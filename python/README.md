@@ -7,8 +7,8 @@ run `docker-compose up`.  Control-C will cleanly stop everything.
 
 This is a minimal example that runs [RabbitMQ](http://rabbitmq.com/)
 and two small Python messages, all in a single Docker environment.
-The `publisher` program publishes a message into RabbitMQ every 5
-seconds; the `consumer` program prints every message it recevies to
+The `publisher` program publishes a message into RabbitMQ every
+second; the `consumer` program prints every message it receives to
 its stdout.
 
 Once you've brought it all up, you should see the publisher and
