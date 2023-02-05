@@ -66,7 +66,7 @@ def main():
 def on_open(connection):
     """Callback when we have connected to the AMQP broker."""
     print('Connected')
-    connection.channel(on_channel_open)
+    connection.channel(on_open_callback=on_channel_open)
 
 
 def on_channel_open(channel):
@@ -77,7 +77,8 @@ def on_channel_open(channel):
     # doesn't matter that both the publisher and consumer are
     # declaring the same exchange, except that they must both declare
     # it with the same parameters.
-    channel.exchange_declare(exchange=EXCHANGE, exchange_type='fanout',
+    channel.exchange_declare(exchange=EXCHANGE,
+                             exchange_type='fanout',
                              durable=True,
                              callback=partial(on_exchange, channel))
 
@@ -89,7 +90,8 @@ def on_channel_open(channel):
 def on_exchange(channel, frame):
     """Callback when we have successfully declared the exchange."""
     print('Have exchange')
-    channel.queue_declare(queue=QUEUE, durable=True,
+    channel.queue_declare(queue=QUEUE,
+                          durable=True,
                           callback=partial(on_queue, channel))
 
 

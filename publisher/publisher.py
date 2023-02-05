@@ -61,22 +61,27 @@ def main():
 
     # Main loop.  This will run forever, or until we get killed.
     try:
+        # Block on the IOLoop
         connection.ioloop.start()
+    # Catch a Keyboard Interrupt to make sure that the connection is closed cleanly
     except KeyboardInterrupt:
+        # Gracefully close the connection
         connection.close()
+        # Start the IOLoop again so Pika can communicate, it will stop on its own when the connection is closed
         connection.ioloop.start()
 
 
 def on_open(connection):
     """Callback when we have connected to the AMQP broker."""
     print('Connected')
-    connection.channel(on_channel_open)
+    connection.channel(on_open_callback=on_channel_open)
 
 
 def on_channel_open(channel):
     """Callback when we have opened a channel on the connection."""
     print('Have channel')
-    channel.exchange_declare(exchange=EXCHANGE, exchange_type='fanout',
+    channel.exchange_declare(exchange=EXCHANGE,
+                             exchange_type='fanout',
                              durable=True,
                              callback=partial(on_exchange, channel))
 
@@ -97,10 +102,9 @@ def send_message(channel, i):
     msg = 'Message %d' % (i,)
     print(msg)
     channel.basic_publish(EXCHANGE, ROUTING_KEY, msg,
-                          pika.BasicProperties(content_type='text/plain',
-                                               delivery_mode=2))
-    channel.connection.add_timeout(DELAY,
-                                   partial(send_message, channel, i+1))
+                          pika.BasicProperties(content_type='text/plain'))
+    channel.connection.call_later(DELAY,
+                                  partial(send_message, channel, i+1))
 
 
 # Python boilerplate to run the main function if this is run as a

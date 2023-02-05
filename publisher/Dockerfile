@@ -7,9 +7,9 @@
 # 'docker build -t publisher .', and then you can manually run
 # 'docker run --rm -e AMQP_URL=... publisher' to run it.
 
-# This is based on the Python 2.7 Alpine Linux image.  See
+# This is based on the Python 3.11 Alpine Linux image.  See
 # https://hub.docker.com/_/python/ for details on this image.
-FROM python:2.7-alpine
+FROM python:3.11-alpine
 
 # Our requirements are minimal, but it's good practice to install them
 # first.  Put things that change less often towards the top of the
@@ -18,15 +18,16 @@ FROM python:2.7-alpine
 # where nothing's changed.
 RUN pip install pika
 
-# Without this setting, Python never prints anything out.
+# Without this setting, Python error logs may not be written on crash
+# Ref.: https://stackoverflow.com/a/59812588/10115198
 ENV PYTHONUNBUFFERED=1
 
 # Actually install the application
-WORKDIR /usr/src/app
+WORKDIR /app
 # It's only a single file.  It has to be in the same directory as the
 # Dockerfile, or a subdirectory, but not a parent or sibling.
 COPY publisher.py .
 
 # When you just 'docker run publisher' with no command afterwards,
 # default to this:
-CMD ["python", "/usr/src/app/publisher.py"]
+CMD ["python", "/app/publisher.py"]

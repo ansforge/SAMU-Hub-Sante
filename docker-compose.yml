@@ -11,7 +11,7 @@ services:
     # https://hub.docker.com/_/rabbitmq/ for details.
     # This variant is built on Alpine Linux (it's smaller) and includes
     # the management UI.
-    image: 'rabbitmq:3.6-management-alpine'
+    image: 'rabbitmq:3.11-management-alpine'
 
     # These ports are exposed on the host; 'hostport:containerport'.
     # You could connect to this server from outside with the *host's*
