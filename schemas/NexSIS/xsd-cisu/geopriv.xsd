@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified"
+           targetNamespace="urn:emergency:cisu:2.0" xmlns:ns1="urn:emergency:cisu:2.0">
+  <xs:include schemaLocation="location-type.xsd"/>
+  <!-- ns="urn:ietf:params:xml:ns:pidf:geopriv10:civicAddr"> -->
+  <xs:complexType name="civicAddressType">
+    <xs:annotation>
+      <xs:documentation>
+        https://www.iana.org/assignments/civic-address-types-registry/civic-address-types-registry.xhtml
+        https://datatracker.ietf.org/doc/html/rfc5139
+        https://datatracker.ietf.org/doc/html/rfc4589
+      </xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element minOccurs="0" ref="ns1:country"/>
+      <xs:element minOccurs="0" ref="ns1:A1"/>
+      <xs:element minOccurs="0" ref="ns1:A2"/>
+      <xs:element minOccurs="0" ref="ns1:A3"/>
+      <xs:element minOccurs="0" ref="ns1:A4"/>
+      <xs:element minOccurs="0" ref="ns1:A5"/>
+      <xs:element minOccurs="0" ref="ns1:A6"/>
+      <xs:element minOccurs="0" ref="ns1:PRD"/>
+      <xs:element minOccurs="0" ref="ns1:POD"/>
+      <xs:element minOccurs="0" ref="ns1:STS"/>
+      <xs:element minOccurs="0" ref="ns1:HNO"/>
+      <xs:element minOccurs="0" ref="ns1:HNS"/>
+      <xs:element minOccurs="0" ref="ns1:LMK"/>
+      <xs:element minOccurs="0" ref="ns1:LOC"/>
+      <xs:element minOccurs="0" ref="ns1:NAM"/>
+      <xs:element minOccurs="0" ref="ns1:PC"/>
+      <xs:element minOccurs="0" ref="ns1:BLD"/>
+      <xs:element minOccurs="0" ref="ns1:UNIT"/>
+      <xs:element minOccurs="0" ref="ns1:FLR"/>
+      <xs:element minOccurs="0" ref="ns1:ROOM"/>
+      <xs:element minOccurs="0" ref="ns1:PLC"/>
+      <xs:element minOccurs="0" ref="ns1:PCN"/>
+      <xs:element minOccurs="0" ref="ns1:POBOX"/>
+      <xs:element minOccurs="0" ref="ns1:ADDCODE"/>
+      <xs:element minOccurs="0" ref="ns1:SEAT"/>
+      <xs:element minOccurs="0" ref="ns1:RD"/>
+      <xs:element minOccurs="0" ref="ns1:RDSEC"/>
+      <xs:element minOccurs="0" ref="ns1:RDBR"/>
+      <xs:element minOccurs="0" ref="ns1:RDSUBBR"/>
+      <xs:element minOccurs="0" ref="ns1:PRM"/>
+      <xs:element minOccurs="0" ref="ns1:POM"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="country" type="ns1:iso3166a2">
+    <xs:annotation>
+      <xs:documentation/>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="A1" type="ns1:caType">
+    <xs:annotation>
+      <xs:documentation>national subdivisions (state, canton, region, province, prefecture)</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="A2" type="ns1:caType">
+    <xs:annotation>
+      <xs:documentation>county, parish, gun (JP), district (IN)</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="A3" type="ns1:caType">
+    <xs:annotation>
+      <xs:documentation>city, township, shi (JP)</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="A4" type="ns1:caType">
+    <xs:annotation>
+      <xs:documentation>city division, borough, city district, ward, chou (JP)</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="A5" type="ns1:caType">
+    <xs:annotation>
+      <xs:documentation>neighborhood, block</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="A6" type="ns1:caType">
+    <xs:annotation>
+      <xs:documentation>group of streets below the neighborhood level</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="PRD" type="ns1:caType">
+    <xs:annotation>
+      <xs:documentation>leading street direction</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="POD" type="ns1:caType">
+    <xs:annotation>
+      <xs:documentation>trailing street suffix</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="STS" type="ns1:caType">
+    <xs:annotation>
+      <xs:documentation>street suffix or type</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="HNO" type="ns1:caType">
+    <xs:annotation>
+      <xs:documentation>house number</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="HNS" type="ns1:caType">
+    <xs:annotation>
+      <xs:documentation>house number suffix</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="LMK" type="ns1:caType">
+    <xs:annotation>
+      <xs:documentation>landmark or vanity address</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="LOC" type="ns1:caType">
+    <xs:annotation>
+      <xs:documentation>additional location information</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="NAM" type="ns1:caType">
+    <xs:annotation>
+      <xs:documentation>name (residence and office occupant)</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="PC" type="ns1:caType">
+    <xs:annotation>
+      <xs:documentation>postal/zip code</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="BLD" type="ns1:caType">
+    <xs:annotation>
+      <xs:documentation>building (structure)</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="UNIT" type="ns1:caType">
+    <xs:annotation>
+      <xs:documentation>unit (apartment, suite)</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="FLR" type="ns1:caType">
+    <xs:annotation>
+      <xs:documentation>floor</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="ROOM" type="ns1:caType">
+    <xs:annotation>
+      <xs:documentation>room number</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="PLC" type="ns1:location-type">
+    <xs:annotation>
+      <xs:documentation>type of place</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="PCN" type="ns1:caType">
+    <xs:annotation>
+      <xs:documentation>postal community name</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="POBOX" type="ns1:caType">
+    <xs:annotation>
+      <xs:documentation>post office box (P.O. Box)</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="ADDCODE" type="ns1:caType">
+    <xs:annotation>
+      <xs:documentation>additional code</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="SEAT" type="ns1:caType">
+    <xs:annotation>
+      <xs:documentation>seat (desk, cubicle, workstation)</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="RD" type="ns1:caType">
+    <xs:annotation>
+      <xs:documentation>Primary road or street</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="RDSEC" type="ns1:caType">
+    <xs:annotation>
+      <xs:documentation>Road section</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="RDBR" type="ns1:caType">
+    <xs:annotation>
+      <xs:documentation>Road branch</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="RDSUBBR" type="ns1:caType">
+    <xs:annotation>
+      <xs:documentation>Road sub-branch</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="PRM" type="ns1:caType">
+    <xs:annotation>
+      <xs:documentation>Street name pre-modifier</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="POM" type="ns1:caType">
+    <xs:annotation>
+      <xs:documentation>Street name post-modifier</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:simpleType name="caType">
+    <xs:restriction base="xs:token"/>
+  </xs:simpleType>
+  <xs:simpleType name="iso3166a2">
+    <xs:restriction base="xs:token">
+      <xs:pattern value="[A-Z]{2}"/>
+    </xs:restriction>
+  </xs:simpleType>
+</xs:schema>
