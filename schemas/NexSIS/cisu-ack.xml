@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<edxlDistribution xlink:type="extended"
+                  xmlns="urn:oasis:names:tc:emergency:EDXL:DE:2.0"
+                  xmlns:xlink="http://www.w3.org/1999/xlink"
+                  xmlns:ct="urn:oasis:names:tc:emergency:edxl:ct:1.0">
+  <distributionID>b526f0ea-0ca7-482a-9cb9-2cd32a1adf58</distributionID>
+  <senderID>77-cgo</senderID>
+  <dateTimeSent>2021-04-23T09:32:49+00:00</dateTimeSent>
+  <dateTimeExpires>2071-04-23T09:32:49+00:00</dateTimeExpires>
+  <distributionStatus>Actual</distributionStatus>
+  <distributionKind>Ack</distributionKind>
+  <descriptor xlink:type="resource">
+    <language>fr-FR</language>
+    <explicitAddress>
+      <explicitAddressScheme>sge</explicitAddressScheme>
+      <explicitAddressValue>sga-nexsis</explicitAddressValue>
+    </explicitAddress>
+  </descriptor>
+  <content xlink:type="resource">
+    <contentObject xlink:type="resource">
+      <contentXML>
+        <embeddedXMLContent>
+          <message xmlns="urn:emergency:cisu:2.0">
+            <messageId>b526f0ea-0ca7-482a-9cb9-2cd32a1adf58</messageId>
+            <sender>
+              <name>pompiers-77</name>
+              <URI>sge:77-cgo</URI>
+            </sender>
+            <sentAt>2021-04-23T09:32:49+00:00</sentAt>
+            <msgType>ACK</msgType>
+            <status>SYSTEM</status>
+            <recipients>
+              <recipient>
+                <name>sga-nexsis</name>
+                <URI>sge:sga-nexsis</URI>
+              </recipient>
+            </recipients>
+            <ackMessage>
+              <ackMessageId>f8c52b0b-e2ab-4cb4-8fa5-73f10619f721</ackMessageId>
+            </ackMessage>
+          </message>
+        </embeddedXMLContent>
+      </contentXML>
+    </contentObject>
+  </content>
+</edxlDistribution>

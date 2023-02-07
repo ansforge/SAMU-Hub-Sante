@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<edxlDistribution xlink:type="extended"
+    xmlns="urn:oasis:names:tc:emergency:EDXL:DE:2.0"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    xmlns:ct="urn:oasis:names:tc:emergency:edxl:ct:1.0">
+    <distributionID>2608323d-507d-4cbf-bf74-52007f8124ea</distributionID>
+    <senderID>sga-nexsis</senderID>
+    <dateTimeSent>2022-09-27T08:23:34+00:00</dateTimeSent>
+    <dateTimeExpires>2072-09-27T08:23:34+00:00</dateTimeExpires>
+    <distributionStatus>Actual</distributionStatus>
+    <distributionKind>Report</distributionKind>
+    <descriptor xlink:type="resource">
+        <language>fr-FR</language>
+        <explicitAddress>
+            <explicitAddressScheme>sge</explicitAddressScheme>
+            <explicitAddressValue>sgo-samu-77</explicitAddressValue>
+        </explicitAddress>
+    </descriptor>
+    <content xlink:type="resource">
+        <contentObject xlink:type="resource">
+            <contentXML>
+                <embeddedXMLContent>
+                    <emsi xmlns="http://tacticalsituationobject.org/schemas/EMSI/3_0">
+
+                        <CONTEXT>
+
+                            <ID>27f46eda-b910-45dd-b09b-8bd8004d3952</ID>
+                            <MODE>ACTUAL</MODE>
+                            <MSGTYPE>ALERT</MSGTYPE>
+                            <CREATION>20220405 12:11:12</CREATION>
+
+                            <LINK>
+                                <ID>messageId EDXL-DE du message recu du SGA</ID>
+                                <ROLE>ADDSTO</ROLE>
+                            </LINK>
+
+                            <LINK>
+                                <ID>ID du message precedent si existant emis par le SGO</ID>
+                                <ROLE>SPRSDS</ROLE>
+                            </LINK>
+
+                            <LEVEL>OPR</LEVEL>
+                            <SECLASS>RESTRC</SECLASS>
+                            <FREETEXT>Création d'un événement opérationnel EMSI 2015 suite à réception d'une affaire</FREETEXT>
+
+                            <!-- le champs URGENCY n'est pas obligatoire si pas de valeur associé au niveau de gravité -->
+        {{#if context.emergency }}
+                            <URGENCY>{{ context.emergency }}</URGENCY>
+        {{/if}}
+
+                            <ORIGIN>
+                                <ORG_ID>FR:NEXSIS:SDIS91:CGA:CDAU</ORG_ID>
+                                <NAME>Centre Départemental d'Appels d'Urgence - SDIS 91</NAME>
+                            </ORIGIN>
+                            <!-- le champs external_info n'est pas obligatoire si pas de valeur -->
+        {{#if context.external_info }}
+                            <EXTERNAL_INFO>
+                                <FREETEXT>external_info</FREETEXT>
+                                <URI></URI>
+                                <TYPE></TYPE>
+                            </EXTERNAL_INFO>
+        {{/if}}
+
+                        </CONTEXT>
+
+                        <EVENT>
+
+                            <!-- pour garantir l'unicité -->
+                            <ID>FR:NEXSIS:SDIS91:CGO:CDAU:NUM_OPERATION</ID>
+                            <NAME>[libelle NF 1] [libelle TL 1]  [commune]</NAME>
+                            <MAIN_EVENT_ID>ID de l'affaire unique recu du SGA et utilisé dans le CISU</MAIN_EVENT_ID>
+
+                            <ETYPE>
+                                <CATEGORY>/FIR/CLA</CATEGORY>
+                                <CATEGORY>/EXP/BLEVE</CATEGORY>
+                                <ACTOR>/BEV/IND/WRH</ACTOR>
+                                <ACTOR>/PPL/EVC</ACTOR>
+                                <LOCTYPE>/URB/IND</LOCTYPE>
+                                <ENV>/DIS/INDHAZ</ENV>
+                            </ETYPE>
+
+                            <SOURCE>HUMOBS</SOURCE>                            <!-- constant pour les affaires recu du SGA ou créé par le SGO -->
+                            <SCALE>2</SCALE>                            <!-- gravité opération -->
+                            <FREETEXT></FREETEXT>                            <!-- commentaire -->
+                            <DECL_DATIME>GH création opération</DECL_DATIME>
+                            <OCC_DATIME>GH primary alert</OCC_DATIME>
+                            <OBS_DATIME>now()</OBS_DATIME>
+                            <STATUS>NST</STATUS>
+
+                            <REFERENCE>
+                                <ORG_ID>FR:NEXSIS:SDIS91:CGA:CDAU</ORG_ID>                                <!-- obligatoire -->
+                                <OTHER_EVENT_ID>NUM_AFFAIRE</OTHER_EVENT_ID>                                <!-- un seul est obligatoire -->
+                                <OTHER_EVENT_ID>NUM_AFFAIRE_secondaire</OTHER_EVENT_ID>
+                            </REFERENCE>
+
+                            <REFERENCE>
+                                <ORG_ID>FR:HUBEX:PN77:SIC</ORG_ID>
+                                <OTHER_EVENT_ID>NUM_ID_POLICE</OTHER_EVENT_ID>
+                            </REFERENCE>
+
+                            <CASUALTIES>
+                                <CONTEXT>PRED_URGENT</CONTEXT>
+                                <DATIME>DATE réception SGA</DATIME>                                <!-- optionnel -->
+                                <DECONT>2</DECONT>                                <!-- optionnel -->
+                                <TRIAGERED></TRIAGERED>
+                                <TRIAGEYELLOW></TRIAGEYELLOW>
+                                <TRIAGEGREEN></TRIAGEGREEN>
+                                <TRIAGEBLACK></TRIAGEBLACK>
+                                <MISSING></MISSING>
+                            </CASUALTIES>
+
+                            <CASUALTIES>
+                                <CONTEXT>PRELIM_STAT</CONTEXT>
+                                <DATIME>DATE réception SGA</DATIME>                                <!-- optionnel -->
+                                <DECONT>1</DECONT>                                <!-- optionnel -->
+                                <TRIAGERED></TRIAGERED>
+                                <TRIAGEYELLOW></TRIAGEYELLOW>
+                                <TRIAGEGREEN></TRIAGEGREEN>
+                                <TRIAGEBLACK></TRIAGEBLACK>
+                                <MISSING></MISSING>
+                            </CASUALTIES>
+
+                            <EVAC>                                <!-- idem CASUALTIES -->
+                                <DATIME></DATIME>
+                                <DISPLACED></DISPLACED>
+                                <EVACUATED></EVACUATED>
+                            </EVAC>
+
+                            <EGEO>
+                                <DATIME></DATIME>
+                                <TYPE>/PLUME</TYPE>
+                                <WEATHER></WEATHER>                                <!-- optional en lien avec les DIOs notamment feu de foret -->
+                                <FREETEXT></FREETEXT>                                <!-- commentaire localisation -->
+
+                                <POSITION>
+                                    <LOC_ID>15da0df7-0815-4d38-8af2-fbc09db27b1c</LOC_ID>
+                                    <ADDRESS>ADRESSE DE l'OPERATION</ADDRESS>
+                                    <NAME>TOPONYME de l'operation</NAME>
+                                    <TYPE>POINT</TYPE>
+                                    <HT_ROLE></HT_ROLE>
+                                    <COORDSYS>4326</COORDSYS>
+                                    <COORD>
+                                        <LAT></LAT>
+                                        <LON></LON>
+                                        <HEIGHT></HEIGHT>
+                                    </COORD>
+                                </POSITION>
+                            </EGEO>
+
+                        </EVENT>
+
+                        <MISSION>
+
+                            <TYPE>/FF</TYPE>
+                            <FREETEXT>Mission générique</FREETEXT>
+                            <ORG_ID>FR:NEXSIS:SDIS91:CGO:CDAU</ORG_ID>
+                            <STATUS>NST</STATUS>
+                            <!-- en attendant la mission
+        <ID></ID>
+        <NAME></NAME>
+        <START_TIME></START_TIME>
+        <END_TIME></END_TIME>
+        <PRIORITY></PRIORITY>
+
+        <POSITION>
+            <LOC_ID></LOC_ID>
+            <ADDRESS></ADDRESS>
+            <NAME></NAME>
+            <TYPE></TYPE>
+            <HT_ROLE></HT_ROLE>
+            <COORDSYS></COORDSYS>
+            <COORD>
+                <LAT></LAT>
+                <LON></LON>
+                <HEIGHT></HEIGHT>
+            </COORD>
+        </POSITION>
+        <RESOURCE_ID></RESOURCE_ID>
+         -->
+                        </MISSION>
+
+                        <!-- en attendant la mission
+    <RESOURCE>
+        <RTYPE>
+            <CLASS></CLASS>
+            <CAPABILITY></CAPABILITY>
+            <CHARACTERISTICS></CHARACTERISTICS>
+        </RTYPE>
+
+        <ID></ID>
+        <ORG_ID></ORG_ID>
+        <NAME></NAME>
+        <FREETEXT></FREETEXT>
+
+        <RGEO>
+            <DATIME></DATIME>
+            <TYPE></TYPE>
+
+            <POSITION>
+                <LOC_ID></LOC_ID>
+                <ADDRESS></ADDRESS>
+                <NAME></NAME>
+                <TYPE></TYPE>
+                <HT_ROLE></HT_ROLE>
+                <COORDSYS></COORDSYS>
+
+                <COORD>
+                    <LAT></LAT>
+                    <LON></LON>
+                    <HEIGHT></HEIGHT>
+                </COORD>
+            </POSITION>
+
+            <FREETEX></FREETEX>
+            <ID></ID>
+        </RGEO>
+
+        <QUANTITY></QUANTITY>
+        <UM></UM>
+        <STATUS></STATUS>
+        <NATIONALITY></NATIONALITY>
+
+        <CONTACT>
+            <TYPE></TYPE>
+            <DETAIL></DETAIL>
+        </CONTACT>
+
+    </RESOURCE>
+-->
+
+                    </emsi>
+                </embeddedXMLContent>
+            </contentXML>
+        </contentObject>
+    </content>
+</edxlDistribution>
