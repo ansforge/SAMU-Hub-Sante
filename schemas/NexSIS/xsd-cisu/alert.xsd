@@ -45,13 +45,17 @@
       </xs:sequence>
     </xs:complexType>
   </xs:element>
-  <xs:element name="alertId" type="xs:token">
+  <xs:element name="alertId">
     <xs:annotation>
       <xs:documentation>
         Identifiant technique unique de l'alerte. Il doit pouvoir être généré automatiquement
         et ne doit pas avoir de signification particulière.
       </xs:documentation>
     </xs:annotation>
+    <!-- JSON: had to be added to work -->
+    <xs:simpleType>
+      <xs:restriction base="xs:token"/>
+    </xs:simpleType>
   </xs:element>
   <xs:element name="receivedAt" type="ns1:date_type"/>
   <xs:element name="reporting">
@@ -69,12 +73,16 @@
       </xs:restriction>
     </xs:simpleType>
   </xs:element>
-  <xs:element name="alertInformation" type="xs:string">
+  <xs:element name="alertInformation">
     <xs:annotation>
       <xs:documentation>
         Texte libre permettant de donner des informations supplémentaires concernant l'alerte.
       </xs:documentation>
     </xs:annotation>
+    <!-- JSON: had to be added to work -->
+    <xs:simpleType>
+      <xs:restriction base="xs:string"/>
+    </xs:simpleType>
   </xs:element>
   <xs:element name="alertLocation" type="ns1:locationType">
     <xs:annotation>
@@ -94,20 +102,28 @@
       </xs:sequence>
     </xs:complexType>
   </xs:element>
-  <xs:element name="source" type="xs:string">
+  <xs:element name="source">
     <xs:annotation>
       <xs:documentation>
         Permet d'indiquer l'origine de la communication : Personne, application, DAU, BAU, défibrillateur,
         ecall, …
       </xs:documentation>
     </xs:annotation>
+    <!-- JSON: had to be added to work -->
+    <xs:simpleType>
+      <xs:restriction base="xs:string"/>
+    </xs:simpleType>
   </xs:element>
-  <xs:element name="dialledURI" type="xs:anyURI">
+  <xs:element name="dialledURI">
     <xs:annotation>
       <xs:documentation>
         URI 'appelée' : tel:112, tel:18, sip:sos@nexsis.fr, ...
       </xs:documentation>
     </xs:annotation>
+    <!-- JSON: had to be added to work -->
+    <xs:simpleType>
+      <xs:restriction base="xs:anyURI"/>
+    </xs:simpleType>
   </xs:element>
   <xs:element name="caller">
     <xs:complexType>
@@ -120,41 +136,61 @@
       </xs:sequence>
     </xs:complexType>
   </xs:element>
-  <xs:element name="callerURI" type="xs:anyURI">
+  <xs:element name="callerURI">
     <xs:annotation>
       <xs:documentation>
         URI de l'appelant : tel:+33611223344, sip:top@domain.org, ...
       </xs:documentation>
     </xs:annotation>
+    <!-- JSON: had to be added to work -->
+    <xs:simpleType>
+      <xs:restriction base="xs:anyURI"/>
+    </xs:simpleType>
   </xs:element>
-  <xs:element name="callbackURI" type="xs:anyURI">
+  <xs:element name="callbackURI">
     <xs:annotation>
       <xs:documentation>
         URI permettant un rappel. Dans certain cas de figure le requérant transmet un moyen de
         recontacter la victime ou un témoin
       </xs:documentation>
     </xs:annotation>
+    <!-- JSON: had to be added to work -->
+    <xs:simpleType>
+      <xs:restriction base="xs:anyURI"/>
+    </xs:simpleType>
   </xs:element>
-  <xs:element name="spokenLanguage" type="xs:language">
+  <xs:element name="spokenLanguage">
     <xs:annotation>
       <xs:documentation>
         Langue parlée par le requérant. Permet de mettre en place des traducteurs si besoin.
       </xs:documentation>
     </xs:annotation>
+    <!-- JSON: had to be added to work -->
+    <xs:simpleType>
+      <xs:restriction base="xs:language"/>
+    </xs:simpleType>
   </xs:element>
-  <xs:element name="callerInformation" type="xs:string">
+  <xs:element name="callerInformation">
     <xs:annotation>
       <xs:documentation>
         Information sur le requérant : malentendant, impliqué dans l'accident, ...
       </xs:documentation>
     </xs:annotation>
+    <!-- JSON: had to be added to work -->
+    <xs:simpleType>
+      <xs:restriction base="xs:string"/>
+    </xs:simpleType>
   </xs:element>
-  <xs:element name="callerName" type="xs:string">
+  <xs:element name="callerName">
     <xs:annotation>
       <xs:documentation>
         Nom du requérant
       </xs:documentation>
     </xs:annotation>
+    <!-- JSON: had to be added to work -->
+    <xs:simpleType>
+      <xs:restriction base="xs:string"/>
+    </xs:simpleType>
   </xs:element>
   <xs:element name="callTaker">
     <xs:complexType>
@@ -165,26 +201,38 @@
       </xs:sequence>
     </xs:complexType>
   </xs:element>
-  <xs:element name="organization" type="xs:string">
+  <xs:element name="organization">
     <xs:annotation>
       <xs:documentation>
         Organisation d'appartenance de l'opérateur ayant traité l'alerte
       </xs:documentation>
     </xs:annotation>
+    <!-- JSON: had to be added to work -->
+    <xs:simpleType>
+      <xs:restriction base="xs:string"/>
+    </xs:simpleType>
   </xs:element>
-  <xs:element name="controlRoom" type="xs:string">
+  <xs:element name="controlRoom">
     <xs:annotation>
       <xs:documentation>
         Salle opérationnelle de l'opérateur de traitement
       </xs:documentation>
     </xs:annotation>
+    <!-- JSON: had to be added to work -->
+    <xs:simpleType>
+      <xs:restriction base="xs:string"/>
+    </xs:simpleType>
   </xs:element>
-  <xs:element name="calltakerURI" type="xs:string">
+  <xs:element name="calltakerURI">
     <xs:annotation>
       <xs:documentation>
         Numéro permettant de recontacter l'opérateur de traitement
       </xs:documentation>
     </xs:annotation>
+    <!-- JSON: had to be added to work -->
+    <xs:simpleType>
+      <xs:restriction base="xs:string"/>
+    </xs:simpleType>
   </xs:element>
   <xs:element name="alertCode">
     <xs:complexType>
@@ -380,40 +428,60 @@
       <xs:element minOccurs="0" ref="ns1:digest"/>
     </xs:sequence>
   </xs:complexType>
-  <xs:element name="resourceDesc" type="xs:string">
+  <xs:element name="resourceDesc">
     <xs:annotation>
       <xs:documentation>
         Décrit la ressource en précisant le type et le contenu, tels que «carte» ou «photo»
       </xs:documentation>
     </xs:annotation>
+    <!-- JSON: had to be added to work -->
+    <xs:simpleType>
+      <xs:restriction base="xs:string"/>
+    </xs:simpleType>
   </xs:element>
-  <xs:element name="mimeType" type="xs:string">
+  <xs:element name="mimeType">
     <xs:annotation>
       <xs:documentation>
         L'identifiant du type MIME de contenu et sous-type décrivant la ressource
       </xs:documentation>
     </xs:annotation>
+    <!-- JSON: had to be added to work -->
+    <xs:simpleType>
+      <xs:restriction base="xs:string"/>
+    </xs:simpleType>
   </xs:element>
-  <xs:element name="size" type="xs:integer">
+  <xs:element name="size">
     <xs:annotation>
       <xs:documentation>
         Taille approximative de la ressource
       </xs:documentation>
     </xs:annotation>
+    <!-- JSON: had to be added to work -->
+    <xs:simpleType>
+      <xs:restriction base="xs:integer"/>
+    </xs:simpleType>
   </xs:element>
-  <xs:element name="derefURI" type="xs:string">
+  <xs:element name="derefURI">
     <xs:annotation>
       <xs:documentation>
         Peut être utilisé à la place de l'élément 'URI' pour envoyer la ressource encodée en base64
       </xs:documentation>
     </xs:annotation>
+    <!-- JSON: had to be added to work -->
+    <xs:simpleType>
+      <xs:restriction base="xs:string"/>
+    </xs:simpleType>
   </xs:element>
-  <xs:element name="digest" type="xs:string">
+  <xs:element name="digest">
     <xs:annotation>
       <xs:documentation>
         Hash de la ressource
       </xs:documentation>
     </xs:annotation>
+    <!-- JSON: had to be added to work -->
+    <xs:simpleType>
+      <xs:restriction base="xs:string"/>
+    </xs:simpleType>
   </xs:element>
   <xs:complexType name="attributeType">
     <xs:sequence>
@@ -441,12 +509,16 @@
       <xs:element minOccurs="0" ref="ns1:comment"/>
     </xs:sequence>
   </xs:complexType>
-  <xs:element name="comment" type="xs:string">
+  <xs:element name="comment">
     <xs:annotation>
       <xs:documentation>
         Permet de complémenter en commentaire libre le choix des circonstances
       </xs:documentation>
     </xs:annotation>
+    <!-- JSON: had to be added to work -->
+    <xs:simpleType>
+      <xs:restriction base="xs:string"/>
+    </xs:simpleType>
   </xs:element>
   <xs:complexType name="optionalAttributeType">
     <xs:sequence>

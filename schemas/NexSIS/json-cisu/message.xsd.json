@@ -1,0 +1,168 @@
+{
+  "$id": "hello_world.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "This JSON Schema file was generated from hello_world.xsd on Tue Feb 07 2023 23:20:47 GMT+0100 (Central European Standard Time).  For more information please see http://www.xsd2jsonschema.org",
+  "description": "Schema tag attributes: xmlns:xs='http://www.w3.org/2001/XMLSchema' elementFormDefault='qualified' targetNamespace='urn:emergency:cisu:2.0' xmlns:ns1='urn:emergency:cisu:2.0'",
+  "properties": {
+    "messageId": {
+      "$ref": "FORWARD_REFERENCE#/to/urn:emergency:cisu:2.0/ns1:uuid_v4",
+      "description": "Identifiant technique unique du message. Il doit pouvoir généré automatiquement et ne doit pas avoir de signification particulière."
+    },
+    "ackMessageId": {
+      "$ref": "#/definitions/ackMessageId"
+    },
+    "sender": {
+      "$ref": "#/definitions/addresseeType",
+      "description": "Identifiant de l'émetteur du message. S'agissant d'un acquittement le 'sender' est un des 'recipients' du message devant être acquitté."
+    },
+    "sentAt": {
+      "$ref": "FORWARD_REFERENCE#/to/urn:emergency:cisu:2.0/ns1:date_type",
+      "description": "Groupe date heure d'émission du message. L'indicateur de fuseau horaire Z ne doit pas être utilisé. Le fuseau horaire pour UTC doit être représenté par '-00:00'."
+    },
+    "msgType": {
+      "$ref": "#/definitions/msgType"
+    },
+    "status": {
+      "$ref": "#/definitions/status"
+    },
+    "recipients": {
+      "$ref": "#/definitions/recipients"
+    },
+    "recipient": {
+      "$ref": "#/definitions/addresseeType"
+    },
+    "addresseeType": {
+      "$ref": "#/definitions/addresseeType"
+    }
+  },
+  "type": "object",
+  "anyOf": [
+    {
+      "required": [
+        "messageId"
+      ]
+    },
+    {
+      "required": [
+        "ackMessageId"
+      ]
+    },
+    {
+      "required": [
+        "sender"
+      ]
+    },
+    {
+      "required": [
+        "sentAt"
+      ]
+    },
+    {
+      "required": [
+        "msgType"
+      ]
+    },
+    {
+      "required": [
+        "status"
+      ]
+    },
+    {
+      "required": [
+        "recipients"
+      ]
+    },
+    {
+      "required": [
+        "recipient"
+      ]
+    },
+    {
+      "required": [
+        "addresseeType"
+      ]
+    }
+  ],
+  "definitions": {
+    "messageId": {
+      "$ref": "FORWARD_REFERENCE#/to/urn:emergency:cisu:2.0/ns1:uuid_v4",
+      "description": "Identifiant technique unique du message. Il doit pouvoir généré automatiquement et ne doit pas avoir de signification particulière."
+    },
+    "ackMessageId": {
+      "$ref": "FORWARD_REFERENCE#/to/urn:emergency:cisu:2.0/ns1:uuid_v4",
+      "description": "Identifiant technique unique du message acquitté."
+    },
+    "sender": {
+      "$ref": "#/definitions/addresseeType",
+      "description": "Identifiant de l'émetteur du message. S'agissant d'un acquittement le 'sender' est un des 'recipients' du message devant être acquitté."
+    },
+    "sentAt": {
+      "$ref": "FORWARD_REFERENCE#/to/urn:emergency:cisu:2.0/ns1:date_type",
+      "description": "Groupe date heure d'émission du message. L'indicateur de fuseau horaire Z ne doit pas être utilisé. Le fuseau horaire pour UTC doit être représenté par '-00:00'."
+    },
+    "msgType": {
+      "description": "Permet l'annulation d'un message Ce champ doit être positionné à 'CANCEL'.",
+      "enum": [
+        "ALERT",
+        "ACK",
+        "UPDATE",
+        "CANCEL"
+      ],
+      "type": "string"
+    },
+    "status": {
+      "description": "Précise le status du message émis : ACTUAL : Le message concerne une affaire/alerte réelle. C'est le mode de fonctionnement nominal. EXERCICE : Le message transmis est utilisé à des fins d'exercice TEST : Utilisé à des fins de test DRAFT : Indique un message dans une version en cours d'élaboration SYSTEM: Indique que le message est technique, \"entre\" systèmes.",
+      "enum": [
+        "ACTUAL",
+        "EXERCISE",
+        "TEST",
+        "DRAFT",
+        "SYSTEM"
+      ],
+      "type": "string"
+    },
+    "recipients": {
+      "description": "Listes de destinataires du message (il doit en avoir un au minimum). S'agissant d'un acquittement on doit trouver au mimnimum l'émetteur du message d'origine mais il est possible d'informer les autres destinataires du message d'origine en les listant dans les 'recipients' (dépendant de la plateforme d'échanges).",
+      "required": [
+        "ns1:recipient"
+      ],
+      "properties": {
+        "ns1:recipient": {
+          "oneOf": [
+            {
+              "$ref": "#/definitions/addresseeType"
+            },
+            {
+              "items": {
+                "$ref": "#/definitions/addresseeType"
+              },
+              "type": "array"
+            }
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "recipient": {
+      "$ref": "#/definitions/addresseeType"
+    },
+    "addresseeType": {
+      "required": [
+        "name",
+        "URI"
+      ],
+      "properties": {
+        "name": {
+          "description": "Nom d'un émetteur/destinataire d'un message",
+          "type": "string"
+        },
+        "URI": {
+          "description": "Adresse de l'émetteur/destinataire.",
+          "format": "uri",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    }
+  }
+}

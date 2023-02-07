@@ -1,0 +1,916 @@
+{
+  "$id": "hello_world.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "This JSON Schema file was generated from hello_world.xsd on Tue Feb 07 2023 23:20:46 GMT+0100 (Central European Standard Time).  For more information please see http://www.xsd2jsonschema.org",
+  "description": "Schema tag attributes: xmlns:xs='http://www.w3.org/2001/XMLSchema' elementFormDefault='qualified' targetNamespace='urn:emergency:cisu:2.0' xmlns:ns1='urn:emergency:cisu:2.0'",
+  "properties": {
+    "primaryAlert": {
+      "$ref": "#/definitions/primaryAlert"
+    },
+    "otherAlert": {
+      "$ref": "#/definitions/otherAlert"
+    },
+    "alertId": {
+      "$ref": "#/definitions/alertId"
+    },
+    "receivedAt": {
+      "$ref": "FORWARD_REFERENCE#/to/urn:emergency:cisu:2.0/ns1:date_type"
+    },
+    "reporting": {
+      "$ref": "#/definitions/reporting"
+    },
+    "alertInformation": {
+      "$ref": "#/definitions/alertInformation"
+    },
+    "alertLocation": {
+      "$ref": "FORWARD_REFERENCE#/to/urn:emergency:cisu:2.0/ns1:locationType",
+      "description": "Cet élément peut soit : - représenter la localisation du requérant si celle-ci diffère de celle de l'événement. - soit pointer sur 'eventLocation' (via 'loc_Id')si la localisation de l'affaire est confondue avec celle de l'alerte."
+    },
+    "call": {
+      "$ref": "#/definitions/call"
+    },
+    "source": {
+      "$ref": "#/definitions/source"
+    },
+    "dialledURI": {
+      "$ref": "#/definitions/dialledURI"
+    },
+    "caller": {
+      "$ref": "#/definitions/caller"
+    },
+    "callerURI": {
+      "$ref": "#/definitions/callerURI"
+    },
+    "callbackURI": {
+      "$ref": "#/definitions/callbackURI"
+    },
+    "spokenLanguage": {
+      "$ref": "#/definitions/spokenLanguage"
+    },
+    "callerInformation": {
+      "$ref": "#/definitions/callerInformation"
+    },
+    "callerName": {
+      "$ref": "#/definitions/callerName"
+    },
+    "callTaker": {
+      "$ref": "#/definitions/callTaker"
+    },
+    "organization": {
+      "$ref": "#/definitions/organization"
+    },
+    "controlRoom": {
+      "$ref": "#/definitions/controlRoom"
+    },
+    "calltakerURI": {
+      "$ref": "#/definitions/calltakerURI"
+    },
+    "alertCode": {
+      "$ref": "#/definitions/alertCode"
+    },
+    "otherAlertCode": {
+      "$ref": "#/definitions/otherAlertCode"
+    },
+    "resource": {
+      "$ref": "#/definitions/resourceType"
+    },
+    "version": {
+      "$ref": "#/definitions/version"
+    },
+    "whatsHappen": {
+      "$ref": "#/definitions/whatsHappen"
+    },
+    "otherWhatsHappen": {
+      "$ref": "#/definitions/otherWhatsHappen"
+    },
+    "locationKind": {
+      "$ref": "#/definitions/locationKind"
+    },
+    "otherLocationKind": {
+      "$ref": "#/definitions/otherLocationKind"
+    },
+    "riskThreat": {
+      "$ref": "#/definitions/riskThreat"
+    },
+    "otherRiskThreat": {
+      "$ref": "#/definitions/otherRiskThreat"
+    },
+    "healthMotive": {
+      "$ref": "#/definitions/healthMotive"
+    },
+    "otherHealthMotive": {
+      "$ref": "#/definitions/otherHealthMotive"
+    },
+    "victims": {
+      "$ref": "#/definitions/victims"
+    },
+    "count": {
+      "$ref": "#/definitions/count"
+    },
+    "mainVictim": {
+      "$ref": "#/definitions/mainVictim"
+    },
+    "resourceType": {
+      "$ref": "#/definitions/resourceType"
+    },
+    "resourceDesc": {
+      "$ref": "#/definitions/resourceDesc"
+    },
+    "mimeType": {
+      "$ref": "#/definitions/mimeType"
+    },
+    "size": {
+      "$ref": "#/definitions/size"
+    },
+    "derefURI": {
+      "$ref": "#/definitions/derefURI"
+    },
+    "digest": {
+      "$ref": "#/definitions/digest"
+    },
+    "attributeType": {
+      "$ref": "#/definitions/attributeType"
+    },
+    "comment": {
+      "$ref": "#/definitions/comment"
+    },
+    "optionalAttributeType": {
+      "$ref": "#/definitions/optionalAttributeType"
+    }
+  },
+  "type": "object",
+  "anyOf": [
+    {
+      "required": [
+        "primaryAlert"
+      ]
+    },
+    {
+      "required": [
+        "otherAlert"
+      ]
+    },
+    {
+      "required": [
+        "alertId"
+      ]
+    },
+    {
+      "required": [
+        "receivedAt"
+      ]
+    },
+    {
+      "required": [
+        "reporting"
+      ]
+    },
+    {
+      "required": [
+        "alertInformation"
+      ]
+    },
+    {
+      "required": [
+        "alertLocation"
+      ]
+    },
+    {
+      "required": [
+        "call"
+      ]
+    },
+    {
+      "required": [
+        "source"
+      ]
+    },
+    {
+      "required": [
+        "dialledURI"
+      ]
+    },
+    {
+      "required": [
+        "caller"
+      ]
+    },
+    {
+      "required": [
+        "callerURI"
+      ]
+    },
+    {
+      "required": [
+        "callbackURI"
+      ]
+    },
+    {
+      "required": [
+        "spokenLanguage"
+      ]
+    },
+    {
+      "required": [
+        "callerInformation"
+      ]
+    },
+    {
+      "required": [
+        "callerName"
+      ]
+    },
+    {
+      "required": [
+        "callTaker"
+      ]
+    },
+    {
+      "required": [
+        "organization"
+      ]
+    },
+    {
+      "required": [
+        "controlRoom"
+      ]
+    },
+    {
+      "required": [
+        "calltakerURI"
+      ]
+    },
+    {
+      "required": [
+        "alertCode"
+      ]
+    },
+    {
+      "required": [
+        "otherAlertCode"
+      ]
+    },
+    {
+      "required": [
+        "resource"
+      ]
+    },
+    {
+      "required": [
+        "version"
+      ]
+    },
+    {
+      "required": [
+        "whatsHappen"
+      ]
+    },
+    {
+      "required": [
+        "otherWhatsHappen"
+      ]
+    },
+    {
+      "required": [
+        "locationKind"
+      ]
+    },
+    {
+      "required": [
+        "otherLocationKind"
+      ]
+    },
+    {
+      "required": [
+        "riskThreat"
+      ]
+    },
+    {
+      "required": [
+        "otherRiskThreat"
+      ]
+    },
+    {
+      "required": [
+        "healthMotive"
+      ]
+    },
+    {
+      "required": [
+        "otherHealthMotive"
+      ]
+    },
+    {
+      "required": [
+        "victims"
+      ]
+    },
+    {
+      "required": [
+        "count"
+      ]
+    },
+    {
+      "required": [
+        "mainVictim"
+      ]
+    },
+    {
+      "required": [
+        "resourceType"
+      ]
+    },
+    {
+      "required": [
+        "resourceDesc"
+      ]
+    },
+    {
+      "required": [
+        "mimeType"
+      ]
+    },
+    {
+      "required": [
+        "size"
+      ]
+    },
+    {
+      "required": [
+        "derefURI"
+      ]
+    },
+    {
+      "required": [
+        "digest"
+      ]
+    },
+    {
+      "required": [
+        "attributeType"
+      ]
+    },
+    {
+      "required": [
+        "comment"
+      ]
+    },
+    {
+      "required": [
+        "optionalAttributeType"
+      ]
+    }
+  ],
+  "definitions": {
+    "primaryAlert": {
+      "description": "L'objet alerte correspond à la transcription d'une communication d'urgence. la PrimaryAlert est la premiere alerte concernant cette situation d'urgence",
+      "required": [
+        "ns1:alertId",
+        "ns1:receivedAt",
+        "ns1:reporting",
+        "ns1:alertLocation",
+        "ns1:call",
+        "ns1:caller",
+        "ns1:callTaker",
+        "ns1:alertCode"
+      ],
+      "properties": {
+        "ns1:alertId": {
+          "$ref": "#/definitions/alertId"
+        },
+        "ns1:receivedAt": {
+          "$ref": "FORWARD_REFERENCE#/to/urn:emergency:cisu:2.0/ns1:date_type"
+        },
+        "ns1:reporting": {
+          "$ref": "#/definitions/reporting"
+        },
+        "ns1:alertInformation": {
+          "$ref": "#/definitions/alertInformation"
+        },
+        "ns1:alertLocation": {
+          "$ref": "FORWARD_REFERENCE#/to/urn:emergency:cisu:2.0/ns1:locationType"
+        },
+        "ns1:call": {
+          "$ref": "#/definitions/call"
+        },
+        "ns1:caller": {
+          "$ref": "#/definitions/caller"
+        },
+        "ns1:callTaker": {
+          "$ref": "#/definitions/callTaker"
+        },
+        "ns1:alertCode": {
+          "$ref": "#/definitions/alertCode"
+        },
+        "ns1:resource": {
+          "oneOf": [
+            {
+              "$ref": "#/definitions/resourceType"
+            },
+            {
+              "items": {
+                "$ref": "#/definitions/resourceType"
+              },
+              "type": "array"
+            }
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "otherAlert": {
+      "description": "L'objet alerte correspond à la transcription d'une communication d'urgence. la otherAlert est un des alerte complémentaire concernant cette situation d'urgence",
+      "required": [
+        "ns1:alertId",
+        "ns1:receivedAt",
+        "ns1:reporting",
+        "ns1:call",
+        "ns1:caller",
+        "ns1:callTaker",
+        "ns1:otherAlertCode"
+      ],
+      "properties": {
+        "ns1:alertId": {
+          "$ref": "#/definitions/alertId"
+        },
+        "ns1:receivedAt": {
+          "$ref": "FORWARD_REFERENCE#/to/urn:emergency:cisu:2.0/ns1:date_type"
+        },
+        "ns1:reporting": {
+          "$ref": "#/definitions/reporting"
+        },
+        "ns1:alertInformation": {
+          "$ref": "#/definitions/alertInformation"
+        },
+        "ns1:alertLocation": {
+          "$ref": "FORWARD_REFERENCE#/to/urn:emergency:cisu:2.0/ns1:locationType"
+        },
+        "ns1:call": {
+          "$ref": "#/definitions/call"
+        },
+        "ns1:caller": {
+          "$ref": "#/definitions/caller"
+        },
+        "ns1:callTaker": {
+          "$ref": "#/definitions/callTaker"
+        },
+        "ns1:otherAlertCode": {
+          "$ref": "#/definitions/otherAlertCode"
+        },
+        "ns1:resource": {
+          "oneOf": [
+            {
+              "$ref": "#/definitions/resourceType"
+            },
+            {
+              "items": {
+                "$ref": "#/definitions/resourceType"
+              },
+              "type": "array"
+            }
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "alertId": {
+      "description": "Identifiant technique unique de l'alerte. Il doit pouvoir être généré automatiquement et ne doit pas avoir de signification particulière.",
+      "type": "string"
+    },
+    "receivedAt": {
+      "$ref": "FORWARD_REFERENCE#/to/urn:emergency:cisu:2.0/ns1:date_type"
+    },
+    "reporting": {
+      "description": "Signalement de l'affaire. Peut prendre les valeurs suivantes : STANDARD : L'alerte n'appelle à aucun signalement ATTENTION : L'alerte mérite une attention particulière des forces",
+      "enum": [
+        "STANDARD",
+        "ATTENTION"
+      ],
+      "type": "string"
+    },
+    "alertInformation": {
+      "description": "Texte libre permettant de donner des informations supplémentaires concernant l'alerte.",
+      "type": "string"
+    },
+    "alertLocation": {
+      "$ref": "FORWARD_REFERENCE#/to/urn:emergency:cisu:2.0/ns1:locationType",
+      "description": "Cet élément peut soit : - représenter la localisation du requérant si celle-ci diffère de celle de l'événement. - soit pointer sur 'eventLocation' (via 'loc_Id')si la localisation de l'affaire est confondue avec celle de l'alerte."
+    },
+    "call": {
+      "required": [
+        "ns1:source"
+      ],
+      "properties": {
+        "ns1:source": {
+          "$ref": "#/definitions/source"
+        },
+        "ns1:dialledURI": {
+          "$ref": "#/definitions/dialledURI"
+        }
+      },
+      "type": "object"
+    },
+    "source": {
+      "description": "Permet d'indiquer l'origine de la communication : Personne, application, DAU, BAU, défibrillateur, ecall, …",
+      "type": "string"
+    },
+    "dialledURI": {
+      "description": "URI 'appelée' : tel:112, tel:18, sip:sos@nexsis.fr, ...",
+      "format": "uri",
+      "type": "string"
+    },
+    "caller": {
+      "required": [
+        "ns1:callerURI"
+      ],
+      "properties": {
+        "ns1:callerURI": {
+          "$ref": "#/definitions/callerURI"
+        },
+        "ns1:callbackURI": {
+          "$ref": "#/definitions/callbackURI"
+        },
+        "ns1:spokenLanguage": {
+          "$ref": "#/definitions/spokenLanguage"
+        },
+        "ns1:callerInformation": {
+          "$ref": "#/definitions/callerInformation"
+        },
+        "ns1:callerName": {
+          "$ref": "#/definitions/callerName"
+        }
+      },
+      "type": "object"
+    },
+    "callerURI": {
+      "description": "URI de l'appelant : tel:+33611223344, sip:top@domain.org, ...",
+      "format": "uri",
+      "type": "string"
+    },
+    "callbackURI": {
+      "description": "URI permettant un rappel. Dans certain cas de figure le requérant transmet un moyen de recontacter la victime ou un témoin",
+      "format": "uri",
+      "type": "string"
+    },
+    "spokenLanguage": {
+      "description": "Langue parlée par le requérant. Permet de mettre en place des traducteurs si besoin.",
+      "pattern": "[a-zA-Z]{1,8}(-[a-zA-Z0-9]{1,8})*",
+      "type": "string"
+    },
+    "callerInformation": {
+      "description": "Information sur le requérant : malentendant, impliqué dans l'accident, ...",
+      "type": "string"
+    },
+    "callerName": {
+      "description": "Nom du requérant",
+      "type": "string"
+    },
+    "callTaker": {
+      "properties": {
+        "ns1:organization": {
+          "$ref": "#/definitions/organization"
+        },
+        "ns1:controlRoom": {
+          "$ref": "#/definitions/controlRoom"
+        },
+        "ns1:calltakerURI": {
+          "$ref": "#/definitions/calltakerURI"
+        }
+      },
+      "type": "object"
+    },
+    "organization": {
+      "description": "Organisation d'appartenance de l'opérateur ayant traité l'alerte",
+      "type": "string"
+    },
+    "controlRoom": {
+      "description": "Salle opérationnelle de l'opérateur de traitement",
+      "type": "string"
+    },
+    "calltakerURI": {
+      "description": "Numéro permettant de recontacter l'opérateur de traitement",
+      "type": "string"
+    },
+    "alertCode": {
+      "required": [
+        "ns1:version",
+        "ns1:whatsHappen"
+      ],
+      "properties": {
+        "ns1:version": {
+          "$ref": "#/definitions/version"
+        },
+        "ns1:whatsHappen": {
+          "$ref": "#/definitions/whatsHappen"
+        },
+        "ns1:locationKind": {
+          "$ref": "#/definitions/locationKind"
+        },
+        "ns1:riskThreat": {
+          "oneOf": [
+            {
+              "$ref": "#/definitions/riskThreat"
+            },
+            {
+              "items": {
+                "$ref": "#/definitions/riskThreat"
+              },
+              "type": "array"
+            }
+          ]
+        },
+        "ns1:healthMotive": {
+          "$ref": "#/definitions/healthMotive"
+        },
+        "ns1:victims": {
+          "$ref": "#/definitions/victims"
+        }
+      },
+      "type": "object"
+    },
+    "otherAlertCode": {
+      "required": [
+        "ns1:version"
+      ],
+      "properties": {
+        "ns1:version": {
+          "$ref": "#/definitions/version"
+        },
+        "ns1:otherWhatsHappen": {
+          "$ref": "#/definitions/otherWhatsHappen"
+        },
+        "ns1:otherLocationKind": {
+          "$ref": "#/definitions/otherLocationKind"
+        },
+        "ns1:otherRiskThreat": {
+          "oneOf": [
+            {
+              "$ref": "#/definitions/otherRiskThreat"
+            },
+            {
+              "items": {
+                "$ref": "#/definitions/otherRiskThreat"
+              },
+              "type": "array"
+            }
+          ]
+        },
+        "ns1:otherHealthMotive": {
+          "$ref": "#/definitions/otherHealthMotive"
+        },
+        "ns1:victims": {
+          "$ref": "#/definitions/victims"
+        }
+      },
+      "type": "object"
+    },
+    "resource": {
+      "$ref": "#/definitions/resourceType"
+    },
+    "version": {
+      "description": "Indique le numéro de version des codes transmis. Cela permet de s'assurer que les systèmes opérationnels soient en capacité de les traiter correctement.",
+      "pattern": "latest|(\\d+(\\.\\d*)?)",
+      "type": "string"
+    },
+    "whatsHappen": {
+      "required": [
+        "whatsHappen"
+      ],
+      "properties": {
+        "whatsHappen": {
+          "$ref": "#/definitions/attributeType",
+          "description": "Décrit la nature de fait de l'alerte (NF)"
+        }
+      },
+      "type": "object"
+    },
+    "otherWhatsHappen": {
+      "required": [
+        "whatsHappen"
+      ],
+      "properties": {
+        "whatsHappen": {
+          "$ref": "#/definitions/optionalAttributeType",
+          "description": "Décrit la nature de fait de l'alerte (NF) pour un update"
+        }
+      },
+      "type": "object"
+    },
+    "locationKind": {
+      "required": [
+        "locationKind"
+      ],
+      "properties": {
+        "locationKind": {
+          "$ref": "#/definitions/attributeType",
+          "description": "Décrit le type de lieu (TL)"
+        }
+      },
+      "type": "object"
+    },
+    "otherLocationKind": {
+      "required": [
+        "locationKind"
+      ],
+      "properties": {
+        "locationKind": {
+          "$ref": "#/definitions/optionalAttributeType",
+          "description": "Décrit le type de lieu (TL) pour un update"
+        }
+      },
+      "type": "object"
+    },
+    "riskThreat": {
+      "required": [
+        "riskThreat"
+      ],
+      "properties": {
+        "riskThreat": {
+          "$ref": "#/definitions/attributeType",
+          "description": "Décrit les risque, menace et sensibilité (RMS)"
+        }
+      },
+      "type": "object"
+    },
+    "otherRiskThreat": {
+      "required": [
+        "riskThreat"
+      ],
+      "properties": {
+        "riskThreat": {
+          "$ref": "#/definitions/optionalAttributeType",
+          "description": "Décrit les risque, menace et sensibilité (RMS) pour un update"
+        }
+      },
+      "type": "object"
+    },
+    "healthMotive": {
+      "required": [
+        "healthMotive"
+      ],
+      "properties": {
+        "healthMotive": {
+          "$ref": "#/definitions/attributeType",
+          "description": "Décrit les motifs de recours médico-secouriste (MR)"
+        }
+      },
+      "type": "object"
+    },
+    "otherHealthMotive": {
+      "required": [
+        "healthMotive"
+      ],
+      "properties": {
+        "healthMotive": {
+          "$ref": "#/definitions/optionalAttributeType",
+          "description": "Décrit les motifs de recours médico-secouriste (MR) pour un update"
+        }
+      },
+      "type": "object"
+    },
+    "victims": {
+      "required": [
+        "ns1:count"
+      ],
+      "properties": {
+        "ns1:count": {
+          "$ref": "#/definitions/count"
+        },
+        "ns1:mainVictim": {
+          "$ref": "#/definitions/mainVictim"
+        },
+        "comment": {
+          "description": "Permet de complémenter en commentaire libre la(les) victime(s)",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "count": {
+      "description": "Indique le nombre de victime 0 (P00), 1 (P01) ou : SEVERAL : (P02) Plusieurs victimes (entre 2 à 4 victimes signalées) MANY : (P03) Nombreuses victimes (à partir de 5 victimes signalées) UNKNOWN : (P04) Indéterminé (information non connue lors de l’appel)",
+      "enum": [
+        "0",
+        "1",
+        "SEVERAL",
+        "MANY",
+        "UNKNOWN"
+      ],
+      "type": "string"
+    },
+    "mainVictim": {
+      "description": "Identifie le type de la principale victime. Celle dont l'état de santé provoque le déclenchement de l'envoi des secours",
+      "enum": [
+        "INFANT",
+        "CHILD",
+        "ADULT",
+        "PREGNANT",
+        "SENIOR"
+      ],
+      "type": "string"
+    },
+    "resourceType": {
+      "required": [
+        "ns1:resourceDesc",
+        "ns1:mimeType"
+      ],
+      "properties": {
+        "ns1:resourceDesc": {
+          "$ref": "#/definitions/resourceDesc"
+        },
+        "ns1:mimeType": {
+          "$ref": "#/definitions/mimeType"
+        },
+        "ns1:size": {
+          "$ref": "#/definitions/size"
+        },
+        "URI": {
+          "description": "Une URI, généralement une URL, qui permet d'atteindre la ressource sur Internet ou sur un réseau privé",
+          "format": "uri",
+          "type": "string"
+        },
+        "ns1:derefURI": {
+          "$ref": "#/definitions/derefURI"
+        },
+        "ns1:digest": {
+          "$ref": "#/definitions/digest"
+        }
+      },
+      "type": "object"
+    },
+    "resourceDesc": {
+      "description": "Décrit la ressource en précisant le type et le contenu, tels que «carte» ou «photo»",
+      "type": "string"
+    },
+    "mimeType": {
+      "description": "L'identifiant du type MIME de contenu et sous-type décrivant la ressource",
+      "type": "string"
+    },
+    "size": {
+      "description": "Taille approximative de la ressource",
+      "type": "integer"
+    },
+    "derefURI": {
+      "description": "Peut être utilisé à la place de l'élément 'URI' pour envoyer la ressource encodée en base64",
+      "type": "string"
+    },
+    "digest": {
+      "description": "Hash de la ressource",
+      "type": "string"
+    },
+    "attributeType": {
+      "required": [
+        "code",
+        "label"
+      ],
+      "properties": {
+        "code": {
+          "description": "Décrit le code des NF, TL, RMS et MR. Les différents niveaux doivent être séparés par un point.",
+          "pattern": "[CLMR](([0-9][0-9])|(([0-9][0-9])(\\.[0-9][0-9]){1,2}))",
+          "type": "string"
+        },
+        "label": {
+          "description": "Présente les différents libellés des circonstances. Les libellés des différents niveaux (par exemple C01.00.02) doivent être concaténés. L’espace peut être utilisé comme séparateur.",
+          "type": "string"
+        },
+        "ns1:comment": {
+          "$ref": "#/definitions/comment"
+        }
+      },
+      "type": "object"
+    },
+    "comment": {
+      "description": "Permet de complémenter en commentaire libre le choix des circonstances",
+      "type": "string"
+    },
+    "optionalAttributeType": {
+      "properties": {
+        "ns1:comment": {
+          "$ref": "#/definitions/comment"
+        }
+      },
+      "type": "object",
+      "anyOf": [
+        {
+          "required": [
+            "code",
+            "label"
+          ],
+          "properties": {
+            "code": {
+              "description": "Décrit le code des NF, TL, RMS et MR. Les différents niveaux doivent être séparés par un point.",
+              "pattern": "[CLMR](([0-9][0-9])|(([0-9][0-9])(\\.[0-9][0-9]){1,2}))",
+              "type": "string"
+            },
+            "label": {
+              "description": "Présente les différents libellés des circonstances. Les libellés des différents niveaux (par exemple C01.00.02) doivent être concaténés. L’espace peut être utilisé comme séparateur.",
+              "type": "string"
+            }
+          }
+        },
+        {
+          "description": "This truthy schema is what makes an optional <sequence> optional."
+        }
+      ]
+    }
+  }
+}

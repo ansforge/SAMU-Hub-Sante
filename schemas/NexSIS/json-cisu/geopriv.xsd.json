@@ -1,0 +1,544 @@
+{
+  "$id": "hello_world.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "This JSON Schema file was generated from hello_world.xsd on Tue Feb 07 2023 23:20:47 GMT+0100 (Central European Standard Time).  For more information please see http://www.xsd2jsonschema.org",
+  "description": "Schema tag attributes: xmlns:xs='http://www.w3.org/2001/XMLSchema' elementFormDefault='qualified' targetNamespace='urn:emergency:cisu:2.0' xmlns:ns1='urn:emergency:cisu:2.0'",
+  "properties": {
+    "civicAddressType": {
+      "$ref": "#/definitions/civicAddressType"
+    },
+    "country": {
+      "$ref": "#/definitions/iso3166a2"
+    },
+    "A1": {
+      "$ref": "#/definitions/caType",
+      "description": "national subdivisions (state, canton, region, province, prefecture)"
+    },
+    "A2": {
+      "$ref": "#/definitions/caType",
+      "description": "county, parish, gun (JP), district (IN)"
+    },
+    "A3": {
+      "$ref": "#/definitions/caType",
+      "description": "city, township, shi (JP)"
+    },
+    "A4": {
+      "$ref": "#/definitions/caType",
+      "description": "city division, borough, city district, ward, chou (JP)"
+    },
+    "A5": {
+      "$ref": "#/definitions/caType",
+      "description": "neighborhood, block"
+    },
+    "A6": {
+      "$ref": "#/definitions/caType",
+      "description": "group of streets below the neighborhood level"
+    },
+    "PRD": {
+      "$ref": "#/definitions/caType",
+      "description": "leading street direction"
+    },
+    "POD": {
+      "$ref": "#/definitions/caType",
+      "description": "trailing street suffix"
+    },
+    "STS": {
+      "$ref": "#/definitions/caType",
+      "description": "street suffix or type"
+    },
+    "HNO": {
+      "$ref": "#/definitions/caType",
+      "description": "house number"
+    },
+    "HNS": {
+      "$ref": "#/definitions/caType",
+      "description": "house number suffix"
+    },
+    "LMK": {
+      "$ref": "#/definitions/caType",
+      "description": "landmark or vanity address"
+    },
+    "LOC": {
+      "$ref": "#/definitions/caType",
+      "description": "additional location information"
+    },
+    "NAM": {
+      "$ref": "#/definitions/caType",
+      "description": "name (residence and office occupant)"
+    },
+    "PC": {
+      "$ref": "#/definitions/caType",
+      "description": "postal/zip code"
+    },
+    "BLD": {
+      "$ref": "#/definitions/caType",
+      "description": "building (structure)"
+    },
+    "UNIT": {
+      "$ref": "#/definitions/caType",
+      "description": "unit (apartment, suite)"
+    },
+    "FLR": {
+      "$ref": "#/definitions/caType",
+      "description": "floor"
+    },
+    "ROOM": {
+      "$ref": "#/definitions/caType",
+      "description": "room number"
+    },
+    "PLC": {
+      "$ref": "FORWARD_REFERENCE#/to/urn:emergency:cisu:2.0/ns1:location-type",
+      "description": "type of place"
+    },
+    "PCN": {
+      "$ref": "#/definitions/caType",
+      "description": "postal community name"
+    },
+    "POBOX": {
+      "$ref": "#/definitions/caType",
+      "description": "post office box (P.O. Box)"
+    },
+    "ADDCODE": {
+      "$ref": "#/definitions/caType",
+      "description": "additional code"
+    },
+    "SEAT": {
+      "$ref": "#/definitions/caType",
+      "description": "seat (desk, cubicle, workstation)"
+    },
+    "RD": {
+      "$ref": "#/definitions/caType",
+      "description": "Primary road or street"
+    },
+    "RDSEC": {
+      "$ref": "#/definitions/caType",
+      "description": "Road section"
+    },
+    "RDBR": {
+      "$ref": "#/definitions/caType",
+      "description": "Road branch"
+    },
+    "RDSUBBR": {
+      "$ref": "#/definitions/caType",
+      "description": "Road sub-branch"
+    },
+    "PRM": {
+      "$ref": "#/definitions/caType",
+      "description": "Street name pre-modifier"
+    },
+    "POM": {
+      "$ref": "#/definitions/caType",
+      "description": "Street name post-modifier"
+    },
+    "caType": {
+      "$ref": "#/definitions/caType"
+    },
+    "iso3166a2": {
+      "$ref": "#/definitions/iso3166a2"
+    }
+  },
+  "type": "object",
+  "anyOf": [
+    {
+      "required": [
+        "civicAddressType"
+      ]
+    },
+    {
+      "required": [
+        "country"
+      ]
+    },
+    {
+      "required": [
+        "A1"
+      ]
+    },
+    {
+      "required": [
+        "A2"
+      ]
+    },
+    {
+      "required": [
+        "A3"
+      ]
+    },
+    {
+      "required": [
+        "A4"
+      ]
+    },
+    {
+      "required": [
+        "A5"
+      ]
+    },
+    {
+      "required": [
+        "A6"
+      ]
+    },
+    {
+      "required": [
+        "PRD"
+      ]
+    },
+    {
+      "required": [
+        "POD"
+      ]
+    },
+    {
+      "required": [
+        "STS"
+      ]
+    },
+    {
+      "required": [
+        "HNO"
+      ]
+    },
+    {
+      "required": [
+        "HNS"
+      ]
+    },
+    {
+      "required": [
+        "LMK"
+      ]
+    },
+    {
+      "required": [
+        "LOC"
+      ]
+    },
+    {
+      "required": [
+        "NAM"
+      ]
+    },
+    {
+      "required": [
+        "PC"
+      ]
+    },
+    {
+      "required": [
+        "BLD"
+      ]
+    },
+    {
+      "required": [
+        "UNIT"
+      ]
+    },
+    {
+      "required": [
+        "FLR"
+      ]
+    },
+    {
+      "required": [
+        "ROOM"
+      ]
+    },
+    {
+      "required": [
+        "PLC"
+      ]
+    },
+    {
+      "required": [
+        "PCN"
+      ]
+    },
+    {
+      "required": [
+        "POBOX"
+      ]
+    },
+    {
+      "required": [
+        "ADDCODE"
+      ]
+    },
+    {
+      "required": [
+        "SEAT"
+      ]
+    },
+    {
+      "required": [
+        "RD"
+      ]
+    },
+    {
+      "required": [
+        "RDSEC"
+      ]
+    },
+    {
+      "required": [
+        "RDBR"
+      ]
+    },
+    {
+      "required": [
+        "RDSUBBR"
+      ]
+    },
+    {
+      "required": [
+        "PRM"
+      ]
+    },
+    {
+      "required": [
+        "POM"
+      ]
+    },
+    {
+      "required": [
+        "caType"
+      ]
+    },
+    {
+      "required": [
+        "iso3166a2"
+      ]
+    }
+  ],
+  "definitions": {
+    "civicAddressType": {
+      "description": "https://www.iana.org/assignments/civic-address-types-registry/civic-address-types-registry.xhtml https://datatracker.ietf.org/doc/html/rfc5139 https://datatracker.ietf.org/doc/html/rfc4589",
+      "properties": {
+        "ns1:country": {
+          "$ref": "#/definitions/iso3166a2"
+        },
+        "ns1:A1": {
+          "$ref": "#/definitions/caType"
+        },
+        "ns1:A2": {
+          "$ref": "#/definitions/caType"
+        },
+        "ns1:A3": {
+          "$ref": "#/definitions/caType"
+        },
+        "ns1:A4": {
+          "$ref": "#/definitions/caType"
+        },
+        "ns1:A5": {
+          "$ref": "#/definitions/caType"
+        },
+        "ns1:A6": {
+          "$ref": "#/definitions/caType"
+        },
+        "ns1:PRD": {
+          "$ref": "#/definitions/caType"
+        },
+        "ns1:POD": {
+          "$ref": "#/definitions/caType"
+        },
+        "ns1:STS": {
+          "$ref": "#/definitions/caType"
+        },
+        "ns1:HNO": {
+          "$ref": "#/definitions/caType"
+        },
+        "ns1:HNS": {
+          "$ref": "#/definitions/caType"
+        },
+        "ns1:LMK": {
+          "$ref": "#/definitions/caType"
+        },
+        "ns1:LOC": {
+          "$ref": "#/definitions/caType"
+        },
+        "ns1:NAM": {
+          "$ref": "#/definitions/caType"
+        },
+        "ns1:PC": {
+          "$ref": "#/definitions/caType"
+        },
+        "ns1:BLD": {
+          "$ref": "#/definitions/caType"
+        },
+        "ns1:UNIT": {
+          "$ref": "#/definitions/caType"
+        },
+        "ns1:FLR": {
+          "$ref": "#/definitions/caType"
+        },
+        "ns1:ROOM": {
+          "$ref": "#/definitions/caType"
+        },
+        "ns1:PLC": {
+          "$ref": "FORWARD_REFERENCE#/to/urn:emergency:cisu:2.0/ns1:location-type"
+        },
+        "ns1:PCN": {
+          "$ref": "#/definitions/caType"
+        },
+        "ns1:POBOX": {
+          "$ref": "#/definitions/caType"
+        },
+        "ns1:ADDCODE": {
+          "$ref": "#/definitions/caType"
+        },
+        "ns1:SEAT": {
+          "$ref": "#/definitions/caType"
+        },
+        "ns1:RD": {
+          "$ref": "#/definitions/caType"
+        },
+        "ns1:RDSEC": {
+          "$ref": "#/definitions/caType"
+        },
+        "ns1:RDBR": {
+          "$ref": "#/definitions/caType"
+        },
+        "ns1:RDSUBBR": {
+          "$ref": "#/definitions/caType"
+        },
+        "ns1:PRM": {
+          "$ref": "#/definitions/caType"
+        },
+        "ns1:POM": {
+          "$ref": "#/definitions/caType"
+        }
+      },
+      "type": "object"
+    },
+    "country": {
+      "$ref": "#/definitions/iso3166a2"
+    },
+    "A1": {
+      "$ref": "#/definitions/caType",
+      "description": "national subdivisions (state, canton, region, province, prefecture)"
+    },
+    "A2": {
+      "$ref": "#/definitions/caType",
+      "description": "county, parish, gun (JP), district (IN)"
+    },
+    "A3": {
+      "$ref": "#/definitions/caType",
+      "description": "city, township, shi (JP)"
+    },
+    "A4": {
+      "$ref": "#/definitions/caType",
+      "description": "city division, borough, city district, ward, chou (JP)"
+    },
+    "A5": {
+      "$ref": "#/definitions/caType",
+      "description": "neighborhood, block"
+    },
+    "A6": {
+      "$ref": "#/definitions/caType",
+      "description": "group of streets below the neighborhood level"
+    },
+    "PRD": {
+      "$ref": "#/definitions/caType",
+      "description": "leading street direction"
+    },
+    "POD": {
+      "$ref": "#/definitions/caType",
+      "description": "trailing street suffix"
+    },
+    "STS": {
+      "$ref": "#/definitions/caType",
+      "description": "street suffix or type"
+    },
+    "HNO": {
+      "$ref": "#/definitions/caType",
+      "description": "house number"
+    },
+    "HNS": {
+      "$ref": "#/definitions/caType",
+      "description": "house number suffix"
+    },
+    "LMK": {
+      "$ref": "#/definitions/caType",
+      "description": "landmark or vanity address"
+    },
+    "LOC": {
+      "$ref": "#/definitions/caType",
+      "description": "additional location information"
+    },
+    "NAM": {
+      "$ref": "#/definitions/caType",
+      "description": "name (residence and office occupant)"
+    },
+    "PC": {
+      "$ref": "#/definitions/caType",
+      "description": "postal/zip code"
+    },
+    "BLD": {
+      "$ref": "#/definitions/caType",
+      "description": "building (structure)"
+    },
+    "UNIT": {
+      "$ref": "#/definitions/caType",
+      "description": "unit (apartment, suite)"
+    },
+    "FLR": {
+      "$ref": "#/definitions/caType",
+      "description": "floor"
+    },
+    "ROOM": {
+      "$ref": "#/definitions/caType",
+      "description": "room number"
+    },
+    "PLC": {
+      "$ref": "FORWARD_REFERENCE#/to/urn:emergency:cisu:2.0/ns1:location-type",
+      "description": "type of place"
+    },
+    "PCN": {
+      "$ref": "#/definitions/caType",
+      "description": "postal community name"
+    },
+    "POBOX": {
+      "$ref": "#/definitions/caType",
+      "description": "post office box (P.O. Box)"
+    },
+    "ADDCODE": {
+      "$ref": "#/definitions/caType",
+      "description": "additional code"
+    },
+    "SEAT": {
+      "$ref": "#/definitions/caType",
+      "description": "seat (desk, cubicle, workstation)"
+    },
+    "RD": {
+      "$ref": "#/definitions/caType",
+      "description": "Primary road or street"
+    },
+    "RDSEC": {
+      "$ref": "#/definitions/caType",
+      "description": "Road section"
+    },
+    "RDBR": {
+      "$ref": "#/definitions/caType",
+      "description": "Road branch"
+    },
+    "RDSUBBR": {
+      "$ref": "#/definitions/caType",
+      "description": "Road sub-branch"
+    },
+    "PRM": {
+      "$ref": "#/definitions/caType",
+      "description": "Street name pre-modifier"
+    },
+    "POM": {
+      "$ref": "#/definitions/caType",
+      "description": "Street name post-modifier"
+    },
+    "caType": {
+      "type": "string"
+    },
+    "iso3166a2": {
+      "pattern": "[A-Z]{2}",
+      "type": "string"
+    }
+  }
+}

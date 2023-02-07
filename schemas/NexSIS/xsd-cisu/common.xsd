@@ -171,5 +171,10 @@
       </xs:restriction>
     </xs:simpleType>
   </xs:element>
-  <xs:element name="height" type="xs:double"/>
+  <!-- JSON: had to be changed to work (even though it works for civicAddress) -->
+  <xs:element name="height">
+    <xs:simpleType>
+      <xs:restriction base="xs:double"/>
+    </xs:simpleType>
+  </xs:element>
 </xs:schema>

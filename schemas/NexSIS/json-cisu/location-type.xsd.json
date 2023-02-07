@@ -1,0 +1,699 @@
+{
+  "$id": "hello_world.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "This JSON Schema file was generated from hello_world.xsd on Tue Feb 07 2023 23:20:47 GMT+0100 (Central European Standard Time).  For more information please see http://www.xsd2jsonschema.org",
+  "description": "Schema tag attributes: xmlns:xs='http://www.w3.org/2001/XMLSchema' elementFormDefault='qualified' targetNamespace='urn:emergency:cisu:2.0' xmlns:ns1='urn:emergency:cisu:2.0'",
+  "properties": {
+    "Note_t": {
+      "$ref": "#/definitions/Note_t"
+    },
+    "location-type": {
+      "$ref": "#/definitions/location-type"
+    },
+    "aircraft": {
+      "$ref": "#/definitions/aircraft"
+    },
+    "airport": {
+      "$ref": "#/definitions/airport"
+    },
+    "arena": {
+      "$ref": "#/definitions/arena"
+    },
+    "automobile": {
+      "$ref": "#/definitions/automobile"
+    },
+    "bank": {
+      "$ref": "#/definitions/bank"
+    },
+    "bar": {
+      "$ref": "#/definitions/bar"
+    },
+    "bicyle": {
+      "$ref": "#/definitions/bicyle"
+    },
+    "bus": {
+      "$ref": "#/definitions/bus"
+    },
+    "bus-station": {
+      "$ref": "#/definitions/bus-station"
+    },
+    "cafe": {
+      "$ref": "#/definitions/cafe"
+    },
+    "classroom": {
+      "$ref": "#/definitions/classroom"
+    },
+    "club": {
+      "$ref": "#/definitions/club"
+    },
+    "construction": {
+      "$ref": "#/definitions/construction"
+    },
+    "convention-center": {
+      "$ref": "#/definitions/convention-center"
+    },
+    "government": {
+      "$ref": "#/definitions/government"
+    },
+    "hospital": {
+      "$ref": "#/definitions/hospital"
+    },
+    "hotel": {
+      "$ref": "#/definitions/hotel"
+    },
+    "industrial": {
+      "$ref": "#/definitions/industrial"
+    },
+    "library": {
+      "$ref": "#/definitions/library"
+    },
+    "motorcycle": {
+      "$ref": "#/definitions/motorcycle"
+    },
+    "office": {
+      "$ref": "#/definitions/office"
+    },
+    "other": {
+      "$ref": "#/definitions/Note_t",
+      "description": "A place without a registered place type representation."
+    },
+    "outdoors": {
+      "$ref": "#/definitions/outdoors"
+    },
+    "parking": {
+      "$ref": "#/definitions/parking"
+    },
+    "place-of-worship": {
+      "$ref": "#/definitions/place-of-worship"
+    },
+    "prison": {
+      "$ref": "#/definitions/prison"
+    },
+    "public": {
+      "$ref": "#/definitions/public"
+    },
+    "public-transport": {
+      "$ref": "#/definitions/public-transport"
+    },
+    "residence": {
+      "$ref": "#/definitions/residence"
+    },
+    "restaurant": {
+      "$ref": "#/definitions/restaurant"
+    },
+    "school": {
+      "$ref": "#/definitions/school"
+    },
+    "shopping-area": {
+      "$ref": "#/definitions/shopping-area"
+    },
+    "stadium": {
+      "$ref": "#/definitions/stadium"
+    },
+    "store": {
+      "$ref": "#/definitions/store"
+    },
+    "street": {
+      "$ref": "#/definitions/street"
+    },
+    "theater": {
+      "$ref": "#/definitions/theater"
+    },
+    "train": {
+      "$ref": "#/definitions/train"
+    },
+    "train-station": {
+      "$ref": "#/definitions/train-station"
+    },
+    "truck": {
+      "$ref": "#/definitions/truck"
+    },
+    "underway": {
+      "$ref": "#/definitions/underway"
+    },
+    "unknown": {
+      "$ref": "#/definitions/unknown"
+    },
+    "warehouse": {
+      "$ref": "#/definitions/warehouse"
+    },
+    "water": {
+      "$ref": "#/definitions/water"
+    },
+    "watercraft": {
+      "$ref": "#/definitions/watercraft"
+    }
+  },
+  "type": "object",
+  "anyOf": [
+    {
+      "required": [
+        "Note_t"
+      ]
+    },
+    {
+      "required": [
+        "location-type"
+      ]
+    },
+    {
+      "required": [
+        "aircraft"
+      ]
+    },
+    {
+      "required": [
+        "airport"
+      ]
+    },
+    {
+      "required": [
+        "arena"
+      ]
+    },
+    {
+      "required": [
+        "automobile"
+      ]
+    },
+    {
+      "required": [
+        "bank"
+      ]
+    },
+    {
+      "required": [
+        "bar"
+      ]
+    },
+    {
+      "required": [
+        "bicyle"
+      ]
+    },
+    {
+      "required": [
+        "bus"
+      ]
+    },
+    {
+      "required": [
+        "bus-station"
+      ]
+    },
+    {
+      "required": [
+        "cafe"
+      ]
+    },
+    {
+      "required": [
+        "classroom"
+      ]
+    },
+    {
+      "required": [
+        "club"
+      ]
+    },
+    {
+      "required": [
+        "construction"
+      ]
+    },
+    {
+      "required": [
+        "convention-center"
+      ]
+    },
+    {
+      "required": [
+        "government"
+      ]
+    },
+    {
+      "required": [
+        "hospital"
+      ]
+    },
+    {
+      "required": [
+        "hotel"
+      ]
+    },
+    {
+      "required": [
+        "industrial"
+      ]
+    },
+    {
+      "required": [
+        "library"
+      ]
+    },
+    {
+      "required": [
+        "motorcycle"
+      ]
+    },
+    {
+      "required": [
+        "office"
+      ]
+    },
+    {
+      "required": [
+        "other"
+      ]
+    },
+    {
+      "required": [
+        "outdoors"
+      ]
+    },
+    {
+      "required": [
+        "parking"
+      ]
+    },
+    {
+      "required": [
+        "place-of-worship"
+      ]
+    },
+    {
+      "required": [
+        "prison"
+      ]
+    },
+    {
+      "required": [
+        "public"
+      ]
+    },
+    {
+      "required": [
+        "public-transport"
+      ]
+    },
+    {
+      "required": [
+        "residence"
+      ]
+    },
+    {
+      "required": [
+        "restaurant"
+      ]
+    },
+    {
+      "required": [
+        "school"
+      ]
+    },
+    {
+      "required": [
+        "shopping-area"
+      ]
+    },
+    {
+      "required": [
+        "stadium"
+      ]
+    },
+    {
+      "required": [
+        "store"
+      ]
+    },
+    {
+      "required": [
+        "street"
+      ]
+    },
+    {
+      "required": [
+        "theater"
+      ]
+    },
+    {
+      "required": [
+        "train"
+      ]
+    },
+    {
+      "required": [
+        "train-station"
+      ]
+    },
+    {
+      "required": [
+        "truck"
+      ]
+    },
+    {
+      "required": [
+        "underway"
+      ]
+    },
+    {
+      "required": [
+        "unknown"
+      ]
+    },
+    {
+      "required": [
+        "warehouse"
+      ]
+    },
+    {
+      "required": [
+        "water"
+      ]
+    },
+    {
+      "required": [
+        "watercraft"
+      ]
+    }
+  ],
+  "definitions": {
+    "Note_t": {
+      "type": "string"
+    },
+    "location-type": {
+      "description": "https://datatracker.ietf.org/doc/html/rfc4589",
+      "properties": {
+        "ns1:aircraft": {
+          "$ref": "#/definitions/aircraft"
+        },
+        "ns1:airport": {
+          "$ref": "#/definitions/airport"
+        },
+        "ns1:arena": {
+          "$ref": "#/definitions/arena"
+        },
+        "ns1:automobile": {
+          "$ref": "#/definitions/automobile"
+        },
+        "ns1:bank": {
+          "$ref": "#/definitions/bank"
+        },
+        "ns1:bar": {
+          "$ref": "#/definitions/bar"
+        },
+        "ns1:bicyle": {
+          "$ref": "#/definitions/bicyle"
+        },
+        "ns1:bus": {
+          "$ref": "#/definitions/bus"
+        },
+        "ns1:bus-station": {
+          "$ref": "#/definitions/bus-station"
+        },
+        "ns1:cafe": {
+          "$ref": "#/definitions/cafe"
+        },
+        "ns1:classroom": {
+          "$ref": "#/definitions/classroom"
+        },
+        "ns1:club": {
+          "$ref": "#/definitions/club"
+        },
+        "ns1:construction": {
+          "$ref": "#/definitions/construction"
+        },
+        "ns1:convention-center": {
+          "$ref": "#/definitions/convention-center"
+        },
+        "ns1:government": {
+          "$ref": "#/definitions/government"
+        },
+        "ns1:hospital": {
+          "$ref": "#/definitions/hospital"
+        },
+        "ns1:hotel": {
+          "$ref": "#/definitions/hotel"
+        },
+        "ns1:industrial": {
+          "$ref": "#/definitions/industrial"
+        },
+        "ns1:library": {
+          "$ref": "#/definitions/library"
+        },
+        "ns1:motorcycle": {
+          "$ref": "#/definitions/motorcycle"
+        },
+        "ns1:office": {
+          "$ref": "#/definitions/office"
+        },
+        "ns1:other": {
+          "$ref": "#/definitions/Note_t"
+        },
+        "ns1:outdoors": {
+          "$ref": "#/definitions/outdoors"
+        },
+        "ns1:parking": {
+          "$ref": "#/definitions/parking"
+        },
+        "ns1:place-of-worship": {
+          "$ref": "#/definitions/place-of-worship"
+        },
+        "ns1:prison": {
+          "$ref": "#/definitions/prison"
+        },
+        "ns1:public": {
+          "$ref": "#/definitions/public"
+        },
+        "ns1:public-transport": {
+          "$ref": "#/definitions/public-transport"
+        },
+        "ns1:residence": {
+          "$ref": "#/definitions/residence"
+        },
+        "ns1:restaurant": {
+          "$ref": "#/definitions/restaurant"
+        },
+        "ns1:school": {
+          "$ref": "#/definitions/school"
+        },
+        "ns1:shopping-area": {
+          "$ref": "#/definitions/shopping-area"
+        },
+        "ns1:stadium": {
+          "$ref": "#/definitions/stadium"
+        },
+        "ns1:store": {
+          "$ref": "#/definitions/store"
+        },
+        "ns1:street": {
+          "$ref": "#/definitions/street"
+        },
+        "ns1:theater": {
+          "$ref": "#/definitions/theater"
+        },
+        "ns1:train": {
+          "$ref": "#/definitions/train"
+        },
+        "ns1:train-station": {
+          "$ref": "#/definitions/train-station"
+        },
+        "ns1:truck": {
+          "$ref": "#/definitions/truck"
+        },
+        "ns1:underway": {
+          "$ref": "#/definitions/underway"
+        },
+        "ns1:unknown": {
+          "$ref": "#/definitions/unknown"
+        },
+        "ns1:warehouse": {
+          "$ref": "#/definitions/warehouse"
+        },
+        "ns1:water": {
+          "$ref": "#/definitions/water"
+        },
+        "ns1:watercraft": {
+          "$ref": "#/definitions/watercraft"
+        }
+      },
+      "type": "object"
+    },
+    "aircraft": {
+      "description": "A device that is used or intended to be used for flight in the air, such as an airplane, helicopter, gyroplane, glider, or lighter-than-air devices like a balloon.",
+      "type": "object"
+    },
+    "airport": {
+      "description": "A place from which aircrafts operate, such as an airport or heliport.",
+      "type": "object"
+    },
+    "arena": {
+      "description": "Enclosed area used for sports events.",
+      "type": "object"
+    },
+    "automobile": {
+      "description": "An automotive vehicle, usually four-wheeled, designed for passenger transportation, such as a car",
+      "type": "object"
+    },
+    "bank": {
+      "description": "Business establishment in which money is kept for saving, commercial purposes, is invested, supplied for loans, or exchanged.",
+      "type": "object"
+    },
+    "bar": {
+      "description": "A bar or saloon.",
+      "type": "object"
+    },
+    "bicyle": {
+      "description": "A vehicle with two wheels tandem, a steering handle, a saddle seat, and pedals by which it is propelled.",
+      "type": "object"
+    },
+    "bus": {
+      "description": "A large motor vehicle designed to carry passengers.",
+      "type": "object"
+    },
+    "bus-station": {
+      "description": "Terminal that serves bus passengers, such as a bus depot or bus terminal.",
+      "type": "object"
+    },
+    "cafe": {
+      "description": "Usually a small and informal establishment that serves various refreshments (such as coffee); coffee shop.",
+      "type": "object"
+    },
+    "classroom": {
+      "description": "Academic classroom or lecture hall.",
+      "type": "object"
+    },
+    "club": {
+      "description": "Dance club, nightclub, or discotheque.",
+      "type": "object"
+    },
+    "construction": {
+      "description": "Construction site.",
+      "type": "object"
+    },
+    "convention-center": {
+      "description": "Convention center or exhibition hall.",
+      "type": "object"
+    },
+    "government": {
+      "description": "Government building, such as those used by the legislative, executive, or judicial branches of governments, including court houses, police stations, and military installations.",
+      "type": "object"
+    },
+    "hospital": {
+      "description": "Hospital, hospice, medical clinic, mental institution, or doctor's office.",
+      "type": "object"
+    },
+    "hotel": {
+      "description": "Hotel, motel, inn, or other lodging establishment.",
+      "type": "object"
+    },
+    "industrial": {
+      "description": "Industrial setting, such as a manufacturing floor or power plant.",
+      "type": "object"
+    },
+    "library": {
+      "description": "Library or other public place in which literary and artistic materials, such as books, music, periodicals, newspapers, pamphlets, prints, records, and tapes, are kept for reading, reference, or lending.",
+      "type": "object"
+    },
+    "motorcycle": {
+      "description": "A two-wheeled automotive vehicle, including a scooter.",
+      "type": "object"
+    },
+    "office": {
+      "description": "Business setting, such as an office.",
+      "type": "object"
+    },
+    "other": {
+      "$ref": "#/definitions/Note_t",
+      "description": "A place without a registered place type representation."
+    },
+    "outdoors": {
+      "description": "Outside a building, in or into the open air, such as a park or city streets.",
+      "type": "object"
+    },
+    "parking": {
+      "description": "A parking lot or parking garage.",
+      "type": "object"
+    },
+    "place-of-worship": {
+      "description": "A religious site where congregations gather for religious observances, such as a church, chapel, meetinghouse, mosque, shrine, synagogue, or temple.",
+      "type": "object"
+    },
+    "prison": {
+      "description": "Correctional institution where persons are confined while on trial or for punishment, such as a prison, penitentiary, jail, brig.",
+      "type": "object"
+    },
+    "public": {
+      "description": "Public area such as a shopping mall, street, park, public building, train station, or airport or in public conveyance such as a bus, train, plane, or ship. This general description encompasses the more precise descriptors 'street', 'public- transport', 'aircraft', 'bus', 'bus-station', 'train', 'train- station', 'airport', 'shopping-area', 'outdoors', and 'watercraft'.",
+      "type": "object"
+    },
+    "public-transport": {
+      "description": "Any form of public transport, including aircraft, bus, train, or ship.",
+      "type": "object"
+    },
+    "residence": {
+      "description": "A private or residential setting, not necessarily the personal residence of the entity, e.g., including a friend's home.",
+      "type": "object"
+    },
+    "restaurant": {
+      "description": "Restaurant, coffee shop, or other public dining establishment.",
+      "type": "object"
+    },
+    "school": {
+      "description": "School or university property, but not necessarily a classroom or library.",
+      "type": "object"
+    },
+    "shopping-area": {
+      "description": "Shopping mall or shopping area. This area is a large, often enclosed, shopping complex containing various stores, businesses, and restaurants usually accessible by common passageways.",
+      "type": "object"
+    },
+    "stadium": {
+      "description": "Large, usually open structure for sports events, including a racetrack.",
+      "type": "object"
+    },
+    "store": {
+      "description": "Place where merchandise is offered for sale, such as a shop.",
+      "type": "object"
+    },
+    "street": {
+      "description": "A public thoroughfare, such as an avenue, street, alley, lane, or road, including any sidewalks.",
+      "type": "object"
+    },
+    "theater": {
+      "description": "Theater, lecture hall, auditorium, classroom, movie theater, or similar facility designed for presentations, talks, plays, music performances, and other events involving an audience.",
+      "type": "object"
+    },
+    "train": {
+      "description": "Train, monorail, maglev, cable car, or similar conveyance.",
+      "type": "object"
+    },
+    "train-station": {
+      "description": "Terminal where trains load or unload passengers or goods; railway station, railroad station, railroad terminal, train depot.",
+      "type": "object"
+    },
+    "truck": {
+      "description": "An automotive vehicle suitable for hauling, used primarily to carry goods rather than people.",
+      "type": "object"
+    },
+    "underway": {
+      "description": "In a land-, water-, or aircraft that is underway (in motion).",
+      "type": "object"
+    },
+    "unknown": {
+      "description": "The type of place is unknown.",
+      "type": "object"
+    },
+    "warehouse": {
+      "description": "Place in which goods or merchandise are stored, such as a storehouse or self-storage facility.",
+      "type": "object"
+    },
+    "water": {
+      "description": "In, on, or above bodies of water, such as an ocean, lake, river, canal, or other waterway.",
+      "type": "object"
+    },
+    "watercraft": {
+      "description": "On a vessel for travel on water such as a boat or ship.",
+      "type": "object"
+    }
+  }
+}

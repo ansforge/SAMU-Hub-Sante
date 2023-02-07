@@ -1,0 +1,101 @@
+{
+  "$id": "hello_world.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "This JSON Schema file was generated from hello_world.xsd on Tue Feb 07 2023 23:20:46 GMT+0100 (Central European Standard Time).  For more information please see http://www.xsd2jsonschema.org",
+  "description": "Schema tag attributes: xmlns:xs='http://www.w3.org/2001/XMLSchema' elementFormDefault='qualified' targetNamespace='urn:emergency:cisu:2.0' xmlns:ns1='urn:emergency:cisu:2.0'",
+  "properties": {
+    "eventId": {
+      "description": "Identifiant fonctionnel unique de l'affaire. Il doit pouvoir être généré de façon unique et décentralisée et ne présenter aucune ambiguïté.",
+      "type": "string"
+    },
+    "createdAt": {
+      "$ref": "FORWARD_REFERENCE#/to/urn:emergency:cisu:2.0/ns1:date_type",
+      "description": "Groupe date heure de création de l'affaire. Il doit être renseigné à la fin du processus de la création de la première alerte. Lors de l'ajout d'alerte à une affaire ce champ ne doit pas être modifié. L'indicateur de fuseau horaire Z ne doit pas être utilisé. Le fuseau horaire pour UTC doit être représenté par '-00:00'."
+    },
+    "severity": {
+      "$ref": "#/definitions/severity"
+    },
+    "eventLocation": {
+      "$ref": "FORWARD_REFERENCE#/to/urn:emergency:cisu:2.0/ns1:locationType",
+      "description": "Localisation de l'affaire. Celle-ci est issue de la première alerte et ne doit pas être modifiée lors des nouvelles alertes associées à l'affaire en cours."
+    },
+    "cancelReason": {
+      "$ref": "#/definitions/cancelReason"
+    },
+    "cancelInformation": {
+      "description": "Texte libre permettant de donner des informations supplémentaires concernant l'abandon de l'affaire.",
+      "type": "string"
+    }
+  },
+  "type": "object",
+  "anyOf": [
+    {
+      "required": [
+        "eventId"
+      ]
+    },
+    {
+      "required": [
+        "createdAt"
+      ]
+    },
+    {
+      "required": [
+        "severity"
+      ]
+    },
+    {
+      "required": [
+        "eventLocation"
+      ]
+    },
+    {
+      "required": [
+        "cancelReason"
+      ]
+    },
+    {
+      "required": [
+        "cancelInformation"
+      ]
+    }
+  ],
+  "definitions": {
+    "eventId": {
+      "description": "Identifiant fonctionnel unique de l'affaire. Il doit pouvoir être généré de façon unique et décentralisée et ne présenter aucune ambiguïté.",
+      "type": "string"
+    },
+    "createdAt": {
+      "$ref": "FORWARD_REFERENCE#/to/urn:emergency:cisu:2.0/ns1:date_type",
+      "description": "Groupe date heure de création de l'affaire. Il doit être renseigné à la fin du processus de la création de la première alerte. Lors de l'ajout d'alerte à une affaire ce champ ne doit pas être modifié. L'indicateur de fuseau horaire Z ne doit pas être utilisé. Le fuseau horaire pour UTC doit être représenté par '-00:00'."
+    },
+    "severity": {
+      "description": "Précise l'urgence de l'affaire : EXTREME : Menace extrême pour la vie ou les biens SEVERE : Menace importante pour la vie ou les biens MODERATE - Menace possible pour la vie ou les biens MINOR : Peu ou pas de menace connue pour la vie ou les biens UNKNOWN : Niveau de menace inconnu",
+      "enum": [
+        "EXTREME",
+        "SEVERE",
+        "MODERATE",
+        "MINOR",
+        "UNKNOWN"
+      ],
+      "type": "string"
+    },
+    "eventLocation": {
+      "$ref": "FORWARD_REFERENCE#/to/urn:emergency:cisu:2.0/ns1:locationType",
+      "description": "Localisation de l'affaire. Celle-ci est issue de la première alerte et ne doit pas être modifiée lors des nouvelles alertes associées à l'affaire en cours."
+    },
+    "cancelReason": {
+      "description": "Raison de l'abandon de l'affaire : ERROR : Il s'agissait d'une erreur MALEVOLENCE: Malveillance OTHER : Autre cause de l'abandon de l'affaire",
+      "enum": [
+        "ERROR",
+        "MALEVOLENCE",
+        "OTHER"
+      ],
+      "type": "string"
+    },
+    "cancelInformation": {
+      "description": "Texte libre permettant de donner des informations supplémentaires concernant l'abandon de l'affaire.",
+      "type": "string"
+    }
+  }
+}

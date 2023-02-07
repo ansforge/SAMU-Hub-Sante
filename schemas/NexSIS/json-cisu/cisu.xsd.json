@@ -1,0 +1,292 @@
+{
+  "$id": "hello_world.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "This JSON Schema file was generated from hello_world.xsd on Tue Feb 07 2023 23:20:46 GMT+0100 (Central European Standard Time).  For more information please see http://www.xsd2jsonschema.org",
+  "description": "Schema tag attributes: xmlns:xs='http://www.w3.org/2001/XMLSchema' elementFormDefault='qualified' targetNamespace='urn:emergency:cisu:2.0' xmlns:ns1='urn:emergency:cisu:2.0'",
+  "properties": {
+    "message": {
+      "$ref": "#/definitions/message"
+    },
+    "ackEvent": {
+      "$ref": "#/definitions/ackEvent"
+    },
+    "alert": {
+      "$ref": "#/definitions/alert"
+    },
+    "ackMessage": {
+      "$ref": "FORWARD_REFERENCE#/to/urn:emergency:cisu:2.0/ns1:ackMessageId",
+      "description": "Ce type de message permet un acquittement \"technique\" d'un message reçu. Il précède un éventuel acquittement \"fonctionnel\"."
+    },
+    "createEvent": {
+      "$ref": "#/definitions/createEvent"
+    },
+    "updateEvent": {
+      "$ref": "#/definitions/updateEvent"
+    },
+    "cancelEvent": {
+      "$ref": "#/definitions/cancelEvent"
+    }
+  },
+  "type": "object",
+  "anyOf": [
+    {
+      "required": [
+        "message"
+      ]
+    },
+    {
+      "required": [
+        "ackEvent"
+      ]
+    },
+    {
+      "required": [
+        "alert"
+      ]
+    },
+    {
+      "required": [
+        "ackMessage"
+      ]
+    },
+    {
+      "required": [
+        "createEvent"
+      ]
+    },
+    {
+      "required": [
+        "updateEvent"
+      ]
+    },
+    {
+      "required": [
+        "cancelEvent"
+      ]
+    }
+  ],
+  "definitions": {
+    "message": {
+      "required": [
+        "ns1:messageId",
+        "ns1:sender",
+        "ns1:sentAt",
+        "ns1:msgType",
+        "ns1:status",
+        "ns1:recipients"
+      ],
+      "properties": {
+        "ns1:messageId": {
+          "$ref": "FORWARD_REFERENCE#/to/urn:emergency:cisu:2.0/ns1:messageId"
+        },
+        "ns1:sender": {
+          "$ref": "FORWARD_REFERENCE#/to/urn:emergency:cisu:2.0/ns1:sender"
+        },
+        "ns1:sentAt": {
+          "$ref": "FORWARD_REFERENCE#/to/urn:emergency:cisu:2.0/ns1:sentAt"
+        },
+        "ns1:msgType": {
+          "$ref": "FORWARD_REFERENCE#/to/urn:emergency:cisu:2.0/ns1:msgType"
+        },
+        "ns1:status": {
+          "$ref": "FORWARD_REFERENCE#/to/urn:emergency:cisu:2.0/ns1:status"
+        },
+        "ns1:recipients": {
+          "$ref": "FORWARD_REFERENCE#/to/urn:emergency:cisu:2.0/ns1:recipients"
+        }
+      },
+      "type": "object",
+      "oneOf": [
+        {
+          "required": [
+            "ns1:ackMessage"
+          ],
+          "properties": {
+            "ns1:ackMessage": {
+              "$ref": "FORWARD_REFERENCE#/to/urn:emergency:cisu:2.0/ns1:ackMessageId"
+            }
+          }
+        },
+        {
+          "required": [
+            "ns1:createEvent"
+          ],
+          "properties": {
+            "ns1:createEvent": {
+              "$ref": "#/definitions/createEvent"
+            }
+          }
+        },
+        {
+          "required": [
+            "ns1:ackEvent"
+          ],
+          "properties": {
+            "ns1:ackEvent": {
+              "$ref": "#/definitions/ackEvent"
+            }
+          }
+        },
+        {
+          "required": [
+            "ns1:updateEvent"
+          ],
+          "properties": {
+            "ns1:updateEvent": {
+              "$ref": "#/definitions/updateEvent"
+            }
+          }
+        },
+        {
+          "required": [
+            "ns1:cancelEvent"
+          ],
+          "properties": {
+            "ns1:cancelEvent": {
+              "$ref": "#/definitions/cancelEvent"
+            }
+          }
+        }
+      ]
+    },
+    "ackEvent": {
+      "description": "Ce type de message permet un acquittement \"fonctionnel\". Il fait suite à un acquittement technique et signifie que l'affaire/alerte transmise n'a pas simplement atteint le système cible mais a été prise en compte (aucune supposition sur suite la suite donnée ne doit en être déduite).",
+      "required": [
+        "ns1:eventId"
+      ],
+      "properties": {
+        "ns1:eventId": {
+          "$ref": "FORWARD_REFERENCE#/to/urn:emergency:cisu:2.0/ns1:eventId"
+        },
+        "ns1:alert": {
+          "oneOf": [
+            {
+              "$ref": "#/definitions/alert"
+            },
+            {
+              "items": {
+                "$ref": "#/definitions/alert"
+              },
+              "type": "array"
+            }
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "alert": {
+      "description": "Alerte a acquitter. Il est possible d'acquitter plusieurs alertes en même temps si elles font partie de la même affaire.",
+      "required": [
+        "alertId"
+      ],
+      "properties": {
+        "alertId": {
+          "description": "Identifiant technique unique de l'alerte à acquitter.",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "ackMessage": {
+      "$ref": "FORWARD_REFERENCE#/to/urn:emergency:cisu:2.0/ns1:ackMessageId",
+      "description": "Ce type de message permet un acquittement \"technique\" d'un message reçu. Il précède un éventuel acquittement \"fonctionnel\"."
+    },
+    "createEvent": {
+      "required": [
+        "ns1:eventId",
+        "ns1:createdAt",
+        "ns1:severity",
+        "ns1:eventLocation",
+        "ns1:primaryAlert"
+      ],
+      "properties": {
+        "ns1:eventId": {
+          "$ref": "FORWARD_REFERENCE#/to/urn:emergency:cisu:2.0/ns1:eventId"
+        },
+        "ns1:createdAt": {
+          "$ref": "FORWARD_REFERENCE#/to/urn:emergency:cisu:2.0/ns1:createdAt"
+        },
+        "ns1:severity": {
+          "$ref": "FORWARD_REFERENCE#/to/urn:emergency:cisu:2.0/ns1:severity"
+        },
+        "ns1:eventLocation": {
+          "$ref": "FORWARD_REFERENCE#/to/urn:emergency:cisu:2.0/ns1:eventLocation"
+        },
+        "ns1:primaryAlert": {
+          "$ref": "FORWARD_REFERENCE#/to/urn:emergency:cisu:2.0/ns1:primaryAlert"
+        },
+        "ns1:otherAlert": {
+          "oneOf": [
+            {
+              "$ref": "FORWARD_REFERENCE#/to/urn:emergency:cisu:2.0/ns1:otherAlert"
+            },
+            {
+              "items": {
+                "$ref": "FORWARD_REFERENCE#/to/urn:emergency:cisu:2.0/ns1:otherAlert"
+              },
+              "type": "array"
+            }
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "updateEvent": {
+      "required": [
+        "ns1:eventId",
+        "ns1:createdAt",
+        "ns1:severity",
+        "ns1:eventLocation",
+        "ns1:otherAlert"
+      ],
+      "properties": {
+        "ns1:eventId": {
+          "$ref": "FORWARD_REFERENCE#/to/urn:emergency:cisu:2.0/ns1:eventId"
+        },
+        "ns1:createdAt": {
+          "$ref": "FORWARD_REFERENCE#/to/urn:emergency:cisu:2.0/ns1:createdAt"
+        },
+        "ns1:severity": {
+          "$ref": "FORWARD_REFERENCE#/to/urn:emergency:cisu:2.0/ns1:severity"
+        },
+        "ns1:eventLocation": {
+          "$ref": "FORWARD_REFERENCE#/to/urn:emergency:cisu:2.0/ns1:eventLocation"
+        },
+        "ns1:otherAlert": {
+          "$ref": "FORWARD_REFERENCE#/to/urn:emergency:cisu:2.0/ns1:otherAlert"
+        }
+      },
+      "type": "object"
+    },
+    "cancelEvent": {
+      "required": [
+        "ns1:eventId",
+        "ns1:cancelReason"
+      ],
+      "properties": {
+        "ns1:eventId": {
+          "$ref": "FORWARD_REFERENCE#/to/urn:emergency:cisu:2.0/ns1:eventId"
+        },
+        "ns1:cancelReason": {
+          "$ref": "FORWARD_REFERENCE#/to/urn:emergency:cisu:2.0/ns1:cancelReason"
+        },
+        "ns1:cancelInformation": {
+          "$ref": "FORWARD_REFERENCE#/to/urn:emergency:cisu:2.0/ns1:cancelInformation"
+        },
+        "ns1:createdAt": {
+          "$ref": "FORWARD_REFERENCE#/to/urn:emergency:cisu:2.0/ns1:createdAt"
+        },
+        "ns1:severity": {
+          "$ref": "FORWARD_REFERENCE#/to/urn:emergency:cisu:2.0/ns1:severity"
+        },
+        "ns1:eventLocation": {
+          "$ref": "FORWARD_REFERENCE#/to/urn:emergency:cisu:2.0/ns1:eventLocation"
+        },
+        "ns1:otherAlert": {
+          "$ref": "FORWARD_REFERENCE#/to/urn:emergency:cisu:2.0/ns1:otherAlert"
+        }
+      },
+      "type": "object"
+    }
+  }
+}

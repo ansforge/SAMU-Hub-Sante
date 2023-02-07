@@ -1,0 +1,277 @@
+{
+  "$id": "hello_world.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "This JSON Schema file was generated from hello_world.xsd on Tue Feb 07 2023 23:20:46 GMT+0100 (Central European Standard Time).  For more information please see http://www.xsd2jsonschema.org",
+  "description": "Schema tag attributes: xmlns:xs='http://www.w3.org/2001/XMLSchema' elementFormDefault='qualified' targetNamespace='urn:emergency:cisu:2.0' xmlns:ns1='urn:emergency:cisu:2.0'",
+  "properties": {
+    "date_type": {
+      "$ref": "#/definitions/date_type"
+    },
+    "uuid_v4": {
+      "$ref": "#/definitions/uuid_v4"
+    },
+    "locationType": {
+      "$ref": "#/definitions/locationType"
+    },
+    "loc_Id": {
+      "$ref": "#/definitions/loc_Id"
+    },
+    "type": {
+      "$ref": "#/definitions/type"
+    },
+    "coordsys": {
+      "$ref": "#/definitions/coordsys"
+    },
+    "height_role": {
+      "$ref": "#/definitions/height_role"
+    },
+    "coord": {
+      "$ref": "#/definitions/coordType",
+      "description": "Liste des points géographiques. Si un point est requis alors la latitude et la longitude doivent être renseignées. La hauteur est optionnelle."
+    },
+    "address": {
+      "$ref": "#/definitions/address"
+    },
+    "commune": {
+      "$ref": "#/definitions/commune"
+    },
+    "civicAddress": {
+      "$ref": "FORWARD_REFERENCE#/to/urn:emergency:cisu:2.0/ns1:civicAddressType"
+    },
+    "coordType": {
+      "$ref": "#/definitions/coordType"
+    },
+    "lat": {
+      "$ref": "#/definitions/lat"
+    },
+    "lon": {
+      "$ref": "#/definitions/lon"
+    },
+    "height": {
+      "$ref": "#/definitions/height"
+    }
+  },
+  "type": "object",
+  "anyOf": [
+    {
+      "required": [
+        "date_type"
+      ]
+    },
+    {
+      "required": [
+        "uuid_v4"
+      ]
+    },
+    {
+      "required": [
+        "locationType"
+      ]
+    },
+    {
+      "required": [
+        "loc_Id"
+      ]
+    },
+    {
+      "required": [
+        "type"
+      ]
+    },
+    {
+      "required": [
+        "coordsys"
+      ]
+    },
+    {
+      "required": [
+        "height_role"
+      ]
+    },
+    {
+      "required": [
+        "coord"
+      ]
+    },
+    {
+      "required": [
+        "address"
+      ]
+    },
+    {
+      "required": [
+        "commune"
+      ]
+    },
+    {
+      "required": [
+        "civicAddress"
+      ]
+    },
+    {
+      "required": [
+        "coordType"
+      ]
+    },
+    {
+      "required": [
+        "lat"
+      ]
+    },
+    {
+      "required": [
+        "lon"
+      ]
+    },
+    {
+      "required": [
+        "height"
+      ]
+    }
+  ],
+  "definitions": {
+    "date_type": {
+      "description": "L'indicateur de fuseau horaire Z ne doit pas être utilisé. Le fuseau horaire pour UTC doit être représenté par '-00:00'.",
+      "pattern": "\\d\\d\\d\\d-\\d\\d-\\d\\dT\\d\\d:\\d\\d:\\d\\d[\\-+]\\d\\d:\\d\\d",
+      "type": "string"
+    },
+    "uuid_v4": {
+      "pattern": "([a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}){1}",
+      "type": "string"
+    },
+    "locationType": {
+      "properties": {
+        "ns1:loc_Id": {
+          "$ref": "#/definitions/loc_Id"
+        },
+        "name": {
+          "description": "Texte libre qui permet de nommer la localisation : nom de la ville, d'un lac, ... Il est de la responsabilité de l'agence de définir une approche cohérente pour nommer les lieux, d'une ville, d'un lac, etc. par exemple, en utilisant les noms d'une carte particulière, ou, dans une zone marquée multilingue, comme la Belgique ou l'Italie, en mettant les deux noms séparés par un \"/\".",
+          "maxLength": 80,
+          "type": "string"
+        },
+        "ns1:type": {
+          "$ref": "#/definitions/type"
+        },
+        "ns1:coordsys": {
+          "$ref": "#/definitions/coordsys"
+        },
+        "ns1:height_role": {
+          "$ref": "#/definitions/height_role"
+        },
+        "ns1:coord": {
+          "oneOf": [
+            {
+              "$ref": "#/definitions/coordType"
+            },
+            {
+              "items": {
+                "$ref": "#/definitions/coordType"
+              },
+              "type": "array"
+            }
+          ]
+        },
+        "ns1:address": {
+          "oneOf": [
+            {
+              "$ref": "#/definitions/address"
+            },
+            {
+              "items": {
+                "$ref": "#/definitions/address"
+              },
+              "type": "array"
+            }
+          ]
+        },
+        "ns1:commune": {
+          "$ref": "#/definitions/commune"
+        },
+        "ns1:civicAddress": {
+          "$ref": "FORWARD_REFERENCE#/to/urn:emergency:cisu:2.0/ns1:civicAddressType"
+        }
+      },
+      "type": "object"
+    },
+    "loc_Id": {
+      "description": "*** Le format locationType est identique au format POSITION de l'EMSI TSO (ISO 22 351) *** Identifiant unique de la localisation au sein du message. Cet identifiant peut être utilisé dans une autre partie du document afin d'éviter la duplication du même objet de localisation.",
+      "maxLength": 80,
+      "type": "string"
+    },
+    "type": {
+      "description": "Les types suivants sont définis: POINT : un point géographique unique, CIRCLE : un cercle défini par le centre et l'un des points de la circonférence, LINE : une liste de points qui créent une ligne, SURFACE : une surface fermée, GRID : un ensemble de points uniques, POLYGON : une liste de points qui sont création d'une ligne fermée, ELLIPSE : une ellipse définie par 3 points: la position des 2 foyers points et une position sur le contour.",
+      "enum": [
+        "POINT",
+        "CIRCLE",
+        "LINE",
+        "SURFACE",
+        "GRID",
+        "POLYGON",
+        "ELLIPSE"
+      ],
+      "type": "string"
+    },
+    "coordsys": {
+      "description": "Cet élément indique le type de coordonnées utilisé. Actuellement, la seule valeur valide est «EPSG-4326», indiquant l'utilisation de WGS-84.",
+      "maxLength": 10,
+      "type": "string"
+    },
+    "height_role": {
+      "description": "Fournit la définition du paramètre de hauteur dans l'élément 'coord'. Trois valeurs possibles : MIN, MAX ou AVG",
+      "enum": [
+        "MIN",
+        "MAX",
+        "AVE"
+      ],
+      "type": "string"
+    },
+    "coord": {
+      "$ref": "#/definitions/coordType",
+      "description": "Liste des points géographiques. Si un point est requis alors la latitude et la longitude doivent être renseignées. La hauteur est optionnelle."
+    },
+    "address": {
+      "description": "Texte libre permettant de saisir une adresse civile. Cet élément peut être répété autant que nécessaire et contenir des informations complémentaires (digicode, étage, ...)",
+      "maxLength": 256,
+      "type": "string"
+    },
+    "commune": {
+      "description": "Commune de la localisation.",
+      "maxLength": 80,
+      "type": "string"
+    },
+    "civicAddress": {
+      "$ref": "FORWARD_REFERENCE#/to/urn:emergency:cisu:2.0/ns1:civicAddressType"
+    },
+    "coordType": {
+      "required": [
+        "ns1:lat",
+        "ns1:lon"
+      ],
+      "properties": {
+        "ns1:lat": {
+          "$ref": "#/definitions/lat"
+        },
+        "ns1:lon": {
+          "$ref": "#/definitions/lon"
+        },
+        "ns1:height": {
+          "$ref": "#/definitions/height"
+        }
+      },
+      "type": "object"
+    },
+    "lat": {
+      "maximum": 90,
+      "minimum": -90,
+      "type": "number"
+    },
+    "lon": {
+      "maximum": 180,
+      "minimum": -180,
+      "type": "number"
+    },
+    "height": {
+      "type": "number"
+    }
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "fs": "^0.0.1-security",
+    "xsd2jsonschema": "^0.3.7"
+  }
+}
