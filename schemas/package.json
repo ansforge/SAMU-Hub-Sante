@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@asyncapi/modelina": "^1.2.1",
     "fs": "^0.0.1-security",
     "xsd2jsonschema": "^0.3.7"
   }

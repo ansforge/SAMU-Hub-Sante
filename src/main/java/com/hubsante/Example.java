@@ -9,7 +9,9 @@ import java.nio.file.Path;
 
 public class Example {
     public static void main(String[] args) throws IOException {
-        Path xmlFilePath = Path.of("/Users/romainfouilland/code/ans/docker-rabbitmq-example/schemas/NexSIS/cisu-message.xml");
+        // Path xmlFilePath = Path.of("/Users/romainfouilland/code/ans/docker-rabbitmq-example/schemas/NexSIS/cisu-ack.xml");
+        // Path xmlFilePath = Path.of("/Users/romainfouilland/code/ans/docker-rabbitmq-example/schemas/NexSIS/cisu-message.xml");
+        Path xmlFilePath = Path.of("/Users/romainfouilland/code/ans/docker-rabbitmq-example/schemas/NexSIS/emsi-operation.xml");
         String xml = Files.readString(xmlFilePath);
         // public static String xml = "<?xml version=\"1.0\" ?><root><test       attribute=\"text1\">javatpoint</test><test attribute=\"text2\">JTP</test></root>";
 

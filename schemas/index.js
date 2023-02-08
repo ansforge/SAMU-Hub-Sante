@@ -8,9 +8,9 @@ fs.readFile(filepath, "utf8", function(err, schema) {
 
     try {
         const convertedSchemas = xs2js.processAllSchemas({
-            schemas: {'hello_world.xsd': schema}
+            schemas: {[filepath]: schema}
         });
-        const jsonSchema = convertedSchemas['hello_world.xsd'].getJsonSchema();
+        const jsonSchema = convertedSchemas[filepath].getJsonSchema();
         console.log(JSON.stringify(jsonSchema, null, 2));
     } catch (e) {
         console.log(e);

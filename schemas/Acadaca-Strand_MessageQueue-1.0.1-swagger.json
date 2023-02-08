@@ -1,0 +1,640 @@
+{
+  "asyncapi" : "2.4.0",
+  "info" : {
+    "title" : "Strand MessageQueue Schema",
+    "version" : "1.0.1"
+  },
+  "servers" : {
+    "test" : {
+      "url" : "strn-staging-mq.uncadunca.com:5672",
+      "protocol" : "amqp",
+      "description" : "Staging RabbitMQ"
+    }
+  },
+  "defaultContentType" : "application/json",
+  "channels" : {
+    "Magento.Product.Created" : {
+      "description" : "Create a new product in Magento",
+      "bindings" : {
+        "amqp" : {
+          "is" : "queue",
+          "queue" : {
+            "name" : "Magento.Product.Created"
+          }
+        }
+      },
+      "publish" : {
+        "operationId" : "Magento.Product.Created",
+        "message" : {
+          "title" : "Magento.Product.Created",
+          "summary" : "A product was created",
+          "payload" : {
+            "$ref" : "#/components/schemas/ProductCreatedInterface"
+          }
+        }
+      }
+    },
+    "Magento.Product.Updated" : {
+      "description" : "Update a product in Magento",
+      "bindings" : {
+        "amqp" : {
+          "is" : "queue",
+          "queue" : {
+            "name" : "Magento.Product.Updated"
+          }
+        }
+      },
+      "publish" : {
+        "operationId" : "Magento.Product.Updated",
+        "message" : {
+          "title" : "Magento.Product.Updated",
+          "summary" : "A product was updated",
+          "payload" : {
+            "$ref" : "#/components/schemas/ProductUpdatedInterface"
+          }
+        }
+      }
+    },
+    "Magento.Product.ImagesUpdated" : {
+      "description" : "Update a product's images in Magento",
+      "bindings" : {
+        "amqp" : {
+          "is" : "queue",
+          "queue" : {
+            "name" : "Magento.Product.ImagesUpdated"
+          }
+        }
+      },
+      "publish" : {
+        "operationId" : "Magento.Product.ImagesUpdated",
+        "message" : {
+          "title" : "Magento.Product.ImagesUpdated",
+          "summary" : "Images updated",
+          "payload" : {
+            "$ref" : "#/components/schemas/ProductImagesUpdatedInterface"
+          }
+        }
+      }
+    },
+    "Magento.Inventory.Updated" : {
+      "description" : "Update a product's inventory in Magento",
+      "bindings" : {
+        "amqp" : {
+          "is" : "queue",
+          "queue" : {
+            "name" : "Magento.Inventory.Updated"
+          }
+        }
+      },
+      "publish" : {
+        "operationId" : "Magento.Inventory.Updated",
+        "message" : {
+          "title" : "Magento.Inventory.Updated",
+          "summary" : "Inventory updated",
+          "payload" : {
+            "$ref" : "#/components/schemas/InventoryUpdatedInterface"
+          }
+        }
+      }
+    },
+    "Basil.Order.Created" : {
+      "description" : "Published when a Magento order is created in or saved as Processing state",
+      "bindings" : {
+        "amqp" : {
+          "is" : "queue",
+          "queue" : {
+            "name" : "Basil.Order.Created"
+          }
+        }
+      },
+      "publish" : {
+        "operationId" : "Basil.Order.Created",
+        "message" : {
+          "title" : "Basil.Order.Created",
+          "summary" : "Magento Order was created",
+          "payload" : {
+            "$ref" : "#/components/schemas/OrderCreatedInterface"
+          }
+        }
+      }
+    },
+    "Magento.Order.Shipped" : {
+      "description" : "Published when a Basil order is shipped",
+      "bindings" : {
+        "amqp" : {
+          "is" : "queue",
+          "queue" : {
+            "name" : "Magento.Order.Shipped"
+          }
+        }
+      },
+      "publish" : {
+        "operationId" : "Magento.Order.Shipped",
+        "message" : {
+          "title" : "Magento.Order.Shipped",
+          "summary" : "Basil order was shipped",
+          "payload" : {
+            "$ref" : "#/components/schemas/OrderShippedInterface"
+          }
+        }
+      }
+    },
+    "Magento.Order.Received" : {
+      "description" : "Published when a Basil order is received",
+      "bindings" : {
+        "amqp" : {
+          "is" : "queue",
+          "queue" : {
+            "name" : "Magento.Order.Received"
+          }
+        }
+      },
+      "publish" : {
+        "operationId" : "Magento.Order.Received",
+        "message" : {
+          "title" : "Magento.Order.Received",
+          "summary" : "Magento order was received",
+          "payload" : {
+            "$ref" : "#/components/schemas/OrderReceivedInterface"
+          }
+        }
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "sku" : {
+        "type" : "string",
+        "description" : "Magento Product Sku",
+        "example" : "magento-product-sku"
+      },
+      "OrderInterface" : {
+        "type" : "object",
+        "properties" : {
+          "..." : {
+            "type" : "string",
+            "description" : "Magento OrderInterface",
+            "example" : "https://magento.redoc.ly/2.4.4-admin/tag/ordersid#operation/salesOrderRepositoryV1GetGet"
+          },
+          "items" : {
+            "$ref" : "#/components/schemas/OrderItemInterface"
+          }
+        }
+      },
+      "OrderAddressInterface" : {
+        "type" : "object",
+        "properties" : {
+          "..." : {
+            "type" : "string",
+            "description" : "Magento OrderAddressInterface",
+            "example" : "https://magento.redoc.ly/2.4.4-admin/tag/ordersid#operation/salesOrderRepositoryV1GetGet"
+          }
+        }
+      },
+      "OrderPaymentInterface" : {
+        "type" : "object",
+        "properties" : {
+          "..." : {
+            "type" : "string",
+            "description" : "Magento OrderPaymentInterface",
+            "example" : "https://magento.redoc.ly/2.4.4-admin/tag/ordersid#operation/salesOrderRepositoryV1GetGet"
+          }
+        }
+      },
+      "InventoryUpdatedInterface" : {
+        "type" : "object",
+        "required" : [ "sku", "inventory" ],
+        "properties" : {
+          "sku" : {
+            "$ref" : "#/components/schemas/sku"
+          },
+          "inventory" : {
+            "$ref" : "#/components/schemas/ProductInventoryInterface"
+          }
+        }
+      },
+      "OrderCreatedInterface" : {
+        "type" : "object",
+        "required" : [ "order", "billing_address", "shipping_address", "shipping_method", "payment_method" ],
+        "properties" : {
+          "order" : {
+            "$ref" : "#/components/schemas/OrderInterface"
+          },
+          "billing_address" : {
+            "$ref" : "#/components/schemas/OrderAddressInterface"
+          },
+          "shipping_address" : {
+            "$ref" : "#/components/schemas/OrderAddressInterface"
+          },
+          "shipping_method" : {
+            "type" : "string",
+            "example" : "UPS Ground"
+          },
+          "payment_method" : {
+            "$ref" : "#/components/schemas/OrderPaymentInterface"
+          }
+        }
+      },
+      "OrderShippedInterface" : {
+        "type" : "object",
+        "required" : [ "order_number", "items" ],
+        "properties" : {
+          "order_number" : {
+            "type" : "string",
+            "description" : "Magento Order Number",
+            "example" : "000000012"
+          },
+          "items" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/OrderShippedItemInterface"
+            }
+          },
+          "tracking" : {
+            "$ref" : "#/components/schemas/OrderShippedTrackingInterface"
+          }
+        }
+      },
+      "OrderShippedTrackingInterface" : {
+        "type" : "object",
+        "required" : [ "method", "track_number" ],
+        "properties" : {
+          "method" : {
+            "type" : "string",
+            "description" : "Shipping Method"
+          },
+          "track_number" : {
+            "type" : "string",
+            "description" : "Tracking Number"
+          }
+        }
+      },
+      "OrderShippedItemInterface" : {
+        "type" : "object",
+        "required" : [ "sku", "qty_shipped" ],
+        "properties" : {
+          "sku" : {
+            "$ref" : "#/components/schemas/sku"
+          },
+          "qty_shipped" : {
+            "type" : "integer",
+            "description" : "Quantity of item Shipped"
+          }
+        }
+      },
+      "OrderItemInterface" : {
+        "type" : "object",
+        "properties" : {
+          "..." : {
+            "type" : "string",
+            "description" : "Magento OrderItemInterface",
+            "example" : "https://magento.redoc.ly/2.4.4-admin/tag/ordersitemsid#operation/salesOrderItemRepositoryV1GetGet"
+          },
+          "extension_attributes" : {
+            "type" : "object",
+            "properties" : {
+              "source_skus" : {
+                "$ref" : "#/components/schemas/OrderItemSourceSkuInterface"
+              }
+            }
+          }
+        }
+      },
+      "OrderItemSourceSkuInterface" : {
+        "type" : "object",
+        "properties" : {
+          "source_sku" : {
+            "type" : "string",
+            "description" : "Source Sku (e.g. the Basil sku)"
+          },
+          "qty" : {
+            "type" : "integer",
+            "description" : "Quantity of source sku to be picked for order"
+          }
+        }
+      },
+      "ProductUpdatedInterface" : {
+        "type" : "object",
+        "properties" : {
+          "sku" : {
+            "$ref" : "#/components/schemas/sku"
+          },
+          "categories" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ProductCategoryInterface"
+            }
+          },
+          "details" : {
+            "$ref" : "#/components/schemas/ProductDetailsInterface"
+          },
+          "attributes" : {
+            "$ref" : "#/components/schemas/ProductAttributesInterface"
+          },
+          "content" : {
+            "$ref" : "#/components/schemas/ProductContentInterface"
+          },
+          "images" : {
+            "$ref" : "#/components/schemas/ProductImagesInterface"
+          },
+          "regular_price" : {
+            "type" : "number",
+            "format" : "float",
+            "description" : "Product Price",
+            "example" : 19.99
+          },
+          "special_price" : {
+            "$ref" : "#/components/schemas/ProductSpecialPriceInterface"
+          },
+          "seo" : {
+            "$ref" : "#/components/schemas/ProductSeoInterface"
+          },
+          "inventory" : {
+            "$ref" : "#/components/schemas/ProductInventoryInterface"
+          }
+        }
+      },
+      "ProductCreatedInterface" : {
+        "type" : "object",
+        "required" : [ "sku", "details", "attributes" ],
+        "properties" : {
+          "sku" : {
+            "$ref" : "#/components/schemas/sku"
+          },
+          "parent_sku" : {
+            "type" : "string",
+            "description" : "Parent Sku. Used to associate sized products to their parent"
+          },
+          "product_type" : {
+            "type" : "string",
+            "description" : "Product Type. Defaults to simple and default attribute set when not defined or invalid",
+            "example" : "book || sized"
+          },
+          "categories" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ProductCategoryInterface"
+            }
+          },
+          "details" : {
+            "$ref" : "#/components/schemas/ProductDetailsInterface"
+          },
+          "attributes" : {
+            "$ref" : "#/components/schemas/ProductAttributesInterface"
+          },
+          "content" : {
+            "$ref" : "#/components/schemas/ProductContentInterface"
+          },
+          "images" : {
+            "$ref" : "#/components/schemas/ProductImagesInterface"
+          },
+          "regular_price" : {
+            "type" : "number",
+            "format" : "float",
+            "description" : "Product Price",
+            "example" : 19.99
+          },
+          "special_price" : {
+            "$ref" : "#/components/schemas/ProductSpecialPriceInterface"
+          },
+          "seo" : {
+            "$ref" : "#/components/schemas/ProductSeoInterface"
+          },
+          "inventory" : {
+            "$ref" : "#/components/schemas/ProductInventoryInterface"
+          }
+        }
+      },
+      "ProductAttributesInterface" : {
+        "type" : "object",
+        "required" : [ "isbn10", "gtin13" ],
+        "properties" : {
+          "authors" : {
+            "type" : "string",
+            "description" : "Pipe delimited string of authors",
+            "example" : "Author One|Author 2"
+          },
+          "isbn10" : {
+            "type" : "string",
+            "description" : "ISBN10"
+          },
+          "gtin13" : {
+            "type" : "string",
+            "description" : "GTIN13"
+          },
+          "cover_type" : {
+            "type" : "string",
+            "description" : "Book Cover Type",
+            "example" : "Hardcover || Paperback"
+          },
+          "condition" : {
+            "type" : "string",
+            "description" : "Book Condition",
+            "example" : "New || Used - Good || Used - Very Good"
+          },
+          "copyright" : {
+            "type" : "string",
+            "description" : "Book Copyright"
+          },
+          "is_signed" : {
+            "type" : "boolean",
+            "description" : "Book is signed"
+          },
+          "just_arrived" : {
+            "type" : "boolean",
+            "description" : "Book is Just Arrived (Set as new)"
+          }
+        }
+      },
+      "ProductCategoryInterface" : {
+        "type" : "object",
+        "required" : [ "path", "position" ],
+        "properties" : {
+          "path" : {
+            "type" : "string",
+            "example" : "Acccessories/Belts",
+            "description" : "Path relative to the default category"
+          },
+          "position" : {
+            "type" : "integer",
+            "description" : "Position in Category"
+          }
+        }
+      },
+      "ProductContentInterface" : {
+        "type" : "object",
+        "properties" : {
+          "description" : {
+            "type" : "string",
+            "description" : "Product Description (Accepts HTML)"
+          },
+          "short_description" : {
+            "type" : "string",
+            "description" : "Product Short Description (Accepts HTML)"
+          },
+          "publisher_marketing" : {
+            "type" : "string",
+            "description" : "Publisher Marketing (Accepts HTML)"
+          },
+          "strand_description" : {
+            "type" : "string",
+            "description" : "Strand Description (Accepts HTML)"
+          },
+          "ingram_description" : {
+            "type" : "string",
+            "description" : "Ingram Description (Accepts HTML)"
+          },
+          "jacket_notes" : {
+            "type" : "string",
+            "description" : "Jacket Notes (Accepts HTML)"
+          }
+        }
+      },
+      "ProductDetailsInterface" : {
+        "type" : "object",
+        "required" : [ "name", "weight", "use_estimated_weight", "is_enabled", "tax_code" ],
+        "properties" : {
+          "name" : {
+            "type" : "string",
+            "description" : "Product Name"
+          },
+          "weight" : {
+            "type" : "number",
+            "format" : "float",
+            "description" : "Product Weight (in lbs)"
+          },
+          "use_estimated_weight" : {
+            "type" : "boolean",
+            "description" : "Flag product as estimated weight. Will stop order processing"
+          },
+          "is_enabled" : {
+            "type" : "boolean",
+            "description" : "Set product enabled/disabled"
+          },
+          "tax_code" : {
+            "type" : "string",
+            "description" : "Avalara Tax Code to set Magento Tax Class on Product"
+          }
+        }
+      },
+      "ProductImagesInterface" : {
+        "type" : "object",
+        "properties" : {
+          "image" : {
+            "type" : "string",
+            "description" : "Product Main Image URL. Used on PDP"
+          },
+          "small_image" : {
+            "type" : "string",
+            "description" : "Product Small Image URL. Used on PLP"
+          },
+          "thumbnail" : {
+            "type" : "string",
+            "description" : "Product Thumbnail URL. Used in cart/checkout"
+          }
+        }
+      },
+      "ProductImagesUpdatedInterface" : {
+        "type" : "object",
+        "required" : [ "sku", "images" ],
+        "properties" : {
+          "sku" : {
+            "$ref" : "#/components/schemas/sku"
+          },
+          "images" : {
+            "$ref" : "#/components/schemas/ProductImagesInterface"
+          }
+        }
+      },
+      "ProductInventoryInterface" : {
+        "type" : "object",
+        "required" : [ "in_stock", "quantity", "source_code" ],
+        "properties" : {
+          "in_stock" : {
+            "type" : "boolean",
+            "description" : "Sets item stock status"
+          },
+          "quantity" : {
+            "type" : "integer",
+            "description" : "Quantity on hand"
+          },
+          "source" : {
+            "type" : "string",
+            "description" : "Inventory Source Type. Use \"external\" for inventory sources with stock locations (e.g basil)",
+            "example" : "external"
+          },
+          "source_code" : {
+            "type" : "string",
+            "description" : "Inventory Source Code",
+            "example" : "basil || ingram"
+          },
+          "location" : {
+            "type" : "string",
+            "description" : "Required for \"external\" type sources. Specifies the physical location of the stock item",
+            "example" : "1st Floor"
+          },
+          "source_sku" : {
+            "type" : "string",
+            "description" : "Required for \"external\" type sources. Specifies the location specific SKU (e.g the Basil sku)"
+          }
+        }
+      },
+      "ProductSeoInterface" : {
+        "type" : "object",
+        "properties" : {
+          "url_key" : {
+            "type" : "string",
+            "description" : "URL Slug for product"
+          },
+          "meta_description" : {
+            "type" : "string",
+            "description" : "Meta description for SEO"
+          },
+          "meta_keyword" : {
+            "type" : "string",
+            "description" : "Meta keywords for SEO"
+          },
+          "meta_title" : {
+            "type" : "string",
+            "description" : "Meta Title for SEO"
+          }
+        }
+      },
+      "ProductSpecialPriceInterface" : {
+        "type" : "object",
+        "required" : [ "price" ],
+        "properties" : {
+          "price" : {
+            "type" : "number",
+            "format" : "float",
+            "description" : "Special price value",
+            "example" : 9.99
+          },
+          "special_from_date" : {
+            "type" : "string",
+            "description" : "Start date of special pricing",
+            "format" : "Y-m-d",
+            "example" : "2022-01-01"
+          },
+          "special_to_date" : {
+            "type" : "string",
+            "description" : "End date of special pricing",
+            "format" : "Y-m-d",
+            "example" : "2022-12-12"
+          }
+        }
+      },
+      "OrderReceivedInterface" : {
+        "type" : "object",
+        "required" : [ "order_number" ],
+        "properties" : {
+          "order_number" : {
+            "type" : "string",
+            "description" : "Magento Order Number",
+            "example" : "000000012"
+          }
+        }
+      }
+    }
+  }
+}
