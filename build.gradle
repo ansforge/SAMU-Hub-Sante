@@ -22,5 +22,5 @@ dependencies {
 
 application {
     mainClassName = project.hasProperty("main") ?
-            project.getProperty("main") : "NULL"
+            project.getProperty("main") : 'com.hubsante.Dispatcher'
 }
