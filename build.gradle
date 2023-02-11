@@ -16,6 +16,7 @@ repositories {
 dependencies {
     implementation 'com.rabbitmq:amqp-client:5.16.0'
     implementation 'org.slf4j:slf4j-simple:1.7.26'
+    implementation 'org.json:json:20220924'
     testImplementation group: 'junit', name: 'junit', version: '4.13.2'
 }
 

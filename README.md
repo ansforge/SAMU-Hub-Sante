@@ -12,9 +12,20 @@
 
 ## Usage
 
-Le dossier [`python/`](./python) contient les informations et le code pour faire tourner un Hub RabbitMQ localement avec un producteur et un consommateur.
+La commande `docker-compose up -d rabbitmq` permet de lancer un Container RabbitMQ localement. L'interface d'administration est accessible par http://localhost:15672.
+Les commandes suivantes permettent d'interagir avec le Hub Santé local :
+```
+# Activate Hub Santé dispatcher
+gradle -Pmain=com.hubsante.Dispatcher run
+
+# Send messages
+CLIENT_ID=Self-Sante; gradle -Pmain=com.hubsante.Send run --args "$CLIENT_ID.in.message {'to': '$CLIENT_ID', 'content': 'test'}"     
+```
 
 Le dossier Java [`tutorials/`](./src/main/java/com/tutorials) contient les informations et le code pour faire tourner les [tutoriels](https://www.rabbitmq.com/getstarted.html) proposés par RabbitMQ.
+
+Le dossier [`python/`](./python) contient les informations et le code pour faire tourner un Hub RabbitMQ localement avec un producteur et un consommateur.
+
 ## Auteur
 
 👤 **ANS > Equipe Hub Santé**
