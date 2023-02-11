@@ -19,7 +19,7 @@ Les commandes suivantes permettent d'interagir avec le Hub Santé local :
 gradle -Pmain=com.hubsante.Dispatcher run
 
 # Send messages
-CLIENT_ID=Self-Sante; gradle -Pmain=com.hubsante.Send run --args "$CLIENT_ID.in.message {'to': '$CLIENT_ID', 'content': 'test'}"     
+CLIENT_ID=Self-Sante; gradle -Pmain=com.hubsante.Send run --args "$CLIENT_ID.out.message {'to': '$CLIENT_ID', 'content': 'test'}"     
 ```
 
 Le dossier Java [`tutorials/`](./src/main/java/com/tutorials) contient les informations et le code pour faire tourner les [tutoriels](https://www.rabbitmq.com/getstarted.html) proposés par RabbitMQ.

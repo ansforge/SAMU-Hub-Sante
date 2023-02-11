@@ -13,15 +13,19 @@ public class Dispatcher {
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost("localhost");
         Connection connection = factory.newConnection();
-        Channel channel = connection.createChannel();
 
-        channel.exchangeDeclare(EXCHANGE_NAME, BuiltinExchangeType.TOPIC);
-        String queueName = channel.queueDeclare().getQueue();
+        // produceChannel: where messages are sent by Hub Santé to be consumed by clients
+        Channel produceChannel = connection.createChannel();
+
+        // consumeChannel: where messages are received by Hub Santé and consumed by Dispatcher
+        Channel consumeChannel = connection.createChannel();
+        consumeChannel.exchangeDeclare(EXCHANGE_NAME, BuiltinExchangeType.TOPIC);
+        String consumeQueueName = consumeChannel.queueDeclare().getQueue();
 
         // Binding to all input queues
-        channel.queueBind(queueName, EXCHANGE_NAME, "*.in.message");
-        channel.queueBind(queueName, EXCHANGE_NAME, "*.in.info");
-        channel.queueBind(queueName, EXCHANGE_NAME, "*.in.ack");
+        consumeChannel.queueBind(consumeQueueName, EXCHANGE_NAME, "*.out.message");
+        consumeChannel.queueBind(consumeQueueName, EXCHANGE_NAME, "*.out.info");
+        consumeChannel.queueBind(consumeQueueName, EXCHANGE_NAME, "*.out.ack");
 
         System.out.println(" [*] Waiting for messages. To exit press CTRL+C");
 
@@ -34,9 +38,12 @@ public class Dispatcher {
             String target = obj.getString("to");
 
             // Dispatch message
-
+            String publishQueueName = target + ".in.message";
+            produceChannel.queueDeclare(publishQueueName, true, false, false, null);
+            produceChannel.basicPublish("", publishQueueName, null, message.getBytes(StandardCharsets.UTF_8));
+            System.out.println("  ↳ [x] Sent '" + publishQueueName + "':'" + message + "'");
         };
-        channel.basicConsume(queueName, true, deliverCallback, consumerTag -> {
+        consumeChannel.basicConsume(consumeQueueName, true, deliverCallback, consumerTag -> {
         });
     }
 }
