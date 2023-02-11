@@ -1,7 +1,7 @@
 {
-  "$id": "hello_world.json",
+  "$id": "geopriv.json",
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "This JSON Schema file was generated from hello_world.xsd on Tue Feb 07 2023 23:20:47 GMT+0100 (Central European Standard Time).  For more information please see http://www.xsd2jsonschema.org",
+  "title": "This JSON Schema file was generated from ./NexSIS/xsd-cisu/geopriv.xsd on Wed Feb 08 2023 22:31:00 GMT+0100 (Central European Standard Time).  For more information please see http://www.xsd2jsonschema.org",
   "description": "Schema tag attributes: xmlns:xs='http://www.w3.org/2001/XMLSchema' elementFormDefault='qualified' targetNamespace='urn:emergency:cisu:2.0' xmlns:ns1='urn:emergency:cisu:2.0'",
   "properties": {
     "civicAddressType": {

@@ -1,0 +1,62 @@
+asyncapi: 2.6.0
+info:
+  title: Strand MessageQueue Schema
+  version: 1.0.1
+servers:
+  test:
+    url: strn-staging-mq.uncadunca.com:5672
+    protocol: amqp
+    description: Staging RabbitMQ
+defaultContentType: application/json
+channels:
+  clientId.out.message:
+    description: Create a new product in Magento
+    bindings:
+      amqp:
+        is: queue
+        queue:
+          name: clientId.out.message
+    publish:
+      operationId: clientId.out.message
+      message:
+        title: clientId.out.message
+        summary: A product was created
+        payload:
+          $ref: '#/components/schemas/shipOrder'
+components:
+  schemas:
+    shipOrder:
+      type: object
+      properties:
+        orderid:
+          type: string
+        orderperson:
+          type: string
+        shipto:
+          $ref: '#/components/schemas/shipto'
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/item'
+    shipto:
+      type: object
+      properties:
+        name:
+          type: string
+        address:
+          type: string
+        city:
+          type: string
+        country:
+          type: string
+    item:
+      type: object
+      properties:
+        title:
+          type: string
+        note:
+          type: string
+        quantity:
+          type: integer
+        price:
+          type: number

@@ -1,0 +1,201 @@
+{
+  "$id": "shiporder.xsd.json",
+  "globalAttributes": {
+    "orderid": {
+      "type": "string"
+    }
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "This JSON Schema file was generated from shiporder.xsd on Wed Feb 08 2023 23:13:03 GMT+0100 (Central European Standard Time).  For more information please see http://www.xsd2jsonschema.org",
+  "description": "Schema tag attributes: xmlns:xs='http://www.w3.org/2001/XMLSchema'",
+  "properties": {
+    "orderperson": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "address": {
+      "type": "string"
+    },
+    "city": {
+      "type": "string"
+    },
+    "country": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "note": {
+      "type": "string"
+    },
+    "quantity": {
+      "type": "integer"
+    },
+    "price": {
+      "type": "number"
+    },
+    "shipto": {
+      "$ref": "#/definitions/shipto"
+    },
+    "item": {
+      "$ref": "#/definitions/item"
+    },
+    "shiporder": {
+      "$ref": "#/definitions/shiporder"
+    }
+  },
+  "type": "object",
+  "anyOf": [
+    {
+      "required": [
+        "orderperson"
+      ]
+    },
+    {
+      "required": [
+        "name"
+      ]
+    },
+    {
+      "required": [
+        "address"
+      ]
+    },
+    {
+      "required": [
+        "city"
+      ]
+    },
+    {
+      "required": [
+        "country"
+      ]
+    },
+    {
+      "required": [
+        "title"
+      ]
+    },
+    {
+      "required": [
+        "note"
+      ]
+    },
+    {
+      "required": [
+        "quantity"
+      ]
+    },
+    {
+      "required": [
+        "price"
+      ]
+    },
+    {
+      "required": [
+        "shipto"
+      ]
+    },
+    {
+      "required": [
+        "item"
+      ]
+    },
+    {
+      "required": [
+        "shiporder"
+      ]
+    }
+  ],
+  "definitions": {
+    "orderperson": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "address": {
+      "type": "string"
+    },
+    "city": {
+      "type": "string"
+    },
+    "country": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "note": {
+      "type": "string"
+    },
+    "quantity": {
+      "type": "integer"
+    },
+    "price": {
+      "type": "number"
+    },
+    "shipto": {
+      "required": [
+        "name",
+        "address",
+        "city",
+        "country"
+      ],
+      "properties": {
+        "name": {},
+        "address": {},
+        "city": {},
+        "country": {}
+      },
+      "type": "object"
+    },
+    "item": {
+      "required": [
+        "title",
+        "quantity",
+        "price"
+      ],
+      "properties": {
+        "title": {},
+        "note": {},
+        "quantity": {},
+        "price": {}
+      },
+      "type": "object"
+    },
+    "shiporder": {
+      "required": [
+        "orderperson",
+        "shipto",
+        "item",
+        "@orderid"
+      ],
+      "properties": {
+        "orderperson": {},
+        "shipto": {
+          "$ref": "#/definitions/shipto"
+        },
+        "item": {
+          "oneOf": [
+            {
+              "$ref": "#/definitions/item"
+            },
+            {
+              "items": {
+                "$ref": "#/definitions/item"
+              },
+              "type": "array"
+            }
+          ]
+        },
+        "@orderid": {
+          "$ref": "shiporder.xsd.json#/globalAttributes/orderid"
+        }
+      },
+      "type": "object"
+    }
+  }
+}
