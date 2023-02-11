@@ -6,3 +6,5 @@ build
 
 # ignore IntelliJ directory
 .idea
+
+schemas/node_modules
