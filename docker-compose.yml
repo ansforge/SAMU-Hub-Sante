@@ -31,28 +31,21 @@ services:
     networks:
       - network
 
-  consumer:
-    # If needed, Docker Compose will automatically run consumer/Dockerfile.
-    build: consumer
+  hub:
+    # If needed, Docker Compose will automatically run ./Dockerfile.
+    build: .
+    platform: linux/x86_64
 
     # Environment variables:
     environment:
       # The location of the RabbitMQ server.  "amqp" is the protocol;
       # "rabbitmq" is the hostname.  Note that there is not a guarantee
-      # that the server will start first!  Telling the pika client library
+      # that the server will start first!  Telling the client library
       # to try multiple times gets around this ordering issue.
       AMQP_URL: 'amqp://rabbitmq?connection_attempts=5&retry_delay=5'
 
     # Again, run on the private network.  Needed to see the "rabbitmq"
     # magic Docker DNS name.
-    networks:
-      - network
-
-  publisher:
-    # Identical to the consumer.
-    build: publisher
-    environment:
-      AMQP_URL: 'amqp://rabbitmq?connection_attempts=5&retry_delay=5'
     networks:
       - network
 

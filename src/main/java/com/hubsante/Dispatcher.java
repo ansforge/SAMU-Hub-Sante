@@ -11,8 +11,21 @@ public class Dispatcher {
 
     public static void main(String[] argv) throws Exception {
         ConnectionFactory factory = new ConnectionFactory();
-        factory.setHost("localhost");
-        Connection connection = factory.newConnection();
+        factory.setAutomaticRecoveryEnabled(true);
+        if (System.getenv("AMQP_URL") == null){
+            factory.setHost("localhost");
+        } else {
+            // Ref.: https://www.rabbitmq.com/api-guide.html#uri
+            factory.setUri(System.getenv("AMQP_URL"));
+        }
+        Connection connection = null;
+        // Retry logic for initial connection | Ref.: https://www.rabbitmq.com/api-guide.html#recovery-triggers
+        try {
+            connection = factory.newConnection();
+        } catch (java.net.ConnectException e) {
+            Thread.sleep(5000);
+            connection = factory.newConnection();
+        }
 
         // produceChannel: where messages are sent by Hub Santé to be consumed by clients
         Channel produceChannel = connection.createChannel();

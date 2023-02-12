@@ -12,8 +12,13 @@
 
 ## Usage
 
-La commande `docker-compose up -d rabbitmq` permet de lancer un Container RabbitMQ localement. L'interface d'administration est accessible par http://localhost:15672.
-Les commandes suivantes permettent d'interagir avec le Hub Santé local :
+La commande `docker compose up` permet de lancer un Container RabbitMQ localement accessible à [amqp://localhost:5672](amqp://localhost:5672). L'interface d'administration est accessible par http://localhost:15672. 
+
+L'ajout du flag `--build` permet de re-construire les images et bénéficier des modifications effectuées localement.
+
+La commande `docker compose up rabbitmq` permet de ne lancer que le cluster RabbitMQ.
+
+Les commandes suivantes permettent de faire tourner et d'interagir avec un Hub Santé local :
 ```
 # Activate Hub Santé dispatcher
 gradle -Pmain=com.hubsante.Dispatcher run
