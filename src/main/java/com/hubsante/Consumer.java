@@ -4,24 +4,34 @@ import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.DeliverCallback;
+import com.rabbitmq.client.BuiltinExchangeType;
+import com.rabbitmq.client.MessageProperties;
 import org.json.JSONObject;
 
 import java.nio.charset.StandardCharsets;
 
+import static com.hubsante.Utils.getClientId;
 import static com.hubsante.Utils.getRouting;
 
 public class Consumer {
+    private static final String EXCHANGE_NAME = "hubsante";
 
     public static void main(String[] argv) throws Exception {
+        String queueName = getRouting(argv);
+
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost("localhost");
         Connection connection = factory.newConnection();
-        Channel channel = connection.createChannel();
 
-        String queueName = getRouting(argv);
-
-        channel.queueDeclare(queueName, true, false, false, null);
+        // consumeChannel: where messages are received by the client from Hub Santé
+        Channel consumeChannel = connection.createChannel();
+        consumeChannel.queueDeclare(queueName, true, false, false, null);
         System.out.println(" [*] Waiting for messages. To exit press CTRL+C");
+
+        // produceChannel: where ack messages are sent to Hub Santé
+        String ackOutRoutingKey = getClientId(argv) + ".out.ack";
+        Channel produceChannel = connection.createChannel();
+        produceChannel.exchangeDeclare(EXCHANGE_NAME, BuiltinExchangeType.TOPIC);
 
         DeliverCallback deliverCallback = (consumerTag, delivery) -> {
             String message = new String(delivery.getBody(), StandardCharsets.UTF_8);
@@ -29,11 +39,24 @@ public class Consumer {
 
             // Process message
             JSONObject obj = new JSONObject(message);
-            String content = obj.getString("content");
+            String distributionId = obj.getString("distributionId");
+            String senderId = obj.getString("senderId");
 
             // Sending back technical ack as delivery responsibility is removed from the Hub
-            channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
+            consumeChannel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
+
+            // Sending back functional ack as info has been processed on the Consumer side
+            if (delivery.getEnvelope().getRoutingKey().endsWith(".message")) {
+                Message ackMessage = new Message(senderId, getClientId(argv), distributionId, "Ack");
+                produceChannel.basicPublish(
+                        EXCHANGE_NAME,
+                        ackOutRoutingKey,
+                        MessageProperties.PERSISTENT_TEXT_PLAIN,
+                        ackMessage.toJsonString().getBytes(StandardCharsets.UTF_8)
+                );
+                System.out.println("  ↳ [x] Sent '" + ackOutRoutingKey + "':'" + ackMessage.toJsonString() + "'");
+            }
         };
-        channel.basicConsume(queueName, false, deliverCallback, consumerTag -> { });
+        consumeChannel.basicConsume(queueName, false, deliverCallback, consumerTag -> { });
     }
 }

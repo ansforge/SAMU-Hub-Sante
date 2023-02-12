@@ -5,6 +5,8 @@ import org.json.JSONObject;
 
 import java.nio.charset.StandardCharsets;
 
+import static com.hubsante.Utils.getMessageType;
+
 public class Dispatcher {
 
     private static final String EXCHANGE_NAME = "hubsante";
@@ -47,24 +49,29 @@ public class Dispatcher {
         System.out.println(" [*] Waiting for messages. To exit press CTRL+C");
 
         DeliverCallback deliverCallback = (consumerTag, delivery) -> {
+            String routingKey = delivery.getEnvelope().getRoutingKey();
             String message = new String(delivery.getBody(), StandardCharsets.UTF_8);
-            System.out.println(" [x] Received '" + delivery.getEnvelope().getRoutingKey() + "':'" + message + "'");
+            System.out.println(" [x] Received '" + routingKey + "':'" + message + "'");
+            try {
+                // Process message
+                JSONObject obj = new JSONObject(message);
+                String target = obj.getString("to");
 
-            // Process message
-            JSONObject obj = new JSONObject(message);
-            String target = obj.getString("to");
+                // Dispatch message
+                String publishQueueName = target + ".in." + getMessageType(routingKey);
+                produceChannel.queueDeclare(publishQueueName, true, false, false, null);
+                produceChannel.basicPublish(
+                        "",
+                        publishQueueName,
+                        MessageProperties.PERSISTENT_TEXT_PLAIN,
+                        message.getBytes(StandardCharsets.UTF_8)
+                );
+                System.out.println("  ↳ [x] Sent '" + publishQueueName + "':'" + message + "'");
 
-            // Dispatch message
-            String publishQueueName = target + ".in.message";
-            produceChannel.queueDeclare(publishQueueName, true, false, false, null);
-            produceChannel.basicPublish(
-                    "",
-                    publishQueueName,
-                    MessageProperties.PERSISTENT_TEXT_PLAIN,
-                    message.getBytes(StandardCharsets.UTF_8)
-            );
-            System.out.println("  ↳ [x] Sent '" + publishQueueName + "':'" + message + "'");
-
+            } catch (Exception e) {
+                // ToDo(romainfd): Better handling of errors (notify sender & receiver?)
+                System.out.println("[ERROR] Failed to dispatch message " + message + ". Raised exception: " + e);
+            }
             // Sending back technical ack as delivery responsibility was passed to next queue
             consumeChannel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
         };

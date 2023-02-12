@@ -1,6 +1,14 @@
 package com.hubsante;
 
 public class Utils {
+    static String getClientId(String[] strings) {
+        return getRouting(strings).split("[.]")[0];
+    }
+
+    static String getMessageType(String routingKey) {
+        return routingKey.split("[.]")[2];
+    }
+
     static String getRouting(String[] strings) {
         if (strings.length < 1)
             return "anonymous.info";

@@ -5,7 +5,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
 public class UtilsTest {
-    private static String[] argv = {"routing.key", "message", "content"};
+    private static String[] argv = {"clientId.in.message", "message", "content"};
 
     @Test
     public void getRouting() {
@@ -13,7 +13,17 @@ public class UtilsTest {
     }
 
     @Test
+    public void getClientId() {
+        assertEquals(Utils.getClientId(argv), "clientId");
+    }
+
+    @Test
     public void getMessage() {
         assertEquals(Utils.getMessage(argv), "message content");
+    }
+
+    @Test
+    public void getMessageType() {
+        assertEquals(Utils.getMessageType("clientId.out.message"), "message");
     }
 }
