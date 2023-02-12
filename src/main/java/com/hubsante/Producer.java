@@ -11,7 +11,7 @@ import java.nio.charset.StandardCharsets;
 import static com.hubsante.Utils.getMessage;
 import static com.hubsante.Utils.getRouting;
 
-public class Send {
+public class Producer {
 
     private static final String EXCHANGE_NAME = "hubsante";
 

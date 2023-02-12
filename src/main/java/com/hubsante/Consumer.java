@@ -10,7 +10,8 @@ import java.nio.charset.StandardCharsets;
 
 import static com.hubsante.Utils.getRouting;
 
-public class Consume {
+public class Consumer {
+
     public static void main(String[] argv) throws Exception {
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost("localhost");
