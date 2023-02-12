@@ -13,6 +13,12 @@ services:
     # the management UI.
     image: 'rabbitmq:3.11-management-alpine'
 
+    # For data persistence to work over restarts
+    # Ref.: https://stackoverflow.com/a/45719877/10115198
+    hostname: hubsante-rabbitmq
+    volumes:
+      # Ref.: https://www.futurefundamentals.com/set-rabbitmq-with-data-persistent-with-docker-compose/
+      - '~/.docker-conf/rabbitmq/data/:/var/lib/rabbitmq/mnesia/'
     # These ports are exposed on the host; 'hostport:containerport'.
     # You could connect to this server from outside with the *host's*
     # DNS name or IP address and port 5672 (the left-hand side of the
@@ -40,9 +46,9 @@ services:
     environment:
       # The location of the RabbitMQ server.  "amqp" is the protocol;
       # "rabbitmq" is the hostname.  Note that there is not a guarantee
-      # that the server will start first!  Telling the client library
-      # to try multiple times gets around this ordering issue.
-      AMQP_URL: 'amqp://rabbitmq?connection_attempts=5&retry_delay=5'
+      # that the server will start first -> the client library should
+      # try multiple times to get around this ordering issue.
+      AMQP_URL: 'amqp://rabbitmq'
 
     # Again, run on the private network.  Needed to see the "rabbitmq"
     # magic Docker DNS name.
