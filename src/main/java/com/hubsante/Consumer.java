@@ -34,8 +34,9 @@ public class Consumer {
         produceChannel.exchangeDeclare(EXCHANGE_NAME, BuiltinExchangeType.TOPIC);
 
         DeliverCallback deliverCallback = (consumerTag, delivery) -> {
+            String routingKey = delivery.getEnvelope().getRoutingKey();
             String message = new String(delivery.getBody(), StandardCharsets.UTF_8);
-            System.out.println(" [x] Received '" + message + "'");
+            System.out.println(" [x] Received '" + routingKey + "':'" + message + "'");
 
             // Process message
             JSONObject obj = new JSONObject(message);
@@ -46,7 +47,7 @@ public class Consumer {
             consumeChannel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
 
             // Sending back functional ack as info has been processed on the Consumer side
-            if (delivery.getEnvelope().getRoutingKey().endsWith(".message")) {
+            if (routingKey.endsWith(".message")) {
                 Message ackMessage = new Message(senderId, getClientId(argv), distributionId, "Ack");
                 produceChannel.basicPublish(
                         EXCHANGE_NAME,
@@ -55,6 +56,9 @@ public class Consumer {
                         ackMessage.toJsonString().getBytes(StandardCharsets.UTF_8)
                 );
                 System.out.println("  ↳ [x] Sent '" + ackOutRoutingKey + "':'" + ackMessage.toJsonString() + "'");
+            } else if (delivery.getEnvelope().getRoutingKey().endsWith(".ack")) {
+                // Inform user that partner has correctly processed the message
+                System.out.println("  ↳ [x] Partner has processed the message.");
             }
         };
         consumeChannel.basicConsume(queueName, false, deliverCallback, consumerTag -> { });
