@@ -24,7 +24,10 @@ Les commandes suivantes permettent de faire tourner et d'interagir avec un Hub S
 gradle -Pmain=com.hubsante.Dispatcher run
 
 # Send messages
-CLIENT_ID=Self-Sante; gradle -Pmain=com.hubsante.Send run --args "$CLIENT_ID.out.message {'to': '$CLIENT_ID', 'content': 'test'}"     
+CLIENT_ID=Self-Sante; gradle -Pmain=com.hubsante.Send run --args "$CLIENT_ID.out.message {'to': '$CLIENT_ID', 'content': 'test'}"
+
+# Consume messages
+CLIENT_ID=Self-Sante; gradle -Pmain=com.hubsante.Consume run --args "$CLIENT_ID.in.message"     
 ```
 Les commandes suivantes permettent de construire et utiliser l'image Docker du Hub Santé localement sur un Mac M1 (les flags `platform` peuvent être supprimés pour les puces non Apple Silicon | Ref.: https://docs.docker.com/desktop/troubleshoot/known-issues/)
 ```
