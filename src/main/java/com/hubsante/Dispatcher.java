@@ -8,6 +8,7 @@ import java.nio.charset.StandardCharsets;
 public class Dispatcher {
 
     private static final String EXCHANGE_NAME = "hubsante";
+    private static final String CONSUME_QUEUE_NAME = "*.out.*";
 
     public static void main(String[] argv) throws Exception {
         ConnectionFactory factory = new ConnectionFactory();
@@ -33,12 +34,15 @@ public class Dispatcher {
         // consumeChannel: where messages are received by Hub Santé and consumed by Dispatcher
         Channel consumeChannel = connection.createChannel();
         consumeChannel.exchangeDeclare(EXCHANGE_NAME, BuiltinExchangeType.TOPIC);
-        String consumeQueueName = consumeChannel.queueDeclare().getQueue();
+        consumeChannel.queueDeclare(CONSUME_QUEUE_NAME, true, false, false, null);
+
+        // ToDo(romainfd): uncomment when multiple consumers are used
+        // consumeChannel.basicQos(1); // accept only one unack-ed message at a time
 
         // Binding to all input queues
-        consumeChannel.queueBind(consumeQueueName, EXCHANGE_NAME, "*.out.message");
-        consumeChannel.queueBind(consumeQueueName, EXCHANGE_NAME, "*.out.info");
-        consumeChannel.queueBind(consumeQueueName, EXCHANGE_NAME, "*.out.ack");
+        consumeChannel.queueBind(CONSUME_QUEUE_NAME, EXCHANGE_NAME, "*.out.message");
+        consumeChannel.queueBind(CONSUME_QUEUE_NAME, EXCHANGE_NAME, "*.out.info");
+        consumeChannel.queueBind(CONSUME_QUEUE_NAME, EXCHANGE_NAME, "*.out.ack");
 
         System.out.println(" [*] Waiting for messages. To exit press CTRL+C");
 
@@ -53,10 +57,18 @@ public class Dispatcher {
             // Dispatch message
             String publishQueueName = target + ".in.message";
             produceChannel.queueDeclare(publishQueueName, true, false, false, null);
-            produceChannel.basicPublish("", publishQueueName, null, message.getBytes(StandardCharsets.UTF_8));
+            produceChannel.basicPublish(
+                    "",
+                    publishQueueName,
+                    MessageProperties.PERSISTENT_TEXT_PLAIN,
+                    message.getBytes(StandardCharsets.UTF_8)
+            );
             System.out.println("  ↳ [x] Sent '" + publishQueueName + "':'" + message + "'");
+
+            // Sending back technical ack as delivery responsibility was passed to next queue
+            consumeChannel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
         };
-        consumeChannel.basicConsume(consumeQueueName, true, deliverCallback, consumerTag -> {
+        consumeChannel.basicConsume(CONSUME_QUEUE_NAME, false, deliverCallback, consumerTag -> {
         });
     }
 }

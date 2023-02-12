@@ -4,6 +4,9 @@ import com.rabbitmq.client.BuiltinExchangeType;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
+import com.rabbitmq.client.MessageProperties;
+
+import java.nio.charset.StandardCharsets;
 
 public class Send {
 
@@ -20,7 +23,12 @@ public class Send {
             String routingKey = getRouting(argv);
             String message = getMessage(argv);
 
-            channel.basicPublish(EXCHANGE_NAME, routingKey, null, message.getBytes("UTF-8"));
+            channel.basicPublish(
+                    EXCHANGE_NAME,
+                    routingKey,
+                    MessageProperties.PERSISTENT_TEXT_PLAIN,
+                    message.getBytes(StandardCharsets.UTF_8)
+            );
             System.out.println(" [x] Sent '" + routingKey + "':'" + message + "'");
         }
     }
