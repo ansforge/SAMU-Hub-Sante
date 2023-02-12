@@ -21,6 +21,12 @@ gradle -Pmain=com.hubsante.Dispatcher run
 # Send messages
 CLIENT_ID=Self-Sante; gradle -Pmain=com.hubsante.Send run --args "$CLIENT_ID.out.message {'to': '$CLIENT_ID', 'content': 'test'}"     
 ```
+Les commandes suivantes permettent de construire et utiliser l'image Docker du Hub Santé localement sur un Mac M1 (les flags `platform` peuvent être supprimés pour les puces non Apple Silicon | Ref.: https://docs.docker.com/desktop/troubleshoot/known-issues/)
+```
+docker buildx build --platform linux/x86_64 -t dispatcher .
+docker run --platform linux/x86_64 --network="host" dispatcher
+```
+
 
 Le dossier Java [`tutorials/`](./src/main/java/com/tutorials) contient les informations et le code pour faire tourner les [tutoriels](https://www.rabbitmq.com/getstarted.html) proposés par RabbitMQ.
 
