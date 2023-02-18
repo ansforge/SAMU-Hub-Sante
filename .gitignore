@@ -6,3 +6,5 @@ build
 
 # ignore IntelliJ directory
 .idea
+
+python/templates/4. tls/cert/
