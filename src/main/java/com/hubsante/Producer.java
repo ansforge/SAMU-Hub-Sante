@@ -18,6 +18,12 @@ public class Producer {
     public static void main(String[] argv) throws Exception {
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost("localhost");
+        factory.setPort(5671);
+        // Only suitable for development.
+        // This code will not perform peer certificate chain verification and prone
+        // to man-in-the-middle attacks.
+        // See the main TLS guide to learn about peer verification and how to enable it.
+        factory.useSslProtocol();
         try (Connection connection = factory.newConnection();
              Channel channel = connection.createChannel()) {
 

@@ -19,6 +19,8 @@ services:
     volumes:
       # Ref.: https://www.futurefundamentals.com/set-rabbitmq-with-data-persistent-with-docker-compose/
       - '~/.docker-conf/rabbitmq/data/:/var/lib/rabbitmq/mnesia/'
+      # Ref.: https://hub.docker.com/_/rabbitmq/
+      - './rabbitmq/:/etc/rabbitmq/'
     # These ports are exposed on the host; 'hostport:containerport'.
     # You could connect to this server from outside with the *host's*
     # DNS name or IP address and port 5672 (the left-hand side of the
@@ -26,6 +28,8 @@ services:
     ports:
       # The standard AMQP protocol port
       - '5672:5672'
+      # The AMQPS protocol port (for TLS)
+      - '5671:5671'
       # HTTP management UI
       - '15672:15672'
 
