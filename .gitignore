@@ -8,3 +8,7 @@ build
 .idea
 
 python/templates/4. tls/cert/
+
+# Certificates
+certs/CA/
+!certs/CA/sign.sh
