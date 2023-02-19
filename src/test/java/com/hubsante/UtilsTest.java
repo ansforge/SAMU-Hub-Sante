@@ -9,7 +9,7 @@ public class UtilsTest {
 
     @Test
     public void getRouting() {
-        assertEquals(Utils.getRouting(argv), "routing.key");
+        assertEquals(Utils.getRouting(argv), "clientId.in.message");
     }
 
     @Test
