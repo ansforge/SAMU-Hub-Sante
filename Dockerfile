@@ -2,7 +2,7 @@
 FROM gradle:7-jdk11-alpine AS cache
 RUN mkdir -p /home/gradle/cache_home
 ENV GRADLE_USER_HOME /home/gradle/cache_home
-COPY *.gradle /home/gradle/java-code/
+COPY build.gradle /home/gradle/java-code/
 WORKDIR /home/gradle/java-code
 RUN gradle clean build -i --stacktrace
 
@@ -12,7 +12,7 @@ COPY *.gradle /home/gradle/java-code/
 COPY src /home/gradle/java-code/src
 
 WORKDIR /home/gradle/java-code
-RUN gradle build --no-daemon
+RUN gradle build -i --stacktrace
 
 FROM openjdk:11-jre-slim AS run
 
