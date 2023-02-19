@@ -40,9 +40,7 @@ services:
       - network
 
   hub:
-    # If needed, Docker Compose will automatically run ./Dockerfile.
-    build: .
-    platform: linux/x86_64
+    image: hub-sante:hub
 
     # Environment variables:
     environment:

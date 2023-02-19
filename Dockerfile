@@ -1,3 +1,5 @@
+# If possible, `gradle jibDockerBuild --image=hub-sante:hub` should be used instead
+
 # Caching Gradle plugins & dep for faster builds | Ref.: https://stackoverflow.com/a/59022743/10115198
 FROM gradle:7-jdk11-alpine AS cache
 RUN mkdir -p /home/gradle/cache_home

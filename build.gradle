@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     id 'application'
+    id 'com.google.cloud.tools.jib' version '3.3.1'
 }
 
 jar {
@@ -28,4 +29,10 @@ dependencies {
 application {
     mainClassName = project.hasProperty("main") ?
             project.getProperty("main") : 'com.hubsante.Dispatcher'
+}
+
+jib {
+    from {
+        image 'eclipse-temurin:11-jre'
+    }
 }
