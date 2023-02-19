@@ -27,7 +27,7 @@ public class Consumer {
         // produceChannel: where ack messages are sent to Hub Santé
         String ackOutRoutingKey = getClientId(argv) + ".out.ack";
         Channel produceChannel = connection.createChannel();
-        produceChannel.exchangeDeclare(EXCHANGE_NAME, BuiltinExchangeType.TOPIC);
+        produceChannel.exchangeDeclare(EXCHANGE_NAME, BuiltinExchangeType.TOPIC, true);
 
         DeliverCallback deliverCallback = (consumerTag, delivery) -> {
             String routingKey = delivery.getEnvelope().getRoutingKey();

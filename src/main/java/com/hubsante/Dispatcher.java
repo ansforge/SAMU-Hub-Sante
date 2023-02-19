@@ -35,7 +35,7 @@ public class Dispatcher {
 
         // consumeChannel: where messages are received by Hub Santé and consumed by Dispatcher
         Channel consumeChannel = connection.createChannel();
-        consumeChannel.exchangeDeclare(EXCHANGE_NAME, BuiltinExchangeType.TOPIC);
+        consumeChannel.exchangeDeclare(EXCHANGE_NAME, BuiltinExchangeType.TOPIC, true);
         consumeChannel.queueDeclare(CONSUME_QUEUE_NAME, true, false, false, null);
 
         // ToDo(romainfd): uncomment when multiple consumers are used

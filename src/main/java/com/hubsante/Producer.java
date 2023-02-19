@@ -23,7 +23,7 @@ public class Producer {
         try (Connection connection = factory.newConnection();
              Channel channel = connection.createChannel()) {
 
-            channel.exchangeDeclare(EXCHANGE_NAME, BuiltinExchangeType.TOPIC);
+            channel.exchangeDeclare(EXCHANGE_NAME, BuiltinExchangeType.TOPIC, true);
 
             String routingKey = getRouting(argv);
             String message = getMessage(argv);
