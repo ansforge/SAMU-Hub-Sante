@@ -26,8 +26,6 @@ services:
     # DNS name or IP address and port 5672 (the left-hand side of the
     # colon).
     ports:
-      # The standard AMQP protocol port
-      - '5672:5672'
       # The AMQPS protocol port (for TLS)
       - '5671:5671'
       # HTTP management UI

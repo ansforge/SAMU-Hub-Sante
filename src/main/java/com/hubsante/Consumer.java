@@ -1,15 +1,11 @@
 package com.hubsante;
 
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.Connection;
-import com.rabbitmq.client.ConnectionFactory;
-import com.rabbitmq.client.DeliverCallback;
-import com.rabbitmq.client.BuiltinExchangeType;
-import com.rabbitmq.client.MessageProperties;
+import com.rabbitmq.client.*;
 import org.json.JSONObject;
 
 import java.nio.charset.StandardCharsets;
 
+import static com.hubsante.Utils.TLS.enableTLS;
 import static com.hubsante.Utils.getClientId;
 import static com.hubsante.Utils.getRouting;
 
@@ -20,7 +16,7 @@ public class Consumer {
         String queueName = getRouting(argv);
 
         ConnectionFactory factory = new ConnectionFactory();
-        factory.setHost("localhost");
+        enableTLS(factory, "certPassword", "certs/client.p12", "trustStore", "certs/trustStore");
         Connection connection = factory.newConnection();
 
         // consumeChannel: where messages are received by the client from Hub Santé
