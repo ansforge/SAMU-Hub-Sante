@@ -1,0 +1,48 @@
+{
+  "exchanges": [
+    {
+      "name": "hubsante",
+      "vhost": "/",
+      "type": "topic",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    }
+  ],
+  "queues": [
+    {
+      "name": "*.out.*",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    }
+  ],
+  "bindings": [
+    {
+      "source": "hubsante",
+      "vhost": "/",
+      "destination": "*.out.*",
+      "destination_type": "queue",
+      "routing_key": "*.out.message",
+      "arguments": {}
+    },
+    {
+      "source": "hubsante",
+      "vhost": "/",
+      "destination": "*.out.*",
+      "destination_type": "queue",
+      "routing_key": "*.out.info",
+      "arguments": {}
+    },
+    {
+      "source": "hubsante",
+      "vhost": "/",
+      "destination": "*.out.*",
+      "destination_type": "queue",
+      "routing_key": "*.out.ack",
+      "arguments": {}
+    }
+  ]
+}
