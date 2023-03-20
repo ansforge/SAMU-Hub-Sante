@@ -28,6 +28,14 @@
         </dependency>
         <!-- Spring starters -->
 
+        <!-- json-schema validator-->
+        <dependency>
+            <groupId>com.networknt</groupId>
+            <artifactId>json-schema-validator</artifactId>
+            <version>1.0.72</version>
+        </dependency>
+        <!-- json-schema validator -->
+
         <!-- miscellaneous -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -76,6 +84,52 @@
                     </excludes>
                 </configuration>
             </plugin>
+
+            <!-- XJC generate model from xsd-->
+            <!-- by default, source directory is located at src/main/xsd. it's configurable elsewhere if needed -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>jaxb2-maven-plugin</artifactId>
+                <version>2.4</version>
+                <executions>
+                    <execution>
+                        <id>xjc</id>
+                        <goals>
+                            <goal>xjc</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <packageName>com.hubsante.model</packageName>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>javax.activation</groupId>
+                        <artifactId>activation</artifactId>
+                        <version>1.1.1</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+            <!-- XJC generate model from xsd-->
+
+            <!-- JSON-schema to POJO -->
+            <plugin>
+                <groupId>org.jsonschema2pojo</groupId>
+                <artifactId>jsonschema2pojo-maven-plugin</artifactId>
+                <version>1.2.1</version>
+                <configuration>
+                    <sourceDirectory>${basedir}/src/main/resources/schema</sourceDirectory>
+                    <targetPackage>com.hubsante.model.json.schema</targetPackage>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- -->
         </plugins>
     </build>
 
