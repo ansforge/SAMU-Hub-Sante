@@ -55,6 +55,34 @@
         </dependency>
         <!-- miscellaneous -->
 
+        <!-- jaxb -->
+        <dependency>
+            <groupId>javax.annotation</groupId>
+            <artifactId>javax.annotation-api</artifactId>
+            <version>1.3.2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-core</artifactId>
+            <version>2.3.0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+            <version>2.3.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-impl</artifactId>
+            <version>2.3.0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jvnet.jaxb2_commons</groupId>
+            <artifactId>jaxb2-basics-runtime</artifactId>
+            <version>1.11.1</version>
+        </dependency>
+        <!-- jaxb -->
+
         <!-- TESTING -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -87,40 +115,37 @@
 
             <!-- XJC generate model from xsd-->
             <!-- by default, source directory is located at src/main/xsd. it's configurable elsewhere if needed -->
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>jaxb2-maven-plugin</artifactId>
-                <version>2.4</version>
-                <executions>
-                    <execution>
-                        <id>xjc</id>
-                        <goals>
-                            <goal>xjc</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <packageName>com.hubsante.model</packageName>
-                </configuration>
-                <dependencies>
-                    <dependency>
-                        <groupId>javax.activation</groupId>
-                        <artifactId>activation</artifactId>
-                        <version>1.1.1</version>
-                    </dependency>
-                </dependencies>
-            </plugin>
+            <!--            <plugin>-->
+            <!--                <groupId>org.codehaus.mojo</groupId>-->
+            <!--                <artifactId>jaxb2-maven-plugin</artifactId>-->
+            <!--                <version>2.4</version>-->
+            <!--                <executions>-->
+            <!--                    <execution>-->
+            <!--                        <id>xjc</id>-->
+            <!--                        <goals>-->
+            <!--                            <goal>xjc</goal>-->
+            <!--                        </goals>-->
+            <!--                    </execution>-->
+            <!--                </executions>-->
+            <!--                <configuration>-->
+            <!--                    <packageName>com.hubsante.model</packageName>-->
+            <!--                    <arguments>-->
+            <!--                        <argument>-XautoNameResolution</argument>-->
+            <!--                    </arguments>-->
+            <!--                </configuration>-->
+            <!--                <dependencies>-->
+            <!--                    <dependency>-->
+            <!--                        <groupId>javax.activation</groupId>-->
+            <!--                        <artifactId>activation</artifactId>-->
+            <!--                        <version>1.1.1</version>-->
+            <!--                    </dependency>-->
+            <!--                </dependencies>-->
+            <!--            </plugin>-->
             <!-- XJC generate model from xsd-->
-
-            <!-- JSON-schema to POJO -->
             <plugin>
-                <groupId>org.jsonschema2pojo</groupId>
-                <artifactId>jsonschema2pojo-maven-plugin</artifactId>
-                <version>1.2.1</version>
-                <configuration>
-                    <sourceDirectory>${basedir}/src/main/resources/schema</sourceDirectory>
-                    <targetPackage>com.hubsante.model.json.schema</targetPackage>
-                </configuration>
+                <groupId>org.jvnet.jaxb2.maven2</groupId>
+                <artifactId>maven-jaxb2-plugin</artifactId>
+                <version>0.15.2</version>
                 <executions>
                     <execution>
                         <goals>
@@ -128,7 +153,58 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <extension>true</extension>
+                    <args>
+                        <arg>-XtoString</arg>
+                        <arg>-Xequals</arg>
+                        <arg>-XhashCode</arg>
+                        <arg>-Xcopyable</arg>
+                        <arg>-Xinheritance</arg>
+                        <arg>-XautoNameResolution</arg>
+                        <arg>-Xjsonix</arg>
+                        <arg>-Xjsonix-compact</arg>
+                        <arg>-Xjsonix-generateJsonSchema</arg>
+                    </args>
+                    <schemaDirectory>src/main/xsd</schemaDirectory>
+                    <bindingDirectory>src/main/xjb</bindingDirectory>
+                    <bindingIncludes>
+                        <include>**.xml</include>
+                    </bindingIncludes>
+                    <generateDirectory>${project.build.directory}/generated-sources/jaxb</generateDirectory>
+                    <generatePackage>com.hubsante.model</generatePackage>
+                    <plugins>
+                        <plugin>
+                            <groupId>org.jvnet.jaxb2_commons</groupId>
+                            <artifactId>jaxb2-basics</artifactId>
+                            <version>1.11.1</version>
+                        </plugin>
+                        <plugin>
+                            <groupId>org.hisrc.jsonix</groupId>
+                            <artifactId>jsonix-schema-compiler</artifactId>
+                            <version>2.3.9</version>
+                        </plugin>
+                    </plugins>
+                </configuration>
             </plugin>
+
+            <!-- JSON-schema to POJO -->
+            <!--            <plugin>-->
+            <!--                <groupId>org.jsonschema2pojo</groupId>-->
+            <!--                <artifactId>jsonschema2pojo-maven-plugin</artifactId>-->
+            <!--                <version>1.2.1</version>-->
+            <!--                <configuration>-->
+            <!--                    <sourceDirectory>${basedir}/src/main/resources/schema</sourceDirectory>-->
+            <!--                    <targetPackage>com.hubsante.model.json.schema</targetPackage>-->
+            <!--                </configuration>-->
+            <!--                <executions>-->
+            <!--                    <execution>-->
+            <!--                        <goals>-->
+            <!--                            <goal>generate</goal>-->
+            <!--                        </goals>-->
+            <!--                    </execution>-->
+            <!--                </executions>-->
+            <!--            </plugin>-->
             <!-- -->
         </plugins>
     </build>
