@@ -1,14 +1,14 @@
-FROM maven:3-jdk-1 AS build
+FROM maven:3-jdk-11 AS build
 COPY hub /usr/src/app/hub
 COPY certs/trustStore /usr/app/certs/trustStore
 COPY certs/client.p12 /usr/app/certs/client.p12
 RUN mvn -f /usr/src/app/hub/pom.xml clean package
 
 FROM openjdk:11-slim-buster
-COPY --from=build /usr/src/app/hubsante/target/hub-*.jar /usr/app/hubsante.jar
+COPY --from=build /usr/src/app/hub/target/hub-*.jar /usr/app/hubsante.jar
 COPY --from=build /usr/app/certs/trustStore /usr/app/certs/trustStore
 COPY --from=build /usr/app/certs/client.p12 /usr/app/certs/client.p12
 
 USER daemon
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "/usr/app/hubsante.jar]
+ENTRYPOINT ["java", "-jar", "/usr/app/hubsante.jar"]
