@@ -13,3 +13,6 @@ python/templates/4. tls/cert/
 certs/CA/
 !certs/CA/sign.sh
 !certs/CA/rootCA.crt
+
+# Helicopters
+helicopters/.ipynb_checkpoints
