@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jxb:bindings xmlns:jxb="http://java.sun.com/xml/ns/jaxb"
+              jxb:version="2.1"
+              xmlns:xs="http://www.w3.org/2001/XMLSchema"
+              xmlns:inheritance="http://jaxb2-commons.dev.java.net/basic/inheritance"
+              xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc"
+              jxb:extensionBindingPrefixes="xjc">
+<!--    <jxb:bindings schemaLocation="../xsd/alternative.xsd"-->
+<!--                    node="/xs:schema/xs:element[@name='message']/xs:complexType/xs:sequence/xs:choice">-->
+<!--        <jxb:property name="Event"/>-->
+<!--    </jxb:bindings>-->
+    <jxb:bindings schemaLocation="../xsd/alternative.xsd"
+                  node="/xs:schema/xs:element[@name='ackEvent']/xs:complexType">
+        <inheritance:implements>com.hubsante.model.Event</inheritance:implements>
+    </jxb:bindings>
+    <jxb:bindings schemaLocation="../xsd/alternative.xsd"
+                  node="/xs:schema/xs:element[@name='createEvent']/xs:complexType">
+        <inheritance:implements>com.hubsante.model.Event</inheritance:implements>
+    </jxb:bindings>
+    <jxb:globalBindings choiceContentProperty="true"/>
+</jxb:bindings>

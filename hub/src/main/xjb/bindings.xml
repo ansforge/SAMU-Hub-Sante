@@ -7,19 +7,19 @@
               jxb:extensionBindingPrefixes="xjc"
 >
     <jxb:bindings schemaLocation="../xsd/cisu.xsd"
-                  node="/xs:schema/xs:element[@name='ackEvent']">
+                  node="/xs:schema/xs:element[@name='ackEvent']/xs:complexType">
         <inheritance:implements>com.hubsante.model.Event</inheritance:implements>
     </jxb:bindings>
     <jxb:bindings schemaLocation="../xsd/cisu.xsd"
-                  node="/xs:schema/xs:element[@name='createEvent']">
+                  node="/xs:schema/xs:element[@name='createEvent']/xs:complexType">
         <inheritance:implements>com.hubsante.model.Event</inheritance:implements>
     </jxb:bindings>
     <jxb:bindings schemaLocation="../xsd/cisu.xsd"
-                  node="/xs:schema/xs:element[@name='updateEvent']">
+                  node="/xs:schema/xs:element[@name='updateEvent']/xs:complexType">
         <inheritance:implements>com.hubsante.model.Event</inheritance:implements>
     </jxb:bindings>
     <jxb:bindings schemaLocation="../xsd/cisu.xsd"
-                  node="/xs:schema/xs:element[@name='cancelEvent']">
+                  node="/xs:schema/xs:element[@name='cancelEvent']/xs:complexType">
         <inheritance:implements>com.hubsante.model.Event</inheritance:implements>
     </jxb:bindings>
 <!--    <jxb:bindings schemaLocation="../xsd/cisu.xsd"-->
@@ -37,6 +37,10 @@
                 node="/xs:schema/xs:complexType[@name='ackMessageId']">
             <jxb:class name="AckMessageIdType"/>
         </jxb:bindings>
+    </jxb:bindings>
+    <jxb:bindings schemaLocation="../xsd/cisu.xsd"
+                  node="/xs:schema/xs:element[@name='message']/xs:complexType/xs:sequence/xs:choice">
+        <jxb:property name="event"/>
     </jxb:bindings>
     <jxb:globalBindings choiceContentProperty="true"/>
 </jxb:bindings>

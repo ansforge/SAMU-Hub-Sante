@@ -81,6 +81,12 @@
             <artifactId>jaxb2-basics-runtime</artifactId>
             <version>1.11.1</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.module</groupId>
+            <artifactId>jackson-module-jsonSchema</artifactId>
+            <version>2.13.5</version>
+        </dependency>
         <!-- jaxb -->
 
         <!-- TESTING -->
