@@ -5,6 +5,7 @@ import org.json.JSONObject;
 
 import java.nio.charset.StandardCharsets;
 
+import static com.hubsante.Utils.TLS.enableTLS;
 import static com.hubsante.Utils.getMessageType;
 
 public class Dispatcher {
@@ -14,6 +15,7 @@ public class Dispatcher {
 
     public static void main(String[] argv) throws Exception {
         ConnectionFactory factory = new ConnectionFactory();
+        enableTLS(factory, "certPassword", "certs/client.p12", "trustStore", "certs/trustStore");
         factory.setAutomaticRecoveryEnabled(true);
         if (System.getenv("AMQP_URL") == null){
             factory.setHost("localhost");
@@ -52,6 +54,7 @@ public class Dispatcher {
             String routingKey = delivery.getEnvelope().getRoutingKey();
             String message = new String(delivery.getBody(), StandardCharsets.UTF_8);
             System.out.println(" [x] Received '" + routingKey + "':'" + message + "'");
+
             try {
                 // Process message
                 JSONObject obj = new JSONObject(message);

@@ -1,12 +1,24 @@
 package com.hubsante;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.networknt.schema.JsonSchema;
+import com.networknt.schema.JsonSchemaFactory;
+import com.networknt.schema.SpecVersion;
+import com.networknt.schema.ValidationMessage;
 import com.rabbitmq.client.ConnectionFactory;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.security.KeyStore;
+import java.util.Arrays;
+import java.util.Set;
 
 public class Utils {
     static String getClientId(String[] strings) {
@@ -38,6 +50,19 @@ public class Utils {
             words.append(delimiter).append(strings[i]);
         }
         return words.toString();
+    }
+
+    static boolean validateAgainstJsonSchema(String message, String schemaFileName) throws FileNotFoundException, JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
+        JsonSchemaFactory jsonSchemaFactory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V4);
+        File jsonSchemaFile = new File("C:/dev/ANS/SAMU/HubSante/repository/SAMU-Hub-Sante/build/resources/main/schemas", schemaFileName);
+        InputStream inputStream = new FileInputStream(jsonSchemaFile);
+        JsonSchema jsonSchema = jsonSchemaFactory.getSchema(inputStream);
+
+        JsonNode node = mapper.readTree(message);
+        Set<ValidationMessage> errors = jsonSchema.validate(node);
+
+        return errors.isEmpty();
     }
 
     static class TLS {

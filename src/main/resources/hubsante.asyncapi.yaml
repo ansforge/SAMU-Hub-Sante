@@ -1,4 +1,4 @@
-asyncapi: '2.5.0'
+asyncapi: '2.3.0'
 info:
   title: Hub Sante AMQP API
   version: '0.4'
@@ -27,13 +27,13 @@ channels:
       summary: Publish message on specific client message consume queue.
       operationId: dispatchMessage
       message:
-        $ref: '#/components/messages/simpleMessage'
+        $ref: '#/components/messages/message'
 
     subscribe:
       summary: Consume message from a specific message consume queue.
       operationId: receiveMessage
       message:
-        $ref: '#/components/messages/simpleMessage'
+        $ref: '#/components/messages/message'
 
   "{clientId}.out.{messageType}":
     description: The topic on which messages can be dispatched to other queues.
@@ -46,18 +46,19 @@ channels:
       summary: Publish message on specific client message consume queue.
       operationId: publishOutMessage
       message:
-        $ref: '#/components/messages/simpleMessage'
+        $ref: '#/components/messages/message'
 
 components:
   messages:
-    simpleMessage:
-      name: simpleMessage
+    message:
+      name: message
       title: Simple Message
       summary: Simple Message for testing purposes
       payload:
-        $ref: '#/components/schemas/simpleMessagePayload'
+        $ref: '#/components/schemas/cisuMessage'
+
   schemas:
-    simpleMessagePayload:
+    cisuMessage:
       type: object
       properties:
         to:

@@ -1,0 +1,6 @@
+{
+  "to": "Target",
+  "senderId": "Origin",
+  "distributionId": "Target_messageId123",
+  "content": "some content"
+}

@@ -1,41 +1,56 @@
 package com.hubsante;
 
-import com.rabbitmq.client.BuiltinExchangeType;
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.Connection;
-import com.rabbitmq.client.ConnectionFactory;
-import com.rabbitmq.client.MessageProperties;
+import com.rabbitmq.client.*;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-
-import static com.hubsante.Utils.TLS.enableTLS;
-import static com.hubsante.Utils.getMessage;
-import static com.hubsante.Utils.getRouting;
+import java.util.concurrent.TimeoutException;
 
 public class Producer {
 
-    private static final String EXCHANGE_NAME = "hubsante";
+    private Channel channelProducer;
+    /** serveur distant */
+    private String host;
 
-    public static void main(String[] argv) throws Exception {
+    /** port du serveur distant */
+    private int port;
+
+    private String exchangeName;
+
+    public Producer(String host, int port, String exchangeName) {
+        super();
+        this.host = host;
+        this.port = port;
+        this.exchangeName = exchangeName;
+    }
+
+    public void connect(TLSConf tlsConf) throws IOException, TimeoutException {
         ConnectionFactory factory = new ConnectionFactory();
-        enableTLS(factory, "certPassword", "certs/client.p12", "trustStore", "certs/trustStore");
-
-        try (Connection connection = factory.newConnection();
-             Channel channel = connection.createChannel()) {
-
-            channel.exchangeDeclare(EXCHANGE_NAME, BuiltinExchangeType.TOPIC, true);
-
-            String routingKey = getRouting(argv);
-            String message = getMessage(argv);
-
-            channel.basicPublish(
-                    EXCHANGE_NAME,
-                    routingKey,
-                    MessageProperties.PERSISTENT_TEXT_PLAIN,
-                    message.getBytes(StandardCharsets.UTF_8)
-            );
-            System.out.println(" [x] Sent '" + routingKey + "':'" + message + "'");
+        factory.setHost(this.host);
+        factory.setPort(this.port);
+        if (tlsConf != null) {
+            factory.useSslProtocol(tlsConf.getSslContext());
+        }
+        factory.enableHostnameVerification();
+        Connection connection = factory.newConnection();
+        if (connection != null) {
+            this.channelProducer = connection.createChannel();
+            this.channelProducer.exchangeDeclare(this.exchangeName, BuiltinExchangeType.TOPIC, true);
         }
     }
-}
 
+    /**
+     * Publication d'un message
+     *
+     * @param routingKey
+     * @param msg
+     * @throws IOException
+     */
+    public void publish(String routingKey, CisuMessage msg) throws IOException {
+        this.channelProducer.basicPublish(
+                this.exchangeName,
+                routingKey,
+                MessageProperties.PERSISTENT_TEXT_PLAIN,
+                msg.toJsonString().getBytes(StandardCharsets.UTF_8));
+    }
+}
