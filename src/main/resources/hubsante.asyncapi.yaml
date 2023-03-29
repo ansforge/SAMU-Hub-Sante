@@ -1,0 +1,96 @@
+asyncapi: '2.5.0'
+info:
+  title: Hub Sante AMQP API
+  version: '0.4'
+  description: |
+    L'API Hub Sante AMQP permet le partage d'informations entre acteurs du monde de la santé.
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+servers:
+  hubsante:
+    url: localhost:5671
+    protocol: amqp
+    description: Hub Sante
+    security:
+      - tlsAuth: []
+defaultContentType: application/json
+channels:
+  "{clientId}.in.{messageType}":
+    description: The topic on which messages for a specific client app can be consumed.
+    parameters:
+      clientId:
+        $ref: '#/components/parameters/clientId'
+      messageType:
+        $ref: '#/components/parameters/messageType'
+    publish:
+      summary: Publish message on specific client message consume queue.
+      operationId: dispatchMessage
+      message:
+        $ref: '#/components/messages/simpleMessage'
+
+    subscribe:
+      summary: Consume message from a specific message consume queue.
+      operationId: receiveMessage
+      message:
+        $ref: '#/components/messages/simpleMessage'
+
+  "{clientId}.out.{messageType}":
+    description: The topic on which messages can be dispatched to other queues.
+    parameters:
+      clientId:
+        $ref: '#/components/parameters/clientId'
+      messageType:
+        $ref: '#/components/parameters/messageType'
+    publish:
+      summary: Publish message on specific client message consume queue.
+      operationId: publishOutMessage
+      message:
+        $ref: '#/components/messages/simpleMessage'
+
+components:
+  messages:
+    simpleMessage:
+      name: simpleMessage
+      title: Simple Message
+      summary: Simple Message for testing purposes
+      payload:
+        $ref: '#/components/schemas/simpleMessagePayload'
+  schemas:
+    simpleMessagePayload:
+      type: object
+      properties:
+        to:
+          type: string
+          description: 'id of target app'
+        senderId:
+          type: string
+          description: 'id of sender app'
+        distributionId:
+          type: string
+          description: 'id of distributed message'
+        content:
+          type: string
+          description: 'free field for message content'
+      additionalProperties: false
+      required:
+        - to
+        - senderId
+        - distributionId
+        - content
+  securitySchemes:
+    tlsAuth:
+      type: X509
+      description: Provide your client certificate for TLS authentication
+  parameters:
+    clientId:
+      description: The ID of the client
+      schema:
+        type: string
+    messageType:
+      description: The type of the message
+      schema:
+        enum:
+          - 'message'
+          - 'ack'
+          - 'info'
