@@ -46,8 +46,6 @@ public abstract class Consumer {
     /**
      * Connexion a la file
      *
-     * @param host
-     * @param port
      * @param tlsConf
      * @throws IOException
      * @throws TimeoutException

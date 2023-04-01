@@ -1,5 +1,7 @@
 package com.hubsante;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hubsante.message.*;
 import com.rabbitmq.client.*;
 
 import java.io.IOException;
@@ -46,11 +48,13 @@ public class Producer {
      * @param msg
      * @throws IOException
      */
-    public void publish(String routingKey, CisuMessage msg) throws IOException {
+    public void publish(String routingKey, MessageEnvelope msg) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+
         this.channelProducer.basicPublish(
                 this.exchangeName,
                 routingKey,
                 MessageProperties.PERSISTENT_TEXT_PLAIN,
-                msg.toJsonString().getBytes(StandardCharsets.UTF_8));
+                mapper.writeValueAsString(msg).getBytes(StandardCharsets.UTF_8));
     }
 }

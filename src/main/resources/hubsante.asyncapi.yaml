@@ -89,6 +89,11 @@ channels:
 
 components:
   messages:
+    messageEnvelope:
+      title: Enveloppe qui doit être implémentée par tous les messages échangées sur le Hub
+      summary: Enveloppe des messages transportables par le Hub
+      payload:
+        $ref: '#/components/schemas/messageEnvelope'
     basicMessage:
       title: Message basique
       summary: Message basique transportable par le Hub
@@ -109,8 +114,7 @@ components:
         $ref: '#/components/schemas/basicMessage'
 
   schemas:
-    basicMessage:
-      title: Message basique transportable par le Hub
+    messageEnvelope:
       type: object
       properties:
         to:
@@ -123,8 +127,29 @@ components:
           type: string
           description: 'ID du message'
         content:
+          type: object
+          description: 'Contenu du message'
+      additionalProperties: false
+      required:
+        - to
+        - senderId
+        - distributionId
+        - content
+    basicMessage:
+      type: object
+      properties:
+        to:
           type: string
-          description: 'Champs libre de contenu du message'
+          description: 'ID du destinataire'
+        senderId:
+          type: string
+          description: "ID de l'émetteur"
+        distributionId:
+          type: string
+          description: 'ID du message'
+        content:
+          type: object
+          description: 'Contenu du message'
       additionalProperties: false
       required:
         - to
@@ -132,7 +157,6 @@ components:
         - distributionId
         - content
     cisuMessage:
-      title: Message CISU transportable par le Hub
       type: object
       properties:
         to:

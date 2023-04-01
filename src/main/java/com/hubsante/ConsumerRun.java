@@ -1,8 +1,11 @@
 package com.hubsante;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hubsante.message.*;
 import com.rabbitmq.client.Delivery;
 
+import java.util.Map;
+import java.util.UUID;
 import java.io.IOException;
 
 import static com.hubsante.Utils.getClientId;
@@ -32,16 +35,21 @@ public class ConsumerRun {
                 String routingKey = delivery.getEnvelope().getRoutingKey();
                 ObjectMapper mapper = new ObjectMapper();
                 CisuMessage msg = mapper.readValue(delivery.getBody(), CisuMessage.class);
-                System.out.println(" [x] Received '" + routingKey + "':'" + msg.toJsonString() + "'");
+                System.out.println(" [x] Received '" + routingKey + "':'" + msg + "'");
 
                 // Sending back technical ack as delivery responsibility is removed from the Hub
                 consumeChannel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
 
                 // Sending back functional ack as info has been processed on the Consumer side
                 if (routingKey.endsWith(".message")) {
-                    CisuMessage ackMessage = new CisuMessage(msg.getSenderId(), msg.getTo(), msg.getDistributionId(), "Ack");
+                    BasicMessage ackMessage = new BasicMessage(
+                            msg.getSenderId(),
+                            msg.getTo(),
+                            UUID.randomUUID().toString(),
+                            Map.of("ackedDistributionId", msg.getDistributionId())
+                    );
                     this.producerAck.publish(this.fileAckName, ackMessage);
-                    System.out.println("  ↳ [x] Sent '" + this.fileAckName + "':'" + ackMessage.toJsonString() + "'");
+                    System.out.println("  ↳ [x] Sent '" + this.fileAckName + "':'" + ackMessage + "'");
                 } else if (delivery.getEnvelope().getRoutingKey().endsWith(".ack")) {
                     // Inform user that partner has correctly processed the message
                     System.out.println("  ↳ [x] Partner has processed the message.");

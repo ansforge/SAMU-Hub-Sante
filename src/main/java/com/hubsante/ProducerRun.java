@@ -1,6 +1,8 @@
 package com.hubsante;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hubsante.message.*;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -15,7 +17,7 @@ public class ProducerRun {
         String routingKey = getRouting(args);
         String json = Files.readString(Path.of(args[1]));
         ObjectMapper mapper = new ObjectMapper();
-        CisuMessage cisuMessage = mapper.readValue(json, CisuMessage.class);
+        MessageEnvelope message = mapper.readValue(json, MessageEnvelope.class);
 
         TLSConf tlsConf = new TLSConf(
                 "TLSv1.2",
@@ -26,6 +28,6 @@ public class ProducerRun {
 
         Producer producer = new Producer(HUB_HOSTNAME, HUB_PORT, EXCHANGE_NAME);
         producer.connect(tlsConf);
-        producer.publish(routingKey, cisuMessage);
+        producer.publish(routingKey, message);
     }
 }
