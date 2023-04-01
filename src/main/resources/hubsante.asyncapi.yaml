@@ -1,4 +1,4 @@
-asyncapi: '2.3.0'
+asyncapi: '2.5.0'
 info:
   title: Hub Sante AMQP API
   version: '0.4'
@@ -8,71 +8,145 @@ info:
     name: Apache 2.0
     url: https://www.apache.org/licenses/LICENSE-2.0
 servers:
-  hubsante:
+  local:
     url: localhost:5671
-    protocol: amqp
-    description: Hub Sante
+    protocol: amqps
+    protocolVersion: '0.9.1'
+    description: Instance locale du Hub Sante portée par `docker-compose` dans le repo du Hub
     security:
       - tlsAuth: []
 defaultContentType: application/json
 channels:
-  "{clientId}.in.{messageType}":
-    description: The topic on which messages for a specific client app can be consumed.
+  "{clientId}.in.message":
+    description: File spécifique à chaque client pour la réception de messages
     parameters:
       clientId:
         $ref: '#/components/parameters/clientId'
-      messageType:
-        $ref: '#/components/parameters/messageType'
-    publish:
-      summary: Publish message on specific client message consume queue.
-      operationId: dispatchMessage
-      message:
-        $ref: '#/components/messages/message'
-
     subscribe:
-      summary: Consume message from a specific message consume queue.
+      summary: Message fonctionnel
       operationId: receiveMessage
       message:
-        $ref: '#/components/messages/message'
+        oneOf:
+          - $ref: '#/components/messages/basicMessage'
+          - $ref: '#/components/messages/cisuMessage'
 
-  "{clientId}.out.{messageType}":
-    description: The topic on which messages can be dispatched to other queues.
+  "{clientId}.out.message":
+    description: File spécifique à chaque client pour l'envoi de messages
     parameters:
       clientId:
         $ref: '#/components/parameters/clientId'
-      messageType:
-        $ref: '#/components/parameters/messageType'
     publish:
-      summary: Publish message on specific client message consume queue.
-      operationId: publishOutMessage
+      summary: Message fonctionnel
+      operationId: publishMessage
       message:
-        $ref: '#/components/messages/message'
+        oneOf:
+          - $ref: '#/components/messages/basicMessage'
+          - $ref: '#/components/messages/cisuMessage'
+
+  "{clientId}.in.ack":
+    description: File spécifique à chaque client pour la réception des acquittements fonctionnels
+    parameters:
+      clientId:
+        $ref: '#/components/parameters/clientId'
+    subscribe:
+      summary: Acquittement fonctionnel
+      operationId: receiveAck
+      message:
+        $ref: '#/components/messages/ack'
+
+  "{clientId}.out.ack":
+    description: File spécifique à chaque client pour l'envoi des acquittements fonctionnels
+    parameters:
+      clientId:
+        $ref: '#/components/parameters/clientId'
+    publish:
+      summary: Acquittement fonctionnel
+      operationId: publishAck
+      message:
+        $ref: '#/components/messages/ack'
+
+  "{clientId}.in.info":
+    description: File spécifique à chaque client pour la réception des informations complémentaires liées au fonctionnement et aux échanges portés par le Hub Santé
+    parameters:
+      clientId:
+        $ref: '#/components/parameters/clientId'
+    subscribe:
+      summary: Informations complémentaires
+      operationId: receiveInfo
+      message:
+        $ref: '#/components/messages/info'
+
+  "{clientId}.out.info":
+    description: File spécifique à chaque client pour l'envoi des informations complémentaires liées au fonctionnement et aux échanges portés par le Hub Santé
+    parameters:
+      clientId:
+        $ref: '#/components/parameters/clientId'
+    publish:
+      summary: Informations complémentaires
+      operationId: publishInfo
+      message:
+        $ref: '#/components/messages/info'
 
 components:
   messages:
-    message:
-      name: message
-      title: Simple Message
-      summary: Simple Message for testing purposes
+    basicMessage:
+      title: Message basique
+      summary: Message basique transportable par le Hub
+      payload:
+        $ref: '#/components/schemas/basicMessage'
+    cisuMessage:
+      title: Message CISU
+      summary: Message CISU transportable par le Hub dans le cadre des échanges inter-forces.
       payload:
         $ref: '#/components/schemas/cisuMessage'
+    ack:
+      title: Acquittement fonctionnel
+      payload:
+        $ref: '#/components/schemas/basicMessage'
+    info:
+      title: Information complémentaire
+      payload:
+        $ref: '#/components/schemas/basicMessage'
 
   schemas:
-    cisuMessage:
+    basicMessage:
+      title: Message basique transportable par le Hub
       type: object
       properties:
         to:
           type: string
-          description: 'id of target app'
+          description: 'ID du destinataire'
         senderId:
           type: string
-          description: 'id of sender app'
+          description: "ID de l'émetteur"
         distributionId:
           type: string
-          description: 'id of distributed message'
+          description: 'ID du message'
         content:
           type: string
-          description: 'free field for message content'
+          description: 'Champs libre de contenu du message'
+      additionalProperties: false
+      required:
+        - to
+        - senderId
+        - distributionId
+        - content
+    cisuMessage:
+      title: Message CISU transportable par le Hub
+      type: object
+      properties:
+        to:
+          type: string
+          description: 'ID du destinataire'
+        senderId:
+          type: string
+          description: "ID de l'émetteur"
+        distributionId:
+          type: string
+          description: 'ID du message'
+        content:
+          type: object
+          description: 'Objet libre de contenu du message'
       additionalProperties: false
       required:
         - to
@@ -82,16 +156,9 @@ components:
   securitySchemes:
     tlsAuth:
       type: X509
-      description: Provide your client certificate for TLS authentication
+      description: Un certificat issu d'une AC validée par le Hub est nécessaire pour l'authentification TLS
   parameters:
     clientId:
-      description: The ID of the client
+      description: L'identifiant du client
       schema:
         type: string
-    messageType:
-      description: The type of the message
-      schema:
-        enum:
-          - 'message'
-          - 'ack'
-          - 'info'
