@@ -39,7 +39,7 @@ jobs:
           git add docs/specs
           git commit -m "⚙️ Auto-génération de la documentation"
 
-      - name: Push changes
+      - name: Push changes ⬆️
         uses: ad-m/github-push-action@master
         with:
           branch: ${{ github.head_ref }}
