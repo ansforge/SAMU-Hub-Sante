@@ -5,6 +5,7 @@ import org.json.JSONObject;
 
 import java.nio.charset.StandardCharsets;
 
+import static com.hubsante.Utils.TLS.enableTLS;
 import static com.hubsante.Utils.getMessageType;
 
 public class Dispatcher {
@@ -14,6 +15,7 @@ public class Dispatcher {
 
     public static void main(String[] argv) throws Exception {
         ConnectionFactory factory = new ConnectionFactory();
+        enableTLS(factory, "certPassword", "certs/client.p12", "trustStore", "certs/trustStore");
         factory.setAutomaticRecoveryEnabled(true);
         if (System.getenv("AMQP_URL") == null){
             factory.setHost("localhost");
@@ -35,7 +37,7 @@ public class Dispatcher {
 
         // consumeChannel: where messages are received by Hub Santé and consumed by Dispatcher
         Channel consumeChannel = connection.createChannel();
-        consumeChannel.exchangeDeclare(EXCHANGE_NAME, BuiltinExchangeType.TOPIC);
+        consumeChannel.exchangeDeclare(EXCHANGE_NAME, BuiltinExchangeType.TOPIC, true);
         consumeChannel.queueDeclare(CONSUME_QUEUE_NAME, true, false, false, null);
 
         // ToDo(romainfd): uncomment when multiple consumers are used
@@ -52,6 +54,7 @@ public class Dispatcher {
             String routingKey = delivery.getEnvelope().getRoutingKey();
             String message = new String(delivery.getBody(), StandardCharsets.UTF_8);
             System.out.println(" [x] Received '" + routingKey + "':'" + message + "'");
+
             try {
                 // Process message
                 JSONObject obj = new JSONObject(message);
