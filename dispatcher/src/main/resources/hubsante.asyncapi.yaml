@@ -170,6 +170,7 @@ components:
           description: 'ID du message'
         content:
           type: object
+          $ref: './cisu.json#/Message'
           description: 'Objet libre de contenu du message'
       additionalProperties: false
       required:
