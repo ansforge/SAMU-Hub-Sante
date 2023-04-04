@@ -54,6 +54,7 @@ public class Dispatcher {
             String routingKey = delivery.getEnvelope().getRoutingKey();
             String message = new String(delivery.getBody(), StandardCharsets.UTF_8);
             System.out.println(" [x] Received '" + routingKey + "':'" + message + "'");
+
             try {
                 // Process message
                 JSONObject obj = new JSONObject(message);

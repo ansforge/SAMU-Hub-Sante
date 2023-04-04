@@ -22,3 +22,11 @@ python/templates/4. tls/cert/
 certs/CA/
 !certs/CA/sign.sh
 !certs/CA/rootCA.crt
+
+# Needed as GitHub action for AsyncAPI generation installs npm packages
+node_modules/
+package-lock.json
+package.json
+
+# Class generation
+models/node_modules

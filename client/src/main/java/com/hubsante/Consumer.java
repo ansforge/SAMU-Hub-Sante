@@ -1,62 +1,92 @@
 package com.hubsante;
 
 import com.rabbitmq.client.*;
-import org.json.JSONObject;
 
-import java.nio.charset.StandardCharsets;
+import java.io.IOException;
+import java.util.concurrent.TimeoutException;
 
-import static com.hubsante.Utils.TLS.enableTLS;
-import static com.hubsante.Utils.getClientId;
-import static com.hubsante.Utils.getRouting;
+public abstract class Consumer {
 
-public class Consumer {
-    private static final String EXCHANGE_NAME = "hubsante";
+    protected Channel consumeChannel;
 
-    public static void main(String[] argv) throws Exception {
-        String queueName = getRouting(argv);
+    protected Producer producerAck;
 
-        ConnectionFactory factory = new ConnectionFactory();
-        enableTLS(factory, "certPassword", "certs/client.p12", "trustStore", "certs/trustStore");
-        Connection connection = factory.newConnection();
+    /** identifiant du client */
+    protected String clientId;
 
-        // consumeChannel: where messages are received by the client from Hub Santé
-        Channel consumeChannel = connection.createChannel();
-        consumeChannel.queueDeclare(queueName, true, false, false, null);
-        System.out.println(" [*] Waiting for messages. To exit press CTRL+C");
+    /** Nom de la file */
+    protected String routingKey;
 
-        // produceChannel: where ack messages are sent to Hub Santé
-        String ackOutRoutingKey = getClientId(argv) + ".out.ack";
-        Channel produceChannel = connection.createChannel();
-        produceChannel.exchangeDeclare(EXCHANGE_NAME, BuiltinExchangeType.TOPIC, true);
+    /** Nom de la file ack */
+    protected String fileAckName;
 
-        DeliverCallback deliverCallback = (consumerTag, delivery) -> {
-            String routingKey = delivery.getEnvelope().getRoutingKey();
-            String message = new String(delivery.getBody(), StandardCharsets.UTF_8);
-            System.out.println(" [x] Received '" + routingKey + "':'" + message + "'");
+    /** serveur distant */
+    private String host;
 
-            // Process message
-            JSONObject obj = new JSONObject(message);
-            String distributionId = obj.getString("distributionId");
-            String senderId = obj.getString("senderId");
+    /** port du serveur distant */
+    private int port;
 
-            // Sending back technical ack as delivery responsibility is removed from the Hub
-            consumeChannel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
-
-            // Sending back functional ack as info has been processed on the Consumer side
-            if (routingKey.endsWith(".message")) {
-                Message ackMessage = new Message(senderId, getClientId(argv), distributionId, "Ack");
-                produceChannel.basicPublish(
-                        EXCHANGE_NAME,
-                        ackOutRoutingKey,
-                        MessageProperties.PERSISTENT_TEXT_PLAIN,
-                        ackMessage.toJsonString().getBytes(StandardCharsets.UTF_8)
-                );
-                System.out.println("  ↳ [x] Sent '" + ackOutRoutingKey + "':'" + ackMessage.toJsonString() + "'");
-            } else if (delivery.getEnvelope().getRoutingKey().endsWith(".ack")) {
-                // Inform user that partner has correctly processed the message
-                System.out.println("  ↳ [x] Partner has processed the message.");
-            }
-        };
-        consumeChannel.basicConsume(queueName, false, deliverCallback, consumerTag -> { });
+    public String getExchangeName() {
+        return exchangeName;
     }
+
+    private String exchangeName;
+
+    public Consumer(String host, int port, String exchangeName, String routingKey, String fileAckName, String clientId) {
+        super();
+
+        this.clientId = clientId;
+        this.routingKey = routingKey;
+        this.fileAckName = fileAckName;
+        this.host = host;
+        this.port = port;
+        this.exchangeName = exchangeName;
+    }
+
+    /**
+     * Connexion a la file
+     *
+     * @param tlsConf
+     * @throws IOException
+     * @throws TimeoutException
+     */
+    public void connect(TLSConf tlsConf) throws IOException, TimeoutException {
+        ConnectionFactory factory = new ConnectionFactory();
+
+        factory.setHost(this.host);
+        factory.setPort(this.port);
+        if (tlsConf != null) {
+            factory.useSslProtocol(tlsConf.getSslContext());
+        }
+        factory.enableHostnameVerification();
+
+        Connection connection = factory.newConnection();
+        if (connection != null) {
+            // consumeChannel: where messages are received by the client from Hub Santé
+
+            this.consumeChannel = connection.createChannel();
+            this.consumeChannel.queueDeclare(this.routingKey, true, false, false, null);
+
+            // produceChannel: where ack messages are sent to Hub Santé
+            this.producerAck = new Producer(this.host, this.port, this.exchangeName);
+            this.producerAck.connect(tlsConf);
+            this.consumeChannel.basicConsume(this.routingKey, false, new DeliverCallback() {
+
+                @Override
+                public void handle(String consumerTag, Delivery message) throws IOException {
+                    deliverCallback(consumerTag, message);
+                }
+            }, consumerTag -> {});
+
+        }
+    }
+
+    /**
+     * Traitement d'un message recu du Hub
+     *
+     * @param consumerTag
+     * @param delivery
+     * @return
+     */
+    protected abstract void deliverCallback(String consumerTag, Delivery delivery) throws IOException;
 }
