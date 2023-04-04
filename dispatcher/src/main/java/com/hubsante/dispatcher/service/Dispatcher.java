@@ -1,4 +1,4 @@
-package com.hubsante.hub.service;
+package com.hubsante.dispatcher.service;
 
 import org.json.JSONObject;
 import org.springframework.amqp.core.*;
@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Configuration;
 
 import java.nio.charset.StandardCharsets;
 
-import static com.hubsante.hub.config.AmqpConfiguration.CONSUME_QUEUE_NAME;
+import static com.hubsante.dispatcher.config.AmqpConfiguration.CONSUME_QUEUE_NAME;
 
 @Configuration
 public class Dispatcher {

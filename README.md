@@ -36,7 +36,7 @@ docker run --platform linux/x86_64 --network="host" dispatcher
 ```
 
 
-Le dossier Java [`tutorials/`](./src/main/java/com/tutorials) contient les informations et le code pour faire tourner les [tutoriels](https://www.rabbitmq.com/getstarted.html) proposés par RabbitMQ.
+Le dossier Java [`tutorials/`](client/src/main/java/com/tutorials) contient les informations et le code pour faire tourner les [tutoriels](https://www.rabbitmq.com/getstarted.html) proposés par RabbitMQ.
 
 Le dossier [`python/`](./python) contient les informations et le code pour faire tourner un Hub RabbitMQ localement avec un producteur et un consommateur.
 
