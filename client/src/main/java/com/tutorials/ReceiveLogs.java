@@ -1,8 +1,9 @@
+package com.tutorials;
+
 import com.rabbitmq.client.*;
 
-public class ReceiveLogsTopic {
-
-    private static final String EXCHANGE_NAME = "topic_logs";
+public class ReceiveLogs {
+    private static final String EXCHANGE_NAME = "logs";
 
     public static void main(String[] argv) throws Exception {
         ConnectionFactory factory = new ConnectionFactory();
@@ -10,23 +11,15 @@ public class ReceiveLogsTopic {
         Connection connection = factory.newConnection();
         Channel channel = connection.createChannel();
 
-        channel.exchangeDeclare(EXCHANGE_NAME, BuiltinExchangeType.TOPIC);
+        channel.exchangeDeclare(EXCHANGE_NAME, BuiltinExchangeType.FANOUT);
         String queueName = channel.queueDeclare().getQueue();
-
-        if (argv.length < 1) {
-            System.err.println("Usage: ReceiveLogsTopic [binding_key]...");
-            System.exit(1);
-        }
-
-        for (String bindingKey : argv) {
-            channel.queueBind(queueName, EXCHANGE_NAME, bindingKey);
-        }
+        channel.queueBind(queueName, EXCHANGE_NAME, "");
 
         System.out.println(" [*] Waiting for messages. To exit press CTRL+C");
 
         DeliverCallback deliverCallback = (consumerTag, delivery) -> {
             String message = new String(delivery.getBody(), "UTF-8");
-            System.out.println(" [x] Received '" + delivery.getEnvelope().getRoutingKey() + "':'" + message + "'");
+            System.out.println(" [x] Received '" + message + "'");
         };
         channel.basicConsume(queueName, true, deliverCallback, consumerTag -> { });
     }
