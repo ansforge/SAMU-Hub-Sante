@@ -681,12 +681,7 @@
                 "sentAt",
                 "msgType",
                 "status",
-                "recipients",
-                "ackMessage",
-                "createEvent",
-                "ackEvent",
-                "updateEvent",
-                "cancelEvent"
+                "recipients"
             ],
             "properties": {
                 "messageId": {"type": "string"},
@@ -720,7 +715,14 @@
                 "ackEvent": {"$ref": "#/definitions/AckEvent"},
                 "updateEvent": {"$ref": "#/definitions/UpdateEvent"},
                 "cancelEvent": {"$ref": "#/definitions/CancelEvent"}
-            }
+            },
+            "oneOf": [
+                {"required": ["ackMessage"]},
+                {"required": ["createEvent"]},
+                {"required": ["ackEvent"]},
+                {"required": ["updateEvent"]},
+                {"required": ["cancelEvent"]}
+            ]
         }
     },
     "properties": {
