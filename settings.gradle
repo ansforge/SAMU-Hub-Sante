@@ -9,4 +9,4 @@
 
 rootProject.name = 'SAMU-Hub-Sante'
 include 'client'
-include 'dispatcher'
+include 'hub'

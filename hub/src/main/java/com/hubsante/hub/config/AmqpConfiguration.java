@@ -1,4 +1,4 @@
-package com.hubsante.dispatcher.config;
+package com.hubsante.hub.config;
 
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;

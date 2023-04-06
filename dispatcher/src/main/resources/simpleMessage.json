@@ -1,8 +1,0 @@
-{
-  "to": "Target-Sante",
-  "senderId": "Self-Sante",
-  "distributionId": "Self-Sante_messageId123",
-  "content": {
-    "freeText": "some content"
-  }
-}

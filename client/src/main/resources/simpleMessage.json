@@ -1,6 +1,6 @@
 {
   "to": "Target-Sante",
-  "senderId": "Self-Sante",
+  "senderId": "Origin-Sante",
   "distributionId": "Self-Sante_messageId123",
   "content": {
     "freeText": "some content"

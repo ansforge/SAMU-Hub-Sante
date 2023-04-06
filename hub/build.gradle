@@ -6,7 +6,7 @@ plugins {
 }
 
 group = 'com.hubsante'
-version = '0.4-SNAPSHOT'
+version = '0.5-SNAPSHOT'
 
 java {
 	toolchain {
@@ -15,7 +15,7 @@ java {
 }
 
 springBoot {
-	mainClass = 'com.hubsante.dispatcher.DispatcherApplication'
+	mainClass = 'com.hubsante.dispatcher.HubApplication'
 }
 
 configurations {
