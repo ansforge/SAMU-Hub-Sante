@@ -7,7 +7,12 @@ plugins {
 
 group = 'com.hubsante'
 version = '0.4-SNAPSHOT'
-sourceCompatibility = '11'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(11)
+	}
+}
 
 springBoot {
 	mainClass = 'com.hubsante.dispatcher.DispatcherApplication'
