@@ -22,9 +22,9 @@ public class ProducerRun {
         TLSConf tlsConf = new TLSConf(
                 "TLSv1.2",
                 "certPassword",
-                "certs/client.p12",
+                "../certs/client.p12",
                 "trustStore",
-                "certs/trustStore");
+                "../certs/trustStore");
 
         Producer producer = new Producer(HUB_HOSTNAME, HUB_PORT, EXCHANGE_NAME);
         producer.connect(tlsConf);

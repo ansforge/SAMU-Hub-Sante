@@ -21,9 +21,9 @@ public class ConsumerRun {
         TLSConf tlsConf = new TLSConf(
                 "TLSv1.2",
                 "certPassword",
-                "certs/client.p12",
+                "../certs/client.p12",
                 "trustStore",
-                "certs/trustStore");
+                "../certs/trustStore");
 
         String routingKey = getRouting(args);
         String clientId = getClientId(args);
@@ -57,5 +57,6 @@ public class ConsumerRun {
             }
         };
         consumer.connect(tlsConf);
+        System.out.println(" [*] Waiting for messages. To exit press CTRL+C");
     }
 }
