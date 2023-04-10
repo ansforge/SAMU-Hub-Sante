@@ -1,16 +1,16 @@
 {
   "messageId": "123",
   "sender": {
-    "name": "ORIGIN",
+    "name": "Origin",
     "uri": "hubsante.origin"
   },
-  "sendAt": "2023-04-10T10:40:55",
+  "sentAt": "2023-04-10T10:40:55+02:00",
   "msgType": "ALERT",
   "status": "TEST",
   "recipients": {
     "recipient": [
       {
-        "name": "TARGET",
+        "name": "Target",
         "uri": "hubsante.target"
       }
     ]

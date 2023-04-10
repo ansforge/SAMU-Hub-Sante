@@ -1,9 +1,17 @@
 package com.hubsante;
 
+import com.ethlo.time.DateTime;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.hubsante.message.*;
 import com.rabbitmq.client.Delivery;
 
+import java.text.SimpleDateFormat;
+import java.time.DateTimeException;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.util.Date;
 import java.util.Map;
 import java.util.UUID;
 import java.io.IOException;
@@ -33,20 +41,25 @@ public class ConsumerRun {
             @Override
             protected void deliverCallback(String consumerTag, Delivery delivery) throws IOException {
                 String routingKey = delivery.getEnvelope().getRoutingKey();
-                ObjectMapper mapper = new ObjectMapper();
-                CisuMessage msg = mapper.readValue(delivery.getBody(), CisuMessage.class);
-                System.out.println(" [x] Received '" + routingKey + "':'" + msg + "'");
+                // registering time module is mandatory to handle date times
+                ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
+                BasicMessage basicMessage = mapper.readValue(delivery.getBody(), BasicMessage.class);
+                System.out.println(" [x] Received '" + routingKey + "':'" + basicMessage + "'");
 
                 // Sending back technical ack as delivery responsibility is removed from the Hub
                 consumeChannel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
 
                 // Sending back functional ack as info has been processed on the Consumer side
                 if (routingKey.endsWith(".message")) {
+                    AddresseeType[] recipients = new AddresseeType[]{basicMessage.getSender()};
                     BasicMessage ackMessage = new BasicMessage(
-                            msg.getSenderId(),
-                            msg.getTo(),
-                            UUID.randomUUID().toString(),
-                            Map.of("ackedDistributionId", msg.getDistributionId())
+                            new AckMessageId(UUID.randomUUID().toString()),
+                            basicMessage.getMessageId(),
+                            new AddresseeType(clientId, "hubsante." + clientId),
+                            OffsetDateTime.of(LocalDateTime.now(), ZoneOffset.of("+02")),
+                            basicMessage.getMsgType(),
+                            basicMessage.getStatus(),
+                            new Recipients(recipients)
                     );
                     this.producerAck.publish(this.fileAckName, ackMessage);
                     System.out.println("  ↳ [x] Sent '" + this.fileAckName + "':'" + ackMessage + "'");

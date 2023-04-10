@@ -1,6 +1,7 @@
 package com.hubsante;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.hubsante.message.*;
 import com.rabbitmq.client.*;
 
@@ -48,8 +49,9 @@ public class Producer {
      * @param msg
      * @throws IOException
      */
-    public void publish(String routingKey, MessageEnvelope msg) throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
+    public void publish(String routingKey, BasicMessage msg) throws IOException {
+        // registering extra module is mandatory to correctly handle DateTimes
+        ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
         this.channelProducer.basicPublish(
                 this.exchangeName,
