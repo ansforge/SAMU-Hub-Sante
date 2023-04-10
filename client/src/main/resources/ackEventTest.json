@@ -1,0 +1,24 @@
+{
+  "messageId": "123",
+  "sender": {
+    "name": "ORIGIN",
+    "uri": "hubsante.origin"
+  },
+  "sendAt": "2023-04-10T10:40:55",
+  "msgType": "ALERT",
+  "status": "TEST",
+  "recipients": {
+    "recipient": [
+      {
+        "name": "TARGET",
+        "uri": "hubsante.target"
+      }
+    ]
+  },
+  "ackEvent": {
+    "eventId": "alert_event_123456",
+    "alert": [
+      "alert_789"
+    ]
+  }
+}
