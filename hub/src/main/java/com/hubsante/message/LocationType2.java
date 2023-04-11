@@ -59,7 +59,7 @@ public class LocationType2 {
   @JsonProperty("prison")
   private Map<String, Object> prison;
   @JsonProperty("_public")
-  private Map<String, Object> public;
+  private Map<String, Object> _public;
   @JsonProperty("publicTransport")
   private Map<String, Object> publicTransport;
   @JsonProperty("residence")
@@ -99,7 +99,7 @@ public class LocationType2 {
   }
 
   public LocationType2(
-    Map<String, Object> aircraft, Map<String, Object> airport, Map<String, Object> arena, Map<String, Object> automobile, Map<String, Object> bank, Map<String, Object> bar, Map<String, Object> bicyle, Map<String, Object> bus, Map<String, Object> busStation, Map<String, Object> cafe, Map<String, Object> classroom, Map<String, Object> club, Map<String, Object> construction, Map<String, Object> conventionCenter, Map<String, Object> government, Map<String, Object> hospital, Map<String, Object> hotel, Map<String, Object> industrial, Map<String, Object> library, Map<String, Object> motorcycle, Map<String, Object> office, String other, Map<String, Object> outdoors, Map<String, Object> parking, Map<String, Object> placeOfWorship, Map<String, Object> prison, Map<String, Object> public, Map<String, Object> publicTransport, Map<String, Object> residence, Map<String, Object> restaurant, Map<String, Object> school, Map<String, Object> shoppingArea, Map<String, Object> stadium, Map<String, Object> store, Map<String, Object> street, Map<String, Object> theater, Map<String, Object> train, Map<String, Object> trainStation, Map<String, Object> truck, Map<String, Object> underway, Map<String, Object> unknown, Map<String, Object> warehouse, Map<String, Object> water, Map<String, Object> watercraft
+    Map<String, Object> aircraft, Map<String, Object> airport, Map<String, Object> arena, Map<String, Object> automobile, Map<String, Object> bank, Map<String, Object> bar, Map<String, Object> bicyle, Map<String, Object> bus, Map<String, Object> busStation, Map<String, Object> cafe, Map<String, Object> classroom, Map<String, Object> club, Map<String, Object> construction, Map<String, Object> conventionCenter, Map<String, Object> government, Map<String, Object> hospital, Map<String, Object> hotel, Map<String, Object> industrial, Map<String, Object> library, Map<String, Object> motorcycle, Map<String, Object> office, String other, Map<String, Object> outdoors, Map<String, Object> parking, Map<String, Object> placeOfWorship, Map<String, Object> prison, Map<String, Object> _public, Map<String, Object> publicTransport, Map<String, Object> residence, Map<String, Object> restaurant, Map<String, Object> school, Map<String, Object> shoppingArea, Map<String, Object> stadium, Map<String, Object> store, Map<String, Object> street, Map<String, Object> theater, Map<String, Object> train, Map<String, Object> trainStation, Map<String, Object> truck, Map<String, Object> underway, Map<String, Object> unknown, Map<String, Object> warehouse, Map<String, Object> water, Map<String, Object> watercraft
   ) {
   	this.aircraft = aircraft;
   	this.airport = airport;
@@ -127,7 +127,7 @@ public class LocationType2 {
   	this.parking = parking;
   	this.placeOfWorship = placeOfWorship;
   	this.prison = prison;
-  	this.public = public;
+  	this._public = _public;
   	this.publicTransport = publicTransport;
   	this.residence = residence;
   	this.restaurant = restaurant;
@@ -225,8 +225,8 @@ public class LocationType2 {
   public Map<String, Object> getPrison() { return this.prison; }
   public void setPrison(Map<String, Object> prison) { this.prison = prison; }
 
-  public Map<String, Object> getPublic() { return this.public; }
-  public void setPublic(Map<String, Object> public) { this.public = public; }
+  public Map<String, Object> getPublic() { return this._public; }
+  public void setPublic(Map<String, Object> _public) { this._public = _public; }
 
   public Map<String, Object> getPublicTransport() { return this.publicTransport; }
   public void setPublicTransport(Map<String, Object> publicTransport) { this.publicTransport = publicTransport; }
@@ -315,7 +315,7 @@ public class LocationType2 {
         Objects.equals(this.parking, self.parking) &&
         Objects.equals(this.placeOfWorship, self.placeOfWorship) &&
         Objects.equals(this.prison, self.prison) &&
-        Objects.equals(this.public, self.public) &&
+        Objects.equals(this._public, self._public) &&
         Objects.equals(this.publicTransport, self.publicTransport) &&
         Objects.equals(this.residence, self.residence) &&
         Objects.equals(this.restaurant, self.restaurant) &&
@@ -337,7 +337,7 @@ public class LocationType2 {
 
   @Override
   public int hashCode() {
-    return Objects.hash((Object)aircraft, (Object)airport, (Object)arena, (Object)automobile, (Object)bank, (Object)bar, (Object)bicyle, (Object)bus, (Object)busStation, (Object)cafe, (Object)classroom, (Object)club, (Object)construction, (Object)conventionCenter, (Object)government, (Object)hospital, (Object)hotel, (Object)industrial, (Object)library, (Object)motorcycle, (Object)office, (Object)other, (Object)outdoors, (Object)parking, (Object)placeOfWorship, (Object)prison, (Object)public, (Object)publicTransport, (Object)residence, (Object)restaurant, (Object)school, (Object)shoppingArea, (Object)stadium, (Object)store, (Object)street, (Object)theater, (Object)train, (Object)trainStation, (Object)truck, (Object)underway, (Object)unknown, (Object)warehouse, (Object)water, (Object)watercraft);
+    return Objects.hash((Object)aircraft, (Object)airport, (Object)arena, (Object)automobile, (Object)bank, (Object)bar, (Object)bicyle, (Object)bus, (Object)busStation, (Object)cafe, (Object)classroom, (Object)club, (Object)construction, (Object)conventionCenter, (Object)government, (Object)hospital, (Object)hotel, (Object)industrial, (Object)library, (Object)motorcycle, (Object)office, (Object)other, (Object)outdoors, (Object)parking, (Object)placeOfWorship, (Object)prison, (Object)_public, (Object)publicTransport, (Object)residence, (Object)restaurant, (Object)school, (Object)shoppingArea, (Object)stadium, (Object)store, (Object)street, (Object)theater, (Object)train, (Object)trainStation, (Object)truck, (Object)underway, (Object)unknown, (Object)warehouse, (Object)water, (Object)watercraft);
   }
 
   @Override
@@ -369,7 +369,7 @@ public class LocationType2 {
       "    parking: " + toIndentedString(parking) + "\n" +
       "    placeOfWorship: " + toIndentedString(placeOfWorship) + "\n" +
       "    prison: " + toIndentedString(prison) + "\n" +
-      "    public: " + toIndentedString(public) + "\n" +
+      "    public: " + toIndentedString(_public) + "\n" +
       "    publicTransport: " + toIndentedString(publicTransport) + "\n" +
       "    residence: " + toIndentedString(residence) + "\n" +
       "    restaurant: " + toIndentedString(restaurant) + "\n" +

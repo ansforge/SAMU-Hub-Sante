@@ -8,19 +8,19 @@ public class Recipients {
   @JsonProperty("recipient")
   @NotNull
   @Size(min=1)
-  private Object[] recipient;
+  private AddresseeType[] recipient;
 
   public Recipients(){
   }
 
   public Recipients(
-    Object[] recipient
+    AddresseeType[] recipient
   ) {
   	this.recipient = recipient;
   }
 
-  public Object[] getRecipient() { return this.recipient; }
-  public void setRecipient(Object[] recipient) { this.recipient = recipient; }
+  public AddresseeType[] getRecipient() { return this.recipient; }
+  public void setRecipient(AddresseeType[] recipient) { this.recipient = recipient; }
 
   @Override
   public boolean equals(Object o) {

@@ -4,11 +4,12 @@ import java.util.Objects;
 import java.util.Map;
 import javax.validation.constraints.*;
 import com.fasterxml.jackson.annotation.*;
-              
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class BasicMessage {
   @JsonProperty("content")
   @NotNull
-  private Map<String, Object> content;
+  private Object content;
   @JsonProperty("messageId")
   @NotNull
   private String messageId;
@@ -32,7 +33,7 @@ public class BasicMessage {
   }
 
   public BasicMessage(
-    Map<String, Object> content, String messageId, AddresseeType sender, java.time.OffsetDateTime sentAt, MsgType msgType, Status status, Recipients recipients
+    Object content, String messageId, AddresseeType sender, java.time.OffsetDateTime sentAt, MsgType msgType, Status status, Recipients recipients
   ) {
   	this.content = content;
   	this.messageId = messageId;
@@ -43,8 +44,8 @@ public class BasicMessage {
   	this.recipients = recipients;
   }
 
-  public Map<String, Object> getContent() { return this.content; }
-  public void setContent(Map<String, Object> content) { this.content = content; }
+  public Object getContent() { return this.content; }
+  public void setContent(Object content) { this.content = content; }
 
   public String getMessageId() { return this.messageId; }
   public void setMessageId(String messageId) { this.messageId = messageId; }
