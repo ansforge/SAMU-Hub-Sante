@@ -35,7 +35,7 @@ jobs:
 
       # Use AsyncAPI generator to generate classes
       - name: Generate models based on Hub Santé interface ⚙️
-        run: cd models && npm run generate4Hub
+        run: cd models && npm run generate
 
       - name: Commit files ✅
         run: |
