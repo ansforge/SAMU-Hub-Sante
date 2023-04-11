@@ -1,15 +1,18 @@
 package com.hubsante;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.hubsante.message.*;
 
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static com.hubsante.Utils.convertMessageFromType;
 import static com.hubsante.Utils.getRouting;
 
 public class ProducerRun {
@@ -33,6 +36,9 @@ public class ProducerRun {
 
         Producer producer = new Producer(HUB_HOSTNAME, HUB_PORT, EXCHANGE_NAME);
         producer.connect(tlsConf);
-        producer.publish(routingKey, basicMessage);
+        CisuMessage cisuMessage = convertMessageFromType(mapper, basicMessage, json.getBytes(StandardCharsets.UTF_8));
+
+        producer.publish(routingKey, cisuMessage);
+//        producer.publish(routingKey, basicMessage);
     }
 }

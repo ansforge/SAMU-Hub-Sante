@@ -6,7 +6,7 @@ import javax.validation.constraints.*;
 import com.fasterxml.jackson.annotation.*;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class BasicMessage {
+public class BasicMessage implements CisuMessage {
   @JsonProperty("content")
   @NotNull
   private Object content;

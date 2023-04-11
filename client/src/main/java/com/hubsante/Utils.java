@@ -3,15 +3,13 @@ package com.hubsante;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hubsante.message.*;
 import com.rabbitmq.client.ConnectionFactory;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
+import java.io.*;
 import java.security.KeyStore;
 
 public class Utils {
@@ -27,6 +25,31 @@ public class Utils {
         if (strings.length < 1)
             return "anonymous.info";
         return strings[0];
+    }
+
+    static CisuMessage convertMessageFromType(ObjectMapper mapper, BasicMessage basicMessage, byte[] msgBody) throws IOException {
+        CisuMessage cisuMessage = null;
+        switch (basicMessage.getMsgType().getValue()) {
+            case "ACK":
+                cisuMessage = mapper.readValue(msgBody, AckMessage.class);
+                break;
+            case "INFO":
+                //TODO : implement INFO logic
+                System.out.println("No INFO queue logic yet implemented");
+                break;
+            case "ALERT":
+                cisuMessage = mapper.readValue(msgBody, CreateEventMessage.class);
+                break;
+            case "UPDATE":
+                cisuMessage = mapper.readValue(msgBody, UpdateEventMessage.class);
+                break;
+            case "CANCEL":
+                cisuMessage = mapper.readValue(msgBody, CancelEventMessage.class);
+                break;
+            default:
+                System.out.println("Unknown message type");
+        }
+        return cisuMessage;
     }
 
     static String getMessage(String[] strings) {

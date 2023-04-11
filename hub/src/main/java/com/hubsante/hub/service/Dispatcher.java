@@ -46,8 +46,10 @@ public class Dispatcher {
             }
 
             for (String recipient : recipients) {
-                //TODO : get msgType from headers : CISU enum doesn't contains INFO or ACK.
-                String publishRoutingKey = recipient + ".in." + receivedRoutingKey.split("[.]")[2];;
+                //TODO : get msgType from headers : CISU enum doesn't contains INFO ?
+                System.out.println("msg type : " + basicMessage.getMsgType().getValue());
+                String queueType = basicMessage.getMsgType().getValue().equals("ACK") ? "ack" : "message";
+                String publishRoutingKey = recipient + ".in." + queueType;
                 Queue queue = new Queue(publishRoutingKey, true, false, false);
                 Binding binding = new Binding(publishRoutingKey, Binding.DestinationType.QUEUE, "", publishRoutingKey, null);
                 amqpAdmin.declareQueue(queue);

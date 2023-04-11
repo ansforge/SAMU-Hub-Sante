@@ -15,10 +15,37 @@
       }
     ]
   },
-  "ackEvent": {
+  "createEvent": {
     "eventId": "alert_event_123456",
-    "alert": [
-      "alert_789"
-    ]
+    "createdAt": "2023-04-10T10:40:55+02:00",
+    "severity": "UNKNOWN",
+    "eventLocation": {},
+    "primaryAlert": {
+      "alertId": "alert_555",
+      "receivedAt": "2023-04-10T10:40:55+02:00",
+      "reporting": "STANDARD",
+      "alertLocation": {},
+      "call": {
+        "source": "phone"
+      },
+      "caller": {
+        "callerURI": "0612345678"
+      },
+      "alertCode": {
+        "version": "1.0",
+        "whatsHappen": {
+          "code": "AA",
+          "label": "label_whats_happen"
+        },
+        "locationKind": {
+          "code": "BB",
+          "label": "label_location_kind"
+        },
+        "healthMotive": {
+          "code": "ZZ",
+          "label": "label_health_motive"
+        }
+      }
+    }
   }
 }

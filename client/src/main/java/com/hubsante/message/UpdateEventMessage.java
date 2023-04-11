@@ -4,7 +4,7 @@ import java.util.Objects;
 import javax.validation.constraints.*;
 import com.fasterxml.jackson.annotation.*;
               
-public class UpdateEventMessage {
+public class UpdateEventMessage implements CisuMessage {
   @JsonProperty("messageId")
   @NotNull
   private String messageId;

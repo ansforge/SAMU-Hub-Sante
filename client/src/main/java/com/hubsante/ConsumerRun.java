@@ -16,8 +16,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.io.IOException;
 
-import static com.hubsante.Utils.getClientId;
-import static com.hubsante.Utils.getRouting;
+import static com.hubsante.Utils.*;
 
 public class ConsumerRun {
 
@@ -44,26 +43,28 @@ public class ConsumerRun {
                 // registering time module is mandatory to handle date times
                 ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
                 BasicMessage basicMessage = mapper.readValue(delivery.getBody(), BasicMessage.class);
-                System.out.println(" [x] Received '" + routingKey + "':'" + basicMessage + "'");
+                CisuMessage cisuMessage = convertMessageFromType(mapper, basicMessage, delivery.getBody());
+
+                System.out.println(" [x] Received '" + routingKey + "':'" + cisuMessage + "'");
 
                 // Sending back technical ack as delivery responsibility is removed from the Hub
                 consumeChannel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
 
                 // Sending back functional ack as info has been processed on the Consumer side
-                if (routingKey.endsWith(".message")) {
+                if (!basicMessage.getMsgType().getValue().equals("ACK")) {
                     AddresseeType[] recipients = new AddresseeType[]{basicMessage.getSender()};
-                    BasicMessage ackMessage = new BasicMessage(
-                            new AckMessageId(UUID.randomUUID().toString()),
+                    AckMessage ackMessage = new AckMessage(
                             basicMessage.getMessageId(),
                             new AddresseeType(clientId, "hubsante." + clientId),
                             OffsetDateTime.of(LocalDateTime.now(), ZoneOffset.of("+02")),
-                            basicMessage.getMsgType(),
+                            MsgType.ACK,
                             basicMessage.getStatus(),
-                            new Recipients(recipients)
+                            new Recipients(recipients),
+                            new AckMessageId(UUID.randomUUID().toString())
                     );
                     this.producerAck.publish(this.fileAckName, ackMessage);
                     System.out.println("  ↳ [x] Sent '" + this.fileAckName + "':'" + ackMessage + "'");
-                } else if (delivery.getEnvelope().getRoutingKey().endsWith(".ack")) {
+                } else {
                     // Inform user that partner has correctly processed the message
                     System.out.println("  ↳ [x] Partner has processed the message.");
                 }
