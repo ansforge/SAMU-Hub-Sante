@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.hubsante.message.AddresseeType;
 import com.hubsante.message.BasicMessage;
-import org.json.JSONObject;
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -13,7 +12,6 @@ import org.springframework.context.annotation.Configuration;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static com.hubsante.hub.config.AmqpConfiguration.CONSUME_QUEUE_NAME;
@@ -39,17 +37,20 @@ public class Dispatcher {
         try {
             ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
             BasicMessage basicMessage = mapper.readValue(message.getBody(), BasicMessage.class);
+
+            // TODO (bbo): migrate with edxl envelope
             List<String> recipients = new ArrayList<>();
             for (AddresseeType recipient : basicMessage.getRecipients().getRecipient()) {
-                System.out.println("recipient : " + recipient.getName());
                 recipients.add(recipient.getName());
             }
 
             for (String recipient : recipients) {
-                //TODO : get msgType from headers : CISU enum doesn't contains INFO ?
+                //TODO (bbo) : get msgType from headers : CISU enum doesn't contains INFO ?
                 System.out.println("msg type : " + basicMessage.getMsgType().getValue());
+
                 String queueType = basicMessage.getMsgType().getValue().equals("ACK") ? "ack" : "message";
                 String publishRoutingKey = recipient + ".in." + queueType;
+
                 Queue queue = new Queue(publishRoutingKey, true, false, false);
                 Binding binding = new Binding(publishRoutingKey, Binding.DestinationType.QUEUE, "", publishRoutingKey, null);
                 amqpAdmin.declareQueue(queue);
