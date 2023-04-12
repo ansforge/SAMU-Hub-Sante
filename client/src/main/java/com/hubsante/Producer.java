@@ -1,19 +1,19 @@
 package com.hubsante;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.hubsante.message.*;
 import com.rabbitmq.client.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
 public class Producer {
 
+    private static final Logger log = LoggerFactory.getLogger(Producer.class);
     private Channel channelProducer;
     /** serveur distant */
     private String host;
@@ -45,6 +45,7 @@ public class Producer {
         }
     }
 
+
     /**
      * Publication d'un message
      *
@@ -56,10 +57,17 @@ public class Producer {
         // registering extra module is mandatory to correctly handle DateTimes
         ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
-        this.channelProducer.basicPublish(
-                this.exchangeName,
-                routingKey,
-                MessageProperties.PERSISTENT_TEXT_PLAIN,
-                mapper.writeValueAsString(msg).getBytes(StandardCharsets.UTF_8));
+        try {
+            this.channelProducer.basicPublish(
+                    this.exchangeName,
+                    routingKey,
+                    MessageProperties.PERSISTENT_TEXT_PLAIN,
+                    mapper.writeValueAsString(msg).getBytes(StandardCharsets.UTF_8));
+        } catch (IOException e) {
+            BasicMessage unpublished = (BasicMessage) msg;
+            // we log error here and propagate the exception to handle it in the business layer
+            log.error("Could not publish message with id " + unpublished.getMessageId(), e);
+            throw e;
+        }
     }
 }
