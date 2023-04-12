@@ -100,6 +100,9 @@ public abstract class Consumer {
         return new AckMessage(
                 receivedMessage.getMessageId(),
                 new AddresseeType(clientId, "hubsante." + clientId),
+                //TODO (bbo) : switch date format in model classes (generator reworking ?)
+                // in order to use ZonedDateTime instead:
+                // ZoneDateTime.of(LocalDateTime.now(), ZoneId.of(Europe/Paris)) will handle automatically hour change
                 OffsetDateTime.of(LocalDateTime.now(), ZoneOffset.of("+02")),
                 MsgType.ACK,
                 receivedMessage.getStatus(),
