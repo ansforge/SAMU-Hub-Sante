@@ -33,13 +33,13 @@ public class PrimaryAlert {
   private AlertCode alertCode;
   @JsonProperty("resource")
   @Size(min=0)
-  private Object[] resource;
+  private ResourceType[] resource;
 
   public PrimaryAlert(){
   }
 
   public PrimaryAlert(
-    String alertId, java.time.OffsetDateTime receivedAt, Reporting reporting, String alertInformation, LocationType alertLocation, Call call, Caller caller, CallTaker callTaker, AlertCode alertCode, Object[] resource
+    String alertId, java.time.OffsetDateTime receivedAt, Reporting reporting, String alertInformation, LocationType alertLocation, Call call, Caller caller, CallTaker callTaker, AlertCode alertCode, ResourceType[] resource
   ) {
   	this.alertId = alertId;
   	this.receivedAt = receivedAt;
@@ -80,8 +80,8 @@ public class PrimaryAlert {
   public AlertCode getAlertCode() { return this.alertCode; }
   public void setAlertCode(AlertCode alertCode) { this.alertCode = alertCode; }
 
-  public Object[] getResource() { return this.resource; }
-  public void setResource(Object[] resource) { this.resource = resource; }
+  public ResourceType[] getResource() { return this.resource; }
+  public void setResource(ResourceType[] resource) { this.resource = resource; }
 
   @Override
   public boolean equals(Object o) {

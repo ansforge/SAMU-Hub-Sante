@@ -1,9 +1,12 @@
 package com.hubsante.message;
-              
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
+import java.util.Arrays;
 import java.util.Objects;
-import javax.validation.constraints.*;
-import com.fasterxml.jackson.annotation.*;
-              
+
 public class CreateEvent {
   @JsonProperty("eventId")
   @NotNull
@@ -22,13 +25,13 @@ public class CreateEvent {
   private PrimaryAlert primaryAlert;
   @JsonProperty("otherAlert")
   @Size(min=0)
-  private Object[] otherAlert;
+  private OtherAlert[] otherAlert;
 
   public CreateEvent(){
   }
 
   public CreateEvent(
-    String eventId, java.time.OffsetDateTime createdAt, Severity severity, LocationType eventLocation, PrimaryAlert primaryAlert, Object[] otherAlert
+    String eventId, java.time.OffsetDateTime createdAt, Severity severity, LocationType eventLocation, PrimaryAlert primaryAlert, OtherAlert[] otherAlert
   ) {
   	this.eventId = eventId;
   	this.createdAt = createdAt;
@@ -53,8 +56,8 @@ public class CreateEvent {
   public PrimaryAlert getPrimaryAlert() { return this.primaryAlert; }
   public void setPrimaryAlert(PrimaryAlert primaryAlert) { this.primaryAlert = primaryAlert; }
 
-  public Object[] getOtherAlert() { return this.otherAlert; }
-  public void setOtherAlert(Object[] otherAlert) { this.otherAlert = otherAlert; }
+  public OtherAlert[] getOtherAlert() { return this.otherAlert; }
+  public void setOtherAlert(OtherAlert[] otherAlert) { this.otherAlert = otherAlert; }
 
   @Override
   public boolean equals(Object o) {
@@ -65,13 +68,13 @@ public class CreateEvent {
       return false;
     }
     CreateEvent self = (CreateEvent) o;
-      return 
+      return
         Objects.equals(this.eventId, self.eventId) &&
         Objects.equals(this.createdAt, self.createdAt) &&
         Objects.equals(this.severity, self.severity) &&
         Objects.equals(this.eventLocation, self.eventLocation) &&
         Objects.equals(this.primaryAlert, self.primaryAlert) &&
-        Objects.equals(this.otherAlert, self.otherAlert);
+                Arrays.equals(this.otherAlert, self.otherAlert);
   }
 
   @Override
@@ -81,7 +84,7 @@ public class CreateEvent {
 
   @Override
   public String toString() {
-    return "class CreateEvent {\n" +   
+    return "class CreateEvent {\n" +
       "    eventId: " + toIndentedString(eventId) + "\n" +
       "    createdAt: " + toIndentedString(createdAt) + "\n" +
       "    severity: " + toIndentedString(severity) + "\n" +

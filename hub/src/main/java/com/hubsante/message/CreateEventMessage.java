@@ -1,10 +1,11 @@
 package com.hubsante.message;
-              
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import javax.validation.constraints.NotNull;
 import java.util.Objects;
-import javax.validation.constraints.*;
-import com.fasterxml.jackson.annotation.*;
               
-public class CreateEventMessage {
+public class CreateEventMessage implements CisuMessage {
   @JsonProperty("messageId")
   @NotNull
   private String messageId;
@@ -13,7 +14,7 @@ public class CreateEventMessage {
   private AddresseeType sender;
   @JsonProperty("sentAt")
   @NotNull
-  private String sentAt;
+  private java.time.OffsetDateTime sentAt;
   @JsonProperty("msgType")
   @NotNull
   private MsgType msgType;
@@ -31,7 +32,7 @@ public class CreateEventMessage {
   }
 
   public CreateEventMessage(
-    String messageId, AddresseeType sender, String sentAt, MsgType msgType, Status status, Recipients recipients, CreateEvent createEvent
+    String messageId, AddresseeType sender, java.time.OffsetDateTime sentAt, MsgType msgType, Status status, Recipients recipients, CreateEvent createEvent
   ) {
   	this.messageId = messageId;
   	this.sender = sender;
@@ -48,8 +49,8 @@ public class CreateEventMessage {
   public AddresseeType getSender() { return this.sender; }
   public void setSender(AddresseeType sender) { this.sender = sender; }
 
-  public String getSentAt() { return this.sentAt; }
-  public void setSentAt(String sentAt) { this.sentAt = sentAt; }
+  public java.time.OffsetDateTime getSentAt() { return this.sentAt; }
+  public void setSentAt(java.time.OffsetDateTime sentAt) { this.sentAt = sentAt; }
 
   public MsgType getMsgType() { return this.msgType; }
   public void setMsgType(MsgType msgType) { this.msgType = msgType; }

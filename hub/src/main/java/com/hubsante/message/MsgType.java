@@ -1,6 +1,7 @@
 package com.hubsante.message;
-              
-import com.fasterxml.jackson.annotation.*;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
               
 public enum MsgType {
   ALERT((String)"ALERT"), ACK((String)"ACK"), UPDATE((String)"UPDATE"), CANCEL((String)"CANCEL");

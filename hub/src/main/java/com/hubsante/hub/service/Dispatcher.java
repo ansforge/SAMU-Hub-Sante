@@ -45,7 +45,7 @@ public class Dispatcher {
             //  if the message is wrongly formatted client-side we should inform the client.
             //  ----
             //  with Spring Rabbit integration, an exception thrown in a @RabbitListener method will end up with message requeuing
-            //  by default, except for AmqpRejectAndDontRequeueException which is specially designed for it.
+            //  by default, except for AmqpRejectAndDontRequeueException which is specially designed for it. Think about moving it to DLQ instead
             throw new AmqpRejectAndDontRequeueException("do not requeue !");
         }
 
@@ -71,7 +71,6 @@ public class Dispatcher {
                 //  We should instead define a retry strategy.
                 log.error("[ERROR] Failed to dispatch message " + basicMessage + ". Raised exception: " + e);
             }
-
         }
     }
 }

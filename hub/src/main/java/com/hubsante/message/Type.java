@@ -1,6 +1,7 @@
 package com.hubsante.message;
-              
-import com.fasterxml.jackson.annotation.*;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
               
 public enum Type {
   POINT((String)"POINT"), CIRCLE((String)"CIRCLE"), LINE((String)"LINE"), SURFACE((String)"SURFACE"), GRID((String)"GRID"), POLYGON((String)"POLYGON"), ELLIPSE((String)"ELLIPSE");

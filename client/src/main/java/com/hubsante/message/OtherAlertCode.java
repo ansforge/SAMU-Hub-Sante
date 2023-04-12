@@ -16,7 +16,7 @@ public class OtherAlertCode {
   private OptionalAttributeType locationKind;
   @JsonProperty("otherRiskThreat")
   @Size(min=0)
-  private Object[] otherRiskThreat;
+  private OptionalAttributeType[] otherRiskThreat;
   @JsonProperty("healthMotive")
   @NotNull
   private OptionalAttributeType healthMotive;
@@ -27,7 +27,7 @@ public class OtherAlertCode {
   }
 
   public OtherAlertCode(
-    String version, OptionalAttributeType whatsHappen, OptionalAttributeType locationKind, Object[] otherRiskThreat, OptionalAttributeType healthMotive, Victims victims
+    String version, OptionalAttributeType whatsHappen, OptionalAttributeType locationKind, OptionalAttributeType[] otherRiskThreat, OptionalAttributeType healthMotive, Victims victims
   ) {
   	this.version = version;
   	this.whatsHappen = whatsHappen;
@@ -46,8 +46,8 @@ public class OtherAlertCode {
   public OptionalAttributeType getLocationKind() { return this.locationKind; }
   public void setLocationKind(OptionalAttributeType locationKind) { this.locationKind = locationKind; }
 
-  public Object[] getOtherRiskThreat() { return this.otherRiskThreat; }
-  public void setOtherRiskThreat(Object[] otherRiskThreat) { this.otherRiskThreat = otherRiskThreat; }
+  public OptionalAttributeType[] getOtherRiskThreat() { return this.otherRiskThreat; }
+  public void setOtherRiskThreat(OptionalAttributeType[] otherRiskThreat) { this.otherRiskThreat = otherRiskThreat; }
 
   public OptionalAttributeType getHealthMotive() { return this.healthMotive; }
   public void setHealthMotive(OptionalAttributeType healthMotive) { this.healthMotive = healthMotive; }

@@ -1,6 +1,7 @@
 package com.hubsante.message;
-              
-import com.fasterxml.jackson.annotation.*;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
               
 public enum Status {
   ACTUAL((String)"ACTUAL"), EXERCISE((String)"EXERCISE"), TEST((String)"TEST"), DRAFT((String)"DRAFT"), SYSTEM((String)"SYSTEM");

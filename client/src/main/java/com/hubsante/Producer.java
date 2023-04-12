@@ -56,7 +56,6 @@ public class Producer {
     public void publish(String routingKey, CisuMessage msg) throws IOException {
         // registering extra module is mandatory to correctly handle DateTimes
         ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
-
         try {
             this.channelProducer.basicPublish(
                     this.exchangeName,

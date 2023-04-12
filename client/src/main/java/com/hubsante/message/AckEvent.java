@@ -10,13 +10,13 @@ public class AckEvent {
   private String eventId;
   @JsonProperty("alert")
   @Size(min=0)
-  private Object[] alert;
+  private Alert[] alert;
 
   public AckEvent(){
   }
 
   public AckEvent(
-    String eventId, Object[] alert
+    String eventId, Alert[] alert
   ) {
   	this.eventId = eventId;
   	this.alert = alert;
@@ -25,8 +25,8 @@ public class AckEvent {
   public String getEventId() { return this.eventId; }
   public void setEventId(String eventId) { this.eventId = eventId; }
 
-  public Object[] getAlert() { return this.alert; }
-  public void setAlert(Object[] alert) { this.alert = alert; }
+  public Alert[] getAlert() { return this.alert; }
+  public void setAlert(Alert[] alert) { this.alert = alert; }
 
   @Override
   public boolean equals(Object o) {

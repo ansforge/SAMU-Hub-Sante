@@ -1,6 +1,7 @@
 package com.hubsante.message;
-              
-import com.fasterxml.jackson.annotation.*;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
               
 public enum Count {
   NUMBER_0((String)"0"), NUMBER_1((String)"1"), SEVERAL((String)"SEVERAL"), MANY((String)"MANY"), UNKNOWN((String)"UNKNOWN");

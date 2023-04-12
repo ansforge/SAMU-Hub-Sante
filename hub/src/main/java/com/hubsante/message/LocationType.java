@@ -1,8 +1,9 @@
 package com.hubsante.message;
-              
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import javax.validation.constraints.Size;
 import java.util.Objects;
-import javax.validation.constraints.*;
-import com.fasterxml.jackson.annotation.*;
               
 public class LocationType {
   @JsonProperty("locId")
@@ -17,10 +18,10 @@ public class LocationType {
   private HeightRole heightRole;
   @JsonProperty("coord")
   @Size(min=0)
-  private Object[] coord;
+  private CoordType[] coord;
   @JsonProperty("address")
   @Size(min=0)
-  private Object[] address;
+  private String[] address;
   @JsonProperty("commune")
   private String commune;
   @JsonProperty("civicAddress")
@@ -30,7 +31,7 @@ public class LocationType {
   }
 
   public LocationType(
-    String locId, String name, Type type, String coordsys, HeightRole heightRole, Object[] coord, Object[] address, String commune, CivicAddressType civicAddress
+    String locId, String name, Type type, String coordsys, HeightRole heightRole, CoordType[] coord, String[] address, String commune, CivicAddressType civicAddress
   ) {
   	this.locId = locId;
   	this.name = name;
@@ -58,11 +59,11 @@ public class LocationType {
   public HeightRole getHeightRole() { return this.heightRole; }
   public void setHeightRole(HeightRole heightRole) { this.heightRole = heightRole; }
 
-  public Object[] getCoord() { return this.coord; }
-  public void setCoord(Object[] coord) { this.coord = coord; }
+  public CoordType[] getCoord() { return this.coord; }
+  public void setCoord(CoordType[] coord) { this.coord = coord; }
 
-  public Object[] getAddress() { return this.address; }
-  public void setAddress(Object[] address) { this.address = address; }
+  public String[] getAddress() { return this.address; }
+  public void setAddress(String[] address) { this.address = address; }
 
   public String getCommune() { return this.commune; }
   public void setCommune(String commune) { this.commune = commune; }

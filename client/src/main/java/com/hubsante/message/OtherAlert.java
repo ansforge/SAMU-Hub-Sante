@@ -32,13 +32,13 @@ public class OtherAlert {
   private OtherAlertCode otherAlertCode;
   @JsonProperty("resource")
   @Size(min=0)
-  private Object[] resource;
+  private ResourceType[] resource;
 
   public OtherAlert(){
   }
 
   public OtherAlert(
-    String alertId, java.time.OffsetDateTime receivedAt, Reporting reporting, String alertInformation, LocationType alertLocation, Call call, Caller caller, CallTaker callTaker, OtherAlertCode otherAlertCode, Object[] resource
+    String alertId, java.time.OffsetDateTime receivedAt, Reporting reporting, String alertInformation, LocationType alertLocation, Call call, Caller caller, CallTaker callTaker, OtherAlertCode otherAlertCode, ResourceType[] resource
   ) {
   	this.alertId = alertId;
   	this.receivedAt = receivedAt;
@@ -79,8 +79,8 @@ public class OtherAlert {
   public OtherAlertCode getOtherAlertCode() { return this.otherAlertCode; }
   public void setOtherAlertCode(OtherAlertCode otherAlertCode) { this.otherAlertCode = otherAlertCode; }
 
-  public Object[] getResource() { return this.resource; }
-  public void setResource(Object[] resource) { this.resource = resource; }
+  public ResourceType[] getResource() { return this.resource; }
+  public void setResource(ResourceType[] resource) { this.resource = resource; }
 
   @Override
   public boolean equals(Object o) {

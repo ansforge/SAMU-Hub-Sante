@@ -1,8 +1,9 @@
 package com.hubsante.message;
-              
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import javax.validation.constraints.NotNull;
 import java.util.Objects;
-import javax.validation.constraints.*;
-import com.fasterxml.jackson.annotation.*;
               
 public class CoordType {
   @JsonProperty("lat")

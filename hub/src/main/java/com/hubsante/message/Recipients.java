@@ -1,8 +1,10 @@
 package com.hubsante.message;
-              
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.util.Objects;
-import javax.validation.constraints.*;
-import com.fasterxml.jackson.annotation.*;
               
 public class Recipients {
   @JsonProperty("recipient")

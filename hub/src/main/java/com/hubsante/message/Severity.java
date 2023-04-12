@@ -1,6 +1,7 @@
 package com.hubsante.message;
-              
-import com.fasterxml.jackson.annotation.*;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
               
 public enum Severity {
   EXTREME((String)"EXTREME"), SEVERE((String)"SEVERE"), MODERATE((String)"MODERATE"), MINOR((String)"MINOR"), UNKNOWN((String)"UNKNOWN");

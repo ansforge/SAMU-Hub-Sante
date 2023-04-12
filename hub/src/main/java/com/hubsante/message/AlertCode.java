@@ -1,8 +1,11 @@
 package com.hubsante.message;
-              
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
+import java.util.Arrays;
 import java.util.Objects;
-import javax.validation.constraints.*;
-import com.fasterxml.jackson.annotation.*;
               
 public class AlertCode {
   @JsonProperty("version")
@@ -16,7 +19,7 @@ public class AlertCode {
   private AttributeType locationKind;
   @JsonProperty("riskThreat")
   @Size(min=0)
-  private Object[] riskThreat;
+  private AttributeType[] riskThreat;
   @JsonProperty("healthMotive")
   @NotNull
   private AttributeType healthMotive;
@@ -27,7 +30,7 @@ public class AlertCode {
   }
 
   public AlertCode(
-    String version, AttributeType whatsHappen, AttributeType locationKind, Object[] riskThreat, AttributeType healthMotive, Victims victims
+    String version, AttributeType whatsHappen, AttributeType locationKind, AttributeType[] riskThreat, AttributeType healthMotive, Victims victims
   ) {
   	this.version = version;
   	this.whatsHappen = whatsHappen;
@@ -46,8 +49,8 @@ public class AlertCode {
   public AttributeType getLocationKind() { return this.locationKind; }
   public void setLocationKind(AttributeType locationKind) { this.locationKind = locationKind; }
 
-  public Object[] getRiskThreat() { return this.riskThreat; }
-  public void setRiskThreat(Object[] riskThreat) { this.riskThreat = riskThreat; }
+  public AttributeType[] getRiskThreat() { return this.riskThreat; }
+  public void setRiskThreat(AttributeType[] riskThreat) { this.riskThreat = riskThreat; }
 
   public AttributeType getHealthMotive() { return this.healthMotive; }
   public void setHealthMotive(AttributeType healthMotive) { this.healthMotive = healthMotive; }
@@ -68,7 +71,7 @@ public class AlertCode {
         Objects.equals(this.version, self.version) &&
         Objects.equals(this.whatsHappen, self.whatsHappen) &&
         Objects.equals(this.locationKind, self.locationKind) &&
-        Objects.equals(this.riskThreat, self.riskThreat) &&
+                Arrays.equals(this.riskThreat, self.riskThreat) &&
         Objects.equals(this.healthMotive, self.healthMotive) &&
         Objects.equals(this.victims, self.victims);
   }

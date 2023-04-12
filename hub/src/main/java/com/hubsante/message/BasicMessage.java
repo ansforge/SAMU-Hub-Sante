@@ -1,12 +1,13 @@
 package com.hubsante.message;
-              
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import javax.validation.constraints.NotNull;
 import java.util.Objects;
-import java.util.Map;
-import javax.validation.constraints.*;
-import com.fasterxml.jackson.annotation.*;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class BasicMessage {
+public class BasicMessage implements CisuMessage {
   @JsonProperty("content")
   @NotNull
   private Object content;

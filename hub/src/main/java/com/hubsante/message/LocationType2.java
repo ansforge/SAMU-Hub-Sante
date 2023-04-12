@@ -1,9 +1,9 @@
 package com.hubsante.message;
-              
-import java.util.Objects;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.Map;
-import javax.validation.constraints.*;
-import com.fasterxml.jackson.annotation.*;
+import java.util.Objects;
               
 public class LocationType2 {
   @JsonProperty("aircraft")

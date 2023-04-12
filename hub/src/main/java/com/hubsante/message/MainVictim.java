@@ -1,6 +1,7 @@
 package com.hubsante.message;
-              
-import com.fasterxml.jackson.annotation.*;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
               
 public enum MainVictim {
   INFANT((String)"INFANT"), CHILD((String)"CHILD"), ADULT((String)"ADULT"), PREGNANT((String)"PREGNANT"), SENIOR((String)"SENIOR");
