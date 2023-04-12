@@ -1,8 +1,13 @@
 package com.hubsante;
 
+import com.hubsante.message.*;
 import com.rabbitmq.client.*;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.util.UUID;
 import java.util.concurrent.TimeoutException;
 
 public abstract class Consumer {
@@ -89,4 +94,17 @@ public abstract class Consumer {
      * @return
      */
     protected abstract void deliverCallback(String consumerTag, Delivery delivery) throws IOException;
+
+    protected AckMessage generateFunctionalAckMessage(BasicMessage receivedMessage) {
+        AddresseeType[] recipients = new AddresseeType[]{receivedMessage.getSender()};
+        return new AckMessage(
+                receivedMessage.getMessageId(),
+                new AddresseeType(clientId, "hubsante." + clientId),
+                OffsetDateTime.of(LocalDateTime.now(), ZoneOffset.of("+02")),
+                MsgType.ACK,
+                receivedMessage.getStatus(),
+                new Recipients(recipients),
+                new AckMessageId(UUID.randomUUID().toString())
+        );
+    }
 }

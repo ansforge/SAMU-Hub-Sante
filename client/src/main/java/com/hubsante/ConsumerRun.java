@@ -1,19 +1,10 @@
 package com.hubsante;
 
-import com.ethlo.time.DateTime;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.hubsante.message.*;
 import com.rabbitmq.client.Delivery;
 
-import java.text.SimpleDateFormat;
-import java.time.DateTimeException;
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.util.Date;
-import java.util.Map;
-import java.util.UUID;
 import java.io.IOException;
 
 import static com.hubsante.Utils.*;
@@ -52,16 +43,7 @@ public class ConsumerRun {
 
                 // Sending back functional ack as info has been processed on the Consumer side
                 if (!basicMessage.getMsgType().getValue().equals("ACK")) {
-                    AddresseeType[] recipients = new AddresseeType[]{basicMessage.getSender()};
-                    AckMessage ackMessage = new AckMessage(
-                            basicMessage.getMessageId(),
-                            new AddresseeType(clientId, "hubsante." + clientId),
-                            OffsetDateTime.of(LocalDateTime.now(), ZoneOffset.of("+02")),
-                            MsgType.ACK,
-                            basicMessage.getStatus(),
-                            new Recipients(recipients),
-                            new AckMessageId(UUID.randomUUID().toString())
-                    );
+                    AckMessage ackMessage = this.generateFunctionalAckMessage(basicMessage);
                     this.producerAck.publish(this.fileAckName, ackMessage);
                     System.out.println("  ↳ [x] Sent '" + this.fileAckName + "':'" + ackMessage + "'");
                 } else {
