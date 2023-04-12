@@ -54,6 +54,12 @@ public class Producer {
      * @throws IOException
      */
     public void publish(String routingKey, CisuMessage msg) throws IOException {
+        if(this.channelProducer == null) {
+            log.warn("Channel producer unreachable, please ensure that connection has been established" +
+                    "(Producer.connect() method has been called)");
+            throw new IOException("Unconnected AMQP channel");
+        }
+
         // registering extra module is mandatory to correctly handle DateTimes
         ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
         try {
