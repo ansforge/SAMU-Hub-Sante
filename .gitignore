@@ -4,8 +4,17 @@
 # Ignore Gradle build output directory
 build
 
+# Ignore Maven build
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
 # ignore IntelliJ directory
 .idea
+*.iws
+*.iml
+*.ipr
 
 python/templates/4. tls/cert/
 

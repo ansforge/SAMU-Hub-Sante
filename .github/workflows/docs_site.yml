@@ -30,7 +30,7 @@ jobs:
 
       # Use AsyncAPI generator to generate the HTML bundle
       - name: Generate docs for Hub Santé interface ⚙️
-        run: npx ag dispatcher/src/main/resources/hubsante.asyncapi.yaml @asyncapi/html-template -o docs/specs
+        run: npx ag models/hubsante.asyncapi.yaml @asyncapi/html-template -o docs/specs
 
       - name: Commit files ✅
         run: |

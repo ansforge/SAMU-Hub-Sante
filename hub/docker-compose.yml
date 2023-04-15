@@ -1,0 +1,61 @@
+# Docker Compose description of the combined application.
+#
+# 'docker-compose up' will run this.
+version: '3'  # requires Docker Compose 1.13 or later
+
+# This section describes the various containers (services).
+services:
+  
+  rabbitmq:
+    # There is a prebuilt RabbitMQ image; see
+    # https://hub.docker.com/_/rabbitmq/ for details.
+    # This variant is built on Alpine Linux (it's smaller) and includes
+    # the management UI.
+    image: 'rabbitmq:3.11-management-alpine'
+
+    # For data persistence to work over restarts
+    # Ref.: https://stackoverflow.com/a/45719877/10115198
+    hostname: hubsante-rabbitmq
+    volumes:
+      # Ref.: https://www.futurefundamentals.com/set-rabbitmq-with-data-persistent-with-docker-compose/
+      - '~/.docker-conf/rabbitmq/data/:/var/lib/rabbitmq/mnesia/'
+      # Ref.: https://hub.docker.com/_/rabbitmq/ & https://stackoverflow.com/a/71035760/10115198
+      - '../rabbitmq/:/etc/rabbitmq/:ro'
+    # These ports are exposed on the host; 'hostport:containerport'.
+    # You could connect to this server from outside with the *host's*
+    # DNS name or IP address and port 5672 (the left-hand side of the
+    # colon).
+    ports:
+      # The AMQPS protocol port (for TLS)
+      - '5671:5671'
+      # HTTP management UI
+      - '15672:15672'
+
+    # Run this container on a private network for this application.
+    # This is necessary for magic Docker DNS to work: other containers
+    # also running on this network will see a host name "rabbitmq"
+    # (the name of this section) and the internal port 5672, even though
+    # that's not explicitly published above.
+    networks:
+      - network
+
+  hub:
+    image: hub-sante:hub
+
+    # Environment variables:
+    environment:
+      # The location of the RabbitMQ server.  "amqp" is the protocol;
+      # "rabbitmq" is the hostname.  Note that there is not a guarantee
+      # that the server will start first -> the client library should
+      # try multiple times to get around this ordering issue.
+      AMQP_URL: 'amqp://rabbitmq'
+
+    # Again, run on the private network.  Needed to see the "rabbitmq"
+    # magic Docker DNS name.
+    networks:
+      - network
+
+networks:
+  # Declare our private network.  We must declare one for the magic
+  # Docker DNS to work, but otherwise its default settings are fine.
+  network: {}

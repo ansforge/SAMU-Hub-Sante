@@ -35,14 +35,14 @@ jobs:
 
       # Use AsyncAPI generator to generate classes
       - name: Generate models based on Hub Santé interface ⚙️
-        run: cd models && npm run generate4Hub
+        run: cd models && npm run generate
 
       - name: Commit files ✅
         run: |
           git config --local user.email "Docs-Generator[bot]@users.noreply.github.com"
           git config --local user.name "Docs-Generator[bot]"
           git add models/generated
-          git add dispatcher/src/main/java/com/hubsante/message/*
+          git add hub/src/main/java/com/hubsante/message/*
           # Commit only if needed | Ref.: https://stackoverflow.com/a/8123841/10115198
           git diff-index --quiet HEAD || git commit -m "⚙️ Auto-génération des classes"
 

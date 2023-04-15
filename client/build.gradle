@@ -1,0 +1,49 @@
+plugins {
+    id 'java'
+    id 'application'
+    id 'com.google.cloud.tools.jib' version '3.3.1'
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(11)
+    }
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'com.hubsante.Dispatcher'
+    }
+    // Building a fat jar (with dependencies) | Ref.: https://www.baeldung.com/gradle-fat-jar
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'com.rabbitmq:amqp-client:5.16.0'
+    implementation 'org.slf4j:slf4j-simple:1.7.26'  // Used by RabbitMQ
+    implementation 'org.json:json:20220924'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.12.7.1'
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+    implementation 'javax.validation:validation-api:2.0.1.Final'
+    implementation 'com.networknt:json-schema-validator:1.0.79'
+    implementation 'org.jetbrains:annotations:23.0.0'
+
+    testImplementation group: 'junit', name: 'junit', version: '4.13.2'
+}
+
+application {
+    mainClassName = project.hasProperty("main") ?
+            project.getProperty("main") : 'com.hubsante.Dispatcher'
+}
+
+jib {
+    from {
+        image 'eclipse-temurin:11-jre'
+    }
+}
