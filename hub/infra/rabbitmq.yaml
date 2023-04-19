@@ -1,0 +1,26 @@
+apiVersion: rabbitmq.com/v1beta1
+kind: RabbitmqCluster
+metadata:
+  name: rabbitmq
+spec:
+  replicas: 1
+  tls:
+    secretName: tls-secret
+    caSecretName: ca-secret
+  rabbitmq:
+    # To make default user work until we configure RabbitMQ users for clients
+    # To avoid error: PLAIN login refused: user 'guest' - invalid credentials
+    # Ref.: https://github.com/rabbitmq/cluster-operator/tree/main/docs/examples/set-login-password-username
+    additionalConfig: |
+      ssl_options.fail_if_no_peer_cert = true
+      loopback_users.guest = false
+      default_user = guest
+      default_pass = guest
+  # Limiting resources | Ref.: https://github.com/rabbitmq/cluster-operator/tree/main/docs/examples/resource-limits
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+    limits:
+      cpu: 800m
+      memory: 1Gi
