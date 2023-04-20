@@ -20,7 +20,7 @@ services:
       # Ref.: https://www.futurefundamentals.com/set-rabbitmq-with-data-persistent-with-docker-compose/
       - '~/.docker-conf/rabbitmq/data/:/var/lib/rabbitmq/mnesia/'
       # Ref.: https://hub.docker.com/_/rabbitmq/ & https://stackoverflow.com/a/71035760/10115198
-      - '../rabbitmq/:/etc/rabbitmq/:ro'
+      - './rabbitmq/:/etc/rabbitmq/:ro'
     # These ports are exposed on the host; 'hostport:containerport'.
     # You could connect to this server from outside with the *host's*
     # DNS name or IP address and port 5672 (the left-hand side of the
