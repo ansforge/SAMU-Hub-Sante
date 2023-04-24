@@ -57,6 +57,7 @@ public abstract class Consumer {
      */
     public void connect(TLSConf tlsConf) throws IOException, TimeoutException {
         ConnectionFactory factory = new ConnectionFactory();
+        factory.setSaslConfig(DefaultSaslConfig.EXTERNAL);
 
         factory.setHost(this.host);
         factory.setPort(this.port);
