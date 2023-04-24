@@ -8,6 +8,11 @@ spec:
     secretName: tls-secret
     caSecretName: ca-secret
   rabbitmq:
+    # Ref.: https://www.rabbitmq.com/kubernetes/operator/using-operator.html#additional-plugins
+    additionalPlugins:
+      # For Certificate Auth EXTERNAL mechanism to work
+      # Ref.: https://cjshelton.github.io/blog/2019/12/18/rabbitmq-client-certificate-authentication.html#server-side-changes
+      - rabbitmq_auth_mechanism_ssl
     # To make default user work until we configure RabbitMQ users for clients
     # To avoid error: PLAIN login refused: user 'guest' - invalid credentials
     # Ref.: https://github.com/rabbitmq/cluster-operator/tree/main/docs/examples/set-login-password-username
@@ -25,9 +30,9 @@ spec:
       load_definitions = /tmp/rabbitmq/config/definitions.json
       
       # x509 cert Auth | Ref.: https://github.com/rabbitmq/rabbitmq-server/tree/main/deps/rabbitmq_auth_mechanism_ssl#usage
-      # auth_mechanisms.1 = EXTERNAL
+      auth_mechanisms.1 = EXTERNAL
       # Use CN | Ref.: https://github.com/rabbitmq/rabbitmq-server/tree/main/deps/rabbitmq_auth_mechanism_ssl#common-name
-      # ssl_cert_login_from = common_name
+      ssl_cert_login_from = common_name
   override:
     statefulSet:
       spec:
