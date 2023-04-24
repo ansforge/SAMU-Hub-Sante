@@ -29,6 +29,8 @@ spec:
 
       load_definitions = /tmp/rabbitmq/config/definitions.json
       
+      # For Dashboard UI to work | # Ref.: https://cjshelton.github.io/blog/2019/12/18/rabbitmq-client-certificate-authentication.html#server-side-changes
+      auth_mechanisms.1 = PLAIN
       # x509 cert Auth | Ref.: https://github.com/rabbitmq/rabbitmq-server/tree/main/deps/rabbitmq_auth_mechanism_ssl#usage
       auth_mechanisms.1 = EXTERNAL
       # Use CN | Ref.: https://github.com/rabbitmq/rabbitmq-server/tree/main/deps/rabbitmq_auth_mechanism_ssl#common-name

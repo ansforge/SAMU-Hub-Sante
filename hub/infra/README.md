@@ -29,7 +29,6 @@ username="$(kubectl get secret rabbitmq-default-user -o jsonpath='{.data.usernam
 echo "username: $username"
 password="$(kubectl get secret rabbitmq-default-user -o jsonpath='{.data.password}' | base64 --decode)"
 echo "password: $password"
-# ToDo(rfo): make this work as it now uses guest:guest
 kubectl port-forward "service/rabbitmq" 15672
 
 # FORWARD RABBITMQ

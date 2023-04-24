@@ -53,14 +53,11 @@
   "users": [
     {
       "name": "localhost",
-      "password": "guest",
-      "tags": [
-        "administrator"
-      ]
+      "tags": []
     },
     {
-      "name": "guest",
-      "password": "guest",
+      "name": "admin",
+      "password": "admin",
       "tags": [
         "administrator"
       ]
@@ -75,7 +72,7 @@
       "write": ".*"
     },
     {
-      "user": "guest",
+      "user": "admin",
       "vhost": "/",
       "configure": ".*",
       "read": ".*",
