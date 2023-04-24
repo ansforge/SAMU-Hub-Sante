@@ -12,10 +12,38 @@ spec:
     # To avoid error: PLAIN login refused: user 'guest' - invalid credentials
     # Ref.: https://github.com/rabbitmq/cluster-operator/tree/main/docs/examples/set-login-password-username
     additionalConfig: |
+      # Debug logging | Ref.: https://www.rabbitmq.com/logging.html#debug-logging
+      log.file.level = debug
+      
+      ssl_options.verify = verify_peer
       ssl_options.fail_if_no_peer_cert = true
+      
       loopback_users.guest = false
       default_user = guest
       default_pass = guest
+
+      load_definitions = /tmp/rabbitmq/config/definitions.json
+      
+      # x509 cert Auth | Ref.: https://github.com/rabbitmq/rabbitmq-server/tree/main/deps/rabbitmq_auth_mechanism_ssl#usage
+      # auth_mechanisms.1 = EXTERNAL
+      # Use CN | Ref.: https://github.com/rabbitmq/rabbitmq-server/tree/main/deps/rabbitmq_auth_mechanism_ssl#common-name
+      # ssl_cert_login_from = common_name
+  override:
+    statefulSet:
+      spec:
+        template:
+          # Use definitions.json to seed RabbitMQ configuration | https://www.rabbitmq.com/access-control.html#seeding
+          # We need to transfer them to the RabbitMQ containers so the load_definitions can work
+          spec:
+            containers:
+              - name: rabbitmq
+                volumeMounts:
+                  - mountPath: /tmp/rabbitmq/config/ # filename left out intentionally
+                    name: definitions
+            volumes:
+              - name: definitions
+                configMap:
+                  name: definitions # Name of the ConfigMap which contains definitions you wish to import
   # Limiting resources | Ref.: https://github.com/rabbitmq/cluster-operator/tree/main/docs/examples/resource-limits
   resources:
     requests:

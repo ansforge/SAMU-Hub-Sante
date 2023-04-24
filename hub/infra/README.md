@@ -13,6 +13,10 @@ kubectl apply -f "https://github.com/rabbitmq/cluster-operator/releases/latest/d
 kubectl create secret tls tls-secret --cert=../../rabbitmq/certs/hub.crt --key=../../rabbitmq/certs/hub.key
 kubectl create secret generic ca-secret --from-file=ca.crt=../../rabbitmq/certs/rootCA.crt
 
+# Create definitions.json ConfigMap
+# Ref.: https://github.com/rabbitmq/cluster-operator/blob/main/docs/examples/import-definitions/setup.sh
+kubectl create configmap definitions --from-file=../../rabbitmq/definitions.json
+
 # Find/build the correct Custom Resource Definition yaml and install it
 # https://github.com/rabbitmq/cluster-operator/tree/main/docs/examples
 kubectl apply -f rabbitmq.yaml
@@ -41,12 +45,20 @@ kubectl apply -f ingress.yaml
 
 # Check Ingress is up
 kubectl get ingress
+# End of FORWARD RABBITMQ
 
 # Run the rest of the pipeline (with disptacher first to create exchange / queues / bindings
 gradle bootRun --args='--spring.profiles.active=local,rfo'
 CLIENT_ID=Target; gradle -Pmain=com.hubsante.ConsumerRun run --args "$CLIENT_ID.in.message"
 CLIENT_ID=Origin; gradle -Pmain=com.hubsante.ConsumerRun run --args "$CLIENT_ID.in.ack"
 CLIENT_ID=Origin; gradle -Pmain=com.hubsante.ProducerRun run --args "$CLIENT_ID.out.message src/main/resources/createEventMessage.json"
+```
+
+### Delete
+```
+kubectl delete --all rabbitmqclusters.rabbitmq.com
+
+minikube delete --profile minikube 
 ```
 
 ### Debugging
@@ -56,9 +68,11 @@ kubectl -n rabbitmq-system logs -l app.kubernetes.io/name=rabbitmq-cluster-opera
 
 # Access Pod logs
 kubectl logs pod/rabbitmq-server-0
+
+# SSH into RabbitMQ Pod (rabbitmqctl, ... commands available)
+kubectl exec --stdin --tty rabbitmq-server-0 -- /bin/bash
 ```
 
 ### Next steps
 - [ ] Add users with specific queue rights + authz with certificates + authn based on info -> remove guest:guest as default user
-- [ ] Load resources (exchange / queue / ...) definitions from definitions.json 
 - [ ] Support RabbitMQ persistency (with perisistent volume & persistent volume claim)
