@@ -1,13 +1,20 @@
 package com.hubsante.message;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Objects;
               
 public class Recipients {
   @JsonProperty("recipient")
+  @JacksonXmlProperty(localName = "recipient")
+  @JacksonXmlElementWrapper(useWrapping = false)
   @NotNull
   @Size(min=1)
   private AddresseeType[] recipient;
@@ -33,8 +40,7 @@ public class Recipients {
       return false;
     }
     Recipients self = (Recipients) o;
-      return 
-        Objects.equals(this.recipient, self.recipient);
+      return Arrays.equals(this.recipient, self.recipient);
   }
 
   @Override

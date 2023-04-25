@@ -1,12 +1,16 @@
 package com.hubsante.message;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 
 import javax.validation.constraints.Size;
+import java.util.Arrays;
 import java.util.Objects;
               
 public class LocationType {
   @JsonProperty("locId")
+  @JacksonXmlProperty(localName = "loc_Id")
   private String locId;
   @JsonProperty("name")
   private String name;
@@ -15,12 +19,17 @@ public class LocationType {
   @JsonProperty("coordsys")
   private String coordsys;
   @JsonProperty("heightRole")
+  @JacksonXmlProperty(localName = "height_role")
   private HeightRole heightRole;
   @JsonProperty("coord")
   @Size(min=0)
+  @JacksonXmlProperty(localName = "coord")
+  @JacksonXmlElementWrapper(useWrapping = false)
   private CoordType[] coord;
   @JsonProperty("address")
   @Size(min=0)
+  @JacksonXmlProperty(localName = "address")
+  @JacksonXmlElementWrapper(useWrapping = false)
   private String[] address;
   @JsonProperty("commune")
   private String commune;
@@ -86,8 +95,8 @@ public class LocationType {
         Objects.equals(this.type, self.type) &&
         Objects.equals(this.coordsys, self.coordsys) &&
         Objects.equals(this.heightRole, self.heightRole) &&
-        Objects.equals(this.coord, self.coord) &&
-        Objects.equals(this.address, self.address) &&
+                Arrays.equals(this.coord, self.coord) &&
+                Arrays.equals(this.address, self.address) &&
         Objects.equals(this.commune, self.commune) &&
         Objects.equals(this.civicAddress, self.civicAddress);
   }

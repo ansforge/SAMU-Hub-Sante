@@ -4,7 +4,7 @@
     "name": "Origin",
     "uri": "hubsante.origin"
   },
-  "sentAt": "2022-09-27T08:23:34+00:00",
+  "sentAt": "2022-09-27T08:23:34+02:00",
   "msgType": "ALERT",
   "status": "TEST",
   "recipients": {
@@ -17,7 +17,7 @@
   },
   "createEvent": {
     "eventId": "Origin-SAMU-AF2",
-    "createdAt": "2022-09-27T08:23:34+00:00",
+    "createdAt": "2022-09-27T08:23:34+02:00",
     "severity": "UNKNOWN",
     "eventLocation": {
       "locId": "111fb03a-6fd9-41e0-8e81-990c45188888",
@@ -45,7 +45,7 @@
     },
     "primaryAlert": {
       "alertId": "Origin-SAMU-AL8",
-      "receivedAt": "2022-09-27T08:23:15+00:00",
+      "receivedAt": "2022-09-27T08:23:15+02:00",
       "reporting": "STANDARD",
       "alertLocation": {
         "type": "POINT",
