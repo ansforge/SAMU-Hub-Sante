@@ -42,14 +42,15 @@ public class JsonXmlConverter {
             .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
             .disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE)
             .configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES, true);
-    private final ObjectMapper objectMapper = new ObjectMapper()
+
+    private final ObjectMapper jsonMapper = new ObjectMapper()
             .registerModule(new JavaTimeModule())
             .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
             .disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE);
 
 
     public CreateEventMessage deserializeJsonMessage(String json) throws JsonProcessingException {
-        return objectMapper.readValue(json, CreateEventMessage.class);
+        return jsonMapper.readValue(json, CreateEventMessage.class);
     }
 
     public CreateEventMessage deserializeXmlMessage(String xml) throws JsonProcessingException {
