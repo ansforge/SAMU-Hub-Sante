@@ -25,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootConfiguration
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = HubApplication.class)
-// You should change the active profile to test it
+// You should change the active profile to test it locally
 @ActiveProfiles({"local","bbo"})
 public class CisuCreateEventMessageTest {
 
