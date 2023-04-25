@@ -1,12 +1,16 @@
 package com.hubsante.dispatcher;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.JacksonException;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.github.jknack.handlebars.Handlebars;
 import com.github.jknack.handlebars.Template;
 import com.github.jknack.handlebars.io.ClassPathTemplateLoader;
 import com.github.jknack.handlebars.io.TemplateLoader;
+import com.hubsante.message.AddresseeType;
 import com.hubsante.message.CreateEventMessage;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.SpringBootConfiguration;
@@ -22,6 +26,8 @@ import javax.xml.validation.Validator;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -32,8 +38,13 @@ public class CisuCreateEventMessageTest {
 
     @Test
     public void renderCisuXML() throws IOException {
-        ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
         File cisuJsonFile = new File(Thread.currentThread().getContextClassLoader().getResource("createEventMessage.json").getFile());
+
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule())
+                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+                .disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE);
+
         CreateEventMessage createEventMessage = mapper.readValue(cisuJsonFile, CreateEventMessage.class);
 
         TemplateLoader loader = new ClassPathTemplateLoader("", ".handlebars");
@@ -48,9 +59,12 @@ public class CisuCreateEventMessageTest {
             validator.validate(new StreamSource(new StringReader(xml)));
         });
 
-        XmlMapper xmlMapper = (XmlMapper) new XmlMapper().registerModule(new JavaTimeModule());
-//        CreateEventMessage message = xmlMapper.readValue(xml, CreateEventMessage.class);
-//        assertEquals(createEventMessage, message);
+        XmlMapper xmlMapper = (XmlMapper) new XmlMapper().registerModule(new JavaTimeModule())
+                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+                .disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE)
+                .configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES, true);
+        CreateEventMessage message = xmlMapper.readValue(xml, CreateEventMessage.class);
+        assertEquals(createEventMessage, message);
     }
 
     private Validator initValidator(String xsdPath) throws SAXException {

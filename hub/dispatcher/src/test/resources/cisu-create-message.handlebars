@@ -1,462 +1,465 @@
-
-  <message xmlns="urn:emergency:cisu:2.0">
+<message xmlns="urn:emergency:cisu:2.0">
     <messageId>{{ messageId }}</messageId>
     <sender>
-      <name>{{ sender.name }}</name>
-      <URI>{{ sender.URI }}</URI>
+        <name>{{ sender.name }}</name>
+        <URI>{{ sender.uri }}</URI>
     </sender>
     <sentAt>{{ sentAt }}</sentAt>
     <msgType>{{ msgType }}</msgType>
     <status>{{ status }}</status>
     <recipients>
-      {{#each recipients}}
-        <recipient>
-          <name>{{ this.name }}</name>
-          <URI>{{ this.URI }}</URI>
-        </recipient>
-      {{/each }}
+        {{#each recipients.recipient}}
+            <recipient>
+                <name>{{ this.name }}</name>
+                <URI>{{ this.uri }}</URI>
+            </recipient>
+        {{/each}}
     </recipients>
     <createEvent>
-      <eventId>{{ createEvent.eventId }}</eventId>
-      <createdAt>{{ createEvent.createdAt }}</createdAt>
-      <severity>{{ createEvent.severity }}</severity>
-      {{#if createEvent.eventLocation }}
-        <eventLocation>
-          {{#if createEvent.eventLocation.loc_Id }}
-            <loc_Id>{{ createEvent.eventLocation.loc_Id }}</loc_Id>
-          {{/if}}
-          {{#if createEvent.eventLocation.name }}
-            <name>{{ createEvent.eventLocation.name }}</name>
-          {{/if}}
-          {{#if createEvent.eventLocation.type }}
-            <type>{{ createEvent.eventLocation.type }}</type>
-          {{/if}}
-          {{#if createEvent.eventLocation.coordsys }}
-            <coordsys>{{ createEvent.eventLocation.coordsys }}</coordsys>
-          {{/if}}
-          {{#if createEvent.eventLocation.height_role }}
-            <height_role>{{ createEvent.eventLocation.height_role }}</height_role>
-          {{/if}}
-          <coord>
-            <lat>{{ createEvent.eventLocation.coord.lat }}</lat>
-            <lon>{{ createEvent.eventLocation.coord.lon }}</lon>
-            {{#if createEvent.eventLocation.coord.height}}
-              <height>{{ createEvent.eventLocation.coord.height }}</height>
-            {{/if}}
-          </coord>
-          {{#each createEvent.eventLocation.address}}
-            <address>{{ this }}</address>
-          {{/each}}
-          {{#if createEvent.eventLocation.commune}}
-            <commune>{{ createEvent.eventLocation.commune }}</commune>
-          {{/if}}
-          {{#if createEvent.eventLocation.civicAddress}}
-            <civicAddress>
-              {{#if createEvent.eventLocation.civicAddress.country}}
-                <country>{{ createEvent.eventLocation.civicAddress.country }}</country>
-              {{/if}}
-              {{#if createEvent.eventLocation.civicAddress.A1}}
-                <A1>{{ createEvent.eventLocation.civicAddress.A1 }}</A1>
-              {{/if}}
-              {{#if createEvent.eventLocation.civicAddress.A2}}
-                <A2>{{ createEvent.eventLocation.civicAddress.A2 }}</A2>
-              {{/if}}
-              {{#if createEvent.eventLocation.civicAddress.A3}}
-                <A3>{{ createEvent.eventLocation.civicAddress.A3 }}</A3>
-              {{/if}}
-              {{#if createEvent.eventLocation.civicAddress.A4}}
-                <A4>{{ createEvent.eventLocation.civicAddress.A4 }}</A4>
-              {{/if}}
-              {{#if createEvent.eventLocation.civicAddress.A5}}
-                <A5>{{ createEvent.eventLocation.civicAddress.A5 }}</A5>
-              {{/if}}
-              {{#if createEvent.eventLocation.civicAddress.A6}}
-                <A6>{{ createEvent.eventLocation.civicAddress.A6 }}</A6>
-              {{/if}}
-              {{#if createEvent.eventLocation.civicAddress.PRD}}
-                <PRD>{{ createEvent.eventLocation.civicAddress.PRD }}</PRD>
-              {{/if}}
-              {{#if createEvent.eventLocation.civicAddress.POD}}
-                <POD>{{ createEvent.eventLocation.civicAddress.POD }}</POD>
-              {{/if}}
-              {{#if createEvent.eventLocation.civicAddress.STS}}
-                <STS>{{ createEvent.eventLocation.civicAddress.STS }}</STS>
-              {{/if}}
-              {{#if createEvent.eventLocation.civicAddress.HNO}}
-                <HNO>{{ createEvent.eventLocation.civicAddress.HNO }}</HNO>
-              {{/if}}
-              {{#if createEvent.eventLocation.civicAddress.HNS}}
-                <HNS>{{ createEvent.eventLocation.civicAddress.HNS }}</HNS>
-              {{/if}}
-              {{#if createEvent.eventLocation.civicAddress.LMK}}
-                <LMK>{{ createEvent.eventLocation.civicAddress.LMK }}</LMK>
-              {{/if}}
-              {{#if createEvent.eventLocation.civicAddress.LOC}}
-                <LOC>{{ createEvent.eventLocation.civicAddress.LOC }}</LOC>
-              {{/if}}
-              {{#if createEvent.eventLocation.civicAddress.NAM}}
-                <NAM>{{ createEvent.eventLocation.civicAddress.NAM }}</NAM>
-              {{/if}}
-              {{#if createEvent.eventLocation.civicAddress.PC}}
-                <PC>{{ createEvent.eventLocation.civicAddress.PC }}</PC>
-              {{/if}}
-              {{#if createEvent.eventLocation.civicAddress.BLD}}
-                <BLD>{{ createEvent.eventLocation.civicAddress.BLD }}</BLD>
-              {{/if}}
-              {{#if createEvent.eventLocation.civicAddress.UNIT}}
-                <UNIT>{{ createEvent.eventLocation.civicAddress.UNIT }}</UNIT>
-              {{/if}}
-              {{#if createEvent.eventLocation.civicAddress.FLR}}
-                <FLR>{{ createEvent.eventLocation.civicAddress.FLR }}</FLR>
-              {{/if}}
-              {{#if createEvent.eventLocation.civicAddress.ROOM}}
-                <ROOM>{{ createEvent.eventLocation.civicAddress.ROOM }}</ROOM>
-              {{/if}}
-              {{#if createEvent.eventLocation.civicAddress.PLC}}
-                <PLC>{{ createEvent.eventLocation.civicAddress.PLC }}</PLC>
-              {{/if}}
-              {{#if createEvent.eventLocation.civicAddress.PCN}}
-                <PCN>{{ createEvent.eventLocation.civicAddress.PCN }}</PCN>
-              {{/if}}
-              {{#if createEvent.eventLocation.civicAddress.POBOX}}
-                <POBOX>{{ createEvent.eventLocation.civicAddress.POBOX }}</POBOX>
-              {{/if}}
-              {{#if createEvent.eventLocation.civicAddress.ADDCODE}}
-                <ADDCODE>{{ createEvent.eventLocation.civicAddress.ADDCODE }}</ADDCODE>
-              {{/if}}
-              {{#if createEvent.eventLocation.civicAddress.SEAT}}
-                <SEAT>{{ createEvent.eventLocation.civicAddress.SEAT }}</SEAT>
-              {{/if}}
-              {{#if createEvent.eventLocation.civicAddress.RD}}
-                <RD>{{ createEvent.eventLocation.civicAddress.RD }}</RD>
-              {{/if}}
-              {{#if createEvent.eventLocation.civicAddress.RDSEC}}
-                <RDSEC>{{ createEvent.eventLocation.civicAddress.RDSEC }}</RDSEC>
-              {{/if}}
-              {{#if createEvent.eventLocation.civicAddress.RDBR}}
-                <RDBR>{{ createEvent.eventLocation.civicAddress.RDBR }}</RDBR>
-              {{/if}}
-              {{#if createEvent.eventLocation.civicAddress.RDSUBBR}}
-                <RDSUBBR>{{ createEvent.eventLocation.civicAddress.RDSUBBR }}</RDSUBBR>
-              {{/if}}
-              {{#if createEvent.eventLocation.civicAddress.PRM}}
-                <PRM>{{ createEvent.eventLocation.civicAddress.PRM }}</PRM>
-              {{/if}}
-              {{#if createEvent.eventLocation.civicAddress.POM}}
-                <POM>{{ createEvent.eventLocation.civicAddress.POM }}</POM>
-              {{/if}}
-            </civicAddress>
-          {{/if}}
-        </eventLocation>
-      {{/if}}
-      {{#with createEvent.primaryAlert}}
-        <primaryAlert>
-          <alertId>{{ this.alertId }}</alertId>
-          <receivedAt>{{ this.receivedAt }}</receivedAt>
-          <reporting>{{ this.reporting }}</reporting>
-          {{#if this.alertInformation}}
-            <alertInformation>{{ this.alertInformation }}</alertInformation>
-          {{/if}}
-          {{#if this.alertLocation }}
-            <alertLocation>
-              {{#if this.alertLocation.loc_Id }}
-                <loc_Id>{{ this.alertLocation.loc_Id }}</loc_Id>
-              {{/if}}
-              {{#if this.alertLocation.name }}
-                <name>{{ this.alertLocation.name }}</name>
-              {{/if}}
-              {{#if this.alertLocation.type }}
-                <type>{{ this.alertLocation.type }}</type>
-              {{/if}}
-              {{#if this.alertLocation.coordsys }}
-                <coordsys>{{ this.alertLocation.coordsys }}</coordsys>
-              {{/if}}
-              {{#if this.alertLocation.height_rol }}
-                <height_role>{{ this.alertLocation.height_role }}</height_role>
-              {{/if}}
-              <coord>
-                <lat>{{ this.alertLocation.coord.lat }}</lat>
-                <lon>{{ this.alertLocation.coord.lon }}</lon>
-                {{#if this.alertLocation.coord.height}}
-                  <height>{{ this.alertLocation.coord.height }}</height>
+        <eventId>{{ createEvent.eventId }}</eventId>
+        <createdAt>{{ createEvent.createdAt }}</createdAt>
+        <severity>{{ createEvent.severity }}</severity>
+        {{#if createEvent.eventLocation }}
+            <eventLocation>
+                {{#if createEvent.eventLocation.locId }}
+                    <loc_Id>{{ createEvent.eventLocation.locId }}</loc_Id>
                 {{/if}}
-              </coord>
-              {{#each this.alertLocation.address}}
-                <address>{{ this }}</address>
-              {{/each}}
-              {{#if this.alertLocation.commune}}
-                <commune>{{ this.alertLocation.commune }}</commune>
-              {{/if}}
-            </alertLocation>
-          {{/if}}
-          {{#if this.call}}
-            <call>
-              {{#if this.call.source }}
-                <source>{{ this.call.source }}</source>
-              {{/if}}
-              {{#if this.call.dialledURI }}
-                <dialledURI>{{ this.call.dialledURI }}</dialledURI>
-              {{/if}}
-            </call>
-          {{/if}}
-          <caller>
-            <callerURI>{{ this.caller.callerUri }}</callerURI>
-            {{#if this.caller.callbackURI}}
-              <callbackURI>{{ this.caller.callbackURI }}</callbackURI>
-            {{/if}}
-            {{#if this.caller.spokenLanguage}}
-              <spokenLanguage>{{ this.caller.spokenLanguage }}</spokenLanguage>
-            {{/if}}
-            {{#if this.caller.callerInformation}}
-              <callerInformation>{{ this.caller.callerInformation }}</callerInformation>
-            {{/if}}
-            {{#if this.caller.callerName}}
-              <callerName>{{ this.caller.callerName }}</callerName>
-            {{/if}}
-          </caller>
-          {{#if this.callTaker }}
-            <callTaker>
-              {{~#if this.callTaker.organization}}
-                <organization>{{ this.callTaker.organization }}</organization>
-              {{~/if~}}
-              {{~#if this.callTaker.controlRoom}}
-                <controlRoom>{{ this.callTaker.controlRoom }}</controlRoom>
-              {{~/if~}}
-              {{~#if this.callTaker.calltakerUri}}
-                <calltakerURI>{{ this.callTaker.calltakerUri }}</calltakerURI>
-              {{~/if~}}
-              {{~#if this.callTaker.calltakerId}}
-                <calltakerId>{{ this.callTaker.calltakerId }}</calltakerId>
-              {{~/if~}}
-            </callTaker>
-          {{/if}}
-          <alertCode>
-            <version>{{ this.alertCode.version }}</version>
-            <whatsHappen>
-              <code>{{ this.alertCode.whatsHappen.code }}</code>
-              <label>{{ this.alertCode.whatsHappen.label }}</label>
-              {{#if this.alertCode.whatsHappen.comment}}
-                <comment>{{ this.alertCode.whatsHappen.comment }}</comment>
-              {{/if}}
-            </whatsHappen>
-            {{#if this.alertCode.locationKind}}
-              <locationKind>
-                <code>{{ this.alertCode.locationKind.code }}</code>
-                <label>{{ this.alertCode.locationKind.label }}</label>
-                {{#if this.alertCode.locationKind.comment}}
-                  <comment>{{ this.alertCode.locationKind.comment }}</comment>
+                {{#if createEvent.eventLocation.name }}
+                    <name>{{ createEvent.eventLocation.name }}</name>
                 {{/if}}
-              </locationKind>
-            {{/if}}
-            {{#if this.alertCode.riskThreat}}
-              {{#each this.alertCode.riskThreat }}
-                <riskThreat>
-                  <code>{{ this.code }}</code>
-                  <label>{{ this.label }}</label>
-                  {{#if this.comment}}
-                    <comment>{{ this.comment }}</comment>
-                  {{/if}}
-                </riskThreat>
-              {{/each }}
-            {{/if}}
-            {{#if this.alertCode.healthMotive}}
-              <healthMotive>
-                <code>{{ this.alertCode.healthMotive.code }}</code>
-                <label>{{ this.alertCode.healthMotive.label }}</label>
-                {{#if this.alertCode.healthMotive.comment}}
-                  <comment>{{ this.alertCode.healthMotive.comment }}</comment>
+                {{#if createEvent.eventLocation.type }}
+                    <type>{{ createEvent.eventLocation.type }}</type>
                 {{/if}}
-              </healthMotive>
-            {{/if}}
-            <victims>
-              {{#if this.alertCode.victims.count}}
-                <count>{{ this.alertCode.victims.count }}</count>
-              {{/if}}
-              {{#if this.alertCode.victims.mainVictim}}
-                <mainVictim>{{ this.alertCode.victims.mainVictim }}</mainVictim>
-              {{/if}}
-              {{#if this.alertCode.victims.comment}}
-                <comment>{{ this.alertCode.victims.comment }}</comment>
-              {{/if}}
-            </victims>
-          </alertCode>
-          {{#if this.resource}}
-            {{#each this.resource}}
-              <resource>
-                <resourceDesc>{{ this.resourceDesc }}</resourceDesc>
-                <mimeType>{{ this.mimeType }}</mimeType>
-                {{#if this.size}}
-                  <size>{{ this.size }}</size>
+                {{#if createEvent.eventLocation.coordsys }}
+                    <coordsys>{{ createEvent.eventLocation.coordsys }}</coordsys>
                 {{/if}}
-                <URI>{{ this.URI }}</URI>
-                {{#if this.derefURI}}
-                  <derefURI>{{ this.derefURI }}</derefURI>
+                {{#if createEvent.eventLocation.heightRole }}
+                    <height_role>{{ createEvent.eventLocation.heightRole }}</height_role>
                 {{/if}}
-                {{#if this.digest}}
-                  <digest>{{ this.digest }}</digest>
+                {{#each createEvent.eventLocation.coord}}
+                    <coord>
+                        <lat>{{ this.lat }}</lat>
+                        <lon>{{ this.lon }}</lon>
+                        {{#if this.height}}
+                            <height>{{ this.height }}</height>
+                        {{/if}}
+                    </coord>
+                {{/each}}
+                {{#each createEvent.eventLocation.address}}
+                    <address>{{ this }}</address>
+                {{/each}}
+                {{#if createEvent.eventLocation.commune}}
+                    <commune>{{ createEvent.eventLocation.commune }}</commune>
                 {{/if}}
-              </resource>
-            {{/each}}
-          {{/if}}
-        </primaryAlert>
-      {{/with}}
-      {{#if createEvent.otherAlert}}
-        {{#with createEvent.otherAlert}}
-        <otherAlert>
-          <alertId>{{ this.alertId }}</alertId>
-          <receivedAt>{{ this.receivedAt }}</receivedAt>
-          <reporting>{{ this.reporting }}</reporting>
-          {{#if this.alertInformation}}
-            <alertInformation>{{ this.alertInformation }}</alertInformation>
-          {{/if}}
-          {{#if this.alertLocation }}
-            <alertLocation>
-              {{#if this.alertLocation.loc_Id }}
-                <loc_Id>{{ this.alertLocation.loc_Id }}</loc_Id>
-              {{/if}}
-              {{#if this.alertLocation.name }}
-                <name>{{ this.alertLocation.name }}</name>
-              {{/if}}
-              {{#if this.alertLocation.type }}
-                <type>{{ this.alertLocation.type }}</type>
-              {{/if}}
-              {{#if this.alertLocation.coordsys }}
-                <coordsys>{{ this.alertLocation.coordsys }}</coordsys>
-              {{/if}}
-              {{#if this.alertLocation.height_rol }}
-                <height_role>{{ this.alertLocation.height_role }}</height_role>
-              {{/if}}
-              <coord>
-                <lat>{{ this.alertLocation.coord.lat }}</lat>
-                <lon>{{ this.alertLocation.coord.lon }}</lon>
-                {{#if this.alertLocation.coord.height}}
-                  <height>{{ this.alertLocation.coord.height }}</height>
+                {{#if createEvent.eventLocation.civicAddress}}
+                    <civicAddress>
+                        {{#if createEvent.eventLocation.civicAddress.country}}
+                            <country>{{ createEvent.eventLocation.civicAddress.country }}</country>
+                        {{/if}}
+                        {{#if createEvent.eventLocation.civicAddress.a1}}
+                            <A1>{{ createEvent.eventLocation.civicAddress.a1 }}</A1>
+                        {{/if}}
+                        {{#if createEvent.eventLocation.civicAddress.a2}}
+                            <A2>{{ createEvent.eventLocation.civicAddress.a2 }}</A2>
+                        {{/if}}
+                        {{#if createEvent.eventLocation.civicAddress.a3}}
+                            <A3>{{ createEvent.eventLocation.civicAddress.a3 }}</A3>
+                        {{/if}}
+                        {{#if createEvent.eventLocation.civicAddress.a4}}
+                            <A4>{{ createEvent.eventLocation.civicAddress.a4 }}</A4>
+                        {{/if}}
+                        {{#if createEvent.eventLocation.civicAddress.a5}}
+                            <A5>{{ createEvent.eventLocation.civicAddress.a5 }}</A5>
+                        {{/if}}
+                        {{#if createEvent.eventLocation.civicAddress.a6}}
+                            <A6>{{ createEvent.eventLocation.civicAddress.a6 }}</A6>
+                        {{/if}}
+                        {{#if createEvent.eventLocation.civicAddress.prd}}
+                            <PRD>{{ createEvent.eventLocation.civicAddress.prd }}</PRD>
+                        {{/if}}
+                        {{#if createEvent.eventLocation.civicAddress.pod}}
+                            <POD>{{ createEvent.eventLocation.civicAddress.pod }}</POD>
+                        {{/if}}
+                        {{#if createEvent.eventLocation.civicAddress.sts}}
+                            <STS>{{ createEvent.eventLocation.civicAddress.sts }}</STS>
+                        {{/if}}
+                        {{#if createEvent.eventLocation.civicAddress.hno}}
+                            <HNO>{{ createEvent.eventLocation.civicAddress.hno }}</HNO>
+                        {{/if}}
+                        {{#if createEvent.eventLocation.civicAddress.hns}}
+                            <HNS>{{ createEvent.eventLocation.civicAddress.hns }}</HNS>
+                        {{/if}}
+                        {{#if createEvent.eventLocation.civicAddress.lmk}}
+                            <LMK>{{ createEvent.eventLocation.civicAddress.lmk }}</LMK>
+                        {{/if}}
+                        {{#if createEvent.eventLocation.civicAddress.loc}}
+                            <LOC>{{ createEvent.eventLocation.civicAddress.loc }}</LOC>
+                        {{/if}}
+                        {{#if createEvent.eventLocation.civicAddress.nam}}
+                            <NAM>{{ createEvent.eventLocation.civicAddress.nam }}</NAM>
+                        {{/if}}
+                        {{#if createEvent.eventLocation.civicAddress.pc}}
+                            <PC>{{ createEvent.eventLocation.civicAddress.pc }}</PC>
+                        {{/if}}
+                        {{#if createEvent.eventLocation.civicAddress.bld}}
+                            <BLD>{{ createEvent.eventLocation.civicAddress.bldf }}</BLD>
+                        {{/if}}
+                        {{#if createEvent.eventLocation.civicAddress.unit}}
+                            <UNIT>{{ createEvent.eventLocation.civicAddress.unit }}</UNIT>
+                        {{/if}}
+                        {{#if createEvent.eventLocation.civicAddress.flr}}
+                            <FLR>{{ createEvent.eventLocation.civicAddress.flr }}</FLR>
+                        {{/if}}
+                        {{#if createEvent.eventLocation.civicAddress.room}}
+                            <ROOM>{{ createEvent.eventLocation.civicAddress.room }}</ROOM>
+                        {{/if}}
+                        {{#if createEvent.eventLocation.civicAddress.plc}}
+                            <PLC>{{ createEvent.eventLocation.civicAddress.plc }}</PLC>
+                        {{/if}}
+                        {{#if createEvent.eventLocation.civicAddress.pcn}}
+                            <PCN>{{ createEvent.eventLocation.civicAddress.pcn }}</PCN>
+                        {{/if}}
+                        {{#if createEvent.eventLocation.civicAddress.pobox}}
+                            <POBOX>{{ createEvent.eventLocation.civicAddress.pobox }}</POBOX>
+                        {{/if}}
+                        {{#if createEvent.eventLocation.civicAddress.addcode}}
+                            <ADDCODE>{{ createEvent.eventLocation.civicAddress.addcode }}</ADDCODE>
+                        {{/if}}
+                        {{#if createEvent.eventLocation.civicAddress.seat}}
+                            <SEAT>{{ createEvent.eventLocation.civicAddress.seat }}</SEAT>
+                        {{/if}}
+                        {{#if createEvent.eventLocation.civicAddress.rd}}
+                            <RD>{{ createEvent.eventLocation.civicAddress.rd }}</RD>
+                        {{/if}}
+                        {{#if createEvent.eventLocation.civicAddress.rdsec}}
+                            <RDSEC>{{ createEvent.eventLocation.civicAddress.redsec }}</RDSEC>
+                        {{/if}}
+                        {{#if createEvent.eventLocation.civicAddress.rdbr}}
+                            <RDBR>{{ createEvent.eventLocation.civicAddress.rdbr }}</RDBR>
+                        {{/if}}
+                        {{#if createEvent.eventLocation.civicAddress.rdsubbr}}
+                            <RDSUBBR>{{ createEvent.eventLocation.civicAddress.rdsubbr }}</RDSUBBR>
+                        {{/if}}
+                        {{#if createEvent.eventLocation.civicAddress.prm}}
+                            <PRM>{{ createEvent.eventLocation.civicAddress.prm }}</PRM>
+                        {{/if}}
+                        {{#if createEvent.eventLocation.civicAddress.pom}}
+                            <POM>{{ createEvent.eventLocation.civicAddress.pom }}</POM>
+                        {{/if}}
+                    </civicAddress>
                 {{/if}}
-              </coord>
-              {{#each this.alertLocation.address}}
-                <address>{{ this }}</address>
-              {{/each}}
-            </alertLocation>
-          {{/if}}
-          {{#if this.call}}
-            <call>
-              {{#if this.call.source }}
-                <source>{{ this.call.source }}</source>
-              {{/if}}
-              {{#if this.call.dialledURI }}
-                <dialledURI>{{ this.call.dialledURI }}</dialledURI>
-              {{/if}}
-            </call>
-          {{/if}}
-          <caller>
-            <callerURI>{{ this.caller.callerURI }}</callerURI>
-            {{#if this.caller.callbackURI}}
-              <callbackURI>{{ this.caller.callbackURI }}</callbackURI>
-            {{/if}}
-            {{#if this.caller.spokenLanguage}}
-              <spokenLanguage>{{ this.caller.spokenLanguage }}</spokenLanguage>
-            {{/if}}
-            {{#if this.caller.callerInformation}}
-              <callerInformation>{{ this.caller.callerInformation }}</callerInformation>
-            {{/if}}
-            {{#if this.caller.callerName}}
-              <callerName>{{ this.caller.callerName }}</callerName>
-            {{/if}}
-          </caller>
-          {{#if this.callTaker }}
-            <callTaker>
-              {{~#if this.callTaker.organization}}
-                <organization>{{ this.callTaker.organization }}</organization>
-              {{~/if~}}
-              {{~#if this.callTaker.controlRoom}}
-                <controlRoom>{{ this.callTaker.controlRoom }}</controlRoom>
-              {{~/if~}}
-              {{~#if this.callTaker.calltakerURI}}
-                <calltakerURI>{{ this.callTaker.calltakerURI }}</calltakerURI>
-              {{~/if~}}
-              {{~#if this.callTaker.calltakerId}}
-                <calltakerId>{{ this.callTaker.calltakerId }}</calltakerId>
-              {{~/if~}}
-            </callTaker>
-          {{/if}}
-          <otherAlertCode>
-            <version>{{ this.otherAlertCode.version }}</version>
-            {{#if this.otherAlertCode.whatsHappen }}
-              <whatsHappen>
-                {{#if this.otherAlertCode.whatsHappen.code }}
-                  <code>{{ this.otherAlertCode.whatsHappen.code }}</code>
+            </eventLocation>
+        {{/if}}
+        {{#with createEvent.primaryAlert}}
+            <primaryAlert>
+                <alertId>{{ this.alertId }}</alertId>
+                <receivedAt>{{ this.receivedAt }}</receivedAt>
+                <reporting>{{ this.reporting }}</reporting>
+                {{#if this.alertInformation}}
+                    <alertInformation>{{ this.alertInformation }}</alertInformation>
                 {{/if}}
-                {{#if this.otherAlertCode.whatsHappen.label }}
-                  <label>{{ this.otherAlertCode.whatsHappen.label }}</label>
+                {{#if this.alertLocation }}
+                    <alertLocation>
+                        {{#if this.alertLocation.locId }}
+                            <loc_Id>{{ this.alertLocation.locId }}</loc_Id>
+                        {{/if}}
+                        {{#if this.alertLocation.name }}
+                            <name>{{ this.alertLocation.name }}</name>
+                        {{/if}}
+                        {{#if this.alertLocation.type }}
+                            <type>{{ this.alertLocation.type }}</type>
+                        {{/if}}
+                        {{#if this.alertLocation.coordsys }}
+                            <coordsys>{{ this.alertLocation.coordsys }}</coordsys>
+                        {{/if}}
+                        {{#if this.alertLocation.heightRole }}
+                            <height_role>{{ this.alertLocation.heightRole }}</height_role>
+                        {{/if}}
+                        {{#each this.alertLocation.coord}}
+                            <coord>
+                                <lat>{{ this.lat }}</lat>
+                                <lon>{{ this.lon }}</lon>
+                                {{#if this.height}}
+                                    <height>{{ this.height }}</height>
+                                {{/if}}
+                            </coord>
+                        {{/each}}
+                        {{#each this.alertLocation.address}}
+                            <address>{{ this }}</address>
+                        {{/each}}
+                        {{#if this.alertLocation.commune}}
+                            <commune>{{ this.alertLocation.commune }}</commune>
+                        {{/if}}
+                    </alertLocation>
                 {{/if}}
-                {{#if this.otherAlertCode.whatsHappen.comment}}
-                  <comment>{{ this.otherAlertCode.whatsHappen.comment }}</comment>
+                {{#if this.call}}
+                    <call>
+                        {{#if this.call.source }}
+                            <source>{{ this.call.source }}</source>
+                        {{/if}}
+                        {{#if this.call.dialledUri }}
+                            <dialledURI>{{ this.call.dialledUri }}</dialledURI>
+                        {{/if}}
+                    </call>
                 {{/if}}
-              </whatsHappen>
-            {{/if}}
-            {{#if this.otherAlertCode.locationKind}}
-              <locationKind>
-                <code>{{ this.otherAlertCode.locationKind.code }}</code>
-                <label>{{ this.otherAlertCode.locationKind.label }}</label>
-                {{#if this.otherAlertCode.locationKind.comment}}
-                  <comment>{{ this.otherAlertCode.locationKind.comment }}</comment>
+                <caller>
+                    <callerURI>{{ this.caller.callerUri }}</callerURI>
+                    {{#if this.caller.callbackUri}}
+                        <callbackURI>{{ this.caller.callbackUri }}</callbackURI>
+                    {{/if}}
+                    {{#if this.caller.spokenLanguage}}
+                        <spokenLanguage>{{ this.caller.spokenLanguage }}</spokenLanguage>
+                    {{/if}}
+                    {{#if this.caller.callerInformation}}
+                        <callerInformation>{{ this.caller.callerInformation }}</callerInformation>
+                    {{/if}}
+                    {{#if this.caller.callerName}}
+                        <callerName>{{ this.caller.callerName }}</callerName>
+                    {{/if}}
+                </caller>
+                {{#if this.callTaker }}
+                    <callTaker>
+                        {{~#if this.callTaker.organization}}
+                            <organization>{{ this.callTaker.organization }}</organization>
+                        {{~/if~}}
+                        {{~#if this.callTaker.controlRoom}}
+                            <controlRoom>{{ this.callTaker.controlRoom }}</controlRoom>
+                        {{~/if~}}
+                        {{~#if this.callTaker.calltakerUri}}
+                            <calltakerURI>{{ this.callTaker.calltakerUri }}</calltakerURI>
+                        {{~/if~}}
+                        {{~#if this.callTaker.calltakerId}}
+                            <calltakerId>{{ this.callTaker.calltakerId }}</calltakerId>
+                        {{~/if~}}
+                    </callTaker>
                 {{/if}}
-              </locationKind>
-            {{/if}}
-            {{#if this.otherAlertCode.riskThreat}}
-              {{#each this.otherAlertCode.riskThreat }}
-                <riskThreat>
-                  <code>{{ this.code }}</code>
-                  <label>{{ this.label }}</label>
-                  {{#if this.comment}}
-                    <comment>{{ this.comment }}</comment>
-                  {{/if}}
-                </riskThreat>
-              {{/each }}
-            {{/if}}
-            {{#if this.otherAlertCode.healthMotive}}
-              <healthMotive>
-                <code>{{ this.otherAlertCode.healthMotive.code }}</code>
-                <label>{{ this.otherAlertCode.healthMotive.label }}</label>
-                {{#if this.otherAlertCode.healthMotive.comment}}
-                  <comment>{{ this.otherAlertCode.healthMotive.comment }}</comment>
+                <alertCode>
+                    <version>{{ this.alertCode.version }}</version>
+                    <whatsHappen>
+                        <code>{{ this.alertCode.whatsHappen.code }}</code>
+                        <label>{{ this.alertCode.whatsHappen.label }}</label>
+                        {{#if this.alertCode.whatsHappen.comment}}
+                            <comment>{{ this.alertCode.whatsHappen.comment }}</comment>
+                        {{/if}}
+                    </whatsHappen>
+                    {{#if this.alertCode.locationKind}}
+                        <locationKind>
+                            <code>{{ this.alertCode.locationKind.code }}</code>
+                            <label>{{ this.alertCode.locationKind.label }}</label>
+                            {{#if this.alertCode.locationKind.comment}}
+                                <comment>{{ this.alertCode.locationKind.comment }}</comment>
+                            {{/if}}
+                        </locationKind>
+                    {{/if}}
+                    {{#if this.alertCode.riskThreat}}
+                        {{#each this.alertCode.riskThreat }}
+                            <riskThreat>
+                                <code>{{ this.code }}</code>
+                                <label>{{ this.label }}</label>
+                                {{#if this.comment}}
+                                    <comment>{{ this.comment }}</comment>
+                                {{/if}}
+                            </riskThreat>
+                        {{/each }}
+                    {{/if}}
+                    {{#if this.alertCode.healthMotive}}
+                        <healthMotive>
+                            <code>{{ this.alertCode.healthMotive.code }}</code>
+                            <label>{{ this.alertCode.healthMotive.label }}</label>
+                            {{#if this.alertCode.healthMotive.comment}}
+                                <comment>{{ this.alertCode.healthMotive.comment }}</comment>
+                            {{/if}}
+                        </healthMotive>
+                    {{/if}}
+                    <victims>
+                        {{#if this.alertCode.victims.count}}
+                            <count>{{ this.alertCode.victims.count }}</count>
+                        {{/if}}
+                        {{#if this.alertCode.victims.mainVictim}}
+                            <mainVictim>{{ this.alertCode.victims.mainVictim }}</mainVictim>
+                        {{/if}}
+                        {{#if this.alertCode.victims.comment}}
+                            <comment>{{ this.alertCode.victims.comment }}</comment>
+                        {{/if}}
+                    </victims>
+                </alertCode>
+                {{#if this.resource}}
+                    {{#each this.resource}}
+                        <resource>
+                            <resourceDesc>{{ this.resourceDesc }}</resourceDesc>
+                            <mimeType>{{ this.mimeType }}</mimeType>
+                            {{#if this.size}}
+                                <size>{{ this.size }}</size>
+                            {{/if}}
+                            <URI>{{ this.uri }}</URI>
+                            {{#if this.derefUri}}
+                                <derefURI>{{ this.derefUri }}</derefURI>
+                            {{/if}}
+                            {{#if this.digest}}
+                                <digest>{{ this.digest }}</digest>
+                            {{/if}}
+                        </resource>
+                    {{/each}}
                 {{/if}}
-              </healthMotive>
-            {{/if}}
-            {{#if this.otherAlertCode.victims}}
-              <victims>
-                {{#if this.otherAlertCode.victims.count}}
-                  <count>{{ this.otherAlertCode.victims.count }}</count>
-                {{/if}}
-                {{#if this.otherAlertCode.victims.mainVictim}}
-                  <mainVictim>{{ this.otherAlertCode.victims.mainVictim }}</mainVictim>
-                {{/if}}
-                {{#if this.otherAlertCode.victims.comment}}
-                  <comment>{{ this.otherAlertCode.victims.comment }}</comment>
-                {{/if}}
-              </victims>
-            {{/if}}
-          </otherAlertCode>
-          {{#if this.resource}}
-            {{#each this.resource}}
-              <resource>
-                <resourceDesc>{{ this.resourceDesc }}</resourceDesc>
-                <mimeType>{{ this.mimeType }}</mimeType>
-                {{#if this.size}}
-                  <size>{{ this.size }}</size>
-                {{/if}}
-                <URI>{{ this.URI }}</URI>
-                {{#if this.derefURI}}
-                  <derefURI>{{ this.derefURI }}</derefURI>
-                {{/if}}
-                {{#if this.digest}}
-                  <digest>{{ this.digest }}</digest>
-                {{/if}}
-              </resource>
-            {{/each}}
-          {{/if}}
-        </otherAlert>
-      {{/with}}
-      {{/if}}
+            </primaryAlert>
+        {{/with}}
+        {{#if createEvent.otherAlert}}
+            {{#with createEvent.otherAlert}}
+                <otherAlert>
+                    <alertId>{{ this.alertId }}</alertId>
+                    <receivedAt>{{ this.receivedAt }}</receivedAt>
+                    <reporting>{{ this.reporting }}</reporting>
+                    {{#if this.alertInformation}}
+                        <alertInformation>{{ this.alertInformation }}</alertInformation>
+                    {{/if}}
+                    {{#if this.alertLocation }}
+                        <alertLocation>
+                            {{#if this.alertLocation.locId }}
+                                <loc_Id>{{ this.alertLocation.locId }}</loc_Id>
+                            {{/if}}
+                            {{#if this.alertLocation.name }}
+                                <name>{{ this.alertLocation.name }}</name>
+                            {{/if}}
+                            {{#if this.alertLocation.type }}
+                                <type>{{ this.alertLocation.type }}</type>
+                            {{/if}}
+                            {{#if this.alertLocation.coordsys }}
+                                <coordsys>{{ this.alertLocation.coordsys }}</coordsys>
+                            {{/if}}
+                            {{#if this.alertLocation.heightRole }}
+                                <height_role>{{ this.alertLocation.heightRole }}</height_role>
+                            {{/if}}
+                            <coord>
+                                <lat>{{ this.alertLocation.coord.lat }}</lat>
+                                <lon>{{ this.alertLocation.coord.lon }}</lon>
+                                {{#if this.alertLocation.coord.height}}
+                                    <height>{{ this.alertLocation.coord.height }}</height>
+                                {{/if}}
+                            </coord>
+                            {{#each this.alertLocation.address}}
+                                <address>{{ this }}</address>
+                            {{/each}}
+                        </alertLocation>
+                    {{/if}}
+                    {{#if this.call}}
+                        <call>
+                            {{#if this.call.source }}
+                                <source>{{ this.call.source }}</source>
+                            {{/if}}
+                            {{#if this.call.dialledUri }}
+                                <dialledURI>{{ this.call.dialledUri }}</dialledURI>
+                            {{/if}}
+                        </call>
+                    {{/if}}
+                    <caller>
+                        <callerURI>{{ this.caller.callerUri }}</callerURI>
+                        {{#if this.caller.callbackUri}}
+                            <callbackURI>{{ this.caller.callbackUri }}</callbackURI>
+                        {{/if}}
+                        {{#if this.caller.spokenLanguage}}
+                            <spokenLanguage>{{ this.caller.spokenLanguage }}</spokenLanguage>
+                        {{/if}}
+                        {{#if this.caller.callerInformation}}
+                            <callerInformation>{{ this.caller.callerInformation }}</callerInformation>
+                        {{/if}}
+                        {{#if this.caller.callerName}}
+                            <callerName>{{ this.caller.callerName }}</callerName>
+                        {{/if}}
+                    </caller>
+                    {{#if this.callTaker }}
+                        <callTaker>
+                            {{~#if this.callTaker.organization}}
+                                <organization>{{ this.callTaker.organization }}</organization>
+                            {{~/if~}}
+                            {{~#if this.callTaker.controlRoom}}
+                                <controlRoom>{{ this.callTaker.controlRoom }}</controlRoom>
+                            {{~/if~}}
+                            {{~#if this.callTaker.calltakerUri}}
+                                <calltakerURI>{{ this.callTaker.calltakerUri }}</calltakerURI>
+                            {{~/if~}}
+                            {{~#if this.callTaker.calltakerId}}
+                                <calltakerId>{{ this.callTaker.calltakerId }}</calltakerId>
+                            {{~/if~}}
+                        </callTaker>
+                    {{/if}}
+                    <otherAlertCode>
+                        <version>{{ this.otherAlertCode.version }}</version>
+                        {{#if this.otherAlertCode.whatsHappen }}
+                            <whatsHappen>
+                                {{#if this.otherAlertCode.whatsHappen.code }}
+                                    <code>{{ this.otherAlertCode.whatsHappen.code }}</code>
+                                {{/if}}
+                                {{#if this.otherAlertCode.whatsHappen.label }}
+                                    <label>{{ this.otherAlertCode.whatsHappen.label }}</label>
+                                {{/if}}
+                                {{#if this.otherAlertCode.whatsHappen.comment}}
+                                    <comment>{{ this.otherAlertCode.whatsHappen.comment }}</comment>
+                                {{/if}}
+                            </whatsHappen>
+                        {{/if}}
+                        {{#if this.otherAlertCode.locationKind}}
+                            <locationKind>
+                                <code>{{ this.otherAlertCode.locationKind.code }}</code>
+                                <label>{{ this.otherAlertCode.locationKind.label }}</label>
+                                {{#if this.otherAlertCode.locationKind.comment}}
+                                    <comment>{{ this.otherAlertCode.locationKind.comment }}</comment>
+                                {{/if}}
+                            </locationKind>
+                        {{/if}}
+                        {{#if this.otherAlertCode.riskThreat}}
+                            {{#each this.otherAlertCode.riskThreat }}
+                                <riskThreat>
+                                    <code>{{ this.code }}</code>
+                                    <label>{{ this.label }}</label>
+                                    {{#if this.comment}}
+                                        <comment>{{ this.comment }}</comment>
+                                    {{/if}}
+                                </riskThreat>
+                            {{/each }}
+                        {{/if}}
+                        {{#if this.otherAlertCode.healthMotive}}
+                            <healthMotive>
+                                <code>{{ this.otherAlertCode.healthMotive.code }}</code>
+                                <label>{{ this.otherAlertCode.healthMotive.label }}</label>
+                                {{#if this.otherAlertCode.healthMotive.comment}}
+                                    <comment>{{ this.otherAlertCode.healthMotive.comment }}</comment>
+                                {{/if}}
+                            </healthMotive>
+                        {{/if}}
+                        {{#if this.otherAlertCode.victims}}
+                            <victims>
+                                {{#if this.otherAlertCode.victims.count}}
+                                    <count>{{ this.otherAlertCode.victims.count }}</count>
+                                {{/if}}
+                                {{#if this.otherAlertCode.victims.mainVictim}}
+                                    <mainVictim>{{ this.otherAlertCode.victims.mainVictim }}</mainVictim>
+                                {{/if}}
+                                {{#if this.otherAlertCode.victims.comment}}
+                                    <comment>{{ this.otherAlertCode.victims.comment }}</comment>
+                                {{/if}}
+                            </victims>
+                        {{/if}}
+                    </otherAlertCode>
+                    {{#if this.resource}}
+                        {{#each this.resource}}
+                            <resource>
+                                <resourceDesc>{{ this.resourceDesc }}</resourceDesc>
+                                <mimeType>{{ this.mimeType }}</mimeType>
+                                {{#if this.size}}
+                                    <size>{{ this.size }}</size>
+                                {{/if}}
+                                <URI>{{ this.uri }}</URI>
+                                {{#if this.derefUri}}
+                                    <derefURI>{{ this.derefUri }}</derefURI>
+                                {{/if}}
+                                {{#if this.digest}}
+                                    <digest>{{ this.digest }}</digest>
+                                {{/if}}
+                            </resource>
+                        {{/each}}
+                    {{/if}}
+                </otherAlert>
+            {{/with}}
+        {{/if}}
     </createEvent>
-  </message>
+</message>

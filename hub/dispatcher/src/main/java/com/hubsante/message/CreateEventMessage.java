@@ -1,6 +1,8 @@
 package com.hubsante.message;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 import javax.validation.constraints.NotNull;
 import java.util.Objects;
@@ -13,6 +15,7 @@ public class CreateEventMessage implements CisuMessage {
   @NotNull
   private AddresseeType sender;
   @JsonProperty("sentAt")
+  @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ssXXX")
   @NotNull
   private java.time.OffsetDateTime sentAt;
   @JsonProperty("msgType")

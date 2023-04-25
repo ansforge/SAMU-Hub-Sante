@@ -1,8 +1,10 @@
 package com.hubsante.message;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 
 import javax.validation.constraints.NotNull;
+import javax.xml.bind.annotation.XmlElement;
 import java.util.Objects;
               
 public class AddresseeType {
@@ -10,6 +12,7 @@ public class AddresseeType {
   @NotNull
   private String name;
   @JsonProperty("uri")
+  @JacksonXmlProperty(localName = "URI")
   @NotNull
   private String uri;
 
