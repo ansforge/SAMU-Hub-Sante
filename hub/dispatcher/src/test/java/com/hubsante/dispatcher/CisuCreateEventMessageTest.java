@@ -1,76 +1,64 @@
 package com.hubsante.dispatcher;
 
-import com.fasterxml.jackson.core.JacksonException;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.github.jknack.handlebars.Handlebars;
-import com.github.jknack.handlebars.Template;
-import com.github.jknack.handlebars.io.ClassPathTemplateLoader;
-import com.github.jknack.handlebars.io.TemplateLoader;
-import com.hubsante.message.AddresseeType;
+import com.hubsante.hub.HubApplication;
+import com.hubsante.hub.service.JsonXmlConverter;
 import com.hubsante.message.CreateEventMessage;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.xml.sax.SAXException;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.xml.sax.SAXParseException;
 
-import javax.xml.XMLConstants;
-import javax.xml.transform.Source;
-import javax.xml.transform.stream.StreamSource;
-import javax.xml.validation.Schema;
-import javax.xml.validation.SchemaFactory;
-import javax.xml.validation.Validator;
-import java.io.File;
-import java.io.IOException;
-import java.io.StringReader;
-import java.util.Arrays;
-import java.util.List;
+import java.io.*;
+import java.nio.file.Files;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
+@Slf4j
 @SpringBootTest
 @SpringBootConfiguration
+@ExtendWith(SpringExtension.class)
+@ContextConfiguration(classes = HubApplication.class)
+// You should change the active profile to test it
+@ActiveProfiles({"local","bbo"})
 public class CisuCreateEventMessageTest {
 
+    @Autowired
+    JsonXmlConverter converter;
+
     @Test
-    public void renderCisuXML() throws IOException {
+    public void converterTest() throws IOException {
+
+        // deserialize JSON message
         File cisuJsonFile = new File(Thread.currentThread().getContextClassLoader().getResource("createEventMessage.json").getFile());
+        CreateEventMessage deserializedJsonMessage = converter.deserializeJsonMessage(Files.readString(cisuJsonFile.toPath()));
 
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new JavaTimeModule())
-                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-                .disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE);
+        // serialize XML message with template
+        String templatedXML = converter.convertToXmlWithTemplate(deserializedJsonMessage);
+        log.info("handlebars message :\n{}", templatedXML);
 
-        CreateEventMessage createEventMessage = mapper.readValue(cisuJsonFile, CreateEventMessage.class);
+        // serialize XML message with Jackson lib
+        String jacksonSerializedXML = converter.convertToXmlWithJackson(deserializedJsonMessage);
+        log.info("jackson serialized message :\n{}", jacksonSerializedXML);
 
-        TemplateLoader loader = new ClassPathTemplateLoader("", ".handlebars");
-        Handlebars handlebars = new Handlebars(loader);
-        handlebars.setPrettyPrint(true);
-        Template template = handlebars.compile("cisu-create-message");
+        // Validate templated message
+        assertDoesNotThrow(() -> converter.validateXML(templatedXML, "cisu.xsd"));
 
-        String xml = template.apply(createEventMessage);
-        System.out.println(xml);
-        assertDoesNotThrow(() -> {
-            Validator validator = initValidator("xsd/cisu.xsd");
-            validator.validate(new StreamSource(new StringReader(xml)));
-        });
+        // Should throw exception since there are case inconsistencies
+        assertThrows(SAXParseException.class, () -> converter.validateXML(jacksonSerializedXML, "cisu.xsd"));
 
-        XmlMapper xmlMapper = (XmlMapper) new XmlMapper().registerModule(new JavaTimeModule())
-                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-                .disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE)
-                .configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES, true);
-        CreateEventMessage message = xmlMapper.readValue(xml, CreateEventMessage.class);
-        assertEquals(createEventMessage, message);
-    }
+        // But both xml messages can be deserialized in a similar object
+        // they equal each other and the generated-from-json one
+        CreateEventMessage deserializedFromTemplatedXML = converter.deserializeXmlMessage(templatedXML);
+        CreateEventMessage deserializedFromJacksonXML = converter.deserializeXmlMessage(jacksonSerializedXML);
 
-    private Validator initValidator(String xsdPath) throws SAXException {
-        SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-        Source schemaFile = new StreamSource(new File(getClass().getClassLoader().getResource(xsdPath).getFile()));
-        Schema schema = factory.newSchema(schemaFile);
-        return schema.newValidator();
+        assertEquals(deserializedJsonMessage, deserializedFromTemplatedXML);
+        assertEquals(deserializedJsonMessage, deserializedFromJacksonXML);
     }
 }

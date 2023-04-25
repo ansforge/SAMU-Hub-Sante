@@ -1,9 +1,10 @@
 package com.hubsante.message;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Objects;
-              
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class CivicAddressType {
   @JsonProperty("country")
   private String country;

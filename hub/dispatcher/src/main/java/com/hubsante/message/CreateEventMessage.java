@@ -1,13 +1,20 @@
 package com.hubsante.message;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 
 import javax.validation.constraints.NotNull;
 import java.util.Objects;
-              
+
+@JacksonXmlRootElement(localName = "message")
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class CreateEventMessage implements CisuMessage {
+
+  @JacksonXmlProperty(isAttribute = true)
+  String xmlns = "urn:emergency:cisu:2.0";
   @JsonProperty("messageId")
   @NotNull
   private String messageId;

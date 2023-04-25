@@ -1,10 +1,11 @@
 package com.hubsante.message;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.validation.constraints.NotNull;
 import java.util.Objects;
-              
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class OptionalAttributeType {
   @JsonProperty("code")
   @NotNull

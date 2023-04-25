@@ -219,18 +219,18 @@
                 </caller>
                 {{#if this.callTaker }}
                     <callTaker>
-                        {{~#if this.callTaker.organization}}
+                        {{#if this.callTaker.organization}}
                             <organization>{{ this.callTaker.organization }}</organization>
-                        {{~/if~}}
-                        {{~#if this.callTaker.controlRoom}}
+                        {{/if}}
+                        {{#if this.callTaker.controlRoom}}
                             <controlRoom>{{ this.callTaker.controlRoom }}</controlRoom>
-                        {{~/if~}}
-                        {{~#if this.callTaker.calltakerUri}}
+                        {{/if}}
+                        {{#if this.callTaker.calltakerUri}}
                             <calltakerURI>{{ this.callTaker.calltakerUri }}</calltakerURI>
-                        {{~/if~}}
-                        {{~#if this.callTaker.calltakerId}}
+                        {{/if}}
+                        {{#if this.callTaker.calltakerId}}
                             <calltakerId>{{ this.callTaker.calltakerId }}</calltakerId>
-                        {{~/if~}}
+                        {{/if}}
                     </callTaker>
                 {{/if}}
                 <alertCode>
@@ -368,18 +368,18 @@
                     </caller>
                     {{#if this.callTaker }}
                         <callTaker>
-                            {{~#if this.callTaker.organization}}
+                            {{#if this.callTaker.organization}}
                                 <organization>{{ this.callTaker.organization }}</organization>
-                            {{~/if~}}
-                            {{~#if this.callTaker.controlRoom}}
+                            {{/if}}
+                            {{#if this.callTaker.controlRoom}}
                                 <controlRoom>{{ this.callTaker.controlRoom }}</controlRoom>
-                            {{~/if~}}
-                            {{~#if this.callTaker.calltakerUri}}
+                            {{/if}}
+                            {{#if this.callTaker.calltakerUri}}
                                 <calltakerURI>{{ this.callTaker.calltakerUri }}</calltakerURI>
-                            {{~/if~}}
-                            {{~#if this.callTaker.calltakerId}}
+                            {{/if}}
+                            {{#if this.callTaker.calltakerId}}
                                 <calltakerId>{{ this.callTaker.calltakerId }}</calltakerId>
-                            {{~/if~}}
+                            {{/if}}
                         </callTaker>
                     {{/if}}
                     <otherAlertCode>
