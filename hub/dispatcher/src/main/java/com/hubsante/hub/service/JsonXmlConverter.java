@@ -1,17 +1,19 @@
 package com.hubsante.hub.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.github.jknack.handlebars.Handlebars;
 import com.github.jknack.handlebars.Template;
 import com.github.jknack.handlebars.io.ClassPathTemplateLoader;
 import com.github.jknack.handlebars.io.TemplateLoader;
+import com.hubsante.hub.exception.JsonSchemaValidationException;
 import com.hubsante.message.CreateEventMessage;
+import com.networknt.schema.JsonSchema;
+import com.networknt.schema.JsonSchemaFactory;
+import com.networknt.schema.SpecVersion;
+import com.networknt.schema.ValidationMessage;
 import org.springframework.stereotype.Service;
 import org.xml.sax.SAXException;
 
@@ -21,9 +23,13 @@ import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 @Service
 public class JsonXmlConverter {
@@ -66,6 +72,10 @@ public class JsonXmlConverter {
         return xmlMapper.writeValueAsString(message);
     }
 
+    public String convertToJson(CreateEventMessage message) throws JsonProcessingException {
+        return jsonMapper.writerWithDefaultPrettyPrinter().writeValueAsString(message);
+    }
+
     private Template getTemplateForFile(String templateName) throws IOException {
         TemplateLoader loader = new ClassPathTemplateLoader("", ".handlebars");
         Handlebars handlebars = new Handlebars(loader);
@@ -84,5 +94,21 @@ public class JsonXmlConverter {
         Source schemaFile = new StreamSource(new File(getClass().getClassLoader().getResource("xsd/" + xsdPath).getFile()));
         Schema schema = factory.newSchema(schemaFile);
         return schema.newValidator();
+    }
+
+    public void validateJSON(String message, String jsonSchemaFile) throws IOException, JsonSchemaValidationException {
+        JsonSchemaFactory factory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7);
+        JsonSchema jsonSchema = factory.getSchema(Thread.currentThread().getContextClassLoader()
+                .getResourceAsStream("json-schema/" + jsonSchemaFile));
+        JsonNode jsonNode = jsonMapper.readTree(message);
+        Set<ValidationMessage> validationMessages = jsonSchema.validate(jsonNode);
+
+        if (!validationMessages.isEmpty()) {
+            StringBuilder errors = new StringBuilder();
+            for (ValidationMessage errorMsg : validationMessages) {
+                errors.append(errorMsg.getMessage()).append("\n");
+            }
+            throw new JsonSchemaValidationException(errors.toString());
+        }
     }
 }
