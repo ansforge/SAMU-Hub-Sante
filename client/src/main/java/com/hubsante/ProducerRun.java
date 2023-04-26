@@ -1,5 +1,6 @@
 package com.hubsante;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.hubsante.message.*;
@@ -15,6 +16,7 @@ public class ProducerRun {
     private static final String HUB_HOSTNAME = "localhost";
     private static final int HUB_PORT = 5671;
     private static final String EXCHANGE_NAME = "hubsante";
+
     public static void main(String[] args) throws Exception {
         String routingKey = getRouting(args);
         String json = Files.readString(Path.of(args[1]));
@@ -30,7 +32,9 @@ public class ProducerRun {
         producer.connect(tlsConf);
 
         // registering extra module is mandatory to handle date time
-        ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
+        ObjectMapper mapper = new ObjectMapper()
+                .registerModule(new JavaTimeModule())
+                .disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE);
         BasicMessage basicMessage = mapper.readValue(json, BasicMessage.class);
         CisuMessage cisuMessage = convertMessageFromType(mapper, basicMessage, json.getBytes(StandardCharsets.UTF_8));
 

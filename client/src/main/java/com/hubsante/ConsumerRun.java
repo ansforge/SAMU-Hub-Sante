@@ -1,5 +1,6 @@
 package com.hubsante;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.hubsante.message.*;
@@ -32,7 +33,10 @@ public class ConsumerRun {
             protected void deliverCallback(String consumerTag, Delivery delivery) throws IOException {
                 String routingKey = delivery.getEnvelope().getRoutingKey();
                 // registering time module is mandatory to handle date times
-                ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
+                ObjectMapper mapper = new ObjectMapper()
+                        .registerModule(new JavaTimeModule())
+                        .disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE);
+
                 BasicMessage basicMessage = mapper.readValue(delivery.getBody(), BasicMessage.class);
                 CisuMessage cisuMessage = convertMessageFromType(mapper, basicMessage, delivery.getBody());
 
