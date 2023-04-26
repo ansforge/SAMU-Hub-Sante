@@ -1,4 +1,9 @@
 {
+  "vhosts": [
+    {
+      "name": "/"
+    }
+  ],
   "exchanges": [
     {
       "name": "hubsante",
@@ -43,6 +48,35 @@
       "destination_type": "queue",
       "routing_key": "*.out.ack",
       "arguments": {}
+    }
+  ],
+  "users": [
+    {
+      "name": "localhost",
+      "tags": []
+    },
+    {
+      "name": "admin",
+      "password": "admin",
+      "tags": [
+        "administrator"
+      ]
+    }
+  ],
+  "permissions": [
+    {
+      "user": "localhost",
+      "vhost": "/",
+      "configure": ".*",
+      "read": ".*",
+      "write": ".*"
+    },
+    {
+      "user": "admin",
+      "vhost": "/",
+      "configure": ".*",
+      "read": ".*",
+      "write": ".*"
     }
   ]
 }

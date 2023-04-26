@@ -1,0 +1,61 @@
+apiVersion: rabbitmq.com/v1beta1
+kind: RabbitmqCluster
+metadata:
+  name: rabbitmq
+spec:
+  replicas: 1
+  tls:
+    secretName: tls-secret
+    caSecretName: ca-secret
+  rabbitmq:
+    # Ref.: https://www.rabbitmq.com/kubernetes/operator/using-operator.html#additional-plugins
+    additionalPlugins:
+      # For Certificate Auth EXTERNAL mechanism to work
+      # Ref.: https://cjshelton.github.io/blog/2019/12/18/rabbitmq-client-certificate-authentication.html#server-side-changes
+      - rabbitmq_auth_mechanism_ssl
+    # To make default user work until we configure RabbitMQ users for clients
+    # To avoid error: PLAIN login refused: user 'guest' - invalid credentials
+    # Ref.: https://github.com/rabbitmq/cluster-operator/tree/main/docs/examples/set-login-password-username
+    additionalConfig: |
+      # Debug logging | Ref.: https://www.rabbitmq.com/logging.html#debug-logging
+      log.file.level = debug
+      
+      ssl_options.verify = verify_peer
+      ssl_options.fail_if_no_peer_cert = true
+      
+      loopback_users.guest = false
+      default_user = guest
+      default_pass = guest
+
+      load_definitions = /tmp/rabbitmq/config/definitions.json
+      
+      # For Dashboard UI to work | # Ref.: https://cjshelton.github.io/blog/2019/12/18/rabbitmq-client-certificate-authentication.html#server-side-changes
+      auth_mechanisms.1 = PLAIN
+      # x509 cert Auth | Ref.: https://github.com/rabbitmq/rabbitmq-server/tree/main/deps/rabbitmq_auth_mechanism_ssl#usage
+      auth_mechanisms.1 = EXTERNAL
+      # Use CN | Ref.: https://github.com/rabbitmq/rabbitmq-server/tree/main/deps/rabbitmq_auth_mechanism_ssl#common-name
+      ssl_cert_login_from = common_name
+  override:
+    statefulSet:
+      spec:
+        template:
+          # Use definitions.json to seed RabbitMQ configuration | https://www.rabbitmq.com/access-control.html#seeding
+          # We need to transfer them to the RabbitMQ containers so the load_definitions can work
+          spec:
+            containers:
+              - name: rabbitmq
+                volumeMounts:
+                  - mountPath: /tmp/rabbitmq/config/ # filename left out intentionally
+                    name: definitions
+            volumes:
+              - name: definitions
+                configMap:
+                  name: definitions # Name of the ConfigMap which contains definitions you wish to import
+  # Limiting resources | Ref.: https://github.com/rabbitmq/cluster-operator/tree/main/docs/examples/resource-limits
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+    limits:
+      cpu: 800m
+      memory: 1Gi
