@@ -1,5 +1,6 @@
 package com.hubsante;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.hubsante.message.*;
@@ -63,7 +64,10 @@ public class Producer {
         }
 
         // registering extra module is mandatory to correctly handle DateTimes
-        ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
+        ObjectMapper mapper = new ObjectMapper()
+                .registerModule(new JavaTimeModule())
+//                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+                .disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE);
         try {
             this.channelProducer.basicPublish(
                     this.exchangeName,
