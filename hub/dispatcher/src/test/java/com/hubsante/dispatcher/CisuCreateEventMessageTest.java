@@ -23,7 +23,6 @@ import static org.junit.jupiter.api.Assertions.*;
 @Slf4j
 @SpringBootTest
 @SpringBootConfiguration
-@ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = HubApplication.class)
 // You should change the active profile to test it locally
 @ActiveProfiles({"local","bbo"})
