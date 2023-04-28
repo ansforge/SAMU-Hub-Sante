@@ -122,7 +122,6 @@ public class CisuCreateEventMessageTest {
 
         // serialize XML message with template
         String templatedXML = converter.convertToXmlWithTemplate(deserializedJsonMessage);
-        log.info("handlebars message :\n{}", templatedXML);
 
         // serialize XML message with Jackson lib
         String jacksonSerializedXML = converter.convertToXmlWithJackson(deserializedJsonMessage);
