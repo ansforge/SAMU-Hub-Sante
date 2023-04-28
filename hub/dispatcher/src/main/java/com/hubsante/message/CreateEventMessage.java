@@ -22,7 +22,6 @@ public class CreateEventMessage implements CisuMessage {
   @NotNull
   private AddresseeType sender;
   @JsonProperty("sentAt")
-  @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ssXXX")
   @NotNull
   private java.time.OffsetDateTime sentAt;
   @JsonProperty("msgType")
