@@ -10,12 +10,12 @@ kubectl apply -f "https://github.com/rabbitmq/cluster-operator/releases/latest/d
 # Create TLS secrets
 # Ref.: https://www.rabbitmq.com/kubernetes/operator/using-operator.html#one-way-tls
 # Ref.: https://www.rabbitmq.com/kubernetes/operator/using-operator.html#mutual-tls
-kubectl create secret tls tls-secret --cert=../../rabbitmq/certs/hub.crt --key=../../rabbitmq/certs/hub.key
-kubectl create secret generic ca-secret --from-file=ca.crt=../../rabbitmq/certs/rootCA.crt
+kubectl create secret tls tls-secret --cert=../rabbitmq/certs/hub.crt --key=../rabbitmq/certs/hub.key
+kubectl create secret generic ca-secret --from-file=ca.crt=../rabbitmq/certs/rootCA.crt
 
 # Create definitions.json ConfigMap
 # Ref.: https://github.com/rabbitmq/cluster-operator/blob/main/docs/examples/import-definitions/setup.sh
-kubectl create configmap definitions --from-file=../../rabbitmq/definitions.json
+kubectl create configmap definitions --from-file=../rabbitmq/definitions.json
 
 # Find/build the correct Custom Resource Definition yaml and install it
 # https://github.com/rabbitmq/cluster-operator/tree/main/docs/examples
