@@ -101,7 +101,7 @@ public class CisuCreateEventMessageTest {
     }
 
     @Test
-    @DisplayName("malformed XML message should not be deserialized")
+    @DisplayName("malformed XML message should fail validation")
     public void wrongXMLdeserializationFailed() throws IOException {
         File wrongXmlFile = new File(classLoader.getResource("missingRequiredElement.xml").getFile());
 
