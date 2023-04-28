@@ -126,7 +126,6 @@ public class CisuCreateEventMessageTest {
 
         // serialize XML message with Jackson lib
         String jacksonSerializedXML = converter.convertToXmlWithJackson(deserializedJsonMessage);
-//        log.info("jackson serialized message :\n{}", jacksonSerializedXML);
 
         // Validate templated message
         assertDoesNotThrow(() -> converter.validateXML(templatedXML, "cisu.xsd"));
