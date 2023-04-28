@@ -38,7 +38,6 @@ public class JsonXmlConverter {
      * SerializationFeature.WRITE_DATES_AS_TIMESTAMPS & DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE
      * must be disabled to preserve offset through deserialization
      * --> see https://stackoverflow.com/questions/40488002/how-to-preserve-the-offset-while-deserializing-offsetdatetime-with-jackson
-     * <p>
      * MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES is set to true to handle deserialization with Jackson when xml element & java props
      * have not the same case
      * When we will use OpenAPI generator the Java classes will respect the same case as the xsd spec
