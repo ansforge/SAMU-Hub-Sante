@@ -88,7 +88,7 @@ public class CisuCreateEventMessageTest {
     }
 
     @Test
-    @DisplayName("malformed JSON message should not deserialized")
+    @DisplayName("malformed JSON message should fail validation")
     public void wrongJSONdeserializationFailed() throws IOException {
         // required "sender.uri" field is missing
         File cisuJsonFile = new File(classLoader.getResource("missingRequiredCreateMessage.json").getFile());
@@ -101,7 +101,7 @@ public class CisuCreateEventMessageTest {
     }
 
     @Test
-    @DisplayName("malformed XML message should not be deserialized")
+    @DisplayName("malformed XML message should fail validation")
     public void wrongXMLdeserializationFailed() throws IOException {
         File wrongXmlFile = new File(classLoader.getResource("missingRequiredElement.xml").getFile());
 
@@ -132,6 +132,7 @@ public class CisuCreateEventMessageTest {
         assertDoesNotThrow(() -> converter.validateXML(templatedXML, "cisu.xsd"));
 
         // Should throw exception since there are case inconsistencies
+        // ToDo(bbo) : fix this when working on OpenAPI generation
         assertThrows(SAXParseException.class, () -> converter.validateXML(jacksonSerializedXML, "cisu.xsd"));
 
         // But both xml messages can be deserialized in a similar object
