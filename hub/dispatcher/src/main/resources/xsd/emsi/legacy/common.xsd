@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="http://tacticalsituationobject.org/schemas/EMSI/1_0" xmlns:emsi="http://tacticalsituationobject.org/schemas/EMSI/1_0">
+  <xs:simpleType name="date_type">
+    <xs:annotation>
+      <xs:documentation>
+            L'indicateur de fuseau horaire Z ne doit pas être utilisé. Le fuseau horaire pour UTC doit être représenté
+            par '-00:00'.
+        </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:dateTime">
+      <xs:pattern value="\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d[\-+]\d\d:\d\d"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="id">
+    <xs:restriction base="xs:token">
+      <xs:maxLength value="40"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="uuid_v4">
+    <xs:restriction base="xs:token">
+      <xs:pattern value="([a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}){1}"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="locationType">
+    <xs:sequence>
+        <xs:element minOccurs="0" ref="emsi:loc_id"/>
+      <xs:element minOccurs="0" ref="emsi:name"/>
+      <xs:element minOccurs="0" ref="emsi:type"/>
+      <xs:element minOccurs="0" ref="emsi:coordsys"/>
+      <xs:element minOccurs="0" ref="emsi:height_role"/>
+      <xs:element minOccurs="0" maxOccurs="unbounded" ref="emsi:coord"/>
+      <xs:element minOccurs="0" maxOccurs="unbounded" ref="emsi:address"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="loc_id">
+    <xs:annotation>
+      <xs:documentation>
+                    *** Le format locationType est identique au format POSITION de l'EMSI TSO (ISO 22 351) ***
+                    Identifiant unique de la localisation au sein du message.
+                    Cet identifiant peut être utilisé dans une autre partie du document afin d'éviter la duplication du même
+                    objet de localisation.
+                </xs:documentation>
+    </xs:annotation>
+    <xs:simpleType>
+      <xs:restriction base="xs:token">
+        <xs:maxLength value="80"/>
+      </xs:restriction>
+    </xs:simpleType>
+  </xs:element>
+  <xs:element name="name">
+    <xs:annotation>
+      <xs:documentation>
+                    Texte libre qui permet de nommer la localisation : nom de la ville, d'un lac, ...
+                    Il est de la responsabilité de l'agence de définir une approche cohérente pour nommer les lieux, d'une ville, d'un lac, etc.
+                    par exemple, en utilisant les noms d'une carte particulière, ou, dans une zone marquée multilingue, comme la Belgique ou
+                    l'Italie, en mettant les deux noms séparés par un "/".
+                </xs:documentation>
+    </xs:annotation>
+    <xs:simpleType>
+      <xs:restriction base="xs:string">
+        <xs:maxLength value="80"/>
+      </xs:restriction>
+    </xs:simpleType>
+  </xs:element>
+  <xs:element name="type">
+    <xs:annotation>
+      <xs:documentation>
+                    Les types suivants sont définis:
+                    POINT : un point géographique unique,
+                    CIRCLE : un cercle défini par le centre et l'un des points de la circonférence,
+                    LINE : une liste de points qui créent une ligne,
+                    SURFACE : une surface fermée,
+                    GRID : un ensemble de points uniques,
+                    POLYGON : une liste de points qui sont création d'une ligne fermée,
+                    ELLIPSE : une ellipse définie par 3 points: la position des 2 foyers points et une position sur le contour.
+                </xs:documentation>
+    </xs:annotation>
+    <xs:simpleType>
+      <xs:restriction base="xs:token">
+        <xs:enumeration value="POINT"/>
+        <xs:enumeration value="CIRCLE"/>
+        <xs:enumeration value="LINE"/>
+        <xs:enumeration value="SURFACE"/>
+        <xs:enumeration value="GRID"/>
+        <xs:enumeration value="POLYGON"/>
+        <xs:enumeration value="ELLIPSE"/>
+      </xs:restriction>
+    </xs:simpleType>
+  </xs:element>
+  <xs:element name="coordsys">
+    <xs:annotation>
+      <xs:documentation>
+                    Cet élément indique le type de coordonnées utilisé.
+                    Actuellement, la seule valeur valide est «EPSG-4326», indiquant l'utilisation de WGS-84.
+                </xs:documentation>
+    </xs:annotation>
+    <xs:simpleType>
+      <xs:restriction base="xs:string">
+        <xs:maxLength value="10"/>
+      </xs:restriction>
+    </xs:simpleType>
+  </xs:element>
+  <xs:element name="height_role">
+    <xs:annotation>
+      <xs:documentation>
+                    Fournit la définition du paramètre de hauteur dans l'élément 'coord'. Trois valeurs possibles : MIN, MAX ou AVG
+                </xs:documentation>
+    </xs:annotation>
+    <xs:simpleType>
+      <xs:restriction base="xs:token">
+        <xs:enumeration value="MIN"/>
+        <xs:enumeration value="MAX"/>
+        <xs:enumeration value="AVE"/>
+      </xs:restriction>
+    </xs:simpleType>
+  </xs:element>
+  <xs:element name="coord" type="emsi:coordType">
+    <xs:annotation>
+      <xs:documentation>
+                    Liste des points géographiques. Si un point est requis alors la latitude et la longitude doivent être renseignées.
+                    La hauteur est optionnelle.
+                </xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="address">
+    <xs:annotation>
+      <xs:documentation>
+                    Texte libre permettant de saisir une adresse civile. Cet élément peut être répété autant que nécessaire
+                    et contenir des informations complémentaires (digicode, étage, ...)
+                </xs:documentation>
+    </xs:annotation>
+    <xs:simpleType>
+      <xs:restriction base="xs:string">
+        <xs:maxLength value="256"/>
+      </xs:restriction>
+    </xs:simpleType>
+  </xs:element>
+  <xs:complexType name="coordType">
+    <xs:sequence>
+      <xs:element ref="emsi:lat"/>
+      <xs:element ref="emsi:lon"/>
+      <xs:element minOccurs="0" ref="emsi:height"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="lat">
+    <xs:simpleType>
+      <xs:restriction base="xs:double">
+        <xs:minInclusive value="-90"/>
+        <xs:maxInclusive value="+90"/>
+      </xs:restriction>
+    </xs:simpleType>
+  </xs:element>
+  <xs:element name="lon">
+    <xs:simpleType>
+      <xs:restriction base="xs:double">
+        <xs:minInclusive value="-180"/>
+        <xs:maxInclusive value="+180"/>
+      </xs:restriction>
+    </xs:simpleType>
+  </xs:element>
+  <xs:element name="height" type="xs:double"/>
+</xs:schema>

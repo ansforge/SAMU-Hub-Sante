@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           elementFormDefault="qualified"
+           targetNamespace="http://tacticalsituationobject.org/schemas/EMSI/2_0"
+           xmlns:emsi="http://tacticalsituationobject.org/schemas/EMSI/2_0">
+
+  <xs:include schemaLocation="context.2015.xsd"/>
+  <xs:include schemaLocation="event.2015.xsd"/>
+  <xs:include schemaLocation="resource.2015.xsd"/>
+  <xs:include schemaLocation="mission.2015.xsd"/>
+
+  <xs:element name="emsi" type="emsi:type2015">
+    <xs:annotation>
+      <xs:documentation>
+        Décrit la structure d'un message EMSI au format ISO 22351 version 2015
+      </xs:documentation>
+    </xs:annotation>
+  </xs:element>
+
+  <xs:complexType name="type2015">
+    <xs:sequence>
+      <xs:element ref="emsi:context"/>
+      <xs:element ref="emsi:event"/>
+      <xs:element ref="emsi:resource" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element ref="emsi:mission" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>
