@@ -80,7 +80,7 @@ public class CisuCreateEventMessageTest {
     public void xmlSerializeMessageTest() throws IOException {
         CreateEventMessage createEventMessage = getCreateEventMessageObject("xml");
         assertDoesNotThrow(() -> converter.convertToXmlWithTemplate(createEventMessage));
-        // TODO bbo: test it with jackson method
+        assertDoesNotThrow(() -> converter.convertToXmlWithJackson(createEventMessage));
     }
 
     @Test

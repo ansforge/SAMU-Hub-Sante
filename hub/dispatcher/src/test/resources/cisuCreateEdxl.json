@@ -1,6 +1,6 @@
 {
   "distributionID": "2608323d-507d-4cbf-bf74-52007f8124ea",
-  "senderID": "Origin",
+  "senderID": "SAMU_001",
   "dateTimeSent": "2022-09-27T08:23:34+02:00",
   "dateTimeExpires": "2072-09-27T08:23:34+02:00",
   "distributionStatus": "Actual",
@@ -8,8 +8,8 @@
   "descriptor": {
     "language": "fr-FR",
     "explicitAddress": {
-      "explicitAddressScheme": "hubsante",
-      "explicitAddressValue": "hubsante:target"
+      "explicitAddressScheme": "FR.HEALTH.HUBSANTE.SAMU_001",
+      "explicitAddressValue": "FR.HEALTH.HUBSANTE.SAMU_002"
     }
   },
   "content": {
@@ -19,8 +19,8 @@
           "message": {
             "messageId": "2608323d-507d-4cbf-bf74-52007f8124ea",
             "sender": {
-              "name": "Origin",
-              "uri": "hubsante:origin"
+              "name": "SAMU_001",
+              "uri": "hubsante:SAMU_001"
             },
             "sentAt": "2022-09-27T08:23:34+02:00",
             "msgType": "ALERT",
@@ -28,13 +28,13 @@
             "recipients": {
               "recipient": [
                 {
-                  "name": "Target",
-                  "uri": "hubsante:target"
+                  "name": "SAMU_002",
+                  "uri": "hubsante:SAMU_002"
                 }
               ]
             },
             "createEvent": {
-              "eventId": "Origin-SAMU-AF2",
+              "eventId": "SAMU_001-AF2",
               "createdAt": "2022-09-27T08:23:34+02:00",
               "severity": "UNKNOWN",
               "eventLocation": {
@@ -62,7 +62,7 @@
                 }
               },
               "primaryAlert": {
-                "alertId": "Origin-SAMU-AL8",
+                "alertId": "SAMU_001-AL8",
                 "receivedAt": "2022-09-27T08:23:15+02:00",
                 "reporting": "STANDARD",
                 "alertLocation": {
@@ -88,9 +88,9 @@
                   "callerURI": "manual"
                 },
                 "callTaker": {
-                  "organization": "Origin",
-                  "controlRoom": "Origin",
-                  "calltakerURI": "Origin-SAMU-AL8@localhost|tel:undefined#0613"
+                  "organization": "SAMU_001",
+                  "controlRoom": "SAMU_001",
+                  "calltakerURI": "SAMU_001-AL8@localhost|tel:undefined#0613"
                 },
                 "alertCode": {
                   "version": "latest",

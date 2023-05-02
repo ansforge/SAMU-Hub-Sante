@@ -1,20 +1,20 @@
 <message xmlns="urn:emergency:cisu:2.0">
     <messageId>2608323d-507d-4cbf-bf74-52007f8124ea</messageId>
     <sender>
-        <name>Origin</name>
-        <URI>hubsante:origin</URI>
+        <name>SAMU_001</name>
+        <URI>hubsante:SAMU_001</URI>
     </sender>
     <sentAt>2022-09-27T08:23:34+02:00</sentAt>
     <msgType>ALERT</msgType>
     <status>TEST</status>
     <recipients>
         <recipient>
-            <name>Target</name>
-            <URI>hubsante:target</URI>
+            <name>SAMU_002</name>
+            <URI>hubsante:SAMU_002</URI>
         </recipient>
     </recipients>
     <createEvent>
-        <eventId>Origin-SAMU-AF2</eventId>
+        <eventId>SAMU_001-AF2</eventId>
         <createdAt>2022-09-27T08:23:34+02:00</createdAt>
         <severity>UNKNOWN</severity>
         <eventLocation>
@@ -38,7 +38,7 @@
             </civicAddress>
         </eventLocation>
         <primaryAlert>
-            <alertId>Origin-SAMU-AL8</alertId>
+            <alertId>SAMU_001-AL8</alertId>
             <receivedAt>2022-09-27T08:23:15+02:00</receivedAt>
             <reporting>STANDARD</reporting>
             <alertLocation>
@@ -60,9 +60,9 @@
                 <callerURI>manual</callerURI>
             </caller>
             <callTaker>
-                <organization>Origin</organization>
-                <controlRoom>Origin</controlRoom>
-                <calltakerURI>Origin-SAMU-AL8@localhost|tel:undefined#0613</calltakerURI>
+                <organization>SAMU_001</organization>
+                <controlRoom>SAMU_001</controlRoom>
+                <calltakerURI>SAMU_001-AL8@localhost|tel:undefined#0613</calltakerURI>
             </callTaker>
             <alertCode>
                 <version>latest</version>

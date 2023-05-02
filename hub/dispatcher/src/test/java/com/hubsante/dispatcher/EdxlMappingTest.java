@@ -1,10 +1,5 @@
 package com.hubsante.dispatcher;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.hubsante.hub.HubApplication;
 import com.hubsante.hub.service.EdxlMessageConverter;
 import com.hubsante.model.edxl.EdxlMessage;
@@ -47,7 +42,7 @@ public class EdxlMappingTest {
         File edxlCisuCreateFile = new File(classLoader.getResource("cisuCreateEdxl.json").getFile());
         EdxlMessage edxlMessage = converter.deserializeJsonEDXL(Files.readString(edxlCisuCreateFile.toPath()));
 
-        assertEquals("Origin", edxlMessage.getSenderID());
+        assertEquals("SAMU_001", edxlMessage.getSenderID());
         assertEquals(
                 OffsetDateTime.parse("2022-09-27T08:23:34+02:00"),
                 edxlMessage.getDateTimeSent()
