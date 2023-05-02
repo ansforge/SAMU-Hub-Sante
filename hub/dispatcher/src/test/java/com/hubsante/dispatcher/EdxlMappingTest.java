@@ -7,17 +7,22 @@ import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.hubsante.hub.HubApplication;
+import com.hubsante.hub.service.EdxlMessageConverter;
 import com.hubsante.model.edxl.EdxlMessage;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
+import org.xml.sax.SAXException;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.time.OffsetDateTime;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -33,11 +38,14 @@ public class EdxlMappingTest {
 
     ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
+    @Autowired
+    private EdxlMessageConverter converter;
+
     ObjectMapper jsonMapper = new ObjectMapper()
             .registerModule(new JavaTimeModule())
             .disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE);
 
-    XmlMapper xmlMapper = (XmlMapper) new XmlMapper()
+    XmlMapper internalXmlMapper = (XmlMapper) new XmlMapper()
             .registerModule(new JavaTimeModule())
             .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
             .disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE);
@@ -48,7 +56,7 @@ public class EdxlMappingTest {
     public void deserializeCreateJsonEDXL() throws IOException {
 
         File edxlCisuCreateFile = new File(classLoader.getResource("cisuCreateEdxl.json").getFile());
-        EdxlMessage edxlMessage = jsonMapper.readValue(edxlCisuCreateFile, EdxlMessage.class);
+        EdxlMessage edxlMessage = converter.deserializeJsonEDXL(Files.readString(edxlCisuCreateFile.toPath()));
 
         assertEquals("Origin", edxlMessage.getSenderID());
         assertEquals(
@@ -69,14 +77,20 @@ public class EdxlMappingTest {
 
     @Test
     @DisplayName("should serialize XML EDXL - Cisu Create")
-    public void serializeCreateXmlEDXL() throws IOException {
+    public void serializeCreateXmlEDXL() throws IOException, SAXException {
         File edxlCisuCreateFile = new File(classLoader.getResource("cisuCreateEdxl.json").getFile());
-        EdxlMessage edxlMessage = jsonMapper.readValue(edxlCisuCreateFile, EdxlMessage.class);
+        EdxlMessage edxlMessage = converter.deserializeJsonEDXL(Files.readString(edxlCisuCreateFile.toPath()));
 
-        xmlMapper.configure(ToXmlGenerator.Feature.WRITE_XML_DECLARATION, true);
-        String xml = xmlMapper.writerWithDefaultPrettyPrinter().writeValueAsString(edxlMessage);
+        String xml = converter.serializeXmlEDXL(edxlMessage);
+        Assertions.assertTrue(() -> xml.startsWith(xmlPrefix()));
 
-        EdxlMessage deserializedFromXml = xmlMapper.readValue(xml, EdxlMessage.class);
+        EdxlMessage deserializedFromXml = converter.deserializeXmlEDXL(xml);
         assertEquals(deserializedFromXml, edxlMessage);
+
+//        converter.validateXML(xml, "edxl/edxl-de-v2.0-wd11.xsd");
+    }
+
+    private String xmlPrefix() {
+        return "<?xml version='1.0' encoding='UTF-8'?>";
     }
 }

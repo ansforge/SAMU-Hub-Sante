@@ -29,7 +29,7 @@ import java.io.StringReader;
 import java.util.Set;
 
 @Service
-public class JsonXmlConverter {
+public class CisuCreateMsgConverter {
 
     /**
      * SerializationFeature.WRITE_DATES_AS_TIMESTAMPS & DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE

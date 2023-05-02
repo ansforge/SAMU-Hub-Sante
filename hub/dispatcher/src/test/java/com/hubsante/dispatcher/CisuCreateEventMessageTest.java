@@ -2,7 +2,7 @@ package com.hubsante.dispatcher;
 
 import com.hubsante.hub.HubApplication;
 import com.hubsante.hub.exception.JsonSchemaValidationException;
-import com.hubsante.hub.service.JsonXmlConverter;
+import com.hubsante.hub.service.CisuCreateMsgConverter;
 import com.hubsante.model.cisu.CreateEventMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
@@ -29,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class CisuCreateEventMessageTest {
 
     @Autowired
-    JsonXmlConverter converter;
+    CisuCreateMsgConverter converter;
 
     ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
@@ -105,7 +105,7 @@ public class CisuCreateEventMessageTest {
         assertDoesNotThrow(() -> converter.deserializeXmlMessage(Files.readString(wrongXmlFile.toPath())));
         // validation does
         assertThrows(SAXParseException.class,
-                () -> converter.validateXML(Files.readString(wrongXmlFile.toPath()), "cisu.xsd"));
+                () -> converter.validateXML(Files.readString(wrongXmlFile.toPath()), "cisu/cisu.xsd"));
     }
 
     @Test
@@ -123,11 +123,11 @@ public class CisuCreateEventMessageTest {
         String jacksonSerializedXML = converter.convertToXmlWithJackson(deserializedJsonMessage);
 
         // Validate templated message
-        assertDoesNotThrow(() -> converter.validateXML(templatedXML, "cisu.xsd"));
+        assertDoesNotThrow(() -> converter.validateXML(templatedXML, "cisu/cisu.xsd"));
 
         // Should throw exception since there are case inconsistencies
         // ToDo(bbo) : fix this when working on OpenAPI generation
-        assertThrows(SAXParseException.class, () -> converter.validateXML(jacksonSerializedXML, "cisu.xsd"));
+        assertThrows(SAXParseException.class, () -> converter.validateXML(jacksonSerializedXML, "cisu/cisu.xsd"));
 
         // But both xml messages can be deserialized in a similar object
         // they equal each other and the generated-from-json one
