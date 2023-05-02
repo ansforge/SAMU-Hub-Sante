@@ -78,7 +78,7 @@ kubectl logs -n ingress-nginx -l app.kubernetes.io/component=controller --prefix
 # SSH into Ingress Controller Pod (to check it can reach Services)
 kubectl get pods -n ingress-nginx  # -> collect Controller Pod name
 kubectl exec -n ingress-nginx --stdin --tty ingress-nginx-controller-6cc5ccb977-2hwk2 -- /bin/bash
-$ curl localhost/
+$ curl localhost/rabbitmq
 ```
 
 ### Next steps

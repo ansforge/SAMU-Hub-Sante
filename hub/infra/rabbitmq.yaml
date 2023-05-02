@@ -38,6 +38,9 @@ spec:
       auth_mechanisms.1 = EXTERNAL
       # Use CN | Ref.: https://github.com/rabbitmq/rabbitmq-server/tree/main/deps/rabbitmq_auth_mechanism_ssl#common-name
       ssl_cert_login_from = common_name
+      
+      # For Dashboard UI access through /rabbitmq | Ref.: https://www.rabbitmq.com/management.html#path-prefix
+      management.path_prefix = /rabbitmq
   override:
     statefulSet:
       spec:
