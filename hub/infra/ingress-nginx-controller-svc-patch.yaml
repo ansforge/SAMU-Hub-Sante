@@ -1,0 +1,6 @@
+spec:
+  ports:
+    - name: amqps
+      port: 5671
+      targetPort: 5671
+      protocol: TCP
