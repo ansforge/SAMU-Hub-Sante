@@ -3,7 +3,7 @@ package com.hubsante.dispatcher;
 import com.hubsante.hub.HubApplication;
 import com.hubsante.hub.exception.JsonSchemaValidationException;
 import com.hubsante.hub.service.JsonXmlConverter;
-import com.hubsante.message.CreateEventMessage;
+import com.hubsante.model.cisu.CreateEventMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
