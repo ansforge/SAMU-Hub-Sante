@@ -61,17 +61,25 @@ minikube delete --profile minikube
 ```
 
 ### Debugging
+Ref.: https://medium.com/@ManagedKube/kubernetes-troubleshooting-ingress-and-services-traffic-flows-547ea867b120
 ```bash
 # Access Operator logs
-kubectl -n rabbitmq-system logs -l app.kubernetes.io/name=rabbitmq-cluster-operator 
+kubectl logs -n rabbitmq-system -l app.kubernetes.io/name=rabbitmq-cluster-operator --prefix --tail -1 -f
 
 # Access Pod logs
-kubectl logs pod/rabbitmq-server-0
+kubectl logs -l app.kubernetes.io/component=rabbitmq --prefix --tail -1 -f
 
 # SSH into RabbitMQ Pod (rabbitmqctl, ... commands available)
 kubectl exec --stdin --tty rabbitmq-server-0 -- /bin/bash
+
+# Ingress Controller logs
+kubectl logs -n ingress-nginx -l app.kubernetes.io/component=controller --prefix --tail -1 -f
+
+# SSH into Ingress Controller Pod (to check it can reach Services)
+kubectl get pods -n ingress-nginx  # -> collect Controller Pod name
+kubectl exec -n ingress-nginx --stdin --tty ingress-nginx-controller-6cc5ccb977-2hwk2 -- /bin/bash
+$ curl localhost/
 ```
 
 ### Next steps
-- [ ] Add users with specific queue rights + authz with certificates + authn based on info -> remove guest:guest as default user
 - [ ] Support RabbitMQ persistency (with perisistent volume & persistent volume claim)
