@@ -1,7 +1,6 @@
 package com.hubsante.model.edxl;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.JsonNode;
 
 import java.util.Objects;
 
@@ -9,13 +8,13 @@ public class ContentXML {
 
     // TODO bbo : String or JsonNode or equivalent ?
     @JsonProperty(value = "embeddedXMLContent")
-    private JsonNode embeddedXMLContent;
+    private ContentWrapper embeddedXMLContent;
 
-    public JsonNode getEmbeddedXMLContent() {
+    public ContentWrapper getEmbeddedXMLContent() {
         return embeddedXMLContent;
     }
 
-    public void setEmbeddedXMLContent(JsonNode embeddedXMLContent) {
+    public void setEmbeddedXMLContent(ContentWrapper embeddedXMLContent) {
         this.embeddedXMLContent = embeddedXMLContent;
     }
 

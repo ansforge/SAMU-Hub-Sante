@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<edxlDistribution xlink:type="extended"
+                  xmlns="urn:oasis:names:tc:emergency:EDXL:DE:2.0"
+                  xmlns:xlink="http://www.w3.org/1999/xlink"
+                  xmlns:ct="urn:oasis:names:tc:emergency:edxl:ct:1.0">
+    <distributionID>2608323d-507d-4cbf-bf74-52007f8124ea</distributionID>
+    <senderID>sga-nexsis</senderID>
+    <dateTimeSent>2022-09-27T08:23:34+00:00</dateTimeSent>
+    <dateTimeExpires>2072-09-27T08:23:34+00:00</dateTimeExpires>
+    <distributionStatus>Actual</distributionStatus>
+    <distributionKind>Report</distributionKind>
+    <descriptor xlink:type="resource">
+        <language>fr-FR</language>
+        <explicitAddress>
+            <explicitAddressScheme>sge</explicitAddressScheme>
+            <explicitAddressValue>sgo-samu-77</explicitAddressValue>
+        </explicitAddress>
+    </descriptor>
+    <content xlink:type="resource">
+        <contentObject xlink:type="resource">
+            <contentXML>
+                <embeddedXMLContent>
+                    <message xmlns="urn:emergency:cisu:2.0">
+                        <messageId>2608323d-507d-4cbf-bf74-52007f8124ea</messageId>
+                        <sender>
+                            <name>Origin</name>
+                            <URI>hubsante:origin</URI>
+                        </sender>
+                        <sentAt>2022-09-27T08:23:34+02:00</sentAt>
+                        <msgType>ALERT</msgType>
+                        <status>TEST</status>
+                        <recipients>
+                            <recipient>
+                                <name>Target</name>
+                                <URI>hubsante:target</URI>
+                            </recipient>
+                        </recipients>
+                        <createEvent>
+                            <eventId>Origin-SAMU-AF2</eventId>
+                            <createdAt>2022-09-27T08:23:34+02:00</createdAt>
+                            <severity>UNKNOWN</severity>
+                            <eventLocation>
+                                <loc_Id>111fb03a-6fd9-41e0-8e81-990c45188888</loc_Id>
+                                <type>POINT</type>
+                                <coordsys>EPSG:4326</coordsys>
+                                <height_role>AVE</height_role>
+                                <coord>
+                                    <lat>48.546462</lat>
+                                    <lon>2.670422</lon>
+                                </coord>
+                                <address>Rue des 3 Moulins</address>
+                                <address>Melun</address>
+                                <address>(77288)</address>
+                                <commune>Melun</commune>
+                                <civicAddress>
+                                    <country>FR</country>
+                                    <A3>Melun</A3>
+                                    <ADDCODE>77288</ADDCODE>
+                                    <RDBR>Rue des 3 Moulins</RDBR>
+                                </civicAddress>
+                            </eventLocation>
+                            <primaryAlert>
+                                <alertId>Origin-SAMU-AL8</alertId>
+                                <receivedAt>2022-09-27T08:23:15+02:00</receivedAt>
+                                <reporting>STANDARD</reporting>
+                                <alertLocation>
+                                    <type>POINT</type>
+                                    <coordsys>ESPG:4326</coordsys>
+                                    <coord>
+                                        <lat>48.546462</lat>
+                                        <lon>2.670422</lon>
+                                    </coord>
+                                    <address>Rue des 3 Moulins</address>
+                                    <address>Melun</address>
+                                    <address>(77288)</address>
+                                    <commune>Melun</commune>
+                                </alertLocation>
+                                <call>
+                                    <source>requérant</source>
+                                </call>
+                                <caller>
+                                    <callerURI>manual</callerURI>
+                                </caller>
+                                <callTaker>
+                                    <organization>Origin</organization>
+                                    <controlRoom>Origin</controlRoom>
+                                    <calltakerURI>Origin-SAMU-AL8@localhost|tel:undefined#0613</calltakerURI>
+                                </callTaker>
+                                <alertCode>
+                                    <version>latest</version>
+                                    <whatsHappen>
+                                        <code>C01.01.00</code>
+                                        <label>Accident de la circulation</label>
+                                    </whatsHappen>
+                                    <locationKind>
+                                        <code>L02.00.00</code>
+                                        <label>Circulation / transport</label>
+                                    </locationKind>
+                                    <healthMotive>
+                                        <code>M01.01</code>
+                                        <label>Détresse vitale|Suspicion d'arrêt cardiaque, mort subite</label>
+                                    </healthMotive>
+                                    <victims>
+                                        <count>1</count>
+                                    </victims>
+                                </alertCode>
+                            </primaryAlert>
+                        </createEvent>
+                    </message>
+                </embeddedXMLContent>
+            </contentXML>
+        </contentObject>
+    </content>
+</edxlDistribution>
