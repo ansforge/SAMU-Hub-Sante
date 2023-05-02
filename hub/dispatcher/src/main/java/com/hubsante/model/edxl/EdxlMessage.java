@@ -1,6 +1,6 @@
 package com.hubsante.model.edxl;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
@@ -9,6 +9,16 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 import java.time.OffsetDateTime;
 import java.util.Objects;
 
+/*
+* We need JsonAutoDetect to override Jackson default behavior :
+* We disable getter usage to force Jackson to use only field accessors.
+* This way, the "@JacksonXmlProperty" annotated methods can generate specific XML (ie namespaces)
+*  but they're not triggered at Json serialization
+ */
+@JsonAutoDetect(
+        fieldVisibility = JsonAutoDetect.Visibility.ANY,
+        getterVisibility = JsonAutoDetect.Visibility.NONE
+)
 @JacksonXmlRootElement(localName = "edxlDistribution")
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class EdxlMessage {
@@ -37,26 +47,26 @@ public class EdxlMessage {
     @JsonProperty(value = "content", required = true)
     private Content content;
 
+    /*
+    * This is a workaround to handle namespaces with prefixes
+    * see https://stackoverflow.com/questions/16442805/jackson-xml-deserializing-xml-with-namespace-prefixes
+     */
     @JacksonXmlProperty(localName = "xlink:type", isAttribute = true)
-    @JsonIgnore
     public String getXmlnsXlinkType() {
         return "extended";
     }
 
     @JacksonXmlProperty(localName = "xmlns", isAttribute = true)
-    @JsonIgnore
     public String getXmlns() {
         return "urn:oasis:names:tc:emergency:EDXL:DE:2.0";
     }
 
     @JacksonXmlProperty(localName = "xmlns:xlink", isAttribute = true)
-    @JsonIgnore
     public String getXmlnsXlink() {
         return "http://www.w3.org/1999/xlink";
     }
 
     @JacksonXmlProperty(localName = "xmlns:ct", isAttribute = true)
-    @JsonIgnore
     public String getXmlnsCt() {
         return "urn:oasis:names:tc:emergency:edxl:ct:1.0";
     }

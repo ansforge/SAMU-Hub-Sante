@@ -1,20 +1,24 @@
 package com.hubsante.model.edxl;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 
 import java.util.Objects;
 
+@JsonAutoDetect(
+        fieldVisibility = JsonAutoDetect.Visibility.ANY,
+        getterVisibility = JsonAutoDetect.Visibility.NONE
+)
 public class ContentObject {
 
     @JacksonXmlProperty(localName = "xlink:type", isAttribute = true)
-    @JsonIgnore
     public String getXmlns() {
         return "resource";
     }
 
-    @JsonProperty(value = "contentXML")
+    @JsonProperty(value = "JsonContent")
+    @JacksonXmlProperty(localName = "contentXML")
     private ContentXML contentXML;
 
     public ContentXML getContentXML() {

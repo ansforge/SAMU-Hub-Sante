@@ -2,6 +2,7 @@ package com.hubsante.model.cisu;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 
 import java.util.Objects;
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
@@ -9,64 +10,94 @@ public class CivicAddressType {
   @JsonProperty("country")
   private String country;
   @JsonProperty("a1")
+  @JacksonXmlProperty(localName = "A1")
   private String a1;
   @JsonProperty("a2")
+  @JacksonXmlProperty(localName = "A2")
   private String a2;
   @JsonProperty("a3")
+  @JacksonXmlProperty(localName = "A3")
   private String a3;
   @JsonProperty("a4")
+  @JacksonXmlProperty(localName = "A4")
   private String a4;
   @JsonProperty("a5")
+  @JacksonXmlProperty(localName = "A5")
   private String a5;
   @JsonProperty("a6")
+  @JacksonXmlProperty(localName = "A6")
   private String a6;
   @JsonProperty("prd")
+  @JacksonXmlProperty(localName = "PRD")
   private String prd;
   @JsonProperty("pod")
+  @JacksonXmlProperty(localName = "POD")
   private String pod;
   @JsonProperty("sts")
+  @JacksonXmlProperty(localName = "STS")
   private String sts;
   @JsonProperty("hno")
+  @JacksonXmlProperty(localName = "HNO")
   private String hno;
   @JsonProperty("hns")
+  @JacksonXmlProperty(localName = "HNS")
   private String hns;
   @JsonProperty("lmk")
+  @JacksonXmlProperty(localName = "LMK")
   private String lmk;
   @JsonProperty("loc")
+  @JacksonXmlProperty(localName = "LOC")
   private String loc;
   @JsonProperty("nam")
+  @JacksonXmlProperty(localName = "NAM")
   private String nam;
   @JsonProperty("pc")
+  @JacksonXmlProperty(localName = "PC")
   private String pc;
   @JsonProperty("bld")
+  @JacksonXmlProperty(localName = "BLD")
   private String bld;
   @JsonProperty("unit")
+  @JacksonXmlProperty(localName = "UNIT")
   private String unit;
   @JsonProperty("flr")
+  @JacksonXmlProperty(localName = "FLR")
   private String flr;
   @JsonProperty("room")
+  @JacksonXmlProperty(localName = "ROOM")
   private String room;
   @JsonProperty("plc")
+  @JacksonXmlProperty(localName = "PLC")
   private LocationType2 plc;
   @JsonProperty("pcn")
+  @JacksonXmlProperty(localName = "PCN")
   private String pcn;
   @JsonProperty("pobox")
+  @JacksonXmlProperty(localName = "POBOX")
   private String pobox;
   @JsonProperty("addcode")
+  @JacksonXmlProperty(localName = "ADDCODE")
   private String addcode;
   @JsonProperty("seat")
+  @JacksonXmlProperty(localName = "SEAT")
   private String seat;
   @JsonProperty("rd")
+  @JacksonXmlProperty(localName = "RD")
   private String rd;
   @JsonProperty("rdsec")
+  @JacksonXmlProperty(localName = "RDSEC")
   private String rdsec;
   @JsonProperty("rdbr")
+  @JacksonXmlProperty(localName = "RDBR")
   private String rdbr;
   @JsonProperty("rdsubbr")
+  @JacksonXmlProperty(localName = "RDSUBBR")
   private String rdsubbr;
   @JsonProperty("prm")
+  @JacksonXmlProperty(localName = "PRM")
   private String prm;
   @JsonProperty("pom")
+  @JacksonXmlProperty(localName = "POM")
   private String pom;
 
   public CivicAddressType(){

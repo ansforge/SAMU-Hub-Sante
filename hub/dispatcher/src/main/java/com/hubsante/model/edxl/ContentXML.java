@@ -1,13 +1,18 @@
 package com.hubsante.model.edxl;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonRootName;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 
 import java.util.Objects;
 
+@JsonRootName(value = "JsonContent")
+@JacksonXmlRootElement(localName = "ContentXML")
 public class ContentXML {
 
-    // TODO bbo : String or JsonNode or equivalent ?
-    @JsonProperty(value = "embeddedXMLContent")
+    @JsonProperty(value = "embeddedJSONContent")
+    @JacksonXmlProperty(localName = "embeddedXMLContent")
     private ContentWrapper embeddedXMLContent;
 
     public ContentWrapper getEmbeddedXMLContent() {

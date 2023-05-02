@@ -125,9 +125,8 @@ public class CisuCreateEventMessageTest {
         // Validate templated message
         assertDoesNotThrow(() -> converter.validateXML(templatedXML, "cisu/cisu.xsd"));
 
-        // Should throw exception since there are case inconsistencies
-        // ToDo(bbo) : fix this when working on OpenAPI generation
-        assertThrows(SAXParseException.class, () -> converter.validateXML(jacksonSerializedXML, "cisu/cisu.xsd"));
+        // Validate Jackson serialized message
+        assertDoesNotThrow(() -> converter.validateXML(jacksonSerializedXML, "cisu/cisu.xsd"));
 
         // But both xml messages can be deserialized in a similar object
         // they equal each other and the generated-from-json one

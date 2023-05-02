@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.hubsante.hub.HubApplication;
 import com.hubsante.hub.service.EdxlMessageConverter;
@@ -40,16 +39,6 @@ public class EdxlMappingTest {
 
     @Autowired
     private EdxlMessageConverter converter;
-
-    ObjectMapper jsonMapper = new ObjectMapper()
-            .registerModule(new JavaTimeModule())
-            .disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE);
-
-    XmlMapper internalXmlMapper = (XmlMapper) new XmlMapper()
-            .registerModule(new JavaTimeModule())
-            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-            .disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE);
-
 
     @Test
     @DisplayName("should deserialize Json EDXL - Cisu Create")
@@ -87,7 +76,7 @@ public class EdxlMappingTest {
         EdxlMessage deserializedFromXml = converter.deserializeXmlEDXL(xml);
         assertEquals(deserializedFromXml, edxlMessage);
 
-//        converter.validateXML(xml, "edxl/edxl-de-v2.0-wd11.xsd");
+        converter.validateXML(xml, "edxl/edxl-de-v2.0-wd11.xsd");
     }
 
     private String xmlPrefix() {

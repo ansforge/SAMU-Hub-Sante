@@ -41,6 +41,7 @@ public class EdxlMessageConverter {
     public EdxlMessageConverter() {
         this.xmlMapper = (XmlMapper) new XmlMapper()
                 .registerModule(new JavaTimeModule())
+                .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
                 .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
                 .disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE);
 
