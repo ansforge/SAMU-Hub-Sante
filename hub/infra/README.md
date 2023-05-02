@@ -38,6 +38,10 @@ kubectl port-forward "service/rabbitmq" 5671
 ## M2. INGRESS (work in progress)
 # Adding Ingress | Ref.: https://kubernetes.io/docs/tasks/access-application-cluster/ingress-minikube/
 minikube addons enable ingress
+
+# Open tunnel to resolve localhost
+# Ref.: https://stackoverflow.com/questions/70287043/run-ingress-in-minikube-and-its-address-shows-localhost
+minikube tunnel
  
 # Apply Ingress
 kubectl apply -f ingress.yaml
