@@ -7,10 +7,10 @@ import com.hubsante.model.cisu.CreateEventMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.amqp.rabbit.test.context.SpringRabbitTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.xml.sax.SAXParseException;
 
@@ -24,8 +24,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 @SpringBootConfiguration
 @ContextConfiguration(classes = HubApplication.class)
-// You should change the active profile to test it locally
-@ActiveProfiles({"local", "bbo"})
+@SpringRabbitTest
 public class CisuCreateEventMessageTest {
 
     @Autowired
