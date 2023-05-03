@@ -25,7 +25,7 @@ public class ContentObject {
         return contentWrapper;
     }
 
-    public void setContentXML(ContentWrapper contentWrapper) {
+    public void setContentWrapper(ContentWrapper contentWrapper) {
         this.contentWrapper = contentWrapper;
     }
 

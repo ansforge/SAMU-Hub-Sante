@@ -13,6 +13,7 @@ import com.github.jknack.handlebars.Template;
 import com.github.jknack.handlebars.io.ClassPathTemplateLoader;
 import com.github.jknack.handlebars.io.TemplateLoader;
 import com.hubsante.hub.exception.JsonSchemaValidationException;
+import com.hubsante.model.edxl.EdxlEnvelope;
 import com.hubsante.model.edxl.EdxlMessage;
 import com.networknt.schema.JsonSchema;
 import com.networknt.schema.JsonSchemaFactory;
@@ -51,6 +52,14 @@ public class EdxlMessageConverter {
                 .registerModule(new JavaTimeModule())
                 .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
                 .disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE);
+    }
+
+    public EdxlEnvelope deserializeJsonEnvelope(String json) throws JsonProcessingException {
+        return jsonMapper.readValue(json, EdxlEnvelope.class);
+    }
+
+    public EdxlEnvelope deserializeXmlEnvelope(String xml) throws JsonProcessingException {
+        return xmlMapper.readValue(xml, EdxlEnvelope.class);
     }
 
     public EdxlMessage deserializeJsonEDXL(String json) throws JsonProcessingException {

@@ -2,6 +2,7 @@ package com.hubsante.dispatcher;
 
 import com.hubsante.hub.HubApplication;
 import com.hubsante.hub.service.EdxlMessageConverter;
+import com.hubsante.model.edxl.EdxlEnvelope;
 import com.hubsante.model.edxl.EdxlMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
@@ -33,6 +34,17 @@ public class EdxlMappingTest {
 
     @Autowired
     private EdxlMessageConverter converter;
+
+    @Test
+    @DisplayName("should deserialize Json EDXL - Envelope Only")
+    public void deserializeJsonEnvelope() throws IOException {
+        File edxlCisuCreateFile = new File(classLoader.getResource("cisuCreateEdxl.json").getFile());
+        String json = Files.readString(edxlCisuCreateFile.toPath());
+
+        EdxlEnvelope envelope = converter.deserializeJsonEnvelope(json);
+        System.out.println("u");
+        assertEquals("SAMU_001", envelope.getSenderID());
+    }
 
     @Test
     @DisplayName("should deserialize Json EDXL - Cisu Create")
