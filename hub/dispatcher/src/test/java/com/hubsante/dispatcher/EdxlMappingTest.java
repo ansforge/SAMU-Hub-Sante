@@ -47,9 +47,11 @@ public class EdxlMappingTest {
                 OffsetDateTime.parse("2022-09-27T08:23:34+02:00"),
                 edxlMessage.getDateTimeSent()
         );
+
         assertEquals(
                 "Détresse vitale|Suspicion d'arrêt cardiaque, mort subite",
-                edxlMessage.getContent().getContentObject().getContentXML().getEmbeddedXMLContent()
+                edxlMessage
+                        .getContent().getContentObject().getContentWrapper().getEmbeddedContent()
                         .getMessage()
                         .getCreateEvent()
                         .getPrimaryAlert()

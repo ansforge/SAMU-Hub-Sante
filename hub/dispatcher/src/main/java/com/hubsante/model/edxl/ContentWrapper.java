@@ -1,32 +1,26 @@
 package com.hubsante.model.edxl;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.hubsante.model.cisu.CreateEventMessage;
-import com.hubsante.model.emsi.Emsi;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonRootName;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 
 import java.util.Objects;
 
-@JsonInclude(JsonInclude.Include.NON_EMPTY)
+@JsonRootName(value = "JsonContent")
+@JacksonXmlRootElement(localName = "ContentXML")
 public class ContentWrapper {
 
-    // TODO bbo : replace by CisuMessage with JsonSubType mapping depending on content ?
-    private CreateEventMessage message;
-    private Emsi emsi;
+    @JsonProperty(value = "embeddedJSONContent")
+    @JacksonXmlProperty(localName = "embeddedXMLContent")
+    private EmbeddedContent embeddedContent;
 
-    public CreateEventMessage getMessage() {
-        return message;
+    public EmbeddedContent getEmbeddedContent() {
+        return embeddedContent;
     }
 
-    public void setMessage(CreateEventMessage message) {
-        this.message = message;
-    }
-
-    public Emsi getEmsi() {
-        return emsi;
-    }
-
-    public void setEmsi(Emsi emsi) {
-        this.emsi = emsi;
+    public void setEmbeddedContent(EmbeddedContent embeddedContent) {
+        this.embeddedContent = embeddedContent;
     }
 
     @Override
@@ -34,11 +28,18 @@ public class ContentWrapper {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ContentWrapper that = (ContentWrapper) o;
-        return Objects.equals(message, that.message) && Objects.equals(emsi, that.emsi);
+        return Objects.equals(embeddedContent, that.embeddedContent);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(message, emsi);
+        return Objects.hash(embeddedContent);
+    }
+
+    @Override
+    public String toString() {
+        return "ContentWrapper{" +
+                "embeddedContent=" + embeddedContent.toString() +
+                '}';
     }
 }

@@ -19,14 +19,14 @@ public class ContentObject {
 
     @JsonProperty(value = "JsonContent")
     @JacksonXmlProperty(localName = "contentXML")
-    private ContentXML contentXML;
+    private ContentWrapper contentWrapper;
 
-    public ContentXML getContentXML() {
-        return contentXML;
+    public ContentWrapper getContentWrapper() {
+        return contentWrapper;
     }
 
-    public void setContentXML(ContentXML contentXML) {
-        this.contentXML = contentXML;
+    public void setContentXML(ContentWrapper contentWrapper) {
+        this.contentWrapper = contentWrapper;
     }
 
     @Override
@@ -34,18 +34,18 @@ public class ContentObject {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ContentObject that = (ContentObject) o;
-        return Objects.equals(contentXML, that.contentXML);
+        return Objects.equals(contentWrapper, that.contentWrapper);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(contentXML);
+        return Objects.hash(contentWrapper);
     }
 
     @Override
     public String toString() {
         return "ContentObject{" +
-                "contentXML=" + contentXML +
+                "contentXML=" + contentWrapper +
                 '}';
     }
 }

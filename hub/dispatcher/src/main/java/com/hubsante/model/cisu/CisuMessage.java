@@ -1,4 +1,4 @@
 package com.hubsante.model.cisu;
 
-public interface CisuMessage {
+public interface CisuMessage{
 }
