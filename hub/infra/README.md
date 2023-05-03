@@ -50,16 +50,16 @@ kubectl get configmap tcp-services -n ingress-nginx -o yaml
 kubectl patch deployment ingress-nginx-controller --patch "$(cat ingress-nginx-controller-patch.yaml)" -n ingress-nginx
 # Patch Ingress Service too so `minikube tunnel` exposes the port -> NOT WORKING...
 kubectl patch svc ingress-nginx-controller --patch "$(cat ingress-nginx-controller-svc-patch.yaml)" -n ingress-nginx
-# Directly expose the Ingress Service 
+# Directly expose the Ingress Service => update the port in ProducerRun for instance
 minikube service ingress-nginx-controller -n ingress-nginx
 # -> fails on handshake termination... 
 # Patch Ingress Controller to enable SSL passthrough | Ref.: https://github.com/kubernetes/minikube/issues/6403#issuecomment-1307883410
 kubectl patch deployment -n ingress-nginx ingress-nginx-controller --type='json' -p='[{"op": "add", "path": "/spec/template/spec/containers/0/args/-", "value":"--enable-ssl-passthrough"}]'
 # Ref.: https://arunsworld.medium.com/ssl-passthrough-via-kubernetes-ingress-b3eaf3c7c9da
 
-## Next steps
-# Do the same logic for a simple AMQP 5672 RabbitMQ cluster and see if it fails
-# Investigate why connection is closed
+## Next possible investigation steps
+# Do the same logic for a simple AMQP 5672 RabbitMQ cluster and see if it fails in hub/infra/amqp
+# Investigate why connection is closed by host (SSL passthrough not working? Add certificate on Ingress Controller?)
 
 
 ### Ingress for Dashboard UI -> http://localhost/rabbitmq/
