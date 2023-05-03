@@ -1,8 +1,8 @@
 ## RabbitMQ Kubernetes Operator
 Ref.: https://www.rabbitmq.com/kubernetes/operator/quickstart-operator.html
 ```bash
-# Start minikube cluster
-minikube start
+# Start minikube cluster with Docker | Ref.: https://minikube.sigs.k8s.io/docs/drivers/docker/
+minikube start --driver=docker
 
 # Install the RabbitMQ Cluster Operator
 kubectl apply -f "https://github.com/rabbitmq/cluster-operator/releases/latest/download/cluster-operator.yml"
@@ -24,27 +24,8 @@ kubectl apply -f rabbitmq.yaml
 # Watch cluster deployment (Running from scratch should take a few minutes)
 watch kubectl get all
 
-# MANAGEMENT UI | Ref.: https://www.rabbitmq.com/kubernetes/operator/quickstart-operator.html
-username="$(kubectl get secret rabbitmq-default-user -o jsonpath='{.data.username}' | base64 --decode)"
-echo "username: $username"
-password="$(kubectl get secret rabbitmq-default-user -o jsonpath='{.data.password}' | base64 --decode)"
-echo "password: $password"
-kubectl port-forward "service/rabbitmq" 15672
-
-# FORWARD RABBITMQ
-## M1. Local port forward 
-kubectl port-forward "service/rabbitmq" 5671
-
-## M2. INGRESS (work in progress)
-# Adding Ingress | Ref.: https://kubernetes.io/docs/tasks/access-application-cluster/ingress-minikube/
-minikube addons enable ingress
- 
-# Apply Ingress
-kubectl apply -f ingress.yaml
-
-# Check Ingress is up
-kubectl get ingress
-# End of FORWARD RABBITMQ
+# Expose all services locally
+minikube tunnel
 
 # Run the rest of the pipeline (with disptacher first to create exchange / queues / bindings
 gradle bootRun --args='--spring.profiles.active=local,rfo'
@@ -62,16 +43,25 @@ minikube delete --profile minikube
 
 ### Debugging
 ```bash
+Ref.: https://medium.com/@ManagedKube/kubernetes-troubleshooting-ingress-and-services-traffic-flows-547ea867b120
+```bash
 # Access Operator logs
-kubectl -n rabbitmq-system logs -l app.kubernetes.io/name=rabbitmq-cluster-operator 
+kubectl logs -n rabbitmq-system -l app.kubernetes.io/name=rabbitmq-cluster-operator --prefix --tail -1 -f
 
 # Access Pod logs
-kubectl logs pod/rabbitmq-server-0
+kubectl logs -l app.kubernetes.io/component=rabbitmq --prefix --tail -1 -f
 
 # SSH into RabbitMQ Pod (rabbitmqctl, ... commands available)
 kubectl exec --stdin --tty rabbitmq-server-0 -- /bin/bash
+
+# Ingress Controller logs
+kubectl logs -n ingress-nginx -l app.kubernetes.io/component=controller --prefix --tail -1 -f
+
+# SSH into Ingress Controller Pod (to check it can reach Services)
+kubectl get pods -n ingress-nginx  # -> collect Controller Pod name
+kubectl exec -n ingress-nginx --stdin --tty ingress-nginx-controller-6cc5ccb977-2hwk2 -- /bin/bash
+$ curl localhost/rabbitmq
 ```
 
 ### Next steps
-- [ ] Add users with specific queue rights + authz with certificates + authn based on info -> remove guest:guest as default user
-- [ ] Support RabbitMQ persistency (with perisistent volume & persistent volume claim)
+- [ ] Support RabbitMQ persistency (with persistent volume & persistent volume claim)
