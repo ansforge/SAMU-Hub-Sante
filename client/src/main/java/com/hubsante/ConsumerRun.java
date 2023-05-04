@@ -3,7 +3,8 @@ package com.hubsante;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.hubsante.message.*;
+import com.hubsante.model.edxl.DistributionKind;
+import com.hubsante.model.edxl.EdxlMessage;
 import com.rabbitmq.client.Delivery;
 
 import java.io.IOException;
@@ -37,19 +38,18 @@ public class ConsumerRun {
                         .registerModule(new JavaTimeModule())
                         .disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE);
 
-                BasicMessage basicMessage = mapper.readValue(delivery.getBody(), BasicMessage.class);
-                CisuMessage cisuMessage = convertMessageFromType(mapper, basicMessage, delivery.getBody());
-
-                System.out.println(" [x] Received '" + routingKey + "':'" + cisuMessage + "'");
+                EdxlMessage edxlMessage = mapper.readValue(delivery.getBody(), EdxlMessage.class);
+                System.out.println(" [x] Received '" + routingKey + "':'" + edxlMessage + "'");
 
                 // Sending back technical ack as delivery responsibility is removed from the Hub
                 consumeChannel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
 
                 // Sending back functional ack as info has been processed on the Consumer side
-                if (!basicMessage.getMsgType().getValue().equals("ACK")) {
-                    AckMessage ackMessage = this.generateFunctionalAckMessage(basicMessage);
-                    this.producerAck.publish(this.fileAckName, ackMessage);
-                    System.out.println("  ↳ [x] Sent '" + this.fileAckName + "':'" + ackMessage + "'");
+                if (!edxlMessage.getDistributionKind().equals(DistributionKind.ACK)) {
+                    EdxlMessage ackEdxl = this.generateFunctionalAckMessage(edxlMessage);
+                    System.out.println(ackEdxl);
+                    this.producerAck.publish(this.fileAckName, ackEdxl);
+                    System.out.println("  ↳ [x] Sent '" + this.fileAckName + "':'" + ackEdxl + "'");
                 } else {
                     // Inform user that partner has correctly processed the message
                     System.out.println("  ↳ [x] Partner has processed the message.");

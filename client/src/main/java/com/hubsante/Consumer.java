@@ -1,6 +1,7 @@
 package com.hubsante;
 
-import com.hubsante.message.*;
+import com.hubsante.model.cisu.*;
+import com.hubsante.model.edxl.*;
 import com.rabbitmq.client.*;
 
 import java.io.IOException;
@@ -10,25 +11,38 @@ import java.time.ZoneOffset;
 import java.util.UUID;
 import java.util.concurrent.TimeoutException;
 
+import static com.hubsante.Utils.getClientId;
+import static com.hubsante.Utils.getClientSuffix;
+
 public abstract class Consumer {
 
     protected Channel consumeChannel;
 
     protected Producer producerAck;
 
-    /** identifiant du client */
+    /**
+     * identifiant du client
+     */
     protected String clientId;
 
-    /** Nom de la file */
+    /**
+     * Nom de la file
+     */
     protected String routingKey;
 
-    /** Nom de la file ack */
+    /**
+     * Nom de la file ack
+     */
     protected String fileAckName;
 
-    /** serveur distant */
+    /**
+     * serveur distant
+     */
     private String host;
 
-    /** port du serveur distant */
+    /**
+     * port du serveur distant
+     */
     private int port;
 
     public String getExchangeName() {
@@ -82,7 +96,8 @@ public abstract class Consumer {
                 public void handle(String consumerTag, Delivery message) throws IOException {
                     deliverCallback(consumerTag, message);
                 }
-            }, consumerTag -> {});
+            }, consumerTag -> {
+            });
 
         }
     }
@@ -96,19 +111,42 @@ public abstract class Consumer {
      */
     protected abstract void deliverCallback(String consumerTag, Delivery delivery) throws IOException;
 
-    protected AckMessage generateFunctionalAckMessage(BasicMessage receivedMessage) {
-        AddresseeType[] recipients = new AddresseeType[]{receivedMessage.getSender()};
-        return new AckMessage(
-                receivedMessage.getMessageId(),
-                new AddresseeType(clientId, "hubsante." + clientId),
-                //TODO (bbo) : switch date format in model classes (generator reworking ?)
-                // in order to use ZonedDateTime instead:
-                // ZoneDateTime.of(LocalDateTime.now(), ZoneId.of(Europe/Paris)) will handle automatically hour change
-                OffsetDateTime.of(LocalDateTime.now(), ZoneOffset.of("+02")),
-                MsgType.ACK,
-                receivedMessage.getStatus(),
-                new Recipients(recipients),
-                new AckMessageId(UUID.randomUUID().toString())
-        );
+    protected EdxlMessage generateFunctionalAckMessage(EdxlMessage receivedMessage) {
+        EdxlMessage ackEdxl = new EdxlMessage();
+
+        ackEdxl.setDistributionID(String.valueOf(UUID.randomUUID()));
+        ackEdxl.setSenderID(getClientSuffix(clientId));
+        ackEdxl.setDateTimeSent(OffsetDateTime.of(LocalDateTime.now(), ZoneOffset.of("+02")));
+        ackEdxl.setDateTimeExpires(OffsetDateTime.of(LocalDateTime.now().plusYears(50), ZoneOffset.of("+02")));
+        ackEdxl.setDistributionKind(DistributionKind.ACK);
+        ackEdxl.setDistributionStatus(receivedMessage.getDistributionStatus());
+
+        ExplicitAddress explicitAddress = new ExplicitAddress();
+        ExplicitAddress receivedAddress = receivedMessage.getDescriptor().getExplicitAddress();
+        explicitAddress.setExplicitAddressScheme(receivedAddress.getExplicitAddressValue());
+        explicitAddress.setExplicitAddressValue(receivedAddress.getExplicitAddressScheme());
+
+        Descriptor descriptor = new Descriptor();
+        descriptor.setLanguage(receivedMessage.getDescriptor().getLanguage());
+        descriptor.setExplicitAddress(explicitAddress);
+
+        ackEdxl.setDescriptor(descriptor);
+        GenericAckMessage ackMessage = new GenericAckMessage(UUID.randomUUID().toString());
+
+//        EmbeddedContent embeddedContent = new EmbeddedContent();
+//        embeddedContent.setGenericAckMessage(ackMessage);
+//
+//        ContentWrapper wrapper = new ContentWrapper();
+//        wrapper.setEmbeddedContent(embeddedContent);
+//
+//        ContentObject contentObject = new ContentObject();
+//        contentObject.setContentWrapper(wrapper);
+//
+//        Content content = new Content();
+//        content.setContentObject(contentObject);
+//        ackEdxl.setContent(content);
+        ackEdxl.setContent(new Content(new ContentObject(new ContentWrapper(new EmbeddedContent(ackMessage)))));
+
+        return ackEdxl;
     }
 }

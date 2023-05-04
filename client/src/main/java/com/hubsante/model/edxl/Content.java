@@ -20,11 +20,11 @@ public class Content {
     @JsonProperty(value = "contentObject")
     private ContentObject contentObject;
 
-    public Content() {
-    }
-
     public Content(ContentObject contentObject) {
         this.contentObject = contentObject;
+    }
+
+    public Content() {
     }
 
     public ContentObject getContentObject() {

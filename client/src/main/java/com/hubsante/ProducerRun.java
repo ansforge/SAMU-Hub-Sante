@@ -2,14 +2,13 @@ package com.hubsante;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.hubsante.message.*;
+import com.hubsante.model.edxl.EdxlMessage;
 
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import static com.hubsante.Utils.convertMessageFromType;
 import static com.hubsante.Utils.getRouting;
 
 public class ProducerRun {
@@ -34,10 +33,10 @@ public class ProducerRun {
         // registering extra module is mandatory to handle date time
         ObjectMapper mapper = new ObjectMapper()
                 .registerModule(new JavaTimeModule())
+                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
                 .disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE);
-        BasicMessage basicMessage = mapper.readValue(json, BasicMessage.class);
-        CisuMessage cisuMessage = convertMessageFromType(mapper, basicMessage, json.getBytes(StandardCharsets.UTF_8));
+        EdxlMessage edxlMessage = mapper.readValue(json, EdxlMessage.class);
 
-        producer.publish(routingKey, cisuMessage);
+        producer.publish(routingKey, edxlMessage);
     }
 }

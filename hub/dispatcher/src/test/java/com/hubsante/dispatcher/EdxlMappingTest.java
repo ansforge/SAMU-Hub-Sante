@@ -1,7 +1,7 @@
 package com.hubsante.dispatcher;
 
 import com.hubsante.hub.HubApplication;
-import com.hubsante.hub.service.EdxlMessageConverter;
+import com.hubsante.hub.service.EdxlHandler;
 import com.hubsante.model.edxl.EdxlEnvelope;
 import com.hubsante.model.edxl.EdxlMessage;
 import lombok.extern.slf4j.Slf4j;
@@ -33,7 +33,7 @@ public class EdxlMappingTest {
     ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
     @Autowired
-    private EdxlMessageConverter converter;
+    private EdxlHandler converter;
 
     @Test
     @DisplayName("should deserialize Json EDXL - Envelope Only")

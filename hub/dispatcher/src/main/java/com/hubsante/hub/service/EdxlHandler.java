@@ -34,12 +34,12 @@ import java.io.StringReader;
 import java.util.Set;
 
 @Service
-public class EdxlMessageConverter {
+public class EdxlHandler {
 
     private XmlMapper xmlMapper;
     private ObjectMapper jsonMapper;
 
-    public EdxlMessageConverter() {
+    public EdxlHandler() {
         this.xmlMapper = (XmlMapper) new XmlMapper()
                 .registerModule(new JavaTimeModule())
                 .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
@@ -70,7 +70,7 @@ public class EdxlMessageConverter {
         return xmlMapper.readValue(xml, EdxlMessage.class);
     }
 
-    public String serializeJsonEDX(EdxlMessage edxlMessage) throws JsonProcessingException {
+    public String serializeJsonEDXL(EdxlMessage edxlMessage) throws JsonProcessingException {
         return jsonMapper.writeValueAsString(edxlMessage);
     }
 
