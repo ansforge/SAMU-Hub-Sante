@@ -30,7 +30,7 @@
       "vhost": "/",
       "destination": "*.out.*",
       "destination_type": "queue",
-      "routing_key": "*.out.message",
+      "routing_key": "#.out.message",
       "arguments": {}
     },
     {
@@ -38,7 +38,7 @@
       "vhost": "/",
       "destination": "*.out.*",
       "destination_type": "queue",
-      "routing_key": "*.out.info",
+      "routing_key":"#.out.info",
       "arguments": {}
     },
     {
@@ -46,7 +46,7 @@
       "vhost": "/",
       "destination": "*.out.*",
       "destination_type": "queue",
-      "routing_key": "*.out.ack",
+      "routing_key": "#.out.ack",
       "arguments": {}
     }
   ],

@@ -1,6 +1,6 @@
 {
   "distributionID": "2608323d-507d-4cbf-bf74-52007f8124ea",
-  "senderID": "SAMU_001",
+  "senderID": "samu001",
   "dateTimeSent": "2022-09-27T08:23:34+02:00",
   "dateTimeExpires": "2072-09-27T08:23:34+02:00",
   "distributionStatus": "Actual",
@@ -8,8 +8,8 @@
   "descriptor": {
     "language": "fr-FR",
     "explicitAddress": {
-      "explicitAddressScheme": "SAMU_001",
-      "explicitAddressValue": "SAMU_002"
+      "explicitAddressScheme": "fr.health.hub.samu001",
+      "explicitAddressValue": "fr.health.hub.samu002"
     }
   },
   "content": {
@@ -19,8 +19,8 @@
           "message": {
             "messageId": "2608323d-507d-4cbf-bf74-52007f8124ea",
             "sender": {
-              "name": "SAMU_001",
-              "uri": "hubsante:SAMU_001"
+              "name": "samu001",
+              "uri": "hubsante:samu001"
             },
             "sentAt": "2022-09-27T08:23:34+02:00",
             "msgType": "ALERT",
@@ -28,8 +28,8 @@
             "recipients": {
               "recipient": [
                 {
-                  "name": "SAMU_002",
-                  "uri": "hubsante:SAMU_002"
+                  "name": "samu002",
+                  "uri": "hubsante:samu002"
                 }
               ]
             },
