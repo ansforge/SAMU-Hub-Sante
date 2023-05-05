@@ -39,7 +39,7 @@ public class ConsumerRun {
                         .disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE);
 
                 EdxlMessage edxlMessage = mapper.readValue(delivery.getBody(), EdxlMessage.class);
-                System.out.println(" [x] Received '" + routingKey + "':'" + edxlMessage + "'");
+                System.out.println(" [x] Received from '" + routingKey + "':'" + edxlMessage + "'");
 
                 // Sending back technical ack as delivery responsibility is removed from the Hub
                 consumeChannel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
@@ -47,9 +47,8 @@ public class ConsumerRun {
                 // Sending back functional ack as info has been processed on the Consumer side
                 if (!edxlMessage.getDistributionKind().equals(DistributionKind.ACK)) {
                     EdxlMessage ackEdxl = this.generateFunctionalAckMessage(edxlMessage);
-                    System.out.println(ackEdxl);
                     this.producerAck.publish(this.fileAckName, ackEdxl);
-                    System.out.println("  ↳ [x] Sent '" + this.fileAckName + "':'" + ackEdxl + "'");
+                    System.out.println("  ↳ [x] Sent  to '" + this.fileAckName + "':'" + ackEdxl + "'");
                 } else {
                     // Inform user that partner has correctly processed the message
                     System.out.println("  ↳ [x] Partner has processed the message.");

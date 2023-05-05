@@ -23,4 +23,11 @@ public class GenericAckMessage {
     public GenericAckMessage(String ackDistributionId) {
         this.ackDistributionId = ackDistributionId;
     }
+
+    @Override
+    public String toString() {
+        return "GenericAckMessage{" +
+                "ackDistributionId='" + ackDistributionId + '\'' +
+                '}';
+    }
 }

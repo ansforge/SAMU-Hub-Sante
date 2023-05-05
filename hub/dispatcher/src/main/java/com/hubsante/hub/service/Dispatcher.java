@@ -34,9 +34,8 @@ public class Dispatcher {
         EdxlMessage edxlMessage;
         String receivedEdxl = new String(message.getBody(), StandardCharsets.UTF_8);
         try {
-
             edxlMessage = edxlHandler.deserializeJsonEDXL(receivedEdxl);
-            log.info(" [x] Received '" + receivedRoutingKey + "':" + receivedEdxl);
+            log.info(" [x] Received from '" + receivedRoutingKey + "':" + edxlHandler.prettyPrintJsonEDXL(edxlMessage));
         } catch (IOException e) {
             log.error("Could not parse message " + message.getMessageProperties().getMessageId()
                     + "coming from " + message.getMessageProperties().getConsumerQueue());
@@ -54,7 +53,7 @@ public class Dispatcher {
 
         try {
             rabbitTemplate.send("", queueName, forwardedMsg);
-            log.info("  ↳ [x] Sent '" + queueName + "':" + receivedEdxl);
+            log.info("  ↳ [x] Sent to '" + queueName + "':" + edxlMessage.getDistributionID());
         } catch (AmqpException e) {
             // TODO (bbo) : if we catch an AmqpException, ii won't be retried.
             //  We should instead define a retry strategy.
