@@ -42,7 +42,6 @@ public class EdxlMappingTest {
         String json = Files.readString(edxlCisuCreateFile.toPath());
 
         EdxlEnvelope envelope = converter.deserializeJsonEnvelope(json);
-        System.out.println("u");
         assertEquals("SAMU_001", envelope.getSenderID());
     }
 
