@@ -22,6 +22,7 @@ python/templates/4. tls/cert/
 certs/CA/
 !certs/CA/sign.sh
 !certs/CA/rootCA.crt
+!certs/CA/hub.ext
 
 # Needed as GitHub action for AsyncAPI generation installs npm packages
 node_modules/
@@ -30,3 +31,6 @@ package.json
 
 # Class generation
 models/node_modules
+
+# Cluster access configs
+kubeconfig.yml
