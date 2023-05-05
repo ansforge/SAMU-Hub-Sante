@@ -1,6 +1,5 @@
 package com.hubsante;
 
-import com.hubsante.model.cisu.*;
 import com.hubsante.model.edxl.*;
 import com.rabbitmq.client.*;
 
@@ -11,7 +10,6 @@ import java.time.ZoneOffset;
 import java.util.UUID;
 import java.util.concurrent.TimeoutException;
 
-import static com.hubsante.Utils.getClientId;
 import static com.hubsante.Utils.getClientSuffix;
 
 public abstract class Consumer {
@@ -131,20 +129,7 @@ public abstract class Consumer {
         descriptor.setExplicitAddress(explicitAddress);
 
         ackEdxl.setDescriptor(descriptor);
-        GenericAckMessage ackMessage = new GenericAckMessage(UUID.randomUUID().toString());
-
-//        EmbeddedContent embeddedContent = new EmbeddedContent();
-//        embeddedContent.setGenericAckMessage(ackMessage);
-//
-//        ContentWrapper wrapper = new ContentWrapper();
-//        wrapper.setEmbeddedContent(embeddedContent);
-//
-//        ContentObject contentObject = new ContentObject();
-//        contentObject.setContentWrapper(wrapper);
-//
-//        Content content = new Content();
-//        content.setContentObject(contentObject);
-//        ackEdxl.setContent(content);
+        GenericAckMessage ackMessage = new GenericAckMessage(receivedMessage.getDistributionID());
         ackEdxl.setContent(new Content(new ContentObject(new ContentWrapper(new EmbeddedContent(ackMessage)))));
 
         return ackEdxl;
