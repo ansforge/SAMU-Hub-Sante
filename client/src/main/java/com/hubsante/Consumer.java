@@ -131,7 +131,7 @@ public abstract class Consumer {
         descriptor.setExplicitAddress(explicitAddress);
 
         ackEdxl.setDescriptor(descriptor);
-        GenericAckMessage ackMessage = new GenericAckMessage(UUID.randomUUID().toString());
+        GenericAckMessage ackMessage = new GenericAckMessage(receivedMessage.getDistributionID());
 
 //        EmbeddedContent embeddedContent = new EmbeddedContent();
 //        embeddedContent.setGenericAckMessage(ackMessage);
