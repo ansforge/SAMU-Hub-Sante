@@ -1,16 +1,5 @@
 package com.hubsante;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hubsante.message.*;
-import com.rabbitmq.client.ConnectionFactory;
-
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManagerFactory;
-import java.io.*;
-import java.security.KeyStore;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
