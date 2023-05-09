@@ -7,6 +7,9 @@ spec:
   tls:
     secretName: tls-secret
     caSecretName: ca-secret
+  service:
+    # Exposed though own LoadBalancer | Ref.: https://www.rabbitmq.com/kubernetes/operator/using-operator.html#service-type
+    type: LoadBalancer
   rabbitmq:
     # Ref.: https://www.rabbitmq.com/kubernetes/operator/using-operator.html#additional-plugins
     additionalPlugins:
