@@ -1,6 +1,6 @@
 {
   "distributionID": "2608323d-507d-4cbf-bf74-52007f8124ea",
-  "senderID": "samu001",
+  "senderID": "fr.health.hub.samu010",
   "dateTimeSent": "2022-09-27T08:23:34+02:00",
   "dateTimeExpires": "2072-09-27T08:23:34+02:00",
   "distributionStatus": "Actual",
@@ -8,19 +8,19 @@
   "descriptor": {
     "language": "fr-FR",
     "explicitAddress": {
-      "explicitAddressScheme": "fr.health.hub.samu001",
-      "explicitAddressValue": "fr.health.hub.samu002"
+      "explicitAddressScheme": "fr.health.hub.samu010",
+      "explicitAddressValue": "fr.health.hub.samu020"
     }
   },
   "content": {
     "contentObject": {
       "JsonContent": {
-        "embeddedJSONContent": {
+        "embeddedJsonContent": {
           "message": {
             "messageId": "2608323d-507d-4cbf-bf74-52007f8124ea",
             "sender": {
-              "name": "samu001",
-              "uri": "hubsante:samu001"
+              "name": "samu010",
+              "uri": "hubsante:samu010"
             },
             "sentAt": "2022-09-27T08:23:34+02:00",
             "msgType": "ALERT",
@@ -28,13 +28,13 @@
             "recipients": {
               "recipient": [
                 {
-                  "name": "samu002",
-                  "uri": "hubsante:samu002"
+                  "name": "samu020",
+                  "uri": "hubsante:samu020"
                 }
               ]
             },
             "createEvent": {
-              "eventId": "SAMU_001-AF2",
+              "eventId": "SAMU10-AF2",
               "createdAt": "2022-09-27T08:23:34+02:00",
               "severity": "UNKNOWN",
               "eventLocation": {
@@ -62,7 +62,7 @@
                 }
               },
               "primaryAlert": {
-                "alertId": "SAMU_001-AL8",
+                "alertId": "SAMU10-AL8",
                 "receivedAt": "2022-09-27T08:23:15+02:00",
                 "reporting": "STANDARD",
                 "alertLocation": {
@@ -88,9 +88,9 @@
                   "callerURI": "manual"
                 },
                 "callTaker": {
-                  "organization": "SAMU_001",
-                  "controlRoom": "SAMU_001",
-                  "calltakerURI": "SAMU_001-AL8@localhost|tel:undefined#0613"
+                  "organization": "SAMU_010",
+                  "controlRoom": "SAMU_010",
+                  "calltakerURI": "SAMU_010-AL8@localhost|tel:undefined#0613"
                 },
                 "alertCode": {
                   "version": "latest",

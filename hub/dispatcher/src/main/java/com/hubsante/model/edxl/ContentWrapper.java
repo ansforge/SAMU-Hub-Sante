@@ -7,11 +7,11 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 
 import java.util.Objects;
 
-@JsonRootName(value = "JSONContent")
+@JsonRootName(value = "JsonContent")
 @JacksonXmlRootElement(localName = "ContentXML")
 public class ContentWrapper {
 
-    @JsonProperty(value = "embeddedJSONContent")
+    @JsonProperty(value = "embeddedJsonContent")
     @JacksonXmlProperty(localName = "embeddedXMLContent")
     private EmbeddedContent embeddedContent;
 

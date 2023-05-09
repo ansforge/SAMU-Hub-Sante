@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @SpringBootConfiguration
 @ContextConfiguration(classes = HubApplication.class)
 @SpringRabbitTest
-public class EdxlMappingTest {
+public class EdxlHandlerTest {
 
     ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 

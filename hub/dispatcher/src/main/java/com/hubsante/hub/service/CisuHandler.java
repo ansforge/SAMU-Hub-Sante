@@ -29,7 +29,7 @@ import java.io.StringReader;
 import java.util.Set;
 
 @Service
-public class CisuCreateMsgConverter {
+public class CisuHandler {
 
     /**
      * SerializationFeature.WRITE_DATES_AS_TIMESTAMPS & DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE

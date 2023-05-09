@@ -27,11 +27,6 @@ public class Utils {
         return String.join(".", routingKey);
     }
 
-    static String getClientSuffix(String clientId) {
-        String[] keys = clientId.split("[.]");
-        return keys[keys.length -1];
-    }
-
     /*
     * Dans le contexte de ce code exemple, cette méthode permet de récupérer la routing key
     * passée en argument de run

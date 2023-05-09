@@ -15,7 +15,7 @@
   "content": {
     "contentObject": {
       "JsonContent": {
-        "embeddedJSONContent": {
+        "embeddedJsonContent": {
           "message": {
             "messageId": "2608323d-507d-4cbf-bf74-52007f8124ea",
             "sender": {

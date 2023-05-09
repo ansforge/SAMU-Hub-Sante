@@ -2,7 +2,7 @@ package com.hubsante.dispatcher;
 
 import com.hubsante.hub.HubApplication;
 import com.hubsante.hub.exception.JsonSchemaValidationException;
-import com.hubsante.hub.service.CisuCreateMsgConverter;
+import com.hubsante.hub.service.CisuHandler;
 import com.hubsante.model.cisu.CreateEventMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
@@ -25,10 +25,10 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootConfiguration
 @ContextConfiguration(classes = HubApplication.class)
 @SpringRabbitTest
-public class CisuCreateEventMessageTest {
+public class CisuHandlerTest {
 
     @Autowired
-    CisuCreateMsgConverter converter;
+    CisuHandler converter;
 
     ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 

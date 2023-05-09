@@ -10,8 +10,6 @@ import java.time.ZoneOffset;
 import java.util.UUID;
 import java.util.concurrent.TimeoutException;
 
-import static com.hubsante.Utils.getClientSuffix;
-
 public abstract class Consumer {
 
     protected Channel consumeChannel;
@@ -113,7 +111,7 @@ public abstract class Consumer {
         EdxlMessage ackEdxl = new EdxlMessage();
 
         ackEdxl.setDistributionID(String.valueOf(UUID.randomUUID()));
-        ackEdxl.setSenderID(getClientSuffix(clientId));
+        ackEdxl.setSenderID(clientId);
         ackEdxl.setDateTimeSent(OffsetDateTime.of(LocalDateTime.now(), ZoneOffset.of("+02")));
         ackEdxl.setDateTimeExpires(OffsetDateTime.of(LocalDateTime.now().plusYears(50), ZoneOffset.of("+02")));
         ackEdxl.setDistributionKind(DistributionKind.ACK);
