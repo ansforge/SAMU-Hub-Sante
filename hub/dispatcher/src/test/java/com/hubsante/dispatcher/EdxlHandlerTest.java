@@ -1,6 +1,7 @@
 package com.hubsante.dispatcher;
 
 import com.hubsante.hub.HubApplication;
+import com.hubsante.hub.exception.JsonSchemaValidationException;
 import com.hubsante.hub.service.EdxlHandler;
 import com.hubsante.model.edxl.EdxlEnvelope;
 import com.hubsante.model.edxl.EdxlMessage;
@@ -20,7 +21,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.time.OffsetDateTime;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 @Slf4j
@@ -84,6 +85,18 @@ public class EdxlHandlerTest {
         assertEquals(deserializedFromXml, edxlMessage);
 
         converter.validateXML(xml, "edxl/edxl-de-v2.0-wd11.xsd");
+    }
+
+    @Test
+    @DisplayName("validation should failed if Json Edxl is malfromatted")
+    public void wrongJsonValidationFailed() throws IOException {
+        File edxlCisuCreateFile = new File(classLoader.getResource("missingRequiredExplicitAddressValue.json").getFile());
+        String json = Files.readString(edxlCisuCreateFile.toPath());
+
+        // deserialization method does not throw error
+        assertDoesNotThrow(() -> converter.deserializeJsonEnvelope(json));
+        // validation does
+        assertThrows(JsonSchemaValidationException.class, () -> converter.validateJSON(json, "edxl.json"));
     }
 
     private String xmlPrefix() {

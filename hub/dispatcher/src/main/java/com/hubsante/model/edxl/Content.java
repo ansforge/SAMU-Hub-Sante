@@ -17,7 +17,7 @@ public class Content {
         return "resource";
     }
 
-    @JsonProperty(value = "contentObject")
+    @JsonProperty(value = "contentObject", required = true)
     private ContentObject contentObject;
 
     public Content() {

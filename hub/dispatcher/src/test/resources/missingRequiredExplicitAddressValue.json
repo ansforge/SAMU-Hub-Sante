@@ -8,8 +8,7 @@
   "descriptor": {
     "language": "fr-FR",
     "explicitAddress": {
-      "explicitAddressScheme": "FR.HEALTH.HUBSANTE.SAMU_001",
-      "explicitAddressValue": "FR.HEALTH.HUBSANTE.SAMU_002"
+      "explicitAddressScheme": "FR.HEALTH.HUBSANTE.SAMU_001"
     }
   },
   "content": {
