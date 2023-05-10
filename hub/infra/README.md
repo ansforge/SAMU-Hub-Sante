@@ -1,4 +1,22 @@
-## RabbitMQ Kubernetes Operator
+# Dispatcher
+```bash
+# Build and upload image to registry accessible in OVH
+gradle jib --image=romainfd/dispatcher:latest
+# Equivalent to
+# gradle jibDockerBuild --image=romainfd/dispatcher:latest
+# docker push romainfd/dispatcher:latest
+
+# Apply Deployment
+kubectl apply -f dispatcher.yaml
+# Reapply deployment with new image
+kubectl replace --force -f dispatcher.yaml
+
+# Get Pod logs
+kubectl logs -l app=dispatcher --prefix --tail -1 -f
+```
+
+# RabbitMQ Kubernetes Operator
+## Setup
 Ref.: https://www.rabbitmq.com/kubernetes/operator/quickstart-operator.html
 ```bash
 # Start minikube cluster with Docker | Ref.: https://minikube.sigs.k8s.io/docs/drivers/docker/
@@ -20,7 +38,10 @@ kubectl create configmap definitions --from-file=../rabbitmq/definitions.json
 # Find/build the correct Custom Resource Definition yaml and install it
 # https://github.com/rabbitmq/cluster-operator/tree/main/docs/examples
 kubectl apply -f rabbitmq.yaml
+```
 
+## Local development
+```bash
 # Watch cluster deployment (Running from scratch should take a few minutes)
 watch kubectl get all
 
@@ -31,7 +52,7 @@ minikube tunnel
 kubectl port-forward "service/rabbitmq" 15672
 kubectl port-forward "service/rabbitmq" 5671
 
-# Run the rest of the pipeline (with disptacher first to create exchange / queues / bindings
+# Run the rest of the pipeline locally (with dispatcher first to create exchange / queues / bindings
 gradle bootRun --args='--spring.profiles.active=local,rfo'
 CLIENT_ID=Target; gradle -Pmain=com.hubsante.ConsumerRun run --args "$CLIENT_ID.in.message"
 CLIENT_ID=Origin; gradle -Pmain=com.hubsante.ConsumerRun run --args "$CLIENT_ID.in.ack"
@@ -48,7 +69,10 @@ CLIENT_ID=Origin; gradle -Pmain=com.hubsante.ProducerRun run --args "$CLIENT_ID.
 - https://medium.com/@ahmetb/mastering-kubeconfig-4e447aa32c75
 
 ## Delete
+> **Warning**
+> Do not run in production as this would delete the LoadBalancer and make us lose the IP.
 ```
+# DO NOT USE IN PRODUCTION
 kubectl delete -f rabbitmq.yaml
 
 minikube delete --profile minikube 

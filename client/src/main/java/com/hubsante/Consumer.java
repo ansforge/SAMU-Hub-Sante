@@ -1,5 +1,9 @@
 package com.hubsante;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.hubsante.model.edxl.*;
 import com.rabbitmq.client.*;
 
@@ -46,6 +50,15 @@ public abstract class Consumer {
     }
 
     private String exchangeName;
+
+    protected final ObjectMapper mapper = new ObjectMapper()
+            .registerModule(new JavaTimeModule())
+            .disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE);
+
+    protected final XmlMapper xmlMapper = (XmlMapper) new XmlMapper()
+            .registerModule(new JavaTimeModule())
+            .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+            .disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE);
 
     public Consumer(String host, int port, String exchangeName, String routingKey, String fileAckName, String clientId) {
         super();

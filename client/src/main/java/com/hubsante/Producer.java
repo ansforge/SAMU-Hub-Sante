@@ -1,7 +1,10 @@
 package com.hubsante;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.hubsante.model.edxl.EdxlMessage;
 import com.rabbitmq.client.*;
@@ -68,12 +71,40 @@ public class Producer {
                 .registerModule(new JavaTimeModule())
                 // required to preserve offset
                 .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
         try {
             this.channelProducer.basicPublish(
                     this.exchangeName,
                     routingKey,
                     MessageProperties.PERSISTENT_TEXT_PLAIN,
                     mapper.writeValueAsString(msg).getBytes(StandardCharsets.UTF_8));
+        } catch (IOException e) {
+            // we log error here and propagate the exception to handle it in the business layer
+            log.error("Could not publish message with id " + msg.getDistributionID(), e);
+            throw e;
+        }
+    }
+
+    public void xmlPublish(String routingKey, EdxlMessage msg) throws IOException {
+        if(this.channelProducer == null) {
+            log.warn("Channel producer unreachable, please ensure that connection has been established" +
+                    "(Producer.connect() method has been called)");
+            throw new IOException("Unconnected AMQP channel");
+        }
+
+        XmlMapper xmlMapper = (XmlMapper) new XmlMapper()
+                .registerModule(new JavaTimeModule())
+                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+                .disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE);
+
+        xmlMapper.configure(ToXmlGenerator.Feature.WRITE_XML_DECLARATION, true);
+
+        try {
+            this.channelProducer.basicPublish(
+                    this.exchangeName,
+                    routingKey,
+                    MessageProperties.PERSISTENT_TEXT_PLAIN,
+                    xmlMapper.writeValueAsString(msg).getBytes(StandardCharsets.UTF_8));
         } catch (IOException e) {
             // we log error here and propagate the exception to handle it in the business layer
             log.error("Could not publish message with id " + msg.getDistributionID(), e);

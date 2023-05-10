@@ -82,6 +82,10 @@ public class EdxlHandler {
         return xmlMapper.writeValueAsString(edxlMessage);
     }
 
+    public String prettyPrintXmlEDXL(EdxlMessage edxlMessage) throws JsonProcessingException {
+        return xmlMapper.writerWithDefaultPrettyPrinter().writeValueAsString(edxlMessage);
+    }
+
     public String xmlTemplateEDXL() {
         return "";
     }

@@ -43,7 +43,7 @@ public class EdxlHandlerTest {
         String json = Files.readString(edxlCisuCreateFile.toPath());
 
         EdxlEnvelope envelope = converter.deserializeJsonEnvelope(json);
-        assertEquals("SAMU_001", envelope.getSenderID());
+        assertEquals("fr.health.hub.samu050", envelope.getSenderID());
     }
 
     @Test
@@ -53,7 +53,7 @@ public class EdxlHandlerTest {
         File edxlCisuCreateFile = new File(classLoader.getResource("cisuCreateEdxl.json").getFile());
         EdxlMessage edxlMessage = converter.deserializeJsonEDXL(Files.readString(edxlCisuCreateFile.toPath()));
 
-        assertEquals("SAMU_001", edxlMessage.getSenderID());
+        assertEquals("fr.health.hub.samu050", edxlMessage.getSenderID());
         assertEquals(
                 OffsetDateTime.parse("2022-09-27T08:23:34+02:00"),
                 edxlMessage.getDateTimeSent()

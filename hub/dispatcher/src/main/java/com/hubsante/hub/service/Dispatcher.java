@@ -1,5 +1,6 @@
 package com.hubsante.hub.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.hubsante.model.edxl.DistributionKind;
 import com.hubsante.model.edxl.EdxlMessage;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +20,8 @@ import static com.hubsante.hub.config.AmqpConfiguration.CONSUME_QUEUE_NAME;
 @Slf4j
 public class Dispatcher {
 
+    private static final String JSON_SCHEME = "fr.health.hub.samu050";
+
     private final RabbitTemplate rabbitTemplate;
     private final EdxlHandler edxlHandler;
 
@@ -34,11 +37,16 @@ public class Dispatcher {
         EdxlMessage edxlMessage;
         String receivedEdxl = new String(message.getBody(), StandardCharsets.UTF_8);
         try {
-            edxlMessage = edxlHandler.deserializeJsonEDXL(receivedEdxl);
-            log.info(" [x] Received from '" + receivedRoutingKey + "':" + edxlHandler.prettyPrintJsonEDXL(edxlMessage));
+            if (receivedRoutingKey.equals(JSON_SCHEME + ".out.message")) {
+                edxlMessage = edxlHandler.deserializeJsonEDXL(receivedEdxl);
+                log.info(" [x] Received from '" + receivedRoutingKey + "':" + edxlHandler.prettyPrintJsonEDXL(edxlMessage));
+            } else {
+                edxlMessage = edxlHandler.deserializeXmlEDXL(receivedEdxl);
+                log.info(" [x] Received from '" + receivedRoutingKey + "':" + edxlHandler.prettyPrintXmlEDXL(edxlMessage));
+            }
+
         } catch (IOException e) {
-            log.error("Could not parse message " + message.getMessageProperties().getMessageId()
-                    + "coming from " + message.getMessageProperties().getConsumerQueue());
+            log.error("Could not parse message " + receivedEdxl + " coming from " + message.getMessageProperties().getConsumerQueue());
             // TODO (bbo) : if we end using a "INFO" channel, we should send an INFO message for this type of errors.
             //  if the message is wrongly formatted client-side we should inform the client.
             //  ----
@@ -49,15 +57,26 @@ public class Dispatcher {
 
         String queueType = edxlMessage.getDistributionKind().equals(DistributionKind.ACK) ? "ack" : "message";
         String queueName = edxlMessage.getDescriptor().getExplicitAddress().getExplicitAddressValue() + ".in." + queueType;
-        Message forwardedMsg = new Message(message.getBody(), message.getMessageProperties());
+
 
         try {
+            String edxlString = convertToJson(edxlMessage) ?
+                    edxlHandler.prettyPrintJsonEDXL(edxlMessage) :
+                    edxlHandler.prettyPrintXmlEDXL(edxlMessage);
+
+            Message forwardedMsg = new Message(edxlString.getBytes(StandardCharsets.UTF_8), message.getMessageProperties());
             rabbitTemplate.send("", queueName, forwardedMsg);
-            log.info("  ↳ [x] Sent to '" + queueName + "':" + edxlMessage.getDistributionID());
+            log.info("  ↳ [x] Sent to '" + queueName + "':" + edxlString);
         } catch (AmqpException e) {
             // TODO (bbo) : if we catch an AmqpException, ii won't be retried.
             //  We should instead define a retry strategy.
-            log.error("[ERROR] Failed to dispatch message " + forwardedMsg + ". Raised exception: " + e);
+            log.error("[ERROR] Failed to dispatch message " + receivedEdxl + ". Raised exception: " + e);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
         }
+    }
+
+    private boolean convertToJson(EdxlMessage edxlMessage) {
+        return edxlMessage.getDescriptor().getExplicitAddress().getExplicitAddressValue().equalsIgnoreCase(JSON_SCHEME);
     }
 }

@@ -76,7 +76,7 @@
                                     <commune>Melun</commune>
                                 </alertLocation>
                                 <call>
-                                    <source>requérant</source>
+                                    <source>requerant</source>
                                 </call>
                                 <caller>
                                     <callerURI>manual</callerURI>
@@ -98,7 +98,7 @@
                                     </locationKind>
                                     <healthMotive>
                                         <code>M01.01</code>
-                                        <label>Détresse vitale|Suspicion d'arrêt cardiaque, mort subite</label>
+                                        <label>Malaise cardiaque</label>
                                     </healthMotive>
                                     <victims>
                                         <count>1</count>
