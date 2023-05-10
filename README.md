@@ -1,6 +1,6 @@
 <h1 align="center">Hub Santé</h1>
 <p align="center">
-  <img alt="Version" src="https://img.shields.io/badge/version-0.4-blue.svg?cacheSeconds=2592000" />
+  <img alt="Version" src="https://img.shields.io/badge/version-0.6-blue.svg?cacheSeconds=2592000" />
   <a href="#" target="_blank">
     <img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg" />
   </a>
@@ -12,33 +12,9 @@
 
 ## Usage
 
-La commande `docker compose up` permet de lancer un Container RabbitMQ localement accessible à [amqp://localhost:5672](amqp://localhost:5672). L'interface d'administration est accessible par http://localhost:15672. 
+Le dossier [`tutorials/`](client/src/main/java/com/tutorials) contient les informations et le code pour faire tourner les [tutoriels](https://www.rabbitmq.com/getstarted.html) Java proposés par RabbitMQ.
 
-L'ajout du flag `--build` permet de re-construire les images et bénéficier des modifications effectuées localement.
-
-La commande `docker compose up rabbitmq` permet de ne lancer que le cluster RabbitMQ.
-
-Les commandes suivantes permettent de faire tourner et d'interagir avec un Hub Santé local :
-```
-# Activate Hub Santé dispatcher
-gradle -Pmain=com.hubsante.Dispatcher run
-
-# Send messages
-CLIENT_ID=Self-Sante; gradle -Pmain=com.hubsante.Producer run --args "$CLIENT_ID.out.message {'to': '$CLIENT_ID', 'content': 'test'}"
-
-# Consume messages
-CLIENT_ID=Self-Sante; gradle -Pmain=com.hubsante.Consumer run --args "$CLIENT_ID.in.message"     
-```
-Les commandes suivantes permettent de construire et utiliser l'image Docker du Hub Santé localement sur un Mac M1 (les flags `platform` peuvent être supprimés pour les puces non Apple Silicon | Ref.: https://docs.docker.com/desktop/troubleshoot/known-issues/)
-```
-docker buildx build --platform linux/x86_64 -t dispatcher .
-docker run --platform linux/x86_64 --network="host" dispatcher
-```
-
-
-Le dossier Java [`tutorials/`](client/src/main/java/com/tutorials) contient les informations et le code pour faire tourner les [tutoriels](https://www.rabbitmq.com/getstarted.html) proposés par RabbitMQ.
-
-Le dossier [`python/`](./python) contient les informations et le code pour faire tourner un Hub RabbitMQ localement avec un producteur et un consommateur.
+Pour faire tourner le Hub Santé localement ou lancer les `Consumer` et `Producer` Java servant d'exemple d'implémentation d'un client du Hub Santé, veuillez vous référez au dossier [`docs/`](./docs).
 
 ## Auteur
 
