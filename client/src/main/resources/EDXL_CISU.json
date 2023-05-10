@@ -82,7 +82,7 @@
                   "commune": "Melun"
                 },
                 "call": {
-                  "source": "requérant"
+                  "source": "requerant"
                 },
                 "caller": {
                   "callerURI": "manual"
@@ -104,7 +104,7 @@
                   },
                   "healthMotive": {
                     "code": "M01.01",
-                    "label": "Détresse vitale|Suspicion d'arrêt cardiaque, mort subite"
+                    "label": "Malaise cardiaque"
                   },
                   "victims": {
                     "count": "1"

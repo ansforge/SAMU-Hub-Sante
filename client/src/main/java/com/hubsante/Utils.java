@@ -25,4 +25,8 @@ public class Utils {
             return "anonymous.info";
         return strings[0];
     }
+
+    static boolean isJsonScheme(String scheme) {
+        return scheme.equalsIgnoreCase("json");
+    }
 }

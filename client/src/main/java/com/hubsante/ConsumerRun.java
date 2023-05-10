@@ -28,18 +28,24 @@ public class ConsumerRun {
         String routingKey = getRouting(args);
         String clientId = getClientId(args);
         String ackRoutingKey = clientId + ".out.ack";
+        String languageType = args[1];
         Consumer consumer = new Consumer(HUB_HOSTNAME, HUB_PORT, EXCHANGE_NAME,
                 routingKey, ackRoutingKey, clientId) {
             @Override
             protected void deliverCallback(String consumerTag, Delivery delivery) throws IOException {
                 String routingKey = delivery.getEnvelope().getRoutingKey();
-                // registering time module is mandatory to handle date times
-                ObjectMapper mapper = new ObjectMapper()
-                        .registerModule(new JavaTimeModule())
-                        .disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE);
 
-                EdxlMessage edxlMessage = mapper.readValue(delivery.getBody(), EdxlMessage.class);
-                System.out.println(" [x] Received from '" + routingKey + "':'" + edxlMessage + "'");
+                EdxlMessage edxlMessage;
+                String msgString;
+
+                if(isJsonScheme(languageType)) {
+                    edxlMessage = this.mapper.readValue(delivery.getBody(), EdxlMessage.class);
+                    msgString = this.mapper.writerWithDefaultPrettyPrinter().writeValueAsString(edxlMessage);
+                } else {
+                    edxlMessage = this.xmlMapper.readValue(delivery.getBody(), EdxlMessage.class);
+                    msgString = this.xmlMapper.writerWithDefaultPrettyPrinter().writeValueAsString(edxlMessage);
+                }
+                System.out.println(" [x] Received from '" + routingKey + "':'" + msgString + "'");
 
                 // Sending back technical ack as delivery responsibility is removed from the Hub
                 consumeChannel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
@@ -47,8 +53,17 @@ public class ConsumerRun {
                 // Sending back functional ack as info has been processed on the Consumer side
                 if (!edxlMessage.getDistributionKind().equals(DistributionKind.ACK)) {
                     EdxlMessage ackEdxl = this.generateFunctionalAckMessage(edxlMessage);
-                    this.producerAck.publish(this.fileAckName, ackEdxl);
-                    System.out.println("  ↳ [x] Sent  to '" + this.fileAckName + "':'" + ackEdxl + "'");
+                    if (isJsonScheme(languageType)) {
+                        this.producerAck.publish(this.fileAckName, ackEdxl);
+                    } else {
+                        this.producerAck.xmlPublish(this.fileAckName, ackEdxl);
+                    }
+
+                    String ackEdxlString = isJsonScheme(languageType) ?
+                            mapper.writerWithDefaultPrettyPrinter().writeValueAsString(ackEdxl) :
+                            xmlMapper.writerWithDefaultPrettyPrinter().writeValueAsString(ackEdxl);
+
+                    System.out.println("  ↳ [x] Sent  to '" + this.fileAckName + "':'" + ackEdxlString + "'");
                 } else {
                     // Inform user that partner has correctly processed the message
                     System.out.println("  ↳ [x] Partner has processed the message.");
