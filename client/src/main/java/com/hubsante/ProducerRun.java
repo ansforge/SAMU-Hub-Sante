@@ -7,7 +7,6 @@ import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.hubsante.model.edxl.EdxlMessage;
 
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -15,7 +14,7 @@ import static com.hubsante.Utils.getRouting;
 import static com.hubsante.Utils.isJsonScheme;
 
 public class ProducerRun {
-    private static final String HUB_HOSTNAME = "localhost";
+    private static final String HUB_HOSTNAME = "hubsante.esante.gouv.fr";
     private static final int HUB_PORT = 5671;
     private static final String EXCHANGE_NAME = "hubsante";
 

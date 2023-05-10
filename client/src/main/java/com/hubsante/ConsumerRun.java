@@ -1,8 +1,5 @@
 package com.hubsante;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.hubsante.model.edxl.DistributionKind;
 import com.hubsante.model.edxl.EdxlMessage;
 import com.rabbitmq.client.Delivery;
@@ -14,7 +11,7 @@ import static com.hubsante.Utils.*;
 public class ConsumerRun {
 
     private static final String EXCHANGE_NAME = "hubsante";
-    private static final String HUB_HOSTNAME = "localhost";
+    private static final String HUB_HOSTNAME = "hubsante.esante.gouv.fr";
     private static final int HUB_PORT = 5671;
 
     public static void main(String[] args) throws Exception {
