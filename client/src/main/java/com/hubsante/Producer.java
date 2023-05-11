@@ -77,7 +77,7 @@ public class Producer {
                     this.exchangeName,
                     routingKey,
                     MessageProperties.PERSISTENT_TEXT_PLAIN,
-                    mapper.writeValueAsString(msg).getBytes(StandardCharsets.UTF_8));
+                    mapper.writerWithDefaultPrettyPrinter().writeValueAsString(msg).getBytes(StandardCharsets.UTF_8));
         } catch (IOException e) {
             // we log error here and propagate the exception to handle it in the business layer
             log.error("Could not publish message with id " + msg.getDistributionID(), e);
@@ -104,7 +104,7 @@ public class Producer {
                     this.exchangeName,
                     routingKey,
                     MessageProperties.PERSISTENT_TEXT_PLAIN,
-                    xmlMapper.writeValueAsString(msg).getBytes(StandardCharsets.UTF_8));
+                    xmlMapper.writerWithDefaultPrettyPrinter().writeValueAsString(msg).getBytes(StandardCharsets.UTF_8));
         } catch (IOException e) {
             // we log error here and propagate the exception to handle it in the business layer
             log.error("Could not publish message with id " + msg.getDistributionID(), e);

@@ -3,7 +3,7 @@
                   xmlns="urn:oasis:names:tc:emergency:EDXL:DE:2.0"
                   xmlns:xlink="http://www.w3.org/1999/xlink"
                   xmlns:ct="urn:oasis:names:tc:emergency:edxl:ct:1.0">
-    <distributionID>2608323d-507d-4cbf-bf74-52007f8124ea</distributionID>
+    <distributionID>samu050_2608323d-507d-4cbf-bf74-52007f8124ea</distributionID>
     <senderID>fr.health.hub.samu110</senderID>
     <dateTimeSent>2022-09-27T08:23:34+02:00</dateTimeSent>
     <dateTimeExpires>2072-09-27T08:23:34+02:00</dateTimeExpires>
@@ -13,7 +13,7 @@
         <language>fr-FR</language>
         <explicitAddress>
             <explicitAddressScheme>fr.health.hub.samu110</explicitAddressScheme>
-            <explicitAddressValue>fr.fire.nexsis.sdis23</explicitAddressValue>
+            <explicitAddressValue>fr.fire.nexsis</explicitAddressValue>
         </explicitAddress>
     </descriptor>
     <content xlink:type="resource">

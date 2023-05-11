@@ -34,7 +34,7 @@ public class ProducerRun {
         producer.connect(tlsConf);
 
         // registering extra module is mandatory to handle date time
-        ObjectMapper mapper = new ObjectMapper()
+        ObjectMapper jsonMapper = new ObjectMapper()
                 .registerModule(new JavaTimeModule())
                 .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
                 .disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE);
@@ -46,7 +46,7 @@ public class ProducerRun {
                 .disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE);
 
         if (isJsonScheme(fileType)) {
-            EdxlMessage edxlMessage = mapper.readValue(messageString, EdxlMessage.class);
+            EdxlMessage edxlMessage = jsonMapper.readValue(messageString, EdxlMessage.class);
             producer.publish(routingKey, edxlMessage);
         } else {
             EdxlMessage edxlMessage = xmlMapper.readValue(messageString, EdxlMessage.class);

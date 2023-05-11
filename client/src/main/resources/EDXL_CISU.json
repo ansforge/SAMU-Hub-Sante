@@ -1,5 +1,5 @@
 {
-  "distributionID": "2608323d-507d-4cbf-bf74-52007f8124ea",
+  "distributionID": "samu050_2608323d-507d-4cbf-bf74-52007f8124ea",
   "senderID": "fr.health.hub.samu050",
   "dateTimeSent": "2022-09-27T08:23:34+02:00",
   "dateTimeExpires": "2072-09-27T08:23:34+02:00",
@@ -9,7 +9,7 @@
     "language": "fr-FR",
     "explicitAddress": {
       "explicitAddressScheme": "fr.health.hub.samu050",
-      "explicitAddressValue": "fr.fire.nexsis.sdis23"
+      "explicitAddressValue": "fr.fire.nexsis"
     }
   },
   "content": {
