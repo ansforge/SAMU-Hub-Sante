@@ -19,6 +19,7 @@ public class Producer {
 
     private static final Logger log = LoggerFactory.getLogger(Producer.class);
     private Channel channelProducer;
+    private Connection connection;
     /** serveur distant */
     private String host;
 
@@ -44,13 +45,17 @@ public class Producer {
             factory.useSslProtocol(tlsConf.getSslContext());
         }
         factory.enableHostnameVerification();
-        Connection connection = factory.newConnection();
+        this.connection = factory.newConnection();
         if (connection != null) {
             this.channelProducer = connection.createChannel();
             this.channelProducer.exchangeDeclare(this.exchangeName, BuiltinExchangeType.TOPIC, true);
         }
     }
 
+    public void close() throws IOException, TimeoutException {
+        this.channelProducer.close();
+        this.connection.close();
+    }
 
     /**
      * Publication d'un message

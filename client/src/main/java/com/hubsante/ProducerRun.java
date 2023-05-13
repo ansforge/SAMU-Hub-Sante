@@ -52,5 +52,6 @@ public class ProducerRun {
             EdxlMessage edxlMessage = xmlMapper.readValue(messageString, EdxlMessage.class);
             producer.xmlPublish(routingKey, edxlMessage);
         }
+        producer.close();
     }
 }

@@ -68,6 +68,6 @@ public class ConsumerRun {
             }
         };
         consumer.connect(tlsConf);
-        System.out.println(" [*] Waiting for messages. To exit press CTRL+C");
+        System.out.println(" [*] Waiting for messages on " + routingKey + ". To exit press CTRL+C");
     }
 }
