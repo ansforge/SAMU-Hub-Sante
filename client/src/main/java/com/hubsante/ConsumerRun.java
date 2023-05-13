@@ -1,9 +1,7 @@
 package com.hubsante;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.hubsante.message.*;
+import com.hubsante.model.edxl.DistributionKind;
+import com.hubsante.model.edxl.EdxlMessage;
 import com.rabbitmq.client.Delivery;
 
 import java.io.IOException;
@@ -13,7 +11,7 @@ import static com.hubsante.Utils.*;
 public class ConsumerRun {
 
     private static final String EXCHANGE_NAME = "hubsante";
-    private static final String HUB_HOSTNAME = "localhost";
+    private static final String HUB_HOSTNAME = "hubsante.esante.gouv.fr";
     private static final int HUB_PORT = 5671;
 
     public static void main(String[] args) throws Exception {
@@ -27,29 +25,42 @@ public class ConsumerRun {
         String routingKey = getRouting(args);
         String clientId = getClientId(args);
         String ackRoutingKey = clientId + ".out.ack";
+        String languageType = args[1];
         Consumer consumer = new Consumer(HUB_HOSTNAME, HUB_PORT, EXCHANGE_NAME,
                 routingKey, ackRoutingKey, clientId) {
             @Override
             protected void deliverCallback(String consumerTag, Delivery delivery) throws IOException {
                 String routingKey = delivery.getEnvelope().getRoutingKey();
-                // registering time module is mandatory to handle date times
-                ObjectMapper mapper = new ObjectMapper()
-                        .registerModule(new JavaTimeModule())
-                        .disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE);
 
-                BasicMessage basicMessage = mapper.readValue(delivery.getBody(), BasicMessage.class);
-                CisuMessage cisuMessage = convertMessageFromType(mapper, basicMessage, delivery.getBody());
+                EdxlMessage edxlMessage;
+                String msgString;
 
-                System.out.println(" [x] Received '" + routingKey + "':'" + cisuMessage + "'");
+                if(isJsonScheme(languageType)) {
+                    edxlMessage = this.mapper.readValue(delivery.getBody(), EdxlMessage.class);
+                    msgString = this.mapper.writerWithDefaultPrettyPrinter().writeValueAsString(edxlMessage);
+                } else {
+                    edxlMessage = this.xmlMapper.readValue(delivery.getBody(), EdxlMessage.class);
+                    msgString = this.xmlMapper.writerWithDefaultPrettyPrinter().writeValueAsString(edxlMessage);
+                }
+                System.out.println(" [x] Received from '" + routingKey + "':'" + msgString + "'");
 
                 // Sending back technical ack as delivery responsibility is removed from the Hub
                 consumeChannel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
 
                 // Sending back functional ack as info has been processed on the Consumer side
-                if (!basicMessage.getMsgType().getValue().equals("ACK")) {
-                    AckMessage ackMessage = this.generateFunctionalAckMessage(basicMessage);
-                    this.producerAck.publish(this.fileAckName, ackMessage);
-                    System.out.println("  ↳ [x] Sent '" + this.fileAckName + "':'" + ackMessage + "'");
+                if (!edxlMessage.getDistributionKind().equals(DistributionKind.ACK)) {
+                    EdxlMessage ackEdxl = this.generateFunctionalAckMessage(edxlMessage);
+                    if (isJsonScheme(languageType)) {
+                        this.producerAck.publish(this.fileAckName, ackEdxl);
+                    } else {
+                        this.producerAck.xmlPublish(this.fileAckName, ackEdxl);
+                    }
+
+                    String ackEdxlString = isJsonScheme(languageType) ?
+                            mapper.writerWithDefaultPrettyPrinter().writeValueAsString(ackEdxl) :
+                            xmlMapper.writerWithDefaultPrettyPrinter().writeValueAsString(ackEdxl);
+
+                    System.out.println("  ↳ [x] Sent  to '" + this.fileAckName + "':'" + ackEdxlString + "'");
                 } else {
                     // Inform user that partner has correctly processed the message
                     System.out.println("  ↳ [x] Partner has processed the message.");

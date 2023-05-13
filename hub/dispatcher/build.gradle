@@ -6,7 +6,7 @@ plugins {
 }
 
 group = 'com.hubsante'
-version = '0.6-SNAPSHOT'
+version = '0.7-SNAPSHOT'
 
 java {
 	toolchain {
@@ -41,8 +41,10 @@ dependencies {
 	implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.12.5'
 	implementation 'com.networknt:json-schema-validator:1.0.72'
 	implementation 'org.projectlombok:lombok'
+
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	annotationProcessor 'org.projectlombok:lombok'
+
 	testAnnotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.amqp:spring-rabbit-test'

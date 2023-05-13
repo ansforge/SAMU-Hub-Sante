@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified"
+           targetNamespace="http://tacticalsituationobject.org/schemas/EMSI/2_0"
+           xmlns:emsi="http://tacticalsituationobject.org/schemas/EMSI/2_0">
+  <xs:include schemaLocation="common.2015.xsd"/>
+
+  <xs:element name="mission">
+    <xs:annotation>
+      <xs:documentation>
+        Identifie les missions de l'EMSI
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="type" maxOccurs="unbounded">
+          <xs:annotation>
+            <xs:documentation>
+              Définit le type de mission
+            </xs:documentation>
+          </xs:annotation>
+          <xs:simpleType>
+            <xs:restriction base="xs:token">
+              <xs:maxLength value="80"/>
+            </xs:restriction>
+          </xs:simpleType>
+        </xs:element>
+        <xs:element name="freetext" type="emsi:freeText" minOccurs="0" >
+          <xs:annotation>
+            <xs:documentation>
+              Description de la mission en texte libre
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="id" type="emsi:id" minOccurs="0" >
+          <xs:annotation>
+            <xs:documentation>
+              Définit l'identifiant unique de la mission dans le nœud actuel.
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="main_mission_id" type="emsi:id" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation>
+              Définit le lien avec la mission principale
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="org_id" type="emsi:id" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation>
+              Définit l'identifiant unique du nœud qui contrôle la mission
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="name" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation>
+              Définit le nom de la mission
+            </xs:documentation>
+          </xs:annotation>
+          <xs:simpleType>
+            <xs:restriction base="xs:string">
+              <xs:maxLength value="80"/>
+            </xs:restriction>
+          </xs:simpleType>
+        </xs:element>
+        <xs:element name="status" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation>
+              Définit le statut actuel de la mission
+              * ABO = mission avortée
+              * CANCLD = mission annulée
+              * COM = mission terminée,
+              * IPR = mission en cours (2 chiffres supplémentaire tels que IPR50 peut préciser le degré d’achèvement de la
+              mission),
+              * NST = mission non débuté,
+              * PAU = mission en pause ou démarrage proche
+            </xs:documentation>
+          </xs:annotation>
+          <xs:simpleType>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="ABO"/>
+              <xs:enumeration value="CANCLD"/>
+              <xs:enumeration value="COM"/>
+              <xs:enumeration value="IPR"/>
+              <xs:enumeration value="NST"/>
+              <xs:enumeration value="PAU"/>
+            </xs:restriction>
+          </xs:simpleType>
+        </xs:element>
+        <xs:element name="start_time" type="emsi:date_type" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation>
+              Chrono-date de la début de mission
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="end_time" type="emsi:date_type" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation>
+              Chrono-date de la fin de mission
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="resource_id" type="emsi:longId" minOccurs="0" maxOccurs="unbounded">
+          <xs:annotation>
+            <xs:documentation>
+              Définit le lien avec la description dans le(s) élément(s) RESOURCE / ID
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="parent_mission_id" type="emsi:id" minOccurs="0" maxOccurs="unbounded">
+          <xs:annotation>
+            <xs:documentation>
+              Définit la liste des missions qui doivent être terminées avant le début de cette mission
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="child_mission_id" type="emsi:id" minOccurs="0" maxOccurs="unbounded">
+          <xs:annotation>
+            <xs:documentation>
+              Définit la liste des missions qui doivent être commencées quand cette mission est finie.
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="position" type="emsi:locationType">
+          <xs:annotation>
+            <xs:documentation>
+              Définit la position des éléments de cette mission
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="priority" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation>
+              Définit le niveau de priorité de la mission
+            </xs:documentation>
+          </xs:annotation>
+          <xs:simpleType>
+            <xs:restriction base="xs:nonNegativeInteger">
+              <xs:minExclusive value="0"/>
+              <xs:maxExclusive value="5"/>
+            </xs:restriction>
+          </xs:simpleType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

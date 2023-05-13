@@ -2,24 +2,26 @@ package com.hubsante;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.hubsante.message.*;
+import com.hubsante.model.edxl.EdxlMessage;
 
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import static com.hubsante.Utils.convertMessageFromType;
 import static com.hubsante.Utils.getRouting;
+import static com.hubsante.Utils.isJsonScheme;
 
 public class ProducerRun {
-    private static final String HUB_HOSTNAME = "localhost";
+    private static final String HUB_HOSTNAME = "hubsante.esante.gouv.fr";
     private static final int HUB_PORT = 5671;
     private static final String EXCHANGE_NAME = "hubsante";
 
     public static void main(String[] args) throws Exception {
         String routingKey = getRouting(args);
-        String json = Files.readString(Path.of(args[1]));
+        String fileType = args[1];
+        String messageString = Files.readString(Path.of(args[2]));
 
         TLSConf tlsConf = new TLSConf(
                 "TLSv1.2",
@@ -32,12 +34,23 @@ public class ProducerRun {
         producer.connect(tlsConf);
 
         // registering extra module is mandatory to handle date time
-        ObjectMapper mapper = new ObjectMapper()
+        ObjectMapper jsonMapper = new ObjectMapper()
                 .registerModule(new JavaTimeModule())
+                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
                 .disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE);
-        BasicMessage basicMessage = mapper.readValue(json, BasicMessage.class);
-        CisuMessage cisuMessage = convertMessageFromType(mapper, basicMessage, json.getBytes(StandardCharsets.UTF_8));
 
-        producer.publish(routingKey, cisuMessage);
+        XmlMapper xmlMapper = (XmlMapper) new XmlMapper()
+                .registerModule(new JavaTimeModule())
+                .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+                .disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE);
+
+        if (isJsonScheme(fileType)) {
+            EdxlMessage edxlMessage = jsonMapper.readValue(messageString, EdxlMessage.class);
+            producer.publish(routingKey, edxlMessage);
+        } else {
+            EdxlMessage edxlMessage = xmlMapper.readValue(messageString, EdxlMessage.class);
+            producer.xmlPublish(routingKey, edxlMessage);
+        }
     }
 }
