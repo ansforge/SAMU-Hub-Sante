@@ -1,6 +1,6 @@
 <h1 align="center">Hub Santé</h1>
 <p align="center">
-  <img alt="Version" src="https://img.shields.io/badge/version-0.6-blue.svg?cacheSeconds=2592000" />
+  <img alt="Version" src="https://img.shields.io/badge/version-1.0-blue.svg?cacheSeconds=2592000" />
   <a href="#" target="_blank">
     <img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg" />
   </a>
@@ -12,9 +12,9 @@
 
 ## Usage
 
-Le dossier [`tutorials/`](client/src/main/java/com/tutorials) contient les informations et le code pour faire tourner les [tutoriels](https://www.rabbitmq.com/getstarted.html) Java proposés par RabbitMQ.
+Vous êtes un éditeur et vous souhaitez vous raccorder au Hub Santé -> rendez-vous sur votre page dédiée [`docs/`](docs/README.md)
 
-Pour faire tourner le Hub Santé localement ou lancer les `Consumer` et `Producer` Java servant d'exemple d'implémentation d'un client du Hub Santé, veuillez vous référez au dossier [`docs/`](./docs).
+Vous êtes un développeur et vous voulez contribuez ou reproduire le Hub Santé -> rendez-vous sur la page développeur [`hub/`](hub/README.md) 
 
 ## Auteur
 
