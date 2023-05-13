@@ -42,7 +42,6 @@ jobs:
           git config --local user.email "Docs-Generator[bot]@users.noreply.github.com"
           git config --local user.name "Docs-Generator[bot]"
           git add models/generated
-          git add hub/dispatcher/src/main/java/com/hubsante/message/*
           # Commit only if needed | Ref.: https://stackoverflow.com/a/8123841/10115198
           git diff-index --quiet HEAD || git commit -m "⚙️ Auto-génération des classes"
 
