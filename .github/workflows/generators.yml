@@ -1,11 +1,11 @@
-name: Code Generator Action
+name: ⚙️ Auto-Generator
 
 on: pull_request
 
 jobs:
   docs_site:
     runs-on: ubuntu-latest
-    name: Generate and commit docs site files
+    name: 📄 Docs site files
     steps:
       # first checkout your code
       - name: Checkout 🛎
@@ -46,17 +46,13 @@ jobs:
           branch: ${{ github.head_ref }}
 
   models:
-    name: Generate and commit data models
+    name: 📦 Data models
     runs-on: ubuntu-latest
 
     # Wait for docs_site commit to be done to avoid push errors / commit Race Condition
     # "Updates were rejected because the remote contains work that you do not have locally"
     # Ref.: https://stackoverflow.com/a/65698892
     needs: docs_site
-
-    strategy:
-      matrix:
-        language: [ ubuntu-latest ]
 
     steps:
       # first checkout your code
