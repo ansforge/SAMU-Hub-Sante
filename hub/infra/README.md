@@ -70,6 +70,17 @@ kubectl create configmap definitions --from-file=../rabbitmq/definitions.json
 kubectl apply -f rabbitmq.yaml
 ```
 
+## Updates
+### Definitions update
+```bash
+kubectl delete configmap definitions          
+kubectl create configmap definitions --from-file=../rabbitmq/definitions.json
+# Trigger definitions reload (might need to be done several time as there seem to be a delay for the new config map to take effect)
+kubectl exec -it rabbitmq-server-0 -- rabbitmqctl import_definitions /tmp/rabbitmq/config/definitions.json
+# Or full Pod restart (to be avoided)
+kubectl delete pods -l app.kubernetes.io/component=rabbitmq
+```
+
 ## Local development
 ```bash
 # Localhost exposition of the Hub

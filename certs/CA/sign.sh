@@ -16,6 +16,6 @@ else
     echo "> Add certificate to Client truststore (from repository root): keytool -import -alias RabbitMQHubSante -file hub/rabbitmq/certs/hub.crt -keystore certs/trustStore"
     echo "> Copy trustStore to be used in Dispatcher (from repository root): cp certs/trustStore dispatcher/src/main/jib/certs/"
   else
-    openssl x509 -req -CA rootCA.crt -CAkey rootCA.key -in "$DOMAIN".csr -out "$DOMAIN".crt -days 365 -CAcreateserial
+    openssl x509 -req -CA rootCA.crt -CAkey rootCA.key -in "$DOMAIN".csr -out "$DOMAIN".crt -days 365 -CAcreateserial -extfile client.ext
   fi
 fi
