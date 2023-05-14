@@ -7,8 +7,9 @@ naviguer le code plus facilement.
 
 ## 📚 Architecture
 - `docs/` est le point d'entrée pour les clients du Hub Santé
-  - [`cookbook.md`](./cookbook.md) contient différents snippets de code utiles pour interagir avec le Hub Santé (lancer les Producer/Consumer Java, générer votre certificat, ...)
+  - [`DST`](./DST) contient la dernière version du DST ainsi que les fichiers complémentaires (schémas, exemples, ...) 
   - [`specs/`](./specs) contient le site présentant le modèle de données de façon interactive et conviviale
+  - [`cookbook.md`](./cookbook.md) contient différents snippets de code utiles pour interagir avec le Hub Santé (lancer les Producer/Consumer Java, générer votre certificat, ...)
   - `vXX.md` contient les informations concernant la dernière version du Hub Santé (voir section ci-dessous)
 - [`certs/`](../certs) contient les certificats clients pour les tests ainsi que les informations pour générer votre certificat
 - [`client/`](../client) contient l'implémentation d'un client en Java 
