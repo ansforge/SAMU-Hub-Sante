@@ -23,6 +23,7 @@ certs/CA/
 !certs/CA/sign.sh
 !certs/CA/rootCA.crt
 !certs/CA/hub.ext
+!certs/CA/client.ext
 
 # Needed as GitHub action for AsyncAPI generation installs npm packages
 node_modules/

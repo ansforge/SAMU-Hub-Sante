@@ -16,5 +16,5 @@ else
   # 1-3. One-liner for Self-Signed Certificate (remove -nodes to encrypt key)
   # openssl req -newkey rsa:2048 -nodes -keyout "$DOMAIN".key -x509 -days 1095 -out "$DOMAIN".crt
 
-  echo "4. Send $DOMAIN.csr to tour CA so they can sign it."
+  echo "4. Send $DOMAIN.csr to your CA so they can sign it."
 fi

@@ -61,6 +61,10 @@
       "tags": [
         "administrator"
       ]
+    },
+    {
+      "name": "fr.health.hub.test",
+      "tags": []
     }
   ],
   "permissions": [
@@ -73,6 +77,13 @@
     },
     {
       "user": "admin",
+      "vhost": "/",
+      "configure": ".*",
+      "read": ".*",
+      "write": ".*"
+    },
+    {
+      "user": "fr.health.hub.test",
       "vhost": "/",
       "configure": ".*",
       "read": ".*",
