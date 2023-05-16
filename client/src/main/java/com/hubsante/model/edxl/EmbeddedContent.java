@@ -1,6 +1,7 @@
 package com.hubsante.model.edxl;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.hubsante.model.cisu.AckMessage;
 import com.hubsante.model.cisu.CreateEventMessage;
 import com.hubsante.model.emsi.Emsi;
 
@@ -15,6 +16,8 @@ public class EmbeddedContent {
 
     private GenericAckMessage genericAckMessage;
 
+    private AckMessage ackMessage;
+
     public EmbeddedContent() {
     }
 
@@ -25,6 +28,8 @@ public class EmbeddedContent {
     public EmbeddedContent(Emsi emsi) {
         this.emsi = emsi;
     }
+
+    public EmbeddedContent(AckMessage ackMessage) { this.ackMessage = ackMessage; }
 
     public EmbeddedContent(GenericAckMessage genericAckMessage) {
         this.genericAckMessage = genericAckMessage;
@@ -52,6 +57,14 @@ public class EmbeddedContent {
 
     public void setGenericAckMessage(GenericAckMessage genericAckMessage) {
         this.genericAckMessage = genericAckMessage;
+    }
+
+    public AckMessage getAckMessage() {
+        return ackMessage;
+    }
+
+    public void setAckMessage(AckMessage ackMessage) {
+        this.ackMessage = ackMessage;
     }
 
     @Override

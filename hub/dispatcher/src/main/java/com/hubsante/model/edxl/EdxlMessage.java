@@ -1,6 +1,9 @@
 package com.hubsante.model.edxl;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.hubsante.model.cisu.CisuMessage;
+import com.hubsante.model.cisu.CreateEventMessage;
+import com.hubsante.model.emsi.Emsi;
 
 import java.util.Objects;
 
@@ -15,6 +18,14 @@ public class EdxlMessage extends EdxlEnvelope {
 
     public void setContent(Content content) {
         this.content = content;
+    }
+
+    public void setContentFrom(CreateEventMessage createEventMessage) {
+        this.setContent(new Content(new ContentObject(new ContentWrapper(new EmbeddedContent(createEventMessage)))));
+    }
+
+    public void setContentFrom(Emsi emsi) {
+        this.setContent(new Content(new ContentObject(new ContentWrapper(new EmbeddedContent(emsi)))));
     }
 
     @Override

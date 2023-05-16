@@ -5,6 +5,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.hubsante.model.builders.AckMessageBuilder;
+import com.hubsante.model.builders.EdxlMessageBuilder;
+import com.hubsante.model.cisu.*;
 import com.hubsante.model.edxl.*;
 import com.rabbitmq.client.*;
 
@@ -124,28 +127,40 @@ public abstract class Consumer {
     protected abstract void deliverCallback(String consumerTag, Delivery delivery) throws IOException;
 
     protected EdxlMessage generateFunctionalAckMessage(EdxlMessage receivedMessage) {
-        EdxlMessage ackEdxl = new EdxlMessage();
 
-        ackEdxl.setDistributionID(clientId + "_" + String.valueOf(UUID.randomUUID()));
-        ackEdxl.setSenderID(clientId);
-        ackEdxl.setDateTimeSent(OffsetDateTime.of(LocalDateTime.now(), ZoneOffset.of("+02")));
-        ackEdxl.setDateTimeExpires(OffsetDateTime.of(LocalDateTime.now().plusYears(50), ZoneOffset.of("+02")));
-        ackEdxl.setDistributionKind(DistributionKind.ACK);
-        ackEdxl.setDistributionStatus(receivedMessage.getDistributionStatus());
+        //TODO bbo : CisuAckMessage : define recipient format
+        // long-clientID & short-clientID ?
+        AddresseeType recipient = new AddresseeType(receivedMessage.getSenderID(), receivedMessage.getSenderID());
 
+        AckMessage cisuAckMessage = new AckMessageBuilder()
+                .withMessageId(clientId + "_" + UUID.randomUUID())
+                .withSender(new AddresseeType(clientId, clientId))
+                .withSentAt(OffsetDateTime.of(LocalDateTime.now(), ZoneOffset.of("+02")))
+                .withMsgType(MsgType.ACK)
+                .withStatus(Status.ACTUAL)
+                .withRecipients(new Recipients(new AddresseeType[]{recipient}))
+                .withAckMessage(new AckMessageId(receivedMessage.getDistributionID()))
+                .build();
+
+        // TODO bbo/rfd : choose what to do with scheme : senderID ? hubsante ?
         ExplicitAddress explicitAddress = new ExplicitAddress();
-        ExplicitAddress receivedAddress = receivedMessage.getDescriptor().getExplicitAddress();
-        explicitAddress.setExplicitAddressScheme(receivedAddress.getExplicitAddressValue());
-        explicitAddress.setExplicitAddressValue(receivedAddress.getExplicitAddressScheme());
+        explicitAddress.setExplicitAddressScheme(receivedMessage.getSenderID());
+        explicitAddress.setExplicitAddressValue(receivedMessage.getSenderID());
 
         Descriptor descriptor = new Descriptor();
+        // TODO bbo : keep/drop track of language ?
         descriptor.setLanguage(receivedMessage.getDescriptor().getLanguage());
         descriptor.setExplicitAddress(explicitAddress);
 
-        ackEdxl.setDescriptor(descriptor);
-        GenericAckMessage ackMessage = new GenericAckMessage(receivedMessage.getDistributionID());
-        ackEdxl.setContent(new Content(new ContentObject(new ContentWrapper(new EmbeddedContent(ackMessage)))));
-
-        return ackEdxl;
+        return new EdxlMessageBuilder()
+                .withDistributionID(clientId + "_" + UUID.randomUUID())
+                .withSenderID(clientId)
+                .withDateTimeSent(OffsetDateTime.of(LocalDateTime.now(), ZoneOffset.of("+02")))
+                .withDateTimeExpires(OffsetDateTime.of(LocalDateTime.now().plusYears(50), ZoneOffset.of("+02")))
+                .withDistributionKind(DistributionKind.ACK)
+                .withDistributionStatus(receivedMessage.getDistributionStatus())
+                .withDescriptor(descriptor)
+                .withContent(cisuAckMessage)
+                .build();
     }
 }
