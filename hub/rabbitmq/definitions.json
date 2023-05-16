@@ -65,6 +65,10 @@
     {
       "name": "fr.health.hub.test",
       "tags": []
+    },
+    {
+      "name": "fr.fire.nexsis.test",
+      "tags": []
     }
   ],
   "permissions": [
@@ -88,6 +92,13 @@
       "configure": ".*",
       "read": ".*",
       "write": ".*"
+    },
+    {
+      "user": "fr.fire.nexsis.test",
+      "vhost": "/",
+      "configure": "^(hubfire|federation: hubfire.*)$",
+      "write": "^(hubfire|federation: hubfire.*)$",
+      "read": "^(hubfire|federation: hubfire.*)$"
     }
   ]
 }

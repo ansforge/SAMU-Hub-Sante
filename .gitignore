@@ -24,7 +24,7 @@ certs/CA/
 !certs/CA/rootCA.crt
 !certs/CA/hub.ext
 !certs/CA/client.ext
-certs/fr.health.hub.test*
+certs/users/
 
 # Needed as GitHub action for AsyncAPI generation installs npm packages
 node_modules/
