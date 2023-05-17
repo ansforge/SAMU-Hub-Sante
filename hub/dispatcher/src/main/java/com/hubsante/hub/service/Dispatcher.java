@@ -65,6 +65,8 @@ public class Dispatcher {
                     edxlHandler.prettyPrintXmlEDXL(edxlMessage);
 
             Message forwardedMsg = new Message(edxlString.getBytes(StandardCharsets.UTF_8), message.getMessageProperties());
+            int receivedLength = message.getBody().length;
+            int fwdLength = message.getBody().length;
             rabbitTemplate.send("", queueName, forwardedMsg);
             log.info("  ↳ [x] Sent to '" + queueName + "':" + edxlString);
         } catch (AmqpException e) {
