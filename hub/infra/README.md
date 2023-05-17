@@ -1,6 +1,6 @@
 # Clusters
 ## Minikube local cluster
-To build a local Kubernetes cluster on your laptop and run the `kubectl` commands below, we recommend using [Minikube](https://kubernetes.io/docs/tutorials/hello-minikube/).
+To build a local Kubernetes cluster on your laptop and run the `kubectl` commands below, we recommend using Minikube ([install](https://minikube.sigs.k8s.io/docs/start/) / [tutorial](https://kubernetes.io/docs/tutorials/hello-minikube/)).
 ```bash
 # Start minikube cluster with Docker | Ref.: https://minikube.sigs.k8s.io/docs/drivers/docker/
 minikube start --driver=docker
