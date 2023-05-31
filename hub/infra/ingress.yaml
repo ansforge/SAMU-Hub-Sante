@@ -7,8 +7,13 @@ metadata:
     namespace: default
 spec:
   ingressClassName: nginx
+  tls:
+  - hosts:
+      - hub.esante.gouv.fr
+    secretName: landing-cert
   rules:
-    - http:
+    - host: "hub.esante.gouv.fr"
+      http:
         paths:
           - path: /
             pathType: Prefix
