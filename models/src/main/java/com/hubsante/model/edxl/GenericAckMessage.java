@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonRootName;
 @JsonRootName(value = "ackMessage")
 public class GenericAckMessage {
 
-    @JsonProperty(value = "ackDistributionId")
+    @JsonProperty(value = "ackDistributionId", required = true)
     private String ackDistributionId;
 
     public String getAckDistributionId() {
@@ -22,12 +22,5 @@ public class GenericAckMessage {
 
     public GenericAckMessage(String ackDistributionId) {
         this.ackDistributionId = ackDistributionId;
-    }
-
-    @Override
-    public String toString() {
-        return "GenericAckMessage{" +
-                "ackDistributionId='" + ackDistributionId + '\'' +
-                '}';
     }
 }

@@ -7,7 +7,7 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 
 import java.util.Objects;
 
-@JsonRootName(value = "JsonContent")
+@JsonRootName(value = "jsonContent")
 @JacksonXmlRootElement(localName = "ContentXML")
 public class ContentWrapper {
 

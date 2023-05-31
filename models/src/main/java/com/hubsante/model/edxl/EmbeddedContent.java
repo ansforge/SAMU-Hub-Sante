@@ -67,6 +67,10 @@ public class EmbeddedContent {
         return Objects.hash(message, emsi, genericAckMessage);
     }
 
+
+    /*
+    * I had to override this toString method to avoid null values
+     */
     @Override
     public String toString() {
         String embeddedContent = new StringBuilder()
