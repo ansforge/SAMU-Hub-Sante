@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="fr" class="no-js" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <title>Interface entre LRM & SI-SAMU - ANS</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="google-site-verification" content="Ra_OXTcYcctxzA0QXcpNtzPI8Rb5u4g8p7IQzvCngVM"/>
+    <link rel="shortcut icon" href="./img/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="https://use.typekit.net/jjx2ksb.css">
+    <link rel="stylesheet" href="./style/style-ans.css" type="text/css">
+    <link rel="stylesheet" href="./style/print.css" type="text/css" media="print">
+    <link rel="stylesheet" href="./style.css" type="text/css">
+</head>
+
+<body>
+<noscript>
+    <p class="js-off">Javascript est désactivé dans votre navigateur.</p>
+</noscript>
+
+<!-- Emplacement des Cookies -->
+
+<!-- Emplacement des Liens d'accès rapide -->
+<header class="header header-principal" role="banner">
+    <div class="header-principal__inner">
+        <div class="header-principal-left">
+            <div class="logos">
+                <div class="logo logo--0">
+                    <a href="https://solidarites-sante.gouv.fr/">
+
+                        <img src="img/logo-ministere.svg" alt="Ministère de la Santé et de la Prévention" width="107"
+                             height="62">
+
+                    </a>
+                </div>
+                <div class="logo logo--1">
+                    <a href="index.html">
+
+                        <img src="./img/logo-ANS.svg" alt="Accueil Design System ANS" width="166" height="50">
+
+                    </a>
+                </div>
+            </div>
+            <p class="header__title">Interface LRM - SI-SAMU</p>
+        </div>
+        <div class="header-principal-right">
+            <div class="header-principal__nav">
+
+                <div class="navbar navbar-expand-xl navbar-light" tabindex="-1" id="menuPrincipalTarget">
+                    <button type="button" class="navbar-toggler btn btn--icon-only btn-icon--header"
+                            data-toggle="collapse" data-target="#menuPrincipal" aria-controls="menuPrincipal"
+                            aria-expanded="false">
+                        <svg class="svg-icon svg-menu" aria-hidden="true" focusable="false">
+                            <use xlink:href="svg-icons/icon-sprite.svg#menu"></use>
+                        </svg>
+                        <span class="sr-only">Menu</span>
+                    </button>
+
+                    <div class="collapse navbar-collapse" id="menuPrincipal">
+                        <button type="button" class="navbar-toggler-close d-xl-none btn btn--icon-only btn-icon--header"
+                                data-toggle="collapse" data-target="#menuPrincipal" aria-controls="menuPrincipal"
+                                aria-expanded="false">
+                            <svg class="svg-icon svg-close" aria-hidden="true" focusable="false">
+                                <use xlink:href="svg-icons/icon-sprite.svg#close"></use>
+                            </svg>
+                            <span class="sr-only">Fermer le menu</span>
+                        </button>
+
+                        <nav role="navigation" aria-label="Menu principal">
+
+                            <ul class="navbar-nav nav-lvl--1">
+                                <li class="nav-item common-nav-item">
+
+                                    <a class="nav-link" href="#presentation">Présentation</a>
+                                </li>
+                                <li class="nav-item common-nav-item">
+
+                                    <a class="nav-link" href="#SAMU">SAMU</a>
+                                </li>
+                                <li class="nav-item common-nav-item">
+
+                                    <a class="nav-link" href="#LRM">LRM</a>
+                                </li>
+                                <li class="nav-item common-nav-item">
+
+                                    <button class="nav-link" type="button"
+                                            data-toggle="collapse"
+                                            data-target="#nav1-nav-collapse-submenu--2"
+                                            aria-controls="nav1-nav-collapse-submenu--2"
+                                            aria-expanded="false"
+                                    >
+                                        Documentation
+                                    </button>
+
+                                    <div class="collapse nav-collapse" id="nav1-nav-collapse-submenu--2"
+                                         data-parent="#menuPrincipal">
+                                        <div class="nav-collapse-inner">
+
+                                            <ul class="navbar-nav nav-lvl--2">
+                                                <li class="nav-item common-nav-item">
+
+                                                    <a class="nav-link" href="lrm.html" target="_blank">LRM</a>
+                                                </li>
+                                                <li class="nav-item common-nav-item">
+
+                                                    <a class="nav-link" href="si-samu.html" target="_blank">SI-SAMU</a>
+                                                </li>
+                                                <li class="nav-item common-nav-item">
+
+                                                    <a class="nav-link"
+                                                       href="https://github.com/ansforge/SAMU-interface-LRM"
+                                                       target="_blank">GitHub</a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </nav>
+
+                        <ul class="nav-right">
+                            <li class="nav-right-item collapse-wrapper common-nav-item">
+                                <button type="button" class="btn btn--icon-only btn-icon--header"
+                                        aria-label="Accessibilité" data-toggle="collapse" data-target="#collapseAccess"
+                                        aria-controls="collapseAccess" aria-expanded="false">
+                                    <svg class="svg-icon svg-access" aria-hidden="true" focusable="false">
+                                        <use xlink:href="svg-icons/icon-sprite.svg#access"></use>
+                                    </svg>
+                                    <span class="title-responsive">Accessibilité</span>
+                                </button>
+                                <div class="collapse nav-collapse nav-collapse--right" id="collapseAccess">
+                                    <section aria-labelledby="widget-access-title">
+                                        <h2 class="o-widget-access__intro" id="widget-access-title">Options
+                                            d'accessibilité</h2>
+
+                                        <div class="o-widget-access">
+                                            <div class="form-group form-group-custom-control">
+                                                <fieldset id="contrast-id">
+                                                    <legend>Contrastes :</legend>
+
+                                                    <div class="o-widget-access__option">
+                                                        <input id="default-c" value="default-c" name="contrast"
+                                                               checked="checked" type="radio" class="sr-only">
+                                                        <label class="o-widget-access__label btn btn--ghost btn--primary btn-sm"
+                                                               for="default-c"><span class="sr-only">Contrastes</span>
+                                                            Standards</label>
+                                                    </div>
+                                                    <div class="o-widget-access__option">
+                                                        <input id="high-c" value="high-c" name="contrast" type="radio"
+                                                               class="sr-only">
+                                                        <label class="o-widget-access__label btn btn--ghost btn--primary btn-sm"
+                                                               for="high-c"><span class="sr-only">Contrastes</span>
+                                                            Renforcés</label>
+                                                    </div>
+                                                </fieldset>
+                                            </div>
+
+                                        </div>
+                                    </section>
+                                </div>
+                            </li>
+                        </ul>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+<div class="body-wrapper">
+    <!-- Emplacement du Header -->
+    <main class="main" role="main" id="main" tabindex="-1">
+        <div class="container">
+            <!-- Emplacement du Contenu -->
+            <h1 class="page-heading">Interface entre les logiciels de régulation médicale (LRM) et le bandeau
+                téléphonique SI-SAMU</h1>
+            <p class="lead">Pour s’inscrire dans la logique d’Etat plate-forme et incarner la nouvelle orientation pour
+                la modernisation des SAMU.</p>
+            <p>Issue <b>d’une concertation et d’une collaboration avec les éditeurs</b>, cette interface entre le
+                bandeau téléphonique du SI-SAMU et les logiciels de LRM constitue une <b>avancée importante en termes
+                    d’ergonomie</b> et de facilité d’utilisation pour les agents des Samu.</p>
+
+            <h3 id="presentation">Présentation générale du bandeau SI-SAMU</h3>
+            Le bandeau téléphonique SI-SAMU permet à ses utilisateurs de piloter et manipuler facilement, et avec
+            sérénité et résilience, les appels de leur centre de régulation directement depuis son interface Web. Le
+            bandeau se compose de plusieurs volets :
+            <div class="wysiwyg">
+                <ul>
+                    <li>
+                        Une <b>infrastructure téléphonique centralisée et résiliente</b> permettant d’opérer à un niveau
+                        d’exigence élevé même lors de problèmes sur les composants du système.
+                    </li>
+                    <li>
+                        Un <b>guide vocal interactif</b> permettant de placer les appels en attente et de les
+                        préqualifier.
+                    </li>
+                    <li>
+                        Un <b>système d’enregistrement</b> de toutes les communications permettant de confirmer des
+                        informations, de faciliter la formation et de répondre à une réclamation.
+                    </li>
+                    <li>
+                        Une <b>distribution des appels hautement paramétrable</b> permettant de coller aux besoins
+                        opérationnels des SAMU.
+                    </li>
+                    <li>
+                        Une <b>interface web moderne et intuitive</b> de couplage téléphonie-informatique offrant une
+                        vue claire sur la situation des appels en cours sur le SAMU et une manipulation facilitée des
+                        appels (décroché, transfert, mise en attente, conférence, …).
+                    </li>
+                </ul>
+            </div>
+            <br>
+            <p>
+                Avec la nouvelle stratégie du SI-SAMU, le programme n’a <b>plus vocation à développer un logiciel de
+                régulation médicale (LRM)</b> permettant aux SAMU de créer et suivre les dossiers patients ainsi que de
+                déclencher des moyens d’intervention. Au contraire, le programme SI-SAMU veut <b>désormais valoriser et
+                s’appuyer sur les éditeurs de LRM en fournissant une brique téléphonique robuste</b> et garantissant un
+                service performant à tous les citoyens.
+            </p>
+            <p>
+                Le SI-SAMU permet donc aux éditeurs de LRM de s’interfacer avec son bandeau téléphonique. Cela permet
+                ainsi à l’utilisateur de déclencher directement des appels depuis son LRM ainsi que d’afficher
+                automatiquement le dossier patient correspondant aux appels entrants ou transférés à l’utilisateur.
+            </p>
+
+            <h3 id="SAMU">Pour les SAMU</h3>
+            <p>
+                Les SAMU-Centres 15 qui veulent utiliser une solution bandeau SI-SAMU - LRM doivent préalablement
+                contractualiser avec le fournisseur de LRM de leur choix, indépendamment du SI-SAMU mais étant interfacé
+                avec le bandeau téléphonique du SI-SAMU.
+            </p>
+            <!-- ToDo: Attendre l'ouverture en prod de l'interface
+            <p>
+                A ce jour, les <b>éditeurs interfacés sont BISOM et Inetum</b> – Centaure 15. Les échanges avec Appligos
+                sont en cours.
+            </p>
+            -->
+            <p>
+                Les SAMU-Centres 15 doivent également se rapprocher de l’équipe SI-SAMU afin d’étudier et de planifier
+                le déploiement de la solution de bandeau téléphonique pour leur SAMU.
+            </p>
+
+            <h3 id="LRM">Pour les LRM (Logiciels de Régulation Médicale)</h3>
+            Le SI-SAMU fournit une documentation publique de son interface à travers
+            <div class="wysiwyg">
+                <ul>
+                    <li>
+                        Un
+                        <a href="DST SI SAMU Interfaçage LRM_V1.2.pdf">
+                            <b>Dossier des Spécifications Techniques (DST)</b> (1Mo - PDF)
+                        </a>
+                        présentant le cadre de l’interface et les services associés.
+                    </li>
+                    <li>
+                        Une
+                        <a href="https://github.com/ansforge/SAMU-interface-LRM/tree/main/specs" target="_blank">
+                            <b>documentation technique OpenAPI</b>
+                        </a>
+                        spécifiant les détails techniques associés aux services de l’interface ainsi que fournissant des
+                        clients et bouchons serveurs auto-générés. Des pages de documentation interactive pour les
+                        interfaces côté
+                        <a href="lrm.html">LRM</a> et <a href="si-samu.html">SI-SAMU</a> sont d'ailleurs disponibles.
+                    </li>
+                    <!-- ToDo: compiler le guide en une version partageable
+                    <li>
+                        Un <b>guide facilitant l’obtention de cartes et de certificats</b> d’authentification, clés pour
+                        garantir la sécurité des échanges.
+                    </li>
+                    -->
+                    <li>
+                        Une
+                        <a href="mailto:api-lrm.contact-editeur@esante.gouv.fr">
+                            <b>adresse email dédiée</b>
+                        </a>
+                        et un
+                        <a href="https://contact-api-lrm.slack.com/join/shared_invite/zt-1lbpmutlh-vsq4ilHZ5ciNezo8Y35FlA"
+                           target="_blank">
+                            <b>espace de discussions Slack</b>
+                        </a>
+                        pour que chacun puisse échanger sur l’interface, proposer des évolutions et demander de l’aide.
+                    </li>
+                </ul>
+            </div>
+            <br>
+            <p>
+                Une fois les services LRM implémentés par l’éditeur, il est possible de tester l’intégration avec le
+                bandeau téléphonique du SI-SAMU grâce à l’<b>accès à une instance de test</b> de la solution.
+            </p>
+            <p>
+                Enfin, les éditeurs souhaitant déployer l’interface pour leurs SAMU doivent contacter le SI-SAMU afin
+                d’activer l’interface, de paramétrer les accès et de sécuriser les échanges grâce à des certificats
+                issus de l’IGC Santé.
+            </p>
+            <br>
+            <p>
+                Dans sa nouvelle approche, le programme SI-SAMU recherche activement les échanges et collaborations donc
+                n'hésitez pas à vous pencher sur cette interface et nous rejoindre :
+            </p>
+            <div class="btn-list">
+                <a href="lrm.html" class="btn btn--style1 btn--white" style="margin-bottom: 10px;">
+                    LRM
+                </a>
+                <a href="si-samu.html" class="btn btn--style1 btn--white" style="margin-bottom: 10px;">
+                    SI-SAMU
+                </a>
+                <a href="mailto:api-lrm.contact-editeur@esante.gouv.fr" class="btn btn--style1 btn--white"
+                   style="margin-bottom: 10px;">
+                    Nous contacter
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <!-- Emplacement du Footer -->
+</div>
+
+<script type="text/javascript" src="./script/jquery-3.5.1.min.js"></script>
+<script type="text/javascript" src="./script/vendor.js"></script>
+<script type="text/javascript" src="./script/app.js"></script>
+</body>
+</html>
