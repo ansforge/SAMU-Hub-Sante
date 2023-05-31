@@ -126,7 +126,7 @@ public abstract class Consumer {
     protected EdxlMessage generateFunctionalAckMessage(EdxlMessage receivedMessage) {
         EdxlMessage ackEdxl = new EdxlMessage();
 
-        ackEdxl.setDistributionID(String.valueOf(UUID.randomUUID()));
+        ackEdxl.setDistributionID(clientId + "_" + String.valueOf(UUID.randomUUID()));
         ackEdxl.setSenderID(clientId);
         ackEdxl.setDateTimeSent(OffsetDateTime.of(LocalDateTime.now(), ZoneOffset.of("+02")));
         ackEdxl.setDateTimeExpires(OffsetDateTime.of(LocalDateTime.now().plusYears(50), ZoneOffset.of("+02")));
