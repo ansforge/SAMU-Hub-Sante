@@ -3,8 +3,8 @@
                   xmlns="urn:oasis:names:tc:emergency:EDXL:DE:2.0"
                   xmlns:xlink="http://www.w3.org/1999/xlink"
                   xmlns:ct="urn:oasis:names:tc:emergency:edxl:ct:1.0">
-    <distributionID>samu050_2608323d-507d-4cbf-bf74-52007f8124ea</distributionID>
-    <senderID>fr.health.hub.samu110</senderID>
+    <distributionID>sdis-50_2608323d-507d-4cbf-bf74-52007f8124ea</distributionID>
+    <senderID>fr.fire.nexsis.sdis-50</senderID>
     <dateTimeSent>2022-09-27T08:23:34+02:00</dateTimeSent>
     <dateTimeExpires>2072-09-27T08:23:34+02:00</dateTimeExpires>
     <distributionStatus>Actual</distributionStatus>
@@ -12,8 +12,8 @@
     <descriptor xlink:type="resource">
         <language>fr-FR</language>
         <explicitAddress>
-            <explicitAddressScheme>fr.health.hub.samu110</explicitAddressScheme>
-            <explicitAddressValue>fr.fire.nexsis</explicitAddressValue>
+            <explicitAddressScheme>hubsante</explicitAddressScheme>
+            <explicitAddressValue>fr.health.hub.samu050</explicitAddressValue>
         </explicitAddress>
     </descriptor>
     <content xlink:type="resource">
@@ -23,20 +23,20 @@
                     <message xmlns="urn:emergency:cisu:2.0">
                         <messageId>2608323d-507d-4cbf-bf74-52007f8124ea</messageId>
                         <sender>
-                            <name>SAMU_001</name>
-                            <URI>hubsante:fr.health.hub.samu110</URI>
+                            <name>sdis-50</name>
+                            <URI>nexsis:fr.fire.nexsis.sdis-050</URI>
                         </sender>
                         <sentAt>2022-09-27T08:23:34+02:00</sentAt>
                         <msgType>ALERT</msgType>
                         <status>TEST</status>
                         <recipients>
                             <recipient>
-                                <name>sdis23</name>
-                                <URI>nexsis:sdis23</URI>
+                                <name>samu050</name>
+                                <URI>hubsante:fr.health.hub.samu050</URI>
                             </recipient>
                         </recipients>
                         <createEvent>
-                            <eventId>SAMU_110-AF2</eventId>
+                            <eventId>SDIS-50-AF2</eventId>
                             <createdAt>2022-09-27T08:23:34+02:00</createdAt>
                             <severity>UNKNOWN</severity>
                             <eventLocation>
@@ -60,7 +60,7 @@
                                 </civicAddress>
                             </eventLocation>
                             <primaryAlert>
-                                <alertId>SAMU110-AL8</alertId>
+                                <alertId>SDIS-50-AL8</alertId>
                                 <receivedAt>2022-09-27T08:23:15+02:00</receivedAt>
                                 <reporting>STANDARD</reporting>
                                 <alertLocation>
@@ -79,12 +79,12 @@
                                     <source>requerant</source>
                                 </call>
                                 <caller>
-                                    <callerURI>manual</callerURI>
+                                    <callerURI>0678958874</callerURI>
                                 </caller>
                                 <callTaker>
-                                    <organization>SAMU_110</organization>
-                                    <controlRoom>SAMU_110</controlRoom>
-                                    <calltakerURI>SAMU_110-AL8@localhost|tel:undefined#0613</calltakerURI>
+                                    <organization>SDIS-50</organization>
+                                    <controlRoom>SDIS-50</controlRoom>
+                                    <calltakerURI>SDIS-50-AL8@localhost|tel:undefined#0613</calltakerURI>
                                 </callTaker>
                                 <alertCode>
                                     <version>latest</version>
