@@ -70,22 +70,6 @@ kubectl create configmap definitions --from-file=../rabbitmq/definitions.json
 kubectl apply -f rabbitmq.yaml
 ```
 
-# Web Load Balancer & Ingress
-All webpages are accessible behind a shared Load Balancer and Ingress
-```
-# Build Nginx Ingress Controller -> creates a Load Balancer
-kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.8.0/deploy/static/provider/cloud/deploy.yaml
-
-# Deploy Ingress
-kubectl apply -f ingress.yaml
-```
-
-## Landing page website
-```
-# Deploy Service and Deployment
-kubectl apply -f web.yaml
-```
-
 ## Updates
 ### Definitions update
 ```bash
@@ -111,6 +95,22 @@ gradle bootRun --args='--spring.profiles.active=local,rfo'
 CLIENT_ID=Target; gradle -Pmain=com.hubsante.ConsumerRun run --args "$CLIENT_ID.in.message"
 CLIENT_ID=Origin; gradle -Pmain=com.hubsante.ConsumerRun run --args "$CLIENT_ID.in.ack"
 CLIENT_ID=Origin; gradle -Pmain=com.hubsante.ProducerRun run --args "$CLIENT_ID.out.message src/main/resources/createEventMessage.json"
+```
+
+# Web Load Balancer & Ingress
+All webpages are accessible behind a shared Load Balancer and Ingress
+```
+# Build Nginx Ingress Controller -> creates a Load Balancer
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.8.0/deploy/static/provider/cloud/deploy.yaml
+
+# Deploy Ingress
+kubectl apply -f ingress.yaml
+```
+
+## Landing page website
+```
+# Deploy Service and Deployment
+kubectl apply -f web.yaml
 ```
 
 # Debugging
