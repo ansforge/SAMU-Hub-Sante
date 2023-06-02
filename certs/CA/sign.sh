@@ -17,5 +17,8 @@ else
     echo "> Copy trustStore to be used in Dispatcher (from repository root): cp certs/trustStore dispatcher/src/main/jib/certs/"
   else
     openssl x509 -req -CA rootCA.crt -CAkey rootCA.key -in "$DOMAIN".csr -out "$DOMAIN".crt -days 365 -CAcreateserial -extfile client.ext
+    echo "> Send $DOMAIN.crt back to user"
+    echo "> Create passwordless user and matching permissions in definitions.json"
+    echo "> Make RabbitMQ reload definitions.json (see hub/infra/REAMDE.md)"
   fi
 fi

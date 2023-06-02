@@ -61,7 +61,7 @@ openssl verify -CAfile certs/CA/rootCA.crt certs/client.crt
 Ref.: https://www.rabbitmq.com/troubleshooting-ssl.html
 ```bash
 ## Créer un serveur TLS avec les certificats du Hub
-openssl s_server -accept 8443 -cert rabbitmq/certs/hub.crt -key rabbitmq/certs/hub.key -CAfile rabbitmq/certs/rootCA.crt
+openssl s_server -accept 8443 -cert rabbitmq/certs/hub.crt -key rabbitmq/certs/hub.key -CAfile rabbitmq/certs/rootCABundle.crt
 
 ## Créer un client se connectant en TLS avec les certificats clients au serveur TLS
 openssl s_client -connect localhost:8443 \
