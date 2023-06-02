@@ -6,7 +6,7 @@ _Site web vitrine_
 docker buildx build --platform linux/amd64 -t romainfd/hub-web:latest .
 docker push romainfd/hub-web:latest
 # Make sure you are on correct Kubernetes context
-kubectl replace --force -f ../SAMU-Hub-Sante/hub/infra/web.yaml
+kubectl replace --force -f ../SAMU-Hub-Sante/hub/infra/web/landing.yaml
 ```
 
 ## Certificates
