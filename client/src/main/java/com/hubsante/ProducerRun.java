@@ -36,11 +36,13 @@ public class ProducerRun {
         // registering extra module is mandatory to handle date time
         ObjectMapper jsonMapper = new ObjectMapper()
                 .registerModule(new JavaTimeModule())
+                .enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
                 .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
                 .disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE);
 
         XmlMapper xmlMapper = (XmlMapper) new XmlMapper()
                 .registerModule(new JavaTimeModule())
+                .enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
                 .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
                 .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
                 .disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE);

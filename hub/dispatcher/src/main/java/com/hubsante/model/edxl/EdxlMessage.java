@@ -17,6 +17,10 @@ public class EdxlMessage extends EdxlEnvelope {
         this.content = content;
     }
 
+    public <T extends EdxlInnerMessage> void setContentFrom(T embeddedContent) {
+        this.setContent(new Content(new ContentObject(new ContentWrapper(new EmbeddedContent(embeddedContent)))));
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

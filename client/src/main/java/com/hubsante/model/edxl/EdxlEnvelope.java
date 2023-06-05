@@ -46,9 +46,6 @@ public class EdxlEnvelope {
     @JsonProperty(value = "descriptor", required = true)
     private Descriptor descriptor;
 
-//    @JsonProperty(value = "content", required = true)
-//    private Content content;
-
     /*
     * This is a workaround to handle namespaces with prefixes
     * see https://stackoverflow.com/questions/16442805/jackson-xml-deserializing-xml-with-namespace-prefixes
@@ -74,6 +71,17 @@ public class EdxlEnvelope {
     }
 
     public EdxlEnvelope() {
+    }
+
+    public EdxlEnvelope(String distributionID, String clientId, OffsetDateTime dateTimeSent, OffsetDateTime dateTimeExpires,
+                        DistributionStatus distributionStatus, DistributionKind distributionKind, Descriptor descriptor) {
+        this.distributionID = distributionID;
+        this.senderID = clientId;
+        this.dateTimeSent = dateTimeSent;
+        this.dateTimeExpires = dateTimeExpires;
+        this.distributionStatus = distributionStatus;
+        this.distributionKind = distributionKind;
+        this.descriptor = descriptor;
     }
 
     public String getDistributionID() {
