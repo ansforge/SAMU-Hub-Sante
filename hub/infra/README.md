@@ -1,6 +1,6 @@
 # Clusters
 ## Minikube local cluster
-To build a local Kubernetes cluster on your laptop and run the `kubectl` commands below, we recommend using [Minikube](https://kubernetes.io/docs/tutorials/hello-minikube/).
+To build a local Kubernetes cluster on your laptop and run the `kubectl` commands below, we recommend using Minikube ([install](https://minikube.sigs.k8s.io/docs/start/) / [tutorial](https://kubernetes.io/docs/tutorials/hello-minikube/)).
 ```bash
 # Start minikube cluster with Docker | Ref.: https://minikube.sigs.k8s.io/docs/drivers/docker/
 minikube start --driver=docker
@@ -95,6 +95,22 @@ gradle bootRun --args='--spring.profiles.active=local,rfo'
 CLIENT_ID=Target; gradle -Pmain=com.hubsante.ConsumerRun run --args "$CLIENT_ID.in.message"
 CLIENT_ID=Origin; gradle -Pmain=com.hubsante.ConsumerRun run --args "$CLIENT_ID.in.ack"
 CLIENT_ID=Origin; gradle -Pmain=com.hubsante.ProducerRun run --args "$CLIENT_ID.out.message src/main/resources/createEventMessage.json"
+```
+
+# Web Load Balancer & Ingress
+All webpages are accessible behind a shared Load Balancer and Ingress
+```
+# Build Nginx Ingress Controller -> creates a Load Balancer
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.8.0/deploy/static/provider/cloud/deploy.yaml
+
+# Deploy Ingress
+kubectl apply -f web/ingress.yaml
+```
+
+## Landing page website
+```
+# Deploy Service and Deployment
+kubectl apply -f web/landing.yaml
 ```
 
 # Debugging

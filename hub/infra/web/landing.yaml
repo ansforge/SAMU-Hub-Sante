@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-landing
+  labels:
+    app: web-landing
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 80
+      protocol: TCP
+      name: http
+  selector:
+    app: web-landing
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-landing-deployment
+  labels:
+    app: web-landing
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web-landing
+  template:
+    metadata:
+      labels:
+        app: web-landing
+    spec:
+      containers:
+        - name: web-landing
+          image: romainfd/hub-web:latest
+          ports:
+            - containerPort: 80

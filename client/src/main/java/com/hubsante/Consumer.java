@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.hubsante.model.cisu.*;
 import com.hubsante.model.edxl.*;
 import com.rabbitmq.client.*;
 
@@ -54,11 +55,13 @@ public abstract class Consumer {
 
     protected final ObjectMapper mapper = new ObjectMapper()
             .registerModule(new JavaTimeModule())
+            .enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
             .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
             .disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE);
 
     protected final XmlMapper xmlMapper = (XmlMapper) new XmlMapper()
             .registerModule(new JavaTimeModule())
+            .enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
             .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
             .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
             .disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE);
@@ -124,28 +127,39 @@ public abstract class Consumer {
     protected abstract void deliverCallback(String consumerTag, Delivery delivery) throws IOException;
 
     protected EdxlMessage generateFunctionalAckMessage(EdxlMessage receivedMessage) {
-        EdxlMessage ackEdxl = new EdxlMessage();
+        //TODO bbo : CisuAckMessage : define recipient format
+        // long-clientID & short-clientID ?
+        AddresseeType recipient = new AddresseeType(receivedMessage.getSenderID(), receivedMessage.getSenderID());
+        AddresseeType[] recipients = new AddresseeType[]{recipient};
 
-        ackEdxl.setDistributionID(String.valueOf(UUID.randomUUID()));
-        ackEdxl.setSenderID(clientId);
-        ackEdxl.setDateTimeSent(OffsetDateTime.of(LocalDateTime.now(), ZoneOffset.of("+02")));
-        ackEdxl.setDateTimeExpires(OffsetDateTime.of(LocalDateTime.now().plusYears(50), ZoneOffset.of("+02")));
-        ackEdxl.setDistributionKind(DistributionKind.ACK);
-        ackEdxl.setDistributionStatus(receivedMessage.getDistributionStatus());
+        AckMessage cisuAckMessage = new AckMessage(
+                clientId + "_" + UUID.randomUUID(),
+                new AddresseeType(clientId, clientId),
+                OffsetDateTime.of(LocalDateTime.now(), ZoneOffset.of("+02")),
+                MsgType.ACK,
+                Status.ACTUAL,
+                new Recipients(recipients),
+                new AckMessageId(receivedMessage.getDistributionID())
+        );
 
+        // TODO bbo/rfd : choose what to do with scheme : senderID ? hubsante ?
         ExplicitAddress explicitAddress = new ExplicitAddress();
-        ExplicitAddress receivedAddress = receivedMessage.getDescriptor().getExplicitAddress();
-        explicitAddress.setExplicitAddressScheme(receivedAddress.getExplicitAddressValue());
-        explicitAddress.setExplicitAddressValue(receivedAddress.getExplicitAddressScheme());
+        explicitAddress.setExplicitAddressScheme(receivedMessage.getSenderID());
+        explicitAddress.setExplicitAddressValue(receivedMessage.getSenderID());
 
         Descriptor descriptor = new Descriptor();
         descriptor.setLanguage(receivedMessage.getDescriptor().getLanguage());
         descriptor.setExplicitAddress(explicitAddress);
 
-        ackEdxl.setDescriptor(descriptor);
-        GenericAckMessage ackMessage = new GenericAckMessage(receivedMessage.getDistributionID());
-        ackEdxl.setContent(new Content(new ContentObject(new ContentWrapper(new EmbeddedContent(ackMessage)))));
-
-        return ackEdxl;
+        return new EdxlMessage(
+                clientId + "_" + UUID.randomUUID(),
+                clientId,
+                OffsetDateTime.of(LocalDateTime.now(), ZoneOffset.of("+02")),
+                OffsetDateTime.of(LocalDateTime.now().plusYears(50), ZoneOffset.of("+02")),
+                receivedMessage.getDistributionStatus(),
+                DistributionKind.ACK,
+                descriptor,
+                cisuAckMessage
+        );
     }
 }
