@@ -65,16 +65,15 @@ public class Dispatcher {
                     edxlHandler.prettyPrintXmlEDXL(edxlMessage);
 
             Message forwardedMsg = new Message(edxlString.getBytes(StandardCharsets.UTF_8), message.getMessageProperties());
-            int receivedLength = message.getBody().length;
-            int fwdLength = message.getBody().length;
             rabbitTemplate.send("", queueName, forwardedMsg);
             log.info("  ↳ [x] Sent to '" + queueName + "':" + edxlString);
         } catch (AmqpException e) {
-            // TODO (bbo) : if we catch an AmqpException, ii won't be retried.
+            // TODO (bbo) : if we catch an AmqpException, it won't be retried.
             //  We should instead define a retry strategy.
             log.error("[ERROR] Failed to dispatch message " + receivedEdxl + ". Raised exception: " + e);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
+            log.error("could not convert EDXL message");
+            throw new AmqpRejectAndDontRequeueException("do not requeue !");
         }
     }
 
