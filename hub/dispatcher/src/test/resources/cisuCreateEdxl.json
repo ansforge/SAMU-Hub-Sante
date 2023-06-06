@@ -8,7 +8,7 @@
   "descriptor": {
     "language": "fr-FR",
     "explicitAddress": {
-      "explicitAddressScheme": "fr.health.hub.samu050",
+      "explicitAddressScheme": "hubsante",
       "explicitAddressValue": "fr.fire.nexsis.sdis23"
     }
   },
