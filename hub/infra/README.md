@@ -97,6 +97,22 @@ CLIENT_ID=Origin; gradle -Pmain=com.hubsante.ConsumerRun run --args "$CLIENT_ID.
 CLIENT_ID=Origin; gradle -Pmain=com.hubsante.ProducerRun run --args "$CLIENT_ID.out.message src/main/resources/createEventMessage.json"
 ```
 
+# Web Load Balancer & Ingress
+All webpages are accessible behind a shared Load Balancer and Ingress
+```
+# Build Nginx Ingress Controller -> creates a Load Balancer
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.8.0/deploy/static/provider/cloud/deploy.yaml
+
+# Deploy Ingress
+kubectl apply -f web/ingress.yaml
+```
+
+## Landing page website
+```
+# Deploy Service and Deployment
+kubectl apply -f web/landing.yaml
+```
+
 # Debugging
 ## RabbitMQ and Cluster Operator
 ```bash

@@ -1,6 +1,6 @@
 {
-  "distributionID": "samu050_2608323d-507d-4cbf-bf74-52007f8124ea",
-  "senderID": "fr.health.hub.samu050",
+  "distributionID": "sdis-50_2608323d-507d-4cbf-bf74-52007f8124ea",
+  "senderID": "fr.fire.nexsis.sdis-50",
   "dateTimeSent": "2022-09-27T08:23:34+02:00",
   "dateTimeExpires": "2072-09-27T08:23:34+02:00",
   "distributionStatus": "Actual",
@@ -8,8 +8,8 @@
   "descriptor": {
     "language": "fr-FR",
     "explicitAddress": {
-      "explicitAddressScheme": "fr.health.hub.samu050",
-      "explicitAddressValue": "fr.fire.nexsis"
+      "explicitAddressScheme": "hubsante",
+      "explicitAddressValue": "fr.health.hub.samu050"
     }
   },
   "content": {
@@ -19,8 +19,8 @@
           "message": {
             "messageId": "2608323d-507d-4cbf-bf74-52007f8124ea",
             "sender": {
-              "name": "fr.health.hub.samu050",
-              "uri": "hubsante:fr.health.hub.samu050"
+              "name": "sdis-50",
+              "uri": "nexsis:fr.fire.nexsis.sdis-050"
             },
             "sentAt": "2022-09-27T08:23:34+02:00",
             "msgType": "ALERT",
@@ -28,13 +28,13 @@
             "recipients": {
               "recipient": [
                 {
-                  "name": "sdis23",
-                  "uri": "nexsis:sdis23"
+                  "name": "samu050",
+                  "uri": "hubsante:fr.health.hub.samu050"
                 }
               ]
             },
             "createEvent": {
-              "eventId": "SAMU050-AF2",
+              "eventId": "SDIS-50-AF2",
               "createdAt": "2022-09-27T08:23:34+02:00",
               "severity": "UNKNOWN",
               "eventLocation": {
@@ -62,7 +62,7 @@
                 }
               },
               "primaryAlert": {
-                "alertId": "SAMU050-AL8",
+                "alertId": "SDIS-50-AL8",
                 "receivedAt": "2022-09-27T08:23:15+02:00",
                 "reporting": "STANDARD",
                 "alertLocation": {
@@ -85,12 +85,12 @@
                   "source": "requerant"
                 },
                 "caller": {
-                  "callerURI": "manual"
+                  "callerURI": "0678958874"
                 },
                 "callTaker": {
-                  "organization": "SAMU_050",
-                  "controlRoom": "SAMU_050",
-                  "calltakerURI": "SAMU_050-AL8@localhost|tel:undefined#0613"
+                  "organization": "SDIS-50",
+                  "controlRoom": "SDIS-50",
+                  "calltakerURI": "SDIS-50-AL8@localhost|tel:undefined#0613"
                 },
                 "alertCode": {
                   "version": "latest",
