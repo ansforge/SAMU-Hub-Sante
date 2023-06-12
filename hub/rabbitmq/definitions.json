@@ -141,8 +141,8 @@
       "user": "fr.health.bisom",
       "vhost": "/",
       "configure": "^(hubsante|fr.health.samu100.*|fr.health.samu090)$",
-      "read": "^(fr.health.bisom.*|fr.health.samu100.*|fr.health.samu090)$",
-      "write": "^(hubsante|fr.health.bisom.*|fr.health.samu100.*|fr.health.samu090.*)$"
+      "read": "^(fr.health.samu100.*|fr.health.samu090)$",
+      "write": "^(hubsante|fr.health.samu100.*|fr.health.samu090.*)$"
     }
   ]
 }
