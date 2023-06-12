@@ -38,7 +38,7 @@
       "vhost": "/",
       "destination": "*.out.*",
       "destination_type": "queue",
-      "routing_key":"#.out.info",
+      "routing_key": "#.out.info",
       "arguments": {}
     },
     {
@@ -68,6 +68,22 @@
     },
     {
       "name": "fr.fire.nexsis.test",
+      "tags": []
+    },
+    {
+      "name": "fr.health.samu800",
+      "tags": []
+    },
+    {
+      "name": "fr.health.samu570",
+      "tags": []
+    },
+    {
+      "name": "fr.health.exos",
+      "tags": []
+    },
+    {
+      "name": "fr.health.bisom",
       "tags": []
     }
   ],
@@ -99,6 +115,34 @@
       "configure": "^(hubfire|federation: hubfire.*)$",
       "write": "^(hubfire|federation: hubfire.*)$",
       "read": "^(hubfire|federation: hubfire.*)$"
+    },
+    {
+      "user": "fr.health.samu800",
+      "vhost": "/",
+      "configure": "^(hubsante|fr.health.samu800.*)$",
+      "read": "fr.health.samu800.*",
+      "write": "^(hubsante|fr.health.samu800.*)$"
+    },
+    {
+      "user": "fr.health.samu570",
+      "vhost": "/",
+      "configure": "^(hubsante|fr.health.samu570.*)$",
+      "read": "fr.health.samu570.*",
+      "write": "^(hubsante|fr.health.samu570.*)$"
+    },
+    {
+      "user": "fr.health.exos",
+      "vhost": "/",
+      "configure": "^(hubsante|fr.health.exos.*)$",
+      "read": "fr.health.exos.*",
+      "write": "^(hubsante|fr.health.exos.*)$"
+    },
+    {
+      "user": "fr.health.bisom",
+      "vhost": "/",
+      "configure": "^(hubsante|fr.health.samu100.*|fr.health.samu090)$",
+      "read": "^(fr.health.bisom.*|fr.health.samu100.*|fr.health.samu090)$",
+      "write": "^(hubsante|fr.health.bisom.*|fr.health.samu100.*|fr.health.samu090.*)$"
     }
   ]
 }
