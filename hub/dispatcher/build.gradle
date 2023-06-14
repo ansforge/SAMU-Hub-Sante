@@ -41,6 +41,8 @@ dependencies {
 	implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.12.5'
 	implementation 'com.networknt:json-schema-validator:1.0.72'
 	implementation 'org.projectlombok:lombok'
+	implementation 'org.junit.jupiter:junit-jupiter-params'
+	implementation 'org.apache.any23:apache-any23-encoding:1.1'
 
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	annotationProcessor 'org.projectlombok:lombok'

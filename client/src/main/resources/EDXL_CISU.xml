@@ -13,7 +13,7 @@
         <language>fr-FR</language>
         <explicitAddress>
             <explicitAddressScheme>hubsante</explicitAddressScheme>
-            <explicitAddressValue>fr.health.hub.samu050</explicitAddressValue>
+            <explicitAddressValue>fr.health.samu050</explicitAddressValue>
         </explicitAddress>
     </descriptor>
     <content xlink:type="resource">
@@ -31,8 +31,8 @@
                         <status>TEST</status>
                         <recipients>
                             <recipient>
-                                <name>samu050</name>
-                                <URI>hubsante:fr.health.hub.samu050</URI>
+                                <name>samu110</name>
+                                <URI>hubsante:fr.health.samu110</URI>
                             </recipient>
                         </recipients>
                         <createEvent>
