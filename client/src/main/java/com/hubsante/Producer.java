@@ -87,8 +87,9 @@ public class Producer {
         // If not set, HubSante will not be able to deserialize the message and will reject it
         AMQP.BasicProperties properties = new AMQP.BasicProperties().builder()
                 .contentType("application/json")
-                .deliveryMode(2)
-                .priority(0).build();
+                .deliveryMode(2) // set persistent mode (for cloud resilience - no message is stored out of the transit scope)
+                .priority(0) // default priority
+                .build();
 
         try {
             this.channelProducer.basicPublish(
@@ -122,8 +123,9 @@ public class Producer {
         // If not set, HubSante will not be able to deserialize the message and will reject it
         AMQP.BasicProperties properties = new AMQP.BasicProperties().builder()
                 .contentType("application/xml")
-                .deliveryMode(2)
-                .priority(0).build();
+                .deliveryMode(2) // set persistent mode (for cloud resilience - no message is stored out of the transit scope)
+                .priority(0) // default priority
+                .build();
 
         try {
             this.channelProducer.basicPublish(
