@@ -73,12 +73,18 @@ public class Dispatcher {
 
         try {
             String senderID = edxlMessage.getSenderID();
+            String edxlString;
+            MessageProperties messageProperties = message.getMessageProperties();
 
-            String edxlString = convertToXML(senderID, recipientID) ?
-                    edxlHandler.prettyPrintXmlEDXL(edxlMessage) :
-                    edxlHandler.prettyPrintJsonEDXL(edxlMessage);
-
-            Message forwardedMsg = new Message(edxlString.getBytes(StandardCharsets.UTF_8), message.getMessageProperties());
+            if (convertToXML(senderID, recipientID)) {
+                edxlString = edxlHandler.prettyPrintXmlEDXL(edxlMessage);
+                messageProperties.setContentType(XML_CONTENT_TYPE);
+            }
+            else {
+                edxlString = edxlHandler.prettyPrintJsonEDXL(edxlMessage);
+                messageProperties.setContentType(JSON_CONTENT_TYPE);
+            }
+            Message forwardedMsg = new Message(edxlString.getBytes(StandardCharsets.UTF_8), messageProperties);
             rabbitTemplate.send("", queueName, forwardedMsg);
             log.info("  ↳ [x] Sent to '" + queueName + "':" + edxlString);
 
