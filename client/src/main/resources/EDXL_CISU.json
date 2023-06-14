@@ -9,7 +9,7 @@
     "language": "fr-FR",
     "explicitAddress": {
       "explicitAddressScheme": "hubsante",
-      "explicitAddressValue": "fr.health.hub.samu050"
+      "explicitAddressValue": "fr.health.samu050"
     }
   },
   "content": {
@@ -29,7 +29,7 @@
               "recipient": [
                 {
                   "name": "samu050",
-                  "uri": "hubsante:fr.health.hub.samu050"
+                  "uri": "hubsante:fr.health.samu050"
                 }
               ]
             },
