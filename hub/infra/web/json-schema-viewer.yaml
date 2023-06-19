@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-jsv
+  labels:
+    app: web-jsv
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 80
+      protocol: TCP
+      name: http
+  selector:
+    app: web-jsv
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-jsv-deployment
+  labels:
+    app: web-jsv
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web-jsv
+  template:
+    metadata:
+      labels:
+        app: web-jsv
+    spec:
+      containers:
+        - name: web-jsv
+          image: romainfd/hub-jsv:latest
+          ports:
+            - containerPort: 80
