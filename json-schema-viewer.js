@@ -12,7 +12,9 @@ if (typeof JSV === 'undefined') {
         /**
          * The root schema to load.
          */
-        schema: '',
+        // schema: '',
+        // schema: 'http://localhost:9001/prod/0.3.4/20230619/1/schemas/schema.json',
+        schema: './schemas/schema.json',
 
         /**
          * If true, render diagram only on init, without the jQuery Mobile UI.

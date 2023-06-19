@@ -1,3 +1,26 @@
+# Hub Santé - JSON Schema Viewer (JSV)
+_Site de manipulation des structures de données JSON Schema_
+
+## Deploy
+```bash
+docker buildx build --platform linux/amd64 -t romainfd/hub-jsv:latest .
+docker push romainfd/hub-jsv:latest
+# Make sure you are on correct Kubernetes context
+kubectl replace --force -f ../SAMU-Hub-Sante/hub/infra/web/json-schema-viewer.yaml
+```
+
+## Comments
+Run locally
+```
+grunt prod 
+python -m http.server
+```
+
+Schemas are passed from `hub-schemas/` to `schemas/` using Gruntfile.js's copy:prod:files task
+
+Schema `id` should match his name with trailing # (e.g. `schema.json#`) to run OK
+
+------
 JSON Schema Viewer [![Build Status](https://travis-ci.org/jlblcc/json-schema-viewer.svg?branch=master)](https://travis-ci.org/jlblcc/json-schema-viewer)
 ==================
 

@@ -474,7 +474,17 @@ module.exports = function(grunt) {
                         ],
                         dest : './prod/<%= pkg.version %>/<%= now %>/<%= ver %>/docs',
 
-                    }
+                    },
+                    {
+
+                        expand : true,
+                        cwd : './hub-schemas/',
+                        src : [
+                            '**/*',
+                        ],
+                        dest : './prod/<%= pkg.version %>/<%= now %>/<%= ver %>/schemas',
+
+                    },
 
                 ],
 

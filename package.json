@@ -34,7 +34,7 @@
     "test": "grunt init"
   },
   "devDependencies": {
-    "grunt-contrib-connect": "^1",
+    "grunt-contrib-connect": "^2",
     "grunt-gh-pages": "^2",
     "grunt-jsdoc": "^2"
   }
