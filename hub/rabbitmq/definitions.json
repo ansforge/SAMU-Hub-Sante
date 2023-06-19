@@ -156,7 +156,7 @@
       "user":  "fr.health.samu090",
       "vhost": "/",
       "configure": "^(hubsante|fr.health.samu090.*)$",
-      "read": "^(fr.health.samu090.*)$",
+      "read": "^(hubsante|fr.health.samu090.*)$",
       "write": "^(hubsante|fr.health.samu090.*)$"
     },
     {
