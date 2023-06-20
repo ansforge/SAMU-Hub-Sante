@@ -95,6 +95,18 @@
       "tags": []
     },
     {
+      "name": "fr.health.normandie",
+      "tags": []
+    },
+    {
+      "name": "fr.health.samu76A",
+      "tags": []
+    },
+    {
+      "name": "fr.health.samu76B",
+      "tags": []
+    },
+    {
       "name": "fr.test.bbo",
       "tags": []
     }
@@ -169,6 +181,27 @@
       "configure": "^(hubsante|fr.health.samu091.*)$",
       "read": "^(fr.health.samu091.*)$",
       "write": "^(hubsante|fr.health.samu091.*)$"
+    },
+    {
+      "user": "fr.health.normandie",
+      "vhost": "/",
+      "configure": "^(fr.health.normandie.*)$",
+      "read": "^(fr.health.normandie.*)$",
+      "write": "^(hubsante)$"
+    },
+    {
+      "user": "fr.health.samu76A",
+      "vhost": "/",
+      "configure": "^(fr.health.samu76A.*)$",
+      "read": "^(fr.health.samu76A.*)$",
+      "write": "^(hubsante)$"
+    },
+    {
+      "user": "fr.health.samu76B",
+      "vhost": "/",
+      "configure": "^(fr.health.samu76B.*)$",
+      "read": "^(fr.health.samu76B.*)$",
+      "write": "^(hubsante)$"
     },
     {
       "user": "fr.test.bbo",
