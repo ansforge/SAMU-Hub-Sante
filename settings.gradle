@@ -8,5 +8,6 @@
  */
 
 rootProject.name = 'SAMU-Hub-Sante'
+include 'models'
 include 'client'
 include 'hub:dispatcher'

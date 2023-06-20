@@ -46,6 +46,16 @@ public class EdxlEnvelope {
     @JsonProperty(value = "descriptor", required = true)
     private Descriptor descriptor;
 
+    public EdxlEnvelope(String distributionID, String senderID, OffsetDateTime dateTimeSent, OffsetDateTime dateTimeExpires, DistributionStatus distributionStatus, DistributionKind distributionKind, Descriptor descriptor) {
+        this.distributionID = distributionID;
+        this.senderID = senderID;
+        this.dateTimeSent = dateTimeSent;
+        this.dateTimeExpires = dateTimeExpires;
+        this.distributionStatus = distributionStatus;
+        this.distributionKind = distributionKind;
+        this.descriptor = descriptor;
+    }
+
     /*
     * This is a workaround to handle namespaces with prefixes
     * see https://stackoverflow.com/questions/16442805/jackson-xml-deserializing-xml-with-namespace-prefixes
@@ -71,17 +81,6 @@ public class EdxlEnvelope {
     }
 
     public EdxlEnvelope() {
-    }
-
-    public EdxlEnvelope(String distributionID, String clientId, OffsetDateTime dateTimeSent, OffsetDateTime dateTimeExpires,
-                        DistributionStatus distributionStatus, DistributionKind distributionKind, Descriptor descriptor) {
-        this.distributionID = distributionID;
-        this.senderID = clientId;
-        this.dateTimeSent = dateTimeSent;
-        this.dateTimeExpires = dateTimeExpires;
-        this.distributionStatus = distributionStatus;
-        this.distributionKind = distributionKind;
-        this.descriptor = descriptor;
     }
 
     public String getDistributionID() {
@@ -140,14 +139,6 @@ public class EdxlEnvelope {
         this.descriptor = descriptor;
     }
 
-//    public Content getContent() {
-//        return content;
-//    }
-//
-//    public void setContent(Content content) {
-//        this.content = content;
-//    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -160,17 +151,12 @@ public class EdxlEnvelope {
                 dateTimeExpires.equals(that.dateTimeExpires) &&
                 distributionStatus == that.distributionStatus &&
                 distributionKind == that.distributionKind &&
-                descriptor.equals(that.descriptor)
-//                        &&
-//                content.equals(that.content)
-                ;
+                descriptor.equals(that.descriptor);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(distributionID, senderID, dateTimeSent, dateTimeExpires, distributionStatus, distributionKind, descriptor
-//                , content
-        );
+        return Objects.hash(distributionID, senderID, dateTimeSent, dateTimeExpires, distributionStatus, distributionKind, descriptor);
     }
 
     @Override
