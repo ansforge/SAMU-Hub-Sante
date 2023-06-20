@@ -17,8 +17,8 @@ public class ConsumerRun {
     public static void main(String[] args) throws Exception {
         TLSConf tlsConf = new TLSConf(
                 "TLSv1.2",
-                "certPassword",
-                "../certs/client.p12",
+                "bbo",
+                "../certs/users/bbo/fr.test.bbo.p12",
                 "trustStore",
                 "../certs/trustStore");
 

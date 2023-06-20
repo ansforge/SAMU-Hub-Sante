@@ -13,7 +13,7 @@
         <language>fr-FR</language>
         <explicitAddress>
             <explicitAddressScheme>hubsante</explicitAddressScheme>
-            <explicitAddressValue>fr.health.hub.samu050</explicitAddressValue>
+            <explicitAddressValue>fr.test.bbo</explicitAddressValue>
         </explicitAddress>
     </descriptor>
     <content xlink:type="resource">

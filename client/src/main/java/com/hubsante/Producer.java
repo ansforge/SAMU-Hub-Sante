@@ -48,7 +48,7 @@ public class Producer {
         this.connection = factory.newConnection();
         if (connection != null) {
             this.channelProducer = connection.createChannel();
-            this.channelProducer.exchangeDeclare(this.exchangeName, BuiltinExchangeType.TOPIC, true);
+//            this.channelProducer.exchangeDeclare(this.exchangeName, BuiltinExchangeType.TOPIC, true);
         }
     }
 

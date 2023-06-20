@@ -101,6 +101,7 @@ public abstract class Consumer {
 
             this.consumeChannel = connection.createChannel();
             this.consumeChannel.queueDeclare(this.routingKey, true, false, false, null);
+//            this.consumeChannel.queueBind(this.routingKey, "hubsante", this.routingKey);
 
             // produceChannel: where ack messages are sent to Hub Santé
             this.producerAck = new Producer(this.host, this.port, this.exchangeName);
