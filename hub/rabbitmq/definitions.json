@@ -63,11 +63,11 @@
       ]
     },
     {
-      "name": "fr.health.hub.test",
+      "name": "dispatcher",
       "tags": []
     },
     {
-      "name": "fr.fire.nexsis.test",
+      "name": "local.test",
       "tags": []
     },
     {
@@ -127,18 +127,18 @@
       "write": ".*"
     },
     {
-      "user": "fr.health.hub.test",
+      "user": "dispatcher",
       "vhost": "/",
-      "configure": ".*",
-      "read": ".*",
-      "write": ".*"
+      "configure": "^(hubsante|#.out.*)$",
+      "read": "^(*.out.*)$",
+      "write": "^(amq.default)$"
     },
     {
-      "user": "fr.fire.nexsis.test",
+      "user": "local.test",
       "vhost": "/",
-      "configure": "^(hubfire|federation: hubfire.*)$",
-      "write": "^(hubfire|federation: hubfire.*)$",
-      "read": "^(hubfire|federation: hubfire.*)$"
+      "configure": "^(fr.health.samuA.*|fr.health.samuB.*|fr.fire.nexsis.sdisZ)$",
+      "read": "^(fr.health.samuA.*|fr.health.samuB.*|fr.fire.nexsis.sdisZ)$",
+      "write": "^(hubsante)$"
     },
     {
       "user": "fr.health.samu800",
