@@ -38,7 +38,7 @@
       "vhost": "/",
       "destination": "*.out.*",
       "destination_type": "queue",
-      "routing_key":"#.out.info",
+      "routing_key": "#.out.info",
       "arguments": {}
     },
     {
@@ -80,6 +80,18 @@
     },
     {
       "name": "fr.health.exos",
+      "tags": []
+    },
+    {
+      "name": "fr.health.bisom",
+      "tags": []
+    },
+    {
+      "name": "fr.health.samu090",
+      "tags": []
+    },
+    {
+      "name": "fr.health.samu091",
       "tags": []
     }
   ],
@@ -132,6 +144,27 @@
       "configure": "^(hubsante|fr.health.exos.*)$",
       "read": "fr.health.exos.*",
       "write": "^(hubsante|fr.health.exos.*)$"
+    },
+    {
+      "user": "fr.health.bisom",
+      "vhost": "/",
+      "configure": "^(hubsante|fr.health.samu091.*|fr.health.samu090.*)$",
+      "read": "^(fr.health.samu100.*|fr.health.samu090.*)$",
+      "write": "^(hubsante|fr.health.samu091.*|fr.health.samu090.*)$"
+    },
+    {
+      "user":  "fr.health.samu090",
+      "vhost": "/",
+      "configure": "^(hubsante|fr.health.samu090.*)$",
+      "read": "^(hubsante|fr.health.samu090.*)$",
+      "write": "^(hubsante|fr.health.samu090.*)$"
+    },
+    {
+      "user":  "fr.health.samu091",
+      "vhost": "/",
+      "configure": "^(hubsante|fr.health.samu091.*)$",
+      "read": "^(fr.health.samu091.*)$",
+      "write": "^(hubsante|fr.health.samu091.*)$"
     }
   ]
 }
