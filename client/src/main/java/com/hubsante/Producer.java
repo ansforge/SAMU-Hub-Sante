@@ -20,10 +20,14 @@ public class Producer {
     private static final Logger log = LoggerFactory.getLogger(Producer.class);
     private Channel channelProducer;
     private Connection connection;
-    /** serveur distant */
+    /**
+     * serveur distant
+     */
     private String host;
 
-    /** port du serveur distant */
+    /**
+     * port du serveur distant
+     */
     private int port;
 
     private String exchangeName;
@@ -65,7 +69,7 @@ public class Producer {
      * @throws IOException
      */
     public void publish(String routingKey, EdxlMessage msg) throws IOException {
-        if(this.channelProducer == null) {
+        if (this.channelProducer == null) {
             log.warn("Channel producer unreachable, please ensure that connection has been established" +
                     "(Producer.connect() method has been called)");
             throw new IOException("Unconnected AMQP channel");
@@ -77,11 +81,21 @@ public class Producer {
                 // required to preserve offset
                 .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
+
+        // Setting Content Type becomes mandatory to allow correct deserialization in HubSante
+        // Only two content types are allowed : application/json and application/xml
+        // If not set, HubSante will not be able to deserialize the message and will reject it
+        AMQP.BasicProperties properties = new AMQP.BasicProperties().builder()
+                .contentType("application/json")
+                .deliveryMode(2) // set persistent mode (for cloud resilience - no message is stored out of the transit scope)
+                .priority(0) // default priority
+                .build();
+
         try {
             this.channelProducer.basicPublish(
                     this.exchangeName,
                     routingKey,
-                    MessageProperties.PERSISTENT_TEXT_PLAIN,
+                    properties,
                     mapper.writerWithDefaultPrettyPrinter().writeValueAsString(msg).getBytes(StandardCharsets.UTF_8));
         } catch (IOException e) {
             // we log error here and propagate the exception to handle it in the business layer
@@ -91,7 +105,7 @@ public class Producer {
     }
 
     public void xmlPublish(String routingKey, EdxlMessage msg) throws IOException {
-        if(this.channelProducer == null) {
+        if (this.channelProducer == null) {
             log.warn("Channel producer unreachable, please ensure that connection has been established" +
                     "(Producer.connect() method has been called)");
             throw new IOException("Unconnected AMQP channel");
@@ -104,11 +118,20 @@ public class Producer {
 
         xmlMapper.configure(ToXmlGenerator.Feature.WRITE_XML_DECLARATION, true);
 
+        // Setting Content Type becomes mandatory to allow correct deserialization in HubSante
+        // Only two content types are allowed : application/json and application/xml
+        // If not set, HubSante will not be able to deserialize the message and will reject it
+        AMQP.BasicProperties properties = new AMQP.BasicProperties().builder()
+                .contentType("application/xml")
+                .deliveryMode(2) // set persistent mode (for cloud resilience - no message is stored out of the transit scope)
+                .priority(0) // default priority
+                .build();
+
         try {
             this.channelProducer.basicPublish(
                     this.exchangeName,
                     routingKey,
-                    MessageProperties.PERSISTENT_TEXT_PLAIN,
+                    properties,
                     xmlMapper.writerWithDefaultPrettyPrinter().writeValueAsString(msg).getBytes(StandardCharsets.UTF_8));
         } catch (IOException e) {
             // we log error here and propagate the exception to handle it in the business layer

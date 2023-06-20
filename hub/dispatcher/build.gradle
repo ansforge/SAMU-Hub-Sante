@@ -6,6 +6,7 @@ plugins {
 }
 
 group = 'com.hubsante'
+archivesBaseName = 'hubsante-dispatcher'
 version = '0.8-SNAPSHOT'
 
 java {
@@ -33,6 +34,8 @@ ext {
 }
 
 dependencies {
+	implementation project(':models')
+
 	implementation 'org.springframework.boot:spring-boot-starter-amqp'
 	implementation 'com.github.jknack:handlebars:4.3.1'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
@@ -41,6 +44,7 @@ dependencies {
 	implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.12.5'
 	implementation 'com.networknt:json-schema-validator:1.0.72'
 	implementation 'org.projectlombok:lombok'
+	implementation 'org.junit.jupiter:junit-jupiter-params'
 
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	annotationProcessor 'org.projectlombok:lombok'
