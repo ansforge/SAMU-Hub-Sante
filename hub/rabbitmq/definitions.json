@@ -93,6 +93,10 @@
     {
       "name": "fr.health.samu091",
       "tags": []
+    },
+    {
+      "name": "fr.test.bbo",
+      "tags": []
     }
   ],
   "permissions": [
@@ -153,18 +157,25 @@
       "write": "^(hubsante|fr.health.samu091.*|fr.health.samu090.*)$"
     },
     {
-      "user":  "fr.health.samu090",
+      "user": "fr.health.samu090",
       "vhost": "/",
       "configure": "^(hubsante|fr.health.samu090.*)$",
       "read": "^(hubsante|fr.health.samu090.*)$",
       "write": "^(hubsante|fr.health.samu090.*)$"
     },
     {
-      "user":  "fr.health.samu091",
+      "user": "fr.health.samu091",
       "vhost": "/",
       "configure": "^(hubsante|fr.health.samu091.*)$",
       "read": "^(fr.health.samu091.*)$",
       "write": "^(hubsante|fr.health.samu091.*)$"
+    },
+    {
+      "user": "fr.test.bbo",
+      "vhost": "/",
+      "configure": "^(fr.test.bbo.*)$",
+      "read": "^(fr.test.bbo.*)$",
+      "write": "^(hubsante)$"
     }
   ]
 }
