@@ -1,6 +1,5 @@
 package com.hubsante.hub.config;
 
-import org.apache.any23.encoding.TikaEncodingDetector;
 import org.junit.jupiter.params.shadow.com.univocity.parsers.common.ParsingContext;
 import org.junit.jupiter.params.shadow.com.univocity.parsers.common.processor.ObjectRowProcessor;
 import org.junit.jupiter.params.shadow.com.univocity.parsers.csv.CsvParser;
@@ -10,7 +9,7 @@ import org.springframework.context.annotation.Configuration;
 
 import javax.annotation.PostConstruct;
 import java.io.*;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
 
@@ -20,13 +19,12 @@ public class HubClientConfiguration {
     private static final int TOGGLE_ROW_LENGTH = 2;
 
     @Value("${client.preferences.file}")
-    private String configFilePath;
+    private File configFile;
 
     private HashMap<String, Boolean> clientPreferences = new HashMap<>();
 
     @PostConstruct
     public void init() throws Exception {
-        File configFile = new File(configFilePath);
 
         try {
             // We define a custom row processor to read the config file
@@ -50,12 +48,9 @@ public class HubClientConfiguration {
             parserSettings.setNullValue("");
 
             CsvParser parser = new CsvParser(parserSettings);
-            // get file charset to secure data encoding
-            InputStream is = new FileInputStream(configFile);
-            Charset detectedCharset = Charset.forName(new TikaEncodingDetector().guessEncoding(is));
-            parser.parse(new BufferedReader(new FileReader(configFile, detectedCharset)));
+            parser.parse(new BufferedReader(new FileReader(configFile, StandardCharsets.UTF_8)));
         } catch (Exception e) {
-            throw new Exception("Could not read config file " + configFilePath, e);
+            throw new Exception("Could not read config file " + configFile.getAbsolutePath(), e);
         }
     }
 
