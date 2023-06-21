@@ -52,10 +52,6 @@
   ],
   "users": [
     {
-      "name": "localhost",
-      "tags": []
-    },
-    {
       "name": "admin",
       "password": "admin",
       "tags": [
@@ -113,13 +109,6 @@
   ],
   "permissions": [
     {
-      "user": "localhost",
-      "vhost": "/",
-      "configure": ".*",
-      "read": ".*",
-      "write": ".*"
-    },
-    {
       "user": "admin",
       "vhost": "/",
       "configure": ".*",
@@ -136,8 +125,8 @@
     {
       "user": "local.test",
       "vhost": "/",
-      "configure": "^(fr.health.samuA.*|fr.health.samuB.*|fr.fire.nexsis.sdisZ)$",
-      "read": "^(fr.health.samuA.*|fr.health.samuB.*|fr.fire.nexsis.sdisZ)$",
+      "configure": "^(fr.health.samuA.*|fr.health.samuB.*|fr.fire.nexsis.sdisZ.*)$",
+      "read": "^(fr.health.samuA.*|fr.health.samuB.*|fr.fire.nexsis.sdisZ.*)$",
       "write": "^(hubsante)$"
     },
     {
