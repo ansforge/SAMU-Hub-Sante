@@ -107,6 +107,85 @@
       "tags": []
     }
   ],
+  "topic_permissions": [
+    {
+      "user": "local.test",
+      "vhost": "/",
+      "exchange": "hubsante",
+      "read": "",
+      "write": "^(fr.health.samuA.*|fr.health.samuB.*|fr.fire.nexsis.sdisZ.*)$"
+    },
+    {
+      "user": "fr.health.samu800",
+      "vhost": "/",
+      "exchange": "hubsante",
+      "read": "",
+      "write": "^(fr.health.samu800.*)$"
+    },
+    {
+      "user": "fr.health.samu570",
+      "vhost": "/",
+      "exchange": "hubsante",
+      "read": "",
+      "write": "^(fr.health.samu570.*)$"
+    },
+    {
+      "user": "fr.health.exos",
+        "vhost": "/",
+        "exchange": "hubsante",
+        "read": "",
+        "write": "^(fr.health.exos.*)$"
+    },
+    {
+      "user": "fr.health.bisom",
+      "vhost": "/",
+      "exchange": "hubsante",
+      "read": "",
+      "write": "^(fr.health.samu091.*|fr.health.samu090.*)$"
+    },
+    {
+      "user": "fr.health.samu090",
+        "vhost": "/",
+        "exchange": "hubsante",
+        "read": "",
+        "write": "^(fr.health.samu090.*)$"
+    },
+    {
+      "user": "fr.health.samu091",
+        "vhost": "/",
+        "exchange": "hubsante",
+        "read": "",
+        "write": "^(fr.health.samu091.*)$"
+    },
+    {
+      "user": "fr.health.normandie",
+        "vhost": "/",
+        "exchange": "hubsante",
+        "read": "",
+        "write": "^(fr.health.normandie.*)$"
+    },
+    {
+      "user": "fr.health.samu76A",
+        "vhost": "/",
+        "exchange": "hubsante",
+        "read": "",
+        "write": "^(fr.health.samu76A.*)$"
+    },
+    {
+      "user": "fr.health.samu76B",
+        "vhost": "/",
+        "exchange": "hubsante",
+        "read": "",
+        "write": "^(fr.health.samu76B.*)$"
+    },
+    {
+      "user": "fr.test.bbo",
+        "vhost": "/",
+        "exchange": "hubsante",
+        "read": "",
+        "write": "^(fr.test.bbo.*)$"
+    }
+  ],
   "permissions": [
     {
       "user": "admin",

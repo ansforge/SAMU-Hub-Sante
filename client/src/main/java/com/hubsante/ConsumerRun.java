@@ -18,7 +18,7 @@ public class ConsumerRun {
         TLSConf tlsConf = new TLSConf(
                 "TLSv1.2",
                 "certPassword",
-                "../certs/users/local_test.p12",
+                "../certs/local_test.p12",
                 "trustStore",
                 "../certs/trustStore");
 
