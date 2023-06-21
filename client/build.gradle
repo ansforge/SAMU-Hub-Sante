@@ -25,6 +25,8 @@ repositories {
 }
 
 dependencies {
+    implementation project(':models')
+
     implementation 'com.rabbitmq:amqp-client:5.16.0'
     implementation 'org.slf4j:slf4j-simple:1.7.26'  // Used by RabbitMQ
     implementation 'org.json:json:20220924'
