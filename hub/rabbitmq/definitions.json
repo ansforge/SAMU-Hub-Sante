@@ -91,6 +91,10 @@
       "tags": []
     },
     {
+      "name": "fr.health.RRAMU",
+      "tags": []
+    },
+    {
       "name": "fr.health.normandie",
       "tags": []
     },
@@ -120,21 +124,21 @@
       "vhost": "/",
       "exchange": "hubsante",
       "read": "",
-      "write": "^(fr.health.samu800.*)$"
+      "write": "fr.health.samu800.*"
     },
     {
       "user": "fr.health.samu570",
       "vhost": "/",
       "exchange": "hubsante",
       "read": "",
-      "write": "^(fr.health.samu570.*)$"
+      "write": "fr.health.samu570.*"
     },
     {
       "user": "fr.health.exos",
         "vhost": "/",
         "exchange": "hubsante",
         "read": "",
-        "write": "^(fr.health.exos.*)$"
+        "write": "fr.health.exos.*"
     },
     {
       "user": "fr.health.bisom",
@@ -148,7 +152,7 @@
         "vhost": "/",
         "exchange": "hubsante",
         "read": "",
-        "write": "^(fr.health.samu090.*)$"
+        "write": "fr.health.samu090.*"
     },
     {
       "user": "fr.health.samu091",
@@ -156,6 +160,13 @@
         "exchange": "hubsante",
         "read": "",
         "write": "^(fr.health.samu091.*)$"
+    },
+    {
+      "user": "fr.health.RRAMU",
+        "vhost": "/",
+        "exchange": "hubsante",
+        "read": "",
+        "write": "^(fr.health.normandie.*|fr.health.RRAMU.*|fr.health.samu76A.*|fr.health.samu76B.*)$"
     },
     {
       "user": "fr.health.normandie",
@@ -169,21 +180,21 @@
         "vhost": "/",
         "exchange": "hubsante",
         "read": "",
-        "write": "^(fr.health.samu76A.*)$"
+        "write": "fr.health.samu76A.*"
     },
     {
       "user": "fr.health.samu76B",
         "vhost": "/",
         "exchange": "hubsante",
         "read": "",
-        "write": "^(fr.health.samu76B.*)$"
+        "write": "fr.health.samu76B.*"
     },
     {
       "user": "fr.test.bbo",
         "vhost": "/",
         "exchange": "hubsante",
         "read": "",
-        "write": "^(fr.test.bbo.*)$"
+        "write": "fr.test.bbo.*"
     }
   ],
   "permissions": [
@@ -197,86 +208,93 @@
     {
       "user": "dispatcher",
       "vhost": "/",
-      "configure": "^(hubsante|#.out.*)$",
-      "read": "^(\\*.out.\\*)$",
-      "write": "^(amq.default)$"
+      "configure": "",
+      "read": "\\*.out.\\*",
+      "write": "amq.default"
     },
     {
       "user": "local.test",
       "vhost": "/",
       "configure": "^(fr.health.samuA.*|fr.health.samuB.*|fr.fire.nexsis.sdisZ.*)$",
       "read": "^(fr.health.samuA.*|fr.health.samuB.*|fr.fire.nexsis.sdisZ.*)$",
-      "write": "^(hubsante)$"
+      "write": "hubsante"
     },
     {
       "user": "fr.health.samu800",
       "vhost": "/",
-      "configure": "^(hubsante|fr.health.samu800.*)$",
+      "configure": "fr.health.samu800.*",
       "read": "fr.health.samu800.*",
-      "write": "^(hubsante|fr.health.samu800.*)$"
+      "write": "hubsante"
     },
     {
       "user": "fr.health.samu570",
       "vhost": "/",
-      "configure": "^(hubsante|fr.health.samu570.*)$",
+      "configure": "fr.health.samu570.*",
       "read": "fr.health.samu570.*",
-      "write": "^(hubsante|fr.health.samu570.*)$"
+      "write": "hubsante"
     },
     {
       "user": "fr.health.exos",
       "vhost": "/",
-      "configure": "^(hubsante|fr.health.exos.*)$",
+      "configure": "fr.health.exos.*",
       "read": "fr.health.exos.*",
-      "write": "^(hubsante|fr.health.exos.*)$"
+      "write": "hubsante"
     },
     {
       "user": "fr.health.bisom",
       "vhost": "/",
-      "configure": "^(hubsante|fr.health.samu091.*|fr.health.samu090.*)$",
-      "read": "^(fr.health.samu100.*|fr.health.samu090.*)$",
-      "write": "^(hubsante|fr.health.samu091.*|fr.health.samu090.*)$"
+      "configure": "^(fr.health.samu091.*|fr.health.samu090.*)$",
+      "read": "^(fr.health.samu091.*|fr.health.samu090.*)$",
+      "write": "hubsante"
     },
     {
       "user": "fr.health.samu090",
       "vhost": "/",
-      "configure": "^(hubsante|fr.health.samu090.*)$",
-      "read": "^(hubsante|fr.health.samu090.*)$",
-      "write": "^(hubsante|fr.health.samu090.*)$"
+      "configure": "fr.health.samu090.*",
+      "read": "fr.health.samu090.*",
+      "write": "hubsante"
     },
     {
       "user": "fr.health.samu091",
       "vhost": "/",
-      "configure": "^(hubsante|fr.health.samu091.*)$",
-      "read": "^(fr.health.samu091.*)$",
-      "write": "^(hubsante|fr.health.samu091.*)$"
+      "configure": "fr.health.samu091.*",
+      "read": "fr.health.samu091.*",
+      "write": "hubsante"
+    },
+    {
+      "user": "fr.health.RRAMU",
+        "vhost": "/",
+        "configure": "^(fr.health.normandie.*|fr.health.RRAMU.*|fr.health.samu76A.*|fr.health.samu76B.*)$",
+        "read": "^(fr.health.normandie.*|fr.health.RRAMU.*|fr.health.samu76A.*|fr.health.samu76B.*)$",
+        "write": "hubsante"
     },
     {
       "user": "fr.health.normandie",
       "vhost": "/",
-      "configure": "^(fr.health.normandie.*)$",
-      "read": "^(fr.health.normandie.*)$",
-      "write": "^(hubsante)$"
+      "configure": "^(fr.health.normandie.*|fr.health.samu76A.*|fr.health.samu76B.*)$",
+      "read": "^(fr.health.normandie.*|fr.health.samu76A.*|fr.health.samu76B.*)$",
+      "write": "hubsante"
     },
     {
       "user": "fr.health.samu76A",
       "vhost": "/",
-      "configure": "^(fr.health.samu76A.*)$",
-      "read": "^(fr.health.samu76A.*)$",
-      "write": "^(hubsante)$"
+      "configure": "fr.health.samu76A.*",
+      "read": "fr.health.samu76A.*",
+      "write": "hubsante"
     },
     {
       "user": "fr.health.samu76B",
       "vhost": "/",
-      "configure": "^(fr.health.samu76B.*)$",
-      "read": "^(fr.health.samu76B.*)$",
-      "write": "^(hubsante)$"
+      "configure": "fr.health.samu76B.*",
+      "read": "fr.health.samu76B.*",
+      "write": "hubsante"
     },
     {
       "user": "fr.test.bbo",
       "vhost": "/",
-      "configure": "^(fr.test.bbo.*)$",
-      "read": "^(fr.test.bbo.*)$",
-      "write": "^(hubsante)$"
+      "configure": "fr.test.bbo.*",
+      "read": "fr.test.bbo.*",
+      "write": "hubsante"
     }
   ]
 }
