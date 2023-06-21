@@ -130,7 +130,7 @@
       "user": "dispatcher",
       "vhost": "/",
       "configure": "^(hubsante|#.out.*)$",
-      "read": "^(*.out.*)$",
+      "read": "^(\\*.out.\\*)$",
       "write": "^(amq.default)$"
     },
     {
