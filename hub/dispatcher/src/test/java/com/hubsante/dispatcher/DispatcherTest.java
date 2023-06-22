@@ -1,9 +1,9 @@
 package com.hubsante.dispatcher;
 
 import com.hubsante.hub.HubApplication;
+import com.hubsante.hub.config.HubClientConfiguration;
 import com.hubsante.hub.service.Dispatcher;
 import com.hubsante.hub.service.EdxlHandler;
-import com.hubsante.model.edxl.EdxlMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,6 +17,8 @@ import org.springframework.amqp.rabbit.test.context.SpringRabbitTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,9 +37,19 @@ import static org.mockito.Mockito.times;
 public class DispatcherTest {
 
     private RabbitTemplate rabbitTemplate = Mockito.mock(RabbitTemplate.class);
+
     @Autowired
     private EdxlHandler converter;
+    @Autowired
+    private HubClientConfiguration hubConfig;
     ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+
+    @DynamicPropertySource
+    static void registerPgProperties(DynamicPropertyRegistry propertiesRegistry) {
+        propertiesRegistry.add("client.preferences.file",
+                () -> "file:C:/dev/ANS/SAMU/HubSante/repository/SAMU-Hub-Sante/hub/dispatcher/src/test/resources/client.preferences.csv");
+    }
+
 
     @Test
     @DisplayName("should send message to the right exchange and routing key")
@@ -45,10 +57,13 @@ public class DispatcherTest {
         File edxlCisuCreateFile = new File(classLoader.getResource("cisuCreateEdxl.xml").getFile());
         String xml = Files.readString(edxlCisuCreateFile.toPath());
 
-        MessageProperties properties = MessagePropertiesBuilder.newInstance().setReceivedRoutingKey("fr.health.hub.samu110.out.message").build();
+        MessageProperties properties = MessagePropertiesBuilder.newInstance()
+                .setReceivedRoutingKey("fr.health.hub.samu110.out.message")
+                .setContentType("application/xml")
+                .build();
         Message receivedMessage = new Message(xml.getBytes(StandardCharsets.UTF_8), properties);
 
-        Dispatcher dispatcher = new Dispatcher(rabbitTemplate, converter);
+        Dispatcher dispatcher = new Dispatcher(rabbitTemplate, converter, hubConfig);
         dispatcher.dispatch(receivedMessage);
 
         // assert that the message was sent to the right exchange with the right routing key exactly 1 time
@@ -62,10 +77,12 @@ public class DispatcherTest {
         File malformedEdxlFile = new File(classLoader.getResource("malformedEdxl.json").getFile());
         String json = Files.readString(malformedEdxlFile.toPath());
 
-        MessageProperties properties = MessagePropertiesBuilder.newInstance().setReceivedRoutingKey("fr.health.hub.samu050.out.message").build();
+        MessageProperties properties = MessagePropertiesBuilder.newInstance()
+                .setReceivedRoutingKey("fr.health.hub.samu050.out.message")
+                .setContentType("application/json").build();
         Message receivedMessage = new Message(json.getBytes(StandardCharsets.UTF_8), properties);
 
-        Dispatcher dispatcher = new Dispatcher(rabbitTemplate, converter);
+        Dispatcher dispatcher = new Dispatcher(rabbitTemplate, converter, hubConfig);
 
         assertThrows(AmqpRejectAndDontRequeueException.class, () -> {
             dispatcher.dispatch(receivedMessage);
