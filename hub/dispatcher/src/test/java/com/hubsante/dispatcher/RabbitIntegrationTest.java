@@ -24,6 +24,7 @@ import org.testcontainers.containers.RabbitMQContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.utility.MountableFile;
 
 
 import java.io.File;
@@ -71,10 +72,12 @@ public class RabbitIntegrationTest {
     }
 
     @BeforeAll
-    public static void beforeAll() {
+    public static void beforeAll() throws IOException, InterruptedException {
         rabbitMQContainer.start();
         // only for debug : to see the management console
         Integer port = rabbitMQContainer.getMappedPort(15672);
+        rabbitMQContainer.execInContainer("rabbitmqctl", "import_definitions", "/tmp/rabbitmq/config/definitions.json");
+        System.out.println("tutu");
     }
 
     @AfterEach
@@ -88,17 +91,20 @@ public class RabbitIntegrationTest {
     public static RabbitMQContainer rabbitMQContainer = new RabbitMQContainer(
             DockerImageName.parse(RABBITMQ_IMAGE))
             .withPluginsEnabled("rabbitmq_management")
-            .withExchange(HUBSANTE_EXCHANGE, "topic")
-
-            .withQueue(ENTRY_QUEUE)
-            .withBinding(HUBSANTE_EXCHANGE, ENTRY_QUEUE, Collections.emptyMap(), MESSAGE_ROUTING_KEY, "queue")
-            .withBinding(HUBSANTE_EXCHANGE, ENTRY_QUEUE, Collections.emptyMap(), ACK_ROUTING_KEY, "queue")
-
-            .withQueue(SENDER_ACK_QUEUE)
-            .withBinding(HUBSANTE_EXCHANGE, SENDER_ACK_QUEUE, Collections.emptyMap(), SENDER_ACK_ROUTING_KEY, "queue")
-
-            .withQueue(RECIPIENT_QUEUE)
-            .withBinding(HUBSANTE_EXCHANGE, RECIPIENT_QUEUE, Collections.emptyMap(), RECIPIENT_ROUTING_KEY, "queue");
+            .withCopyFileToContainer(MountableFile.forClasspathResource("config/definitions.json"),
+                    "tmp/rabbitmq/config/definitions.json")
+            .withRabbitMQConfigSysctl(MountableFile.forClasspathResource("config/rabbitmq.conf"));
+//            .withExchange(HUBSANTE_EXCHANGE, "topic")
+//
+//            .withQueue(ENTRY_QUEUE)
+//            .withBinding(HUBSANTE_EXCHANGE, ENTRY_QUEUE, Collections.emptyMap(), MESSAGE_ROUTING_KEY, "queue")
+//            .withBinding(HUBSANTE_EXCHANGE, ENTRY_QUEUE, Collections.emptyMap(), ACK_ROUTING_KEY, "queue")
+//
+//            .withQueue(SENDER_ACK_QUEUE)
+//            .withBinding(HUBSANTE_EXCHANGE, SENDER_ACK_QUEUE, Collections.emptyMap(), SENDER_ACK_ROUTING_KEY, "queue")
+//
+//            .withQueue(RECIPIENT_QUEUE)
+//            .withBinding(HUBSANTE_EXCHANGE, RECIPIENT_QUEUE, Collections.emptyMap(), RECIPIENT_ROUTING_KEY, "queue");
 
     @Test
     @DisplayName("message dispatched to exchange is received by a consumer listening to the right queue")
