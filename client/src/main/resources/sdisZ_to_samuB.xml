@@ -3,8 +3,8 @@
                   xmlns="urn:oasis:names:tc:emergency:EDXL:DE:2.0"
                   xmlns:xlink="http://www.w3.org/1999/xlink"
                   xmlns:ct="urn:oasis:names:tc:emergency:edxl:ct:1.0">
-    <distributionID>sdis-50_2608323d-507d-4cbf-bf74-52007f8124ea</distributionID>
-    <senderID>fr.fire.nexsis.sdis-50</senderID>
+    <distributionID>sdisZ_2608323d-507d-4cbf-bf74-52007f8124ea</distributionID>
+    <senderID>fr.fire.nexsis.sdisZ</senderID>
     <dateTimeSent>2022-09-27T08:23:34+02:00</dateTimeSent>
     <dateTimeExpires>2072-09-27T08:23:34+02:00</dateTimeExpires>
     <distributionStatus>Actual</distributionStatus>
@@ -13,7 +13,7 @@
         <language>fr-FR</language>
         <explicitAddress>
             <explicitAddressScheme>hubsante</explicitAddressScheme>
-            <explicitAddressValue>fr.health.samu050</explicitAddressValue>
+            <explicitAddressValue>fr.health.samuB</explicitAddressValue>
         </explicitAddress>
     </descriptor>
     <content xlink:type="resource">
@@ -23,20 +23,20 @@
                     <message xmlns="urn:emergency:cisu:2.0">
                         <messageId>2608323d-507d-4cbf-bf74-52007f8124ea</messageId>
                         <sender>
-                            <name>sdis-50</name>
-                            <URI>nexsis:fr.fire.nexsis.sdis-050</URI>
+                            <name>sdisZ</name>
+                            <URI>nexsis:fr.fire.nexsis.sdisZ</URI>
                         </sender>
                         <sentAt>2022-09-27T08:23:34+02:00</sentAt>
                         <msgType>ALERT</msgType>
                         <status>TEST</status>
                         <recipients>
                             <recipient>
-                                <name>samu050</name>
-                                <URI>hubsante:fr.health.samu050</URI>
+                                <name>samuB</name>
+                                <URI>hubsante:fr.health.samuB</URI>
                             </recipient>
                         </recipients>
                         <createEvent>
-                            <eventId>SDIS-50-AF2</eventId>
+                            <eventId>SDISZ-AF2</eventId>
                             <createdAt>2022-09-27T08:23:34+02:00</createdAt>
                             <severity>UNKNOWN</severity>
                             <eventLocation>
@@ -60,7 +60,7 @@
                                 </civicAddress>
                             </eventLocation>
                             <primaryAlert>
-                                <alertId>SDIS-50-AL8</alertId>
+                                <alertId>SDIsZ-AL8</alertId>
                                 <receivedAt>2022-09-27T08:23:15+02:00</receivedAt>
                                 <reporting>STANDARD</reporting>
                                 <alertLocation>
@@ -82,9 +82,9 @@
                                     <callerURI>0678958874</callerURI>
                                 </caller>
                                 <callTaker>
-                                    <organization>SDIS-50</organization>
-                                    <controlRoom>SDIS-50</controlRoom>
-                                    <calltakerURI>SDIS-50-AL8@localhost|tel:undefined#0613</calltakerURI>
+                                    <organization>SDISZ</organization>
+                                    <controlRoom>SDISZ</controlRoom>
+                                    <calltakerURI>SDISZ-AL8@localhost|tel:undefined#0613</calltakerURI>
                                 </callTaker>
                                 <alertCode>
                                     <version>latest</version>
