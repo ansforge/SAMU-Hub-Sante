@@ -45,7 +45,7 @@
                     <ul id="search-result" data-role="listview" data-filter="true" data-filter-reveal="true" data-input="#search-input" data-inset="true"></ul>
                 </div>
             </div>
-            <div data-role="footer">
+            <div data-role="footer" style="display: flex; justify-content: space-between; align-items: center;">
                 <div id="schema-path" class="ui-content">
                     <a href="#permalink-popup" id="permalink" data-rel="popup">Select a Node</a>
                     <div data-role="popup" id="permalink-popup" class="ui-content" data-arrow="true">
@@ -53,6 +53,9 @@
                         <input type="text" id="sharelink" style="min-width:300px;" placeholder="Select a Node to create a permalink." value="" data-theme="a">
                     </div>
                 </div>
+                <a href="https://hub.esante.gouv.fr/" data-role="none" target="_blank">
+                    <img src="images/ANS.png" alt="Logo de l'ANS" style="height: 40px; padding: 10px 20px 3px 0;">
+                </a>
             </div><!-- /footer -->
             <div data-display="push" data-role="panel" id="info-panel" data-swipe-close=false>
                 <div data-role="header" data-theme="b" class="ui-mini">

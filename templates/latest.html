@@ -16,6 +16,12 @@
     <meta http-equiv="expires" content="Tue, 01 Jan 1980 1:00:00 GMT">
     <meta http-equiv="pragma" content="no-cache">
 
+    <script>
+        // Redirects to URL with trailing slash if not present, so that refresh goes to the right page
+        if (!window.location.href.endsWith('/')) {
+            window.location.href = window.location.href + '/';
+        }
+    </script>
     <meta http-equiv="refresh" content="2;./<!-- @if NODE_ENV!='PRODUCTION' -->prod/<!-- @endif --><!-- @echo version -->/<!-- @echo now -->/<!-- @echo ver -->/">
     <style type="text/css" media="screen">
     	body {
