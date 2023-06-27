@@ -42,12 +42,12 @@ public class DispatcherTest {
     private EdxlHandler converter;
     @Autowired
     private HubClientConfiguration hubConfig;
-    ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+    static ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
     @DynamicPropertySource
     static void registerPgProperties(DynamicPropertyRegistry propertiesRegistry) {
         propertiesRegistry.add("client.preferences.file",
-                () -> "file:C:/dev/ANS/SAMU/HubSante/repository/SAMU-Hub-Sante/hub/dispatcher/src/test/resources/client.preferences.csv");
+                () -> classLoader.getResource("config/client.preferences.csv"));
     }
 
 

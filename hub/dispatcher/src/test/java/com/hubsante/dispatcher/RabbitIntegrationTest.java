@@ -60,7 +60,7 @@ public class RabbitIntegrationTest {
     @Autowired
     private RabbitAdmin rabbitAdmin;
 
-    ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+    static ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
     @Autowired
     private EdxlHandler converter;
@@ -68,16 +68,16 @@ public class RabbitIntegrationTest {
     @DynamicPropertySource
     static void registerPgProperties(DynamicPropertyRegistry propertiesRegistry) {
         propertiesRegistry.add("client.preferences.file",
-                () -> "file:C:/dev/ANS/SAMU/HubSante/repository/SAMU-Hub-Sante/hub/dispatcher/src/test/resources/client.preferences.csv");
+                () -> classLoader.getResource("config/client.preferences.csv"));
     }
+
+
 
     @BeforeAll
     public static void beforeAll() throws IOException, InterruptedException {
         rabbitMQContainer.start();
         // only for debug : to see the management console
         Integer port = rabbitMQContainer.getMappedPort(15672);
-        rabbitMQContainer.execInContainer("rabbitmqctl", "import_definitions", "/tmp/rabbitmq/config/definitions.json");
-        System.out.println("tutu");
     }
 
     @AfterEach
@@ -91,20 +91,17 @@ public class RabbitIntegrationTest {
     public static RabbitMQContainer rabbitMQContainer = new RabbitMQContainer(
             DockerImageName.parse(RABBITMQ_IMAGE))
             .withPluginsEnabled("rabbitmq_management")
-            .withCopyFileToContainer(MountableFile.forClasspathResource("config/definitions.json"),
-                    "tmp/rabbitmq/config/definitions.json")
-            .withRabbitMQConfigSysctl(MountableFile.forClasspathResource("config/rabbitmq.conf"));
-//            .withExchange(HUBSANTE_EXCHANGE, "topic")
-//
-//            .withQueue(ENTRY_QUEUE)
-//            .withBinding(HUBSANTE_EXCHANGE, ENTRY_QUEUE, Collections.emptyMap(), MESSAGE_ROUTING_KEY, "queue")
-//            .withBinding(HUBSANTE_EXCHANGE, ENTRY_QUEUE, Collections.emptyMap(), ACK_ROUTING_KEY, "queue")
-//
-//            .withQueue(SENDER_ACK_QUEUE)
-//            .withBinding(HUBSANTE_EXCHANGE, SENDER_ACK_QUEUE, Collections.emptyMap(), SENDER_ACK_ROUTING_KEY, "queue")
-//
-//            .withQueue(RECIPIENT_QUEUE)
-//            .withBinding(HUBSANTE_EXCHANGE, RECIPIENT_QUEUE, Collections.emptyMap(), RECIPIENT_ROUTING_KEY, "queue");
+            .withExchange(HUBSANTE_EXCHANGE, "topic")
+
+            .withQueue(ENTRY_QUEUE)
+            .withBinding(HUBSANTE_EXCHANGE, ENTRY_QUEUE, Collections.emptyMap(), MESSAGE_ROUTING_KEY, "queue")
+            .withBinding(HUBSANTE_EXCHANGE, ENTRY_QUEUE, Collections.emptyMap(), ACK_ROUTING_KEY, "queue")
+
+            .withQueue(SENDER_ACK_QUEUE)
+            .withBinding(HUBSANTE_EXCHANGE, SENDER_ACK_QUEUE, Collections.emptyMap(), SENDER_ACK_ROUTING_KEY, "queue")
+
+            .withQueue(RECIPIENT_QUEUE)
+            .withBinding(HUBSANTE_EXCHANGE, RECIPIENT_QUEUE, Collections.emptyMap(), RECIPIENT_ROUTING_KEY, "queue");
 
     @Test
     @DisplayName("message dispatched to exchange is received by a consumer listening to the right queue")
