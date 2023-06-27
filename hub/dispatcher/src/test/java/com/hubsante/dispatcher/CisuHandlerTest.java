@@ -46,7 +46,7 @@ public class CisuHandlerTest {
     @DisplayName("should deserialize JSON CreateEventMessage")
     public void deserializeJsonMessageTest() throws IOException {
         // deserialize JSON message
-        File cisuJsonFile = new File(classLoader.getResource("createEventMessage.json").getFile());
+        File cisuJsonFile = new File(classLoader.getResource("messages/createEventMessage.json").getFile());
         CreateEventMessage deserializedJsonMessage = converter.deserializeJsonMessage(Files.readString(cisuJsonFile.toPath()));
 
         assertEquals(
@@ -63,7 +63,7 @@ public class CisuHandlerTest {
     @Test
     @DisplayName("should deserialize XML CreateEventMessage")
     public void deserializeXmlMessageTest() throws IOException {
-        File cisuXmlFile = new File(classLoader.getResource("createEventMessage.xml").getFile());
+        File cisuXmlFile = new File(classLoader.getResource("messages/createEventMessage.xml").getFile());
         CreateEventMessage deserializedJsonMessage = converter.deserializeXmlMessage(Files.readString(cisuXmlFile.toPath()));
 
         assertEquals(
@@ -96,7 +96,7 @@ public class CisuHandlerTest {
     @DisplayName("malformed JSON message should fail validation")
     public void wrongJSONdeserializationFailed() throws IOException {
         // required "sender.uri" field is missing
-        File cisuJsonFile = new File(classLoader.getResource("missingRequiredCreateMessage.json").getFile());
+        File cisuJsonFile = new File(classLoader.getResource("messages/missingRequiredCreateMessage.json").getFile());
 
         // deserialization method does not throw error
         assertDoesNotThrow(() -> converter.deserializeJsonMessage(Files.readString(cisuJsonFile.toPath())));
@@ -108,7 +108,7 @@ public class CisuHandlerTest {
     @Test
     @DisplayName("malformed XML message should fail validation")
     public void wrongXMLdeserializationFailed() throws IOException {
-        File wrongXmlFile = new File(classLoader.getResource("missingRequiredElement.xml").getFile());
+        File wrongXmlFile = new File(classLoader.getResource("messages/missingRequiredElement.xml").getFile());
 
         // deserialization method does not throw error
         assertDoesNotThrow(() -> converter.deserializeXmlMessage(Files.readString(wrongXmlFile.toPath())));
@@ -122,7 +122,7 @@ public class CisuHandlerTest {
     public void endToEnd() throws IOException {
 
         // deserialize JSON message
-        File cisuJsonFile = new File(classLoader.getResource("createEventMessage.json").getFile());
+        File cisuJsonFile = new File(classLoader.getResource("messages/createEventMessage.json").getFile());
         CreateEventMessage deserializedJsonMessage = converter.deserializeJsonMessage(Files.readString(cisuJsonFile.toPath()));
 
         // serialize XML message with template
@@ -142,8 +142,8 @@ public class CisuHandlerTest {
         CreateEventMessage deserializedFromTemplatedXML = converter.deserializeXmlMessage(templatedXML);
         CreateEventMessage deserializedFromJacksonXML = converter.deserializeXmlMessage(jacksonSerializedXML);
 
-//        assertEquals(deserializedJsonMessage, deserializedFromTemplatedXML);
-//        assertEquals(deserializedJsonMessage, deserializedFromJacksonXML);
+        assertEquals(deserializedJsonMessage, deserializedFromTemplatedXML);
+        assertEquals(deserializedJsonMessage, deserializedFromJacksonXML);
 
         String serializedJSON = converter.convertToJson(deserializedFromTemplatedXML);
         assertDoesNotThrow(() -> converter.validateJSON(serializedJSON, "cisu.json"));
@@ -151,7 +151,7 @@ public class CisuHandlerTest {
 
     private CreateEventMessage getCreateEventMessageObject(String fileType) throws IOException {
         String fileNamePrefix = "createEventMessage.";
-        File sourceFile = new File(classLoader.getResource(fileNamePrefix + fileType).getFile());
+        File sourceFile = new File(classLoader.getResource("messages/" + fileNamePrefix + fileType).getFile());
 
         if (fileType.equals("xml")) {
             return converter.deserializeXmlMessage(Files.readString(sourceFile.toPath()));

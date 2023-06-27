@@ -54,7 +54,7 @@ public class DispatcherTest {
     @Test
     @DisplayName("should send message to the right exchange and routing key")
     public void shouldDispatchToRightExchange() throws IOException {
-        File edxlCisuCreateFile = new File(classLoader.getResource("cisuCreateEdxl.xml").getFile());
+        File edxlCisuCreateFile = new File(classLoader.getResource("messages/cisuCreateEdxl.xml").getFile());
         String xml = Files.readString(edxlCisuCreateFile.toPath());
 
         MessageProperties properties = MessagePropertiesBuilder.newInstance()
@@ -74,7 +74,7 @@ public class DispatcherTest {
     @Test
     @DisplayName("malformed message should throw an exception")
     public void malformedMessagefailed() throws IOException {
-        File malformedEdxlFile = new File(classLoader.getResource("malformedEdxl.json").getFile());
+        File malformedEdxlFile = new File(classLoader.getResource("messages/malformedEdxl.json").getFile());
         String json = Files.readString(malformedEdxlFile.toPath());
 
         MessageProperties properties = MessagePropertiesBuilder.newInstance()
