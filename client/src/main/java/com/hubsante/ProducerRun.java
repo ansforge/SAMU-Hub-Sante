@@ -26,7 +26,7 @@ public class ProducerRun {
         TLSConf tlsConf = new TLSConf(
                 "TLSv1.2",
                 "certPassword",
-                "../certs/client.p12",
+                "../certs/local_test.p12",
                 "trustStore",
                 "../certs/trustStore");
 

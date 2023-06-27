@@ -24,6 +24,7 @@ certs/CA/
 !certs/CA/rootCA.crt
 !certs/CA/hub.ext
 !certs/CA/client.ext
+!certs/dispatcher.tmp.p12
 certs/users/
 
 # Needed as GitHub action for AsyncAPI generation installs npm packages

@@ -39,34 +39,4 @@ public class AmqpConfiguration {
             connectionFactory.getRabbitConnectionFactory().setSaslConfig(DefaultSaslConfig.EXTERNAL);
         }
     }
-
-    @Bean
-    public AmqpAdmin amqpAdmin() {
-        return new RabbitAdmin(connectionFactory);
-    }
-
-    @Bean
-    TopicExchange hubsanteExchange() {
-        return new TopicExchange(HUBSANTE_EXCHANGE);
-    }
-
-    @Bean
-    Queue outMessageQueue() {
-        return QueueBuilder.durable(CONSUME_QUEUE_NAME).build();
-    }
-
-    @Bean
-    Binding outMessageBinding() {
-        return BindingBuilder.bind(outMessageQueue()).to(hubsanteExchange()).with(MESSAGE_ROUTING_KEY);
-    }
-
-    @Bean
-    Binding outInfoBinding() {
-        return BindingBuilder.bind(outMessageQueue()).to(hubsanteExchange()).with(INFO_ROUTING_KEY);
-    }
-
-    @Bean
-    Binding outAckBinding() {
-        return BindingBuilder.bind(outMessageQueue()).to(hubsanteExchange()).with(ACK_ROUTING_KEY);
-    }
 }

@@ -3,6 +3,11 @@ if [ -z "$DOMAIN" ];
 then
   echo "Script should be run with DOMAIN var: $ DOMAIN=... ./sign.sh"
 else
+  ROOT_CA="rootCA"
+  if [ "$CA" = "bbo" ]
+  then
+    ROOT_CA="bbo-rootCA"
+  fi
   if [ "$DOMAIN" = "hub" ];
   then
     # Additional SAN can be added in hub.ext
@@ -16,6 +21,6 @@ else
     echo "> Add certificate to Client truststore (from repository root): keytool -import -alias RabbitMQHubSante -file hub/rabbitmq/certs/hub.crt -keystore certs/trustStore"
     echo "> Copy trustStore to be used in Dispatcher (from repository root): cp certs/trustStore dispatcher/src/main/jib/certs/"
   else
-    openssl x509 -req -CA rootCA.crt -CAkey rootCA.key -in "$DOMAIN".csr -out "$DOMAIN".crt -days 365 -CAcreateserial -extfile client.ext
+    openssl x509 -req -CA "$ROOT_CA".crt -CAkey rootCA.key -in "$DOMAIN".csr -out "$DOMAIN".crt -days 365 -CAcreateserial -extfile client.ext
   fi
 fi

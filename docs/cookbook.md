@@ -9,15 +9,18 @@ Pour plus de détails sur l'instanciation en local du Hub Santé, veuillez vous 
 
 ## Lancer un Consumer sur $CLIENT_ID.in.message
 # Shell 1
-CLIENT_ID=fr.fire.nexsis; gradle -Pmain=com.hubsante.ConsumerRun run --args "$CLIENT_ID.in.message xml"
+CLIENT_ID=fr.health.samuA; gradle run --args "$CLIENT_ID.in.message json"
 
 ## Lancer un Consumer sur $CLIENT_ID.in.ack
 #Shell 2
-CLIENT_ID=fr.health.hub.samu050; gradle -Pmain=com.hubsante.ConsumerRun run --args "$CLIENT_ID.in.ack json"
+CLIENT_ID=fr.fire.nexsis.sdisZ; gradle run --args "$CLIENT_ID.in.ack xml"
 
 ## Envoyer un message sur $CLIENT_ID.out.message avec un Producer
 # Shell 3
-CLIENT_ID=fr.health.hub.samu050; gradle -Pmain=com.hubsante.ProducerRun run --args "$CLIENT_ID.out.message json src/main/resources/EDXL_CISU.json"
+CLIENT_ID=fr.fire.nexsis.sdisZ; gradle -Pmain=com.hubsante.ProducerRun run --args "$CLIENT_ID.out.message xml src/main/resources/sdisZ_to_samuA.xml"
+
+## Vous pouvez également tester le fonctionnement avec un client communiquant en XML avec NexSIS
+## en remplaçant le CLIENT_ID samu par "fr.health.samuB"
 ```
 
 ### Windows
@@ -25,16 +28,19 @@ CLIENT_ID=fr.health.hub.samu050; gradle -Pmain=com.hubsante.ProducerRun run --ar
 ## Depuis le répertoire ./client
 
 ## Lancer un Consumer sur $CLIENT_ID.in.message
-set CLIENT_ID=fr.fire.nexsis
-gradle -Pmain=com.hubsante.Consumer run --args "%CLIENT_ID%.in.message xml"
+set CLIENT_ID=fr.health.hub.samuA
+gradle run --args "%CLIENT_ID%.in.message json"
 
 ## Lancer un Consumer sur $CLIENT_ID.in.ack
-set CLIENT_ID=fr.health.hub.samu050
-gradle -Pmain=com.hubsante.Consumer run --args "%CLIENT_ID%.in.ack json"
+set CLIENT_ID=fr.fire.nexsis.sdisZ
+gradle run --args "%CLIENT_ID%.in.ack xml"
 
 ## Envoyer un message sur $CLIENT_ID.out.message avec un Producer
-set CLIENT_ID=fr.health.hub.samu050
-gradle -Pmain=com.hubsante.ProducerRun run --args "$CLIENT_ID.out.message json src/main/resources/EDXL_CISU.json"
+set CLIENT_ID=fr.fire.nexsis.sdisZ
+gradle -Pmain=com.hubsante.ProducerRun run --args "$CLIENT_ID.out.message xml src/main/resources/sdisZ_to_samuA.xml"
+
+## Vous pouvez également tester le fonctionnement avec un client communiquant en XML avec NexSIS
+## en remplaçant le CLIENT_ID samu par "fr.health.samuB"
 ```
 
 ### Certificats
