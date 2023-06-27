@@ -9,9 +9,11 @@ import org.junit.jupiter.api.*;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.core.MessagePropertiesBuilder;
+import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.r2dbc.ConnectionFactoryBuilder;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.util.TestPropertyValues;
 import org.springframework.context.ApplicationContextInitializer;
@@ -27,11 +29,15 @@ import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocketFactory;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.Collections;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.util.Objects;
 
 
 @SpringBootTest
@@ -43,16 +49,9 @@ import java.util.Collections;
 @Slf4j
 public class RabbitIntegrationTest {
     private static final String HUBSANTE_EXCHANGE = "hubsante";
-
     private static final String RABBITMQ_IMAGE = "rabbitmq:3.11-management-alpine";
-    private static final String ENTRY_QUEUE = "*.out.*";
-    private static final String SENDER_ACK_QUEUE = "fr.health.hub.samu110.out.ack";
-    private static final String SENDER_MESSAGE_ROUTING_KEY = "fr.health.hub.samu110.out.message";
-    private static final String SENDER_ACK_ROUTING_KEY = "fr.health.hub.samu110.out.ack";
-    private static final String RECIPIENT_QUEUE = "fr.fire.nexsis.sdis23.in.message";
-    private static final String RECIPIENT_ROUTING_KEY = "fr.fire.nexsis.sdis23.in.message";
-    private static final String MESSAGE_ROUTING_KEY = "#.out.message";
-    private static final String ACK_ROUTING_KEY = "#.out.ack";
+    private static final String SENDER_MESSAGE_ROUTING_KEY = "fr.health.samuB.out.message";
+    private static final String RECIPIENT_QUEUE = "fr.fire.nexsis.in.message";
 
     @Autowired
     private RabbitTemplate rabbitTemplate;
@@ -60,7 +59,7 @@ public class RabbitIntegrationTest {
     @Autowired
     private RabbitAdmin rabbitAdmin;
 
-    ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+    static ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
     @Autowired
     private EdxlHandler converter;
@@ -68,7 +67,7 @@ public class RabbitIntegrationTest {
     @DynamicPropertySource
     static void registerPgProperties(DynamicPropertyRegistry propertiesRegistry) {
         propertiesRegistry.add("client.preferences.file",
-                () -> "file:C:/dev/ANS/SAMU/HubSante/repository/SAMU-Hub-Sante/hub/dispatcher/src/test/resources/client.preferences.csv");
+                () -> Objects.requireNonNull(classLoader.getResource("config/client.preferences.csv")));
     }
 
     @BeforeAll
@@ -82,34 +81,25 @@ public class RabbitIntegrationTest {
 
     @AfterEach
     public void cleanUp() {
-        rabbitAdmin.purgeQueue(ENTRY_QUEUE, false);
-        rabbitAdmin.purgeQueue(SENDER_ACK_QUEUE, false);
-        rabbitAdmin.purgeQueue(RECIPIENT_QUEUE, false);
+//        rabbitAdmin.purgeQueue(ENTRY_QUEUE, false);
+//        rabbitAdmin.purgeQueue(SENDER_ACK_QUEUE, false);
+//        rabbitAdmin.purgeQueue(RECIPIENT_QUEUE, false);
     }
 
     @Container
     public static RabbitMQContainer rabbitMQContainer = new RabbitMQContainer(
             DockerImageName.parse(RABBITMQ_IMAGE))
-            .withPluginsEnabled("rabbitmq_management")
+            .withPluginsEnabled("rabbitmq_management", "rabbitmq_auth_mechanism_ssl")
             .withCopyFileToContainer(MountableFile.forClasspathResource("config/definitions.json"),
                     "tmp/rabbitmq/config/definitions.json")
+            .withCopyFileToContainer(MountableFile.forClasspathResource("config/certs/server/"),
+                    "/etc/rabbitmq-tls/")
             .withRabbitMQConfigSysctl(MountableFile.forClasspathResource("config/rabbitmq.conf"));
-//            .withExchange(HUBSANTE_EXCHANGE, "topic")
-//
-//            .withQueue(ENTRY_QUEUE)
-//            .withBinding(HUBSANTE_EXCHANGE, ENTRY_QUEUE, Collections.emptyMap(), MESSAGE_ROUTING_KEY, "queue")
-//            .withBinding(HUBSANTE_EXCHANGE, ENTRY_QUEUE, Collections.emptyMap(), ACK_ROUTING_KEY, "queue")
-//
-//            .withQueue(SENDER_ACK_QUEUE)
-//            .withBinding(HUBSANTE_EXCHANGE, SENDER_ACK_QUEUE, Collections.emptyMap(), SENDER_ACK_ROUTING_KEY, "queue")
-//
-//            .withQueue(RECIPIENT_QUEUE)
-//            .withBinding(HUBSANTE_EXCHANGE, RECIPIENT_QUEUE, Collections.emptyMap(), RECIPIENT_ROUTING_KEY, "queue");
 
     @Test
     @DisplayName("message dispatched to exchange is received by a consumer listening to the right queue")
-    public void dispatchTest() throws IOException, InterruptedException {
-        File edxlCisuCreateFile = new File(classLoader.getResource("cisuCreateEdxl.xml").getFile());
+    public void dispatchTest() throws IOException, InterruptedException, KeyManagementException, NoSuchAlgorithmException {
+        File edxlCisuCreateFile = new File(classLoader.getResource("messages/samuB_to_nexsis.xml").getFile());
         String json = Files.readString(edxlCisuCreateFile.toPath());
 
         MessageProperties properties = MessagePropertiesBuilder.newInstance().setContentType("application/xml").build();

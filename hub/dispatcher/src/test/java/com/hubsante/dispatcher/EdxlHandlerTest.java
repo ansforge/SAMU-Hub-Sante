@@ -15,12 +15,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.xml.sax.SAXException;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.time.OffsetDateTime;
+import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -36,6 +39,13 @@ public class EdxlHandlerTest {
 
     @Autowired
     private EdxlHandler converter;
+
+    @DynamicPropertySource
+    static void registerPgProperties(DynamicPropertyRegistry propertiesRegistry) {
+        propertiesRegistry.add("client.preferences.file",
+                () -> Objects.requireNonNull(Thread.currentThread().getContextClassLoader()
+                        .getResource("config/client.preferences.csv")));
+    }
 
     @Test
     @DisplayName("should deserialize Json EDXL - Envelope Only")

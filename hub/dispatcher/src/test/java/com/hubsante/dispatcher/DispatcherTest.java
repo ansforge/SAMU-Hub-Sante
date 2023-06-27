@@ -47,7 +47,7 @@ public class DispatcherTest {
     @DynamicPropertySource
     static void registerPgProperties(DynamicPropertyRegistry propertiesRegistry) {
         propertiesRegistry.add("client.preferences.file",
-                () -> "file:C:/dev/ANS/SAMU/HubSante/repository/SAMU-Hub-Sante/hub/dispatcher/src/test/resources/client.preferences.csv");
+                () -> "file:C:/dev/ANS/SAMU/HubSante/repository/SAMU-Hub-Sante/hub/dispatcher/src/test/resources/config/client.preferences.csv");
     }
 
 
