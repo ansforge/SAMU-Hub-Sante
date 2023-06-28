@@ -3,6 +3,7 @@ package com.hubsante.dispatcher;
 import com.hubsante.model.edxl.EdxlMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.*;
+import org.springframework.amqp.AmqpException;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.core.MessagePropertiesBuilder;
@@ -40,8 +41,8 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
     }
 
     @Test
-    @DisplayName("samuB can't publish without topic permissions")
-    public void unauthorizedConsumerTest() throws Exception {
+    @DisplayName("publish with unauthorized routing key fails")
+    public void publishWithUnauthorizedRoutingKeyFails() throws Exception {
         String p12Path = classLoader.getResource("config/certs/samuB/samuB.p12").getPath();
         RabbitTemplate samuB_client = getCustomRabbitTemplate(p12Path, "samuB");
 

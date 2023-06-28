@@ -59,7 +59,7 @@ public class DispatcherTest {
 
         MessageProperties properties = MessagePropertiesBuilder.newInstance()
                 .setReceivedRoutingKey("fr.health.hub.samu110.out.message")
-                .setContentType("application/xml")
+                .setContentType(MessageProperties.CONTENT_TYPE_XML)
                 .build();
         Message receivedMessage = new Message(xml.getBytes(StandardCharsets.UTF_8), properties);
 
@@ -79,11 +79,82 @@ public class DispatcherTest {
 
         MessageProperties properties = MessagePropertiesBuilder.newInstance()
                 .setReceivedRoutingKey("fr.health.hub.samu050.out.message")
-                .setContentType("application/json").build();
+                .setContentType(MessageProperties.CONTENT_TYPE_JSON).build();
         Message receivedMessage = new Message(json.getBytes(StandardCharsets.UTF_8), properties);
 
         Dispatcher dispatcher = new Dispatcher(rabbitTemplate, converter, hubConfig);
 
+        assertThrows(AmqpRejectAndDontRequeueException.class, () -> {
+            dispatcher.dispatch(receivedMessage);
+        });
+    }
+
+    @Test
+    @DisplayName("message without content-type is rejected")
+    public void rejectMessageWithoutContentType() throws IOException {
+        File edxlCisuCreateFile = new File(classLoader.getResource("messages/cisuCreateEdxl.xml").getFile());
+        String xml = Files.readString(edxlCisuCreateFile.toPath());
+
+        MessageProperties properties = MessagePropertiesBuilder.newInstance()
+                .setReceivedRoutingKey("fr.health.hub.samu110.out.message")
+                .build();
+        Message receivedMessage = new Message(xml.getBytes(StandardCharsets.UTF_8), properties);
+
+        Dispatcher dispatcher = new Dispatcher(rabbitTemplate, converter, hubConfig);
+        assertThrows(AmqpRejectAndDontRequeueException.class, () -> {
+            dispatcher.dispatch(receivedMessage);
+        });
+    }
+
+    @Test
+    @DisplayName("message with unhandled content-type is rejected")
+    public void rejectMessageWithUnhandledContentType() throws IOException {
+        File edxlCisuCreateFile = new File(classLoader.getResource("messages/cisuCreateEdxl.xml").getFile());
+        String xml = Files.readString(edxlCisuCreateFile.toPath());
+
+        MessageProperties properties = MessagePropertiesBuilder.newInstance()
+                .setReceivedRoutingKey("fr.health.hub.samu110.out.message")
+                .setContentType(MessageProperties.DEFAULT_CONTENT_TYPE)
+                .build();
+        Message receivedMessage = new Message(xml.getBytes(StandardCharsets.UTF_8), properties);
+
+        Dispatcher dispatcher = new Dispatcher(rabbitTemplate, converter, hubConfig);
+        assertThrows(AmqpRejectAndDontRequeueException.class, () -> {
+            dispatcher.dispatch(receivedMessage);
+        });
+    }
+
+    @Test
+    @DisplayName("message body inconsistent with content-type is rejected")
+    public void rejectMessageWithInconsistentBody() throws IOException {
+        File edxlCisuCreateFile = new File(classLoader.getResource("messages/cisuCreateEdxl.xml").getFile());
+        String xml = Files.readString(edxlCisuCreateFile.toPath());
+
+        MessageProperties properties = MessagePropertiesBuilder.newInstance()
+                .setReceivedRoutingKey("fr.health.hub.samu110.out.message")
+                .setContentType(MessageProperties.CONTENT_TYPE_JSON)
+                .build();
+        Message receivedMessage = new Message(xml.getBytes(StandardCharsets.UTF_8), properties);
+
+        Dispatcher dispatcher = new Dispatcher(rabbitTemplate, converter, hubConfig);
+        assertThrows(AmqpRejectAndDontRequeueException.class, () -> {
+            dispatcher.dispatch(receivedMessage);
+        });
+    }
+
+    @Test
+    @DisplayName("outer routing key inconsistent with sender ID")
+    public void outerRoutingKeyInconsistentWithSenderId() throws IOException {
+        File edxlCisuCreateFile = new File(classLoader.getResource("messages/cisuCreateEdxl.xml").getFile());
+        String xml = Files.readString(edxlCisuCreateFile.toPath());
+
+        MessageProperties properties = MessagePropertiesBuilder.newInstance()
+                .setReceivedRoutingKey("fr.health.hub.samu050.out.message")
+                .setContentType(MessageProperties.CONTENT_TYPE_XML)
+                .build();
+        Message receivedMessage = new Message(xml.getBytes(StandardCharsets.UTF_8), properties);
+
+        Dispatcher dispatcher = new Dispatcher(rabbitTemplate, converter, hubConfig);
         assertThrows(AmqpRejectAndDontRequeueException.class, () -> {
             dispatcher.dispatch(receivedMessage);
         });
