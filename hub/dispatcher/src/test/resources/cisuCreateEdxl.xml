@@ -12,7 +12,7 @@
     <descriptor xlink:type="resource">
         <language>fr-FR</language>
         <explicitAddress>
-            <explicitAddressScheme>fr.health.hub.samu110</explicitAddressScheme>
+            <explicitAddressScheme>hubsante</explicitAddressScheme>
             <explicitAddressValue>fr.fire.nexsis.sdis23</explicitAddressValue>
         </explicitAddress>
     </descriptor>

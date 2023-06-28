@@ -15,6 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.xml.sax.SAXException;
 
 import java.io.File;
@@ -32,10 +34,16 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringRabbitTest
 public class EdxlHandlerTest {
 
-    ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+    static ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
     @Autowired
     private EdxlHandler converter;
+
+    @DynamicPropertySource
+    static void registerPgProperties(DynamicPropertyRegistry propertiesRegistry) {
+        propertiesRegistry.add("client.preferences.file",
+                () -> classLoader.getResource("config/client.preferences.csv"));
+    }
 
     @Test
     @DisplayName("should deserialize Json EDXL - Envelope Only")
@@ -44,7 +52,10 @@ public class EdxlHandlerTest {
         String json = Files.readString(edxlCisuCreateFile.toPath());
 
         EdxlEnvelope envelope = converter.deserializeJsonEnvelope(json);
+        assertEquals("samu050_2608323d-507d-4cbf-bf74-52007f8124ea",envelope.getDistributionID());
         assertEquals("fr.health.hub.samu050", envelope.getSenderID());
+        assertEquals("hubsante", envelope.getDescriptor().getExplicitAddress().getExplicitAddressScheme());
+        assertEquals("fr.fire.nexsis.sdis23", envelope.getDescriptor().getExplicitAddress().getExplicitAddressValue());
     }
 
     @Test

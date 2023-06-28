@@ -89,12 +89,13 @@ public class Dispatcher {
             log.info("  ↳ [x] Sent to '" + queueName + "':" + edxlString);
 
         } catch (AmqpException e) {
-            // TODO (bbo) : if we catch an AmqpException, ii won't be retried.
+            // TODO (bbo) : if we catch an AmqpException, it won't be retried.
             //  We should instead define a retry strategy.
             log.error("[ERROR] Failed to dispatch message " + receivedEdxl + ". Raised exception: " + e);
 
         } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
+            log.error("could not convert EDXL message");
+            throw new AmqpRejectAndDontRequeueException("do not requeue !");
         }
     }
 

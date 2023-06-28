@@ -1,0 +1,104 @@
+{
+  "vhosts": [
+    {
+      "name": "/"
+    }
+  ],
+  "exchanges": [
+    {
+      "name": "hubsante",
+      "vhost": "/",
+      "type": "topic",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    }
+  ],
+  "queues": [
+    {
+      "name": "*.out.*",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    }
+  ],
+  "bindings": [
+    {
+      "source": "hubsante",
+      "vhost": "/",
+      "destination": "*.out.*",
+      "destination_type": "queue",
+      "routing_key": "#.out.message",
+      "arguments": {}
+    },
+    {
+      "source": "hubsante",
+      "vhost": "/",
+      "destination": "*.out.*",
+      "destination_type": "queue",
+      "routing_key":"#.out.info",
+      "arguments": {}
+    },
+    {
+      "source": "hubsante",
+      "vhost": "/",
+      "destination": "*.out.*",
+      "destination_type": "queue",
+      "routing_key": "#.out.ack",
+      "arguments": {}
+    }
+  ],
+  "users": [
+    {
+      "name": "localhost",
+      "tags": []
+    },
+    {
+      "name": "admin",
+      "password": "admin",
+      "tags": [
+        "administrator"
+      ]
+    },
+    {
+      "name": "fr.health.hub.test",
+      "tags": []
+    },
+    {
+      "name": "fr.fire.nexsis.test",
+      "tags": []
+    }
+  ],
+  "permissions": [
+    {
+      "user": "localhost",
+      "vhost": "/",
+      "configure": ".*",
+      "read": ".*",
+      "write": ".*"
+    },
+    {
+      "user": "admin",
+      "vhost": "/",
+      "configure": ".*",
+      "read": ".*",
+      "write": ".*"
+    },
+    {
+      "user": "fr.health.hub.test",
+      "vhost": "/",
+      "configure": ".*",
+      "read": ".*",
+      "write": ".*"
+    },
+    {
+      "user": "fr.fire.nexsis.test",
+      "vhost": "/",
+      "configure": "^(hubfire|federation: hubfire.*)$",
+      "write": "^(hubfire|federation: hubfire.*)$",
+      "read": "^(hubfire|federation: hubfire.*)$"
+    }
+  ]
+}
