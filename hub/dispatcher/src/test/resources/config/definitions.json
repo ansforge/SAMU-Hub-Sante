@@ -66,7 +66,7 @@
       "arguments": {}
     },
     {
-      "name": "fr.fire.nexsis.in.message",
+      "name": "fr.fire.nexsis.sdisZ.in.message",
       "vhost": "/",
       "durable": true,
       "auto_delete": false,
@@ -108,6 +108,10 @@
       ]
     },
     {
+      "name": "dispatcher",
+      "tags": []
+    },
+    {
       "name": "fr.health.samuA",
       "tags": []
     },
@@ -116,7 +120,7 @@
       "tags": []
     },
     {
-      "name": "fr.fire.nexsis",
+      "name": "fr.fire.nexsis.sdisZ",
       "tags": []
     }
   ],
@@ -127,6 +131,13 @@
       "configure": ".*",
       "read": ".*",
       "write": ".*"
+    },
+    {
+      "user": "dispatcher",
+      "vhost": "/",
+      "configure": "",
+      "read": "\\*.out.\\*",
+      "write": "amq.default"
     },
     {
       "user": "fr.health.samuA",
@@ -143,11 +154,11 @@
       "read": "fr.health.samuB.*"
     },
     {
-      "user": "fr.fire.nexsis",
+      "user": "fr.fire.nexsis.sdisZ",
       "vhost": "/",
-      "configure": "fr.fire.nexsis.*",
+      "configure": "fr.fire.nexsis.sdisZ.*",
       "write": "hubsante",
-      "read": "fr.fire.nexsis.*"
+      "read": "fr.fire.nexsis.sdisZ.*"
     }
   ],
   "topic_permissions": [
@@ -167,12 +178,12 @@
       "configure": "fr.health.samuB.*"
     },
     {
-        "exchange": "hubsante",
-        "vhost": "/",
-        "user": "fr.fire.nexsis",
-        "write": "fr.fire.nexsis.*",
-        "read": "",
-        "configure": "fr.fire.nexsis.*"
+      "exchange": "hubsante",
+      "vhost": "/",
+      "user": "fr.fire.nexsis.sdisZ",
+      "write": "fr.fire.nexsis.sdisZ.*",
+      "read": "",
+      "configure": "fr.fire.nexsis.sdisZ.*"
     }
   ]
 }

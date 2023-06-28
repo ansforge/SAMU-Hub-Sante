@@ -13,7 +13,7 @@
         <language>fr-FR</language>
         <explicitAddress>
             <explicitAddressScheme>hubfire</explicitAddressScheme>
-            <explicitAddressValue>fr.fire.nexsis</explicitAddressValue>
+            <explicitAddressValue>fr.fire.nexsis.sdisZ</explicitAddressValue>
         </explicitAddress>
     </descriptor>
     <content xlink:type="resource">
@@ -32,7 +32,7 @@
                         <recipients>
                             <recipient>
                                 <name>nexsis</name>
-                                <URI>nexsis:nexsis</URI>
+                                <URI>nexsis:fr.fire.nexsis.sdisZ</URI>
                             </recipient>
                         </recipients>
                         <createEvent>
