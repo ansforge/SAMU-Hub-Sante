@@ -16,6 +16,9 @@ spec:
       # For Certificate Auth EXTERNAL mechanism to work
       # Ref.: https://cjshelton.github.io/blog/2019/12/18/rabbitmq-client-certificate-authentication.html#server-side-changes
       - rabbitmq_auth_mechanism_ssl
+      # For Exchange Federation | Ref.: https://www.rabbitmq.com/federation.html#getting-started
+      - rabbitmq_federation
+      - rabbitmq_federation_management
     # To make default user work until we configure RabbitMQ users for clients
     # To avoid error: PLAIN login refused: user 'guest' - invalid credentials
     # Ref.: https://github.com/rabbitmq/cluster-operator/tree/main/docs/examples/set-login-password-username
