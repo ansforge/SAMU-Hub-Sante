@@ -35,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringRabbitTest
 public class EdxlHandlerTest {
 
-    ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+    static ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
     @Autowired
     private EdxlHandler converter;
@@ -43,8 +43,7 @@ public class EdxlHandlerTest {
     @DynamicPropertySource
     static void registerPgProperties(DynamicPropertyRegistry propertiesRegistry) {
         propertiesRegistry.add("client.preferences.file",
-                () -> Objects.requireNonNull(Thread.currentThread().getContextClassLoader()
-                        .getResource("config/client.preferences.csv")));
+                () -> classLoader.getResource("config/client.preferences.csv"));
     }
 
     @Test

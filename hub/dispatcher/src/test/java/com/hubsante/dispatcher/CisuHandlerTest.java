@@ -33,13 +33,12 @@ public class CisuHandlerTest {
     @Autowired
     CisuHandler converter;
 
-    ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+    static ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
     @DynamicPropertySource
     static void registerPgProperties(DynamicPropertyRegistry propertiesRegistry) {
         propertiesRegistry.add("client.preferences.file",
-                () -> Objects.requireNonNull(Thread.currentThread().getContextClassLoader()
-                        .getResource("config/client.preferences.csv")));
+                () -> classLoader.getResource("config/client.preferences.csv"));
     }
 
     @Test
