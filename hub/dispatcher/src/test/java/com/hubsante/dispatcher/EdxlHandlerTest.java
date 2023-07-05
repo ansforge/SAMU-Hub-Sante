@@ -49,13 +49,13 @@ public class EdxlHandlerTest {
     @Test
     @DisplayName("should deserialize Json EDXL - Envelope Only")
     public void deserializeJsonEnvelope() throws IOException {
-        File edxlCisuCreateFile = new File(classLoader.getResource("messages/cisuCreateEdxl.json").getFile());
+        File edxlCisuCreateFile = new File(classLoader.getResource("messages/malformedEdxl.json").getFile());
         String json = Files.readString(edxlCisuCreateFile.toPath());
 
         EdxlEnvelope envelope = converter.deserializeJsonEnvelope(json);
         assertEquals("samu050_2608323d-507d-4cbf-bf74-52007f8124ea",envelope.getDistributionID());
         assertEquals("fr.health.hub.samu050", envelope.getSenderID());
-        assertEquals("hubsante", envelope.getDescriptor().getExplicitAddress().getExplicitAddressScheme());
+        assertEquals("hubfire", envelope.getDescriptor().getExplicitAddress().getExplicitAddressScheme());
         assertEquals("fr.fire.nexsis.sdis23", envelope.getDescriptor().getExplicitAddress().getExplicitAddressValue());
     }
 
@@ -98,7 +98,7 @@ public class EdxlHandlerTest {
         EdxlMessage deserializedFromXml = converter.deserializeXmlEDXL(xml);
         assertEquals(deserializedFromXml, edxlMessage);
 
-        converter.validateXML(xml, "edxl/edxl-de-v2.0-wd11.xsd");
+        assertDoesNotThrow(() -> converter.validateXML(xml, "edxl/edxl-de-v2.0-wd11.xsd"));
     }
 
     @Test
