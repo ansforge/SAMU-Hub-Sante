@@ -4,7 +4,7 @@
                   xmlns:xlink="http://www.w3.org/1999/xlink"
                   xmlns:ct="urn:oasis:names:tc:emergency:edxl:ct:1.0">
     <distributionID>samu050_2608323d-507d-4cbf-bf74-52007f8124ea</distributionID>
-    <senderID>fr.health.hub.samu110</senderID>
+    <senderID>fr.health.samu110</senderID>
     <dateTimeSent>2022-09-27T08:23:34+02:00</dateTimeSent>
     <dateTimeExpires>2072-09-27T08:23:34+02:00</dateTimeExpires>
     <distributionStatus>Actual</distributionStatus>
