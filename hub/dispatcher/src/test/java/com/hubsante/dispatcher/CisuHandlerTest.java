@@ -38,7 +38,7 @@ public class CisuHandlerTest {
     @DynamicPropertySource
     static void registerPgProperties(DynamicPropertyRegistry propertiesRegistry) {
         propertiesRegistry.add("client.preferences.file",
-                () -> classLoader.getResource("config/client.preferences.csv"));
+                () -> Objects.requireNonNull(classLoader.getResource("config/client.preferences.csv")));
     }
 
     @Test
