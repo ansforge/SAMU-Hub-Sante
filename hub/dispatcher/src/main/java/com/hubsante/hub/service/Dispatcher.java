@@ -38,11 +38,15 @@ public class Dispatcher {
         String receivedRoutingKey = message.getMessageProperties().getReceivedRoutingKey();
         String receivedEdxl = new String(message.getBody(), StandardCharsets.UTF_8);
 
+        // Deserialize the message according to its content type
         EdxlMessage edxlMessage = deserializeMessage(receivedEdxl, receivedRoutingKey, message);
+        // Check that the sender is consistent with the routing key
         checkSenderConsistency(receivedRoutingKey, edxlMessage);
-
+        // Extract recipient queue name from the message (explicit address and distribution kind)
         String queueName = getRecipientQueueName(edxlMessage);
+        // Clone the message and adapt properties: set the content type
         Message forwardedMsg = forwardedMessage(edxlMessage, message.getMessageProperties());
+        // publish the message to the recipient queue
         rabbitTemplate.send("", queueName, forwardedMsg);
     }
 
@@ -97,6 +101,9 @@ public class Dispatcher {
         return getRecipientID(edxlMessage) + ".in." + queueType;
     }
 
+    /*
+    ** Deserialize the message according to its content type
+     */
     private EdxlMessage deserializeMessage(String receivedEdxl, String receivedRoutingKey, Message message) {
         EdxlMessage edxlMessage;
 
