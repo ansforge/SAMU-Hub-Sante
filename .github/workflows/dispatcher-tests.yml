@@ -22,7 +22,7 @@ jobs:
         with:
           java-version: '11'
           distribution: 'temurin'
-      
+
       - name: Go to dispatcher sub-project
         run: cd hub/dispatcher
 
@@ -31,3 +31,12 @@ jobs:
 
       - name: Build and run tests
         run: ./gradlew test
+
+      - name: Add coverage to PR
+        id: jacoco
+        uses: madrapps/jacoco-report@v1.3
+        with:
+          paths: ${{ github.workspace }}/hub/dispatcher/build/reports/jacoco/test/jacocoTestReport.xml
+          token: ${{ secrets.GITHUB_TOKEN }}
+          min-coverage-overall: 40
+          min-coverage-changed-files: 60
