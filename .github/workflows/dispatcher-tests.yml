@@ -21,6 +21,7 @@ jobs:
         uses: actions/setup-java@v2
         with:
           java-version: '11'
+          distribution: 'temurin'
       
       - name: Go to dispatcher sub-project
         run: cd hub/dispatcher
