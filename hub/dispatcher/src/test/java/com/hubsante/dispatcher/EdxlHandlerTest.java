@@ -49,7 +49,7 @@ public class EdxlHandlerTest {
     @Test
     @DisplayName("should deserialize Json EDXL - Envelope Only")
     public void deserializeJsonEnvelope() throws IOException {
-        File edxlCisuCreateFile = new File(classLoader.getResource("messages/malformedEdxl.json").getFile());
+        File edxlCisuCreateFile = new File(classLoader.getResource("messages/edxlWithMalformedContent.json").getFile());
         String json = Files.readString(edxlCisuCreateFile.toPath());
 
         EdxlEnvelope envelope = converter.deserializeJsonEnvelope(json);

@@ -76,7 +76,7 @@ public class DispatcherTest {
     @Test
     @DisplayName("malformed message should throw an exception")
     public void malformedMessagefailed() throws IOException {
-        Message receivedMessage = createMessage("malformedEdxl.json", JSON_MESSAGE_ROUTING_KEY);
+        Message receivedMessage = createMessage("edxlWithMalformedContent.json", JSON_MESSAGE_ROUTING_KEY);
         assertThrows(AmqpRejectAndDontRequeueException.class, () -> {
             dispatcher.dispatch(receivedMessage);
         });
