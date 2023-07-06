@@ -22,7 +22,8 @@ springBoot {
 
 jacocoTestReport {
 	reports {
-		html.enabled true
+		html.required = true
+		xml.required = true
 	}
 }
 
