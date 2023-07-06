@@ -14,14 +14,8 @@ jobs:
       - name: Run Coverage
         run: |
           chmod +x gradlew
+          # ToDo: Update so that tests are run as otherwise the task is skipped
           ./gradlew jacocoTestReport
-          ls ${{ github.workspace }}
-          ls ${{ github.workspace }}/hub/
-          ls ${{ github.workspace }}/hub/dispatcher/
-          ls ${{ github.workspace }}/hub/dispatcher/build/
-          ls ${{ github.workspace }}/hub/dispatcher/build/reports/
-          ls ${{ github.workspace }}/hub/dispatcher/build/reports/jacoco/
-          ls ${{ github.workspace }}/hub/dispatcher/build/reports/jacoco/test/          
 
       - name: Add coverage to PR
         id: jacoco
