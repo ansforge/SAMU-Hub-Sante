@@ -38,6 +38,7 @@ public class RabbitIntegrationAbstract {
     protected static final String RABBITMQ_IMAGE = "rabbitmq:3.11-management-alpine";
     protected static final String ENTRY_QUEUE = "*.out.*";
     protected static final String SAMU_B_OUTER_MESSAGE_ROUTING_KEY = "fr.health.samuB.out.message";
+    protected static final String SAMU_A_OUTER_MESSAGE_ROUTING_KEY = "fr.health.samuA.out.message";
     protected static final String SAMU_B_ACK_QUEUE = "fr.health.samuB.in.ack";
     protected static final String SDIS_Z_MESSAGE_QUEUE = "fr.fire.nexsis.sdisZ.in.message";
 
@@ -55,7 +56,7 @@ public class RabbitIntegrationAbstract {
             DockerImageName.parse(RABBITMQ_IMAGE))
             .withPluginsEnabled("rabbitmq_management", "rabbitmq_auth_mechanism_ssl")
             .withCopyFileToContainer(mountFile("config/definitions.json"),
-                    "tmp/rabbitmq/config/definitions.json")
+                    "/tmp/rabbitmq/config/definitions.json")
             .withCopyFileToContainer(mountFile("config/certs/server/"),
                     "/etc/rabbitmq-tls/")
             .withRabbitMQConfigSysctl(mountFile("config/rabbitmq.conf"));
