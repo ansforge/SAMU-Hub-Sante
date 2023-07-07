@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.time.OffsetDateTime;
+import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -42,19 +43,19 @@ public class EdxlHandlerTest {
     @DynamicPropertySource
     static void registerPgProperties(DynamicPropertyRegistry propertiesRegistry) {
         propertiesRegistry.add("client.preferences.file",
-                () -> classLoader.getResource("config/client.preferences.csv"));
+                () -> Objects.requireNonNull(classLoader.getResource("config/client.preferences.csv")));
     }
 
     @Test
     @DisplayName("should deserialize Json EDXL - Envelope Only")
     public void deserializeJsonEnvelope() throws IOException {
-        File edxlCisuCreateFile = new File(classLoader.getResource("cisuCreateEdxl.json").getFile());
+        File edxlCisuCreateFile = new File(classLoader.getResource("messages/edxlWithMalformedContent.json").getFile());
         String json = Files.readString(edxlCisuCreateFile.toPath());
 
         EdxlEnvelope envelope = converter.deserializeJsonEnvelope(json);
         assertEquals("samu050_2608323d-507d-4cbf-bf74-52007f8124ea",envelope.getDistributionID());
-        assertEquals("fr.health.hub.samu050", envelope.getSenderID());
-        assertEquals("hubsante", envelope.getDescriptor().getExplicitAddress().getExplicitAddressScheme());
+        assertEquals("fr.health.samu050", envelope.getSenderID());
+        assertEquals("hubfire", envelope.getDescriptor().getExplicitAddress().getExplicitAddressScheme());
         assertEquals("fr.fire.nexsis.sdis23", envelope.getDescriptor().getExplicitAddress().getExplicitAddressValue());
     }
 
@@ -62,10 +63,10 @@ public class EdxlHandlerTest {
     @DisplayName("should deserialize Json EDXL - Cisu Create")
     public void deserializeCreateJsonEDXL() throws IOException {
 
-        File edxlCisuCreateFile = new File(classLoader.getResource("cisuCreateEdxl.json").getFile());
+        File edxlCisuCreateFile = new File(classLoader.getResource("messages/cisuCreateEdxl.json").getFile());
         EdxlMessage edxlMessage = converter.deserializeJsonEDXL(Files.readString(edxlCisuCreateFile.toPath()));
 
-        assertEquals("fr.health.hub.samu050", edxlMessage.getSenderID());
+        assertEquals("fr.health.samu050", edxlMessage.getSenderID());
         assertEquals(
                 OffsetDateTime.parse("2022-09-27T08:23:34+02:00"),
                 edxlMessage.getDateTimeSent()
@@ -88,22 +89,22 @@ public class EdxlHandlerTest {
     @Test
     @DisplayName("should serialize XML EDXL - Cisu Create")
     public void serializeCreateXmlEDXL() throws IOException, SAXException {
-        File edxlCisuCreateFile = new File(classLoader.getResource("cisuCreateEdxl.json").getFile());
+        File edxlCisuCreateFile = new File(classLoader.getResource("messages/cisuCreateEdxl.json").getFile());
         EdxlMessage edxlMessage = converter.deserializeJsonEDXL(Files.readString(edxlCisuCreateFile.toPath()));
 
         String xml = converter.serializeXmlEDXL(edxlMessage);
         Assertions.assertTrue(() -> xml.startsWith(xmlPrefix()));
 
         EdxlMessage deserializedFromXml = converter.deserializeXmlEDXL(xml);
-//        assertEquals(deserializedFromXml, edxlMessage);
+        assertEquals(deserializedFromXml, edxlMessage);
 
-        converter.validateXML(xml, "edxl/edxl-de-v2.0-wd11.xsd");
+        assertDoesNotThrow(() -> converter.validateXML(xml, "edxl/edxl-de-v2.0-wd11.xsd"));
     }
 
     @Test
     @DisplayName("validation should failed if Json Edxl is malfromatted")
     public void wrongJsonValidationFailed() throws IOException {
-        File edxlCisuCreateFile = new File(classLoader.getResource("missingRequiredExplicitAddressValue.json").getFile());
+        File edxlCisuCreateFile = new File(classLoader.getResource("messages/missingRequiredExplicitAddressValue.json").getFile());
         String json = Files.readString(edxlCisuCreateFile.toPath());
 
         // deserialization method does not throw error

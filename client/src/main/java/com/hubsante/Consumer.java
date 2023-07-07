@@ -13,6 +13,8 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeoutException;
 
@@ -130,7 +132,8 @@ public abstract class Consumer {
         //TODO bbo : CisuAckMessage : define recipient format
         // long-clientID & short-clientID ?
         AddresseeType recipient = new AddresseeType(receivedMessage.getSenderID(), receivedMessage.getSenderID());
-        AddresseeType[] recipients = new AddresseeType[]{recipient};
+        List<AddresseeType> recipients = new ArrayList<>();
+        recipients.add(recipient);
 
         AckMessage cisuAckMessage = new AckMessage(
                 clientId + "_" + UUID.randomUUID(),

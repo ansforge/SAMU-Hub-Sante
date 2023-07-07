@@ -20,11 +20,14 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 
+import javax.annotation.PostConstruct;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.Objects;
 
+import static com.hubsante.dispatcher.utils.MessageTestUtils.createMessage;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -43,27 +46,26 @@ public class DispatcherTest {
     @Autowired
     private HubClientConfiguration hubConfig;
     static ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+    private Dispatcher dispatcher;
+    private final String XML_MESSAGE_ROUTING_KEY = "fr.health.samu110.out.message";
+    private final String JSON_MESSAGE_ROUTING_KEY = "fr.health.samu050.out.message";
 
     @DynamicPropertySource
     static void registerPgProperties(DynamicPropertyRegistry propertiesRegistry) {
         propertiesRegistry.add("client.preferences.file",
-                () -> classLoader.getResource("config/client.preferences.csv"));
+                () -> Objects.requireNonNull(classLoader.getResource("config/client.preferences.csv")));
+    }
+
+    @PostConstruct
+    public void init() {
+        dispatcher = new Dispatcher(rabbitTemplate, converter, hubConfig);
     }
 
 
     @Test
     @DisplayName("should send message to the right exchange and routing key")
     public void shouldDispatchToRightExchange() throws IOException {
-        File edxlCisuCreateFile = new File(classLoader.getResource("cisuCreateEdxl.xml").getFile());
-        String xml = Files.readString(edxlCisuCreateFile.toPath());
-
-        MessageProperties properties = MessagePropertiesBuilder.newInstance()
-                .setReceivedRoutingKey("fr.health.hub.samu110.out.message")
-                .setContentType("application/xml")
-                .build();
-        Message receivedMessage = new Message(xml.getBytes(StandardCharsets.UTF_8), properties);
-
-        Dispatcher dispatcher = new Dispatcher(rabbitTemplate, converter, hubConfig);
+        Message receivedMessage = createMessage("cisuCreateEdxl.xml", MessageProperties.CONTENT_TYPE_XML, XML_MESSAGE_ROUTING_KEY);
         dispatcher.dispatch(receivedMessage);
 
         // assert that the message was sent to the right exchange with the right routing key exactly 1 time
@@ -74,16 +76,43 @@ public class DispatcherTest {
     @Test
     @DisplayName("malformed message should throw an exception")
     public void malformedMessagefailed() throws IOException {
-        File malformedEdxlFile = new File(classLoader.getResource("malformedEdxl.json").getFile());
-        String json = Files.readString(malformedEdxlFile.toPath());
+        Message receivedMessage = createMessage("edxlWithMalformedContent.json", JSON_MESSAGE_ROUTING_KEY);
+        assertThrows(AmqpRejectAndDontRequeueException.class, () -> {
+            dispatcher.dispatch(receivedMessage);
+        });
+    }
 
-        MessageProperties properties = MessagePropertiesBuilder.newInstance()
-                .setReceivedRoutingKey("fr.health.hub.samu050.out.message")
-                .setContentType("application/json").build();
-        Message receivedMessage = new Message(json.getBytes(StandardCharsets.UTF_8), properties);
+    @Test
+    @DisplayName("message without content-type is rejected")
+    public void rejectMessageWithoutContentType() throws IOException {
+        Message receivedMessage = createMessage("cisuCreateEdxl.json", null, JSON_MESSAGE_ROUTING_KEY);
+        assertThrows(AmqpRejectAndDontRequeueException.class, () -> {
+            dispatcher.dispatch(receivedMessage);
+        });
+    }
 
-        Dispatcher dispatcher = new Dispatcher(rabbitTemplate, converter, hubConfig);
+    @Test
+    @DisplayName("message with unhandled content-type is rejected")
+    public void rejectMessageWithUnhandledContentType() throws IOException {
+        Message receivedMessage = createMessage("cisuCreateEdxl.json", MessageProperties.DEFAULT_CONTENT_TYPE, JSON_MESSAGE_ROUTING_KEY);
+        assertThrows(AmqpRejectAndDontRequeueException.class, () -> {
+            dispatcher.dispatch(receivedMessage);
+        });
+    }
 
+    @Test
+    @DisplayName("message body inconsistent with content-type is rejected")
+    public void rejectMessageWithInconsistentBody() throws IOException {
+        Message receivedMessage = createMessage("cisuCreateEdxl.json", MessageProperties.CONTENT_TYPE_XML, JSON_MESSAGE_ROUTING_KEY);
+        assertThrows(AmqpRejectAndDontRequeueException.class, () -> {
+            dispatcher.dispatch(receivedMessage);
+        });
+    }
+
+    @Test
+    @DisplayName("outer routing key inconsistent with sender ID")
+    public void outerRoutingKeyInconsistentWithSenderId() throws IOException {
+        Message receivedMessage = createMessage("cisuCreateEdxl.json", XML_MESSAGE_ROUTING_KEY);
         assertThrows(AmqpRejectAndDontRequeueException.class, () -> {
             dispatcher.dispatch(receivedMessage);
         });
