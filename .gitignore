@@ -37,3 +37,6 @@ models/node_modules
 
 # Cluster access configs
 kubeconfig.yml
+
+# Model Excel
+models/csv_parser/model.xlsx
