@@ -1,0 +1,17 @@
+.btn-list > a {
+    margin-right: 30px;
+}
+
+/* Fixing anchor links behind header |
+   Ref.: https://gomakethings.com/how-to-prevent-anchor-links-from-scrolling-behind-a-sticky-header-with-one-line-of-css
+*/
+h3 {
+    scroll-margin-top: var(--header-min-height);
+}
+
+@media (max-width: 35.98em) {
+    h3 {
+        /* Mobile view has header__title with title below header */
+        scroll-margin-top: calc(var(--header-min-height) + 35px);
+    }
+}
