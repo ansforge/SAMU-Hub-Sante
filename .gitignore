@@ -40,3 +40,4 @@ kubeconfig.yml
 
 # Model Excel
 models/csv_parser/model.xlsx
+models/csv_parser/docx-styles/
