@@ -35,7 +35,7 @@
   },
   "devDependencies": {
     "grunt-contrib-connect": "^2",
-    "grunt-gh-pages": "^2",
+    "grunt-gh-pages": "^4",
     "grunt-jsdoc": "^2"
   }
 }
