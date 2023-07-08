@@ -5,8 +5,8 @@
 # Ref.: https://stackoverflow.com/questions/73285601/docker-exec-usr-bin-sh-exec-format-error
 FROM --platform=linux/amd64 nginx:alpine
 
-# Copy the static files to the nginx default document root
-COPY asyncapi/ /usr/share/nginx/html
+# Copy the files to the nginx default document root
+COPY . /usr/share/nginx/html
 
 # Expose port 80 to allow incoming traffic
 EXPOSE 80

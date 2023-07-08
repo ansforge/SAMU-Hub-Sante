@@ -15,6 +15,7 @@ target/
 *.iws
 *.iml
 *.ipr
+**/.DS_Store
 
 python/templates/4. tls/cert/
 
