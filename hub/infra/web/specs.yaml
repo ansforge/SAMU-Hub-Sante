@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-specs
+  labels:
+    app: web-specs
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 80
+      protocol: TCP
+      name: http
+  selector:
+    app: web-specs
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-specs-deployment
+  labels:
+    app: web-specs
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web-specs
+  template:
+    metadata:
+      labels:
+        app: web-specs
+    spec:
+      containers:
+        - name: web-specs
+          image: romainfd/hub-specs:latest
+          ports:
+            - containerPort: 80
