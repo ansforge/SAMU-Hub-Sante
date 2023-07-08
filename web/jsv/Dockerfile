@@ -1,24 +1,27 @@
 # Base image
-FROM node:20-slim as build
+FROM node:20 as build
 
 # Set working directory
 WORKDIR /app
 
-# Copy the project files to the container
-COPY . .
-
-# Install dependencies via NPM
-RUN npm install
-
 # Install Bower globally
 RUN npm install -g bower
-
-# Install dependencies via Bower
-RUN bower install --allow-root
 
 # Install Sass via gem
 RUN apt-get update && apt-get install -y build-essential && apt-get install -y ruby-dev
 RUN gem install sass
+
+# Copy the project files needed for install to the container
+COPY package.json package-lock.json bower.json ./
+
+# Install dependencies via NPM
+RUN npm install
+
+# Install dependencies via Bower
+RUN bower install --allow-root
+
+# Copy the project files to the container
+COPY . .
 
 # Build project via Grunt
 RUN npm install -g grunt-cli

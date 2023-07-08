@@ -3,10 +3,12 @@ _Site de manipulation des structures de données JSON Schema_
 
 ## Deploy
 ```bash
+cp ../../models/csv_parser/schema.json hub-schemas/
+cp ../../models/csv_parser/example.json hub-schemas/
 docker buildx build --platform linux/amd64 -t romainfd/hub-jsv:latest .
 docker push romainfd/hub-jsv:latest
 # Make sure you are on correct Kubernetes context
-kubectl replace --force -f ../SAMU-Hub-Sante/hub/infra/web/json-schema-viewer.yaml
+kubectl replace --force -f ../../hub/infra/web/json-schema-viewer.yaml
 ```
 
 ## Comments
