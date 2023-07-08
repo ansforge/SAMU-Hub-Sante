@@ -41,3 +41,10 @@ spec:
                 name: web-specs
                 port:
                   number: 80
+          - path: /lrm(/|$)(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: web-lrm
+                port:
+                  number: 80

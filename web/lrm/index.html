@@ -51,10 +51,10 @@
 
 <script>
 
-    fetch('../../models/csv_parser/schema.json')
+    fetch('./schemas/schema.json')
         .then((response) => response.json())
         .then((schema) => {
-            fetch('../../models/csv_parser/example.json')
+            fetch('./schemas/example.json')
                 .then((response) => response.json())
                 .then((example) => {
                     // Initialize the editor with a JSON schema
