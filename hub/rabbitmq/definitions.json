@@ -1,59 +1,9 @@
 {
-  "vhosts": [
-    {
-      "name": "/"
-    }
-  ],
-  "exchanges": [
-    {
-      "name": "hubsante",
-      "vhost": "/",
-      "type": "topic",
-      "durable": true,
-      "auto_delete": false,
-      "internal": false,
-      "arguments": {}
-    }
-  ],
-  "queues": [
-    {
-      "name": "*.out.*",
-      "vhost": "/",
-      "durable": true,
-      "auto_delete": false,
-      "arguments": {}
-    }
-  ],
-  "bindings": [
-    {
-      "source": "hubsante",
-      "vhost": "/",
-      "destination": "*.out.*",
-      "destination_type": "queue",
-      "routing_key": "#.out.message",
-      "arguments": {}
-    },
-    {
-      "source": "hubsante",
-      "vhost": "/",
-      "destination": "*.out.*",
-      "destination_type": "queue",
-      "routing_key": "#.out.info",
-      "arguments": {}
-    },
-    {
-      "source": "hubsante",
-      "vhost": "/",
-      "destination": "*.out.*",
-      "destination_type": "queue",
-      "routing_key": "#.out.ack",
-      "arguments": {}
-    }
-  ],
   "users": [
     {
       "name": "admin",
-      "password": "admin",
+      "password_hash": "Spp/x1ULDwdDoJBnmfRezBaOAFypW2/Ks6wNHlSyboFdtXpf",
+      "hashing_algorithm": "rabbit_password_hashing_sha256",
       "tags": [
         "administrator"
       ]
@@ -67,19 +17,15 @@
       "tags": []
     },
     {
-      "name": "fr.health.samu800",
-      "tags": []
-    },
-    {
       "name": "fr.health.samu570",
       "tags": []
     },
     {
-      "name": "fr.health.exos",
+      "name": "fr.health.samu800",
       "tags": []
     },
     {
-      "name": "fr.health.bisom",
+      "name": "fr.health.exos",
       "tags": []
     },
     {
@@ -91,7 +37,7 @@
       "tags": []
     },
     {
-      "name": "fr.health.RRAMU",
+      "name": "fr.health.bisom",
       "tags": []
     },
     {
@@ -107,94 +53,13 @@
       "tags": []
     },
     {
-      "name": "fr.test.bbo",
+      "name": "fr.fire.nexsis.test",
       "tags": []
     }
   ],
-  "topic_permissions": [
+  "vhosts": [
     {
-      "user": "local.test",
-      "vhost": "/",
-      "exchange": "hubsante",
-      "read": "",
-      "write": "^(fr.health.samuA.*|fr.health.samuB.*|fr.fire.nexsis.sdisZ.*)$"
-    },
-    {
-      "user": "fr.health.samu800",
-      "vhost": "/",
-      "exchange": "hubsante",
-      "read": "",
-      "write": "fr.health.samu800.*"
-    },
-    {
-      "user": "fr.health.samu570",
-      "vhost": "/",
-      "exchange": "hubsante",
-      "read": "",
-      "write": "fr.health.samu570.*"
-    },
-    {
-      "user": "fr.health.exos",
-        "vhost": "/",
-        "exchange": "hubsante",
-        "read": "",
-        "write": "fr.health.exos.*"
-    },
-    {
-      "user": "fr.health.bisom",
-      "vhost": "/",
-      "exchange": "hubsante",
-      "read": "",
-      "write": "^(fr.health.samu091.*|fr.health.samu090.*)$"
-    },
-    {
-      "user": "fr.health.samu090",
-        "vhost": "/",
-        "exchange": "hubsante",
-        "read": "",
-        "write": "fr.health.samu090.*"
-    },
-    {
-      "user": "fr.health.samu091",
-        "vhost": "/",
-        "exchange": "hubsante",
-        "read": "",
-        "write": "^(fr.health.samu091.*)$"
-    },
-    {
-      "user": "fr.health.RRAMU",
-        "vhost": "/",
-        "exchange": "hubsante",
-        "read": "",
-        "write": "^(fr.health.normandie.*|fr.health.RRAMU.*|fr.health.samu76A.*|fr.health.samu76B.*)$"
-    },
-    {
-      "user": "fr.health.normandie",
-        "vhost": "/",
-        "exchange": "hubsante",
-        "read": "",
-        "write": "^(fr.health.normandie.*)$"
-    },
-    {
-      "user": "fr.health.samu76A",
-        "vhost": "/",
-        "exchange": "hubsante",
-        "read": "",
-        "write": "fr.health.samu76A.*"
-    },
-    {
-      "user": "fr.health.samu76B",
-        "vhost": "/",
-        "exchange": "hubsante",
-        "read": "",
-        "write": "fr.health.samu76B.*"
-    },
-    {
-      "user": "fr.test.bbo",
-        "vhost": "/",
-        "exchange": "hubsante",
-        "read": "",
-        "write": "fr.test.bbo.*"
+      "name": "/"
     }
   ],
   "permissions": [
@@ -202,99 +67,321 @@
       "user": "admin",
       "vhost": "/",
       "configure": ".*",
-      "read": ".*",
-      "write": ".*"
+      "write": ".*",
+      "read": ".*"
     },
     {
       "user": "dispatcher",
       "vhost": "/",
       "configure": "",
-      "read": "\\*.out.\\*",
-      "write": "amq.default"
+      "write": "amq.default",
+      "read": "\\*.out.\\*"
     },
     {
       "user": "local.test",
       "vhost": "/",
       "configure": "^(fr.health.samuA.*|fr.health.samuB.*|fr.fire.nexsis.sdisZ.*)$",
-      "read": "^(fr.health.samuA.*|fr.health.samuB.*|fr.fire.nexsis.sdisZ.*)$",
-      "write": "hubsante"
-    },
-    {
-      "user": "fr.health.samu800",
-      "vhost": "/",
-      "configure": "fr.health.samu800.*",
-      "read": "fr.health.samu800.*",
-      "write": "hubsante"
+      "write": "hubsante",
+      "read": "^(fr.health.samuA.*|fr.health.samuB.*|fr.fire.nexsis.sdisZ.*)$"
     },
     {
       "user": "fr.health.samu570",
       "vhost": "/",
       "configure": "fr.health.samu570.*",
-      "read": "fr.health.samu570.*",
-      "write": "hubsante"
+      "write": "hubsante",
+      "read": "fr.health.samu570.*"
+    },
+    {
+      "user": "fr.health.samu800",
+      "vhost": "/",
+      "configure": "fr.health.samu800.*",
+      "write": "hubsante",
+      "read": "fr.health.samu800.*"
     },
     {
       "user": "fr.health.exos",
       "vhost": "/",
       "configure": "fr.health.exos.*",
-      "read": "fr.health.exos.*",
-      "write": "hubsante"
-    },
-    {
-      "user": "fr.health.bisom",
-      "vhost": "/",
-      "configure": "^(fr.health.samu091.*|fr.health.samu090.*)$",
-      "read": "^(fr.health.samu091.*|fr.health.samu090.*)$",
-      "write": "hubsante"
+      "write": "hubsante",
+      "read": "fr.health.exos.*"
     },
     {
       "user": "fr.health.samu090",
       "vhost": "/",
       "configure": "fr.health.samu090.*",
-      "read": "fr.health.samu090.*",
-      "write": "hubsante"
+      "write": "hubsante",
+      "read": "fr.health.samu090.*"
     },
     {
       "user": "fr.health.samu091",
       "vhost": "/",
       "configure": "fr.health.samu091.*",
-      "read": "fr.health.samu091.*",
-      "write": "hubsante"
+      "write": "hubsante",
+      "read": "fr.health.samu091.*"
     },
     {
-      "user": "fr.health.RRAMU",
-        "vhost": "/",
-        "configure": "^(fr.health.normandie.*|fr.health.RRAMU.*|fr.health.samu76A.*|fr.health.samu76B.*)$",
-        "read": "^(fr.health.normandie.*|fr.health.RRAMU.*|fr.health.samu76A.*|fr.health.samu76B.*)$",
-        "write": "hubsante"
+      "user": "fr.health.bisom",
+      "vhost": "/",
+      "configure": "^(fr.health.samu091.*|fr.health.samu090.*)$",
+      "write": "hubsante",
+      "read": "^(fr.health.samu100.*|fr.health.samu090.*)$"
     },
     {
       "user": "fr.health.normandie",
       "vhost": "/",
       "configure": "^(fr.health.normandie.*|fr.health.samu76A.*|fr.health.samu76B.*)$",
-      "read": "^(fr.health.normandie.*|fr.health.samu76A.*|fr.health.samu76B.*)$",
-      "write": "hubsante"
+      "write": "hubsante",
+      "read": "^(fr.health.normandie.*|fr.health.samu76A.*|fr.health.samu76B.*)$"
     },
     {
       "user": "fr.health.samu76A",
       "vhost": "/",
       "configure": "fr.health.samu76A.*",
-      "read": "fr.health.samu76A.*",
-      "write": "hubsante"
+      "write": "hubsante",
+      "read": "fr.health.samu76A.*"
     },
     {
       "user": "fr.health.samu76B",
       "vhost": "/",
       "configure": "fr.health.samu76B.*",
-      "read": "fr.health.samu76B.*",
-      "write": "hubsante"
+      "write": "hubsante",
+      "read": "fr.health.samu76B.*"
     },
     {
-      "user": "fr.test.bbo",
+      "user": "fr.fire.nexsis.test",
       "vhost": "/",
-      "configure": "fr.test.bbo.*",
-      "read": "fr.test.bbo.*",
-      "write": "hubsante"
+      "configure": "^(hubfire|federation: hubfire.*)$",
+      "write": "^(hubfire|federation: hubfire.*)$",
+      "read": "^(hubfire|federation: hubfire.*)$"
+    }
+  ],
+  "topic_permissions": [
+    {
+      "exchange": "hubsante",
+      "vhost": "/",
+      "user": "fr.health.samuA",
+      "write": "fr.health.samuA.*",
+      "read": ""
+    },
+    {
+      "exchange": "hubsante",
+      "vhost": "/",
+      "user": "fr.health.samuB",
+      "write": "fr.health.samuB.*",
+      "read": ""
+    },
+    {
+      "exchange": "hubsante",
+      "vhost": "/",
+      "user": "fr.fire.nexsis.sdisZ",
+      "write": "fr.dire.nexsis.sdisZ.*",
+      "read": ""
+    },
+    {
+      "exchange": "hubsante",
+      "vhost": "/",
+      "user": "fr.health.samu570",
+      "write": "fr.health.samu570.*",
+      "read": ""
+    },
+    {
+      "exchange": "hubsante",
+      "vhost": "/",
+      "user": "fr.health.samu800",
+      "write": "fr.health.samu800.*",
+      "read": ""
+    },
+    {
+      "exchange": "hubsante",
+      "vhost": "/",
+      "user": "fr.health.exos",
+      "write": "fr.health.exos.*",
+      "read": ""
+    },
+    {
+      "exchange": "hubsante",
+      "vhost": "/",
+      "user": "fr.health.samu090",
+      "write": "fr.health.samu090.*",
+      "read": ""
+    },
+    {
+      "exchange": "hubsante",
+      "vhost": "/",
+      "user": "fr.health.samu091",
+      "write": "fr.health.samu091.*",
+      "read": ""
+    },
+    {
+      "exchange": "hubsante",
+      "vhost": "/",
+      "user": "fr.health.bisom",
+      "write": "^(fr.health.samu100.*|fr.health.samu090.*)$",
+      "read": ""
+    },
+    {
+      "exchange": "hubsante",
+      "vhost": "/",
+      "user": "fr.health.normandie",
+      "write": "^(fr.health.normandie.*|fr.health.samu76A.*|fr.health.samu76B.*)$",
+      "read": ""
+    },
+    {
+      "exchange": "hubsante",
+      "vhost": "/",
+      "user": "fr.health.samu76A",
+      "write": "fr.health.samu76A.*",
+      "read": ""
+    },
+    {
+      "exchange": "hubsante",
+      "vhost": "/",
+      "user": "fr.health.samu76B",
+      "write": "fr.health.samu76B.*",
+      "read": ""
+    }
+  ],
+  "policies": [
+    {
+      "vhost": "/",
+      "name": "hubfire.federation-policy",
+      "pattern": "^hubfire",
+      "apply-to": "exchanges",
+      "definition": {
+        "federation-upstream": "fr.fire"
+      },
+      "priority": 0
+    }
+  ],
+  "queues": [
+    {
+      "name": "*.out.*",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "fr.health.samu090.in.message",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "fr.health.samu091.in.message",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "federation: hubfire -> rabbit@fire-mq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-internal-purpose": "federation"
+      }
+    }
+  ],
+  "exchanges": [
+    {
+      "name": "hubfire",
+      "vhost": "/",
+      "type": "topic",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    },
+    {
+      "name": "federation: hubfire -> rabbit@fire-mq B",
+      "vhost": "/",
+      "type": "fanout",
+      "durable": true,
+      "auto_delete": true,
+      "internal": true,
+      "arguments": {
+        "x-internal-purpose": "federation"
+      }
+    },
+    {
+      "name": "hubsante",
+      "vhost": "/",
+      "type": "topic",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    }
+  ],
+  "bindings": [
+    {
+      "source": "federation: hubfire -> rabbit@fire-mq B",
+      "vhost": "/",
+      "destination": "federation: hubfire -> rabbit@fire-mq",
+      "destination_type": "queue",
+      "routing_key": "",
+      "arguments": {}
+    },
+    {
+      "source": "hubfire",
+      "vhost": "/",
+      "destination": "federation: hubfire -> rabbit@fire-mq B",
+      "destination_type": "exchange",
+      "routing_key": "fr.fire.nexsis.sdis75",
+      "arguments": {
+        "x-bound-from": [
+          {
+            "cluster-name": "rabbit@fire-mq",
+            "exchange": "/:hubfire B",
+            "hops": 1,
+            "vhost": "/"
+          }
+        ]
+      }
+    },
+    {
+      "source": "hubfire",
+      "vhost": "/",
+      "destination": "federation: hubfire -> rabbit@fire-mq B",
+      "destination_type": "exchange",
+      "routing_key": "fr.fire.nexsis.sdis91",
+      "arguments": {
+        "x-bound-from": [
+          {
+            "cluster-name": "rabbit@fire-mq",
+            "exchange": "/:hubfire B",
+            "hops": 1,
+            "vhost": "/"
+          }
+        ]
+      }
+    },
+    {
+      "source": "hubsante",
+      "vhost": "/",
+      "destination": "*.out.*",
+      "destination_type": "queue",
+      "routing_key": "#.out.ack",
+      "arguments": {}
+    },
+    {
+      "source": "hubsante",
+      "vhost": "/",
+      "destination": "*.out.*",
+      "destination_type": "queue",
+      "routing_key": "#.out.info",
+      "arguments": {}
+    },
+    {
+      "source": "hubsante",
+      "vhost": "/",
+      "destination": "*.out.*",
+      "destination_type": "queue",
+      "routing_key": "#.out.message",
+      "arguments": {}
     }
   ]
 }
