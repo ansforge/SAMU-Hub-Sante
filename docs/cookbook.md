@@ -9,15 +9,15 @@ Pour plus de détails sur l'instanciation en local du Hub Santé, veuillez vous 
 
 ## Lancer un Consumer sur $CLIENT_ID.in.message
 # Shell 1
-CLIENT_ID=fr.health.samuA; gradle run --args "$CLIENT_ID.in.message json"
+CLIENT_ID=fr.health.samuA; gradle run --args "$CLIENT_ID.message json"
 
 ## Lancer un Consumer sur $CLIENT_ID.in.ack
 #Shell 2
-CLIENT_ID=fr.fire.nexsis.sdisZ; gradle run --args "$CLIENT_ID.in.ack xml"
+CLIENT_ID=fr.fire.nexsis.sdisZ; gradle run --args "$CLIENT_ID.ack xml"
 
 ## Envoyer un message sur $CLIENT_ID.out.message avec un Producer
 # Shell 3
-CLIENT_ID=fr.fire.nexsis.sdisZ; gradle -Pmain=com.hubsante.ProducerRun run --args "$CLIENT_ID.out.message xml src/main/resources/sdisZ_to_samuA.xml"
+CLIENT_ID=fr.fire.nexsis.sdisZ; gradle -Pmain=com.hubsante.ProducerRun run --args "$CLIENT_ID xml src/main/resources/sdisZ_to_samuA.xml"
 
 ## Vous pouvez également tester le fonctionnement avec un client communiquant en XML avec NexSIS
 ## en remplaçant le CLIENT_ID samu par "fr.health.samuB"
@@ -29,15 +29,15 @@ CLIENT_ID=fr.fire.nexsis.sdisZ; gradle -Pmain=com.hubsante.ProducerRun run --arg
 
 ## Lancer un Consumer sur $CLIENT_ID.in.message
 set CLIENT_ID=fr.health.hub.samuA
-gradle run --args "%CLIENT_ID%.in.message json"
+gradle run --args "%CLIENT_ID%.message json"
 
 ## Lancer un Consumer sur $CLIENT_ID.in.ack
 set CLIENT_ID=fr.fire.nexsis.sdisZ
-gradle run --args "%CLIENT_ID%.in.ack xml"
+gradle run --args "%CLIENT_ID%.ack xml"
 
 ## Envoyer un message sur $CLIENT_ID.out.message avec un Producer
 set CLIENT_ID=fr.fire.nexsis.sdisZ
-gradle -Pmain=com.hubsante.ProducerRun run --args "$CLIENT_ID.out.message xml src/main/resources/sdisZ_to_samuA.xml"
+gradle -Pmain=com.hubsante.ProducerRun run --args "$CLIENT_ID xml src/main/resources/sdisZ_to_samuA.xml"
 
 ## Vous pouvez également tester le fonctionnement avec un client communiquant en XML avec NexSIS
 ## en remplaçant le CLIENT_ID samu par "fr.health.samuB"
