@@ -14,17 +14,16 @@ import org.springframework.stereotype.Service;
 import java.nio.charset.StandardCharsets;
 
 import static com.hubsante.hub.config.AmqpConfiguration.CONSUME_QUEUE_NAME;
+import static com.hubsante.hub.config.AmqpConfiguration.DISTRIBUTION_EXCHANGE;
 
 @Service
 @Slf4j
 public class Dispatcher {
-
-    private static final String JSON_CONTENT_TYPE = "application/json";
-    private static final String XML_CONTENT_TYPE = "application/xml";
-
     private final RabbitTemplate rabbitTemplate;
     private final EdxlHandler edxlHandler;
     private final HubClientConfiguration hubConfig;
+
+    private static final String HEALTH_PREFIX = "fr.health";
 
     public Dispatcher(RabbitTemplate rabbitTemplate, EdxlHandler edxlHandler, HubClientConfiguration hubConfig) {
         this.rabbitTemplate = rabbitTemplate;
@@ -47,22 +46,22 @@ public class Dispatcher {
         // Clone the message and adapt properties: set the content type
         Message forwardedMsg = forwardedMessage(edxlMessage, message.getMessageProperties());
         // publish the message to the recipient queue
-        rabbitTemplate.send("", queueName, forwardedMsg);
+        rabbitTemplate.send(DISTRIBUTION_EXCHANGE, queueName, forwardedMsg);
     }
 
     private boolean convertToXML(String senderID, String recipientID) {
         // inter forces messaging is always XML
-        if (!recipientID.startsWith("fr.health")) {
+        if (!recipientID.startsWith(HEALTH_PREFIX)) {
             return true;
         }
         // for outside -> hubsante messaging, use client preference (default to JSON)
-        return !senderID.startsWith("fr.health") &&
+        return !senderID.startsWith(HEALTH_PREFIX) &&
                 (hubConfig.getClientPreferences().get(recipientID) != null
                         && hubConfig.getClientPreferences().get(recipientID));
     }
 
     private void checkSenderConsistency(String receivedRoutingKey, EdxlMessage edxlMessage) {
-        if (!receivedRoutingKey.startsWith(edxlMessage.getSenderID())) {
+        if (!receivedRoutingKey.equals(edxlMessage.getSenderID())) {
             log.warn("Sender inconsistency for message {} : message sender is {} but received routing key is {}",
                     edxlMessage.getDistributionID(), edxlMessage.getSenderID(), receivedRoutingKey);
             throw new AmqpRejectAndDontRequeueException("do not requeue !");
@@ -77,10 +76,10 @@ public class Dispatcher {
         try {
             if (convertToXML(senderID, recipientID)) {
                 edxlString = edxlHandler.prettyPrintXmlEDXL(edxlMessage);
-                properties.setContentType(XML_CONTENT_TYPE);
+                properties.setContentType(MessageProperties.CONTENT_TYPE_XML);
             } else {
                 edxlString = edxlHandler.prettyPrintJsonEDXL(edxlMessage);
-                properties.setContentType(JSON_CONTENT_TYPE);
+                properties.setContentType(MessageProperties.CONTENT_TYPE_JSON);
             }
             log.info("  ↳ [x] Forwarding to '" + recipientID + "':" + edxlString);
             return new Message(edxlString.getBytes(StandardCharsets.UTF_8), properties);
@@ -98,7 +97,7 @@ public class Dispatcher {
 
     private String getRecipientQueueName(EdxlMessage edxlMessage) {
         String queueType = edxlMessage.getDistributionKind().equals(DistributionKind.ACK) ? "ack" : "message";
-        return getRecipientID(edxlMessage) + ".in." + queueType;
+        return getRecipientID(edxlMessage) + "." + queueType;
     }
 
     /*
@@ -110,11 +109,11 @@ public class Dispatcher {
         try {
             // We deserialize according to the content type
             // It MUST be explicitly set by the client
-            if (message.getMessageProperties().getContentType().equals(JSON_CONTENT_TYPE)) {
+            if (message.getMessageProperties().getContentType().equals(MessageProperties.CONTENT_TYPE_JSON)) {
                 edxlMessage = edxlHandler.deserializeJsonEDXL(receivedEdxl);
                 log.info(" [x] Received from '" + receivedRoutingKey + "':" + edxlHandler.prettyPrintJsonEDXL(edxlMessage));
 
-            } else if (message.getMessageProperties().getContentType().equals(XML_CONTENT_TYPE)) {
+            } else if (message.getMessageProperties().getContentType().equals(MessageProperties.CONTENT_TYPE_XML)) {
                 edxlMessage = edxlHandler.deserializeXmlEDXL(receivedEdxl);
                 log.info(" [x] Received from '" + receivedRoutingKey + "':" + edxlHandler.prettyPrintXmlEDXL(edxlMessage));
 

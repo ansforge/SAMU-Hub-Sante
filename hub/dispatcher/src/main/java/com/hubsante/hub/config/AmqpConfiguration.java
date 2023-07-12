@@ -13,10 +13,8 @@ import javax.annotation.PostConstruct;
 @Configuration
 public class AmqpConfiguration {
     public static final String HUBSANTE_EXCHANGE = "hubsante";
-    public static final String CONSUME_QUEUE_NAME = "*.out.*";
-    public static final String MESSAGE_ROUTING_KEY = "#.out.message";
-    public static final String INFO_ROUTING_KEY = "#.out.info";
-    public static final String ACK_ROUTING_KEY = "#.out.ack";
+    public static final String DISTRIBUTION_EXCHANGE = "distribution";
+    public static final String CONSUME_QUEUE_NAME = "dispatch";
 
     private final CachingConnectionFactory connectionFactory;
 

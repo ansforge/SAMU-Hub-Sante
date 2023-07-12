@@ -11,7 +11,6 @@ import org.mockito.Mockito;
 import org.springframework.amqp.AmqpRejectAndDontRequeueException;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageProperties;
-import org.springframework.amqp.core.MessagePropertiesBuilder;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.rabbit.test.context.SpringRabbitTest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,13 +20,11 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 
 import javax.annotation.PostConstruct;
-import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.Objects;
 
 import static com.hubsante.dispatcher.utils.MessageTestUtils.createMessage;
+import static com.hubsante.hub.config.AmqpConfiguration.DISTRIBUTION_EXCHANGE;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -47,8 +44,8 @@ public class DispatcherTest {
     private HubClientConfiguration hubConfig;
     static ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
     private Dispatcher dispatcher;
-    private final String XML_MESSAGE_ROUTING_KEY = "fr.health.samu110.out.message";
-    private final String JSON_MESSAGE_ROUTING_KEY = "fr.health.samu050.out.message";
+    private final String XML_MESSAGE_ROUTING_KEY = "fr.health.samu110";
+    private final String JSON_MESSAGE_ROUTING_KEY = "fr.health.samu050";
 
     @DynamicPropertySource
     static void registerPgProperties(DynamicPropertyRegistry propertiesRegistry) {
@@ -70,51 +67,41 @@ public class DispatcherTest {
 
         // assert that the message was sent to the right exchange with the right routing key exactly 1 time
         Mockito.verify(rabbitTemplate, times(1)).send(
-                eq(""), eq("fr.fire.nexsis.sdis23.in.message"), any());
+                eq(DISTRIBUTION_EXCHANGE), eq("fr.fire.nexsis.sdis23.message"), any());
     }
 
     @Test
     @DisplayName("malformed message should throw an exception")
     public void malformedMessagefailed() throws IOException {
         Message receivedMessage = createMessage("edxlWithMalformedContent.json", JSON_MESSAGE_ROUTING_KEY);
-        assertThrows(AmqpRejectAndDontRequeueException.class, () -> {
-            dispatcher.dispatch(receivedMessage);
-        });
+        assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
     }
 
     @Test
     @DisplayName("message without content-type is rejected")
     public void rejectMessageWithoutContentType() throws IOException {
         Message receivedMessage = createMessage("cisuCreateEdxl.json", null, JSON_MESSAGE_ROUTING_KEY);
-        assertThrows(AmqpRejectAndDontRequeueException.class, () -> {
-            dispatcher.dispatch(receivedMessage);
-        });
+        assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
     }
 
     @Test
     @DisplayName("message with unhandled content-type is rejected")
     public void rejectMessageWithUnhandledContentType() throws IOException {
         Message receivedMessage = createMessage("cisuCreateEdxl.json", MessageProperties.DEFAULT_CONTENT_TYPE, JSON_MESSAGE_ROUTING_KEY);
-        assertThrows(AmqpRejectAndDontRequeueException.class, () -> {
-            dispatcher.dispatch(receivedMessage);
-        });
+        assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
     }
 
     @Test
     @DisplayName("message body inconsistent with content-type is rejected")
     public void rejectMessageWithInconsistentBody() throws IOException {
         Message receivedMessage = createMessage("cisuCreateEdxl.json", MessageProperties.CONTENT_TYPE_XML, JSON_MESSAGE_ROUTING_KEY);
-        assertThrows(AmqpRejectAndDontRequeueException.class, () -> {
-            dispatcher.dispatch(receivedMessage);
-        });
+        assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
     }
 
     @Test
     @DisplayName("outer routing key inconsistent with sender ID")
     public void outerRoutingKeyInconsistentWithSenderId() throws IOException {
         Message receivedMessage = createMessage("cisuCreateEdxl.json", XML_MESSAGE_ROUTING_KEY);
-        assertThrows(AmqpRejectAndDontRequeueException.class, () -> {
-            dispatcher.dispatch(receivedMessage);
-        });
+        assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
     }
 }
