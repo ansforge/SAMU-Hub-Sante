@@ -11,7 +11,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static com.hubsante.Utils.getRouting;
-import static com.hubsante.Utils.isJsonScheme;
 
 public class ProducerRun {
     private static final String HUB_HOSTNAME = "hubsante.esante.gouv.fr";
@@ -20,8 +19,8 @@ public class ProducerRun {
 
     public static void main(String[] args) throws Exception {
         String routingKey = getRouting(args);
-        String fileType = args[1];
-        String messageString = Files.readString(Path.of(args[2]));
+        String messageString = Files.readString(Path.of(args[1]));
+        boolean isJsonScheme = Path.of(args[1]).endsWith("json");
 
         TLSConf tlsConf = new TLSConf(
                 "TLSv1.2",
@@ -47,7 +46,7 @@ public class ProducerRun {
                 .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
                 .disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE);
 
-        if (isJsonScheme(fileType)) {
+        if (isJsonScheme) {
             EdxlMessage edxlMessage = jsonMapper.readValue(messageString, EdxlMessage.class);
             producer.publish(routingKey, edxlMessage);
         } else {

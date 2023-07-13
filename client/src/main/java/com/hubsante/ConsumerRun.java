@@ -22,12 +22,11 @@ public class ConsumerRun {
                 "trustStore",
                 "../certs/trustStore");
 
-        String routingKey = getRouting(args);
+        String queueName = getRouting(args);
         String clientId = getClientId(args);
-        String ackRoutingKey = clientId + ".out.ack";
-        String languageType = args[1];
+        boolean isJsonScheme = "json".equalsIgnoreCase(args[1]);
         Consumer consumer = new Consumer(HUB_HOSTNAME, HUB_PORT, EXCHANGE_NAME,
-                routingKey, ackRoutingKey, clientId) {
+                queueName, clientId) {
             @Override
             protected void deliverCallback(String consumerTag, Delivery delivery) throws IOException {
                 String routingKey = delivery.getEnvelope().getRoutingKey();
@@ -35,7 +34,7 @@ public class ConsumerRun {
                 EdxlMessage edxlMessage;
                 String msgString;
 
-                if(isJsonScheme(languageType)) {
+                if(isJsonScheme) {
                     edxlMessage = this.mapper.readValue(delivery.getBody(), EdxlMessage.class);
                     msgString = this.mapper.writerWithDefaultPrettyPrinter().writeValueAsString(edxlMessage);
                 } else {
@@ -50,17 +49,18 @@ public class ConsumerRun {
                 // Sending back functional ack as info has been processed on the Consumer side
                 if (!edxlMessage.getDistributionKind().equals(DistributionKind.ACK)) {
                     EdxlMessage ackEdxl = this.generateFunctionalAckMessage(edxlMessage);
-                    if (isJsonScheme(languageType)) {
-                        this.producerAck.publish(this.fileAckName, ackEdxl);
+                    if (isJsonScheme) {
+                        this.producerAck.publish(this.clientId, ackEdxl);
                     } else {
-                        this.producerAck.xmlPublish(this.fileAckName, ackEdxl);
+                        this.producerAck.xmlPublish(this.clientId, ackEdxl);
                     }
 
-                    String ackEdxlString = isJsonScheme(languageType) ?
+                    String ackEdxlString = isJsonScheme ?
                             mapper.writerWithDefaultPrettyPrinter().writeValueAsString(ackEdxl) :
                             xmlMapper.writerWithDefaultPrettyPrinter().writeValueAsString(ackEdxl);
 
-                    System.out.println("  ↳ [x] Sent  to '" + this.fileAckName + "':'" + ackEdxlString + "'");
+                    System.out.println("  ↳ [x] Sent  to '" + getExchangeName() + " with routing key " + this.clientId + "':'"
+                            + ackEdxlString + "'");
                 } else {
                     // Inform user that partner has correctly processed the message
                     System.out.println("  ↳ [x] Partner has processed the message.");
@@ -68,6 +68,6 @@ public class ConsumerRun {
             }
         };
         consumer.connect(tlsConf);
-        System.out.println(" [*] Waiting for messages on " + routingKey + ". To exit press CTRL+C");
+        System.out.println(" [*] Waiting for messages on " + queueName + ". To exit press CTRL+C");
     }
 }

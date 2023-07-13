@@ -31,8 +31,6 @@ minikube delete --profile minikube
 watch kubectl get all
 ```
 
-
-
 # RabbitMQ Kubernetes Operator
 ## Setup
 Ref.: https://www.rabbitmq.com/kubernetes/operator/quickstart-operator.html
@@ -98,9 +96,9 @@ kubectl port-forward "service/rabbitmq" 5671
 
 # Run the rest of the pipeline locally (with dispatcher first to create exchange / queues / bindings
 gradle bootRun --args='--spring.profiles.active=local,rfo'
-CLIENT_ID=Target; gradle -Pmain=com.hubsante.ConsumerRun run --args "$CLIENT_ID.in.message"
-CLIENT_ID=Origin; gradle -Pmain=com.hubsante.ConsumerRun run --args "$CLIENT_ID.in.ack"
-CLIENT_ID=Origin; gradle -Pmain=com.hubsante.ProducerRun run --args "$CLIENT_ID.out.message src/main/resources/createEventMessage.json"
+CLIENT_ID=fr.health.samuA; gradle -Pmain=com.hubsante.ConsumerRun run --args "$CLIENT_ID.message json"
+CLIENT_ID=fr.fire.nexsis.sdisZ; gradle -Pmain=com.hubsante.ConsumerRun run --args "$CLIENT_ID.ack xml"
+CLIENT_ID=fr.fire.nexsis.sdisZ; gradle -Pmain=com.hubsante.ProducerRun run --args "$CLIENT_ID src/main/resources/sdisZ_to_samuA.xml"
 ```
 
 # Web Load Balancer & Ingress

@@ -1,5 +1,6 @@
 package com.hubsante;
 
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -12,7 +13,7 @@ public class Utils {
      */
     static String getClientId(String[] strings) {
         String[] routing = getRouting(strings).split("[.]");
-        List<String> routingKey = Arrays.stream(routing).limit(routing.length-2).collect(Collectors.toList());
+        List<String> routingKey = Arrays.stream(routing).limit(routing.length-1).collect(Collectors.toList());
         return String.join(".", routingKey);
     }
 
@@ -24,9 +25,5 @@ public class Utils {
         if (strings.length < 1)
             return "anonymous.info";
         return strings[0];
-    }
-
-    static boolean isJsonScheme(String scheme) {
-        return scheme.equalsIgnoreCase("json");
     }
 }
