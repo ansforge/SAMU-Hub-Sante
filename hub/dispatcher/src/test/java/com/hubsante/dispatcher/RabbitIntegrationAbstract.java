@@ -35,6 +35,7 @@ public class RabbitIntegrationAbstract {
     protected static final String HUBSANTE_EXCHANGE = "hubsante";
     protected static final String RABBITMQ_IMAGE = "rabbitmq:3.11-management-alpine";
     protected static final String SAMU_B_OUTER_MESSAGE_ROUTING_KEY = "fr.health.samuB";
+    protected static final String SAMU_B_WRONG_OUTER_MESSAGE_ROUTING_KEY = "fr.health.samuB.suffix";
     protected static final String SAMU_A_OUTER_MESSAGE_ROUTING_KEY = "fr.health.samuA";
     protected static final String SAMU_B_ACK_QUEUE = "fr.health.samuB.ack";
     protected static final String SDIS_Z_MESSAGE_QUEUE = "fr.fire.nexsis.sdisZ.message";

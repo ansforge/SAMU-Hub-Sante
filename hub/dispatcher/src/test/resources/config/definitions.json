@@ -245,24 +245,22 @@
       "exchange": "hubsante",
       "vhost": "/",
       "user": "fr.health.samuA",
-      "write": "fr.health.samuA.*",
+      "write": "^fr.health.samuA$",
       "read": ""
     },
     {
       "exchange": "hubsante",
       "vhost": "/",
       "user": "fr.health.samuB",
-      "write": "fr.health.samuB.*",
-      "read": "",
-      "configure": "fr.health.samuB.*"
+      "write": "^fr.health.samuB$",
+      "read": ""
     },
     {
       "exchange": "hubsante",
       "vhost": "/",
       "user": "fr.fire.nexsis.sdisZ",
-      "write": "fr.fire.nexsis.sdisZ.*",
-      "read": "",
-      "configure": "fr.fire.nexsis.sdisZ.*"
+      "write": "^fr.fire.nexsis.sdisZ$",
+      "read": ""
     }
   ]
 }

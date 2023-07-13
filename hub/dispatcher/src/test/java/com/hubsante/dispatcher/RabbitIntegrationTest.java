@@ -43,8 +43,8 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
             }
         });
 
-        Message published = createMessage("samuB_to_nexsis.xml", SAMU_A_OUTER_MESSAGE_ROUTING_KEY);
-        samuB_client.sendAndReceive(HUBSANTE_EXCHANGE, SAMU_A_OUTER_MESSAGE_ROUTING_KEY, published);
+        Message published = createMessage("samuB_to_nexsis.xml", SAMU_B_WRONG_OUTER_MESSAGE_ROUTING_KEY);
+        samuB_client.sendAndReceive(HUBSANTE_EXCHANGE, SAMU_B_WRONG_OUTER_MESSAGE_ROUTING_KEY, published);
 
         assertTrue(failed);
     }
