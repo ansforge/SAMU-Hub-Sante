@@ -9,7 +9,7 @@
       ]
     },
     {
-      "name": "dispatcher",
+      "name": "localhost",
       "tags": []
     },
     {
@@ -71,7 +71,7 @@
       "read": ".*"
     },
     {
-      "user": "dispatcher",
+      "user": "localhost",
       "vhost": "/",
       "configure": "",
       "write": "amq.default",
@@ -159,22 +159,8 @@
     {
       "exchange": "hubsante",
       "vhost": "/",
-      "user": "fr.health.samuA",
-      "write": "fr.health.samuA.*",
-      "read": ""
-    },
-    {
-      "exchange": "hubsante",
-      "vhost": "/",
-      "user": "fr.health.samuB",
-      "write": "fr.health.samuB.*",
-      "read": ""
-    },
-    {
-      "exchange": "hubsante",
-      "vhost": "/",
-      "user": "fr.fire.nexsis.sdisZ",
-      "write": "fr.dire.nexsis.sdisZ.*",
+      "user": "local.test",
+      "write": "^(fr.health.samuA.*|fr.health.samuB.*|fr.fire.nexsis.sdisZ.*)$",
       "read": ""
     },
     {
