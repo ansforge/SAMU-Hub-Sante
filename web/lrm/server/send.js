@@ -14,9 +14,6 @@ const opts = {
   ], // array of trusted CA certs
   // Ref.: https://github.com/amqp-node/amqplib/issues/105
   credentials: amqp.credentials.external(),
-  // Ref.: https://github.com/amqp-node/amqplib/blob/4791f2dfbe8f3bfbd02bb0907e3c35129ae71c13/lib/api_args.js#L231
-  contentType: 'application/json',
-  deliveryMode: 2,
 };
 
 amqp.connect('amqps://hubsante.esante.gouv.fr', opts, (error0, connection) => {
@@ -38,7 +35,13 @@ amqp.connect('amqps://hubsante.esante.gouv.fr', opts, (error0, connection) => {
       durable: false,
     });
      */
-    channel.publish(exchange, key, Buffer.from(msg));
+    const properties = {
+      // Ref.: https://github.com/amqp-node/amqplib/blob/4791f2dfbe8f3bfbd02bb0907e3c35129ae71c13/lib/api_args.js#L231
+      contentType: 'application/json',
+      deliveryMode: 2,
+      priority: 0,
+    };
+    channel.publish(exchange, key, Buffer.from(msg), properties);
     console.log(" [x] Sent %s: '%s'", key, msg);
   });
 
