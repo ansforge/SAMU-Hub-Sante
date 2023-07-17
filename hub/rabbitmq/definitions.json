@@ -556,7 +556,7 @@
       ]
     },
     {
-      "name": "dispatcher",
+      "name": "localhost",
       "tags": []
     },
     {
@@ -613,7 +613,7 @@
       "write": ".*"
     },
     {
-      "user": "dispatcher",
+      "user": "localhost",
       "vhost": "/",
       "configure": "",
       "read": "dispatch",
