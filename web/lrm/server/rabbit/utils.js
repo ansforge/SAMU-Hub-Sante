@@ -1,15 +1,25 @@
+const path = require('path');
 const fs = require('fs');
 const amqp = require('amqplib/callback_api');
 
-const RABBIT_URL = 'amqps://hubsante.esante.gouv.fr';
+const moduleDir = __dirname;
+
+const HUB_SANTE_URL = 'amqps://hubsante.esante.gouv.fr';
+const HUB_SANTE_EXCHANGE = 'hubsante';
+const DEMO_CLIENT_IDS = {
+  SAMU_A: 'fr.health.samuA', // fr.health.demo.samuA
+  SAMU_B: 'fr.health.samuB', // fr.health.demo.samuB
+  SDIS_Z: 'fr.fire.nexsis.sdisZ', // fr.health.demo.sdisZ
+};
+
 const opts = {
-  pfx: fs.readFileSync('certs/local_test.p12'),
-  // cert: fs.readFileSync('certs/local_test.crt'), // client cert
-  // key: fs.readFileSync('certs/local_test.key'), // client key
+  pfx: fs.readFileSync(path.join(moduleDir, 'certs/local_test.p12')),
+  // cert: fs.readFileSync(path.join(moduleDir, 'certs/local_test.crt')), // client cert
+  // key: fs.readFileSync(path.join(moduleDir, 'certs/local_test.key')), // client key
   passphrase: 'certPassword', // passphrase for key
   ca: [
-    fs.readFileSync('certs/hub.crt'),
-    fs.readFileSync('certs/rootCA.crt'),
+    fs.readFileSync(path.join(moduleDir, 'certs/hub.crt')),
+    fs.readFileSync(path.join(moduleDir, 'certs/rootCA.crt')),
   ], // array of trusted CA certs
   // Ref.: https://github.com/amqp-node/amqplib/issues/105
   credentials: amqp.credentials.external(),
@@ -17,7 +27,7 @@ const opts = {
 
 module.exports = {
   connect(callback) {
-    amqp.connect(RABBIT_URL, opts, (error0, connection) => {
+    amqp.connect(HUB_SANTE_URL, opts, (error0, connection) => {
       if (error0) {
         throw error0;
       }
@@ -42,4 +52,7 @@ module.exports = {
     deliveryMode: 2,
     priority: 0,
   },
+  HUB_SANTE_URL,
+  HUB_SANTE_EXCHANGE,
+  DEMO_CLIENT_IDS,
 };
