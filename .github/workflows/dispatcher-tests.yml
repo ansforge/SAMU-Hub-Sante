@@ -30,6 +30,8 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build and run tests
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ./gradlew test
 
       - name: Add coverage to PR
