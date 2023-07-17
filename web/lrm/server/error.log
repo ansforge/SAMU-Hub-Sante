@@ -25,3 +25,4 @@
 {"level":"error","message":"failed to start Express Server","service":"user-service","timestamp":"2023-07-17T14:07:23.557Z"}
 {"level":"error","message":"failed to start Express Server","service":"user-service","timestamp":"2023-07-17T14:10:19.164Z"}
 {"level":"error","message":"failed to start Express Server","service":"user-service","timestamp":"2023-07-17T14:10:35.926Z"}
+{"level":"error","message":"failed to start Express Server","service":"user-service","timestamp":"2023-07-17T14:13:47.961Z"}
