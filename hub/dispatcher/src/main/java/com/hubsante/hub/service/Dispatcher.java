@@ -26,9 +26,6 @@ public class Dispatcher {
     private final EdxlHandler edxlHandler;
     private final HubClientConfiguration hubConfig;
 
-    @Autowired
-    private AmqpConfiguration amqpConfiguration;
-
     private static final String HEALTH_PREFIX = "fr.health";
 
     public Dispatcher(RabbitTemplate rabbitTemplate, EdxlHandler edxlHandler, HubClientConfiguration hubConfig) {
