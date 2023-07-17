@@ -1,6 +1,7 @@
 package com.hubsante.hub.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.hubsante.hub.config.AmqpConfiguration;
 import com.hubsante.hub.config.HubClientConfiguration;
 import com.hubsante.model.edxl.DistributionKind;
 import com.hubsante.model.edxl.EdxlMessage;
@@ -9,12 +10,14 @@ import org.springframework.amqp.AmqpRejectAndDontRequeueException;
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 
-import static com.hubsante.hub.config.AmqpConfiguration.CONSUME_QUEUE_NAME;
-import static com.hubsante.hub.config.AmqpConfiguration.DISTRIBUTION_EXCHANGE;
+import static com.hubsante.hub.config.AmqpConfiguration.*;
 
 @Service
 @Slf4j
@@ -22,6 +25,9 @@ public class Dispatcher {
     private final RabbitTemplate rabbitTemplate;
     private final EdxlHandler edxlHandler;
     private final HubClientConfiguration hubConfig;
+
+    @Autowired
+    private AmqpConfiguration amqpConfiguration;
 
     private static final String HEALTH_PREFIX = "fr.health";
 
@@ -33,12 +39,9 @@ public class Dispatcher {
 
     @RabbitListener(queues = CONSUME_QUEUE_NAME)
     public void dispatch(Message message) {
-
         String receivedRoutingKey = message.getMessageProperties().getReceivedRoutingKey();
-        String receivedEdxl = new String(message.getBody(), StandardCharsets.UTF_8);
-
         // Deserialize the message according to its content type
-        EdxlMessage edxlMessage = deserializeMessage(receivedEdxl, receivedRoutingKey, message);
+        EdxlMessage edxlMessage = deserializeMessage(message);
         // Check that the sender is consistent with the routing key
         checkSenderConsistency(receivedRoutingKey, edxlMessage);
         // Extract recipient queue name from the message (explicit address and distribution kind)
@@ -73,6 +76,8 @@ public class Dispatcher {
         String senderID = edxlMessage.getSenderID();
         String edxlString;
 
+        overrideExpirationIfNeeded(edxlMessage, properties);
+
         try {
             if (convertToXML(senderID, recipientID)) {
                 edxlString = edxlHandler.prettyPrintXmlEDXL(edxlMessage);
@@ -103,7 +108,8 @@ public class Dispatcher {
     /*
     ** Deserialize the message according to its content type
      */
-    private EdxlMessage deserializeMessage(String receivedEdxl, String receivedRoutingKey, Message message) {
+    private EdxlMessage deserializeMessage(Message message) {
+        String receivedEdxl = new String(message.getBody(), StandardCharsets.UTF_8);
         EdxlMessage edxlMessage;
 
         try {
@@ -111,11 +117,11 @@ public class Dispatcher {
             // It MUST be explicitly set by the client
             if (message.getMessageProperties().getContentType().equals(MessageProperties.CONTENT_TYPE_JSON)) {
                 edxlMessage = edxlHandler.deserializeJsonEDXL(receivedEdxl);
-                log.info(" [x] Received from '" + receivedRoutingKey + "':" + edxlHandler.prettyPrintJsonEDXL(edxlMessage));
+                log.info(" [x] Received from '" + message.getMessageProperties().getReceivedRoutingKey() + "':" + edxlHandler.prettyPrintJsonEDXL(edxlMessage));
 
             } else if (message.getMessageProperties().getContentType().equals(MessageProperties.CONTENT_TYPE_XML)) {
                 edxlMessage = edxlHandler.deserializeXmlEDXL(receivedEdxl);
-                log.info(" [x] Received from '" + receivedRoutingKey + "':" + edxlHandler.prettyPrintXmlEDXL(edxlMessage));
+                log.info(" [x] Received from '" + message.getMessageProperties().getReceivedRoutingKey() + "':" + edxlHandler.prettyPrintXmlEDXL(edxlMessage));
 
             } else {
                 // TODO (bbo) : send message to sender info queue with distributionID and error type ?
@@ -133,5 +139,20 @@ public class Dispatcher {
             throw new AmqpRejectAndDontRequeueException("do not requeue !");
         }
         return edxlMessage;
+    }
+
+    private void overrideExpirationIfNeeded(EdxlMessage edxlMessage, MessageProperties properties) {
+        // OffsetDateTime comes with seconds and nanos, not millis
+        // We assume that one second is an acceptable interval
+        long queueExpiration = OffsetDateTime.now().plusSeconds(5).toEpochSecond();
+        long edxlCustomExpiration = edxlMessage.getDateTimeExpires().toEpochSecond();
+        long customDelay = (queueExpiration - edxlCustomExpiration)*1000;
+
+        if (customDelay > 0) {
+            properties.setExpiration(String.valueOf(customDelay));
+            log.info("override expiration for message {}: expiration is now {}",
+                    edxlMessage.getDistributionID(),
+                    edxlMessage.getDateTimeExpires().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+        }
     }
 }
