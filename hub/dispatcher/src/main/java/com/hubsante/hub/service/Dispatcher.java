@@ -47,6 +47,22 @@ public class Dispatcher {
         rabbitTemplate.send(DISTRIBUTION_EXCHANGE, queueName, forwardedMsg);
     }
 
+    @RabbitListener(queues = DISPATCH_DLQ)
+    public void handleDLQ(Message message) {
+        EdxlMessage edxlMessage = deserializeMessage(message);
+        String queueName = edxlMessage.getSenderID() + ".info";
+        // log message & error
+        log.warn("Message {} has been moved to dead-letter-queue; reason was {}",
+                edxlMessage.getDistributionID(),
+                message.getMessageProperties().getHeader(DLQ_REASON));
+        // send info
+        //TODO bbo: use Error model
+        rabbitTemplate.send(DISTRIBUTION_EXCHANGE, queueName, new Message(
+                ("message " + edxlMessage.getDistributionID() + "has not been consumed on "
+                        + message.getMessageProperties().getHeader(DLQ_MESSAGE_ORIGIN)
+                ).getBytes()));
+    }
+
     private boolean convertToXML(String senderID, String recipientID) {
         // inter forces messaging is always XML
         if (!recipientID.startsWith(HEALTH_PREFIX)) {

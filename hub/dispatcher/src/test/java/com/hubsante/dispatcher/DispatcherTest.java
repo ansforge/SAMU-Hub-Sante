@@ -13,7 +13,6 @@ import org.mockito.Mockito;
 import org.springframework.amqp.AmqpRejectAndDontRequeueException;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageProperties;
-import org.springframework.amqp.core.MessagePropertiesBuilder;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.rabbit.test.context.SpringRabbitTest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,20 +22,16 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 
 import javax.annotation.PostConstruct;
-import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.time.OffsetDateTime;
-import java.time.temporal.TemporalAmount;
 import java.util.Objects;
 
 import static com.hubsante.dispatcher.utils.MessageTestUtils.createMessage;
-import static com.hubsante.hub.config.AmqpConfiguration.DISTRIBUTION_EXCHANGE;
+import static com.hubsante.hub.config.AmqpConfiguration.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 
 @SpringBootTest
@@ -103,6 +98,21 @@ public class DispatcherTest {
         assertEquals(
                 argument.getValue().getMessageProperties().getExpiration(),
                 customTTLMessage.getMessageProperties().getExpiration());
+    }
+
+    @Test
+    @DisplayName("should send info to sender of DLQed message - expiration")
+    public void handleDLQMessage() throws Exception {
+        Message receivedMessage = createMessage("cisuCreateEdxl.xml", MessageProperties.CONTENT_TYPE_XML, XML_MESSAGE_ROUTING_KEY);
+        receivedMessage.getMessageProperties().setHeader(DLQ_REASON, "expired");
+        receivedMessage.getMessageProperties().setHeader(DLQ_MESSAGE_ORIGIN, "fr.fire.nexsis.sdis23.message");
+        dispatcher.handleDLQ(receivedMessage);
+
+        ArgumentCaptor<Message> argument = ArgumentCaptor.forClass(Message.class);
+        Mockito.verify(rabbitTemplate, times(1)).send(
+                eq(DISTRIBUTION_EXCHANGE), eq("fr.health.samu110.info"), argument.capture());
+        String str = new String(argument.getValue().getBody());
+        assert(str.endsWith("has not been consumed on fr.fire.nexsis.sdis23.message"));
     }
 
     @Test
