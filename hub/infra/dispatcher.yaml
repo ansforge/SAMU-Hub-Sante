@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: dispatcher
-          image: roaminfd/dispatcher:latest
+          image: romainfd/dispatcher:latest
           env:
             - name: DISPATCHER_KEYSTORE_PASSWORD
               valueFrom:
