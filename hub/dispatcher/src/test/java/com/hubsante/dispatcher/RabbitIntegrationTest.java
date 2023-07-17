@@ -4,10 +4,8 @@ import com.hubsante.model.edxl.EdxlMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.*;
 import org.springframework.amqp.core.Message;
-import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 import static com.hubsante.dispatcher.utils.MessageTestUtils.createMessage;
@@ -83,13 +81,10 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
         Message received = nexsis_client.receive(SDIS_Z_MESSAGE_QUEUE);
         assertNull(received);
 
-        Message dlqMessage = rabbitTemplate.receive(DISPATCH_DLQ);
-        assertNotNull(dlqMessage);
-        EdxlMessage publishedEdxl = converter.deserializeXmlEDXL(new String(published.getBody(), StandardCharsets.UTF_8));
-        EdxlMessage dlqEdxl = converter.deserializeXmlEDXL(new String(dlqMessage.getBody(), StandardCharsets.UTF_8));
-        assertEquals(publishedEdxl, dlqEdxl);
-        assertEquals("expired", dlqMessage.getMessageProperties().getHeader(DLQ_REASON));
-        assertEquals(SDIS_Z_MESSAGE_QUEUE, dlqMessage.getMessageProperties().getHeader(DLQ_MESSAGE_ORIGIN));
+        Message infoMsg = samuB_client.receive(SAMU_B_INFO_QUEUE);
+        assertNotNull(infoMsg);
+        String errorMsg = new String(infoMsg.getBody());
+        assert(errorMsg.endsWith("has not been consumed on fr.fire.nexsis.sdisZ.message"));
     }
 
     @Test
@@ -102,8 +97,10 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
 
         Thread.sleep(100);
 
-        Message dlqMessage = rabbitTemplate.receive(DISPATCH_DLQ);
-        assertNotNull(dlqMessage);
+        Message infoMsg = samuB_client.receive(SAMU_B_INFO_QUEUE);
+        assertNotNull(infoMsg);
+        String errorMsg = new String(infoMsg.getBody());
+        assert(errorMsg.endsWith("has not been consumed on fr.fire.nexsis.sdisZ.message"));
     }
 
 }
