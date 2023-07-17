@@ -108,6 +108,7 @@ public class RabbitIntegrationAbstract {
                             .getResource("config/certs/trustStore"),
                     "client.preferences.file=" + Thread.currentThread().getContextClassLoader()
                             .getResource("config/client.preferences.csv"),
+                    "hubsante.default.message.ttl=5",
 
                     // must be set to handle PublisherConfirms in other RabbitTemplates,
                     // even if we don't use it in Dispatcher

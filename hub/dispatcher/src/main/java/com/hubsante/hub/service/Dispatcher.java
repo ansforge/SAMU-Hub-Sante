@@ -1,7 +1,6 @@
 package com.hubsante.hub.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.hubsante.hub.config.AmqpConfiguration;
 import com.hubsante.hub.config.HubClientConfiguration;
 import com.hubsante.model.edxl.DistributionKind;
 import com.hubsante.model.edxl.EdxlMessage;
@@ -10,7 +9,6 @@ import org.springframework.amqp.AmqpRejectAndDontRequeueException;
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
@@ -141,7 +139,7 @@ public class Dispatcher {
     private void overrideExpirationIfNeeded(EdxlMessage edxlMessage, MessageProperties properties) {
         // OffsetDateTime comes with seconds and nanos, not millis
         // We assume that one second is an acceptable interval
-        long queueExpiration = OffsetDateTime.now().plusSeconds(5).toEpochSecond();
+        long queueExpiration = OffsetDateTime.now().plusSeconds(hubConfig.getDefaultTTL()).toEpochSecond();
         long edxlCustomExpiration = edxlMessage.getDateTimeExpires().toEpochSecond();
         long customDelay = (queueExpiration - edxlCustomExpiration)*1000;
 
