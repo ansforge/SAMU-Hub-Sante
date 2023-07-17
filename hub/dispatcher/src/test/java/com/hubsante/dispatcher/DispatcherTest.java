@@ -120,6 +120,10 @@ public class DispatcherTest {
     public void malformedMessagefailed() throws IOException {
         Message receivedMessage = createMessage("edxlWithMalformedContent.json", JSON_MESSAGE_ROUTING_KEY);
         assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
+        ArgumentCaptor<Message> argument = ArgumentCaptor.forClass(Message.class);
+        Mockito.verify(rabbitTemplate, times(1)).send(
+                eq(DISTRIBUTION_EXCHANGE), eq("fr.health.samu050.info"), argument.capture());
+        assertEquals("Could not parse message, invalid format", new String(argument.getValue().getBody()));
     }
 
     @Test
@@ -127,6 +131,11 @@ public class DispatcherTest {
     public void rejectMessageWithoutContentType() throws IOException {
         Message receivedMessage = createMessage("cisuCreateEdxl.json", null, JSON_MESSAGE_ROUTING_KEY);
         assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
+        ArgumentCaptor<Message> argument = ArgumentCaptor.forClass(Message.class);
+        Mockito.verify(rabbitTemplate, times(1)).send(
+                eq(DISTRIBUTION_EXCHANGE), eq("fr.health.samu050.info"), argument.capture());
+        assertEquals("Unhandled Content-Type ! Message Content-Type should be set at 'application/json' or 'application/xml'",
+                new String(argument.getValue().getBody()));
     }
 
     @Test
@@ -148,5 +157,9 @@ public class DispatcherTest {
     public void outerRoutingKeyInconsistentWithSenderId() throws IOException {
         Message receivedMessage = createMessage("cisuCreateEdxl.json", XML_MESSAGE_ROUTING_KEY);
         assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
+        ArgumentCaptor<Message> argument = ArgumentCaptor.forClass(Message.class);
+        Mockito.verify(rabbitTemplate, times(1)).send(
+                eq(DISTRIBUTION_EXCHANGE), eq("fr.health.samu050.info"), argument.capture());
+        assert(new String(argument.getValue().getBody()).startsWith("Sender inconsistency for message"));
     }
 }

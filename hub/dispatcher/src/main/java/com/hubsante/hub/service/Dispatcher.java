@@ -76,8 +76,14 @@ public class Dispatcher {
 
     private void checkSenderConsistency(String receivedRoutingKey, EdxlMessage edxlMessage) {
         if (!receivedRoutingKey.equals(edxlMessage.getSenderID())) {
-            log.warn("Sender inconsistency for message {} : message sender is {} but received routing key is {}",
-                    edxlMessage.getDistributionID(), edxlMessage.getSenderID(), receivedRoutingKey);
+            String errorMessage = "Sender inconsistency for message " +
+                    edxlMessage.getDistributionID() +
+                    " : message sender is " +
+                    edxlMessage.getSenderID() +
+                    " but received routing key is " +
+                    receivedRoutingKey;
+            log.warn(errorMessage);
+            rabbitTemplate.send(DISTRIBUTION_EXCHANGE, getSenderInfoQueueName(edxlMessage), new Message(errorMessage.getBytes()));
             throw new AmqpRejectAndDontRequeueException("do not requeue !");
         }
     }
@@ -116,8 +122,12 @@ public class Dispatcher {
         return getRecipientID(edxlMessage) + "." + queueType;
     }
 
+    private String getSenderInfoQueueName(EdxlMessage edxlMessage) {
+        return edxlMessage.getSenderID() + ".info";
+    }
+
     /*
-    ** Deserialize the message according to its content type
+     ** Deserialize the message according to its content type
      */
     private EdxlMessage deserializeMessage(Message message) {
         String receivedEdxl = new String(message.getBody(), StandardCharsets.UTF_8);
@@ -136,6 +146,9 @@ public class Dispatcher {
 
             } else {
                 // TODO (bbo) : send message to sender info queue with distributionID and error type ?
+                String queueName = message.getMessageProperties().getReceivedRoutingKey() + ".info";
+                rabbitTemplate.send(DISTRIBUTION_EXCHANGE, queueName, new Message(
+                        ("Unhandled Content-Type ! Message Content-Type should be set at 'application/json' or 'application/xml'").getBytes()));
                 throw new AmqpRejectAndDontRequeueException("do not requeue ! Unhandled message content type : "
                         + message.getMessageProperties().getContentType());
             }
@@ -147,6 +160,9 @@ public class Dispatcher {
             //  ----
             //  with Spring Rabbit integration, an exception thrown in a @RabbitListener method will end up with message requeuing
             //  by default, except for AmqpRejectAndDontRequeueException which is specially designed for it. Think about moving it to DLQ instead
+            String queueName = message.getMessageProperties().getReceivedRoutingKey() + ".info";
+            rabbitTemplate.send(DISTRIBUTION_EXCHANGE, queueName, new Message(
+                    new String("Could not parse message, invalid format").getBytes()));
             throw new AmqpRejectAndDontRequeueException("do not requeue !");
         }
         return edxlMessage;
@@ -157,7 +173,7 @@ public class Dispatcher {
         // We assume that one second is an acceptable interval
         long queueExpiration = OffsetDateTime.now().plusSeconds(hubConfig.getDefaultTTL()).toEpochSecond();
         long edxlCustomExpiration = edxlMessage.getDateTimeExpires().toEpochSecond();
-        long customDelay = (queueExpiration - edxlCustomExpiration)*1000;
+        long customDelay = (queueExpiration - edxlCustomExpiration) * 1000;
 
         if (customDelay > 0) {
             properties.setExpiration(String.valueOf(customDelay));
