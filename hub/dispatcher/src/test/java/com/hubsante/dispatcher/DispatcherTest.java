@@ -60,6 +60,7 @@ public class DispatcherTest {
     static void registerPgProperties(DynamicPropertyRegistry propertiesRegistry) {
         propertiesRegistry.add("client.preferences.file",
                 () -> Objects.requireNonNull(classLoader.getResource("config/client.preferences.csv")));
+        propertiesRegistry.add("hubsante.default.message.ttl", () -> 5);
     }
 
     @PostConstruct

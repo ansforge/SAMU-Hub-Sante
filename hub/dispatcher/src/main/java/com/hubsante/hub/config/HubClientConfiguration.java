@@ -20,6 +20,9 @@ public class HubClientConfiguration {
 
     @Value("${client.preferences.file}")
     private File configFile;
+    @Value("${hubsante.default.message.ttl}")
+    private String ttlProperty;
+    private long defaultTTL;
 
     private HashMap<String, Boolean> clientPreferences = new HashMap<>();
 
@@ -27,6 +30,9 @@ public class HubClientConfiguration {
     public void init() throws Exception {
 
         try {
+            // We first get the parameterized default message TTL
+            defaultTTL = Long.parseLong(this.ttlProperty);
+
             // We define a custom row processor to read the config file
             // we override the rowProcessed method on the fly to store the config in a HashMap
             // then we define the parser settings and parse the file
@@ -56,5 +62,9 @@ public class HubClientConfiguration {
 
     public HashMap<String, Boolean> getClientPreferences() {
         return clientPreferences;
+    }
+
+    public long getDefaultTTL() {
+        return defaultTTL;
     }
 }
