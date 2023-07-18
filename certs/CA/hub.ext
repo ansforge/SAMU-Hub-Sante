@@ -2,7 +2,9 @@ authorityKeyIdentifier=keyid,issuer
 basicConstraints=CA:FALSE
 subjectAltName = @alt_names
 [alt_names]
+IP.1 = 141.95.163.242
 DNS.1 = localhost
 DNS.2 = rabbitmq
-DNS.3 = hubsante.esante.gouv.fr
-IP.1 = 141.95.163.183
+DNS.3 = messaging.hub.esante.gouv.fr
+DNS.4 = hubsante.esante.gouv.fr
+DNS.5 = 141.95.163.242
