@@ -227,6 +227,16 @@
       "read": ""
     }
   ],
+  "parameters":[
+    {
+      "component":"federation-upstream",
+      "name":"fr.fire",
+      "value": {
+        "uri": "amqps://rabbitmq.dev.scw.ansc.fr:5671/vhost-hub-master"
+      },
+      "vhost":"/"
+    }
+  ],
   "policies": [
     {
       "vhost": "/",
