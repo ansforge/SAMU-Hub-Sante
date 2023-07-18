@@ -4,7 +4,7 @@ const amqp = require('amqplib/callback_api');
 
 const moduleDir = __dirname;
 
-const HUB_SANTE_URL = 'amqps://hubsante.esante.gouv.fr';
+const HUB_SANTE_URL = 'amqps://messaging.hub.esante.gouv.fr';
 const HUB_SANTE_EXCHANGE = 'hubsante';
 const DEMO_CLIENT_IDS = {
   SAMU_A: 'fr.health.samuA', // fr.health.demo.samuA
@@ -40,10 +40,10 @@ module.exports = {
       });
     });
   },
-  close(connection) {
+  close(connection, exit = false) {
     setTimeout(() => {
       connection.close();
-      process.exit(0);
+      if (exit) process.exit(0);
     }, 500);
   },
   messageProperties: {

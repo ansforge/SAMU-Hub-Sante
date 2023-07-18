@@ -7,10 +7,6 @@ const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
-const interceptor = require('express-interceptor');
-const axios = require('axios');
-// const https = require('https');
-const config = require('./config');
 const logger = require('./logger');
 const {
   connect, close, HUB_SANTE_EXCHANGE, DEMO_CLIENT_IDS, messageProperties,
@@ -33,9 +29,9 @@ class ExpressServer {
     this.app = express();
     this.openApiPath = openApiYaml;
     try {
-      this.schema = jsYaml.safeLoad(fs.readFileSync(openApiYaml));
+      this.schema = jsYaml.load(fs.readFileSync(openApiYaml));
     } catch (e) {
-      logger.error('failed to start Express Server', e.message);
+      logger.error('failed to load OpenAPI spec in YAML', e);
     }
     this.setupMiddleware();
   }
@@ -64,20 +60,25 @@ class ExpressServer {
     this.app.use('/ui', express.static(path.join(__dirname, 'ui')));
 
     // Forward UI request to Hub Santé
-    this.app.use('/publish', async (req, res) => {
+    this.app.use('/publish', async (req) => {
       const { key, msg } = req.body;
       connect((connection, channel) => {
-        channel.publish(HUB_SANTE_EXCHANGE, key, Buffer.from(msg), messageProperties);
-        console.log(" [x] Sent %s: '%s'", key, msg);
+        logger.log(" [x] Sending to key %s: '%s'", key, msg);
+        channel.publish(HUB_SANTE_EXCHANGE, `${key}.out.message`, Buffer.from(JSON.stringify(msg)), messageProperties);
         close(connection);
-        res.status(200);
       });
     });
 
     // Send back info from backend to client using long polling
     // 1. Create long polling endpoint
     const longPoll = require('express-longpoll')(this.app, { DEBUG: true });
-    longPoll.create('/poll', { maxListeners: 100 });
+    longPoll.create('/poll', { maxListeners: 100 })
+      .then(() => {
+        logger.info('Created /poll');
+      })
+      .catch((err) => {
+        logger.error('Something went wrong during long polling creation!', err);
+      });
 
     // 2. Subscribe to Hub messages and send them to the client through long polling endpoint
     connect((connection, channel) => {
@@ -86,10 +87,26 @@ class ExpressServer {
         if (clientName === 'SDIS_Z') {
           queue = `${clientId}.in.ack`;
         }
-        console.log(' [*] Waiting for %s messages in %s. To exit press CTRL+C', clientName, queue);
+        logger.info(' [*] Waiting for %s messages in %s. To exit press CTRL+C', clientName, queue);
         channel.consume(queue, (msg) => {
-          console.log(' [x] Received from %s: %s', clientName, msg.content.toString());
-          longPoll.publish('/poll', { clientName, queue, msg: JSON.parse(msg.content) });
+          logger.info(' [x] Received from %s: %s', clientName, msg.content.toString());
+          const d = new Date();
+          const data = {
+            clientName,
+            queue,
+            endpoint: queue,
+            from: clientName,
+            code: 200,
+            time: `${d.toLocaleTimeString().replace(':', 'h')}.${d.getMilliseconds()}`,
+            body: JSON.parse(msg.content),
+          };
+          longPoll.publish('/poll', data)
+            .then(() => {
+              logger.info('Published to /poll:', data);
+            })
+            .catch((err) => {
+              logger.error('Something went wrong during long polling publish!', err);
+            });
         }, {
           noAck: true, // Ref.: https://amqp-node.github.io/amqplib/channel_api.html#channelconsume
         });
@@ -108,13 +125,13 @@ class ExpressServer {
     });
 
     http.createServer(this.app).listen(this.port);
-    console.log(`Listening on port ${this.port}`);
+    logger.info(`Listening on port ${this.port}`);
   }
 
   async close() {
     if (this.server !== undefined) {
       await this.server.close();
-      console.log(`Server on port ${this.port} shut down`);
+      logger.info(`Server on port ${this.port} shut down`);
     }
   }
 }

@@ -1,0 +1,120 @@
+{
+  "distributionID": "samuA_2608323d-507d-4cbf-bf74-52007f8124ea",
+  "senderID": "fr.health.samuA",
+  "dateTimeSent": "2022-09-27T08:23:34+02:00",
+  "dateTimeExpires": "2072-09-27T08:23:34+02:00",
+  "distributionStatus": "Actual",
+  "distributionKind": "Report",
+  "descriptor": {
+    "language": "fr-FR",
+    "explicitAddress": {
+      "explicitAddressScheme": "hubsante",
+      "explicitAddressValue": "fr.health.samuB"
+    }
+  },
+  "content": {
+    "contentObject": {
+      "JsonContent": {
+        "embeddedJsonContent": {
+          "message": {
+            "messageId": "2608323d-507d-4cbf-bf74-52007f8124ea",
+            "sender": {
+              "name": "samuA",
+              "uri": "hubsante:fr.health.samuA"
+            },
+            "sentAt": "2022-09-27T08:23:34+02:00",
+            "msgType": "ALERT",
+            "status": "TEST",
+            "recipients": {
+              "recipient": [
+                {
+                  "name": "samuB",
+                  "uri": "hubsante:fr.health.samuB"
+                }
+              ]
+            },
+            "createEvent": {
+              "eventId": "samuA-AF2",
+              "createdAt": "2022-09-27T08:23:34+02:00",
+              "severity": "UNKNOWN",
+              "eventLocation": {
+                "locId": "111fb03a-6fd9-41e0-8e81-990c45188888",
+                "type": "POINT",
+                "coordsys": "EPSG:4326",
+                "heightRole": "AVE",
+                "coord": [
+                  {
+                    "lat": 48.546462,
+                    "lon": 2.670422
+                  }
+                ],
+                "address": [
+                  "Rue des 3 Moulins",
+                  "Melun",
+                  "(77288)"
+                ],
+                "commune": "Melun",
+                "civicAddress": {
+                  "country": "FR",
+                  "a3": "Melun",
+                  "addcode": "77288",
+                  "rdbr": "Rue des 3 Moulins"
+                }
+              },
+              "primaryAlert": {
+                "alertId": "samuA-AL8",
+                "receivedAt": "2022-09-27T08:23:15+02:00",
+                "reporting": "STANDARD",
+                "alertLocation": {
+                  "type": "POINT",
+                  "coordsys": "ESPG:4326",
+                  "coord": [
+                    {
+                      "lat": 48.546462,
+                      "lon": 2.670422
+                    }
+                  ],
+                  "address": [
+                    "Rue des 3 Moulins",
+                    "Melun",
+                    "(77288)"
+                  ],
+                  "commune": "Melun"
+                },
+                "call": {
+                  "source": "requerant"
+                },
+                "caller": {
+                  "callerURI": "0678958874"
+                },
+                "callTaker": {
+                  "organization": "samuA",
+                  "controlRoom": "samuA",
+                  "calltakerURI": "samuA-AL8@localhost|tel:undefined#0613"
+                },
+                "alertCode": {
+                  "version": "latest",
+                  "whatsHappen": {
+                    "code": "C01.01.00",
+                    "label": "Accident de la circulation"
+                  },
+                  "locationKind": {
+                    "code": "L02.00.00",
+                    "label": "Circulation / transport"
+                  },
+                  "healthMotive": {
+                    "code": "M01.01",
+                    "label": "Malaise cardiaque"
+                  },
+                  "victims": {
+                    "count": "1"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

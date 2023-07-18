@@ -11,5 +11,5 @@ const msg = fs.readFileSync(args.slice(1).join(' ') || 'samuA_to_samuB.json');
 connect((connection, channel) => {
   channel.publish(HUB_SANTE_EXCHANGE, key, Buffer.from(msg), messageProperties);
   console.log(" [x] Sent %s: '%s'", key, msg);
-  close(connection);
+  close(connection, true);
 });

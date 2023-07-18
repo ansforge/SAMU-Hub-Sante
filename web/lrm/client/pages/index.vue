@@ -2,10 +2,12 @@
   <v-row justify="center">
     <v-col cols="12" md="7">
       <v-card style="height: 86vh; overflow-y: auto;">
-        <v-card-title class="headline">Formulaire</v-card-title>
+        <v-card-title class="headline">
+          Formulaire
+        </v-card-title>
         <v-card-text>
           <v-alert type="info" dense class="mb-0">
-            Ce formulaire permet d'envoyer des requêtes vers le bandeau SI-SAMU
+            Ce formulaire permet d'envoyer des messages via le Hub Santé
           </v-alert>
           <v-card-title>Infos cœur</v-card-title>
           <v-form>
@@ -15,62 +17,36 @@
                 md="6"
               >
                 <v-combobox
-                  v-model="form.urlSiSamu"
-                  :items="items.urlSiSamu"
-                  label="URL SI-SAMU"
+                  v-model="form.clientId"
+                  :items="items.clientId"
+                  label="Identification"
                   hide-details="auto"
                   dense
-                ></v-combobox>
+                />
               </v-col>
               <v-col
                 cols="12"
                 md="6"
               >
                 <v-combobox
-                  v-model="form.idCrra"
-                  :items="items.idCrra"
-                  label="idCrra"
+                  v-model="form.routingKey"
+                  :items="items.routingKey"
+                  label="routingKey"
                   dense
-                ></v-combobox>
-              </v-col>
-            </v-row>
-            <v-row>
-              <v-col
-                cols="12"
-                md="6"
-              >
-                <v-combobox
-                  v-model="form.idNatPs"
-                  :items="items.idNatPs"
-                  label="idNatPs"
-                  dense
-                ></v-combobox>
-              </v-col>
-              <v-col
-                cols="12"
-                md="6"
-              >
-                <v-combobox
-                  v-model="form.idDossier"
-                  :items="items.idDossier"
-                  label="idDossier"
-                  hide-details="auto"
-                  dense
-                ></v-combobox>
+                />
               </v-col>
             </v-row>
           </v-form>
           <RequestForm
-            v-if="swagger"
             v-for="(requestInfos, request) in requests"
+            v-if="swagger"
             :key="request"
-            :swagger="swagger"
-            :completeForm="form"
-            :requestInfos="requestInfos"
-            :items="items"
             v-model="form"
+            :swagger="swagger"
+            :complete-form="form"
+            :request-infos="requestInfos"
+            :items="items"
             @submit="submit(request)"
-            @save="save(request)"
           />
         </v-card-text>
       </v-card>
@@ -79,23 +55,27 @@
       <v-card style="height: 86vh; overflow-y: auto;">
         <v-card-title class="headline">
           Messages
-          <v-badge :content="messages.length"/>
+          <v-badge :content="messages.length" />
         </v-card-title>
         <v-card-text>
           <transition-group name="message">
-            <div v-for="{direction, endpoint, time, receivedTime, code, body, from} in messages" :key="time"
-                 class="message mb-4">
-              <v-badge :color="code === 200 ? 'green' : 'red'" :content="code"></v-badge>
+            <div
+              v-for="{direction, endpoint, time, receivedTime, code, body, from} in messages"
+              :key="time"
+              class="message mb-4"
+            >
+              <v-badge :color="code === 200 ? 'green' : 'red'" :content="code" />
 
-              <pre style="white-space: pre-wrap; background-color: rgba(0, 0, 0, 0.05);"
-                   class="elevation-1 pa-2 mt-n3"><span v-if="from">{{ from }}<br></span>{{ direction }}{{
+              <pre
+                style="white-space: pre-wrap; background-color: rgba(0, 0, 0, 0.05);"
+                class="elevation-1 pa-2 mt-n3"
+              ><span v-if="from">{{ from }}<br></span>{{ direction }}{{
                   endpoint
                 }}<br>{{ time }} -> {{ receivedTime }}<br>{{
                   body
-                }}</pre>
+              }}</pre>
             </div>
           </transition-group>
-
         </v-card-text>
       </v-card>
     </v-col>
@@ -105,12 +85,7 @@
 <script>
 export default {
   name: 'IndexPage',
-  head() {
-    return {
-      title: 'Interface SI-SAMU tester',
-    }
-  },
-  data() {
+  data () {
     return {
       swagger: null,
       messages: [{
@@ -119,7 +94,7 @@ export default {
         time: this.time(),
         receivedTime: this.time(),
         code: 200,
-        body: {body: 'Page loaded successfully!'}
+        body: { body: 'Page loaded successfully!' }
       }],
       requests: {
         clickToCall: {
@@ -133,11 +108,11 @@ export default {
           actionName: 'Corréler',
           properties: [],
           justCopiedToClipboard: false
-        },
+        }
       },
       items: {
-        urlSiSamu: ['http://localhost:8080', 'https://www.portail.vft.si-samu.fr', 'https://www.portail.testsutilisateurs.si-samu.fr', 'https://www.portail.preprod.si-samu.fr', 'https://www.portail.formation.si-samu.fr'],
-        idCrra: ['FR090', 'FR42A', 'FR870', 'FR080', 'FR530'],
+        clientId: ['fr.health.samuA', 'fr.health.samuB', 'fr.fire.nexsis.sdisZ'],
+        routingKey: ['fr.health.samuA.in.message', 'fr.health.samuB.in.message', 'fr.fire.nexsis.sdisZ.in.ack'],
         idNatPs: ['00B9814506', '1234', '518751275100020/0000000613'],
         numTel: ['0606060606'],
         idDossier: ['22298003', 'idDossier', '2301236789'],
@@ -160,8 +135,8 @@ export default {
         }
       },
       form: {
-        urlSiSamu: 'https://www.portail.vft.si-samu.fr',
-        idCrra: 'FR090',
+        clientId: 'fr.health.samuA',
+        routingKey: 'fr.health.samuB.in.message',
         idNatPs: '00B9814506',
         numTel: '0606060606',
         idDossier: '2301236789',
@@ -177,107 +152,79 @@ export default {
       }
     }
   },
-  mounted() {
+  head () {
+    return {
+      title: 'Interface SI-SAMU tester'
+    }
+  },
+  mounted () {
     // To automatically generate the UI and input fields based on the swagger
     fetch('swagger-si-samu.json')
-      .then((response) => response.json())
+      .then(response => response.json())
       .then((swagger) => {
-        this.swagger = swagger;
-        console.log(swagger);
+        this.swagger = swagger
         // Collecting properties for each request
-        this.requests.clickToCall.properties = swagger.definitions.DemandeAppelSortant.properties;
-        this.requests.correlation.properties = swagger.definitions.CorrelationDossier.properties;
-      });
+        this.requests.clickToCall.properties = swagger.definitions.DemandeAppelSortant.properties
+        this.requests.correlation.properties = swagger.definitions.CorrelationDossier.properties
+      })
     // Start listening to server events
-    this.longPolling();
+    this.longPolling()
   },
   methods: {
-    async longPolling() {
-      this.$axios.$get('/poll', {timeout: 10000}).then((response) => {
+    longPolling () {
+      this.$axios.$get('/poll', { timeout: 10000 }).then((response) => {
         try {
-          response.body = JSON.parse(response.body);
-        } catch (e) {
+          response.body = JSON.parse(response.body)
+        } catch (error) {
+          console.error('Erreur lors de la lecture du message', error)
         }
         this.messages.unshift({
           ...response,
           direction: '→ ',
           receivedTime: this.time()
-        });
-        this.longPolling();
-      }).catch(error => {
-        console.log(error)
-        this.longPolling();
+        })
+        this.longPolling()
+      }).catch((error) => {
+        if (error.code === 'ECONNABORTED') {
+          console.info('Expiration du long polling', error)
+        } else {
+          console.error('Erreur lors de la récupération du message', error)
+        }
+        this.longPolling()
       })
     },
-    time() {
-      const d = new Date();
-      return d.toLocaleTimeString().replace(':', 'h') + '.' + d.getMilliseconds();
+    time () {
+      const d = new Date()
+      return d.toLocaleTimeString().replace(':', 'h') + '.' + d.getMilliseconds()
     },
-    getSpecificValues(request) {
+    getSpecificValues (request) {
       return Object.fromEntries(
         Object.keys(this.requests[request].properties)
           .filter(key => key in this.form)
           .map(key => [key, this.form[key]])
-      );
+      )
     },
-    getCallData(request) {
-      let endpoint, caller, method;
-      if (request === 'clickToCall') {
-        endpoint = '/si-samu-back-synchro-lrm-web/api/v1/cti/' + this.form.idCrra + '/agents/' + this.form.idNatPs.replace('/', '%2F') + '/calls';
-        caller = this.$axios.$post;
-        method = 'POST'
-      } else if (request === 'correlation') {
-        endpoint = '/si-samu-back-synchro-lrm-web/api/v1/cti/' + this.form.idCrra + '/dossiers/' + this.form.idDossier;
-        caller = this.$axios.$put;
-        method = 'PUT';
-      } else {
-        console.error('Unknown request', request);
-      }
-      return {
-        caller,
-        method,
-        endpoint: this.form.urlSiSamu + endpoint,
-        data: this.getSpecificValues(request)
-      };
-    },
-    save(request) {
-      const {method, endpoint, data} = this.getCallData(request);
-      const curlRequest = `curl --key certif.key --cert certif.crt -v \\
-                    -X ${method} -k -H 'Content-Type: application/json' \\
-                    -i '${endpoint}' --data '${JSON.stringify(data)}'`;
-      console.log(curlRequest);
-      // Copy to clipboard
-      navigator.clipboard.writeText(curlRequest);
-      // Toggle copied icon
-      this.requests[request].justCopiedToClipboard = true;
-      setTimeout(() => this.requests[request].justCopiedToClipboard = false, 1000);
-    },
-    submit(request) {
-      const {caller, endpoint, data} = this.getCallData(request);
-      const time = this.time();
-      // Could be using Swagger generated client, but it would validate fields!
-      caller(
-        '/forward',
-        {endpoint, data}
+    async submit (request) {
+      console.log('submit', request)
+      const time = this.time()
+      const data = await (await fetch('samuA_to_samuB.json')).json()
+      console.log('Data', data)
+      // Could be done using Swagger generated client, but it would validate fields!
+      this.$axios.$post(
+        '/publish',
+        { key: this.form.clientId, msg: data }
       ).then((response) => {
-        console.log(response);
+        console.log(response)
         this.messages.unshift({
           direction: '← ',
-          endpoint,
+          clientId: this.form.clientId,
+          routingKey: this.form.routingKey,
           time,
-          receivedTime: this.time(),
           code: 200,
-          body: response
-        });
-      }).catch(error => {
-        this.messages.unshift({
-          direction: '← ',
-          endpoint,
-          time,
-          receivedTime: this.time(),
-          code: error.response.status,
-          body: error.response.data
-        });
+          body: data
+        })
+      }).catch((error) => {
+        console.error("Erreur lors de l'envoi du message", error)
       })
     }
   }
