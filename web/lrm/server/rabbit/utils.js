@@ -17,10 +17,7 @@ const opts = {
   // cert: fs.readFileSync(path.join(moduleDir, 'certs/local_test.crt')), // client cert
   // key: fs.readFileSync(path.join(moduleDir, 'certs/local_test.key')), // client key
   passphrase: 'certPassword', // passphrase for key
-  ca: [
-    fs.readFileSync(path.join(moduleDir, 'certs/hub.crt')),
-    fs.readFileSync(path.join(moduleDir, 'certs/rootCA.crt')),
-  ], // array of trusted CA certs
+  ca: [fs.readFileSync(path.join(moduleDir, 'certs/rootCA.crt'))], // array of trusted CA certs
   // Ref.: https://github.com/amqp-node/amqplib/issues/105
   credentials: amqp.credentials.external(),
 };
