@@ -31,23 +31,6 @@ minikube delete --profile minikube
 watch kubectl get all
 ```
 
-# Dispatcher
-```bash
-# Build and upload image to registry accessible in OVH
-gradle jib --image=romainfd/dispatcher:latest
-# Equivalent to
-# gradle jibDockerBuild --image=romainfd/dispatcher:latest
-# docker push romainfd/dispatcher:latest
-
-# Apply Deployment
-kubectl apply -f dispatcher.yaml
-# Reapply deployment with new image
-kubectl replace --force -f dispatcher.yaml
-
-# Get Pod logs
-kubectl logs -l app=dispatcher --prefix --tail -1 -f
-```
-
 # RabbitMQ Kubernetes Operator
 ## Setup
 Ref.: https://www.rabbitmq.com/kubernetes/operator/quickstart-operator.html
@@ -81,6 +64,27 @@ kubectl exec -it rabbitmq-server-0 -- rabbitmqctl import_definitions /tmp/rabbit
 kubectl delete pods -l app.kubernetes.io/component=rabbitmq
 ```
 
+# Dispatcher
+```bash
+# Build and upload image to registry accessible in OVH
+gradle jib --image=romainfd/dispatcher:latest
+# Equivalent to
+# gradle jibDockerBuild --image=romainfd/dispatcher:latest
+# docker push romainfd/dispatcher:latest
+
+# Apply Deployment
+kubectl create secret generic dispatcher-tls-passwords --from-literal=truststore-password=trustStore --from-literal=keystore-password=replaceMe
+kubectl create secret generic dispatcher-p12 --from-file=../../certs/users/dispatcher/dispatcher.p12
+kubectl create secret generic trust-store --from-file=../../certs/trustStore
+
+kubectl apply -f dispatcher.yaml
+# Reapply deployment with new image
+kubectl replace --force -f dispatcher.yaml
+
+# Get Pod logs
+kubectl logs -l app=dispatcher --prefix --tail -1 -f
+```
+
 ## Local development
 ```bash
 # Localhost exposition of the Hub
@@ -92,9 +96,9 @@ kubectl port-forward "service/rabbitmq" 5671
 
 # Run the rest of the pipeline locally (with dispatcher first to create exchange / queues / bindings
 gradle bootRun --args='--spring.profiles.active=local,rfo'
-CLIENT_ID=Target; gradle -Pmain=com.hubsante.ConsumerRun run --args "$CLIENT_ID.in.message"
-CLIENT_ID=Origin; gradle -Pmain=com.hubsante.ConsumerRun run --args "$CLIENT_ID.in.ack"
-CLIENT_ID=Origin; gradle -Pmain=com.hubsante.ProducerRun run --args "$CLIENT_ID.out.message src/main/resources/createEventMessage.json"
+CLIENT_ID=fr.health.samuA; gradle -Pmain=com.hubsante.ConsumerRun run --args "$CLIENT_ID.message json"
+CLIENT_ID=fr.fire.nexsis.sdisZ; gradle -Pmain=com.hubsante.ConsumerRun run --args "$CLIENT_ID.ack xml"
+CLIENT_ID=fr.fire.nexsis.sdisZ; gradle -Pmain=com.hubsante.ProducerRun run --args "$CLIENT_ID src/main/resources/sdisZ_to_samuA.xml"
 ```
 
 # Web Load Balancer & Ingress

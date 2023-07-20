@@ -13,60 +13,83 @@
       "auto_delete": false,
       "internal": false,
       "arguments": {}
+    },
+    {
+      "name": "distribution",
+      "vhost": "/",
+      "type": "direct",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
     }
   ],
   "queues": [
     {
-      "name": "*.out.*",
+      "name": "dispatch",
       "vhost": "/",
       "durable": true,
       "auto_delete": false,
       "arguments": {}
     },
     {
-      "name": "fr.health.samuA.in.message",
+      "name": "fr.health.samuA.message",
       "vhost": "/",
       "durable": true,
       "auto_delete": false,
       "arguments": {}
     },
     {
-      "name": "fr.health.samuA.in.info",
+      "name": "fr.health.samuA.info",
       "vhost": "/",
       "durable": true,
       "auto_delete": false,
       "arguments": {}
     },
     {
-      "name": "fr.health.samuA.in.ack",
+      "name": "fr.health.samuA.ack",
       "vhost": "/",
       "durable": true,
       "auto_delete": false,
       "arguments": {}
     },
     {
-      "name": "fr.health.samuB.in.message",
+      "name": "fr.health.samuB.message",
       "vhost": "/",
       "durable": true,
       "auto_delete": false,
       "arguments": {}
     },
     {
-      "name": "fr.health.samuB.in.info",
+      "name": "fr.health.samuB.info",
       "vhost": "/",
       "durable": true,
       "auto_delete": false,
       "arguments": {}
     },
     {
-      "name": "fr.health.samuB.in.ack",
+      "name": "fr.health.samuB.ack",
       "vhost": "/",
       "durable": true,
       "auto_delete": false,
       "arguments": {}
     },
     {
-      "name": "fr.fire.nexsis.sdisZ.in.message",
+      "name": "fr.fire.nexsis.sdisZ.message",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "fr.fire.nexsis.sdisZ.info",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "fr.fire.nexsis.sdisZ.ack",
       "vhost": "/",
       "durable": true,
       "auto_delete": false,
@@ -77,25 +100,81 @@
     {
       "source": "hubsante",
       "vhost": "/",
-      "destination": "*.out.*",
+      "destination": "dispatch",
       "destination_type": "queue",
-      "routing_key": "#.out.message",
+      "routing_key": "#",
       "arguments": {}
     },
     {
-      "source": "hubsante",
+      "source": "distribution",
       "vhost": "/",
-      "destination": "*.out.*",
+      "destination": "fr.health.samuA.message",
       "destination_type": "queue",
-      "routing_key": "#.out.info",
+      "routing_key": "fr.health.samuA.message",
       "arguments": {}
     },
     {
-      "source": "hubsante",
+      "source": "distribution",
       "vhost": "/",
-      "destination": "*.out.*",
+      "destination": "fr.health.samuA.ack",
       "destination_type": "queue",
-      "routing_key": "#.out.ack",
+      "routing_key": "fr.health.samuA.ack",
+      "arguments": {}
+    },
+    {
+      "source": "distribution",
+      "vhost": "/",
+      "destination": "fr.health.samuA.info",
+      "destination_type": "queue",
+      "routing_key": "fr.health.samuA.info",
+      "arguments": {}
+    },
+    {
+      "source": "distribution",
+      "vhost": "/",
+      "destination": "fr.health.samuB.message",
+      "destination_type": "queue",
+      "routing_key": "fr.health.samuB.message",
+      "arguments": {}
+    },
+    {
+      "source": "distribution",
+      "vhost": "/",
+      "destination": "fr.health.samuB.ack",
+      "destination_type": "queue",
+      "routing_key": "fr.health.samuB.ack",
+      "arguments": {}
+    },
+    {
+      "source": "distribution",
+      "vhost": "/",
+      "destination": "fr.health.samuB.info",
+      "destination_type": "queue",
+      "routing_key": "fr.health.samuB.info",
+      "arguments": {}
+    },
+    {
+      "source": "distribution",
+      "vhost": "/",
+      "destination": "fr.fire.nexsis.sdisZ.message",
+      "destination_type": "queue",
+      "routing_key": "fr.fire.nexsis.sdisZ.message",
+      "arguments": {}
+    },
+    {
+      "source": "distribution",
+      "vhost": "/",
+      "destination": "fr.fire.nexsis.sdisZ.ack",
+      "destination_type": "queue",
+      "routing_key": "fr.fire.nexsis.sdisZ.ack",
+      "arguments": {}
+    },
+    {
+      "source": "distribution",
+      "vhost": "/",
+      "destination": "fr.fire.nexsis.sdisZ.info",
+      "destination_type": "queue",
+      "routing_key": "fr.fire.nexsis.sdisZ.info",
       "arguments": {}
     }
   ],
@@ -136,8 +215,8 @@
       "user": "dispatcher",
       "vhost": "/",
       "configure": "",
-      "read": "\\*.out.\\*",
-      "write": "amq.default"
+      "read": "dispatch",
+      "write": "distribution"
     },
     {
       "user": "fr.health.samuA",
@@ -166,24 +245,22 @@
       "exchange": "hubsante",
       "vhost": "/",
       "user": "fr.health.samuA",
-      "write": "fr.health.samuA.*",
+      "write": "^fr.health.samuA$",
       "read": ""
     },
     {
       "exchange": "hubsante",
       "vhost": "/",
       "user": "fr.health.samuB",
-      "write": "fr.health.samuB.*",
-      "read": "",
-      "configure": "fr.health.samuB.*"
+      "write": "^fr.health.samuB$",
+      "read": ""
     },
     {
       "exchange": "hubsante",
       "vhost": "/",
       "user": "fr.fire.nexsis.sdisZ",
-      "write": "fr.fire.nexsis.sdisZ.*",
-      "read": "",
-      "configure": "fr.fire.nexsis.sdisZ.*"
+      "write": "^fr.fire.nexsis.sdisZ$",
+      "read": ""
     }
   ]
 }

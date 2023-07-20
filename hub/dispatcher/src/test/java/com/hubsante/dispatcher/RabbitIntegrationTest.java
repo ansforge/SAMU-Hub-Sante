@@ -3,15 +3,10 @@ package com.hubsante.dispatcher;
 import com.hubsante.model.edxl.EdxlMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.*;
-import org.springframework.amqp.AmqpException;
 import org.springframework.amqp.core.Message;
-import org.springframework.amqp.core.MessageProperties;
-import org.springframework.amqp.core.MessagePropertiesBuilder;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
-import java.io.File;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 
 import static com.hubsante.dispatcher.utils.MessageTestUtils.createMessage;
 import static org.junit.jupiter.api.Assertions.*;
@@ -48,7 +43,25 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
             }
         });
 
-        Message published = createMessage("samuB_to_nexsis.xml", SAMU_A_OUTER_MESSAGE_ROUTING_KEY);
+        Message published = createMessage("samuB_to_nexsis.xml", SAMU_B_WRONG_OUTER_MESSAGE_ROUTING_KEY);
+        samuB_client.sendAndReceive(HUBSANTE_EXCHANGE, SAMU_B_WRONG_OUTER_MESSAGE_ROUTING_KEY, published);
+
+        assertTrue(failed);
+    }
+
+    @Test
+    @DisplayName("publish with authorized but inconsistent routing key fails")
+    public void publishWithAuthorizedButInconsistentRoutingKeyFails() throws Exception {
+        String p12Path = classLoader.getResource("config/certs/samuB/samuB.p12").getPath();
+        RabbitTemplate samuB_client = getCustomRabbitTemplate(p12Path, "samuB");
+
+        samuB_client.setConfirmCallback((correlationData, ack, cause) -> {
+            if (!ack) {
+                failed = true;
+            }
+        });
+
+        Message published = createMessage("samuA_to_nexsis.xml", SAMU_B_OUTER_MESSAGE_ROUTING_KEY);
         samuB_client.sendAndReceive(HUBSANTE_EXCHANGE, SAMU_A_OUTER_MESSAGE_ROUTING_KEY, published);
 
         assertTrue(failed);
