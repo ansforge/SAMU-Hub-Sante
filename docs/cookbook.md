@@ -17,7 +17,7 @@ CLIENT_ID=fr.fire.nexsis.sdisZ; gradle run --args "$CLIENT_ID.ack xml"
 
 ## Envoyer un message sur $CLIENT_ID.out.message avec un Producer
 # Shell 3
-CLIENT_ID=fr.fire.nexsis.sdisZ; gradle -Pmain=com.hubsante.ProducerRun run --args "$CLIENT_ID xml src/main/resources/sdisZ_to_samuA.xml"
+CLIENT_ID=fr.fire.nexsis.sdisZ; gradle -Pmain=com.hubsante.ProducerRun run --args "$CLIENT_ID src/main/resources/sdisZ_to_samuA.xml"
 
 ## Vous pouvez également tester le fonctionnement avec un client communiquant en XML avec NexSIS
 ## en remplaçant le CLIENT_ID samu par "fr.health.samuB"
