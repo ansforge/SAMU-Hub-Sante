@@ -106,7 +106,7 @@ public class DispatcherTest {
         Message receivedMessage = createMessage("cisuCreateEdxl.xml", MessageProperties.CONTENT_TYPE_XML, XML_MESSAGE_ROUTING_KEY);
         receivedMessage.getMessageProperties().setHeader(DLQ_REASON, "expired");
         receivedMessage.getMessageProperties().setHeader(DLQ_MESSAGE_ORIGIN, "fr.fire.nexsis.sdis23.message");
-        dispatcher.handleDLQ(receivedMessage);
+        dispatcher.dispatchDLQ(receivedMessage);
 
         ArgumentCaptor<Message> argument = ArgumentCaptor.forClass(Message.class);
         Mockito.verify(rabbitTemplate, times(1)).send(

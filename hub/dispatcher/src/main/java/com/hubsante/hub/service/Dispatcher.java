@@ -32,7 +32,7 @@ public class Dispatcher {
         this.hubConfig = hubConfig;
     }
 
-    @RabbitListener(queues = CONSUME_QUEUE_NAME)
+    @RabbitListener(queues = DISPATCH_QUEUE_NAME)
     public void dispatch(Message message) {
         String receivedRoutingKey = message.getMessageProperties().getReceivedRoutingKey();
         // Deserialize the message according to its content type
@@ -47,12 +47,12 @@ public class Dispatcher {
         rabbitTemplate.send(DISTRIBUTION_EXCHANGE, queueName, forwardedMsg);
     }
 
-    @RabbitListener(queues = DISPATCH_DLQ)
-    public void handleDLQ(Message message) {
+    @RabbitListener(queues = DISPATCH_DLQ_NAME)
+    public void dispatchDLQ(Message message) {
         EdxlMessage edxlMessage = deserializeMessage(message);
-        String queueName = edxlMessage.getSenderID() + ".info";
+        String queueName = getSenderInfoQueueName(edxlMessage);
         // log message & error
-        log.warn("Message {} has been moved to dead-letter-queue; reason was {}",
+        log.warn("Message {} has been read from dead-letter-queue; reason was {}",
                 edxlMessage.getDistributionID(),
                 message.getMessageProperties().getHeader(DLQ_REASON));
         // send info
@@ -145,7 +145,6 @@ public class Dispatcher {
                 log.info(" [x] Received from '" + message.getMessageProperties().getReceivedRoutingKey() + "':" + edxlHandler.prettyPrintXmlEDXL(edxlMessage));
 
             } else {
-                // TODO (bbo) : send message to sender info queue with distributionID and error type ?
                 String queueName = message.getMessageProperties().getReceivedRoutingKey() + ".info";
                 rabbitTemplate.send(DISTRIBUTION_EXCHANGE, queueName, new Message(
                         ("Unhandled Content-Type ! Message Content-Type should be set at 'application/json' or 'application/xml'").getBytes()));
@@ -155,11 +154,6 @@ public class Dispatcher {
 
         } catch (JsonProcessingException e) {
             log.error("Could not parse message " + receivedEdxl + " coming from " + message.getMessageProperties().getConsumerQueue(), e);
-            // TODO (bbo) : if we end using a "INFO" channel, we should send an INFO message for this type of errors.
-            //  if the message is wrongly formatted client-side we should inform the client.
-            //  ----
-            //  with Spring Rabbit integration, an exception thrown in a @RabbitListener method will end up with message requeuing
-            //  by default, except for AmqpRejectAndDontRequeueException which is specially designed for it. Think about moving it to DLQ instead
             String queueName = message.getMessageProperties().getReceivedRoutingKey() + ".info";
             rabbitTemplate.send(DISTRIBUTION_EXCHANGE, queueName, new Message(
                     new String("Could not parse message, invalid format").getBytes()));
