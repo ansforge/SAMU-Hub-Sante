@@ -12,8 +12,8 @@ import javax.annotation.PostConstruct;
 public class AmqpConfiguration {
     public static final String HUBSANTE_EXCHANGE = "hubsante";
     public static final String DISTRIBUTION_EXCHANGE = "distribution";
-    public static final String CONSUME_QUEUE_NAME = "dispatch";
-    public static final String DISPATCH_DLQ = "dispatch.dlq";
+    public static final String DISPATCH_QUEUE_NAME = "dispatch";
+    public static final String DISPATCH_DLQ_NAME = "dispatch.dlq";
     public static final String DLQ_REASON = "x-first-death-reason";
     public static final String DLQ_MESSAGE_ORIGIN = "x-first-death-queue";
 

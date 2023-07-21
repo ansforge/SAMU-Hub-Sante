@@ -69,7 +69,7 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
 
     @Test
     @DisplayName("expired message should be rejected")
-    public void expiredMessageShouldBeRejected() throws Exception {
+    public void rejectExpiredMessage() throws Exception {
         Message published = createMessage("samuB_to_nexsis.xml", SAMU_B_OUTER_MESSAGE_ROUTING_KEY);
         RabbitTemplate samuB_client = getCustomRabbitTemplate(classLoader.getResource("config/certs/samuB/samuB.p12").getPath(), "samuB");
         samuB_client.sendAndReceive(HUBSANTE_EXCHANGE, SAMU_B_OUTER_MESSAGE_ROUTING_KEY, published);
@@ -88,13 +88,13 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
 
     @Test
     @DisplayName("message expired by publisher rule should be rejected")
-    public void rejectPublisherExpirationLowerThanHubTTL() throws Exception {
+    public void rejectExpiredMessageWithPublisherExpirationLowerThanHubTTL() throws Exception {
         Message published = createMessage("samuB_to_nexsis.xml", SAMU_B_OUTER_MESSAGE_ROUTING_KEY);
         published.getMessageProperties().setExpiration("100");
         RabbitTemplate samuB_client = getCustomRabbitTemplate(classLoader.getResource("config/certs/samuB/samuB.p12").getPath(), "samuB");
         samuB_client.sendAndReceive(HUBSANTE_EXCHANGE, SAMU_B_OUTER_MESSAGE_ROUTING_KEY, published);
 
-        Thread.sleep(100);
+        Thread.sleep(200);
 
         Message infoMsg = samuB_client.receive(SAMU_B_INFO_QUEUE);
         assertNotNull(infoMsg);
@@ -109,7 +109,7 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
         RabbitTemplate samuB_client = getCustomRabbitTemplate(classLoader.getResource("config/certs/samuB/samuB.p12").getPath(), "samuB");
         samuB_client.sendAndReceive(HUBSANTE_EXCHANGE, SAMU_B_OUTER_MESSAGE_ROUTING_KEY, noContentTypeMsg);
 
-        Thread.sleep(100);
+        Thread.sleep(200);
 
         Message infoMsg = samuB_client.receive(SAMU_B_INFO_QUEUE);
         assertNotNull(infoMsg);
