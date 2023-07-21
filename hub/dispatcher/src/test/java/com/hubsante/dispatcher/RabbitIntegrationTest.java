@@ -7,6 +7,7 @@ import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
 import java.nio.charset.StandardCharsets;
+import java.time.OffsetDateTime;
 
 import static com.hubsante.dispatcher.utils.MessageTestUtils.createMessage;
 import static org.junit.jupiter.api.Assertions.*;
@@ -75,10 +76,7 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
         samuB_client.sendAndReceive(HUBSANTE_EXCHANGE, SAMU_B_OUTER_MESSAGE_ROUTING_KEY, published);
 
         Thread.sleep(10000);
-
-        RabbitTemplate nexsis_client = getCustomRabbitTemplate(classLoader.getResource("config/certs/sdisZ/sdisZ.p12").getPath(), "sdisZ");
-        Message received = nexsis_client.receive(SDIS_Z_MESSAGE_QUEUE);
-        assertNull(received);
+        assertRecipientDidNotReceive("sdisZ", SDIS_Z_MESSAGE_QUEUE);
 
         Message infoMsg = samuB_client.receive(SAMU_B_INFO_QUEUE);
         assertNotNull(infoMsg);
@@ -96,6 +94,28 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
 
         Thread.sleep(200);
 
+        assertRecipientDidNotReceive("sdisZ", SDIS_Z_MESSAGE_QUEUE);
+        Message infoMsg = samuB_client.receive(SAMU_B_INFO_QUEUE);
+        assertNotNull(infoMsg);
+        String errorMsg = new String(infoMsg.getBody());
+        assert(errorMsg.endsWith("has not been consumed on fr.fire.nexsis.sdisZ.message"));
+    }
+
+    @Test
+    @DisplayName("message expired according to EDXM.dateTimeExpires should be rejected")
+    public void rejectExpirationMessageWithEdxlDateTimeExpiresLowerThanHubTTL() throws Exception {
+        Message source = createMessage("samuB_to_nexsis.xml", SAMU_B_OUTER_MESSAGE_ROUTING_KEY);
+        EdxlMessage edxlMessage = converter.deserializeXmlEDXL(new String(source.getBody(), StandardCharsets.UTF_8));
+        edxlMessage.setDateTimeExpires(OffsetDateTime.now().plusNanos(100000));
+        byte[] edxlBytes = converter.serializeXmlEDXL(edxlMessage).getBytes();
+        Message published = new Message(edxlBytes, source.getMessageProperties());
+
+        RabbitTemplate samuB_client = getCustomRabbitTemplate(classLoader.getResource("config/certs/samuB/samuB.p12").getPath(), "samuB");
+        samuB_client.sendAndReceive(HUBSANTE_EXCHANGE, SAMU_B_OUTER_MESSAGE_ROUTING_KEY, published);
+
+        Thread.sleep(200);
+
+        assertRecipientDidNotReceive("sdisZ", SDIS_Z_MESSAGE_QUEUE);
         Message infoMsg = samuB_client.receive(SAMU_B_INFO_QUEUE);
         assertNotNull(infoMsg);
         String errorMsg = new String(infoMsg.getBody());
@@ -111,9 +131,18 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
 
         Thread.sleep(200);
 
+        assertRecipientDidNotReceive("sdisZ", SDIS_Z_MESSAGE_QUEUE);
         Message infoMsg = samuB_client.receive(SAMU_B_INFO_QUEUE);
         assertNotNull(infoMsg);
         String errorMsg = new String(infoMsg.getBody());
         assertEquals("Unhandled Content-Type ! Message Content-Type should be set at 'application/json' or 'application/xml'", errorMsg);
+    }
+
+    private void assertRecipientDidNotReceive(String client, String queueName) throws Exception {
+        RabbitTemplate nexsis_client = getCustomRabbitTemplate(
+                classLoader.getResource("config/certs/" + client + "/" + client + ".p12").getPath(),
+                client);
+        Message received = nexsis_client.receive(queueName);
+        assertNull(received);
     }
 }
