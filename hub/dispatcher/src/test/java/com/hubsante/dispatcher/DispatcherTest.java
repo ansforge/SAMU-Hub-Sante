@@ -12,6 +12,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.springframework.amqp.AmqpRejectAndDontRequeueException;
 import org.springframework.amqp.core.Message;
+import org.springframework.amqp.core.MessageDeliveryMode;
 import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.rabbit.test.context.SpringRabbitTest;
@@ -161,5 +162,19 @@ public class DispatcherTest {
         Mockito.verify(rabbitTemplate, times(1)).send(
                 eq(DISTRIBUTION_EXCHANGE), eq("fr.health.samu050.info"), argument.capture());
         assert(new String(argument.getValue().getBody()).startsWith("Sender inconsistency for message"));
+    }
+
+    @Test
+    @DisplayName("should forward message with persistent delivery mode")
+    public void forwardMessageWithPersistentDeliveryMode() throws IOException {
+        Message receivedMessage = createMessage("cisuCreateEdxl.xml", MessageProperties.CONTENT_TYPE_XML, XML_MESSAGE_ROUTING_KEY);
+        receivedMessage.getMessageProperties().setDeliveryMode(MessageDeliveryMode.NON_PERSISTENT);
+        dispatcher.dispatch(receivedMessage);
+
+        ArgumentCaptor<Message> sentMessage = ArgumentCaptor.forClass(Message.class);
+        Mockito.verify(rabbitTemplate, times(1)).send(
+                eq(DISTRIBUTION_EXCHANGE), eq("fr.fire.nexsis.sdis23.message"), sentMessage.capture());
+
+        assertEquals(MessageDeliveryMode.PERSISTENT, sentMessage.getValue().getMessageProperties().getDeliveryMode());
     }
 }

@@ -93,6 +93,9 @@ public class Dispatcher {
         String senderID = edxlMessage.getSenderID();
         String edxlString;
 
+        if (properties.getDeliveryMode().equals(MessageDeliveryMode.NON_PERSISTENT)) {
+            properties.setDeliveryMode(MessageDeliveryMode.PERSISTENT);
+        }
         overrideExpirationIfNeeded(edxlMessage, properties);
 
         try {
