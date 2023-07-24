@@ -93,7 +93,7 @@ public class Dispatcher {
         String senderID = edxlMessage.getSenderID();
         String edxlString;
 
-        if (properties.getDeliveryMode().equals(MessageDeliveryMode.NON_PERSISTENT)) {
+        if (!MessageDeliveryMode.PERSISTENT.equals(properties.getReceivedDeliveryMode())) {
             properties.setDeliveryMode(MessageDeliveryMode.PERSISTENT);
         }
         overrideExpirationIfNeeded(edxlMessage, properties);
@@ -160,6 +160,9 @@ public class Dispatcher {
             String queueName = message.getMessageProperties().getReceivedRoutingKey() + ".info";
             rabbitTemplate.send(DISTRIBUTION_EXCHANGE, queueName, new Message(
                     new String("Could not parse message, invalid format").getBytes()));
+            throw new AmqpRejectAndDontRequeueException("do not requeue !");
+        } catch (Exception e) {
+            e.printStackTrace();
             throw new AmqpRejectAndDontRequeueException("do not requeue !");
         }
         return edxlMessage;
