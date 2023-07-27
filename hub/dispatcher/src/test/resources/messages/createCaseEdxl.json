@@ -1,0 +1,185 @@
+{
+  "distributionID": "samu050_2608323d-507d-4cbf-bf74-52007f8124ea",
+  "senderID": "fr.health.samu050",
+  "dateTimeSent": "2022-09-27T08:23:34+02:00",
+  "dateTimeExpires": "2072-09-27T08:23:34+02:00",
+  "distributionStatus": "Actual",
+  "distributionKind": "Report",
+  "descriptor": {
+    "language": "fr-FR",
+    "explicitAddress": {
+      "explicitAddressScheme": "hubsante",
+      "explicitAddressValue": "fr.fire.nexsis.sdis23"
+    }
+  },
+  "content": {
+    "contentObject": {
+      "JsonContent": {
+        "embeddedJsonContent": {
+          "message": {
+            "caseId": "SAMU069-20230725-AF1234",
+            "senderCaseId": "? Absence de nomenclature",
+            "createdAt": "2022-07-25 T10:03:34+01:00",
+            "initialAlert": {
+              "alertId": "SAMU069-20230725-AL01234",
+              "receivedAt": "2022-07-25 T10:01:22+01:00",
+              "reporting": "STANDARD",
+              "alertInformation": " suite collision avec un autre vélo sur piste cyclable, gonflement du geneoux, grosses égratinures, maux de tête",
+              "caller": {
+                "callerURI": "0607080901",
+                "callbackURI": "0601020304",
+                "spokenLanguage": "Français",
+                "callerInformation": "Epoux",
+                "callerName": {
+                  "complete": "Louise Durand",
+                  "callerLastName": "Durand",
+                  "callerFirstName": "Louise"
+                }
+              },
+              "alertLocation": {},
+              "alertCode": {
+                "cisuVersion": "1.19",
+                "whatsHappen": {
+                  "code": "C01.01.04",
+                  "label": "2-roues",
+                  "freetext": "pas d'autres types de véhicules impliqués"
+                },
+                "locationKind": {
+                  "code": "L02.01.00",
+                  "label": "Voie publique hors voie rapide",
+                  "freetext": "Voie vélo le long d'une route "
+                },
+                "riskThreat": [
+                  {
+                    "code": "R22",
+                    "label": "Gêne à la circulation",
+                    "freetext": "vélos débordent sur la route, rsique lié aux voitures"
+                  }
+                ],
+                "healthMotive": {
+                  "code": "M03.11, M02.07",
+                  "label": "Céphalée, migraines, Traumatisme sérieux, plaie intermédiaire",
+                  "freetext": "Portait un casque de protection"
+                },
+                "gravity": "3 ? Absence de nomenclature",
+                "victims": {
+                  "count": "MANY",
+                  "mainVictim": "ADULT",
+                  "comment": "Deuxième victime présente saignement legers aux mains et genoux"
+                }
+              },
+              "contact": {
+                "type": "? Absence de nomenclature ",
+                "detail": "? Absence de nomenclature "
+              },
+              "callTaker": {
+                "organization": "? Absence de nomenclature",
+                "controlRoom": "? Absence de nomenclature",
+                "calltakerURI": "? Absence de nomenclature",
+                "calltakerId": "? Absence de nomenclature"
+              },
+              "resource": [
+                {
+                  "resourceDesc": "DISPMED",
+                  "mimeType": "PDF",
+                  "size": "9",
+                  "URI": "https://www.docPatient1.hpLyon.com",
+                  "derefURI": "??",
+                  "digest": "8822 "
+                }
+              ]
+            },
+            "caseLocation": {
+              "locID": "??",
+              "locLabel": "??",
+              "name": "Quai des célestin",
+              "address": {
+                "complete": "8 quai des Célestins",
+                "number": "8",
+                "wayName": {
+                  "complete": "",
+                  "type": "Quai",
+                  "name": "des Célestins"
+                }
+              },
+              "city": {
+                "name": "Lyon",
+                "inseeCode": 69002,
+                "detail": "deuxième arrondissement"
+              },
+              "access": {
+                "floor": "None",
+                "roomNumber": "None",
+                "interphone": "None",
+                "accessCode": [
+                  "None"
+                ],
+                "elevator": "None",
+                "buildingName": "None",
+                "entrance": "None",
+                "entity": "None"
+              },
+              "geometry": {
+                "point": {
+                  "coord": {
+                    "lat": 45.7602368,
+                    "lon": 4.8310551,
+                    "height": 237,
+                    "heading": null,
+                    "speed": null,
+                    "time": "2022-07-25T10:03:34+01:00",
+                    "precision": "ADDRESS"
+                  },
+                  "coordsys": "EPSG-4326"
+                },
+                "sketch": "None"
+              },
+              "link": [
+                {
+                  "source": "BAN",
+                  "type": "samu050",
+                  "id": "id1234"
+                }
+              ],
+              "country": "France",
+              "freetext": "Devant la boulangerie Quai des Célestin"
+            },
+            "casualties": [
+              {
+                "identifier": [
+                  {
+                    "source": "NIR",
+                    "value": "37"
+                  }
+                ],
+                "phoneNumber": "tel:0607080901",
+                "name": "Marin Durand",
+                "birthName": "Marin",
+                "firstName": "Durand",
+                "sex": "M",
+                "birthDate": "1980-06-22",
+                "age": "43Y",
+                "weight": 80,
+                "height": 184,
+                "freetext": "Allergique au doliprane"
+              }
+            ],
+            "newAlert": [
+              {}
+            ],
+            "severity": "? Absence de nomenclature",
+            "additionalInformation": {
+              "customMap": {
+                "key": "neighborhood",
+                "label": "Quartier",
+                "value": "SECT.QUARTIER HISTORIQUE",
+                "freetext": "Une voix sens unique pour voiture + une voix bus"
+              }
+            },
+            "freetext": "choc à la tête mais portait un casque de protection. 2ème victime n'a pas de blessures apparantes."
+          }
+        }
+      }
+    }
+  }
+}
