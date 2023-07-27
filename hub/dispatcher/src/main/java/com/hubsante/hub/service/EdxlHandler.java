@@ -13,12 +13,15 @@ import com.github.jknack.handlebars.Template;
 import com.github.jknack.handlebars.io.ClassPathTemplateLoader;
 import com.github.jknack.handlebars.io.TemplateLoader;
 import com.hubsante.hub.exception.JsonSchemaValidationException;
+import com.hubsante.model.cisu.CreateEventMessage;
 import com.hubsante.model.edxl.EdxlEnvelope;
+import com.hubsante.model.edxl.EdxlInnerMessage;
 import com.hubsante.model.edxl.EdxlMessage;
 import com.networknt.schema.JsonSchema;
 import com.networknt.schema.JsonSchemaFactory;
 import com.networknt.schema.SpecVersion;
 import com.networknt.schema.ValidationMessage;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.xml.sax.SAXException;
 
@@ -33,7 +36,10 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.Set;
 
+import static java.lang.Enum.valueOf;
+
 @Service
+@Slf4j
 public class EdxlHandler {
 
     private XmlMapper xmlMapper;
@@ -54,14 +60,6 @@ public class EdxlHandler {
                 .enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
                 .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
                 .disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE);
-    }
-
-    public EdxlEnvelope deserializeJsonEnvelope(String json) throws JsonProcessingException {
-        return jsonMapper.readValue(json, EdxlEnvelope.class);
-    }
-
-    public EdxlEnvelope deserializeXmlEnvelope(String xml) throws JsonProcessingException {
-        return xmlMapper.readValue(xml, EdxlEnvelope.class);
     }
 
     public EdxlMessage deserializeJsonEDXL(String json) throws JsonProcessingException {
@@ -86,18 +84,6 @@ public class EdxlHandler {
 
     public String prettyPrintXmlEDXL(EdxlMessage edxlMessage) throws JsonProcessingException {
         return xmlMapper.writerWithDefaultPrettyPrinter().writeValueAsString(edxlMessage);
-    }
-
-    public String xmlTemplateEDXL() {
-        return "";
-    }
-
-    private Template getTemplateForFile(String templateName) throws IOException {
-        TemplateLoader loader = new ClassPathTemplateLoader("", ".handlebars");
-        Handlebars handlebars = new Handlebars(loader);
-        handlebars.setPrettyPrint(true);
-
-        return handlebars.compile(templateName);
     }
 
     public void validateXML(String message, String xsdFile) throws SAXException, IOException {
