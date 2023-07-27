@@ -94,7 +94,7 @@ public class CisuHandlerTest {
     @Test
     @DisplayName("malformed JSON message should fail validation")
     public void wrongJSONdeserializationFailed() throws IOException {
-        // required "sender.uri" field is missing
+        // required "sender.uri" and "messageId" fields are missing
         File cisuJsonFile = new File(classLoader.getResource("messages/missingRequiredCreateMessage.json").getFile());
 
         // deserialization method does not throw error

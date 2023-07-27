@@ -104,7 +104,7 @@ public class EdxlHandlerTest {
     @Test
     @DisplayName("validation should failed if Json Edxl is malfromatted")
     public void wrongJsonValidationFailed() throws IOException {
-        File edxlCisuCreateFile = new File(classLoader.getResource("messages/missingRequiredExplicitAddressValue.json").getFile());
+        File edxlCisuCreateFile = new File(classLoader.getResource("messages/missingRootAndChildRequiredValues.json").getFile());
         String json = Files.readString(edxlCisuCreateFile.toPath());
 
         // deserialization method does not throw error
