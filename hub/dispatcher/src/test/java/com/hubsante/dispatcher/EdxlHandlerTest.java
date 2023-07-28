@@ -3,7 +3,6 @@ package com.hubsante.dispatcher;
 import com.hubsante.hub.HubApplication;
 import com.hubsante.hub.exception.JsonSchemaValidationException;
 import com.hubsante.hub.service.EdxlHandler;
-//import com.hubsante.model.cisu.CreateEventMessage;
 import com.hubsante.model.cisu.CreateCaseMessage;
 import com.hubsante.model.edxl.EdxlMessage;
 import lombok.extern.slf4j.Slf4j;
@@ -17,7 +16,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.xml.sax.SAXException;
 
 import java.io.File;
 import java.io.IOException;
@@ -94,7 +92,7 @@ public class EdxlHandlerTest {
     @Test
     @DisplayName("validation should failed if Json Edxl is malfromatted")
     public void wrongJsonValidationFailed() throws IOException {
-        File edxlCisuCreateFile = new File(classLoader.getResource("messages/missingRootAndChildRequiredValues.json").getFile());
+        File edxlCisuCreateFile = new File(classLoader.getResource("messages/missingRootAndChildRequiredValues_CreateCaseEDXL.json").getFile());
         String json = Files.readString(edxlCisuCreateFile.toPath());
 
         // deserialization method does not throw error

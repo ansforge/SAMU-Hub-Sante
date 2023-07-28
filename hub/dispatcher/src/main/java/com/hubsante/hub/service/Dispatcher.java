@@ -106,7 +106,8 @@ public class Dispatcher {
                 edxlString = edxlHandler.prettyPrintJsonEDXL(edxlMessage);
                 properties.setContentType(MessageProperties.CONTENT_TYPE_JSON);
             }
-            log.info("  ↳ [x] Forwarding to '" + recipientID + "':" + edxlString);
+            log.info("  ↳ [x] Forwarding to '" + recipientID + "': message with distributionID " + edxlMessage.getDistributionID());
+            log.debug(edxlString);
             return new Message(edxlString.getBytes(StandardCharsets.UTF_8), properties);
 
         } catch (JsonProcessingException e) {
@@ -141,11 +142,13 @@ public class Dispatcher {
             // It MUST be explicitly set by the client
             if (message.getMessageProperties().getContentType().equals(MessageProperties.CONTENT_TYPE_JSON)) {
                 edxlMessage = edxlHandler.deserializeJsonEDXL(receivedEdxl);
-                log.info(" [x] Received from '" + message.getMessageProperties().getReceivedRoutingKey() + "':" + edxlHandler.prettyPrintJsonEDXL(edxlMessage));
+                log.info(" [x] Received from '" + message.getMessageProperties().getReceivedRoutingKey() + "': message with distributionID" + edxlMessage.getDistributionID());
+                log.debug(edxlHandler.prettyPrintJsonEDXL(edxlMessage));
 
             } else if (message.getMessageProperties().getContentType().equals(MessageProperties.CONTENT_TYPE_XML)) {
                 edxlMessage = edxlHandler.deserializeXmlEDXL(receivedEdxl);
-                log.info(" [x] Received from '" + message.getMessageProperties().getReceivedRoutingKey() + "':" + edxlHandler.prettyPrintXmlEDXL(edxlMessage));
+                log.info(" [x] Received from '" + message.getMessageProperties().getReceivedRoutingKey() + "': message with distributionID " + edxlMessage.getDistributionID());
+                log.debug(edxlHandler.prettyPrintXmlEDXL(edxlMessage));
 
             } else {
                 String queueName = message.getMessageProperties().getReceivedRoutingKey() + ".info";
