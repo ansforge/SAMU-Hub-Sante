@@ -8,13 +8,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.github.jknack.handlebars.Handlebars;
-import com.github.jknack.handlebars.Template;
-import com.github.jknack.handlebars.io.ClassPathTemplateLoader;
-import com.github.jknack.handlebars.io.TemplateLoader;
 import com.hubsante.hub.exception.JsonSchemaValidationException;
-import com.hubsante.model.cisu.CreateEventMessage;
-import com.hubsante.model.edxl.EdxlEnvelope;
 import com.hubsante.model.edxl.EdxlInnerMessage;
 import com.hubsante.model.edxl.EdxlMessage;
 import com.networknt.schema.JsonSchema;
@@ -111,6 +105,40 @@ public class EdxlHandler {
                 errors.append(errorMsg.getMessage()).append("\n");
             }
             throw new JsonSchemaValidationException(errors.toString());
+        }
+    }
+
+    public void validateUseCaseMessage(EdxlMessage edxlMessage, boolean isXML)
+            throws IOException, JsonSchemaValidationException, SAXException {
+        EdxlInnerMessage useCaseMessage = edxlMessage
+                .getContent().getContentObject().getContentWrapper().getEmbeddedContent().getMessage();
+
+        switch (valueOf(UseCaseClass.class, useCaseMessage.getClass().getSimpleName())) {
+            case CREATE_EVENT:
+                if (isXML) {
+                    validateXML(serializeXmlEDXL(edxlMessage), "cisu/cisu.xsd");
+                    break;
+                }
+                validateJSON(serializeJsonEDXL(edxlMessage), "cisu.json");
+                break;
+            case UNKNOWN:
+            default:
+                if (isXML) {
+                    log.error("Can't validate against XSD : class {} has no specified xsd spec",
+                            useCaseMessage.getClass().getSimpleName());
+                    break;
+                }
+                log.error("Can't validate against Json-schema : class {} has no specified schema",
+                        useCaseMessage.getClass().getSimpleName());
+                break;
+        }
+    }
+
+    public enum UseCaseClass {
+        CREATE_EVENT("CreateEventMessage"),
+        UNKNOWN("Unknown");
+
+        UseCaseClass(String clazzName) {
         }
     }
 }
