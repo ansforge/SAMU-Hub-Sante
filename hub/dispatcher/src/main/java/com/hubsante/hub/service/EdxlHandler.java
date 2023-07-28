@@ -9,6 +9,7 @@ import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.hubsante.hub.exception.JsonSchemaValidationException;
+import com.hubsante.model.cisu.CreateCaseMessage;
 import com.hubsante.model.edxl.EdxlInnerMessage;
 import com.hubsante.model.edxl.EdxlMessage;
 import com.networknt.schema.JsonSchema;
@@ -16,6 +17,7 @@ import com.networknt.schema.JsonSchemaFactory;
 import com.networknt.schema.SpecVersion;
 import com.networknt.schema.ValidationMessage;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.xml.sax.SAXException;
 
@@ -28,6 +30,7 @@ import javax.xml.validation.Validator;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.Arrays;
 import java.util.Set;
 
 import static java.lang.Enum.valueOf;
@@ -38,6 +41,9 @@ public class EdxlHandler {
 
     private XmlMapper xmlMapper;
     private ObjectMapper jsonMapper;
+
+    @Autowired
+    private CreateCaseHandler createCaseHandler;
 
     public EdxlHandler() {
         this.xmlMapper = (XmlMapper) new XmlMapper()
@@ -113,13 +119,19 @@ public class EdxlHandler {
         EdxlInnerMessage useCaseMessage = edxlMessage
                 .getContent().getContentObject().getContentWrapper().getEmbeddedContent().getMessage();
 
-        switch (valueOf(UseCaseClass.class, useCaseMessage.getClass().getSimpleName())) {
-            case CREATE_EVENT:
+        UseCaseEnum useCase = UseCaseEnum.getByValue(useCaseMessage.getClass().getSimpleName());
+
+        switch (useCase) {
+            case CREATE_CASE:
                 if (isXML) {
-                    validateXML(serializeXmlEDXL(edxlMessage), "cisu/cisu.xsd");
+                    validateXML(
+                            createCaseHandler.serializeXmlMessage((CreateCaseMessage) useCaseMessage),
+                            "cisu/cisu.xsd");
                     break;
                 }
-                validateJSON(serializeJsonEDXL(edxlMessage), "cisu.json");
+                validateJSON(
+                        createCaseHandler.serializeJsonMessage((CreateCaseMessage) useCaseMessage),
+                        "createCase_schema.json");
                 break;
             case UNKNOWN:
             default:
@@ -134,11 +146,19 @@ public class EdxlHandler {
         }
     }
 
-    public enum UseCaseClass {
-        CREATE_EVENT("CreateEventMessage"),
+    public enum UseCaseEnum {
+        CREATE_CASE("CreateCaseMessage"),
         UNKNOWN("Unknown");
 
-        UseCaseClass(String clazzName) {
+        private String clazzName;
+
+        UseCaseEnum(String clazzName) {
+            this.clazzName = clazzName;
+        }
+
+        public static final UseCaseEnum getByValue(String clazzName) {
+            return Arrays.stream(UseCaseEnum.values())
+                    .filter(useCaseEnum -> useCaseEnum.clazzName.equals(clazzName)).findFirst().orElse(UNKNOWN);
         }
     }
 }
