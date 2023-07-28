@@ -142,6 +142,24 @@
       "weight": 80,
       "height": 184,
       "freetext": "Allergique au doliprane"
+    },
+    {
+      "identifier": [
+        {
+          "source": "NIR",
+          "value": "38"
+        }
+      ],
+      "phoneNumber": "tel:+330607080901",
+      "name": "Marinette Durand",
+      "birthName": "Marinette",
+      "firstName": "Durand",
+      "sex": "F",
+      "birthDate": "1980-06-23",
+      "age": "42Y",
+      "weight": 80,
+      "height": 179,
+      "freetext": "RAS"
     }
   ],
   "newAlert": null,

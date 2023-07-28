@@ -27,4 +27,13 @@ public class UseCaseMessageHandler {
     public String serializeXmlMessage(UseCaseMessage message) throws JsonProcessingException {
         return xmlMapper.writeValueAsString(message);
     }
+
+    public UseCaseMessage deserializeJsonMessage(String json) throws JsonProcessingException {
+        return jsonMapper.readValue(json, UseCaseMessage.class);
+    }
+
+    public UseCaseMessage deserializeXmlMessage(String xml) throws JsonProcessingException {
+        return xmlMapper.readValue(xml, UseCaseMessage.class);
+    }
+
 }

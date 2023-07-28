@@ -3,8 +3,10 @@ package com.hubsante.dispatcher;
 import com.hubsante.hub.HubApplication;
 import com.hubsante.hub.exception.JsonSchemaValidationException;
 import com.hubsante.hub.service.EdxlHandler;
+import com.hubsante.hub.service.Validator;
 import com.hubsante.model.cisu.CreateCaseMessage;
 import com.hubsante.model.edxl.EdxlMessage;
+import com.hubsante.model.edxl.UseCaseMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -37,6 +39,9 @@ public class EdxlHandlerTest {
 
     @Autowired
     private EdxlHandler converter;
+
+    @Autowired
+    private Validator validator;
 
     @DynamicPropertySource
     static void registerPgProperties(DynamicPropertyRegistry propertiesRegistry) {
@@ -83,7 +88,9 @@ public class EdxlHandlerTest {
         EdxlMessage deserializedFromXml = converter.deserializeXmlEDXL(xml);
         assertEquals(deserializedFromXml, edxlMessage);
 
-        assertDoesNotThrow(() -> converter.validateUseCaseMessage(edxlMessage, false));
+        UseCaseMessage useCaseMessage = edxlMessage
+                .getContent().getContentObject().getContentWrapper().getEmbeddedContent().getMessage();
+        assertDoesNotThrow(() -> validator.validateUseCaseMessage(useCaseMessage, false));
 
         //TODO team: generate xsd for new cisu model
 //        assertDoesNotThrow(() -> converter.validateXML(xml, "edxl/edxl-de-v2.0-wd11.xsd"));
@@ -98,7 +105,7 @@ public class EdxlHandlerTest {
         // deserialization method does not throw error
         assertDoesNotThrow(() -> converter.deserializeJsonEDXL(json));
         // validation does
-        assertThrows(JsonSchemaValidationException.class, () -> converter.validateJSON(json, "edxl.json"));
+        assertThrows(JsonSchemaValidationException.class, () -> validator.validateJSON(json, "edxl.json"));
     }
 
     private String xmlPrefix() {
