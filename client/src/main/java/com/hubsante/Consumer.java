@@ -123,21 +123,8 @@ public abstract class Consumer {
     protected abstract void deliverCallback(String consumerTag, Delivery delivery) throws IOException;
 
     protected EdxlMessage generateFunctionalAckMessage(EdxlMessage receivedMessage) {
-        //TODO bbo : CisuAckMessage : define recipient format
-        // long-clientID & short-clientID ?
-        AddresseeType recipient = new AddresseeType(receivedMessage.getSenderID(), receivedMessage.getSenderID());
-        List<AddresseeType> recipients = new ArrayList<>();
-        recipients.add(recipient);
 
-        AckMessage cisuAckMessage = new AckMessage(
-                clientId + "_" + UUID.randomUUID(),
-                new AddresseeType(clientId, clientId),
-                OffsetDateTime.of(LocalDateTime.now(), ZoneOffset.of("+02")),
-                MsgType.ACK,
-                Status.ACTUAL,
-                new Recipients(recipients),
-                new AckMessageId(receivedMessage.getDistributionID())
-        );
+        GenericAckMessage cisuAckMessage = new GenericAckMessage(receivedMessage.getDistributionID());
 
         // TODO bbo/rfd : choose what to do with scheme : senderID ? hubsante ?
         ExplicitAddress explicitAddress = new ExplicitAddress();
