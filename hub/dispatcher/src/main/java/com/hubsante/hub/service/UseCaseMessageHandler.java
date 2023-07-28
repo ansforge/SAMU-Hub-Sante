@@ -3,7 +3,7 @@ package com.hubsante.hub.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import com.hubsante.model.edxl.EdxlInnerMessage;
+import com.hubsante.model.edxl.UseCaseMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -20,11 +20,11 @@ public class UseCaseMessageHandler {
     @Qualifier("xmlMapper")
     private XmlMapper xmlMapper;
 
-    public String serializeJsonMessage(EdxlInnerMessage message) throws JsonProcessingException {
+    public String serializeJsonMessage(UseCaseMessage message) throws JsonProcessingException {
         return jsonMapper.writeValueAsString(message);
     }
 
-    public String serializeXmlMessage(EdxlInnerMessage message) throws JsonProcessingException {
+    public String serializeXmlMessage(UseCaseMessage message) throws JsonProcessingException {
         return xmlMapper.writeValueAsString(message);
     }
 }

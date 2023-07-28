@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.hubsante.hub.exception.JsonSchemaValidationException;
 import com.hubsante.model.cisu.CreateCaseMessage;
-import com.hubsante.model.edxl.EdxlInnerMessage;
+import com.hubsante.model.edxl.UseCaseMessage;
 import com.hubsante.model.edxl.EdxlMessage;
 import com.networknt.schema.JsonSchema;
 import com.networknt.schema.JsonSchemaFactory;
@@ -101,7 +101,7 @@ public class EdxlHandler {
 
     public void validateUseCaseMessage(EdxlMessage edxlMessage, boolean isXML)
             throws IOException, JsonSchemaValidationException, SAXException {
-        EdxlInnerMessage useCaseMessage = edxlMessage
+        UseCaseMessage useCaseMessage = edxlMessage
                 .getContent().getContentObject().getContentWrapper().getEmbeddedContent().getMessage();
 
         UseCaseEnum useCase = UseCaseEnum.getByValue(useCaseMessage.getClass().getSimpleName());
@@ -110,12 +110,12 @@ public class EdxlHandler {
             case CREATE_CASE:
                 if (isXML) {
                     validateXML(
-                            useCaseMessageHandler.serializeXmlMessage((CreateCaseMessage) useCaseMessage),
+                            useCaseMessageHandler.serializeXmlMessage(useCaseMessage),
                             "cisu/cisu.xsd");
                     break;
                 }
                 validateJSON(
-                        useCaseMessageHandler.serializeJsonMessage((CreateCaseMessage) useCaseMessage),
+                        useCaseMessageHandler.serializeJsonMessage(useCaseMessage),
                         "createCase_schema.json");
                 break;
             case UNKNOWN:
