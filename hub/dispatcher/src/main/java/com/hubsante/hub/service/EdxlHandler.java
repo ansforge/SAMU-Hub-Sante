@@ -1,13 +1,9 @@
 package com.hubsante.hub.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.hubsante.hub.exception.JsonSchemaValidationException;
 import com.hubsante.model.cisu.CreateCaseMessage;
 import com.hubsante.model.edxl.EdxlInnerMessage;
@@ -18,6 +14,7 @@ import com.networknt.schema.SpecVersion;
 import com.networknt.schema.ValidationMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.xml.sax.SAXException;
 
@@ -33,33 +30,21 @@ import java.io.StringReader;
 import java.util.Arrays;
 import java.util.Set;
 
-import static java.lang.Enum.valueOf;
-
 @Service
 @Slf4j
 public class EdxlHandler {
 
+    @Qualifier("rootXmlMapper")
+    @Autowired
     private XmlMapper xmlMapper;
+
+    @Autowired
     private ObjectMapper jsonMapper;
 
     @Autowired
-    private CreateCaseHandler createCaseHandler;
+    private UseCaseMessageHandler useCaseMessageHandler;
 
     public EdxlHandler() {
-        this.xmlMapper = (XmlMapper) new XmlMapper()
-                .registerModule(new JavaTimeModule())
-                .enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
-                .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-                .disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE);
-
-        xmlMapper.configure(ToXmlGenerator.Feature.WRITE_XML_DECLARATION, true);
-
-        this.jsonMapper = new ObjectMapper()
-                .registerModule(new JavaTimeModule())
-                .enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
-                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-                .disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE);
     }
 
     public EdxlMessage deserializeJsonEDXL(String json) throws JsonProcessingException {
@@ -125,12 +110,12 @@ public class EdxlHandler {
             case CREATE_CASE:
                 if (isXML) {
                     validateXML(
-                            createCaseHandler.serializeXmlMessage((CreateCaseMessage) useCaseMessage),
+                            useCaseMessageHandler.serializeXmlMessage((CreateCaseMessage) useCaseMessage),
                             "cisu/cisu.xsd");
                     break;
                 }
                 validateJSON(
-                        createCaseHandler.serializeJsonMessage((CreateCaseMessage) useCaseMessage),
+                        useCaseMessageHandler.serializeJsonMessage((CreateCaseMessage) useCaseMessage),
                         "createCase_schema.json");
                 break;
             case UNKNOWN:
