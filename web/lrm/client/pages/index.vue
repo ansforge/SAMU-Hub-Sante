@@ -69,7 +69,7 @@
               <pre
                 style="white-space: pre-wrap; background-color: rgba(0, 0, 0, 0.05);"
                 class="elevation-1 pa-2 mt-n3"
-              ><span v-if="from">{{ from }}<br></span>{{ direction }}{{
+              ><span v-if="from">{{ from }}<br></span>{{ direction }} {{
                   endpoint
                 }}<br>{{ time }} -> {{ receivedTime }}<br>{{
                   body
@@ -83,13 +83,17 @@
 </template>
 
 <script>
+const DIRECTIONS = {
+  IN: '←',
+  OUT: '→'
+}
 export default {
   name: 'IndexPage',
   data () {
     return {
       swagger: null,
       messages: [{
-        direction: '→ ',
+        direction: DIRECTIONS.IN,
         endpoint: '/',
         time: this.time(),
         receivedTime: this.time(),
@@ -173,24 +177,23 @@ export default {
   methods: {
     longPolling () {
       this.$axios.$get('/poll', { timeout: 10000 }).then((response) => {
-        try {
-          response.body = JSON.parse(response.body)
-        } catch (error) {
-          console.error('Erreur lors de la lecture du message', error)
-        }
         this.messages.unshift({
           ...response,
-          direction: '→ ',
+          direction: DIRECTIONS.IN,
           receivedTime: this.time()
         })
         this.longPolling()
       }).catch((error) => {
         if (error.code === 'ECONNABORTED') {
-          console.info('Expiration du long polling', error)
+          console.info('Long polling expiration, restarting.', error)
+          this.longPolling()
+        } else if (error.message === 'Network Error') {
+          console.warn('Server unavailable, waiting before reconnection.', error)
+          setTimeout(() => this.longPolling(), 300)
         } else {
-          console.error('Erreur lors de la récupération du message', error)
+          console.error('Error while reading message, restarting.', error)
+          this.longPolling()
         }
-        this.longPolling()
       })
     },
     time () {
@@ -214,10 +217,10 @@ export default {
         '/publish',
         { key: this.form.clientId, msg: data },
         { timeout: 1000 }
-      ).then((response) => {
-        console.log(response)
+      ).then(() => {
         this.messages.unshift({
-          direction: '← ',
+          endpoint: this.form.routingKey,
+          direction: DIRECTIONS.OUT,
           clientId: this.form.clientId,
           routingKey: this.form.routingKey,
           time,
