@@ -212,7 +212,8 @@ export default {
       // Could be done using Swagger generated client, but it would validate fields!
       this.$axios.$post(
         '/publish',
-        { key: this.form.clientId, msg: data }
+        { key: this.form.clientId, msg: data },
+        { timeout: 1000 }
       ).then((response) => {
         console.log(response)
         this.messages.unshift({

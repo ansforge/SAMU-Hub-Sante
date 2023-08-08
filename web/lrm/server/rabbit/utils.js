@@ -37,6 +37,25 @@ module.exports = {
       });
     });
   },
+  async connectAsync() {
+    return new Promise((resolve, reject) => {
+      amqp.connect(HUB_SANTE_URL, opts, (error0, connection) => {
+        if (error0) {
+          reject(error0);
+          return;
+        }
+
+        connection.createChannel((error1, channel) => {
+          if (error1) {
+            reject(error1);
+            return;
+          }
+
+          resolve({ connection, channel });
+        });
+      });
+    });
+  },
   close(connection, exit = false) {
     setTimeout(() => {
       connection.close();

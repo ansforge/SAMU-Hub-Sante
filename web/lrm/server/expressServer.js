@@ -9,7 +9,7 @@ const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const logger = require('./logger');
 const {
-  connect, close, HUB_SANTE_EXCHANGE, DEMO_CLIENT_IDS, messageProperties,
+  connect, connectAsync, close, HUB_SANTE_EXCHANGE, DEMO_CLIENT_IDS, messageProperties,
 } = require('./rabbit/utils');
 
 // Ref.: https://smallstep.com/hello-mtls/doc/combined/nodejs/axios
@@ -60,13 +60,15 @@ class ExpressServer {
     this.app.use('/ui', express.static(path.join(__dirname, 'ui')));
 
     // Forward UI request to Hub Santé
-    this.app.use('/publish', async (req) => {
+    this.app.use('/publish', async (req, res) => {
       const { key, msg } = req.body;
-      connect((connection, channel) => {
-        logger.log(" [x] Sending to key %s: '%s'", key, msg);
-        channel.publish(HUB_SANTE_EXCHANGE, `${key}.out.message`, Buffer.from(JSON.stringify(msg)), messageProperties);
-        close(connection);
-      });
+      logger.info(` [x] Sending to key ${key}: '${msg}'`);
+      const { connection, channel } = await connectAsync();
+      channel.publish(HUB_SANTE_EXCHANGE, `${key}.out.message`, Buffer.from(JSON.stringify(msg)), messageProperties);
+      close(connection);
+      logger.info('Publish call done and connection closed.');
+      res.status(200);
+      res.json({ key, msg });
     });
 
     // Send back info from backend to client using long polling
