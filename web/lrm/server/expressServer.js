@@ -74,6 +74,7 @@ class ExpressServer {
     // Send back info from backend to client using long polling
     // 1. Create long polling endpoint
     const longPoll = require('express-longpoll')(this.app, { DEBUG: true });
+    // Somehow triggering node memory leak warnings | Ref.: https://github.com/yehya/express-longpoll/issues/12
     longPoll.create('/poll', { maxListeners: 100 })
       .then(() => {
         logger.info('Created /poll');
