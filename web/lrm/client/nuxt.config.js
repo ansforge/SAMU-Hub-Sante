@@ -12,13 +12,13 @@ export default {
       lang: 'en'
     },
     meta: [
-      {charset: 'utf-8'},
-      {name: 'viewport', content: 'width=device-width, initial-scale=1'},
-      {hid: 'description', name: 'description', content: ''},
-      {name: 'format-detection', content: 'telephone=no'}
+      { charset: 'utf-8' },
+      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+      { hid: 'description', name: 'description', content: '' },
+      { name: 'format-detection', content: 'telephone=no' }
     ],
     link: [
-      {rel: 'icon', type: 'image/x-icon', href: '/favicon.ico'}
+      { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }
     ]
   },
 
@@ -26,7 +26,10 @@ export default {
   css: [],
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
-  plugins: [],
+  plugins: [
+    // Ref.: https://github.com/clwillingham/nuxt-vjsf-test/blob/master/nuxt.config.js
+    { src: '~/plugins/vjsf', mode: 'client' }
+  ],
 
   // Auto import components: https://go.nuxtjs.dev/config-components
   components: true,
@@ -71,11 +74,15 @@ export default {
   },
 
   // Build Configuration: https://go.nuxtjs.dev/config-build
-  build: {},
+  build: {
+    // Necessary for "à la carte" import of vuetify components as the js import in vjsf.js was failing
+    // Ref.: https://koumoul-dev.github.io/vuetify-jsonschema-form/latest/getting-started
+    transpile: ['vuetify/lib', /@koumoul/, 'markdown-it/lib', 'vuedraggable/src']
+  },
 
   generate: {
     // Ignore href links of default.vue | Ref.: https://github.com/nuxt/nuxt.js/issues/8105#issuecomment-706702793
-    exclude: ['/openapi', '/api-docs', '/poll'],
+    exclude: ['/openapi', '/api-docs', '/poll']
   },
 
   router: {

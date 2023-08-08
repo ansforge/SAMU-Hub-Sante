@@ -17,7 +17,7 @@
                 md="6"
               >
                 <v-combobox
-                  v-model="form.clientId"
+                  v-model="header.clientId"
                   :items="items.clientId"
                   label="Identification"
                   hide-details="auto"
@@ -29,7 +29,7 @@
                 md="6"
               >
                 <v-combobox
-                  v-model="form.routingKey"
+                  v-model="header.routingKey"
                   :items="items.routingKey"
                   label="routingKey"
                   dense
@@ -38,15 +38,10 @@
             </v-row>
           </v-form>
           <RequestForm
-            v-for="(requestInfos, request) in requests"
-            v-if="swagger"
-            :key="request"
+            v-if="schema"
             v-model="form"
-            :swagger="swagger"
-            :complete-form="form"
-            :request-infos="requestInfos"
-            :items="items"
-            @submit="submit(request)"
+            :schema="schema"
+            @submit="submit(null)"
           />
         </v-card-text>
       </v-card>
@@ -122,7 +117,7 @@ export default {
   name: 'IndexPage',
   data () {
     return {
-      swagger: null,
+      schema: null,
       messages: [/* {
         direction: DIRECTIONS.IN,
         routingKey: '',
@@ -135,60 +130,15 @@ export default {
         showSentMessages: false
       },
       selectedClientId: null,
-      requests: {
-        clickToCall: {
-          name: 'Click-to-Call',
-          actionName: 'Appeler',
-          properties: [],
-          justCopiedToClipboard: false
-        },
-        correlation: {
-          name: 'Corrélation',
-          actionName: 'Corréler',
-          properties: [],
-          justCopiedToClipboard: false
-        }
-      },
       items: {
         clientId: ['fr.health.samuA', 'fr.health.samuB', 'fr.fire.nexsis.sdisZ'],
-        routingKey: ['fr.health.samuA.in.message', 'fr.health.samuB.in.message', 'fr.fire.nexsis.sdisZ.in.ack'],
-        idNatPs: ['00B9814506', '1234', '518751275100020/0000000613'],
-        numTel: ['0606060606'],
-        idDossier: ['22298003', 'idDossier', '2301236789'],
-        idAppel: ['interne-SI-SAMU'],
-        idFlux: ['FR090-FluxStd-MU-P0-F02'],
-        prioriteRegul: ['P0', 'P1', 'P2', 'P3', 'NR'],
-        localisation: ['PariSanté Campus', 'Tour Pitard'],
-        appelant: {
-          nom: ['Appelant'],
-          prenom: ['Jean'],
-          adresse: ['1 rue de la paix']
-        },
-        patients: {
-          nom: ['Patient'],
-          nomNaissance: ['Patient Bébé'],
-          prenom: ['Michel'],
-          sexe: ['M', 'F', 'O', 'U'],
-          age: ['P75Y', 'P9M'],
-          motifRecours: ['Motif Recours', 'AUTCHUTE']
-        }
+        routingKey: ['fr.health.samuA.in.message', 'fr.health.samuB.in.message', 'fr.fire.nexsis.sdisZ.in.ack']
       },
-      form: {
+      header: {
         clientId: 'fr.health.samuA',
-        routingKey: 'fr.health.samuB.in.message',
-        idNatPs: '00B9814506',
-        numTel: '0606060606',
-        idDossier: '2301236789',
-        idAppel: 'interne-SI-SAMU',
-        idFlux: 'FR090-FluxStd-MU-P0-F02',
-        prioriteRegul: 'P2',
-        localisation: 'PariSanté Campus',
-        appelant: {
-          nom: 'Appelant',
-          prenom: 'Jean',
-          adresse: '1 rue de la paix'
-        }
-      }
+        routingKey: 'fr.health.samuB.in.message'
+      },
+      form: {}
     }
   },
   head () {
@@ -208,14 +158,11 @@ export default {
     }
   },
   mounted () {
-    // To automatically generate the UI and input fields based on the swagger
-    fetch('swagger-si-samu.json')
+    // To automatically generate the UI and input fields based on the JSON Schema
+    fetch('schema.json')
       .then(response => response.json())
-      .then((swagger) => {
-        this.swagger = swagger
-        // Collecting properties for each request
-        this.requests.clickToCall.properties = swagger.definitions.DemandeAppelSortant.properties
-        this.requests.correlation.properties = swagger.definitions.CorrelationDossier.properties
+      .then((schema) => {
+        this.schema = schema
       })
     // Start listening to server events
     this.longPolling()
@@ -266,13 +213,6 @@ export default {
         icon: clientId.split('.')[1] === 'health' ? 'mdi-heart-pulse' : 'mdi-fire'
       }
     },
-    getSpecificValues (request) {
-      return Object.fromEntries(
-        Object.keys(this.requests[request].properties)
-          .filter(key => key in this.form)
-          .map(key => [key, this.form[key]])
-      )
-    },
     async submit (request) {
       const time = this.time()
       const data = await (await fetch('samuA_to_samuB.json')).json()
@@ -280,12 +220,12 @@ export default {
       // Could be done using Swagger generated client, but it would validate fields!
       this.$axios.$post(
         '/publish',
-        { key: this.form.clientId, msg: data },
+        { key: this.header.clientId, msg: data },
         { timeout: 1000 }
       ).then(() => {
         this.messages.unshift({
           direction: DIRECTIONS.OUT,
-          routingKey: this.form.routingKey,
+          routingKey: this.header.routingKey,
           time,
           code: 200,
           body: data
