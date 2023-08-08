@@ -55,23 +55,54 @@
       <v-card style="height: 86vh; overflow-y: auto;">
         <v-card-title class="headline">
           Messages
-          <v-badge :content="messages.length" />
+          <v-badge
+            v-if="showedMessages.length"
+            :content="showedMessages.length"
+          />
+          <v-spacer />
+          <v-switch
+            v-model="config.showSentMessages"
+            inset
+            :label="'Show sent (' + messagesSentCount + ')'"
+          />
         </v-card-title>
+        <v-btn-toggle
+          v-model="selectedClientId"
+          class="ml-4"
+          dense
+          borderless
+          mandatory
+        >
+          <v-btn v-for="clientId in items.clientId" :key="clientId" :value="clientId">
+            <v-icon left>
+              {{ clientInfos(clientId).icon }}
+            </v-icon>
+            <span class="hidden-sm-and-down">
+              {{ clientInfos(clientId).name }}
+              <v-badge
+                v-if="clientMessages(clientId).length > 0"
+                class="mr-4 ml-1"
+                :content="clientMessages(clientId).length"
+              />
+            </span>
+          </v-btn>
+        </v-btn-toggle>
         <v-card-text>
           <transition-group name="message">
             <div
-              v-for="{direction, endpoint, time, receivedTime, code, body, from} in messages"
+              v-for="{direction, routingKey, time, receivedTime, code, body} in selectedMessages"
               :key="time"
               class="message mb-4"
             >
               <v-badge :color="code === 200 ? 'green' : 'red'" :content="code" />
-
               <pre
                 style="white-space: pre-wrap; background-color: rgba(0, 0, 0, 0.05);"
                 class="elevation-1 pa-2 mt-n3"
-              ><span v-if="from">{{ from }}<br></span>{{ direction }} {{
-                  endpoint
-                }}<br>{{ time }} -> {{ receivedTime }}<br>{{
+              ><span v-if="isOut(direction)">{{ direction }} {{
+                routingKey
+              }}</span><span v-else>{{ direction }} {{
+                body.senderID
+              }}</span><br>{{ time }} -> {{ receivedTime }}<br>{{
                   body
               }}</pre>
             </div>
@@ -92,14 +123,18 @@ export default {
   data () {
     return {
       swagger: null,
-      messages: [{
+      messages: [/* {
         direction: DIRECTIONS.IN,
-        endpoint: '/',
+        routingKey: '',
         time: this.time(),
         receivedTime: this.time(),
         code: 200,
         body: { body: 'Page loaded successfully!' }
-      }],
+      } */],
+      config: {
+        showSentMessages: false
+      },
+      selectedClientId: null,
       requests: {
         clickToCall: {
           name: 'Click-to-Call',
@@ -161,6 +196,17 @@ export default {
       title: 'Interface SI-SAMU tester'
     }
   },
+  computed: {
+    showedMessages () {
+      return this.config.showSentMessages ? this.messages : this.messages.filter(message => !this.isOut(message.direction))
+    },
+    messagesSentCount () {
+      return this.messages.filter(message => this.isOut(message.direction)).length
+    },
+    selectedMessages () {
+      return this.clientMessages(this.selectedClientId)
+    }
+  },
   mounted () {
     // To automatically generate the UI and input fields based on the swagger
     fetch('swagger-si-samu.json')
@@ -200,6 +246,26 @@ export default {
       const d = new Date()
       return d.toLocaleTimeString().replace(':', 'h') + '.' + d.getMilliseconds()
     },
+    isOut (direction) {
+      return direction === DIRECTIONS.OUT
+    },
+    clientMessages (clientId) {
+      return this.messages.filter(
+        message => message.routingKey.startsWith(clientId) && !this.isOut(message.direction)
+      ).concat(
+        this.config.showSentMessages
+          ? this.messages.filter(
+            message => message.body.senderID === clientId && this.isOut(message.direction)
+          )
+          : []
+      )
+    },
+    clientInfos (clientId) {
+      return {
+        name: clientId.split('.')[2],
+        icon: clientId.split('.')[1] === 'health' ? 'mdi-heart-pulse' : 'mdi-fire'
+      }
+    },
     getSpecificValues (request) {
       return Object.fromEntries(
         Object.keys(this.requests[request].properties)
@@ -208,10 +274,9 @@ export default {
       )
     },
     async submit (request) {
-      console.log('submit', request)
       const time = this.time()
       const data = await (await fetch('samuA_to_samuB.json')).json()
-      console.log('Data', data)
+      console.log('submit', request, data)
       // Could be done using Swagger generated client, but it would validate fields!
       this.$axios.$post(
         '/publish',
@@ -219,9 +284,7 @@ export default {
         { timeout: 1000 }
       ).then(() => {
         this.messages.unshift({
-          endpoint: this.form.routingKey,
           direction: DIRECTIONS.OUT,
-          clientId: this.form.clientId,
           routingKey: this.form.routingKey,
           time,
           code: 200,

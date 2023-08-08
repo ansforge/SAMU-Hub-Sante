@@ -94,10 +94,8 @@ class ExpressServer {
           logger.info(' [x] Received from %s: %s', clientName, msg.content.toString());
           const d = new Date();
           const data = {
-            clientName,
-            queue,
-            endpoint: queue,
-            from: clientName,
+            direction: '←',
+            routingKey: queue,
             code: 200,
             time: `${d.toLocaleTimeString().replace(':', 'h')}.${d.getMilliseconds()}`,
             body: JSON.parse(msg.content),
