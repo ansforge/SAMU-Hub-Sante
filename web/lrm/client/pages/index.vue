@@ -120,9 +120,53 @@
 </template>
 
 <script>
+import { v4 as uuidv4 } from 'uuid'
+import moment from 'moment'
+
 const DIRECTIONS = {
   IN: '←',
   OUT: '→'
+}
+const EDXL_ENVELOPE = {
+  distributionID: '{{ samuA_2608323d-507d-4cbf-bf74-52007f8124ea }}',
+  senderID: '{{ fr.health.samuA }}',
+  dateTimeSent: '{{ 2022-09-27T08:23:34+02:00 }}',
+  dateTimeExpires: '2072-09-27T08:23:34+02:00',
+  distributionStatus: 'Actual',
+  distributionKind: 'Report',
+  descriptor: {
+    language: 'fr-FR',
+    explicitAddress: {
+      explicitAddressScheme: 'hubsante',
+      explicitAddressValue: '{{ fr.health.samuB }}'
+    }
+  },
+  content: {
+    contentObject: {
+      JsonContent: {
+        embeddedJsonContent: {
+          message: {
+            messageId: '{{ 2608323d-507d-4cbf-bf74-52007f8124ea }}',
+            sender: {
+              name: '{{ samuA }}',
+              uri: '{{ hubsante:fr.health.samuA }}'
+            },
+            sentAt: '{{ 2022-09-27T08:23:34+02:00 }}',
+            msgType: 'ALERT',
+            status: 'TEST',
+            recipients: {
+              recipient: [
+                {
+                  name: '{{ samuB }}',
+                  uri: '{{ hubsante:fr.health.samuB }}'
+                }
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
 }
 export default {
   name: 'IndexPage',
@@ -222,7 +266,8 @@ export default {
     clientInfos (clientId) {
       return {
         name: clientId.split('.')[2],
-        icon: clientId.split('.')[1] === 'health' ? 'mdi-heart-pulse' : 'mdi-fire'
+        icon: clientId.split('.')[1] === 'health' ? 'mdi-heart-pulse' : 'mdi-fire',
+        id: clientId.split('.').slice(0, 3).join('.')
       }
     },
     load (exampleName) {
@@ -234,9 +279,27 @@ export default {
           this.selectedExample = exampleName
         })
     },
+    buildMessage () {
+      const message = JSON.parse(JSON.stringify(EDXL_ENVELOPE)) // Deep copy
+      message.content.contentObject.JsonContent.embeddedJsonContent.message.createEvent = this.form
+      const name = this.clientInfos(this.header.clientId).name
+      const messageId = uuidv4()
+      const targetId = this.clientInfos(this.header.routingKey).id
+      const sentAt = moment().format()
+      message.distributionID = `${name}_${messageId}`
+      message.senderID = this.header.clientId
+      message.dateTimeSent = sentAt
+      message.descriptor.explicitAddress.explicitAddressValue = targetId
+      message.content.contentObject.JsonContent.embeddedJsonContent.message.messageId = messageId
+      message.content.contentObject.JsonContent.embeddedJsonContent.message.sender = { name, uri: `hubsante:${this.header.clientId}}` }
+      message.content.contentObject.JsonContent.embeddedJsonContent.message.sentAt = sentAt
+      message.content.contentObject.JsonContent.embeddedJsonContent.message.recipients.recipient = [{ name: this.clientInfos(this.header.routingKey).name, uri: `hubsante:${targetId}}` }]
+      return message
+    },
     async submit (request) {
       const time = this.time()
-      const data = await (await fetch('samuA_to_samuB.json')).json()
+      // const data = await (await fetch('samuA_to_samuB.json')).json()
+      const data = this.buildMessage()
       console.log('submit', request, data)
       // Could be done using Swagger generated client, but it would validate fields!
       this.$axios.$post(

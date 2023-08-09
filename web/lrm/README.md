@@ -15,7 +15,11 @@ kubectl replace --force -f ../../hub/infra/web/lrm.yaml
 ### Client
 - [ ] Make message sending work
   - [x] Load message from file into UI
-  - [ ] Auto add fixed EDXL envelope and message header + integrate header data on send (sender, recipient, time, ...)
+  - [x] Auto add fixed EDXL envelope and message header + integrate header data on send (sender, recipient, time, ...)
+  - [x] Rebuild local cluster
+  - [ ] Review DLQ PR and merge into main
+  - [ ] Review Model Migration PR and merge into demo branch
+  - [ ] Use local dispatcher image for tests
   - [ ] Make message editable & send by SAMU A (json)
   - [ ] _Handle XML for SAMU B & NexSIS?_ -> not now
 - [ ] Landing interface 
@@ -46,3 +50,7 @@ kubectl replace --force -f ../../hub/infra/web/lrm.yaml
 - [ ] Improve logging and visibility to make it easier to debug
     - [ ] Better logging
     - [ ] ELK stack
+
+### Acks
+- [ ] Be able to send back acks
+- [ ] Handle ack display in UI
