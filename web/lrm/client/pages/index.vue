@@ -4,6 +4,16 @@
       <v-card style="height: 86vh; overflow-y: auto;">
         <v-card-title class="headline">
           Formulaire
+          <v-spacer />
+          <v-btn
+            color="primary"
+            @click="load('ExempleDubois.json')"
+          >
+            <v-icon left>
+              mdi-upload
+            </v-icon>
+            Charger
+          </v-btn>
         </v-card-title>
         <v-card-text>
           <v-alert type="info" dense class="mb-0">
@@ -39,6 +49,7 @@
           </v-form>
           <RequestForm
             v-if="schema"
+            :key="selectedExample"
             v-model="form"
             :schema="schema"
             @submit="submit(null)"
@@ -118,6 +129,7 @@ export default {
   data () {
     return {
       schema: null,
+      selectedExample: null,
       messages: [/* {
         direction: DIRECTIONS.IN,
         routingKey: '',
@@ -212,6 +224,15 @@ export default {
         name: clientId.split('.')[2],
         icon: clientId.split('.')[1] === 'health' ? 'mdi-heart-pulse' : 'mdi-fire'
       }
+    },
+    load (exampleName) {
+      fetch('examples/' + exampleName)
+        .then(response => response.json())
+        .then((data) => {
+          this.form = data
+          // Trigger RequestForm reload with key change | Ref.: https://stackoverflow.com/a/48755228
+          this.selectedExample = exampleName
+        })
     },
     async submit (request) {
       const time = this.time()
