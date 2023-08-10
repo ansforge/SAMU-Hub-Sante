@@ -34,8 +34,8 @@
         <v-card-title class="headline">
           Messages
           <v-badge
-            v-if="showedMessages.length"
-            :content="showedMessages.length"
+            v-if="showableMessages.length"
+            :content="showableMessages.length"
           />
           <v-spacer />
           <v-switch
@@ -45,13 +45,13 @@
           />
         </v-card-title>
         <v-btn-toggle
-          v-model="selectedClientId"
+          v-model="selectedMessageType"
           class="ml-4"
           dense
           borderless
           mandatory
         >
-          <v-btn v-for="{name, type, icon} in messageTypes" :key="name" :value="name">
+          <v-btn v-for="{name, type, icon} in messageTypes" :key="type" :value="type" class="px-4">
             <v-icon left>
               {{ icon }}
             </v-icon>
@@ -66,7 +66,7 @@
         <v-card-text>
           <transition-group name="message">
             <div
-              v-for="{direction, routingKey, time, receivedTime, code, body} in showedMessages"
+              v-for="{direction, routingKey, time, receivedTime, code, body} in selectedMessages"
               :key="time"
               class="message mb-4"
             >
@@ -164,11 +164,11 @@ const EDXL_ENVELOPE = {
   }
 }
 export default {
-  name: 'LRM',
+  name: 'Demo',
   data () {
     return {
       schema: null,
-      selectedExample: null,
+      selectedMessageType: 'message',
       messages: [/* {
         direction: DIRECTIONS.IN,
         routingKey: '',
@@ -181,22 +181,18 @@ export default {
         showSentMessages: false
       },
       selectedClientId: null,
-      items: {
-        clientId: ['fr.health.samuA', 'fr.health.samuB', 'fr.fire.nexsis.sdisZ'],
-        routingKey: ['fr.health.samuA', 'fr.health.samuB', 'fr.fire.nexsis.sdisZ']
-      },
       messageTypes: [{
         name: 'Message',
         type: 'message',
         icon: 'mdi-message'
       }, {
-        name: 'Info',
-        type: 'info',
-        icon: 'mdi-information'
-      }, {
         name: 'Ack',
         type: 'ack',
         icon: 'mdi-check'
+      }, {
+        name: 'Info',
+        type: 'info',
+        icon: 'mdi-information'
       }],
       form: {}
     }
@@ -216,8 +212,11 @@ export default {
         )
       )
     },
-    showedMessages () {
+    showableMessages () {
       return this.config.showSentMessages ? this.clientMessages : this.clientMessages.filter(message => !this.isOut(message.direction))
+    },
+    selectedMessages () {
+      return this.showableMessages.filter(message => this.getMessageType(message) === this.selectedMessageType)
     },
     messagesSentCount () {
       return this.clientMessages.filter(message => this.isOut(message.direction)).length
@@ -264,19 +263,19 @@ export default {
     isOut (direction) {
       return direction === DIRECTIONS.OUT
     },
+    getMessageType (message) {
+      if (message.body.distributionKind === 'Ack') {
+        return 'ack'
+      } else if (message.body.distributionKind === 'Error') {
+        return 'info'
+      } else {
+        return 'message'
+      }
+    },
     typeMessages (type) {
-      return this.showedMessages.filter((message) => {
-        if (type === 'ack') {
-          return message.body.distributionKind === 'Ack'
-        } else if (type === 'info') {
-          return message.body.distributionKind === 'Error'
-        } else if (type === 'message') {
-          return message.body.distributionKind !== 'Ack' && message.body.distributionKind !== 'Error'
-        } else {
-          console.error('Unexpected message type', type)
-          return true
-        }
-      })
+      return this.showableMessages.filter(
+        message => this.getMessageType(message) === type
+      )
     },
     clientInfos (clientId) {
       return {
