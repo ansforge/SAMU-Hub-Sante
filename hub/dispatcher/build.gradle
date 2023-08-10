@@ -1,9 +1,9 @@
 plugins {
-	id 'java'
-	id 'org.springframework.boot' version '2.7.9'
-	id 'io.spring.dependency-management' version '1.1.0'
-	id 'com.google.cloud.tools.jib' version '3.3.1'
-	id 'jacoco'
+    id 'java'
+    id 'org.springframework.boot' version '2.7.9'
+    id 'io.spring.dependency-management' version '1.1.0'
+    id 'com.google.cloud.tools.jib' version '3.3.1'
+    id 'jacoco'
 }
 
 group = 'com.hubsante'
@@ -11,72 +11,118 @@ archivesBaseName = 'hubsante-dispatcher'
 version = '0.8-SNAPSHOT'
 
 java {
-	toolchain {
-		languageVersion = JavaLanguageVersion.of(11)
-	}
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(11)
+    }
 }
 
 springBoot {
-	mainClass = 'com.hubsante.hub.HubApplication'
+    mainClass = 'com.hubsante.hub.HubApplication'
 }
 
 jacocoTestReport {
-	reports {
-		html.required = true
-		xml.required = true
-	}
+    reports {
+        html.required = true
+        xml.required = true
+    }
 }
 
 configurations {
-	compileOnly {
-		extendsFrom annotationProcessor
-	}
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
 }
 
 repositories {
-	mavenCentral()
+    mavenCentral()
 }
 
 ext {
-	set('testcontainersVersion', "1.17.6")
+    set('testcontainersVersion', "1.17.6")
 }
 
 dependencies {
-	implementation project(':models')
+    implementation project(':models')
 
-	implementation 'org.springframework.boot:spring-boot-starter-amqp'
-	implementation 'com.github.jknack:handlebars:4.3.1'
-	implementation 'org.springframework.boot:spring-boot-starter-validation'
-	implementation 'org.json:json:20220924'
-	implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
-	implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.12.5'
-	implementation 'com.networknt:json-schema-validator:1.0.72'
-	implementation 'org.projectlombok:lombok'
-	implementation 'org.junit.jupiter:junit-jupiter-params'
+    implementation 'org.codehaus.groovy:groovy-json:3.0.9'
 
-	developmentOnly 'org.springframework.boot:spring-boot-devtools'
-	annotationProcessor 'org.projectlombok:lombok'
+    implementation 'org.springframework.boot:spring-boot-starter-amqp'
+    implementation 'com.github.jknack:handlebars:4.3.1'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.json:json:20220924'
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.12.5'
+    implementation 'com.networknt:json-schema-validator:1.0.72'
+    implementation 'org.projectlombok:lombok'
+    implementation 'org.junit.jupiter:junit-jupiter-params'
 
-	testAnnotationProcessor 'org.projectlombok:lombok'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testImplementation 'org.springframework.amqp:spring-rabbit-test'
-	testImplementation 'org.testcontainers:junit-jupiter'
-	testImplementation 'org.testcontainers:rabbitmq'
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    testAnnotationProcessor 'org.projectlombok:lombok'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.amqp:spring-rabbit-test'
+    testImplementation 'org.testcontainers:junit-jupiter'
+    testImplementation 'org.testcontainers:rabbitmq'
 }
 
 dependencyManagement {
-	imports {
-		mavenBom "org.testcontainers:testcontainers-bom:${testcontainersVersion}"
-	}
+    imports {
+        mavenBom "org.testcontainers:testcontainers-bom:${testcontainersVersion}"
+    }
 }
 
 tasks.named('test') {
-	useJUnitPlatform()
-	finalizedBy jacocoTestReport // report is always generated after tests run
+    useJUnitPlatform()
+    finalizedBy jacocoTestReport // report is always generated after tests run
 }
 
 jib {
-	from {
-		image 'eclipse-temurin:11-jre'
-	}
+    from {
+        image 'eclipse-temurin:11-jre'
+    }
+    to {
+        image 'romainfd/dispatcher:latest'
+        tags = gitRefs()
+    }
+}
+
+import groovy.json.JsonSlurper
+def gitRefs() {
+    try {
+        def releaseData = callGithubAPI('releases/latest')
+        def tagName = releaseData.tag_name
+
+        def commitData = callGithubAPI('commits/tags/' + tagName)
+        def releaseCommitHash = commitData.sha.take(7)
+        println("Release commit hash: " + releaseCommitHash)
+
+        new ByteArrayOutputStream().withStream { os ->
+            exec {
+                commandLine 'git', 'rev-parse', '--short=7', 'HEAD'
+                standardOutput = os
+            }
+            def currentCommitHash = os.toString().trim()
+            println("Current commit hash: " + currentCommitHash)
+
+            if (currentCommitHash == releaseCommitHash) {
+                return ['latest', currentCommitHash, tagName]
+            } else {
+                return [currentCommitHash]
+            }
+        }
+    } catch (Exception e) {
+        throw new GradleException('Failed to retrieve Git commit hash.', e)
+    }
+}
+
+static def callGithubAPI(String endpoint) {
+    // GitHub API base URL
+    def apiUrl = 'https://api.github.com/repos/ansforge/SAMU-Hub-Sante/'
+    def token = System.getenv('GITHUB_TOKEN')
+    def request = new URL(apiUrl + endpoint).openConnection()
+    request.setRequestProperty('Authorization', 'token ' + token)
+    request.connect()
+
+    return new JsonSlurper().parseText(request.getInputStream().getText())
 }

@@ -3,9 +3,10 @@ package com.hubsante.dispatcher;
 import com.hubsante.hub.HubApplication;
 import com.hubsante.hub.exception.JsonSchemaValidationException;
 import com.hubsante.hub.service.EdxlHandler;
-import com.hubsante.model.cisu.CreateEventMessage;
-import com.hubsante.model.edxl.EdxlEnvelope;
+import com.hubsante.hub.service.Validator;
+import com.hubsante.model.cisu.CreateCaseMessage;
 import com.hubsante.model.edxl.EdxlMessage;
+import com.hubsante.model.edxl.UseCaseMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -17,7 +18,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.xml.sax.SAXException;
 
 import java.io.File;
 import java.io.IOException;
@@ -40,6 +40,9 @@ public class EdxlHandlerTest {
     @Autowired
     private EdxlHandler converter;
 
+    @Autowired
+    private Validator validator;
+
     @DynamicPropertySource
     static void registerPgProperties(DynamicPropertyRegistry propertiesRegistry) {
         propertiesRegistry.add("client.preferences.file",
@@ -47,39 +50,25 @@ public class EdxlHandlerTest {
     }
 
     @Test
-    @DisplayName("should deserialize Json EDXL - Envelope Only")
-    public void deserializeJsonEnvelope() throws IOException {
-        File edxlCisuCreateFile = new File(classLoader.getResource("messages/edxlWithMalformedContent.json").getFile());
-        String json = Files.readString(edxlCisuCreateFile.toPath());
-
-        EdxlEnvelope envelope = converter.deserializeJsonEnvelope(json);
-        assertEquals("samu050_2608323d-507d-4cbf-bf74-52007f8124ea",envelope.getDistributionID());
-        assertEquals("fr.health.samu050", envelope.getSenderID());
-        assertEquals("hubfire", envelope.getDescriptor().getExplicitAddress().getExplicitAddressScheme());
-        assertEquals("fr.fire.nexsis.sdis23", envelope.getDescriptor().getExplicitAddress().getExplicitAddressValue());
-    }
-
-    @Test
     @DisplayName("should deserialize Json EDXL - Cisu Create")
     public void deserializeCreateJsonEDXL() throws IOException {
 
-        File edxlCisuCreateFile = new File(classLoader.getResource("messages/cisuCreateEdxl.json").getFile());
+        File edxlCisuCreateFile = new File(classLoader.getResource("messages/createCaseEdxl.json").getFile());
         EdxlMessage edxlMessage = converter.deserializeJsonEDXL(Files.readString(edxlCisuCreateFile.toPath()));
 
-        assertEquals("fr.health.samu050", edxlMessage.getSenderID());
+        assertEquals("fr.health.samu069", edxlMessage.getSenderID());
         assertEquals(
-                OffsetDateTime.parse("2022-09-27T08:23:34+02:00"),
+                OffsetDateTime.parse("2022-07-25T10:04:34+01:00"),
                 edxlMessage.getDateTimeSent()
         );
 
-        CreateEventMessage createEventMessage = edxlMessage
+        CreateCaseMessage createCaseMessage = edxlMessage
                 .getContent().getContentObject().getContentWrapper().getEmbeddedContent().getMessage();
 
         assertEquals(
-                "Détresse vitale|Suspicion d'arrêt cardiaque, mort subite",
-                createEventMessage
-                        .getCreateEvent()
-                        .getPrimaryAlert()
+                "Céphalée, migraines, Traumatisme sérieux, plaie intermédiaire",
+                createCaseMessage
+                        .getInitialAlert()
                         .getAlertCode()
                         .getHealthMotive()
                         .getLabel()
@@ -88,9 +77,10 @@ public class EdxlHandlerTest {
 
     @Test
     @DisplayName("should serialize XML EDXL - Cisu Create")
-    public void serializeCreateXmlEDXL() throws IOException, SAXException {
-        File edxlCisuCreateFile = new File(classLoader.getResource("messages/cisuCreateEdxl.json").getFile());
-        EdxlMessage edxlMessage = converter.deserializeJsonEDXL(Files.readString(edxlCisuCreateFile.toPath()));
+    public void serializeCreateXmlEDXL() throws IOException {
+        File edxlCisuCreateFile = new File(classLoader.getResource("messages/createCaseEdxl.json").getFile());
+        String json = Files.readString(edxlCisuCreateFile.toPath());
+        EdxlMessage edxlMessage = converter.deserializeJsonEDXL(json);
 
         String xml = converter.serializeXmlEDXL(edxlMessage);
         Assertions.assertTrue(() -> xml.startsWith(xmlPrefix()));
@@ -98,19 +88,24 @@ public class EdxlHandlerTest {
         EdxlMessage deserializedFromXml = converter.deserializeXmlEDXL(xml);
         assertEquals(deserializedFromXml, edxlMessage);
 
-        assertDoesNotThrow(() -> converter.validateXML(xml, "edxl/edxl-de-v2.0-wd11.xsd"));
+        UseCaseMessage useCaseMessage = edxlMessage
+                .getContent().getContentObject().getContentWrapper().getEmbeddedContent().getMessage();
+        assertDoesNotThrow(() -> validator.validateUseCaseMessage(useCaseMessage, false));
+
+        //TODO team: generate xsd for new cisu model
+//        assertDoesNotThrow(() -> converter.validateXML(xml, "edxl/edxl-de-v2.0-wd11.xsd"));
     }
 
     @Test
     @DisplayName("validation should failed if Json Edxl is malfromatted")
     public void wrongJsonValidationFailed() throws IOException {
-        File edxlCisuCreateFile = new File(classLoader.getResource("messages/missingRequiredExplicitAddressValue.json").getFile());
+        File edxlCisuCreateFile = new File(classLoader.getResource("messages/missingRootAndChildRequiredValues_CreateCaseEDXL.json").getFile());
         String json = Files.readString(edxlCisuCreateFile.toPath());
 
         // deserialization method does not throw error
-        assertDoesNotThrow(() -> converter.deserializeJsonEnvelope(json));
+        assertDoesNotThrow(() -> converter.deserializeJsonEDXL(json));
         // validation does
-        assertThrows(JsonSchemaValidationException.class, () -> converter.validateJSON(json, "edxl.json"));
+        assertThrows(JsonSchemaValidationException.class, () -> validator.validateJSON(json, "edxl.json"));
     }
 
     private String xmlPrefix() {

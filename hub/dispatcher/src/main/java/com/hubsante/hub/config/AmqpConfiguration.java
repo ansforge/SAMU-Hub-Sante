@@ -1,22 +1,21 @@
 package com.hubsante.hub.config;
 
 import com.rabbitmq.client.DefaultSaslConfig;
-import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
-import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.amqp.RabbitProperties;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
 import javax.annotation.PostConstruct;
 
 @Configuration
 public class AmqpConfiguration {
     public static final String HUBSANTE_EXCHANGE = "hubsante";
-    public static final String CONSUME_QUEUE_NAME = "*.out.*";
-    public static final String MESSAGE_ROUTING_KEY = "#.out.message";
-    public static final String INFO_ROUTING_KEY = "#.out.info";
-    public static final String ACK_ROUTING_KEY = "#.out.ack";
+    public static final String DISTRIBUTION_EXCHANGE = "distribution";
+    public static final String DISPATCH_QUEUE_NAME = "dispatch";
+    public static final String DISPATCH_DLQ_NAME = "dispatch.dlq";
+    public static final String DLQ_REASON = "x-first-death-reason";
+    public static final String DLQ_MESSAGE_ORIGIN = "x-first-death-queue";
 
     private final CachingConnectionFactory connectionFactory;
 

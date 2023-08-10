@@ -32,12 +32,7 @@ public abstract class Consumer {
     /**
      * Nom de la file
      */
-    protected String routingKey;
-
-    /**
-     * Nom de la file ack
-     */
-    protected String fileAckName;
+    protected String queueName;
 
     /**
      * serveur distant
@@ -68,12 +63,11 @@ public abstract class Consumer {
             .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
             .disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE);
 
-    public Consumer(String host, int port, String exchangeName, String routingKey, String fileAckName, String clientId) {
+    public Consumer(String host, int port, String exchangeName, String queueName, String clientId) {
         super();
 
         this.clientId = clientId;
-        this.routingKey = routingKey;
-        this.fileAckName = fileAckName;
+        this.queueName = queueName;
         this.host = host;
         this.port = port;
         this.exchangeName = exchangeName;
@@ -102,12 +96,12 @@ public abstract class Consumer {
             // consumeChannel: where messages are received by the client from Hub Santé
 
             this.consumeChannel = connection.createChannel();
-            this.consumeChannel.queueDeclare(this.routingKey, true, false, false, null);
+            this.consumeChannel.queueDeclare(this.queueName, true, false, false, null);
 
             // produceChannel: where ack messages are sent to Hub Santé
             this.producerAck = new Producer(this.host, this.port, this.exchangeName);
             this.producerAck.connect(tlsConf);
-            this.consumeChannel.basicConsume(this.routingKey, false, new DeliverCallback() {
+            this.consumeChannel.basicConsume(this.queueName, false, new DeliverCallback() {
 
                 @Override
                 public void handle(String consumerTag, Delivery message) throws IOException {
@@ -129,21 +123,8 @@ public abstract class Consumer {
     protected abstract void deliverCallback(String consumerTag, Delivery delivery) throws IOException;
 
     protected EdxlMessage generateFunctionalAckMessage(EdxlMessage receivedMessage) {
-        //TODO bbo : CisuAckMessage : define recipient format
-        // long-clientID & short-clientID ?
-        AddresseeType recipient = new AddresseeType(receivedMessage.getSenderID(), receivedMessage.getSenderID());
-        List<AddresseeType> recipients = new ArrayList<>();
-        recipients.add(recipient);
 
-        AckMessage cisuAckMessage = new AckMessage(
-                clientId + "_" + UUID.randomUUID(),
-                new AddresseeType(clientId, clientId),
-                OffsetDateTime.of(LocalDateTime.now(), ZoneOffset.of("+02")),
-                MsgType.ACK,
-                Status.ACTUAL,
-                new Recipients(recipients),
-                new AckMessageId(receivedMessage.getDistributionID())
-        );
+        GenericAckMessage cisuAckMessage = new GenericAckMessage(receivedMessage.getDistributionID());
 
         // TODO bbo/rfd : choose what to do with scheme : senderID ? hubsante ?
         ExplicitAddress explicitAddress = new ExplicitAddress();

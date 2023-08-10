@@ -12,19 +12,19 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 
-import static com.hubsante.hub.config.AmqpConfiguration.CONSUME_QUEUE_NAME;
+import static com.hubsante.hub.config.AmqpConfiguration.*;
 
 @Service
 @Slf4j
 public class Dispatcher {
-
-    private static final String JSON_CONTENT_TYPE = "application/json";
-    private static final String XML_CONTENT_TYPE = "application/xml";
-
     private final RabbitTemplate rabbitTemplate;
     private final EdxlHandler edxlHandler;
     private final HubClientConfiguration hubConfig;
+
+    private static final String HEALTH_PREFIX = "fr.health";
 
     public Dispatcher(RabbitTemplate rabbitTemplate, EdxlHandler edxlHandler, HubClientConfiguration hubConfig) {
         this.rabbitTemplate = rabbitTemplate;
@@ -32,14 +32,11 @@ public class Dispatcher {
         this.hubConfig = hubConfig;
     }
 
-    @RabbitListener(queues = CONSUME_QUEUE_NAME)
+    @RabbitListener(queues = DISPATCH_QUEUE_NAME)
     public void dispatch(Message message) {
-
         String receivedRoutingKey = message.getMessageProperties().getReceivedRoutingKey();
-        String receivedEdxl = new String(message.getBody(), StandardCharsets.UTF_8);
-
         // Deserialize the message according to its content type
-        EdxlMessage edxlMessage = deserializeMessage(receivedEdxl, receivedRoutingKey, message);
+        EdxlMessage edxlMessage = deserializeMessage(message);
         // Check that the sender is consistent with the routing key
         checkSenderConsistency(receivedRoutingKey, edxlMessage);
         // Extract recipient queue name from the message (explicit address and distribution kind)
@@ -47,24 +44,46 @@ public class Dispatcher {
         // Clone the message and adapt properties: set the content type
         Message forwardedMsg = forwardedMessage(edxlMessage, message.getMessageProperties());
         // publish the message to the recipient queue
-        rabbitTemplate.send("", queueName, forwardedMsg);
+        rabbitTemplate.send(DISTRIBUTION_EXCHANGE, queueName, forwardedMsg);
+    }
+
+    @RabbitListener(queues = DISPATCH_DLQ_NAME)
+    public void dispatchDLQ(Message message) {
+        EdxlMessage edxlMessage = deserializeMessage(message);
+        String queueName = getSenderInfoQueueName(edxlMessage);
+        // log message & error
+        log.warn("Message {} has been read from dead-letter-queue; reason was {}",
+                edxlMessage.getDistributionID(),
+                message.getMessageProperties().getHeader(DLQ_REASON));
+        // send info
+        //TODO bbo: use Error model
+        rabbitTemplate.send(DISTRIBUTION_EXCHANGE, queueName, new Message(
+                ("message " + edxlMessage.getDistributionID() + "has not been consumed on "
+                        + message.getMessageProperties().getHeader(DLQ_MESSAGE_ORIGIN)
+                ).getBytes()));
     }
 
     private boolean convertToXML(String senderID, String recipientID) {
         // inter forces messaging is always XML
-        if (!recipientID.startsWith("fr.health")) {
+        if (!recipientID.startsWith(HEALTH_PREFIX)) {
             return true;
         }
         // for outside -> hubsante messaging, use client preference (default to JSON)
-        return !senderID.startsWith("fr.health") &&
+        return !senderID.startsWith(HEALTH_PREFIX) &&
                 (hubConfig.getClientPreferences().get(recipientID) != null
                         && hubConfig.getClientPreferences().get(recipientID));
     }
 
     private void checkSenderConsistency(String receivedRoutingKey, EdxlMessage edxlMessage) {
-        if (!receivedRoutingKey.startsWith(edxlMessage.getSenderID())) {
-            log.warn("Sender inconsistency for message {} : message sender is {} but received routing key is {}",
-                    edxlMessage.getDistributionID(), edxlMessage.getSenderID(), receivedRoutingKey);
+        if (!receivedRoutingKey.equals(edxlMessage.getSenderID())) {
+            String errorMessage = "Sender inconsistency for message " +
+                    edxlMessage.getDistributionID() +
+                    " : message sender is " +
+                    edxlMessage.getSenderID() +
+                    " but received routing key is " +
+                    receivedRoutingKey;
+            log.warn(errorMessage);
+            rabbitTemplate.send(DISTRIBUTION_EXCHANGE, getSenderInfoQueueName(edxlMessage), new Message(errorMessage.getBytes()));
             throw new AmqpRejectAndDontRequeueException("do not requeue !");
         }
     }
@@ -74,15 +93,21 @@ public class Dispatcher {
         String senderID = edxlMessage.getSenderID();
         String edxlString;
 
+        if (!MessageDeliveryMode.PERSISTENT.equals(properties.getReceivedDeliveryMode())) {
+            properties.setDeliveryMode(MessageDeliveryMode.PERSISTENT);
+        }
+        overrideExpirationIfNeeded(edxlMessage, properties);
+
         try {
             if (convertToXML(senderID, recipientID)) {
                 edxlString = edxlHandler.prettyPrintXmlEDXL(edxlMessage);
-                properties.setContentType(XML_CONTENT_TYPE);
+                properties.setContentType(MessageProperties.CONTENT_TYPE_XML);
             } else {
                 edxlString = edxlHandler.prettyPrintJsonEDXL(edxlMessage);
-                properties.setContentType(JSON_CONTENT_TYPE);
+                properties.setContentType(MessageProperties.CONTENT_TYPE_JSON);
             }
-            log.info("  ↳ [x] Forwarding to '" + recipientID + "':" + edxlString);
+            log.info("  ↳ [x] Forwarding to '" + recipientID + "': message with distributionID " + edxlMessage.getDistributionID());
+            log.debug(edxlString);
             return new Message(edxlString.getBytes(StandardCharsets.UTF_8), properties);
 
         } catch (JsonProcessingException e) {
@@ -98,41 +123,66 @@ public class Dispatcher {
 
     private String getRecipientQueueName(EdxlMessage edxlMessage) {
         String queueType = edxlMessage.getDistributionKind().equals(DistributionKind.ACK) ? "ack" : "message";
-        return getRecipientID(edxlMessage) + ".in." + queueType;
+        return getRecipientID(edxlMessage) + "." + queueType;
+    }
+
+    private String getSenderInfoQueueName(EdxlMessage edxlMessage) {
+        return edxlMessage.getSenderID() + ".info";
     }
 
     /*
-    ** Deserialize the message according to its content type
+     ** Deserialize the message according to its content type
      */
-    private EdxlMessage deserializeMessage(String receivedEdxl, String receivedRoutingKey, Message message) {
+    private EdxlMessage deserializeMessage(Message message) {
+        String receivedEdxl = new String(message.getBody(), StandardCharsets.UTF_8);
         EdxlMessage edxlMessage;
 
         try {
             // We deserialize according to the content type
             // It MUST be explicitly set by the client
-            if (message.getMessageProperties().getContentType().equals(JSON_CONTENT_TYPE)) {
+            if (message.getMessageProperties().getContentType().equals(MessageProperties.CONTENT_TYPE_JSON)) {
                 edxlMessage = edxlHandler.deserializeJsonEDXL(receivedEdxl);
-                log.info(" [x] Received from '" + receivedRoutingKey + "':" + edxlHandler.prettyPrintJsonEDXL(edxlMessage));
+                log.info(" [x] Received from '" + message.getMessageProperties().getReceivedRoutingKey() + "': message with distributionID" + edxlMessage.getDistributionID());
+                log.debug(edxlHandler.prettyPrintJsonEDXL(edxlMessage));
 
-            } else if (message.getMessageProperties().getContentType().equals(XML_CONTENT_TYPE)) {
+            } else if (message.getMessageProperties().getContentType().equals(MessageProperties.CONTENT_TYPE_XML)) {
                 edxlMessage = edxlHandler.deserializeXmlEDXL(receivedEdxl);
-                log.info(" [x] Received from '" + receivedRoutingKey + "':" + edxlHandler.prettyPrintXmlEDXL(edxlMessage));
+                log.info(" [x] Received from '" + message.getMessageProperties().getReceivedRoutingKey() + "': message with distributionID " + edxlMessage.getDistributionID());
+                log.debug(edxlHandler.prettyPrintXmlEDXL(edxlMessage));
 
             } else {
-                // TODO (bbo) : send message to sender info queue with distributionID and error type ?
+                String queueName = message.getMessageProperties().getReceivedRoutingKey() + ".info";
+                rabbitTemplate.send(DISTRIBUTION_EXCHANGE, queueName, new Message(
+                        ("Unhandled Content-Type ! Message Content-Type should be set at 'application/json' or 'application/xml'").getBytes()));
                 throw new AmqpRejectAndDontRequeueException("do not requeue ! Unhandled message content type : "
                         + message.getMessageProperties().getContentType());
             }
 
         } catch (JsonProcessingException e) {
             log.error("Could not parse message " + receivedEdxl + " coming from " + message.getMessageProperties().getConsumerQueue(), e);
-            // TODO (bbo) : if we end using a "INFO" channel, we should send an INFO message for this type of errors.
-            //  if the message is wrongly formatted client-side we should inform the client.
-            //  ----
-            //  with Spring Rabbit integration, an exception thrown in a @RabbitListener method will end up with message requeuing
-            //  by default, except for AmqpRejectAndDontRequeueException which is specially designed for it. Think about moving it to DLQ instead
+            String queueName = message.getMessageProperties().getReceivedRoutingKey() + ".info";
+            rabbitTemplate.send(DISTRIBUTION_EXCHANGE, queueName, new Message(
+                    new String("Could not parse message, invalid format").getBytes()));
+            throw new AmqpRejectAndDontRequeueException("do not requeue !");
+        } catch (Exception e) {
+            e.printStackTrace();
             throw new AmqpRejectAndDontRequeueException("do not requeue !");
         }
         return edxlMessage;
+    }
+
+    private void overrideExpirationIfNeeded(EdxlMessage edxlMessage, MessageProperties properties) {
+        // OffsetDateTime comes with seconds and nanos, not millis
+        // We assume that one second is an acceptable interval
+        long queueExpiration = OffsetDateTime.now().plusSeconds(hubConfig.getDefaultTTL()).toEpochSecond();
+        long edxlCustomExpiration = edxlMessage.getDateTimeExpires().toEpochSecond();
+        long customDelay = (queueExpiration - edxlCustomExpiration) * 1000;
+
+        if (customDelay > 0) {
+            properties.setExpiration(String.valueOf(customDelay));
+            log.info("override expiration for message {}: expiration is now {}",
+                    edxlMessage.getDistributionID(),
+                    edxlMessage.getDateTimeExpires().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+        }
     }
 }

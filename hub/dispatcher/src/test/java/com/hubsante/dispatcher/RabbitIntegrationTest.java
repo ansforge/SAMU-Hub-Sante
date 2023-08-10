@@ -3,15 +3,11 @@ package com.hubsante.dispatcher;
 import com.hubsante.model.edxl.EdxlMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.*;
-import org.springframework.amqp.AmqpException;
 import org.springframework.amqp.core.Message;
-import org.springframework.amqp.core.MessageProperties;
-import org.springframework.amqp.core.MessagePropertiesBuilder;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
-import java.io.File;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
+import java.time.OffsetDateTime;
 
 import static com.hubsante.dispatcher.utils.MessageTestUtils.createMessage;
 import static org.junit.jupiter.api.Assertions.*;
@@ -48,9 +44,105 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
             }
         });
 
-        Message published = createMessage("samuB_to_nexsis.xml", SAMU_A_OUTER_MESSAGE_ROUTING_KEY);
+        Message published = createMessage("samuB_to_nexsis.xml", SAMU_B_WRONG_OUTER_MESSAGE_ROUTING_KEY);
+        samuB_client.sendAndReceive(HUBSANTE_EXCHANGE, SAMU_B_WRONG_OUTER_MESSAGE_ROUTING_KEY, published);
+
+        assertTrue(failed);
+    }
+
+    @Test
+    @DisplayName("publish with authorized but inconsistent routing key fails")
+    public void publishWithAuthorizedButInconsistentRoutingKeyFails() throws Exception {
+        String p12Path = classLoader.getResource("config/certs/samuB/samuB.p12").getPath();
+        RabbitTemplate samuB_client = getCustomRabbitTemplate(p12Path, "samuB");
+
+        samuB_client.setConfirmCallback((correlationData, ack, cause) -> {
+            if (!ack) {
+                failed = true;
+            }
+        });
+
+        Message published = createMessage("samuA_to_nexsis.xml", SAMU_B_OUTER_MESSAGE_ROUTING_KEY);
         samuB_client.sendAndReceive(HUBSANTE_EXCHANGE, SAMU_A_OUTER_MESSAGE_ROUTING_KEY, published);
 
         assertTrue(failed);
+    }
+
+    @Test
+    @DisplayName("expired message should be rejected")
+    public void rejectExpiredMessage() throws Exception {
+        Message published = createMessage("samuB_to_nexsis.xml", SAMU_B_OUTER_MESSAGE_ROUTING_KEY);
+        RabbitTemplate samuB_client = getCustomRabbitTemplate(classLoader.getResource("config/certs/samuB/samuB.p12").getPath(), "samuB");
+        samuB_client.sendAndReceive(HUBSANTE_EXCHANGE, SAMU_B_OUTER_MESSAGE_ROUTING_KEY, published);
+
+        Thread.sleep(10000);
+        assertRecipientDidNotReceive("sdisZ", SDIS_Z_MESSAGE_QUEUE);
+
+        Message infoMsg = samuB_client.receive(SAMU_B_INFO_QUEUE);
+        assertNotNull(infoMsg);
+        String errorMsg = new String(infoMsg.getBody());
+        assert(errorMsg.endsWith("has not been consumed on fr.fire.nexsis.sdisZ.message"));
+    }
+
+    @Test
+    @DisplayName("message expired by publisher rule should be rejected")
+    public void rejectExpiredMessageWithPublisherExpirationLowerThanHubTTL() throws Exception {
+        Message published = createMessage("samuB_to_nexsis.xml", SAMU_B_OUTER_MESSAGE_ROUTING_KEY);
+        published.getMessageProperties().setExpiration("100");
+        RabbitTemplate samuB_client = getCustomRabbitTemplate(classLoader.getResource("config/certs/samuB/samuB.p12").getPath(), "samuB");
+        samuB_client.sendAndReceive(HUBSANTE_EXCHANGE, SAMU_B_OUTER_MESSAGE_ROUTING_KEY, published);
+
+        Thread.sleep(200);
+
+        assertRecipientDidNotReceive("sdisZ", SDIS_Z_MESSAGE_QUEUE);
+        Message infoMsg = samuB_client.receive(SAMU_B_INFO_QUEUE);
+        assertNotNull(infoMsg);
+        String errorMsg = new String(infoMsg.getBody());
+        assert(errorMsg.endsWith("has not been consumed on fr.fire.nexsis.sdisZ.message"));
+    }
+
+    @Test
+    @DisplayName("message expired according to EDXL.dateTimeExpires should be rejected")
+    public void rejectExpirationMessageWithEdxlDateTimeExpiresLowerThanHubTTL() throws Exception {
+        Message source = createMessage("samuB_to_nexsis.xml", SAMU_B_OUTER_MESSAGE_ROUTING_KEY);
+        EdxlMessage edxlMessage = converter.deserializeXmlEDXL(new String(source.getBody(), StandardCharsets.UTF_8));
+        edxlMessage.setDateTimeExpires(OffsetDateTime.now().plusNanos(100000));
+        byte[] edxlBytes = converter.serializeXmlEDXL(edxlMessage).getBytes();
+        Message published = new Message(edxlBytes, source.getMessageProperties());
+
+        RabbitTemplate samuB_client = getCustomRabbitTemplate(classLoader.getResource("config/certs/samuB/samuB.p12").getPath(), "samuB");
+        samuB_client.sendAndReceive(HUBSANTE_EXCHANGE, SAMU_B_OUTER_MESSAGE_ROUTING_KEY, published);
+
+        Thread.sleep(200);
+
+        assertRecipientDidNotReceive("sdisZ", SDIS_Z_MESSAGE_QUEUE);
+        Message infoMsg = samuB_client.receive(SAMU_B_INFO_QUEUE);
+        assertNotNull(infoMsg);
+        String errorMsg = new String(infoMsg.getBody());
+        assert(errorMsg.endsWith("has not been consumed on fr.fire.nexsis.sdisZ.message"));
+    }
+
+    @Test
+    @DisplayName("message without Content-type should be dlq")
+    public void messageWithoutContentTypeIsDLQ() throws Exception {
+        Message noContentTypeMsg = createMessage("samuB_to_nexsis.xml", null, SAMU_B_OUTER_MESSAGE_ROUTING_KEY);
+        RabbitTemplate samuB_client = getCustomRabbitTemplate(classLoader.getResource("config/certs/samuB/samuB.p12").getPath(), "samuB");
+        samuB_client.sendAndReceive(HUBSANTE_EXCHANGE, SAMU_B_OUTER_MESSAGE_ROUTING_KEY, noContentTypeMsg);
+
+        Thread.sleep(200);
+
+        assertRecipientDidNotReceive("sdisZ", SDIS_Z_MESSAGE_QUEUE);
+        Message infoMsg = samuB_client.receive(SAMU_B_INFO_QUEUE);
+        assertNotNull(infoMsg);
+        String errorMsg = new String(infoMsg.getBody());
+        assertEquals("Unhandled Content-Type ! Message Content-Type should be set at 'application/json' or 'application/xml'", errorMsg);
+    }
+
+    private void assertRecipientDidNotReceive(String client, String queueName) throws Exception {
+        RabbitTemplate nexsis_client = getCustomRabbitTemplate(
+                classLoader.getResource("config/certs/" + client + "/" + client + ".p12").getPath(),
+                client);
+        Message received = nexsis_client.receive(queueName);
+        assertNull(received);
     }
 }

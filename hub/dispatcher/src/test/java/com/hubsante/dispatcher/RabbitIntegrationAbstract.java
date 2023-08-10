@@ -27,20 +27,19 @@ import java.io.IOException;
 import static com.hubsante.dispatcher.utils.SSLTestUtils.getSSlContext;
 
 @SpringBootTest
-@ContextConfiguration(classes = HubApplication.class
-        , initializers = RabbitIntegrationTest.Initializer.class
-)
+@ContextConfiguration(classes = HubApplication.class, initializers = RabbitIntegrationTest.Initializer.class)
 @Testcontainers
 @Slf4j
 public class RabbitIntegrationAbstract {
 
     protected static final String HUBSANTE_EXCHANGE = "hubsante";
     protected static final String RABBITMQ_IMAGE = "rabbitmq:3.11-management-alpine";
-    protected static final String ENTRY_QUEUE = "*.out.*";
-    protected static final String SAMU_B_OUTER_MESSAGE_ROUTING_KEY = "fr.health.samuB.out.message";
-    protected static final String SAMU_A_OUTER_MESSAGE_ROUTING_KEY = "fr.health.samuA.out.message";
-    protected static final String SAMU_B_ACK_QUEUE = "fr.health.samuB.in.ack";
-    protected static final String SDIS_Z_MESSAGE_QUEUE = "fr.fire.nexsis.sdisZ.in.message";
+    protected static final String SAMU_B_OUTER_MESSAGE_ROUTING_KEY = "fr.health.samuB";
+    protected static final String SAMU_B_WRONG_OUTER_MESSAGE_ROUTING_KEY = "fr.health.samuB.suffix";
+    protected static final String SAMU_A_OUTER_MESSAGE_ROUTING_KEY = "fr.health.samuA";
+    protected static final String SAMU_B_ACK_QUEUE = "fr.health.samuB.ack";
+    protected static final String SAMU_B_INFO_QUEUE = "fr.health.samuB.info";
+    protected static final String SDIS_Z_MESSAGE_QUEUE = "fr.fire.nexsis.sdisZ.message";
 
     @Autowired
     protected RabbitTemplate rabbitTemplate;
@@ -109,6 +108,7 @@ public class RabbitIntegrationAbstract {
                             .getResource("config/certs/trustStore"),
                     "client.preferences.file=" + Thread.currentThread().getContextClassLoader()
                             .getResource("config/client.preferences.csv"),
+                    "hubsante.default.message.ttl=5",
 
                     // must be set to handle PublisherConfirms in other RabbitTemplates,
                     // even if we don't use it in Dispatcher

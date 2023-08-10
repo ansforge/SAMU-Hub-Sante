@@ -950,5 +950,20 @@
         "NAM": {"type": "string"},
         "ROOM": {"type": "string"},
         "RDSUBBR": {"type": "string"}
-    }
+    },
+    "required": [
+        "messageId",
+        "sender",
+        "sentAt",
+        "msgType",
+        "status",
+        "recipients"
+    ],
+    "oneOf": [
+        {"required": ["ackMessage"]},
+        {"required": ["createEvent"]},
+        {"required": ["ackEvent"]},
+        {"required": ["updateEvent"]},
+        {"required": ["cancelEvent"]}
+    ]
 }

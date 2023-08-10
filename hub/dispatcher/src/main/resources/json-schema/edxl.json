@@ -89,11 +89,11 @@
     },
     "DistributionKind": {
       "type" : "string",
-      "enum" : [ "REPORT", "UPDATE", "CANCEL", "REQUEST", "RESPONSE", "DISPATCH", "ACK", "ERROR", "SENSOR_CONFIGURATION", "SENSOR_CONTROL", "SENSOR_STATUS", "SENSOR_DETECTION", "UNKOWN", "NO_APPROPRIATE_DEFAULT" ]
+      "enum" : [ "Report", "Update", "Cancel", "Ack", "Error" ]
     },
     "DistributionStatus": {
       "type" : "string",
-      "enum" : [ "ACTUAL", "EXERCISE", "SYSTEM", "TEST", "UNKOWN", "NO_APPROPRIATE_DEFAULT" ]
+      "enum" : [ "Actual", "Exercise" ]
     },
     "ExplicitAddress": {
       "type": "object",
@@ -151,5 +151,8 @@
     "genericAckMessage": {
       "$ref": "#/definitions/GenericAckMessage"
     }
-  }
+  },
+  "required": [
+    "senderID", "distributionID", "dateTimeSent", "dateTimeExpires", "distributionStatus", "distributionKind", "descriptor", "content"
+  ]
 }
