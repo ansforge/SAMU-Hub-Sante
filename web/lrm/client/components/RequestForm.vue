@@ -11,6 +11,8 @@
 </template>
 
 <script>
+import moment from 'moment'
+
 export default {
   props: {
     value: {
@@ -32,7 +34,10 @@ export default {
         defaultLocale: 'fr',
         rootDisplay: 'expansion-panels',
         editMode: 'inline',
-        expansionPanelsProps: { mandatory: false }
+        expansionPanelsProps: { mandatory: false },
+        formats: {
+          'date-time': function (dateTime, _locale) { return moment(new Date(dateTime)).format() }
+        }
       }
     }
   },

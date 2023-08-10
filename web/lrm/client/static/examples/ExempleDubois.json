@@ -52,7 +52,7 @@
         },
         "contact": {
             "type": "Personne ? Absence de nomenclature",
-            "detail": "15"
+            "detail": "tel:15"
         },
         "callTaker": {
             "organization": " SAMU? Absence de nomenclature",

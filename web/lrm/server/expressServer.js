@@ -64,7 +64,7 @@ class ExpressServer {
       const { key, msg } = req.body;
       logger.info(` [x] Sending to key ${key}: '${msg}'`);
       const { connection, channel } = await connectAsync();
-      channel.publish(HUB_SANTE_EXCHANGE, `${key}.out.message`, Buffer.from(JSON.stringify(msg)), messageProperties);
+      channel.publish(HUB_SANTE_EXCHANGE, key, Buffer.from(JSON.stringify(msg)), messageProperties);
       close(connection);
       logger.info('Publish call done and connection closed.');
       res.status(200);
@@ -86,9 +86,9 @@ class ExpressServer {
     // 2. Subscribe to Hub messages and send them to the client through long polling endpoint
     connect((connection, channel) => {
       for (const [clientName, clientId] of Object.entries(DEMO_CLIENT_IDS)) {
-        let queue = `${clientId}.in.message`;
+        let queue = `${clientId}.message`;
         if (clientName === 'SDIS_Z') {
-          queue = `${clientId}.in.ack`;
+          queue = `${clientId}.ack`;
         }
         logger.info(' [*] Waiting for %s messages in %s. To exit press CTRL+C', clientName, queue);
         channel.consume(queue, (msg) => {

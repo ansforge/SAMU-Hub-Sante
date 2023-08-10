@@ -127,6 +127,31 @@ const DIRECTIONS = {
   IN: '←',
   OUT: '→'
 }
+const WRONG_EDXL_ENVELOPE = {
+  distributionID: '{{ samuA_2608323d-507d-4cbf-bf74-52007f8124ea }}',
+  senderID: '{{ fr.health.samuA }}',
+  dateTimeSent: '{{ 2022-09-27T08:23:34+02:00 }}',
+  dateTimeExpires: '2072-09-27T08:23:34+02:00',
+  distributionStatus: 'Actual',
+  distributionKind: 'Report',
+  descriptor: {
+    language: 'fr-FR',
+    explicitAddress: {
+      explicitAddressScheme: 'hubsante',
+      explicitAddressValue: '{{ fr.health.samuB }}'
+    }
+  },
+  content: {
+    contentObject: {
+      jsonContent: {
+        embeddedJsonContent: {
+          message: {}
+        }
+      }
+    }
+  }
+}
+
 const EDXL_ENVELOPE = {
   distributionID: '{{ samuA_2608323d-507d-4cbf-bf74-52007f8124ea }}',
   senderID: '{{ fr.health.samuA }}',
@@ -143,7 +168,7 @@ const EDXL_ENVELOPE = {
   },
   content: {
     contentObject: {
-      JsonContent: {
+      jsonContent: {
         embeddedJsonContent: {
           message: {
             messageId: '{{ 2608323d-507d-4cbf-bf74-52007f8124ea }}',
@@ -188,11 +213,11 @@ export default {
       selectedClientId: null,
       items: {
         clientId: ['fr.health.samuA', 'fr.health.samuB', 'fr.fire.nexsis.sdisZ'],
-        routingKey: ['fr.health.samuA.in.message', 'fr.health.samuB.in.message', 'fr.fire.nexsis.sdisZ.in.ack']
+        routingKey: ['fr.health.samuA', 'fr.health.samuB', 'fr.fire.nexsis.sdisZ']
       },
       header: {
         clientId: 'fr.health.samuA',
-        routingKey: 'fr.health.samuB.in.message'
+        routingKey: 'fr.health.samuB'
       },
       form: {}
     }
@@ -219,6 +244,8 @@ export default {
       .then(response => response.json())
       .then((schema) => {
         this.schema = schema
+        // For test purposes
+        this.load('ExempleDubois.json')
       })
     // Start listening to server events
     this.longPolling()
@@ -280,8 +307,9 @@ export default {
         })
     },
     buildMessage () {
+      return this.buildWrongMessage()
       const message = JSON.parse(JSON.stringify(EDXL_ENVELOPE)) // Deep copy
-      message.content.contentObject.JsonContent.embeddedJsonContent.message.createEvent = this.form
+      message.content.contentObject.jsonContent.embeddedJsonContent.message.createEvent = this.form
       const name = this.clientInfos(this.header.clientId).name
       const messageId = uuidv4()
       const targetId = this.clientInfos(this.header.routingKey).id
@@ -290,13 +318,26 @@ export default {
       message.senderID = this.header.clientId
       message.dateTimeSent = sentAt
       message.descriptor.explicitAddress.explicitAddressValue = targetId
-      message.content.contentObject.JsonContent.embeddedJsonContent.message.messageId = messageId
-      message.content.contentObject.JsonContent.embeddedJsonContent.message.sender = { name, uri: `hubsante:${this.header.clientId}}` }
-      message.content.contentObject.JsonContent.embeddedJsonContent.message.sentAt = sentAt
-      message.content.contentObject.JsonContent.embeddedJsonContent.message.recipients.recipient = [{ name: this.clientInfos(this.header.routingKey).name, uri: `hubsante:${targetId}}` }]
+      message.content.contentObject.jsonContent.embeddedJsonContent.message.messageId = messageId
+      message.content.contentObject.jsonContent.embeddedJsonContent.message.sender = { name, uri: `hubsante:${this.header.clientId}}` }
+      message.content.contentObject.jsonContent.embeddedJsonContent.message.sentAt = sentAt
+      message.content.contentObject.jsonContent.embeddedJsonContent.message.recipients.recipient = [{ name: this.clientInfos(this.header.routingKey).name, uri: `hubsante:${targetId}}` }]
       return message
     },
-    async submit (request) {
+    buildWrongMessage () {
+      const message = JSON.parse(JSON.stringify(WRONG_EDXL_ENVELOPE)) // Deep copy
+      message.content.contentObject.jsonContent.embeddedJsonContent.message = this.form
+      const name = this.clientInfos(this.header.clientId).name
+      const messageId = uuidv4()
+      const targetId = this.clientInfos(this.header.routingKey).id
+      const sentAt = moment().format()
+      message.distributionID = `${name}_${messageId}`
+      message.senderID = this.header.clientId
+      message.dateTimeSent = sentAt
+      message.descriptor.explicitAddress.explicitAddressValue = targetId
+      return message
+    },
+    submit (request) {
       const time = this.time()
       // const data = await (await fetch('samuA_to_samuB.json')).json()
       const data = this.buildMessage()

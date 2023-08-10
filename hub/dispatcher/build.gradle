@@ -90,12 +90,17 @@ jib {
 import groovy.json.JsonSlurper
 def gitRefs() {
     try {
-        def releaseData = callGithubAPI('releases/latest')
-        def tagName = releaseData.tag_name
+        def releaseCommitHash = null
+        def tagName = null
 
-        def commitData = callGithubAPI('commits/tags/' + tagName)
-        def releaseCommitHash = commitData.sha.take(7)
-        println("Release commit hash: " + releaseCommitHash)
+        if (System.getenv('GITHUB_TOKEN')) {
+            def releaseData = callGithubAPI('releases/latest')
+            tagName = releaseData.tag_name
+
+            def commitData = callGithubAPI('commits/tags/' + tagName)
+            releaseCommitHash = commitData.sha.take(7)
+            println("Release commit hash: " + releaseCommitHash)
+        }
 
         new ByteArrayOutputStream().withStream { os ->
             exec {

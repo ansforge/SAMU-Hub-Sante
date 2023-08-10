@@ -73,7 +73,7 @@ gradle jib --image=romainfd/dispatcher:latest
 # docker push romainfd/dispatcher:latest
 
 # Apply Deployment
-kubectl create secret generic dispatcher-tls-passwords --from-literal=truststore-password=trustStore --from-literal=keystore-password=replaceMe
+kubectl create secret generic dispatcher-tls-passwords --from-literal=truststore-password=trustStore --from-literal=keystore-password='${replaceMe}'
 kubectl create secret generic dispatcher-p12 --from-file=../../certs/users/dispatcher/dispatcher.p12
 kubectl create secret generic trust-store --from-file=../../certs/trustStore
 

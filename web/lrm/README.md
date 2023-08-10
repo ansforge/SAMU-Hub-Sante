@@ -13,20 +13,20 @@ kubectl replace --force -f ../../hub/infra/web/lrm.yaml
 
 ## ToDo
 ### Client
-- [ ] Make message sending work
+- [x] Make message sending work
   - [x] Load message from file into UI
   - [x] Auto add fixed EDXL envelope and message header + integrate header data on send (sender, recipient, time, ...)
   - [x] Rebuild local cluster
-  - [ ] Review DLQ PR and merge into main
-  - [ ] Review Model Migration PR and merge into demo branch
-  - [ ] Use local dispatcher image for tests
-  - [ ] Make message editable & send by SAMU A (json)
+  - [x] Review DLQ PR and merge into demo branch
+  - [x] Review Model Migration PR and merge into demo branch
+  - [x] Use local dispatcher image for tests
+  - [x] Make message editable & send by SAMU A (json)
   - [ ] _Handle XML for SAMU B & NexSIS?_ -> not now
-- [ ] Landing interface 
+- [ ] Landing interface
   - [ ] _Choose demo or tests?_ -> not now
-  - [ ] Choose userId
-    - [ ] tests: can only send to this clientId and will only see messages sent from this clientId to SAMU A, B or NexSIS
-    - [ ] demo: SAMU A or SAMU B or NexSIS and can send to these 3
+  - [ ] Choose userId and targetId: can only see messages between these entities
+    - [ ] demo: list of message types with prebuild messages appearing on top to send messages & edit them if wanted 
+    - [ ] tests: list of use cases with steps and go through (send or validate recep ok) to validate the use case - no edit
   - [ ] _Security?_ -> not now
     - [ ] ask for the first 10 characters of the associated public cert?
     - [ ] have one password per editor + 1 per SAMUA/SAMUB/NexSIS as env var?
@@ -34,16 +34,16 @@ kubectl replace --force -f ../../hub/infra/web/lrm.yaml
     - [ ] tests: 
       - [ ] use cases list
       - [ ] then stepper with messages to be sent (not mutable)
-      - [ ] check received messages to confirm OK
+      - [ ] check received messages to confirm OK and move to the next step
     - [ ] demo: 
-      - [ ] messages list to prefill
+      - [ ] messages types with message list to prefill
       - [ ] mutable messages to send
       - [ ] possibility to reuse a received message (to prefill the message sent back as an update or else)
 - [ ] Polish UI (design, config, badges, collapsed JSON messages : https://www.npmjs.com/package/vue-json-viewer, ...)
 
 ### Server
 - [ ] Enable multiple connections
-    - [ ] Create a longpoll instance per userId: poll-${userId}/ endpoint on connection and publish to it
+    - [ ] Create a longpoll instance per pair: poll-${userId}-${targetId}/ endpoint on connection and publish to it
       -> for editor tests: userId is the clientId they are using -> check senderId on receive to know where to send
       -> for demo: needs to connect as SAMU A
     - [ ] _Migrate to websockets https://www.npmjs.com/package/ws?_ -> not now (https://chat.openai.com/share/08d3a339-4e8e-40a6-b0e3-7a52bd35292c)
@@ -52,5 +52,5 @@ kubectl replace --force -f ../../hub/infra/web/lrm.yaml
     - [ ] ELK stack
 
 ### Acks
-- [ ] Be able to send back acks
+- [ ] Be able to send back acks manually or automatically
 - [ ] Handle ack display in UI
