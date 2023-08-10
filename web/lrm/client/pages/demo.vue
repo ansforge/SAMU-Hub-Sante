@@ -19,6 +19,26 @@
           <v-alert type="info" dense class="mb-0">
             Ce formulaire permet d'envoyer des messages via le Hub Santé
           </v-alert>
+          <v-tabs
+            v-model="messageTypeTabIndex"
+            align-with-title
+          >
+            <v-tabs-slider color="yellow" />
+            <v-tab
+              v-for="[name, {label}] in Object.entries(messageTypes)"
+              :key="name"
+            >
+              {{ label }}
+            </v-tab>
+          </v-tabs>
+          <v-tabs-items v-model="messageTypeTabIndex">
+            <v-tab-item
+              v-for="[name, {examples}] in Object.entries(messageTypes)"
+              :key="name"
+            >
+              <examples-list :examples="examples" />
+            </v-tab-item>
+          </v-tabs-items>
           <RequestForm
             v-if="schema"
             :key="selectedExample"
@@ -51,7 +71,7 @@
           borderless
           mandatory
         >
-          <v-btn v-for="{name, type, icon} in messageTypes" :key="type" :value="type" class="px-4">
+          <v-btn v-for="{name, type, icon} in queueTypes" :key="type" :value="type" class="px-4">
             <v-icon left>
               {{ icon }}
             </v-icon>
@@ -167,7 +187,42 @@ export default {
   name: 'Demo',
   data () {
     return {
-      schema: null,
+      messageTypeTabIndex: 0,
+      messageTypes: {
+        createCase: {
+          label: 'Partage de dossier',
+          schemaName: 'schema.json',
+          schema: null,
+          examples: [{
+            file: 'ExempleDurand.json',
+            icon: 'mdi-bike-fast',
+            name: 'Marin DURAND',
+            caller: 'Épouse appelle pour son mari',
+            context: 'Collision de 2 vélos',
+            environment: 'Voie cyclable à Lyon, gêne de la circulation',
+            victims: '2 victimes, 1 nécessitant assistance SAMU.',
+            victim: 'Homme, adulte, 43 ans',
+            medicalSituation: 'Céphalées, migraines, traumatismes sérieux, plaies intermédiaire'
+          }, {
+            file: 'ExempleDubois.json',
+            icon: 'mdi-home-thermometer',
+            name: 'Alexandre DUBOIS',
+            caller: 'Aide à la personne appelle pour un de ses patients',
+            context: 'Malaise pendant canicule',
+            environment: 'appartement de la victime',
+            victims: '1 victime',
+            victim: 'Homme, adulte, 83 ans',
+            medicalSituation: 'victime amorphe allongée sur son lit, répond peu, soupçonne une déshydratatio'
+          }]
+        },
+        operationRequest: {
+          label: 'Demande de concours',
+          schemaName: 'schema.json',
+          schema: null,
+          examples: []
+        }
+      },
+      selectedExample: null,
       selectedMessageType: 'message',
       messages: [/* {
         direction: DIRECTIONS.IN,
@@ -181,7 +236,7 @@ export default {
         showSentMessages: false
       },
       selectedClientId: null,
-      messageTypes: [{
+      queueTypes: [{
         name: 'Message',
         type: 'message',
         icon: 'mdi-message'
@@ -204,6 +259,11 @@ export default {
   },
   computed: {
     ...mapGetters(['user']),
+    schema () {
+      // As v-tabs have a bug and don't handle value (use index instead) | Ref.: https://github.com/vuetifyjs/vuetify/issues/10540
+      const messageTypeTab = Object.keys(this.messageTypes)[this.messageTypeTabIndex]
+      return this.messageTypes[messageTypeTab].schema ?? null
+    },
     clientMessages () {
       return this.messages.filter(
         message => (
@@ -224,13 +284,15 @@ export default {
   },
   mounted () {
     // To automatically generate the UI and input fields based on the JSON Schema
-    fetch('schema.json')
-      .then(response => response.json())
-      .then((schema) => {
-        this.schema = schema
-        // For test purposes
-        this.load('ExempleDubois.json')
+    Promise.all(Object.entries(this.messageTypes).map(([name, { schemaName }]) => {
+      return fetch(schemaName).then(response => response.json()).then(schema => ({ name, schema }))
+    })).then((schemas) => {
+      schemas.forEach(({ name, schema }) => {
+        this.messageTypes[name].schema = schema
       })
+      // For test purposes
+      this.load('ExempleDubois.json')
+    })
     // Start listening to server events
     this.longPolling()
   },
