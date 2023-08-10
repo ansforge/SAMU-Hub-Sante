@@ -24,7 +24,8 @@ kubectl replace --force -f ../../hub/infra/web/lrm.yaml
   - [ ] _Handle XML for SAMU B & NexSIS?_ -> not now
 - [ ] Landing interface
   - [ ] _Choose demo or tests?_ -> not now
-  - [ ] Choose userId and targetId: can only see messages between these entities
+  - [ ] Choose userId, targetId and tester or not
+    - [x] Can only see messages between these entities from userId point of view (A -> B out or B -> A in)
     - [ ] demo: list of message types with prebuild messages appearing on top to send messages & edit them if wanted 
     - [ ] tests: list of use cases with steps and go through (send or validate recep ok) to validate the use case - no edit
   - [ ] _Security?_ -> not now
