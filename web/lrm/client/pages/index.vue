@@ -20,6 +20,9 @@
                 :items="clientIds"
                 :rules="[rules.required]"
               />
+              <v-icon flat @click="swap">
+                mdi-swap-vertical
+              </v-icon>
               <v-combobox
                 v-model="form.targetId"
                 label="ID du système cible"
@@ -88,6 +91,16 @@ export default {
       if (!this.$refs.form.validate()) { return }
       const loggedInUser = await this.$store.dispatch('logInUser', this.form)
       await this.$router.push(loggedInUser.tester ? '/test' : '/demo')
+    },
+    swap () {
+      const clientId = this.form.clientId
+      if (this.clientIds.includes(this.form.targetId)) {
+        this.form.clientId = this.form.targetId
+      } else {
+        // Can only connect as a clientId in the authorised clientIds
+        this.form.clientId = null
+      }
+      this.form.targetId = clientId
     }
   }
 }

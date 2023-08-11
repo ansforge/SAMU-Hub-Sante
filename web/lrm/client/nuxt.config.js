@@ -83,12 +83,16 @@ export default {
 
   generate: {
     // Ignore href links of default.vue | Ref.: https://github.com/nuxt/nuxt.js/issues/8105#issuecomment-706702793
-    exclude: ['/openapi', '/api-docs', '/poll']
+    exclude: []
   },
 
   router: {
     middleware: ['auth'],
     base:
       (process.env.NODE_ENV === 'production' ? '/ui' : '/')
+  },
+
+  env: {
+    wssUrl: (process.env.NODE_ENV === 'production' ? '/' : 'ws://localhost:8081/')
   }
 }

@@ -23,7 +23,7 @@ kubectl replace --force -f ../../hub/infra/web/lrm.yaml
   - [x] Make message editable & send by SAMU A (json)
   - [ ] _Handle XML for SAMU B & NexSIS?_ -> not now
 - [ ] Landing interface
-  - [ ] _Choose demo or tests?_ -> not now
+  - [x] _Choose demo or tests?_ -> not now
   - [ ] Choose userId, targetId and tester or not
     - [x] Can only see messages between these entities from userId point of view (A -> B out or B -> A in)
     - [x] demo: list of message types with prebuild messages appearing on top to send messages & edit them if wanted 
@@ -43,11 +43,11 @@ kubectl replace --force -f ../../hub/infra/web/lrm.yaml
 - [ ] Polish UI (design, config, badges, collapsed JSON messages : https://www.npmjs.com/package/vue-json-viewer, ...)
 
 ### Server
-- [ ] Enable multiple connections
-    - [ ] Create a longpoll instance per pair: poll-${userId}-${targetId}/ endpoint on connection and publish to it
+- [x] Enable multiple connections
+    - [x] Create a longpoll instance per pair: poll-${userId}-${targetId}/ endpoint on connection and publish to it
       -> for editor tests: userId is the clientId they are using -> check senderId on receive to know where to send
       -> for demo: needs to connect as SAMU A
-    - [ ] _Migrate to websockets https://www.npmjs.com/package/ws?_ -> not now (https://chat.openai.com/share/08d3a339-4e8e-40a6-b0e3-7a52bd35292c)
+    - [x] _Migrate to websockets https://www.npmjs.com/package/ws?_ -> not now (https://chat.openai.com/share/08d3a339-4e8e-40a6-b0e3-7a52bd35292c)
 - [ ] Improve logging and visibility to make it easier to debug
     - [ ] Better logging
     - [ ] ELK stack

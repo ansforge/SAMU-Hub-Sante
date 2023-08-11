@@ -21,7 +21,8 @@
     "express-interceptor": "^1.2.0",
     "express-longpoll": "^0.0.6",
     "js-yaml": "^4.1.0",
-    "winston": "^3.10.0"
+    "winston": "^3.10.0",
+    "ws": "^8.13.0"
   },
   "devDependencies": {
     "eslint": "^5.16.0",

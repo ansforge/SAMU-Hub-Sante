@@ -4,6 +4,13 @@
       <v-card style="height: 86vh; overflow-y: auto;">
         <v-card-title class="headline pb-">
           Formulaire
+          <v-spacer />
+          <v-btn color="primary" @click="submit">
+            <v-icon left>
+              mdi-send
+            </v-icon>
+            Envoyer
+          </v-btn>
         </v-card-title>
         <v-card-text>
           <v-tabs
@@ -23,7 +30,7 @@
               v-for="[name, messageTypeDetails] in Object.entries(messageTypes)"
               :key="name"
             >
-              <SchemaForm :name="name" v-bind="messageTypeDetails" @sent="messageSent" />
+              <SchemaForm v-bind="messageTypeDetails" ref="schemaForms" :name="name" @sent="messageSent" />
             </v-tab-item>
           </v-tabs-items>
         </v-card-text>
@@ -196,31 +203,24 @@ export default {
         this.messageTypes[name].schema = schema
       })
     })
-    // Start listening to server events
-    this.longPolling()
+
+    // Start listening to server messages
+    const socket = new WebSocket(process.env.wssUrl)
+    socket.addEventListener('open', () => {
+      console.log('WebSocket demo connection established')
+    })
+    socket.addEventListener('message', (event) => {
+      this.messages.unshift({
+        ...JSON.parse(event.data),
+        direction: DIRECTIONS.IN,
+        receivedTime: this.time()
+      })
+    })
+    socket.addEventListener('close', () => {
+      console.log('WebSocket connection closed')
+    })
   },
   methods: {
-    longPolling () {
-      this.$axios.$get('/poll', { timeout: 10000 }).then((response) => {
-        this.messages.unshift({
-          ...response,
-          direction: DIRECTIONS.IN,
-          receivedTime: this.time()
-        })
-        this.longPolling()
-      }).catch((error) => {
-        if (error.code === 'ECONNABORTED') {
-          console.info('Long polling expiration, restarting.', error)
-          this.longPolling()
-        } else if (error.message === 'Network Error') {
-          console.warn('Server unavailable, waiting before reconnection.', error)
-          setTimeout(() => this.longPolling(), 300)
-        } else {
-          console.error('Error while reading message, restarting.', error)
-          this.longPolling()
-        }
-      })
-    },
     time () {
       const d = new Date()
       return d.toLocaleTimeString().replace(':', 'h') + '.' + d.getMilliseconds()
@@ -244,6 +244,10 @@ export default {
     },
     messageSent (message) {
       this.messages.unshift(message)
+    },
+    submit () {
+      // Submits current SchemaForm
+      this.$refs.schemaForms[this.messageTypeTabIndex].submit()
     }
   }
 }

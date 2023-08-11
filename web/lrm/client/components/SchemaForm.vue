@@ -6,7 +6,7 @@
       :key="exampleLoadDatetime"
       v-model="form"
       :schema="schema"
-      @submit="submit(null)"
+      @submit="submit()"
     />
   </div>
 </template>
@@ -45,6 +45,12 @@ export default {
       form: {}
     }
   },
+  mounted () {
+    this.socket = new WebSocket(process.env.wssUrl)
+    this.socket.addEventListener('open', () => {
+      console.log('WebSocket SchemaForm connection established')
+    })
+  },
   methods: {
     load (example) {
       this.form = example
@@ -55,17 +61,13 @@ export default {
       const d = new Date()
       return d.toLocaleTimeString().replace(':', 'h') + '.' + d.getMilliseconds()
     },
-    submit (request) {
-      const time = this.time()
-      // const data = await (await fetch('samuA_to_samuB.json')).json()
-      const data = this.buildMessage()
-      console.log('submit', request, data)
-      // Could be done using Swagger generated client, but it would validate fields!
-      this.$axios.$post(
-        '/publish',
-        { key: this.user.clientId, msg: data },
-        { timeout: 1000 }
-      ).then(() => {
+    submit () {
+      try {
+        const time = this.time()
+        // const data = await (await fetch('samuA_to_samuB.json')).json()
+        const data = this.buildMessage()
+        console.log('submit', data)
+        this.socket.send(JSON.stringify({ key: this.user.clientId, msg: data }))
         this.$emit('sent', {
           direction: DIRECTIONS.OUT,
           routingKey: this.user.targetId,
@@ -73,9 +75,9 @@ export default {
           code: 200,
           body: data
         })
-      }).catch((error) => {
+      } catch (error) {
         console.error("Erreur lors de l'envoi du message", error)
-      })
+      }
     },
     buildMessage () {
       return this.buildWrongMessage()
