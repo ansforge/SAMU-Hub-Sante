@@ -26,7 +26,7 @@ kubectl replace --force -f ../../hub/infra/web/lrm.yaml
   - [ ] _Choose demo or tests?_ -> not now
   - [ ] Choose userId, targetId and tester or not
     - [x] Can only see messages between these entities from userId point of view (A -> B out or B -> A in)
-    - [ ] demo: list of message types with prebuild messages appearing on top to send messages & edit them if wanted 
+    - [x] demo: list of message types with prebuild messages appearing on top to send messages & edit them if wanted 
     - [ ] tests: list of use cases with steps and go through (send or validate recep ok) to validate the use case - no edit
   - [ ] _Security?_ -> not now
     - [ ] ask for the first 10 characters of the associated public cert?
@@ -37,8 +37,8 @@ kubectl replace --force -f ../../hub/infra/web/lrm.yaml
       - [ ] then stepper with messages to be sent (not mutable)
       - [ ] check received messages to confirm OK and move to the next step
     - [ ] demo: 
-      - [ ] messages types with message list to prefill
-      - [ ] mutable messages to send
+      - [x] messages types with message list to prefill
+      - [x] mutable messages to send
       - [ ] possibility to reuse a received message (to prefill the message sent back as an update or else)
 - [ ] Polish UI (design, config, badges, collapsed JSON messages : https://www.npmjs.com/package/vue-json-viewer, ...)
 
