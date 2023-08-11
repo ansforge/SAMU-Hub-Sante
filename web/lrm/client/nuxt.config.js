@@ -28,7 +28,8 @@ export default {
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
   plugins: [
     // Ref.: https://github.com/clwillingham/nuxt-vjsf-test/blob/master/nuxt.config.js
-    { src: '~/plugins/vjsf', mode: 'client' }
+    { src: '~/plugins/vjsf', mode: 'client' },
+    { src: '~/plugins/mixinUser', mode: 'client' }
   ],
 
   // Auto import components: https://go.nuxtjs.dev/config-components

@@ -51,6 +51,10 @@ export default {
       // Trigger RequestForm reload with key change | Ref.: https://stackoverflow.com/a/48755228
       this.exampleLoadDatetime = new Date().toISOString()
     },
+    time () {
+      const d = new Date()
+      return d.toLocaleTimeString().replace(':', 'h') + '.' + d.getMilliseconds()
+    },
     submit (request) {
       const time = this.time()
       // const data = await (await fetch('samuA_to_samuB.json')).json()
@@ -62,7 +66,7 @@ export default {
         { key: this.user.clientId, msg: data },
         { timeout: 1000 }
       ).then(() => {
-        this.messages.unshift({
+        this.$emit('sent', {
           direction: DIRECTIONS.OUT,
           routingKey: this.user.targetId,
           time,
@@ -78,7 +82,7 @@ export default {
       // ToDo: remove above line once messages are built with the correct full EDXL envelope
       const message = JSON.parse(JSON.stringify(EDXL_ENVELOPE)) // Deep copy
       message.content.contentObject.jsonContent.embeddedJsonContent.message.createEvent = this.form
-      const name = this.clientInfos(this.user.clientId).name
+      const name = this.userInfos.name
       const messageId = uuidv4()
       const targetId = this.clientInfos(this.user.targetId).id
       const sentAt = moment().format()
@@ -95,7 +99,7 @@ export default {
     buildWrongMessage () {
       const message = JSON.parse(JSON.stringify(WRONG_EDXL_ENVELOPE)) // Deep copy
       message.content.contentObject.jsonContent.embeddedJsonContent.message = this.form
-      const name = this.clientInfos(this.user.clientId).name
+      const name = this.userInfos.name
       const messageId = uuidv4()
       const targetId = this.clientInfos(this.user.targetId).id
       const sentAt = moment().format()

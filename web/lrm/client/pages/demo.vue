@@ -1,29 +1,16 @@
 <template>
   <v-row justify="center">
-    <v-col cols="12" md="7">
+    <v-col cols="12" sm="7">
       <v-card style="height: 86vh; overflow-y: auto;">
-        <v-card-title class="headline">
+        <v-card-title class="headline pb-">
           Formulaire
-          <v-spacer />
-          <v-btn
-            color="primary"
-            @click="load('ExempleDubois.json')"
-          >
-            <v-icon left>
-              mdi-upload
-            </v-icon>
-            Charger
-          </v-btn>
         </v-card-title>
         <v-card-text>
-          <v-alert type="info" dense class="mb-0">
-            Ce formulaire permet d'envoyer des messages via le Hub Santé
-          </v-alert>
           <v-tabs
             v-model="messageTypeTabIndex"
             align-with-title
           >
-            <v-tabs-slider color="yellow" />
+            <v-tabs-slider color="primary" />
             <v-tab
               v-for="[name, {label}] in Object.entries(messageTypes)"
               :key="name"
@@ -33,26 +20,21 @@
           </v-tabs>
           <v-tabs-items v-model="messageTypeTabIndex">
             <v-tab-item
-              v-for="[name, {examples}] in Object.entries(messageTypes)"
+              v-for="[name, messageTypeDetails] in Object.entries(messageTypes)"
               :key="name"
             >
-              <examples-list :examples="examples" />
+              <SchemaForm :name="name" v-bind="messageTypeDetails" @sent="messageSent" />
             </v-tab-item>
           </v-tabs-items>
-          <RequestForm
-            v-if="schema"
-            :key="selectedExample"
-            v-model="form"
-            :schema="schema"
-            @submit="submit(null)"
-          />
         </v-card-text>
       </v-card>
     </v-col>
-    <v-col cols="12" md="5">
+    <v-col cols="12" sm="5">
       <v-card style="height: 86vh; overflow-y: auto;">
         <v-card-title class="headline">
-          Messages
+          <span class="mb-4">
+            Messages
+          </span>
           <v-badge
             v-if="showableMessages.length"
             :content="showableMessages.length"
@@ -62,6 +44,7 @@
             v-model="config.showSentMessages"
             inset
             :label="'Show sent (' + messagesSentCount + ')'"
+            class="my-0 py-0"
           />
         </v-card-title>
         <v-btn-toggle
@@ -110,79 +93,8 @@
 </template>
 
 <script>
-import { v4 as uuidv4 } from 'uuid'
-import moment from 'moment'
-import { mapGetters } from 'vuex'
+import { DIRECTIONS } from '@/constants'
 
-const DIRECTIONS = {
-  IN: '←',
-  OUT: '→'
-}
-const WRONG_EDXL_ENVELOPE = {
-  distributionID: '{{ samuA_2608323d-507d-4cbf-bf74-52007f8124ea }}',
-  senderID: '{{ fr.health.samuA }}',
-  dateTimeSent: '{{ 2022-09-27T08:23:34+02:00 }}',
-  dateTimeExpires: '2072-09-27T08:23:34+02:00',
-  distributionStatus: 'Actual',
-  distributionKind: 'Report',
-  descriptor: {
-    language: 'fr-FR',
-    explicitAddress: {
-      explicitAddressScheme: 'hubsante',
-      explicitAddressValue: '{{ fr.health.samuB }}'
-    }
-  },
-  content: {
-    contentObject: {
-      jsonContent: {
-        embeddedJsonContent: {
-          message: {}
-        }
-      }
-    }
-  }
-}
-const EDXL_ENVELOPE = {
-  distributionID: '{{ samuA_2608323d-507d-4cbf-bf74-52007f8124ea }}',
-  senderID: '{{ fr.health.samuA }}',
-  dateTimeSent: '{{ 2022-09-27T08:23:34+02:00 }}',
-  dateTimeExpires: '2072-09-27T08:23:34+02:00',
-  distributionStatus: 'Actual',
-  distributionKind: 'Report',
-  descriptor: {
-    language: 'fr-FR',
-    explicitAddress: {
-      explicitAddressScheme: 'hubsante',
-      explicitAddressValue: '{{ fr.health.samuB }}'
-    }
-  },
-  content: {
-    contentObject: {
-      jsonContent: {
-        embeddedJsonContent: {
-          message: {
-            messageId: '{{ 2608323d-507d-4cbf-bf74-52007f8124ea }}',
-            sender: {
-              name: '{{ samuA }}',
-              uri: '{{ hubsante:fr.health.samuA }}'
-            },
-            sentAt: '{{ 2022-09-27T08:23:34+02:00 }}',
-            msgType: 'ALERT',
-            status: 'TEST',
-            recipients: {
-              recipient: [
-                {
-                  name: '{{ samuB }}',
-                  uri: '{{ hubsante:fr.health.samuB }}'
-                }
-              ]
-            }
-          }
-        }
-      }
-    }
-  }
-}
 export default {
   name: 'Demo',
   data () {
@@ -194,16 +106,6 @@ export default {
           schemaName: 'schema.json',
           schema: null,
           examples: [{
-            file: 'ExempleDurand.json',
-            icon: 'mdi-bike-fast',
-            name: 'Marin DURAND',
-            caller: 'Épouse appelle pour son mari',
-            context: 'Collision de 2 vélos',
-            environment: 'Voie cyclable à Lyon, gêne de la circulation',
-            victims: '2 victimes, 1 nécessitant assistance SAMU.',
-            victim: 'Homme, adulte, 43 ans',
-            medicalSituation: 'Céphalées, migraines, traumatismes sérieux, plaies intermédiaire'
-          }, {
             file: 'ExempleDubois.json',
             icon: 'mdi-home-thermometer',
             name: 'Alexandre DUBOIS',
@@ -213,6 +115,16 @@ export default {
             victims: '1 victime',
             victim: 'Homme, adulte, 83 ans',
             medicalSituation: 'victime amorphe allongée sur son lit, répond peu, soupçonne une déshydratatio'
+          }, {
+            file: 'ExempleDurand.json',
+            icon: 'mdi-bike-fast',
+            name: 'Marin DURAND',
+            caller: 'Épouse appelle pour son mari',
+            context: 'Collision de 2 vélos',
+            environment: 'Voie cyclable à Lyon, gêne de la circulation',
+            victims: '2 victimes, 1 nécessitant assistance SAMU.',
+            victim: 'Homme, adulte, 43 ans',
+            medicalSituation: 'Céphalées, migraines, traumatismes sérieux, plaies intermédiaire'
           }]
         },
         operationRequest: {
@@ -222,7 +134,6 @@ export default {
           examples: []
         }
       },
-      selectedExample: null,
       selectedMessageType: 'message',
       messages: [/* {
         direction: DIRECTIONS.IN,
@@ -258,12 +169,6 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['user']),
-    schema () {
-      // As v-tabs have a bug and don't handle value (use index instead) | Ref.: https://github.com/vuetifyjs/vuetify/issues/10540
-      const messageTypeTab = Object.keys(this.messageTypes)[this.messageTypeTabIndex]
-      return this.messageTypes[messageTypeTab].schema ?? null
-    },
     clientMessages () {
       return this.messages.filter(
         message => (
@@ -290,8 +195,6 @@ export default {
       schemas.forEach(({ name, schema }) => {
         this.messageTypes[name].schema = schema
       })
-      // For test purposes
-      this.load('ExempleDubois.json')
     })
     // Start listening to server events
     this.longPolling()
@@ -339,74 +242,8 @@ export default {
         message => this.getMessageType(message) === type
       )
     },
-    clientInfos (clientId) {
-      return {
-        name: clientId.split('.')[2],
-        icon: clientId.split('.')[1] === 'health' ? 'mdi-heart-pulse' : 'mdi-fire',
-        id: clientId.split('.').slice(0, 3).join('.')
-      }
-    },
-    load (exampleName) {
-      fetch('examples/' + exampleName)
-        .then(response => response.json())
-        .then((data) => {
-          this.form = data
-          // Trigger RequestForm reload with key change | Ref.: https://stackoverflow.com/a/48755228
-          this.selectedExample = exampleName
-        })
-    },
-    buildMessage () {
-      return this.buildWrongMessage()
-      const message = JSON.parse(JSON.stringify(EDXL_ENVELOPE)) // Deep copy
-      message.content.contentObject.jsonContent.embeddedJsonContent.message.createEvent = this.form
-      const name = this.clientInfos(this.user.clientId).name
-      const messageId = uuidv4()
-      const targetId = this.clientInfos(this.user.targetId).id
-      const sentAt = moment().format()
-      message.distributionID = `${name}_${messageId}`
-      message.senderID = this.user.clientId
-      message.dateTimeSent = sentAt
-      message.descriptor.explicitAddress.explicitAddressValue = targetId
-      message.content.contentObject.jsonContent.embeddedJsonContent.message.messageId = messageId
-      message.content.contentObject.jsonContent.embeddedJsonContent.message.sender = { name, uri: `hubsante:${this.user.clientId}}` }
-      message.content.contentObject.jsonContent.embeddedJsonContent.message.sentAt = sentAt
-      message.content.contentObject.jsonContent.embeddedJsonContent.message.recipients.recipient = [{ name: this.clientInfos(this.user.targetId).name, uri: `hubsante:${targetId}}` }]
-      return message
-    },
-    buildWrongMessage () {
-      const message = JSON.parse(JSON.stringify(WRONG_EDXL_ENVELOPE)) // Deep copy
-      message.content.contentObject.jsonContent.embeddedJsonContent.message = this.form
-      const name = this.clientInfos(this.user.clientId).name
-      const messageId = uuidv4()
-      const targetId = this.clientInfos(this.user.targetId).id
-      const sentAt = moment().format()
-      message.distributionID = `${name}_${messageId}`
-      message.senderID = this.user.clientId
-      message.dateTimeSent = sentAt
-      message.descriptor.explicitAddress.explicitAddressValue = targetId
-      return message
-    },
-    submit (request) {
-      const time = this.time()
-      // const data = await (await fetch('samuA_to_samuB.json')).json()
-      const data = this.buildMessage()
-      console.log('submit', request, data)
-      // Could be done using Swagger generated client, but it would validate fields!
-      this.$axios.$post(
-        '/publish',
-        { key: this.user.clientId, msg: data },
-        { timeout: 1000 }
-      ).then(() => {
-        this.messages.unshift({
-          direction: DIRECTIONS.OUT,
-          routingKey: this.user.targetId,
-          time,
-          code: 200,
-          body: data
-        })
-      }).catch((error) => {
-        console.error("Erreur lors de l'envoi du message", error)
-      })
+    messageSent (message) {
+      this.messages.unshift(message)
     }
   }
 }
