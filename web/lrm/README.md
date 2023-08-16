@@ -31,6 +31,8 @@ kubectl replace --force -f ../../hub/infra/web/lrm.yaml
   - [ ] _Security?_ -> not now
     - [ ] ask for the first 10 characters of the associated public cert?
     - [ ] have one password per editor + 1 per SAMUA/SAMUB/NexSIS as env var?
+  - [x] Advanced mode
+    - [x] Ability to live switch between users
   - [ ] Choose messages
     - [ ] tests: 
       - [ ] use cases list
