@@ -106,7 +106,7 @@ public class Dispatcher {
                 edxlString = edxlHandler.prettyPrintJsonEDXL(edxlMessage);
                 properties.setContentType(MessageProperties.CONTENT_TYPE_JSON);
             }
-            log.info("  ↳ [x] Forwarding to '" + recipientID + "':" + edxlString);
+            log.debug("  ↳ [x] Forwarding to '" + recipientID + "':" + edxlString);
             return new Message(edxlString.getBytes(StandardCharsets.UTF_8), properties);
 
         } catch (JsonProcessingException e) {
@@ -141,11 +141,11 @@ public class Dispatcher {
             // It MUST be explicitly set by the client
             if (message.getMessageProperties().getContentType().equals(MessageProperties.CONTENT_TYPE_JSON)) {
                 edxlMessage = edxlHandler.deserializeJsonEDXL(receivedEdxl);
-                log.info(" [x] Received from '" + message.getMessageProperties().getReceivedRoutingKey() + "':" + edxlHandler.prettyPrintJsonEDXL(edxlMessage));
+                log.debug(" [x] Received from '" + message.getMessageProperties().getReceivedRoutingKey() + "':" + edxlHandler.prettyPrintJsonEDXL(edxlMessage));
 
             } else if (message.getMessageProperties().getContentType().equals(MessageProperties.CONTENT_TYPE_XML)) {
                 edxlMessage = edxlHandler.deserializeXmlEDXL(receivedEdxl);
-                log.info(" [x] Received from '" + message.getMessageProperties().getReceivedRoutingKey() + "':" + edxlHandler.prettyPrintXmlEDXL(edxlMessage));
+                log.debug(" [x] Received from '" + message.getMessageProperties().getReceivedRoutingKey() + "':" + edxlHandler.prettyPrintXmlEDXL(edxlMessage));
 
             } else {
                 String queueName = message.getMessageProperties().getReceivedRoutingKey() + ".info";
@@ -171,12 +171,12 @@ public class Dispatcher {
     private void overrideExpirationIfNeeded(EdxlMessage edxlMessage, MessageProperties properties) {
         // OffsetDateTime comes with seconds and nanos, not millis
         // We assume that one second is an acceptable interval
-        long queueExpiration = OffsetDateTime.now().plusSeconds(hubConfig.getDefaultTTL()).toEpochSecond();
+        long queueExpiration = edxlMessage.getDateTimeSent().plusSeconds(hubConfig.getDefaultTTL()).toEpochSecond();
         long edxlCustomExpiration = edxlMessage.getDateTimeExpires().toEpochSecond();
-        long customDelay = (queueExpiration - edxlCustomExpiration) * 1000;
 
-        if (customDelay > 0) {
-            properties.setExpiration(String.valueOf(customDelay));
+        if (queueExpiration > edxlCustomExpiration) {
+            long newTTL = edxlCustomExpiration - edxlMessage.getDateTimeSent().toEpochSecond();
+            properties.setExpiration(String.valueOf(newTTL * 1000));
             log.info("override expiration for message {}: expiration is now {}",
                     edxlMessage.getDistributionID(),
                     edxlMessage.getDateTimeExpires().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));

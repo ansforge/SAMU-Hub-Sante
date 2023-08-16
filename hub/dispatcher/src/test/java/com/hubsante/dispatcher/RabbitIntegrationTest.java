@@ -106,7 +106,9 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
     public void rejectExpirationMessageWithEdxlDateTimeExpiresLowerThanHubTTL() throws Exception {
         Message source = createMessage("samuB_to_nexsis.xml", SAMU_B_OUTER_MESSAGE_ROUTING_KEY);
         EdxlMessage edxlMessage = converter.deserializeXmlEDXL(new String(source.getBody(), StandardCharsets.UTF_8));
-        edxlMessage.setDateTimeExpires(OffsetDateTime.now().plusNanos(100000));
+        OffsetDateTime now = OffsetDateTime.now();
+        edxlMessage.setDateTimeSent(now);
+        edxlMessage.setDateTimeExpires(now.plusNanos(100000));
         byte[] edxlBytes = converter.serializeXmlEDXL(edxlMessage).getBytes();
         Message published = new Message(edxlBytes, source.getMessageProperties());
 
