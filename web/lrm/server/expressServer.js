@@ -56,8 +56,8 @@ class ExpressServer {
           const data = {
             direction: '←',
             routingKey: queue,
-            code: 200,
-            time: `${d.toLocaleTimeString().replace(':', 'h')}.${d.getMilliseconds()}`,
+            acked: null,
+            time: `${d.toLocaleTimeString('fr').replace(':', 'h')}.${d.getMilliseconds()}`,
             body: JSON.parse(msg.content),
           };
           // Send the message to all connected WebSocket clients

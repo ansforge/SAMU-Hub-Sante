@@ -1,4 +1,4 @@
-const { SET_CURRENT_USER, TOGGLE_ADVANCED } = require('./constants')
+const { SET_CURRENT_USER, TOGGLE_ADVANCED, SET_SHOW_SENT_MESSAGES } = require('./constants')
 
 export const state = () => ({
   auth: {
@@ -6,7 +6,8 @@ export const state = () => ({
       clientId: null,
       targetId: null,
       tester: false,
-      advanced: false
+      advanced: process.env.NODE_ENV !== 'production',
+      showSentMessages: process.env.NODE_ENV !== 'production'
     }
   }
 })
@@ -22,19 +23,28 @@ export const getters = {
 
   isAdvanced (state) {
     return state.auth.user.advanced
+  },
+
+  showSentMessages (state) {
+    return state.auth.user.showSentMessages
   }
 }
 
 export const actions = {
-  logInUser ({ commit }, userData) {
-    userData.advanced = userData.advanced || false
-    commit(SET_CURRENT_USER, userData)
+  logInUser ({ state, commit }, userData) {
+    // use state.auth.user to get default values
+    commit(SET_CURRENT_USER, { ...state.auth.user, ...userData })
     return userData
   },
 
   toggleAdvanced ({ commit, getters }) {
     commit(TOGGLE_ADVANCED)
     return getters.isAdvanced
+  },
+
+  setShowSentMessages ({ commit }, showSentMessages) {
+    commit(SET_SHOW_SENT_MESSAGES, showSentMessages)
+    return showSentMessages
   }
 }
 
@@ -48,6 +58,13 @@ export const mutations = {
     state.auth.user = {
       ...state.auth.user,
       advanced: !state.auth.user.advanced
+    }
+  },
+
+  [SET_SHOW_SENT_MESSAGES] (state, showSentMessages) {
+    state.auth.user = {
+      ...state.auth.user,
+      showSentMessages
     }
   }
 }

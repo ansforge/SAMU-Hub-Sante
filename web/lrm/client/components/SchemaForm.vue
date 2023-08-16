@@ -59,7 +59,7 @@ export default {
     },
     time () {
       const d = new Date()
-      return d.toLocaleTimeString().replace(':', 'h') + '.' + d.getMilliseconds()
+      return d.toLocaleTimeString('fr').replace(':', 'h') + '.' + d.getMilliseconds()
     },
     submit () {
       try {
@@ -72,7 +72,7 @@ export default {
           direction: DIRECTIONS.OUT,
           routingKey: this.user.targetId,
           time,
-          code: 200,
+          acked: null,
           body: data
         })
       } catch (error) {

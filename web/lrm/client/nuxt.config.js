@@ -29,7 +29,8 @@ export default {
   plugins: [
     // Ref.: https://github.com/clwillingham/nuxt-vjsf-test/blob/master/nuxt.config.js
     { src: '~/plugins/vjsf', mode: 'client' },
-    { src: '~/plugins/mixinUser', mode: 'client' }
+    { src: '~/plugins/mixinUser', mode: 'client' },
+    { src: '~/plugins/jsonViewer', mode: 'client' }
   ],
 
   // Auto import components: https://go.nuxtjs.dev/config-components

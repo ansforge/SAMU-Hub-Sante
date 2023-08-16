@@ -44,11 +44,12 @@
           </span>
           <v-badge
             v-if="showableMessages.length"
+            class="mb-4"
             :content="showableMessages.length"
           />
           <v-spacer />
           <v-switch
-            v-model="config.showSentMessages"
+            v-model="showSentMessagesConfig"
             inset
             :label="'Show sent (' + messagesSentCount + ')'"
             class="my-0 py-0"
@@ -75,23 +76,12 @@
         </v-btn-toggle>
         <v-card-text>
           <transition-group name="message">
-            <div
-              v-for="{direction, routingKey, time, receivedTime, code, body} in selectedMessages"
-              :key="time"
+            <ReceivedMessage
+              v-for="message in selectedMessages"
+              v-bind="message"
+              :key="message.time"
               class="message mb-4"
-            >
-              <v-badge :color="code === 200 ? 'green' : 'red'" :content="code" />
-              <pre
-                style="white-space: pre-wrap; background-color: rgba(0, 0, 0, 0.05);"
-                class="elevation-1 pa-2 mt-n3"
-              ><span v-if="isOut(direction)">{{ direction }} {{
-                routingKey
-              }}</span><span v-else>{{ direction }} {{
-                body.senderID
-              }}</span><br>{{ time }} -> {{ receivedTime }}<br>{{
-                  body
-              }}</pre>
-            </div>
+            />
           </transition-group>
         </v-card-text>
       </v-card>
@@ -147,12 +137,9 @@ export default {
         routingKey: '',
         time: this.time(),
         receivedTime: this.time(),
-        code: 200,
+        acked: null,
         body: { body: 'Page loaded successfully!' }
       } */],
-      config: {
-        showSentMessages: false
-      },
       selectedClientId: null,
       queueTypes: [{
         name: 'Message',
@@ -176,6 +163,14 @@ export default {
     }
   },
   computed: {
+    showSentMessagesConfig: {
+      get () {
+        return this.showSentMessages
+      },
+      set (value) {
+        this.$store.dispatch('setShowSentMessages', value)
+      }
+    },
     clientMessages () {
       return this.messages.filter(
         message => (
@@ -185,7 +180,7 @@ export default {
       )
     },
     showableMessages () {
-      return this.config.showSentMessages ? this.clientMessages : this.clientMessages.filter(message => !this.isOut(message.direction))
+      return this.showSentMessages ? this.clientMessages : this.clientMessages.filter(message => !this.isOut(message.direction))
     },
     selectedMessages () {
       return this.showableMessages.filter(message => this.getMessageType(message) === this.selectedMessageType)
@@ -223,7 +218,7 @@ export default {
   methods: {
     time () {
       const d = new Date()
-      return d.toLocaleTimeString().replace(':', 'h') + '.' + d.getMilliseconds()
+      return d.toLocaleTimeString('fr').replace(':', 'h') + '.' + d.getMilliseconds()
     },
     isOut (direction) {
       return direction === DIRECTIONS.OUT
