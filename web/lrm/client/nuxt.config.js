@@ -88,12 +88,10 @@ export default {
   },
 
   router: {
-    middleware: ['auth'],
-    base:
-      (process.env.NODE_ENV === 'production' ? '/ui' : '/')
+    middleware: ['auth']
   },
 
   env: {
-    wssUrl: (process.env.NODE_ENV === 'production' ? '/' : 'ws://localhost:8081/')
+    wssUrl: (process.env.NODE_ENV === 'production' ? 'ws://hub.esante.gouv.fr/lrm/' : 'ws://localhost:8081/')
   }
 }

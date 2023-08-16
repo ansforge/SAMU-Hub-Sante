@@ -1,10 +1,12 @@
 const path = require('path');
 const fs = require('fs');
 const amqp = require('amqplib/callback_api');
+const logger = require('../logger');
+require('dotenv').config();
 
 const moduleDir = __dirname;
 
-const HUB_SANTE_URL = 'amqps://messaging.hub.esante.gouv.fr';
+const HUB_SANTE_URL = process.env.HUB_URL || 'amqps://messaging.hub.esante.gouv.fr';
 const HUB_SANTE_EXCHANGE = 'hubsante';
 const DEMO_CLIENT_IDS = {
   SAMU_A: 'fr.health.samuA', // fr.health.demo.samuA
@@ -13,7 +15,9 @@ const DEMO_CLIENT_IDS = {
 };
 
 const opts = {
-  pfx: fs.readFileSync(path.join(moduleDir, 'certs/local_test.p12')),
+  // pfx with new encryption needed for Node 19 support
+  // Ref: https://github.com/nodejs/node/issues/40672#issuecomment-1680460423
+  pfx: fs.readFileSync(path.join(moduleDir, 'certs/local_test.pfx')),
   // cert: fs.readFileSync(path.join(moduleDir, 'certs/local_test.crt')), // client cert
   // key: fs.readFileSync(path.join(moduleDir, 'certs/local_test.key')), // client key
   passphrase: 'certPassword', // passphrase for key
@@ -26,11 +30,13 @@ module.exports = {
   connect(callback) {
     amqp.connect(HUB_SANTE_URL, opts, (error0, connection) => {
       if (error0) {
+        logger.error(`Error during AMQP connection: ${error0}`);
         throw error0;
       }
 
       connection.createChannel((error1, channel) => {
         if (error1) {
+          logger.error(`Error during AMQP channel creation: ${error1}`);
           throw error1;
         }
         callback(connection, channel);

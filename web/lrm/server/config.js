@@ -6,6 +6,5 @@ const config = {
   URL_PATH: process.env.URL || 'http://localhost',
   PROJECT_DIR: __dirname,
 };
-config.ASYNCAPI_YAML = path.join(config.ROOT_DIR, 'hubsante.asyncapi.yaml');
 
 module.exports = config;

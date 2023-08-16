@@ -161,7 +161,7 @@ export default {
   },
   head () {
     return {
-      title: 'Interface SI-SAMU tester'
+      title: 'Démo'
     }
   },
   computed: {

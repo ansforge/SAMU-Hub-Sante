@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "setup": "cp ../../specs/swagger-si-samu.json static/",
+    "setup": "cp ../../../models/csv_parser/schema.json static/",
     "dev": "nuxt",
     "build": "nuxt build",
     "start": "nuxt start",

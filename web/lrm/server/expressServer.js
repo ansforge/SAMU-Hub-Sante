@@ -40,7 +40,7 @@ class ExpressServer {
     this.app.get('/hello', (req, res) => res.send(`Hello World. path: ${this.openApiPath}`));
 
     // Serve distribution UI
-    this.app.use('/ui', express.static(path.join(__dirname, 'ui')));
+    this.app.use('/', express.static(path.join(__dirname, 'ui')));
 
     // Subscribe to Hub messages and send them to the client through web socket
     connect((connection, channel) => {
@@ -95,9 +95,7 @@ class ExpressServer {
           const { key, msg } = JSON.parse(body);
           logger.info(` [x] Sending msg to key ${key}`);
           const { connection, channel } = await connectAsync();
-          channel.publish(
-            HUB_SANTE_EXCHANGE, key, Buffer.from(JSON.stringify(msg)), messageProperties,
-          );
+          channel.publish(HUB_SANTE_EXCHANGE, key, Buffer.from(JSON.stringify(msg)), messageProperties);
           close(connection);
           logger.info('Publish call done and connection closed.');
         } catch (error) {
