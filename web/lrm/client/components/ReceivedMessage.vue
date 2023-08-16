@@ -25,6 +25,14 @@
           </v-btn>
         </div>
         <v-btn
+          v-if="getMessageType({body}) !== 'ack'"
+          icon
+          color="primary"
+          @click="useMessageToReply"
+        >
+          <v-icon>mdi-reply</v-icon>
+        </v-btn>
+        <v-btn
           icon
           color="primary"
           @click="showFullMessage = !showFullMessage"
@@ -91,9 +99,6 @@ export default {
     }
   },
   methods: {
-    isOut (direction) {
-      return direction === DIRECTIONS.OUT
-    },
     sendAck () {
       try {
         const msg = this.buildMessage({ ackDistributionId: this.body.distributionID }, 'Ack')
@@ -101,6 +106,9 @@ export default {
       } catch (error) {
         console.error("Erreur lors de l'envoi de l'acquittement", error)
       }
+    },
+    useMessageToReply () {
+      this.$emit('useMessageToReply', this.body.content.contentObject.jsonContent.embeddedJsonContent.message)
     }
   }
 }

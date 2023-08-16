@@ -38,10 +38,10 @@ kubectl replace --force -f ../../hub/infra/web/lrm.yaml
       - [ ] use cases list
       - [ ] then stepper with messages to be sent (not mutable)
       - [ ] check received messages to confirm OK and move to the next step
-    - [ ] demo: 
+    - [x] demo: 
       - [x] messages types with message list to prefill
       - [x] mutable messages to send
-      - [ ] possibility to reuse a received message (to prefill the message sent back as an update or else)
+      - [x] possibility to reuse a received message (to prefill the message sent back as an update or else)
 - [x] Polish UI (design, config, badges, collapsed JSON messages : https://www.npmjs.com/package/vue-json-viewer, ...)
 
 ### Server

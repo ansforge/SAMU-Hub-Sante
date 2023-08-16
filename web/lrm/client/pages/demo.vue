@@ -87,6 +87,7 @@
               v-bind="message"
               :key="message.time"
               class="message mb-4"
+              @useMessageToReply="useMessageToReply"
             />
           </transition-group>
         </v-card-text>
@@ -227,20 +228,18 @@ export default {
     })
   },
   methods: {
-    isOut (direction) {
-      return direction === DIRECTIONS.OUT
-    },
     typeMessages (type) {
       return this.showableMessages.filter(
         message => this.getMessageType(message) === type
       )
     },
-    messageSent (message) {
-      this.messages.unshift(message)
-    },
     submit () {
       // Submits current SchemaForm
       this.$refs.schemaForms[this.messageTypeTabIndex].submit()
+    },
+    useMessageToReply (message) {
+      // Use message to fill the form
+      this.$refs.schemaForms[this.messageTypeTabIndex].load(message)
     }
   }
 }

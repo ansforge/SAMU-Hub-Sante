@@ -13,6 +13,9 @@ export default {
     })
   },
   methods: {
+    isOut (direction) {
+      return direction === DIRECTIONS.OUT
+    },
     getMessageType (message) {
       if (message.body.distributionKind === 'Ack') {
         return 'ack'
@@ -58,7 +61,7 @@ export default {
     },
     timeDisplayFormat () {
       const d = new Date()
-      return d.toLocaleTimeString('fr').replace(':', 'h') + '.' + d.getMilliseconds()
+      return d.toLocaleTimeString('fr').replace(':', 'h') + '.' + String(new Date().getMilliseconds()).padStart(3, '0')
     },
     sendMessage (msg) {
       console.log('Sending message', msg)
