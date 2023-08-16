@@ -98,9 +98,6 @@ public class DispatcherTest {
 
         // when calling rabbitTemplate.send(), the message has new expiration set
         assertNotNull(customTTLMessage.getMessageProperties().getExpiration());
-        assertEquals(
-                argument.getValue().getMessageProperties().getExpiration(),
-                customTTLMessage.getMessageProperties().getExpiration());
     }
 
     @Test

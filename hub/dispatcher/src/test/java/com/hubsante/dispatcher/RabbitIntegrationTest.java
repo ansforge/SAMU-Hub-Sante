@@ -103,7 +103,7 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
 
     @Test
     @DisplayName("message expired according to EDXL.dateTimeExpires should be rejected")
-    public void rejectExpirationMessageWithEdxlDateTimeExpiresLowerThanHubTTL() throws Exception {
+    public void rejectExpiredMessageWithEdxlDateTimeExpiresLowerThanHubTTL() throws Exception {
         Message source = createMessage("samuB_to_nexsis.xml", SAMU_B_OUTER_MESSAGE_ROUTING_KEY);
         EdxlMessage edxlMessage = converter.deserializeXmlEDXL(new String(source.getBody(), StandardCharsets.UTF_8));
         OffsetDateTime now = OffsetDateTime.now();
