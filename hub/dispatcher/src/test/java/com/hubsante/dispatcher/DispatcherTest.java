@@ -82,7 +82,9 @@ public class DispatcherTest {
         // get message and override dateTimeExpires field with sooner value
         Message base = createMessage("cisuCreateEdxl.xml", MessageProperties.CONTENT_TYPE_XML, XML_MESSAGE_ROUTING_KEY);
         EdxlMessage edxlMessage = converter.deserializeXmlEDXL(new String(base.getBody(), StandardCharsets.UTF_8));
-        edxlMessage.setDateTimeExpires(OffsetDateTime.now().plusSeconds(1));
+        OffsetDateTime now = OffsetDateTime.now();
+        edxlMessage.setDateTimeSent(now);
+        edxlMessage.setDateTimeExpires(now.plusSeconds(1));
         Message customTTLMessage = new Message(converter.serializeXmlEDXL(edxlMessage).getBytes(), base.getMessageProperties());
 
         // before dispatch, the message has no expiration set
