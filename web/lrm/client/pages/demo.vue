@@ -30,7 +30,7 @@
               v-for="[name, messageTypeDetails] in Object.entries(messageTypes)"
               :key="name"
             >
-              <SchemaForm v-bind="messageTypeDetails" ref="schemaForms" :name="name" @sent="messageSent" />
+              <SchemaForm v-bind="messageTypeDetails" ref="schemaForms" :name="name" />
             </v-tab-item>
           </v-tabs-items>
         </v-card-text>
@@ -48,6 +48,12 @@
             :content="showableMessages.length"
           />
           <v-spacer />
+          <v-switch
+            v-model="autoAckConfig"
+            inset
+            :label="'Auto ack'"
+            class="my-0 py-0 mr-4"
+          />
           <v-switch
             v-model="showSentMessagesConfig"
             inset
@@ -90,10 +96,13 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
 import { DIRECTIONS } from '@/constants'
+import mixinMessage from '~/plugins/mixinMessage'
 
 export default {
   name: 'Demo',
+  mixins: [mixinMessage],
   data () {
     return {
       messageTypeTabIndex: 0,
@@ -132,14 +141,6 @@ export default {
         }
       },
       selectedMessageType: 'message',
-      messages: [/* {
-        direction: DIRECTIONS.IN,
-        routingKey: '',
-        time: this.time(),
-        receivedTime: this.time(),
-        acked: null,
-        body: { body: 'Page loaded successfully!' }
-      } */],
       selectedClientId: null,
       queueTypes: [{
         name: 'Message',
@@ -163,12 +164,21 @@ export default {
     }
   },
   computed: {
+    ...mapGetters(['messages']),
     showSentMessagesConfig: {
       get () {
         return this.showSentMessages
       },
       set (value) {
         this.$store.dispatch('setShowSentMessages', value)
+      }
+    },
+    autoAckConfig: {
+      get () {
+        return this.autoAck
+      },
+      set (value) {
+        this.$store.dispatch('setAutoAck', value)
       }
     },
     clientMessages () {
@@ -200,37 +210,25 @@ export default {
     })
 
     // Start listening to server messages
-    const socket = new WebSocket(process.env.wssUrl)
-    socket.addEventListener('open', () => {
-      console.log('WebSocket demo connection established')
-    })
-    socket.addEventListener('message', (event) => {
-      this.messages.unshift({
-        ...JSON.parse(event.data),
+    this.socket.addEventListener('message', (event) => {
+      const message = JSON.parse(event.data)
+      this.$store.dispatch('addMessage', {
+        ...message,
         direction: DIRECTIONS.IN,
-        receivedTime: this.time()
+        receivedTime: this.timeDisplayFormat()
       })
-    })
-    socket.addEventListener('close', () => {
-      console.log('WebSocket connection closed')
+      if (this.autoAck) {
+        // Send back acks automatically to received messages
+        if (this.getMessageType(message) !== 'ack' && message.routingKey.startsWith(this.user.clientId)) {
+          const msg = this.buildMessage({ ackDistributionId: message.body.distributionID }, 'Ack')
+          this.sendMessage(msg)
+        }
+      }
     })
   },
   methods: {
-    time () {
-      const d = new Date()
-      return d.toLocaleTimeString('fr').replace(':', 'h') + '.' + d.getMilliseconds()
-    },
     isOut (direction) {
       return direction === DIRECTIONS.OUT
-    },
-    getMessageType (message) {
-      if (message.body.distributionKind === 'Ack') {
-        return 'ack'
-      } else if (message.body.distributionKind === 'Error') {
-        return 'info'
-      } else {
-        return 'message'
-      }
     },
     typeMessages (type) {
       return this.showableMessages.filter(

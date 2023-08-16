@@ -5,16 +5,25 @@
         v-if="showSentMessages"
         :icon="isOut(direction) ? 'mdi-upload' : 'mdi-download'"
       />
-      <status-badge :direction="direction" :acked="acked" :class="{'ml-5': showSentMessages}" />
+      <status-badge :direction="direction" :acked="acked" :distribution-id="body.distributionID" :class="{'ml-5': showSentMessages}" />
     </div>
     <div class="elevation-4 pt-8">
       <v-row class="mx-4">
         <span>
           <v-icon small left>mdi-email-fast</v-icon>{{ direction }} {{ isOut(direction) ? routingKey : body.senderID }}
           <br>
-          <v-icon small left>mdi-timer</v-icon>{{ time }} → {{ receivedTime }}
+          <v-icon small left>mdi-timer</v-icon>{{ time }} → {{ isOut(direction) ? acked?.time : receivedTime }}
         </span>
         <v-spacer />
+        <div v-if="getMessageType({body}) !== 'ack' && !isOut(direction)">
+          <v-btn
+            icon
+            :color="acked ? 'accent' : 'primary'"
+            @click="sendAck"
+          >
+            <v-icon>mdi-check-all</v-icon>
+          </v-btn>
+        </div>
         <v-btn
           icon
           color="primary"
@@ -36,9 +45,12 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
 import { DIRECTIONS } from '@/constants'
+import mixinMessage from '~/plugins/mixinMessage'
 
 export default {
+  mixins: [mixinMessage],
   props: {
     direction: {
       type: String,
@@ -54,11 +66,7 @@ export default {
     },
     receivedTime: {
       type: String,
-      required: true
-    },
-    acked: {
-      type: String,
-      required: true
+      default: null
     },
     body: {
       type: Object,
@@ -71,9 +79,28 @@ export default {
       showFullMessage: false
     }
   },
+  computed: {
+    ...mapGetters(['messages']),
+    acked () {
+      // Within Ack messages, check if there is one matching the message
+      return this.messages.filter(
+        message => this.getMessageType(message) === 'ack'
+      ).find(
+        message => message.body.content.contentObject.jsonContent.embeddedJsonContent.message.ackDistributionId === this.body.distributionID
+      )
+    }
+  },
   methods: {
     isOut (direction) {
       return direction === DIRECTIONS.OUT
+    },
+    sendAck () {
+      try {
+        const msg = this.buildMessage({ ackDistributionId: this.body.distributionID }, 'Ack')
+        this.sendMessage(msg)
+      } catch (error) {
+        console.error("Erreur lors de l'envoi de l'acquittement", error)
+      }
     }
   }
 }

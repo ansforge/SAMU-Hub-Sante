@@ -12,11 +12,10 @@
 </template>
 
 <script>
-import { v4 as uuidv4 } from 'uuid'
-import moment from 'moment/moment'
-import { WRONG_EDXL_ENVELOPE, DIRECTIONS, EDXL_ENVELOPE } from '@/constants'
+import mixinMessage from '@/plugins/mixinMessage'
 
 export default {
+  mixins: [mixinMessage],
   props: {
     name: {
       type: String,
@@ -45,71 +44,20 @@ export default {
       form: {}
     }
   },
-  mounted () {
-    this.socket = new WebSocket(process.env.wssUrl)
-    this.socket.addEventListener('open', () => {
-      console.log('WebSocket SchemaForm connection established')
-    })
-  },
   methods: {
     load (example) {
       this.form = example
       // Trigger RequestForm reload with key change | Ref.: https://stackoverflow.com/a/48755228
       this.exampleLoadDatetime = new Date().toISOString()
     },
-    time () {
-      const d = new Date()
-      return d.toLocaleTimeString('fr').replace(':', 'h') + '.' + d.getMilliseconds()
-    },
     submit () {
       try {
-        const time = this.time()
         // const data = await (await fetch('samuA_to_samuB.json')).json()
-        const data = this.buildMessage()
-        console.log('submit', data)
-        this.socket.send(JSON.stringify({ key: this.user.clientId, msg: data }))
-        this.$emit('sent', {
-          direction: DIRECTIONS.OUT,
-          routingKey: this.user.targetId,
-          time,
-          acked: null,
-          body: data
-        })
+        const data = this.buildMessage({ createEvent: this.form })
+        this.sendMessage(data)
       } catch (error) {
         console.error("Erreur lors de l'envoi du message", error)
       }
-    },
-    buildMessage () {
-      return this.buildWrongMessage()
-      // ToDo: remove above line once messages are built with the correct full EDXL envelope
-      const message = JSON.parse(JSON.stringify(EDXL_ENVELOPE)) // Deep copy
-      message.content.contentObject.jsonContent.embeddedJsonContent.message.createEvent = this.form
-      const name = this.userInfos.name
-      const messageId = uuidv4()
-      const targetId = this.clientInfos(this.user.targetId).id
-      const sentAt = moment().format()
-      message.distributionID = `${name}_${messageId}`
-      message.senderID = this.user.clientId
-      message.dateTimeSent = sentAt
-      message.descriptor.explicitAddress.explicitAddressValue = targetId
-      message.content.contentObject.jsonContent.embeddedJsonContent.message.messageId = messageId
-      message.content.contentObject.jsonContent.embeddedJsonContent.message.sender = { name, uri: `hubsante:${this.user.clientId}}` }
-      message.content.contentObject.jsonContent.embeddedJsonContent.message.sentAt = sentAt
-      message.content.contentObject.jsonContent.embeddedJsonContent.message.recipients.recipient = [{ name: this.clientInfos(this.user.targetId).name, uri: `hubsante:${targetId}}` }]
-      return message
-    },
-    buildWrongMessage () {
-      const message = JSON.parse(JSON.stringify(WRONG_EDXL_ENVELOPE)) // Deep copy
-      message.content.contentObject.jsonContent.embeddedJsonContent.message = this.form
-      const name = this.userInfos.name
-      const messageId = uuidv4()
-      const targetId = this.clientInfos(this.user.targetId).id
-      const sentAt = moment().format()
-      message.distributionID = `${name}_${messageId}`
-      message.senderID = this.user.clientId
-      message.dateTimeSent = sentAt
-      message.descriptor.explicitAddress.explicitAddressValue = targetId
-      return message
     }
   }
 }

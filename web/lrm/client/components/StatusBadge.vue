@@ -21,7 +21,7 @@ export default {
       required: true
     },
     acked: {
-      type: String,
+      type: Object,
       default: null
     }
   },

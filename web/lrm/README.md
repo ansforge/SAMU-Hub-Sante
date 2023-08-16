@@ -55,5 +55,5 @@ kubectl replace --force -f ../../hub/infra/web/lrm.yaml
     - [ ] ELK stack
 
 ### Acks
-- [ ] Be able to send back acks manually or automatically
-- [ ] Handle ack display in UI
+- [x] Be able to send back acks manually or automatically
+- [x] Handle ack display in UI

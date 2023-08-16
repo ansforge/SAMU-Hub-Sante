@@ -45,31 +45,29 @@ class ExpressServer {
     // Subscribe to Hub messages and send them to the client through web socket
     connect((connection, channel) => {
       for (const [clientName, clientId] of Object.entries(DEMO_CLIENT_IDS)) {
-        let queue = `${clientId}.message`;
-        if (clientName === 'SDIS_Z') {
-          queue = `${clientId}.ack`;
-        }
-        logger.info(' [*] Waiting for %s messages in %s. To exit press CTRL+C', clientName, queue);
-        channel.consume(queue, (msg) => {
-          logger.info(' [x] Received from %s: %s', clientName, msg.content.toString());
-          const d = new Date();
-          const data = {
-            direction: '←',
-            routingKey: queue,
-            acked: null,
-            time: `${d.toLocaleTimeString('fr').replace(':', 'h')}.${d.getMilliseconds()}`,
-            body: JSON.parse(msg.content),
-          };
-          // Send the message to all connected WebSocket clients
-          this.wss.clients.forEach((client) => {
-            if (client.readyState === WebSocket.OPEN) {
-              logger.info('Sent to clients:', data);
-              client.send(JSON.stringify(data));
-            }
+        for (const type of ['message', 'ack', 'info']) {
+          const queue = `${clientId}.${type}`;
+          logger.info(` [*] Waiting for ${clientName} messages in ${queue}. To exit press CTRL+C`);
+          channel.consume(queue, (msg) => {
+            logger.info(' [x] Received from %s: %s', clientName, msg.content.toString());
+            const d = new Date();
+            const data = {
+              direction: '←',
+              routingKey: queue,
+              time: `${d.toLocaleTimeString('fr').replace(':', 'h')}.${d.getMilliseconds()}`,
+              body: JSON.parse(msg.content),
+            };
+            // Send the message to all connected WebSocket clients
+            this.wss.clients.forEach((client) => {
+              if (client.readyState === WebSocket.OPEN) {
+                logger.info('Sent to clients:', data);
+                client.send(JSON.stringify(data));
+              }
+            });
+          }, {
+            noAck: true, // Ref.: https://amqp-node.github.io/amqplib/channel_api.html#channelconsume
           });
-        }, {
-          noAck: true, // Ref.: https://amqp-node.github.io/amqplib/channel_api.html#channelconsume
-        });
+        }
       }
     });
   }

@@ -3,7 +3,7 @@ import { mapGetters } from 'vuex'
 
 Vue.mixin({
   computed: {
-    ...mapGetters(['user', 'isAuthenticated', 'isAdvanced', 'showSentMessages']),
+    ...mapGetters(['user', 'isAuthenticated', 'isAdvanced', 'showSentMessages', 'autoAck']),
     userInfos () {
       if (this.isAuthenticated) {
         return this.clientInfos(this.user.clientId)

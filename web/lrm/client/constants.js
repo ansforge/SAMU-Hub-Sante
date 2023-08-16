@@ -32,7 +32,7 @@ export const EDXL_ENVELOPE = {
   dateTimeSent: '{{ 2022-09-27T08:23:34+02:00 }}',
   dateTimeExpires: '2072-09-27T08:23:34+02:00',
   distributionStatus: 'Actual',
-  distributionKind: 'Report',
+  distributionKind: '{{ Report }}',
   descriptor: {
     language: 'fr-FR',
     explicitAddress: {
