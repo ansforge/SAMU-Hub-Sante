@@ -171,11 +171,16 @@ public class Dispatcher {
     private void overrideExpirationIfNeeded(EdxlMessage edxlMessage, MessageProperties properties) {
         // OffsetDateTime comes with seconds and nanos, not millis
         // We assume that one second is an acceptable interval
-        long queueExpiration = edxlMessage.getDateTimeSent().plusSeconds(hubConfig.getDefaultTTL()).toEpochSecond();
-        long edxlCustomExpiration = edxlMessage.getDateTimeExpires().toEpochSecond();
+        long queueExpirationDateTime = OffsetDateTime.now().plusSeconds(hubConfig.getDefaultTTL()).toEpochSecond();
+        long edxlCustomExpirationDateTime = edxlMessage.getDateTimeExpires().toEpochSecond();
 
-        if (queueExpiration > edxlCustomExpiration) {
-            long newTTL = edxlCustomExpiration - edxlMessage.getDateTimeSent().toEpochSecond();
+        // if default expiration (now + queue TTl) outlasts edxl.dateTimeExpires,
+        // we have to override per-message TTL
+        if (queueExpirationDateTime > edxlCustomExpirationDateTime) {
+            // if edxl.dateTimeExpires is in the past, we set TTL to 0
+            // it would be automatically discarded to DLQ (cf https://www.rabbitmq.com/ttl.html)
+            long newTTL = Math.max(0,
+                    edxlMessage.getDateTimeExpires().toEpochSecond() - OffsetDateTime.now().toEpochSecond());
             properties.setExpiration(String.valueOf(newTTL * 1000));
             log.info("override expiration for message {}: expiration is now {}",
                     edxlMessage.getDistributionID(),

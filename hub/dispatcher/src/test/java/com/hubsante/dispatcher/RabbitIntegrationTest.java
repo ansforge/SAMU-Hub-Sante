@@ -75,7 +75,7 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
         RabbitTemplate samuB_client = getCustomRabbitTemplate(classLoader.getResource("config/certs/samuB/samuB.p12").getPath(), "samuB");
         samuB_client.sendAndReceive(HUBSANTE_EXCHANGE, SAMU_B_OUTER_MESSAGE_ROUTING_KEY, published);
 
-        Thread.sleep(10000);
+        Thread.sleep(2000);
         assertRecipientDidNotReceive("sdisZ", SDIS_Z_MESSAGE_QUEUE);
 
         Message infoMsg = samuB_client.receive(SAMU_B_INFO_QUEUE);
@@ -129,6 +129,7 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
     public void messageWithoutContentTypeIsDLQ() throws Exception {
         Message noContentTypeMsg = createMessage("samuB_to_nexsis.xml", null, SAMU_B_OUTER_MESSAGE_ROUTING_KEY);
         RabbitTemplate samuB_client = getCustomRabbitTemplate(classLoader.getResource("config/certs/samuB/samuB.p12").getPath(), "samuB");
+        assertNull(samuB_client.receive(SAMU_B_INFO_QUEUE));
         samuB_client.sendAndReceive(HUBSANTE_EXCHANGE, SAMU_B_OUTER_MESSAGE_ROUTING_KEY, noContentTypeMsg);
 
         Thread.sleep(200);

@@ -116,7 +116,18 @@
     {
       "vhost": "/",
       "name": "dead-lettering",
-      "pattern": "^.*\\.(?:ack|info|message)$",
+      "pattern": "^.*\\.(?:ack|message)$",
+      "apply-to": "queues",
+      "definition": {
+        "message-ttl": 5000,
+        "dead-letter-exchange": "distribution.dlx"
+      },
+      "priority": 0
+    },
+    {
+      "vhost": "/",
+      "name": "dead-lettering-info",
+      "pattern": "^.*\\.info",
       "apply-to": "queues",
       "definition": {
         "message-ttl": 10000,
