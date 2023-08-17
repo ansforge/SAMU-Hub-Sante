@@ -4,15 +4,47 @@ import { WRONG_EDXL_ENVELOPE, EDXL_ENVELOPE, DIRECTIONS } from '@/constants'
 
 export default {
   mounted () {
-    this.socket = new WebSocket(process.env.wssUrl)
-    this.socket.addEventListener('open', () => {
-      console.log(`WebSocket ${this.$options.name} connection established`)
-    })
-    this.socket.addEventListener('close', () => {
-      console.log(`WebSocket ${this.$options.name} connection closed`)
-    })
+    this.wsConnect()
   },
   methods: {
+    wsConnect () {
+      this.socket = new WebSocket(process.env.wssUrl)
+      this.socket.onopen = () => {
+        console.log(`WebSocket ${this.$options.name} connection established`)
+      }
+
+      this.socket.onclose = (e) => {
+        console.log(`WebSocket ${this.$options.name} connection closed`, e)
+        // Retry connection
+        setTimeout(() => {
+          this.wsConnect()
+        }, 1000)
+      }
+
+      this.socket.onerror = (err) => {
+        console.error(`WebSocket ${this.$options.name} connection errored`, err)
+        this.socket.close()
+      }
+
+      // demo.vue is in charge of listening to server messages
+      if (this.$options.name === 'Demo') {
+        this.socket.addEventListener('message', (event) => {
+          const message = JSON.parse(event.data)
+          this.$store.dispatch('addMessage', {
+            ...message,
+            direction: DIRECTIONS.IN,
+            receivedTime: this.timeDisplayFormat()
+          })
+          if (this.autoAck) {
+          // Send back acks automatically to received messages
+            if (this.getMessageType(message) !== 'ack' && message.routingKey.startsWith(this.user.clientId)) {
+              const msg = this.buildMessage({ ackDistributionId: message.body.distributionID }, 'Ack')
+              this.sendMessage(msg)
+            }
+          }
+        })
+      }
+    },
     isOut (direction) {
       return direction === DIRECTIONS.OUT
     },

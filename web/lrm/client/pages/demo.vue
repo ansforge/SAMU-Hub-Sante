@@ -209,23 +209,6 @@ export default {
         this.messageTypes[name].schema = schema
       })
     })
-
-    // Start listening to server messages
-    this.socket.addEventListener('message', (event) => {
-      const message = JSON.parse(event.data)
-      this.$store.dispatch('addMessage', {
-        ...message,
-        direction: DIRECTIONS.IN,
-        receivedTime: this.timeDisplayFormat()
-      })
-      if (this.autoAck) {
-        // Send back acks automatically to received messages
-        if (this.getMessageType(message) !== 'ack' && message.routingKey.startsWith(this.user.clientId)) {
-          const msg = this.buildMessage({ ackDistributionId: message.body.distributionID }, 'Ack')
-          this.sendMessage(msg)
-        }
-      }
-    })
   },
   methods: {
     typeMessages (type) {
