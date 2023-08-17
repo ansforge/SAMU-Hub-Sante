@@ -143,7 +143,7 @@ public class Dispatcher {
             if (message.getMessageProperties().getContentType().equals(MessageProperties.CONTENT_TYPE_JSON)) {
                 edxlMessage = edxlHandler.deserializeJsonEDXL(receivedEdxl);
                 log.info(" [x] Received from '" + message.getMessageProperties().getReceivedRoutingKey() + "': message with distributionID" + edxlMessage.getDistributionID());
-                log.debug(edxlHandler.prettyPrintJsonEDXL(edxlMessage));
+                log.info(edxlHandler.prettyPrintJsonEDXL(edxlMessage));
 
             } else if (message.getMessageProperties().getContentType().equals(MessageProperties.CONTENT_TYPE_XML)) {
                 edxlMessage = edxlHandler.deserializeXmlEDXL(receivedEdxl);

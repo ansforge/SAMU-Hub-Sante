@@ -4,6 +4,7 @@ import com.hubsante.hub.HubApplication;
 import com.hubsante.hub.config.HubClientConfiguration;
 import com.hubsante.hub.service.Dispatcher;
 import com.hubsante.hub.service.EdxlHandler;
+import com.hubsante.model.GenericMessage;
 import com.hubsante.model.edxl.EdxlMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
@@ -75,6 +76,26 @@ public class DispatcherTest {
         // assert that the message was sent to the right exchange with the right routing key exactly 1 time
         Mockito.verify(rabbitTemplate, times(1)).send(
                 eq(DISTRIBUTION_EXCHANGE), eq("fr.fire.nexsis.sdis23.message"), any(Message.class));
+    }
+
+    @Test
+    @DisplayName("generic message should be dispatched to the right exchange")
+    public void shouldDispatchGenericMessageToRightExchange() throws IOException {
+        Message receivedMessage = createMessage("genericMessage.json", JSON_MESSAGE_ROUTING_KEY);
+        assert(receivedMessage.getMessageProperties().getContentType().equals(MessageProperties.CONTENT_TYPE_JSON));
+        dispatcher.dispatch(receivedMessage);
+
+        ArgumentCaptor<Message> argument = ArgumentCaptor.forClass(Message.class);
+        Mockito.verify(rabbitTemplate, times(1)).send(
+                eq(DISTRIBUTION_EXCHANGE), eq("fr.health.samu70.message"), argument.capture());
+
+        EdxlMessage edxlMessage = converter.deserializeJsonEDXL(
+                new String(argument.getValue().getBody()));
+        GenericMessage genericMessage = edxlMessage.getContent().getContentObject()
+                .getContentWrapper().getEmbeddedContent().getMessage();
+
+        assertEquals("generic-123", genericMessage.getGenericMessageId());
+        assertEquals("value1", genericMessage.getAttributesWrapper().get("prop1").asText());
     }
 
     @Test
