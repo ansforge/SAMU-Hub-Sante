@@ -3,14 +3,14 @@
     --paragraph-space-bg: 4rem
 }
 
-@media (min-width:62em) {
+@media (min-width: 62em) {
     :root {
         --paragraph-space: 6rem;
         --paragraph-space-bg: 6rem
     }
 }
 
-@media (min-width:48em) {
+@media (min-width: 48em) {
     .bg-drop {
         overflow: hidden;
         position: relative
@@ -41,7 +41,7 @@
     }
 }
 
-@media (min-width:62em) {
+@media (min-width: 62em) {
     .aw-col-lg-20 {
         -ms-flex: 0 0 20%;
         flex: 0 0 20%;
