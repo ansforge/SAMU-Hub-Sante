@@ -1,4 +1,4 @@
-.btn-list > a {
+.btn-list>a {
     margin-right: 30px;
 }
 
@@ -14,4 +14,13 @@ h3 {
         /* Mobile view has header__title with title below header */
         scroll-margin-top: calc(var(--header-min-height) + 35px);
     }
+}
+
+/* Pour la bannière | Ref.: https: //ansforge.github.io/DesignSystem/sg-bloc-banner.html */
+:root {
+    --main-margin-top: 0;
+}
+
+.bg-gray-800 {
+    background-color: var(--gray-800)
 }
