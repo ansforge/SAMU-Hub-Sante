@@ -1,0 +1,204 @@
+.m-card {
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-direction: column;
+    flex-direction: column
+}
+
+.m-card[class*=bg-] {
+    padding: 4rem
+}
+
+.m-card[class*=bg-]:not(.m-card--img-bg) {
+    box-shadow: 0 1.5rem 4rem 0 rgba(0, 0, 0, .1)
+}
+
+.m-card .lead {
+    margin-bottom: 1rem
+}
+
+.m-card .paragraph--lien {
+    margin-top: auto
+}
+
+.m-card:not(.text-center) .paragraph--lien {
+    text-align: right
+}
+
+.m-card>:last-child {
+    margin-bottom: 0
+}
+
+a.m-card,
+button.m-card {
+    display: -ms-flexbox;
+    display: flex;
+    text-decoration: none
+}
+
+a.m-card:hover .m-card__title,
+button.m-card:hover .m-card__title {
+    text-decoration: underline
+}
+
+a.m-card:not(.text-white) .svg-arrow-right,
+a.m-card:not(.text-white) .svg-external-link,
+button.m-card:not(.text-white) .svg-arrow-right,
+button.m-card:not(.text-white) .svg-external-link {
+    color: var(--primary)
+}
+
+a.m-card:not(.text-white):hover,
+button.m-card:not(.text-white):hover {
+    color: inherit
+}
+
+a.m-card.text-white,
+button.m-card.text-white {
+    outline-color: var(--body-color)
+}
+
+a.m-card.text-white:hover,
+button.m-card.text-white:hover {
+    color: var(--white)
+}
+
+.m-card__title {
+    margin-bottom: 1rem
+}
+
+.m-card__img {
+    margin-bottom: 2rem
+}
+
+.m-card--img-top {
+    overflow: hidden
+}
+
+.m-card--img-top .m-card__img {
+    margin: -4rem -4rem 3rem
+}
+
+.m-card--img-top img {
+    width: 100%
+}
+
+.m-card--img-top.rounded-md .m-card__img {
+    border-top-right-radius: var(--border-radius-md)
+}
+
+.m-card--img-bg {
+    overflow: hidden;
+    position: relative
+}
+
+.m-card--img-bg.m-card {
+    padding-top: 47%
+}
+
+.m-card--img-bg.rounded-md .m-card__img {
+    border-radius: var(--border-radius-md)
+}
+
+.m-card--img-bg .m-card__img {
+    bottom: 0;
+    left: 0;
+    margin-bottom: 0;
+    position: absolute;
+    right: 0;
+    top: 0
+}
+
+.m-card--img-bg .m-card__img:after {
+    background: linear-gradient(180deg, transparent 0, rgba(32, 41, 65, .05) 14%, #000);
+    bottom: 0;
+    content: "";
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0
+}
+
+[data-contrast=high-c] .m-card--img-bg .m-card__img:after {
+    background: rgba(0, 0, 0, .8)
+}
+
+.m-card--img-bg .m-card__img img {
+    height: 100%;
+    -o-object-fit: cover;
+    object-fit: cover;
+    width: 100%
+}
+
+.m-card--img-bg>:not(.m-card__img) {
+    position: relative;
+    z-index: 1
+}
+
+a.m-card--img-bg .m-card__img,
+a.m-card--img-top .m-card__img,
+button.m-card--img-bg .m-card__img {
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    overflow: hidden;
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0)
+}
+
+a.m-card--img-bg img,
+a.m-card--img-top img,
+button.m-card--img-bg img {
+    transition: -webkit-transform .8s ease-in-out;
+    transition: transform .8s ease-in-out;
+    transition: transform .8s ease-in-out, -webkit-transform .8s ease-in-out
+}
+
+a.m-card--img-bg:focus .m-card__img img,
+a.m-card--img-bg:hover .m-card__img img,
+a.m-card--img-top:focus .m-card__img img,
+a.m-card--img-top:hover .m-card__img img,
+button.m-card--img-bg:focus .m-card__img img,
+button.m-card--img-bg:hover .m-card__img img {
+    -webkit-transform: scale(1.1);
+    transform: scale(1.1)
+}
+
+a.m-card.external-link:after {
+    background-size: 1.8rem;
+    height: 1.8rem;
+    margin-left: auto;
+    margin-top: auto;
+    position: relative;
+    width: 1.8rem;
+    z-index: 1
+}
+
+a.m-card.external-link.text-center:after {
+    margin-right: auto
+}
+
+a.m-card.external-link:not(.m-card--has-arrow) {
+    position: relative
+}
+
+a.m-card.external-link:not(.m-card--has-arrow):after {
+    background-color: var(--gray-200);
+    background-size: 1.5rem;
+    border-radius: 100%;
+    height: 4rem;
+    opacity: 0;
+    position: absolute;
+    right: 2rem;
+    top: 2rem;
+    transition: opacity .25s ease;
+    width: 4rem
+}
+
+a.m-card.external-link:not(.m-card--has-arrow):focus:after,
+a.m-card.external-link:not(.m-card--has-arrow):hover:after {
+    opacity: 1
+}
+
+a.m-card--has-arrow.external-link:after {
+    content: none
+}
