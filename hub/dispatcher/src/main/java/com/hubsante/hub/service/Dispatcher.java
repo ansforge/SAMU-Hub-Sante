@@ -95,6 +95,10 @@ public class Dispatcher {
 
         if (!MessageDeliveryMode.PERSISTENT.equals(properties.getReceivedDeliveryMode())) {
             properties.setDeliveryMode(MessageDeliveryMode.PERSISTENT);
+            //TODO bbo: use Error model when available
+            rabbitTemplate.send(DISTRIBUTION_EXCHANGE, getSenderInfoQueueName(edxlMessage),
+                    new Message(("message " + edxlMessage.getDistributionID() +
+                            "has been received with non-persistent delivery mode").getBytes()));
         }
         overrideExpirationIfNeeded(edxlMessage, properties);
 
