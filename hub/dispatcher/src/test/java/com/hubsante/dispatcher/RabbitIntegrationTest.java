@@ -120,8 +120,8 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
         samuB_client.send(HUBSANTE_EXCHANGE, SAMU_B_OUTER_MESSAGE_ROUTING_KEY, published);
 
         Thread.sleep(DISPATCHER_PROCESS_TIME);
-
         assertRecipientDidNotReceive("sdisZ", SDIS_Z_MESSAGE_QUEUE);
+
         Message infoMsg = samuB_client.receive(SAMU_B_INFO_QUEUE);
         assertNotNull(infoMsg);
         String errorMsg = new String(infoMsg.getBody());
