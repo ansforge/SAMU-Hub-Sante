@@ -178,7 +178,7 @@ public class DispatcherTest {
                 eq(DISTRIBUTION_EXCHANGE), eq("fr.fire.nexsis.sdis23.message"), sentMessage.capture());
 
         Mockito.verify(rabbitTemplate, times(1)).send(
-                eq(DISTRIBUTION_EXCHANGE), eq("fr.health.samu110.info"), infoMessage.capture());
+                eq(DISTRIBUTION_EXCHANGE), eq(SAMU069_ROUTING_KEY + ".info"), infoMessage.capture());
 
         assertEquals(MessageDeliveryMode.PERSISTENT, sentMessage.getValue().getMessageProperties().getDeliveryMode());
         assert(new String(infoMessage.getValue().getBody()).endsWith("has been received with non-persistent delivery mode"));
