@@ -40,7 +40,7 @@
       <v-card style="height: 86vh; overflow-y: auto;">
         <v-card-title class="headline">
           <span class="mb-4">
-            Messages
+            {{ showSentMessagesConfig ? 'Messages' : 'Messages reçus' }}
           </span>
           <v-badge
             v-if="showableMessages.length"
@@ -161,7 +161,7 @@ export default {
   },
   head () {
     return {
-      title: 'Démo'
+      title: `Démo [${this.userInfos.name}]`
     }
   },
   computed: {

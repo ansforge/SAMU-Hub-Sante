@@ -4,10 +4,11 @@
       <v-badge
         v-if="showSentMessages"
         :icon="isOut(direction) ? 'mdi-upload' : 'mdi-download'"
+        :color="isOut(direction) ? 'secondary' : 'primary'"
       />
       <status-badge :direction="direction" :acked="acked" :distribution-id="body.distributionID" :class="{'ml-5': showSentMessages}" />
     </div>
-    <div class="elevation-4 pt-8">
+    <div class="elevation-4 pt-8" :class="{'grey lighten-4': isOut(direction)}">
       <v-row class="mx-4">
         <span>
           <v-icon small left>mdi-email-fast</v-icon>{{ direction }} {{ isOut(direction) ? routingKey : body.senderID }}
