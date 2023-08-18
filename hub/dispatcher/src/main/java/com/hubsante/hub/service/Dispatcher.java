@@ -117,7 +117,9 @@ public class Dispatcher {
                 edxlString = edxlHandler.prettyPrintJsonEDXL(edxlMessage);
                 properties.setContentType(MessageProperties.CONTENT_TYPE_JSON);
             }
-            log.debug("  ↳ [x] Forwarding to '" + recipientID + "':" + edxlString);
+            log.info("  ↳ [x] Forwarding to '" + recipientID + "': message with distributionID " + edxlMessage.getDistributionID());
+            log.debug(edxlString);
+
             return new Message(edxlString.getBytes(StandardCharsets.UTF_8), properties);
 
         } catch (JsonProcessingException e) {
@@ -152,12 +154,12 @@ public class Dispatcher {
             // It MUST be explicitly set by the client
             if (message.getMessageProperties().getContentType().equals(MessageProperties.CONTENT_TYPE_JSON)) {
                 edxlMessage = edxlHandler.deserializeJsonEDXL(receivedEdxl);
-                log.debug(" [x] Received from '" + message.getMessageProperties().getReceivedRoutingKey() + "':" + edxlHandler.prettyPrintJsonEDXL(edxlMessage));
-
+                log.info(" [x] Received from '" + message.getMessageProperties().getReceivedRoutingKey() + "': message with distributionID" + edxlMessage.getDistributionID());
+                log.debug(edxlHandler.prettyPrintJsonEDXL(edxlMessage));
             } else if (message.getMessageProperties().getContentType().equals(MessageProperties.CONTENT_TYPE_XML)) {
                 edxlMessage = edxlHandler.deserializeXmlEDXL(receivedEdxl);
-                log.debug(" [x] Received from '" + message.getMessageProperties().getReceivedRoutingKey() + "':" + edxlHandler.prettyPrintXmlEDXL(edxlMessage));
-
+                log.info(" [x] Received from '" + message.getMessageProperties().getReceivedRoutingKey() + "': message with distributionID " + edxlMessage.getDistributionID());
+                log.debug(edxlHandler.prettyPrintXmlEDXL(edxlMessage));
             } else {
                 String queueName = message.getMessageProperties().getReceivedRoutingKey() + ".info";
                 rabbitTemplate.send(DISTRIBUTION_EXCHANGE, queueName, new Message(
@@ -192,7 +194,6 @@ public class Dispatcher {
             // it would be automatically discarded to DLQ (cf https://www.rabbitmq.com/ttl.html)
             long newTTL = Math.max(0,
                     edxlMessage.getDateTimeExpires().toEpochSecond() - OffsetDateTime.now().toEpochSecond());
-
             if (newTTL == 0) {
                 log.warn("message {} has expired", edxlMessage.getDistributionID());
                 throw new HubExpiredMessageException("message " + edxlMessage.getDistributionID() + " has expired");

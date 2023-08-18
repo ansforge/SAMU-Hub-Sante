@@ -49,8 +49,8 @@ public class DispatcherTest {
     private HubClientConfiguration hubConfig;
     static ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
     private Dispatcher dispatcher;
-    private final String XML_MESSAGE_ROUTING_KEY = "fr.health.samu110";
-    private final String JSON_MESSAGE_ROUTING_KEY = "fr.health.samu050";
+    private final String SAMU069_ROUTING_KEY = "fr.health.samu069";
+    private final String INCONSISTENT_ROUTING_KEY = "fr.health.no-samu";
 
     @DynamicPropertySource
     static void registerPgProperties(DynamicPropertyRegistry propertiesRegistry) {
@@ -64,11 +64,10 @@ public class DispatcherTest {
         dispatcher = new Dispatcher(rabbitTemplate, converter, hubConfig);
     }
 
-
     @Test
     @DisplayName("should send message to the right exchange and routing key")
     public void shouldDispatchToRightExchange() throws IOException {
-        Message receivedMessage = createMessage("cisuCreateEdxl.xml", MessageProperties.CONTENT_TYPE_XML, XML_MESSAGE_ROUTING_KEY);
+        Message receivedMessage = createMessage("createCaseEdxl.xml", MessageProperties.CONTENT_TYPE_XML, SAMU069_ROUTING_KEY);
         dispatcher.dispatch(receivedMessage);
 
         // assert that the message was sent to the right exchange with the right routing key exactly 1 time
@@ -80,7 +79,7 @@ public class DispatcherTest {
     @DisplayName("should reset TTL if edxl dateTimeExpires is lower")
     public void shouldResetTTL() throws IOException {
         // get message and override dateTimeExpires field with sooner value
-        Message base = createMessage("cisuCreateEdxl.xml", MessageProperties.CONTENT_TYPE_XML, XML_MESSAGE_ROUTING_KEY);
+        Message base = createMessage("createCaseEdxl.xml", MessageProperties.CONTENT_TYPE_XML, SAMU069_ROUTING_KEY);
         EdxlMessage edxlMessage = converter.deserializeXmlEDXL(new String(base.getBody(), StandardCharsets.UTF_8));
         OffsetDateTime now = OffsetDateTime.now();
         edxlMessage.setDateTimeSent(now);
@@ -103,14 +102,14 @@ public class DispatcherTest {
     @Test
     @DisplayName("should send info to sender of DLQed message - expiration")
     public void handleDLQMessage() throws Exception {
-        Message receivedMessage = createMessage("cisuCreateEdxl.xml", MessageProperties.CONTENT_TYPE_XML, XML_MESSAGE_ROUTING_KEY);
+        Message receivedMessage = createMessage("createCaseEdxl.xml", MessageProperties.CONTENT_TYPE_XML, SAMU069_ROUTING_KEY);
         receivedMessage.getMessageProperties().setHeader(DLQ_REASON, "expired");
         receivedMessage.getMessageProperties().setHeader(DLQ_MESSAGE_ORIGIN, "fr.fire.nexsis.sdis23.message");
         dispatcher.dispatchDLQ(receivedMessage);
 
         ArgumentCaptor<Message> argument = ArgumentCaptor.forClass(Message.class);
         Mockito.verify(rabbitTemplate, times(1)).send(
-                eq(DISTRIBUTION_EXCHANGE), eq("fr.health.samu110.info"), argument.capture());
+                eq(DISTRIBUTION_EXCHANGE), eq("fr.health.samu069.info"), argument.capture());
         String str = new String(argument.getValue().getBody());
         assert(str.endsWith("has not been consumed on fr.fire.nexsis.sdis23.message"));
     }
@@ -118,22 +117,25 @@ public class DispatcherTest {
     @Test
     @DisplayName("malformed message should throw an exception")
     public void malformedMessagefailed() throws IOException {
-        Message receivedMessage = createMessage("edxlWithMalformedContent.json", JSON_MESSAGE_ROUTING_KEY);
+        //TODO bbo : without validation, only type errors are detected.
+        //missing required fields are not
+        // only validation will do
+        Message receivedMessage = createMessage("edxlWithMalformedContent.json", SAMU069_ROUTING_KEY);
         assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
         ArgumentCaptor<Message> argument = ArgumentCaptor.forClass(Message.class);
         Mockito.verify(rabbitTemplate, times(1)).send(
-                eq(DISTRIBUTION_EXCHANGE), eq("fr.health.samu050.info"), argument.capture());
+                eq(DISTRIBUTION_EXCHANGE), eq("fr.health.samu069.info"), argument.capture());
         assertEquals("Could not parse message, invalid format", new String(argument.getValue().getBody()));
     }
 
     @Test
     @DisplayName("message without content-type is rejected")
     public void rejectMessageWithoutContentType() throws IOException {
-        Message receivedMessage = createMessage("cisuCreateEdxl.json", null, JSON_MESSAGE_ROUTING_KEY);
+        Message receivedMessage = createMessage("createCaseEdxl.json", null, SAMU069_ROUTING_KEY);
         assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
         ArgumentCaptor<Message> argument = ArgumentCaptor.forClass(Message.class);
         Mockito.verify(rabbitTemplate, times(1)).send(
-                eq(DISTRIBUTION_EXCHANGE), eq("fr.health.samu050.info"), argument.capture());
+                eq(DISTRIBUTION_EXCHANGE), eq("fr.health.samu069.info"), argument.capture());
         assertEquals("Unhandled Content-Type ! Message Content-Type should be set at 'application/json' or 'application/xml'",
                 new String(argument.getValue().getBody()));
     }
@@ -141,32 +143,32 @@ public class DispatcherTest {
     @Test
     @DisplayName("message with unhandled content-type is rejected")
     public void rejectMessageWithUnhandledContentType() throws IOException {
-        Message receivedMessage = createMessage("cisuCreateEdxl.json", MessageProperties.DEFAULT_CONTENT_TYPE, JSON_MESSAGE_ROUTING_KEY);
+        Message receivedMessage = createMessage("createCaseEdxl.json", MessageProperties.DEFAULT_CONTENT_TYPE, SAMU069_ROUTING_KEY);
         assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
     }
 
     @Test
     @DisplayName("message body inconsistent with content-type is rejected")
     public void rejectMessageWithInconsistentBody() throws IOException {
-        Message receivedMessage = createMessage("cisuCreateEdxl.json", MessageProperties.CONTENT_TYPE_XML, JSON_MESSAGE_ROUTING_KEY);
+        Message receivedMessage = createMessage("createCaseEdxl.json", MessageProperties.CONTENT_TYPE_XML, SAMU069_ROUTING_KEY);
         assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
     }
 
     @Test
     @DisplayName("outer routing key inconsistent with sender ID")
     public void outerRoutingKeyInconsistentWithSenderId() throws IOException {
-        Message receivedMessage = createMessage("cisuCreateEdxl.json", XML_MESSAGE_ROUTING_KEY);
+        Message receivedMessage = createMessage("createCaseEdxl.json", INCONSISTENT_ROUTING_KEY);
         assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
         ArgumentCaptor<Message> argument = ArgumentCaptor.forClass(Message.class);
         Mockito.verify(rabbitTemplate, times(1)).send(
-                eq(DISTRIBUTION_EXCHANGE), eq("fr.health.samu050.info"), argument.capture());
+                eq(DISTRIBUTION_EXCHANGE), eq("fr.health.samu069.info"), argument.capture());
         assert(new String(argument.getValue().getBody()).startsWith("Sender inconsistency for message"));
     }
 
     @Test
     @DisplayName("should forward message with persistent delivery mode")
     public void forwardMessageWithPersistentDeliveryMode() throws IOException {
-        Message receivedMessage = createMessage("cisuCreateEdxl.xml", MessageProperties.CONTENT_TYPE_XML, XML_MESSAGE_ROUTING_KEY);
+        Message receivedMessage = createMessage("createCaseEdxl.xml", MessageProperties.CONTENT_TYPE_XML, SAMU069_ROUTING_KEY);
         receivedMessage.getMessageProperties().setDeliveryMode(MessageDeliveryMode.NON_PERSISTENT);
         dispatcher.dispatch(receivedMessage);
 
@@ -176,7 +178,7 @@ public class DispatcherTest {
                 eq(DISTRIBUTION_EXCHANGE), eq("fr.fire.nexsis.sdis23.message"), sentMessage.capture());
 
         Mockito.verify(rabbitTemplate, times(1)).send(
-                eq(DISTRIBUTION_EXCHANGE), eq("fr.health.samu110.info"), infoMessage.capture());
+                eq(DISTRIBUTION_EXCHANGE), eq(SAMU069_ROUTING_KEY + ".info"), infoMessage.capture());
 
         assertEquals(MessageDeliveryMode.PERSISTENT, sentMessage.getValue().getMessageProperties().getDeliveryMode());
         assert(new String(infoMessage.getValue().getBody()).endsWith("has been received with non-persistent delivery mode"));

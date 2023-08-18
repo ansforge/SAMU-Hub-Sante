@@ -1,0 +1,176 @@
+{
+  "caseId": "SAMU069-20230725-AF1234",
+  "senderCaseId": "SAMU069-20230725-AF1234",
+  "createdAt": "2022-07-25T10:03:34+01:00",
+  "initialAlert": {
+    "alertId": "SAMU069-20230725-AL01234",
+    "receivedAt": "2022-07-25T10:01:22+01:00",
+    "reporting": "STANDARD",
+    "alertInformation": "suite collision avec un autre vélo sur piste cyclable, gonflement du genou, grosses égratignures, maux de tête",
+    "caller": {
+      "callerURI": "tel:+330607080901",
+      "callbackURI": "tel:+330601020304",
+      "spokenLanguage": "Français",
+      "callerInformation": "Epoux",
+      "callerName": {
+        "complete": "Louise Durand",
+        "callerLastName": "Durand",
+        "callerFirstName": "Louise"
+      }
+    },
+    "alertLocation": {},
+    "alertCode": {
+      "cisuVersion": "1.19",
+      "whatsHappen": {
+        "code": "C01.01.04",
+        "label": "2-roues",
+        "freetext": "pas d'autres types de véhicules impliqués"
+      },
+      "locationKind": {
+        "code": "L02.01.00",
+        "label": "Voie publique hors voie rapide",
+        "freetext": "Voie vélo le long d'une route "
+      },
+      "riskThreat": [
+        {
+          "code": "R22",
+          "label": "Gêne à la circulation",
+          "freetext": "vélos débordent sur la route, rsique lié aux voitures"
+        }
+      ],
+      "healthMotive": {
+        "code": "M03.11, M02.07",
+        "label": "Céphalée, migraines, Traumatisme sérieux, plaie intermédiaire",
+        "freetext": "Portait un casque de protection"
+      },
+      "gravity": "faible",
+      "victims": {
+        "count": "MANY",
+        "mainVictim": "ADULT",
+        "comment": "Deuxième victime présente saignement legers aux mains et genoux"
+      }
+    },
+    "contact": {
+      "type": "Personne",
+      "detail": "tel:+330607080901"
+    },
+    "callTaker": {
+      "organization": "SAMU069",
+      "controlRoom": "Régulation",
+      "calltakerURI": null,
+      "calltakerId": null
+    },
+    "resource": [
+      {
+        "resourceDesc": "DISPMED",
+        "mimeType": "pdf",
+        "size": "9",
+        "URI": "https://www.docPatient1.hpLyon.com/share?res=123456",
+        "derefURI": null,
+        "digest": "84feb54a7ab868484feb54a7ab868484feb54a7ab868484feb54a7ab868484feb54a7ab868484feb54a7ab868484feb54a7ab868484feb54a7ab868484feb54a7ab8684"
+      }
+    ]
+  },
+  "caseLocation": {
+    "locID": "BA-15478-21455789",
+    "locLabel": null,
+    "name": "Quai des Célestins",
+    "address": {
+      "complete": "8 quai des Célestins",
+      "number": "8",
+      "wayName": {
+        "complete": null,
+        "type": "Quai",
+        "name": "des Célestins"
+      }
+    },
+    "city": {
+      "name": "Lyon",
+      "inseeCode": 69002,
+      "detail": "deuxième arrondissement"
+    },
+    "access": {
+      "floor": null,
+      "roomNumber": null,
+      "interphone": null,
+      "accessCode": null,
+      "elevator": null,
+      "buildingName": null,
+      "entrance": null,
+      "entity": null
+    },
+    "geometry": {
+      "point": {
+        "coord": {
+          "lat": 45.7602368,
+          "lon": 4.8310551,
+          "height": 237,
+          "heading": null,
+          "speed": null,
+          "time": "2022-07-25T10:03:34+01:00",
+          "precision": "ADDRESS"
+        },
+        "coordsys": "EPSG-4326"
+      },
+      "sketch": null
+    },
+    "link": [
+      {
+        "source": "BAN",
+        "type": null,
+        "id": "id1234"
+      }
+    ],
+    "country": "France",
+    "freetext": "Devant la boulangerie Quai des Célestin"
+  },
+  "casualties": [
+    {
+      "identifier": [
+        {
+          "source": "NIR",
+          "value": "37"
+        }
+      ],
+      "phoneNumber": "tel:+330607080901",
+      "name": "Marin Durand",
+      "birthName": "Marin",
+      "firstName": "Durand",
+      "sex": "M",
+      "birthDate": "1980-06-22",
+      "age": "43Y",
+      "weight": 80,
+      "height": 184,
+      "freetext": "Allergique au doliprane"
+    },
+    {
+      "identifier": [
+        {
+          "source": "NIR",
+          "value": "38"
+        }
+      ],
+      "phoneNumber": "tel:+330607080901",
+      "name": "Marinette Durand",
+      "birthName": "Marinette",
+      "firstName": "Durand",
+      "sex": "F",
+      "birthDate": "1980-06-23",
+      "age": "42Y",
+      "weight": 80,
+      "height": 179,
+      "freetext": "RAS"
+    }
+  ],
+  "newAlert": null,
+  "severity": "MINOR",
+  "additionalInformation": {
+    "customMap": {
+      "key": "neighborhood",
+      "label": "Quartier",
+      "value": "SECT.QUARTIER HISTORIQUE",
+      "freetext": "Une voix sens unique pour voiture + une voix bus"
+    }
+  },
+  "freetext": "choc à la tête mais portait un casque de protection. 2ème victime n'a pas de blessures apparantes."
+}
