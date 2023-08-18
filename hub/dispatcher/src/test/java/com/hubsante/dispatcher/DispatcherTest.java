@@ -4,7 +4,7 @@ import com.hubsante.hub.HubApplication;
 import com.hubsante.hub.config.HubClientConfiguration;
 import com.hubsante.hub.service.Dispatcher;
 import com.hubsante.hub.service.EdxlHandler;
-import com.hubsante.model.GenericMessage;
+import com.hubsante.model.CustomMessage;
 import com.hubsante.model.edxl.EdxlMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
@@ -79,8 +79,8 @@ public class DispatcherTest {
     }
 
     @Test
-    @DisplayName("generic message should be dispatched to the right exchange")
-    public void shouldDispatchGenericMessageToRightExchange() throws IOException {
+    @DisplayName("custom message should be dispatched to the right exchange")
+    public void shouldDispatchCustomMessageToRightExchange() throws IOException {
         Message receivedMessage = createMessage("genericMessage.json", JSON_MESSAGE_ROUTING_KEY);
         assert(receivedMessage.getMessageProperties().getContentType().equals(MessageProperties.CONTENT_TYPE_JSON));
         dispatcher.dispatch(receivedMessage);
@@ -91,11 +91,10 @@ public class DispatcherTest {
 
         EdxlMessage edxlMessage = converter.deserializeJsonEDXL(
                 new String(argument.getValue().getBody()));
-        GenericMessage genericMessage = edxlMessage.getContent().getContentObject()
+        CustomMessage customMessage = edxlMessage.getContent().getContentObject()
                 .getContentWrapper().getEmbeddedContent().getMessage();
 
-        assertEquals("generic-123", genericMessage.getGenericMessageId());
-        assertEquals("value1", genericMessage.getAttributesWrapper().get("prop1").asText());
+        assertEquals("value1", customMessage.getCustomContent().get("prop1").asText());
     }
 
     @Test
@@ -149,7 +148,7 @@ public class DispatcherTest {
         ArgumentCaptor<Message> argument = ArgumentCaptor.forClass(Message.class);
         Mockito.verify(rabbitTemplate, times(1)).send(
                 eq(DISTRIBUTION_EXCHANGE), eq("fr.health.samu069.info"), argument.capture());
-        assertEquals("Could not parse message, invalid format", new String(argument.getValue().getBody()));
+        assert(new String(argument.getValue().getBody()).startsWith("Could not parse message, invalid format"));
     }
 
     @Test

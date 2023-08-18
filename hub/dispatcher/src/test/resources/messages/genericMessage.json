@@ -17,8 +17,7 @@
       "jsonContent": {
         "embeddedJsonContent": {
           "message": {
-            "genericMessageId": "generic-123",
-            "wrapper": {
+            "customContent": {
               "prop1": "value1",
               "prop2": "value2"
             }
