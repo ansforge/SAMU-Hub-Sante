@@ -2,6 +2,7 @@ package com.hubsante.hub.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.hubsante.hub.config.HubClientConfiguration;
+import com.hubsante.hub.exception.HubExpiredMessageException;
 import com.hubsante.model.edxl.DistributionKind;
 import com.hubsante.model.edxl.EdxlMessage;
 import lombok.extern.slf4j.Slf4j;
@@ -42,9 +43,15 @@ public class Dispatcher {
         // Extract recipient queue name from the message (explicit address and distribution kind)
         String queueName = getRecipientQueueName(edxlMessage);
         // Clone the message and adapt properties: set the content type
-        Message forwardedMsg = forwardedMessage(edxlMessage, message.getMessageProperties());
-        // publish the message to the recipient queue
-        rabbitTemplate.send(DISTRIBUTION_EXCHANGE, queueName, forwardedMsg);
+        try {
+            Message forwardedMsg = forwardedMessage(edxlMessage, message.getMessageProperties());
+            // publish the message to the recipient queue
+            rabbitTemplate.send(DISTRIBUTION_EXCHANGE, queueName, forwardedMsg);
+        } catch (HubExpiredMessageException e) {
+            message.getMessageProperties().setHeader(DLQ_REASON, "expired");
+            message.getMessageProperties().setHeader(DLQ_MESSAGE_ORIGIN, queueName);
+            rabbitTemplate.send(DISTRIBUTION_DLX, queueName, message);
+        }
     }
 
     @RabbitListener(queues = DISPATCH_DLQ_NAME)
@@ -185,6 +192,11 @@ public class Dispatcher {
             // it would be automatically discarded to DLQ (cf https://www.rabbitmq.com/ttl.html)
             long newTTL = Math.max(0,
                     edxlMessage.getDateTimeExpires().toEpochSecond() - OffsetDateTime.now().toEpochSecond());
+
+            if (newTTL == 0) {
+                log.warn("message {} has expired", edxlMessage.getDistributionID());
+                throw new HubExpiredMessageException("message " + edxlMessage.getDistributionID() + " has expired");
+            }
             properties.setExpiration(String.valueOf(newTTL * 1000));
             log.info("override expiration for message {}: expiration is now {}",
                     edxlMessage.getDistributionID(),
