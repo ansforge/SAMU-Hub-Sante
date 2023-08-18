@@ -3,6 +3,7 @@ package com.hubsante.hub.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.hubsante.hub.config.HubClientConfiguration;
+import com.hubsante.hub.exception.HubExpiredMessageException;
 import com.hubsante.model.edxl.DistributionKind;
 import com.hubsante.model.edxl.EdxlMessage;
 import lombok.extern.slf4j.Slf4j;
@@ -43,9 +44,15 @@ public class Dispatcher {
         // Extract recipient queue name from the message (explicit address and distribution kind)
         String queueName = getRecipientQueueName(edxlMessage);
         // Clone the message and adapt properties: set the content type
-        Message forwardedMsg = forwardedMessage(edxlMessage, message.getMessageProperties());
-        // publish the message to the recipient queue
-        rabbitTemplate.send(DISTRIBUTION_EXCHANGE, queueName, forwardedMsg);
+        try {
+            Message forwardedMsg = forwardedMessage(edxlMessage, message.getMessageProperties());
+            // publish the message to the recipient queue
+            rabbitTemplate.send(DISTRIBUTION_EXCHANGE, queueName, forwardedMsg);
+        } catch (HubExpiredMessageException e) {
+            message.getMessageProperties().setHeader(DLQ_REASON, "expired");
+            message.getMessageProperties().setHeader(DLQ_MESSAGE_ORIGIN, queueName);
+            rabbitTemplate.send(DISTRIBUTION_DLX, queueName, message);
+        }
     }
 
     @RabbitListener(queues = DISPATCH_DLQ_NAME)
@@ -96,6 +103,10 @@ public class Dispatcher {
 
         if (!MessageDeliveryMode.PERSISTENT.equals(properties.getReceivedDeliveryMode())) {
             properties.setDeliveryMode(MessageDeliveryMode.PERSISTENT);
+            //TODO bbo: use Error model when available
+            rabbitTemplate.send(DISTRIBUTION_EXCHANGE, getSenderInfoQueueName(edxlMessage),
+                    new Message(("message " + edxlMessage.getDistributionID() +
+                            "has been received with non-persistent delivery mode").getBytes()));
         }
         overrideExpirationIfNeeded(edxlMessage, properties);
 
@@ -109,6 +120,7 @@ public class Dispatcher {
             }
             log.info("  ↳ [x] Forwarding to '" + recipientID + "': message with distributionID " + edxlMessage.getDistributionID());
             log.debug(edxlString);
+
             return new Message(edxlString.getBytes(StandardCharsets.UTF_8), properties);
 
         } catch (JsonProcessingException e) {
@@ -145,12 +157,10 @@ public class Dispatcher {
                 edxlMessage = edxlHandler.deserializeJsonEDXL(receivedEdxl);
                 log.info(" [x] Received from '" + message.getMessageProperties().getReceivedRoutingKey() + "': message with distributionID" + edxlMessage.getDistributionID());
                 log.info(edxlHandler.prettyPrintJsonEDXL(edxlMessage));
-
             } else if (message.getMessageProperties().getContentType().equals(MessageProperties.CONTENT_TYPE_XML)) {
                 edxlMessage = edxlHandler.deserializeXmlEDXL(receivedEdxl);
                 log.info(" [x] Received from '" + message.getMessageProperties().getReceivedRoutingKey() + "': message with distributionID " + edxlMessage.getDistributionID());
                 log.debug(edxlHandler.prettyPrintXmlEDXL(edxlMessage));
-
             } else {
                 String queueName = message.getMessageProperties().getReceivedRoutingKey() + ".info";
                 rabbitTemplate.send(DISTRIBUTION_EXCHANGE, queueName, new Message(
@@ -176,12 +186,21 @@ public class Dispatcher {
     private void overrideExpirationIfNeeded(EdxlMessage edxlMessage, MessageProperties properties) {
         // OffsetDateTime comes with seconds and nanos, not millis
         // We assume that one second is an acceptable interval
-        long queueExpiration = OffsetDateTime.now().plusSeconds(hubConfig.getDefaultTTL()).toEpochSecond();
-        long edxlCustomExpiration = edxlMessage.getDateTimeExpires().toEpochSecond();
-        long customDelay = (queueExpiration - edxlCustomExpiration) * 1000;
+        long queueExpirationDateTime = OffsetDateTime.now().plusSeconds(hubConfig.getDefaultTTL()).toEpochSecond();
+        long edxlCustomExpirationDateTime = edxlMessage.getDateTimeExpires().toEpochSecond();
 
-        if (customDelay > 0) {
-            properties.setExpiration(String.valueOf(customDelay));
+        // if default expiration (now + queue TTl) outlasts edxl.dateTimeExpires,
+        // we have to override per-message TTL
+        if (queueExpirationDateTime > edxlCustomExpirationDateTime) {
+            // if edxl.dateTimeExpires is in the past, we set TTL to 0
+            // it would be automatically discarded to DLQ (cf https://www.rabbitmq.com/ttl.html)
+            long newTTL = Math.max(0,
+                    edxlMessage.getDateTimeExpires().toEpochSecond() - OffsetDateTime.now().toEpochSecond());
+            if (newTTL == 0) {
+                log.warn("message {} has expired", edxlMessage.getDistributionID());
+                throw new HubExpiredMessageException("message " + edxlMessage.getDistributionID() + " has expired");
+            }
+            properties.setExpiration(String.valueOf(newTTL * 1000));
             log.info("override expiration for message {}: expiration is now {}",
                     edxlMessage.getDistributionID(),
                     edxlMessage.getDateTimeExpires().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));

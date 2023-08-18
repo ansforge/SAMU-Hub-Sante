@@ -14,6 +14,7 @@ public class AmqpConfiguration {
     public static final String DISTRIBUTION_EXCHANGE = "distribution";
     public static final String DISPATCH_QUEUE_NAME = "dispatch";
     public static final String DISPATCH_DLQ_NAME = "dispatch.dlq";
+    public static final String DISTRIBUTION_DLX = "distribution.dlx";
     public static final String DLQ_REASON = "x-first-death-reason";
     public static final String DLQ_MESSAGE_ORIGIN = "x-first-death-queue";
 
