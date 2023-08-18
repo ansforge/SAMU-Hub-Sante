@@ -95,6 +95,10 @@ public class Dispatcher {
 
         if (!MessageDeliveryMode.PERSISTENT.equals(properties.getReceivedDeliveryMode())) {
             properties.setDeliveryMode(MessageDeliveryMode.PERSISTENT);
+            //TODO bbo: use Error model when available
+            rabbitTemplate.send(DISTRIBUTION_EXCHANGE, getSenderInfoQueueName(edxlMessage),
+                    new Message(("message " + edxlMessage.getDistributionID() +
+                            "has been received with non-persistent delivery mode").getBytes()));
         }
         overrideExpirationIfNeeded(edxlMessage, properties);
 
@@ -108,6 +112,7 @@ public class Dispatcher {
             }
             log.info("  ↳ [x] Forwarding to '" + recipientID + "': message with distributionID " + edxlMessage.getDistributionID());
             log.debug(edxlString);
+
             return new Message(edxlString.getBytes(StandardCharsets.UTF_8), properties);
 
         } catch (JsonProcessingException e) {
@@ -174,12 +179,17 @@ public class Dispatcher {
     private void overrideExpirationIfNeeded(EdxlMessage edxlMessage, MessageProperties properties) {
         // OffsetDateTime comes with seconds and nanos, not millis
         // We assume that one second is an acceptable interval
-        long queueExpiration = OffsetDateTime.now().plusSeconds(hubConfig.getDefaultTTL()).toEpochSecond();
-        long edxlCustomExpiration = edxlMessage.getDateTimeExpires().toEpochSecond();
-        long customDelay = (queueExpiration - edxlCustomExpiration) * 1000;
+        long queueExpirationDateTime = OffsetDateTime.now().plusSeconds(hubConfig.getDefaultTTL()).toEpochSecond();
+        long edxlCustomExpirationDateTime = edxlMessage.getDateTimeExpires().toEpochSecond();
 
-        if (customDelay > 0) {
-            properties.setExpiration(String.valueOf(customDelay));
+        // if default expiration (now + queue TTl) outlasts edxl.dateTimeExpires,
+        // we have to override per-message TTL
+        if (queueExpirationDateTime > edxlCustomExpirationDateTime) {
+            // if edxl.dateTimeExpires is in the past, we set TTL to 0
+            // it would be automatically discarded to DLQ (cf https://www.rabbitmq.com/ttl.html)
+            long newTTL = Math.max(0,
+                    edxlMessage.getDateTimeExpires().toEpochSecond() - OffsetDateTime.now().toEpochSecond());
+            properties.setExpiration(String.valueOf(newTTL * 1000));
             log.info("override expiration for message {}: expiration is now {}",
                     edxlMessage.getDistributionID(),
                     edxlMessage.getDateTimeExpires().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
