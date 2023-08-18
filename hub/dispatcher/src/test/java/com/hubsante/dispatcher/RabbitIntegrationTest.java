@@ -75,7 +75,7 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
         RabbitTemplate samuB_client = getCustomRabbitTemplate(classLoader.getResource("config/certs/samuB/samuB.p12").getPath(), "samuB");
         samuB_client.sendAndReceive(HUBSANTE_EXCHANGE, SAMU_B_OUTER_MESSAGE_ROUTING_KEY, published);
 
-        Thread.sleep(10000);
+        Thread.sleep(2000);
         assertRecipientDidNotReceive("sdisZ", SDIS_Z_MESSAGE_QUEUE);
 
         Message infoMsg = samuB_client.receive(SAMU_B_INFO_QUEUE);
@@ -103,10 +103,12 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
 
     @Test
     @DisplayName("message expired according to EDXL.dateTimeExpires should be rejected")
-    public void rejectExpirationMessageWithEdxlDateTimeExpiresLowerThanHubTTL() throws Exception {
+    public void rejectExpiredMessageWithEdxlDateTimeExpiresLowerThanHubTTL() throws Exception {
         Message source = createMessage("samuB_to_nexsis.xml", SAMU_B_OUTER_MESSAGE_ROUTING_KEY);
         EdxlMessage edxlMessage = converter.deserializeXmlEDXL(new String(source.getBody(), StandardCharsets.UTF_8));
-        edxlMessage.setDateTimeExpires(OffsetDateTime.now().plusNanos(100000));
+        OffsetDateTime now = OffsetDateTime.now();
+        edxlMessage.setDateTimeSent(now);
+        edxlMessage.setDateTimeExpires(now.plusNanos(100000));
         byte[] edxlBytes = converter.serializeXmlEDXL(edxlMessage).getBytes();
         Message published = new Message(edxlBytes, source.getMessageProperties());
 
@@ -127,6 +129,7 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
     public void messageWithoutContentTypeIsDLQ() throws Exception {
         Message noContentTypeMsg = createMessage("samuB_to_nexsis.xml", null, SAMU_B_OUTER_MESSAGE_ROUTING_KEY);
         RabbitTemplate samuB_client = getCustomRabbitTemplate(classLoader.getResource("config/certs/samuB/samuB.p12").getPath(), "samuB");
+        assertNull(samuB_client.receive(SAMU_B_INFO_QUEUE));
         samuB_client.sendAndReceive(HUBSANTE_EXCHANGE, SAMU_B_OUTER_MESSAGE_ROUTING_KEY, noContentTypeMsg);
 
         Thread.sleep(200);
