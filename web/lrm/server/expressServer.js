@@ -76,10 +76,11 @@ class ExpressServer {
     this.wss = new WebSocket.Server({ server: this.server });
     // WebSocket server
     this.wss.on('connection', (ws) => {
-      console.log('WebSocket client connected');
+      logger.info('WebSocket client connected');
 
       ws.on('message', async (body) => {
-        console.log(`Received message from WebSocket client: ${body}`);
+        logger.info(`Received message from WebSocket client: ${body.distributionID}`);
+        logger.debug(`Received message from WebSocket client: ${body.distributionID} of content ${body}`);
         try {
           // Publish the message to RabbitMQ
           const { key, msg } = JSON.parse(body);
@@ -89,12 +90,12 @@ class ExpressServer {
           close(connection);
           logger.info('Publish call done and connection closed.');
         } catch (error) {
-          console.error('Error publishing message to RabbitMQ:', error);
+          logger.error('Error publishing message to RabbitMQ:', error);
         }
       });
 
       ws.on('close', () => {
-        console.log('WebSocket client disconnected');
+        logger.info('WebSocket client disconnected');
       });
     });
     logger.info(`Listening on port ${this.port}`);
