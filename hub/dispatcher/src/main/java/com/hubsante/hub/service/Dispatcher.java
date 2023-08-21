@@ -1,6 +1,7 @@
 package com.hubsante.hub.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.hubsante.hub.config.HubClientConfiguration;
 import com.hubsante.hub.exception.HubExpiredMessageException;
 import com.hubsante.model.edxl.DistributionKind;
@@ -172,7 +173,8 @@ public class Dispatcher {
             log.error("Could not parse message " + receivedEdxl + " coming from " + message.getMessageProperties().getConsumerQueue(), e);
             String queueName = message.getMessageProperties().getReceivedRoutingKey() + ".info";
             rabbitTemplate.send(DISTRIBUTION_EXCHANGE, queueName, new Message(
-                    new String("Could not parse message, invalid format").getBytes()));
+                    new String("Could not parse message, invalid format. \n " +
+                            "If you don't want to use HubSanté model for now, please use a \"customContent\" wrapper inside your message.").getBytes()));
             throw new AmqpRejectAndDontRequeueException("do not requeue !");
         } catch (Exception e) {
             e.printStackTrace();

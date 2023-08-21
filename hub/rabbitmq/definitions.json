@@ -22,11 +22,27 @@
       "auto_delete": false,
       "internal": false,
       "arguments": {}
+    },
+    {
+      "name": "distribution.dlx",
+      "vhost": "/",
+      "type": "fanout",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
     }
   ],
   "queues": [
     {
       "name": "dispatch",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "dispatch.dlq",
       "vhost": "/",
       "durable": true,
       "auto_delete": false,
@@ -545,6 +561,14 @@
       "destination_type": "queue",
       "routing_key": "fr.fire.nexsis.sdisZ.info",
       "arguments": {}
+    },
+    {
+      "source": "distribution.dlx",
+      "vhost": "/",
+      "destination": "dispatch.dlq",
+      "destination_type": "queue",
+      "routing_key": "",
+      "arguments": {}
     }
   ],
   "users": [
@@ -767,6 +791,18 @@
       "user": "local.test",
       "write": "^(fr.health.samuA|fr.health.samuB|fr.fire.nexsis.sdisZ)$",
       "read": ""
+    }
+  ],
+  "policies": [
+    {
+      "vhost": "/",
+      "name": "dead-lettering",
+      "pattern": "^.*\\.(?:ack|info|message)$",
+      "apply-to": "queues",
+      "definition": {
+        "message-ttl": 10000,
+        "dead-letter-exchange": "distribution.dlx"},
+      "priority": 0
     }
   ]
 }

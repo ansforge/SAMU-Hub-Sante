@@ -1,0 +1,116 @@
+// const { Middleware } = require('swagger-express-middleware');
+const http = require('http');
+const path = require('path');
+const express = require('express');
+const cors = require('cors');
+const cookieParser = require('cookie-parser');
+const bodyParser = require('body-parser');
+const WebSocket = require('ws');
+const logger = require('./logger');
+const {
+  connect, connectAsync, close, HUB_SANTE_EXCHANGE, DEMO_CLIENT_IDS, messageProperties,
+} = require('./rabbit/utils');
+
+class ExpressServer {
+  constructor(port) {
+    this.port = port;
+    this.app = express();
+    this.setupMiddleware();
+  }
+
+  setupMiddleware() {
+    // this.setupAllowedMedia();
+    this.app.use(cors());
+    this.app.use(bodyParser.json({ limit: '14MB' }));
+    this.app.use(express.json());
+    this.app.use(express.urlencoded({ extended: false }));
+    this.app.use(cookieParser());
+    // Simple test to see that the server is up and responding
+    this.app.get('/hello', (req, res) => res.send(`Hello World. path: ${this.openApiPath}`));
+
+    // Serve distribution UI
+    this.app.use('/', express.static(path.join(__dirname, 'ui')));
+
+    // Subscribe to Hub messages and send them to the client through web socket
+    connect((connection, channel) => {
+      this.connection = connection;
+      for (const [clientName, clientId] of Object.entries(DEMO_CLIENT_IDS)) {
+        for (const type of ['message', 'ack', 'info']) {
+          const queue = `${clientId}.${type}`;
+          logger.info(` [*] Waiting for ${clientName} messages in ${queue}. To exit press CTRL+C`);
+          channel.consume(queue, (msg) => {
+            logger.info(' [x] Received from %s: %s', clientName, msg.content.toString());
+            const d = new Date();
+            const data = {
+              direction: '←',
+              routingKey: queue,
+              time: `${d.toLocaleTimeString('fr').replace(':', 'h')}.${String(new Date().getMilliseconds()).padStart(3, '0')}`,
+              body: JSON.parse(msg.content),
+            };
+            // Send the message to all connected WebSocket clients
+            this.wss.clients.forEach((client) => {
+              if (client.readyState === WebSocket.OPEN) {
+                logger.info('Sent to clients:', data);
+                client.send(JSON.stringify(data));
+              }
+            });
+          }, {
+            noAck: true, // Ref.: https://amqp-node.github.io/amqplib/channel_api.html#channelconsume
+          });
+        }
+      }
+    });
+  }
+
+  launch() {
+    // eslint-disable-next-line no-unused-vars
+    this.app.use((err, req, res, next) => {
+      // format errors
+      res.status(err.status || 500).json({
+        message: err.message || err,
+        errors: err.errors || '',
+      });
+    });
+
+    this.server = http.createServer(this.app).listen(this.port);
+    this.wss = new WebSocket.Server({ server: this.server });
+    // WebSocket server
+    this.wss.on('connection', (ws) => {
+      logger.info('WebSocket client connected');
+
+      ws.on('message', async (body) => {
+        logger.info(`Received message from WebSocket client: ${body.distributionID}`);
+        logger.debug(`Received message from WebSocket client: ${body.distributionID} of content ${body}`);
+        try {
+          // Publish the message to RabbitMQ
+          const { key, msg } = JSON.parse(body);
+          logger.info(` [x] Sending msg to key ${key}`);
+          const { connection, channel } = await connectAsync();
+          channel.publish(HUB_SANTE_EXCHANGE, key, Buffer.from(JSON.stringify(msg)), messageProperties);
+          close(connection);
+          logger.info('Publish call done and connection closed.');
+        } catch (error) {
+          logger.error('Error publishing message to RabbitMQ:', error);
+        }
+      });
+
+      ws.on('close', () => {
+        logger.info('WebSocket client disconnected');
+      });
+    });
+    logger.info(`Listening on port ${this.port}`);
+  }
+
+  async close() {
+    if (this.connection !== undefined) {
+      close(this.connection);
+      logger.info('RabbitMQ connection shut down');
+    }
+    if (this.server !== undefined) {
+      await this.server.close();
+      logger.info(`Server on port ${this.port} shut down`);
+    }
+  }
+}
+
+module.exports = ExpressServer;

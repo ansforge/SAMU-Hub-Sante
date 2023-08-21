@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-lrm
+  labels:
+    app: web-lrm
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 80
+      protocol: TCP
+      name: http
+  selector:
+    app: web-lrm
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-lrm-deployment
+  labels:
+    app: web-lrm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web-lrm
+  template:
+    metadata:
+      labels:
+        app: web-lrm
+    spec:
+      containers:
+        - name: web-lrm
+          image: romainfd/hub-lrm:latest
+          ports:
+            - containerPort: 80

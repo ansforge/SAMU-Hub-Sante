@@ -1,6 +1,9 @@
 name: ⚙️ Auto-Generator
 
-on: pull_request
+on:
+  push:
+    branches:
+      - feat/git-generators-action
 
 jobs:
   docs_site:

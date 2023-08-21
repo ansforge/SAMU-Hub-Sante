@@ -39,6 +39,8 @@ models/node_modules
 # Cluster access configs
 kubeconfig.yml
 
-# Model Excel
+# Models
+# - Excel model
 models/csv_parser/model.xlsx
+# - Example Word tables styles
 models/csv_parser/docx-styles/

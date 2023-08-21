@@ -1,11 +1,11 @@
 name: build image on release
 
 on:
-  #  release:
-  #    types: [published]
-  push:
-    branches:
-      - git-commit-hash
+  release:
+    types: [published]
+  # push:
+  #   branches:
+  #     - git-commit-hash
 
 jobs:
   build-image:
