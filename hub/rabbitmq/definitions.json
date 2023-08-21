@@ -561,6 +561,14 @@
       "destination_type": "queue",
       "routing_key": "fr.fire.nexsis.sdisZ.info",
       "arguments": {}
+    },
+    {
+      "source": "distribution.dlx",
+      "vhost": "/",
+      "destination": "dispatch.dlq",
+      "destination_type": "queue",
+      "routing_key": "",
+      "arguments": {}
     }
   ],
   "users": [

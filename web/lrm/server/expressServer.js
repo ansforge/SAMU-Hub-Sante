@@ -11,17 +11,6 @@ const {
   connect, connectAsync, close, HUB_SANTE_EXCHANGE, DEMO_CLIENT_IDS, messageProperties,
 } = require('./rabbit/utils');
 
-// Ref.: https://smallstep.com/hello-mtls/doc/combined/nodejs/axios
-/*
-const httpsAgent = new https.Agent({
-  // Needed to allow self-signed certificates | Ref.: https://stackoverflow.com/a/54903835/10115198
-  rejectUnauthorized: false,
-  cert: fs.readFileSync('certs/certif.crt'),
-  key: fs.readFileSync('certs/certif.key'),
-  // ca: fs.readFileSync('certs/ACI-EL-ORG-TEST.crt'),
-});
- */
-
 class ExpressServer {
   constructor(port) {
     this.port = port;

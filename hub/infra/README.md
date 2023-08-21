@@ -183,5 +183,5 @@ kubectl exec -it rabbitmq-server-0 -- rabbitmqctl import_definitions /tmp/rabbit
 # Dispatcher
 ["Blue/Green"](https://blog.container-solutions.com/kubernetes-deployment-strategies#kubernetes-blue-green) could be implemented. 
 For the moment, simple image replace :
-- Build and publish new image, new secrets and reapply deployment with new image: see [above](#dispatcher).
+- Build and publish new image (if needed as this is done automatically - with tags - on a GitHub release), new secrets and reapply deployment with new image: see [above](#dispatcher).
 - Get [Pod logs](#dispatcher-logs)

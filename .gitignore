@@ -44,6 +44,3 @@ kubeconfig.yml
 models/csv_parser/model.xlsx
 # - Example Word tables styles
 models/csv_parser/docx-styles/
-# - JSON Schemas and examples in web/ projects
-web/**/schema.json
-web/**/example.json
