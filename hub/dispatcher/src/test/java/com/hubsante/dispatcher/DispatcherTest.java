@@ -79,7 +79,7 @@ public class DispatcherTest {
     @Test
     @DisplayName("custom message should be dispatched to the right exchange")
     public void shouldDispatchCustomMessageToRightExchange() throws IOException {
-        Message receivedMessage = createMessage("genericMessage.json", JSON_MESSAGE_ROUTING_KEY);
+        Message receivedMessage = createMessage("genericMessage.json", SAMU069_ROUTING_KEY);
         assert(receivedMessage.getMessageProperties().getContentType().equals(MessageProperties.CONTENT_TYPE_JSON));
         dispatcher.dispatch(receivedMessage);
 
