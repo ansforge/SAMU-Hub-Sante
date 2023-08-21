@@ -103,7 +103,7 @@ CLIENT_ID=fr.fire.nexsis.sdisZ; gradle -Pmain=com.hubsante.ProducerRun run --arg
 
 # Web Load Balancer & Ingress
 All webpages are accessible behind a shared Load Balancer and Ingress
-```
+```bash
 # Build Nginx Ingress Controller -> creates a Load Balancer
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.8.0/deploy/static/provider/cloud/deploy.yaml
 
@@ -112,7 +112,7 @@ kubectl apply -f web/ingress.yaml
 ```
 
 ## Landing page website
-```
+```bash
 # Deploy Service and Deployment
 kubectl apply -f web/landing.yaml
 ```
@@ -130,11 +130,18 @@ kubectl logs -l app.kubernetes.io/component=rabbitmq --prefix --tail -1 -f
 kubectl exec --stdin --tty rabbitmq-server-0 -- /bin/bash
 ```
 
-## Dispatcher
+## Dispatcher logs
 ```bash
 # Access Dispatcher Pod logs
 kubectl logs -l app=dispatcher --prefix --tail -1 -f
+
+# Get Pods events (in cas stuck in ContainerCreating for instance)
+# Ref.: https://serverfault.com/a/730746
+kubectl describe pods -l app=dispatcher
+# All events
+kubectl get events --all-namespaces  --sort-by='.metadata.creationTimestamp'
 ```
+
 
 ## [BusyBox](https://en.wikipedia.org/wiki/BusyBox) Investigation Pod
 ```bash
@@ -153,3 +160,28 @@ kubectl get pods -n ingress-nginx  # -> collect Controller Pod name
 kubectl exec -n ingress-nginx --stdin --tty ingress-nginx-controller-6cc5ccb977-2hwk2 -- /bin/bash
 $ curl localhost/rabbitmq
 ```
+
+# Deploying
+For API deployment, the best deployment strategy is ["Blue/Green"](https://blog.container-solutions.com/kubernetes-deployment-strategies#kubernetes-blue-green).
+
+## RabbitMQ
+However, we don't have direct access to RabbitMQ Service so this is not so easy.
+Therefore, we just do a Kubernetes apply.
+- Clear all the Secrets and ConfigMaps (uncomment based on needs)
+```bash
+kubectl delete configmap definitions          
+# kubectl delete secret tls-secret
+# kubectl delete secret ca-secret
+```
+- Run [RabbitMQ setup](#setup).
+- Trigger a [definitions.json update](#definitions-update)
+```bash
+kubectl exec -it rabbitmq-server-0 -- rabbitmqctl import_definitions /tmp/rabbitmq/config/definitions.json
+```
+- Check [RabbitMQ logs](#rabbitmq-and-cluster-operator) to see updates
+
+# Dispatcher
+["Blue/Green"](https://blog.container-solutions.com/kubernetes-deployment-strategies#kubernetes-blue-green) could be implemented. 
+For the moment, simple image replace :
+- Build and publish new image, new secrets and reapply deployment with new image: see [above](#dispatcher).
+- Get [Pod logs](#dispatcher-logs)
