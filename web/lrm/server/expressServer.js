@@ -44,6 +44,7 @@ class ExpressServer {
 
     // Subscribe to Hub messages and send them to the client through web socket
     connect((connection, channel) => {
+      this.connection = connection;
       for (const [clientName, clientId] of Object.entries(DEMO_CLIENT_IDS)) {
         for (const type of ['message', 'ack', 'info']) {
           const queue = `${clientId}.${type}`;
@@ -111,6 +112,10 @@ class ExpressServer {
   }
 
   async close() {
+    if (this.connection !== undefined) {
+      close(this.connection);
+      logger.info('RabbitMQ connection shut down');
+    }
     if (this.server !== undefined) {
       await this.server.close();
       logger.info(`Server on port ${this.port} shut down`);

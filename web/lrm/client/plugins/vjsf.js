@@ -1,7 +1,8 @@
 // Ref.: https://koumoul-dev.github.io/vuetify-jsonschema-form/latest/getting-started
 import Vue from 'vue'
-import VJsf from '@koumoul/vjsf'
-import '@koumoul/vjsf/dist/main.css'
+// Fixing Nuxt static generation not rendering form | Ref.: https://github.com/koumoul-dev/vuetify-jsonschema-form/issues/305
+import VJsf from '@koumoul/vjsf/lib/VJsf.js'
+import '@koumoul/vjsf/lib/VJsf.css'
 // load third-party dependencies (markdown-it, vuedraggable)
 // you can also load them separately based on your needs
 // import '@koumoul/vjsf/dist/third-party.js'
