@@ -39,21 +39,26 @@ class ExpressServer {
           const queue = `${clientId}.${type}`;
           logger.info(` [*] Waiting for ${clientName} messages in ${queue}. To exit press CTRL+C`);
           channel.consume(queue, (msg) => {
-            logger.info(' [x] Received from %s: %s', clientName, msg.content.toString());
+            const body = JSON.parse(msg.content);
+            logger.info(` [x] Received for ${clientName}: ${body.distributionID}`);
+            logger.debug(` [x] Received for ${clientName}: ${body.distributionID} of content ${msg.content}`);
             const d = new Date();
             const data = {
               direction: '←',
               routingKey: queue,
               time: `${d.toLocaleTimeString('fr').replace(':', 'h')}.${String(new Date().getMilliseconds()).padStart(3, '0')}`,
-              body: JSON.parse(msg.content),
+              body,
             };
             // Send the message to all connected WebSocket clients
+            let clientCounts = 0;
             this.wss.clients.forEach((client) => {
               if (client.readyState === WebSocket.OPEN) {
-                logger.info('Sent to clients:', data);
                 client.send(JSON.stringify(data));
+                clientCounts++;
               }
             });
+            logger.info(`Sent to ${clientCounts} clients: ${data.body.distributionID}`);
+            logger.debug(`Sent to ${clientCounts} clients: ${data} of content ${data}`);
           }, {
             noAck: true, // Ref.: https://amqp-node.github.io/amqplib/channel_api.html#channelconsume
           });
@@ -79,18 +84,18 @@ class ExpressServer {
       logger.info('WebSocket client connected');
 
       ws.on('message', async (body) => {
-        logger.info(`Received message from WebSocket client: ${body.distributionID}`);
-        logger.debug(`Received message from WebSocket client: ${body.distributionID} of content ${body}`);
         try {
           // Publish the message to RabbitMQ
           const { key, msg } = JSON.parse(body);
-          logger.info(` [x] Sending msg to key ${key}`);
+          logger.info(`Received message from WebSocket client: ${msg.distributionID}`);
+          logger.debug(`Received message from WebSocket client: ${msg.distributionID} of content ${body}`);
+          logger.info(` [x] Sending msg ${msg.distributionID} to key ${key}`);
           const { connection, channel } = await connectAsync();
           channel.publish(HUB_SANTE_EXCHANGE, key, Buffer.from(JSON.stringify(msg)), messageProperties);
           close(connection);
-          logger.info('Publish call done and connection closed.');
+          logger.info(`Publish call done and connection closed for ${msg.distributionID}`);
         } catch (error) {
-          logger.error('Error publishing message to RabbitMQ:', error);
+          logger.error(`Error publishing message to RabbitMQ: ${error}`);
         }
       });
 
