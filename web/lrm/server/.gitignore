@@ -1,4 +1,5 @@
 error.log
 combined.log
+info.log
 node_modules/
 ui/
