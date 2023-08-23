@@ -94,6 +94,8 @@ export default {
   },
 
   env: {
-    wssUrl: (process.env.NODE_ENV === 'production' ? 'wss://hub.esante.gouv.fr/lrm/' : 'ws://localhost:8081/')
+    wssUrl: (process.env.NODE_ENV === 'production' || process.env.USE_PROD_SERVER
+      ? 'wss://hub.esante.gouv.fr/lrm/'
+      : 'ws://localhost:8081/')
   }
 }

@@ -12,6 +12,15 @@ docker push romainfd/hub-lrm:latest
 kubectl replace --force -f ../../hub/infra/web/lrm.yaml
 ```
 
+## Local development
+```bash
+# Using local server
+npm run dev
+
+# Using prod remote server
+USE_PROD_SERVER=true npm run dev
+```
+
 ## ToDo
 ### Client
 - [x] Make message sending work
