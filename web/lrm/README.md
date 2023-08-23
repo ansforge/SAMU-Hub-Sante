@@ -58,3 +58,7 @@ kubectl replace --force -f ../../hub/infra/web/lrm.yaml
 ### Acks
 - [x] Be able to send back acks manually or automatically
 - [x] Handle ack display in UI
+
+### Improvements
+- [x] Group by caseId (conversation mode)
+- [ ] Add documentation

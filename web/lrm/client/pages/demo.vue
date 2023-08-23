@@ -80,10 +80,26 @@
             />
           </v-btn>
         </v-btn-toggle>
+        <v-chip-group
+          v-if="selectedMessageType === 'message' && caseIds.length > 1"
+          v-model="selectedCaseIds"
+          class="ml-4"
+          multiple
+        >
+          <v-chip
+            v-for="caseId in caseIds"
+            :key="caseId"
+            :value="caseId"
+            filter
+            outlined
+          >
+            {{ caseId }}
+          </v-chip>
+        </v-chip-group>
         <v-card-text>
           <transition-group name="message">
             <ReceivedMessage
-              v-for="message in selectedMessages"
+              v-for="message in selectedTypeCaseMessages"
               v-bind="message"
               :key="message.time"
               class="message mb-4"
@@ -98,7 +114,6 @@
 
 <script>
 import { mapGetters } from 'vuex'
-import { DIRECTIONS } from '@/constants'
 import mixinMessage from '~/plugins/mixinMessage'
 
 export default {
@@ -143,6 +158,7 @@ export default {
       },
       selectedMessageType: 'message',
       selectedClientId: null,
+      selectedCaseIds: [],
       queueTypes: [{
         name: 'Message',
         type: 'message',
@@ -193,11 +209,22 @@ export default {
     showableMessages () {
       return this.showSentMessages ? this.clientMessages : this.clientMessages.filter(message => !this.isOut(message.direction))
     },
-    selectedMessages () {
+    selectedTypeMessages () {
       return this.showableMessages.filter(message => this.getMessageType(message) === this.selectedMessageType)
+    },
+    selectedTypeCaseMessages () {
+      if (this.selectedCaseIds.length === 0) {
+        return this.selectedTypeMessages
+      }
+      return this.selectedTypeMessages.filter(
+        message => this.selectedCaseIds.includes(this.getCaseId(message))
+      )
     },
     messagesSentCount () {
       return this.clientMessages.filter(message => this.isOut(message.direction)).length
+    },
+    caseIds () {
+      return [...new Set(this.selectedTypeMessages.map(this.getCaseId))]
     }
   },
   mounted () {

@@ -48,6 +48,9 @@ export default {
     isOut (direction) {
       return direction === DIRECTIONS.OUT
     },
+    getCaseId (message) {
+      return message.body.content.contentObject.jsonContent.embeddedJsonContent.message.caseId
+    },
     getMessageType (message) {
       if (message.body.distributionKind === 'Ack') {
         return 'ack'
