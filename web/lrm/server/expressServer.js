@@ -46,7 +46,8 @@ class ExpressServer {
             const data = {
               direction: '←',
               routingKey: queue,
-              time: `${d.toLocaleTimeString('fr').replace(':', 'h')}.${String(new Date().getMilliseconds()).padStart(3, '0')}`,
+              // Ref.: https://stackoverflow.com/a/9849524
+              time: `${d.toLocaleTimeString('fr', { timeZone: 'Europe/Paris' }).replace(':', 'h')}.${String(new Date().getMilliseconds()).padStart(3, '0')}`,
               body,
             };
             // Send the message to all connected WebSocket clients
@@ -54,7 +55,7 @@ class ExpressServer {
             this.wss.clients.forEach((client) => {
               if (client.readyState === WebSocket.OPEN) {
                 client.send(JSON.stringify(data));
-                clientCounts++;
+                clientCounts += 1;
               }
             });
             logger.info(`Sent to ${clientCounts} clients: ${data.body.distributionID}`);
