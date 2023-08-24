@@ -3,12 +3,7 @@
     <v-jsf v-model="form" :schema="schema" :options="options" />
     <v-card-actions>
       <v-spacer />
-      <v-btn color="primary" class="mt-2" @click="$emit('submit')">
-        <v-icon left>
-          mdi-send
-        </v-icon>
-        Envoyer
-      </v-btn>
+      <SendButton class="mt-2" @click="$emit('submit')" />
     </v-card-actions>
   </v-form>
 </template>

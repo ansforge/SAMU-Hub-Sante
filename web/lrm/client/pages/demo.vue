@@ -5,12 +5,7 @@
         <v-card-title class="headline pb-">
           Formulaire
           <v-spacer />
-          <v-btn color="primary" @click="submit">
-            <v-icon left>
-              mdi-send
-            </v-icon>
-            Envoyer
-          </v-btn>
+          <SendButton class="mt-2" @click="submit" />
         </v-card-title>
         <v-card-text>
           <v-tabs

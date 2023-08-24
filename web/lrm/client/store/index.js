@@ -1,4 +1,4 @@
-const { SET_CURRENT_USER, TOGGLE_ADVANCED, SET_SHOW_SENT_MESSAGES, ADD_MESSAGE, SET_AUTO_ACK } = require('./constants')
+const { SET_CURRENT_USER, TOGGLE_ADVANCED, SET_SHOW_SENT_MESSAGES, ADD_MESSAGE, SET_AUTO_ACK, SET_MESSAGE_JUST_SENT } = require('./constants')
 
 export const state = () => ({
   auth: {
@@ -17,7 +17,8 @@ export const state = () => ({
         time: this.timeDisplayFormat(),
         receivedTime: this.timeDisplayFormat(),
         body: { body: 'Page loaded successfully!' }
-      } */]
+      } */],
+  messageJustSent: false
 })
 
 export const getters = {
@@ -43,6 +44,10 @@ export const getters = {
 
   messages (state) {
     return state.messages
+  },
+
+  messageJustSent (state) {
+    return state.messageJustSent
   }
 }
 
@@ -70,6 +75,13 @@ export const actions = {
 
   addMessage ({ commit }, message) {
     commit(ADD_MESSAGE, message)
+    // If sending message worked well
+    if (message.direction === '→') { // isOUt() check
+      commit(SET_MESSAGE_JUST_SENT, true)
+      setTimeout(() => {
+        commit(SET_MESSAGE_JUST_SENT, false)
+      }, 1000)
+    }
   }
 }
 
@@ -102,5 +114,9 @@ export const mutations = {
 
   [ADD_MESSAGE] (state, message) {
     state.messages.unshift(message)
+  },
+
+  [SET_MESSAGE_JUST_SENT] (state, messageJustSent) {
+    state.messageJustSent = messageJustSent
   }
 }
