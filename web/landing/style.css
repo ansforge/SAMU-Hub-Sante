@@ -16,14 +16,14 @@ h3 {
     }
 }
 
-/* Pour la bannière | Ref.: https: //ansforge.github.io/DesignSystem/sg-bloc-banner.html */
 :root {
+    /* Pour la bannière | Ref.: https: //ansforge.github.io/DesignSystem/sg-bloc-banner.html */
     --main-margin-top: 0;
+    /* Pour ne pas avoir de marge avant le footer */
+    --main-margin-bottom: 0;
 }
 
 /* Toutes les nuances de gris en fond */
-
-
 .bg-gray-800 {
     background-color: var(--gray-800)
 }
