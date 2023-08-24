@@ -6019,6 +6019,7 @@ a[class*=bg]:hover {
 }
 
 .footer-principal {
+    border-top: 0.1rem solid var(--border-color);
     --footer-padding-top: 5rem;
     background-color: var(--white, #fff);
     padding-top: var(--footer-padding-top)
