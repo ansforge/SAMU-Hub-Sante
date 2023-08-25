@@ -1,14 +1,20 @@
 package com.hubsante.dispatcher;
 
+import com.hubsante.hub.service.UseCaseMessageHandler;
 import com.hubsante.model.edxl.EdxlMessage;
+import com.hubsante.model.report.ErrorCode;
+import com.hubsante.model.report.ErrorReport;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.*;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 
 import static com.hubsante.dispatcher.utils.MessageTestUtils.createMessage;
+import static com.hubsante.dispatcher.utils.MessageTestUtils.setCustomExpirationDate;
 import static org.junit.jupiter.api.Assertions.*;
 
 @Slf4j
@@ -16,6 +22,9 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
 
     private static long DISPATCHER_PROCESS_TIME = 1000;
     private static long DEFAULT_TTL = 5000;
+
+    @Autowired
+    private UseCaseMessageHandler useCaseHandler;
 
     @Test
     @DisplayName("message dispatched to exchange is received by a consumer listening to the right queue")
@@ -84,8 +93,12 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
 
         Message infoMsg = samuB_client.receive(SAMU_B_INFO_QUEUE);
         assertNotNull(infoMsg);
-        String errorMsg = new String(infoMsg.getBody());
-        assert(errorMsg.endsWith("has not been consumed on fr.fire.nexsis.sdisZ.message"));
+
+        String errorJson = new String(infoMsg.getBody());
+        ErrorReport errorReport = (ErrorReport) useCaseHandler.deserializeJsonMessage(errorJson);
+        assertEquals(ErrorCode.DEAD_LETTER_QUEUED, errorReport.getErrorCode());
+        assertEquals("Message samuB_2608323d-507d-4cbf-bf74-52007f8124ea has been read from dead-letter-queue; reason was expired",
+                errorReport.getErrorCause());
     }
 
     @Test
@@ -101,8 +114,12 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
         assertRecipientDidNotReceive("sdisZ", SDIS_Z_MESSAGE_QUEUE);
         Message infoMsg = samuB_client.receive(SAMU_B_INFO_QUEUE);
         assertNotNull(infoMsg);
-        String errorMsg = new String(infoMsg.getBody());
-        assert(errorMsg.endsWith("has not been consumed on fr.fire.nexsis.sdisZ.message"));
+
+        String errorJson = new String(infoMsg.getBody());
+        ErrorReport errorReport = (ErrorReport) useCaseHandler.deserializeJsonMessage(errorJson);
+
+        assertEquals("Message samuB_2608323d-507d-4cbf-bf74-52007f8124ea has been read from dead-letter-queue; reason was expired",
+                errorReport.getErrorCause());
     }
 
     @Test
@@ -110,11 +127,9 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
     public void rejectExpiredMessageWithEdxlDateTimeExpiresLowerThanHubTTL() throws Exception {
         Message source = createMessage("samuB_to_nexsis.xml", SAMU_B_OUTER_MESSAGE_ROUTING_KEY);
         EdxlMessage edxlMessage = converter.deserializeXmlEDXL(new String(source.getBody(), StandardCharsets.UTF_8));
-        OffsetDateTime now = OffsetDateTime.now();
-        edxlMessage.setDateTimeSent(now);
-        edxlMessage.setDateTimeExpires(now.plusNanos(100000));
-        byte[] edxlBytes = converter.serializeXmlEDXL(edxlMessage).getBytes();
-        Message published = new Message(edxlBytes, source.getMessageProperties());
+        setCustomExpirationDate(edxlMessage, 100000);
+        String xml = converter.serializeXmlEDXL(edxlMessage);
+        Message published = new Message(xml.getBytes(), source.getMessageProperties());
 
         RabbitTemplate samuB_client = getCustomRabbitTemplate(classLoader.getResource("config/certs/samuB/samuB.p12").getPath(), "samuB");
         samuB_client.send(HUBSANTE_EXCHANGE, SAMU_B_OUTER_MESSAGE_ROUTING_KEY, published);
@@ -124,8 +139,12 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
 
         Message infoMsg = samuB_client.receive(SAMU_B_INFO_QUEUE);
         assertNotNull(infoMsg);
-        String errorMsg = new String(infoMsg.getBody());
-        assert(errorMsg.endsWith("has not been consumed on fr.fire.nexsis.sdisZ.message"));
+
+        String errorJson = new String(infoMsg.getBody());
+        ErrorReport errorReport = (ErrorReport) useCaseHandler.deserializeJsonMessage(errorJson);
+        assertEquals(ErrorCode.EXPIRED_MESSAGE_BEFORE_ROUTING, errorReport.getErrorCode());
+        assertEquals("Message samuB_2608323d-507d-4cbf-bf74-52007f8124ea has expired before reaching the recipient queue",
+                errorReport.getErrorCause());
     }
 
     @Test
@@ -141,8 +160,12 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
         assertRecipientDidNotReceive("sdisZ", SDIS_Z_MESSAGE_QUEUE);
         Message infoMsg = samuB_client.receive(SAMU_B_INFO_QUEUE);
         assertNotNull(infoMsg);
-        String errorMsg = new String(infoMsg.getBody());
-        assertEquals("Unhandled Content-Type ! Message Content-Type should be set at 'application/json' or 'application/xml'", errorMsg);
+
+        String errorJson = new String(infoMsg.getBody());
+        ErrorReport errorReport = (ErrorReport) useCaseHandler.deserializeJsonMessage(errorJson);
+        assertEquals(ErrorCode.NOT_ALLOWED_CONTENT_TYPE, errorReport.getErrorCode());
+        assertEquals("Unhandled Content-Type ! Message Content-Type should be set at 'application/json' or 'application/xml'",
+                errorReport.getErrorCause());
     }
 
     private void assertRecipientDidNotReceive(String client, String queueName) throws Exception {

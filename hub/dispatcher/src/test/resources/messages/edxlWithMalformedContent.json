@@ -163,7 +163,7 @@
               }
             ],
             "newAlert": null,
-            "severity": "Unkown_enum_value",
+            "severity": "Unknown_enum_value",
             "additionalInformation": {
               "customMap": {
                 "key": "neighborhood",

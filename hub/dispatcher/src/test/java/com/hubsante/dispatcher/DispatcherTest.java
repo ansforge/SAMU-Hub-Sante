@@ -1,11 +1,15 @@
 package com.hubsante.dispatcher;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.hubsante.hub.HubApplication;
 import com.hubsante.hub.config.HubClientConfiguration;
 import com.hubsante.hub.service.Dispatcher;
 import com.hubsante.hub.service.EdxlHandler;
+import com.hubsante.hub.service.UseCaseMessageHandler;
 import com.hubsante.model.CustomMessage;
 import com.hubsante.model.edxl.EdxlMessage;
+import com.hubsante.model.report.ErrorCode;
+import com.hubsante.model.report.ErrorReport;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -29,7 +33,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.util.Objects;
 
-import static com.hubsante.dispatcher.utils.MessageTestUtils.createMessage;
+import static com.hubsante.dispatcher.utils.MessageTestUtils.*;
 import static com.hubsante.hub.config.AmqpConfiguration.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -47,6 +51,8 @@ public class DispatcherTest {
     @Autowired
     private EdxlHandler converter;
     @Autowired
+    private UseCaseMessageHandler usecaseHandler;
+    @Autowired
     private HubClientConfiguration hubConfig;
     static ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
     private Dispatcher dispatcher;
@@ -62,7 +68,7 @@ public class DispatcherTest {
 
     @PostConstruct
     public void init() {
-        dispatcher = new Dispatcher(rabbitTemplate, converter, hubConfig);
+        dispatcher = new Dispatcher(rabbitTemplate, converter, usecaseHandler, hubConfig);
     }
 
     @Test
@@ -103,7 +109,7 @@ public class DispatcherTest {
         EdxlMessage edxlMessage = converter.deserializeXmlEDXL(new String(base.getBody(), StandardCharsets.UTF_8));
         OffsetDateTime now = OffsetDateTime.now();
         edxlMessage.setDateTimeSent(now);
-        edxlMessage.setDateTimeExpires(now.plusSeconds(1));
+        edxlMessage.setDateTimeExpires(now.plusSeconds(2));
         Message customTTLMessage = new Message(converter.serializeXmlEDXL(edxlMessage).getBytes(), base.getMessageProperties());
 
         // before dispatch, the message has no expiration set
@@ -116,22 +122,23 @@ public class DispatcherTest {
                 eq(DISTRIBUTION_EXCHANGE), eq("fr.fire.nexsis.sdis23.message"), argument.capture());
 
         // when calling rabbitTemplate.send(), the message has new expiration set
-        assertNotNull(customTTLMessage.getMessageProperties().getExpiration());
+        assertNotNull(argument.getValue().getMessageProperties().getExpiration());
     }
 
     @Test
     @DisplayName("should send info to sender of DLQed message - expiration")
     public void handleDLQMessage() throws Exception {
-        Message receivedMessage = createMessage("createCaseEdxl.xml", MessageProperties.CONTENT_TYPE_XML, SAMU069_ROUTING_KEY);
-        receivedMessage.getMessageProperties().setHeader(DLQ_REASON, "expired");
-        receivedMessage.getMessageProperties().setHeader(DLQ_MESSAGE_ORIGIN, "fr.fire.nexsis.sdis23.message");
-        dispatcher.dispatchDLQ(receivedMessage);
+        // we test that the message has been rejected after the DLQ listener has been called
+        Message originalMessage = createMessage("createCaseEdxl.xml", MessageProperties.CONTENT_TYPE_XML, SAMU069_ROUTING_KEY);
+        Message dlqMessage = moveToDLQ(originalMessage, "expired");
+        assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatchDLQ(dlqMessage));
 
-        ArgumentCaptor<Message> argument = ArgumentCaptor.forClass(Message.class);
-        Mockito.verify(rabbitTemplate, times(1)).send(
-                eq(DISTRIBUTION_EXCHANGE), eq("fr.health.samu069.info"), argument.capture());
-        String str = new String(argument.getValue().getBody());
-        assert(str.endsWith("has not been consumed on fr.fire.nexsis.sdis23.message"));
+        // we test that an error report has been sent with the correct error code
+        ErrorReport errorReport = assertErrorReportHasBeenSent("fr.health.samu069.info");
+        String expected = "Message samu069_2608323d-507d-4cbf-bf74-52007f8124ea has been read from dead-letter-queue;" +
+                " reason was expired";
+        assertEquals(ErrorCode.DEAD_LETTER_QUEUED, errorReport.getErrorCode());
+        assertEquals(expected, errorReport.getErrorCause());
     }
 
     @Test
@@ -140,49 +147,65 @@ public class DispatcherTest {
         //TODO bbo : without validation, only type errors are detected.
         //missing required fields are not
         // only validation will do
+
+        // we test that the message has been rejected if we can't parse it
         Message receivedMessage = createMessage("edxlWithMalformedContent.json", SAMU069_ROUTING_KEY);
         assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
-        ArgumentCaptor<Message> argument = ArgumentCaptor.forClass(Message.class);
-        Mockito.verify(rabbitTemplate, times(1)).send(
-                eq(DISTRIBUTION_EXCHANGE), eq("fr.health.samu069.info"), argument.capture());
-        assert(new String(argument.getValue().getBody()).startsWith("Could not parse message, invalid format"));
+
+        ErrorReport errorReport = assertErrorReportHasBeenSent("fr.health.samu069.info");
+        assertEquals(ErrorCode.UNRECOGNIZED_MESSAGE_FORMAT, errorReport.getErrorCode());
+        assertEquals("Could not parse message, invalid format. \n If you don't want to use HubSanté model" +
+                " for now, please use a \"customContent\" wrapper inside your message.", errorReport.getErrorCause());
     }
 
     @Test
     @DisplayName("message without content-type is rejected")
     public void rejectMessageWithoutContentType() throws IOException {
+        // we test that the message has been rejected if the content-type is not set
         Message receivedMessage = createMessage("createCaseEdxl.json", null, SAMU069_ROUTING_KEY);
         assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
-        ArgumentCaptor<Message> argument = ArgumentCaptor.forClass(Message.class);
-        Mockito.verify(rabbitTemplate, times(1)).send(
-                eq(DISTRIBUTION_EXCHANGE), eq("fr.health.samu069.info"), argument.capture());
+
+        // we test that an error report has been sent with the correct error code
+        ErrorReport errorReport = assertErrorReportHasBeenSent("fr.health.samu069.info");
+        assertEquals(ErrorCode.NOT_ALLOWED_CONTENT_TYPE, errorReport.getErrorCode());
         assertEquals("Unhandled Content-Type ! Message Content-Type should be set at 'application/json' or 'application/xml'",
-                new String(argument.getValue().getBody()));
+                errorReport.getErrorCause());
     }
 
     @Test
     @DisplayName("message with unhandled content-type is rejected")
     public void rejectMessageWithUnhandledContentType() throws IOException {
+        // we test that the message has been rejected if the content-type is neither json nor xml
         Message receivedMessage = createMessage("createCaseEdxl.json", MessageProperties.DEFAULT_CONTENT_TYPE, SAMU069_ROUTING_KEY);
         assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
+
+        // we test that an error report has been sent with the correct error code
+        ErrorReport errorReport = assertErrorReportHasBeenSent("fr.health.samu069.info");
+        assertEquals(ErrorCode.NOT_ALLOWED_CONTENT_TYPE, errorReport.getErrorCode());
     }
 
     @Test
     @DisplayName("message body inconsistent with content-type is rejected")
     public void rejectMessageWithInconsistentBody() throws IOException {
+        // we test that the message has been rejected if the body is not consistent with the content-type
         Message receivedMessage = createMessage("createCaseEdxl.json", MessageProperties.CONTENT_TYPE_XML, SAMU069_ROUTING_KEY);
         assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
+
+        // we test that an error report has been sent with the correct error code
+        ErrorReport errorReport = assertErrorReportHasBeenSent("fr.health.samu069.info");
+        assertEquals(ErrorCode.UNRECOGNIZED_MESSAGE_FORMAT, errorReport.getErrorCode());
     }
 
     @Test
     @DisplayName("outer routing key inconsistent with sender ID")
     public void outerRoutingKeyInconsistentWithSenderId() throws IOException {
+        // we test that the message has been rejected if the sender ID is not consistent with the outer routing key
         Message receivedMessage = createMessage("createCaseEdxl.json", INCONSISTENT_ROUTING_KEY);
         assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
-        ArgumentCaptor<Message> argument = ArgumentCaptor.forClass(Message.class);
-        Mockito.verify(rabbitTemplate, times(1)).send(
-                eq(DISTRIBUTION_EXCHANGE), eq("fr.health.samu069.info"), argument.capture());
-        assert(new String(argument.getValue().getBody()).startsWith("Sender inconsistency for message"));
+
+        // we test that an error report has been sent with the correct error code
+        ErrorReport errorReport = assertErrorReportHasBeenSent(INCONSISTENT_ROUTING_KEY + ".info");
+        assertEquals(ErrorCode.SENDER_INCONSISTENCY, errorReport.getErrorCode());
     }
 
     @Test
@@ -192,15 +215,21 @@ public class DispatcherTest {
         receivedMessage.getMessageProperties().setDeliveryMode(MessageDeliveryMode.NON_PERSISTENT);
         dispatcher.dispatch(receivedMessage);
 
+        // we test that the message has been forwarded with persistent delivery mode
         ArgumentCaptor<Message> sentMessage = ArgumentCaptor.forClass(Message.class);
-        ArgumentCaptor<Message> infoMessage = ArgumentCaptor.forClass(Message.class);
         Mockito.verify(rabbitTemplate, times(1)).send(
                 eq(DISTRIBUTION_EXCHANGE), eq("fr.fire.nexsis.sdis23.message"), sentMessage.capture());
-
-        Mockito.verify(rabbitTemplate, times(1)).send(
-                eq(DISTRIBUTION_EXCHANGE), eq(SAMU069_ROUTING_KEY + ".info"), infoMessage.capture());
-
         assertEquals(MessageDeliveryMode.PERSISTENT, sentMessage.getValue().getMessageProperties().getDeliveryMode());
-        assert(new String(infoMessage.getValue().getBody()).endsWith("has been received with non-persistent delivery mode"));
+
+        // we test that an error report has been sent alongside the process
+        ErrorReport errorReport = assertErrorReportHasBeenSent(SAMU069_ROUTING_KEY + ".info");
+        assertEquals(ErrorCode.DELIVERY_MODE_INCONSISTENCY, errorReport.getErrorCode());
+    }
+
+    private ErrorReport assertErrorReportHasBeenSent(String infoQueueName) throws JsonProcessingException {
+        ArgumentCaptor<Message> argument = ArgumentCaptor.forClass(Message.class);
+        Mockito.verify(rabbitTemplate, times(1)).send(
+                eq(DISTRIBUTION_EXCHANGE), eq(infoQueueName), argument.capture());
+        return getErrorReportFromMessage(usecaseHandler, argument);
     }
 }
