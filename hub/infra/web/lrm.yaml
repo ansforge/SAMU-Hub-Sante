@@ -32,6 +32,6 @@ spec:
     spec:
       containers:
         - name: web-lrm
-          image: romainfd/hub-lrm:latest
+          image: bou3108/hub-lrm:latest # romainfd/hub-lrm:latest
           ports:
             - containerPort: 80

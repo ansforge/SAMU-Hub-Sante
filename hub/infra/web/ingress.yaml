@@ -15,7 +15,7 @@ spec:
   tls:
     - hosts:
         - hub.esante.gouv.fr
-      secretName: landing-cert
+      secretName: secret-tls-backup
   rules:
     - host: "hub.esante.gouv.fr"
       http:

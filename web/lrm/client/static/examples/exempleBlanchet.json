@@ -1,0 +1,160 @@
+{
+    "caseId": "SAMU033-20230707-AF4321",
+    "senderCaseId": "BBB",
+    "createdAt": "2023-08-07T14:17:48+02:00",
+    "initialAlert": {
+        "alertId": "SAMU033-20230725-AL01234",
+        "receivedAt": "2023-08-07T14:16:35+02:00",
+        "reporting": "STANDARD",
+        "alertInformation": " Malaise personne agée, canicule",
+        "caller": {
+            "callerURI": "tel:0611223344",
+            "callbackURI": "tel:0655667788",
+            "spokenLanguage": "Français",
+            "callerInformation": "ACCOMP",
+            "callerName": {
+                "complete": "Benjamin Ballard",
+                "callerLastName": "Ballard",
+                "callerFirstName": "Benjamin"
+            }
+        },
+        "alertLocation": {},
+        "alertCode": {
+            "cisuVersion": "1.19",
+            "whatsHappen": {
+                "code": "C02.07.01",
+                "label": "à la chaleur, canicule",
+                "freetext": "Malaise, victime amorphe "
+            },
+            "locationKind": {
+                "code": "L01.02.03",
+                "label": "Appartement",
+                "freetext": "pas d'ascenceur"
+            },
+            "riskThreat": [
+                {
+                    "code": "",
+                    "label": "",
+                    "freetext": ""
+                }
+            ],
+            "healthMotive": {
+                "code": "M01.02, M02.03,",
+                "label": "Altération de la conscience, coup de chaleur",
+                "freetext": "Apparaît très déshydraté"
+            },
+            "gravity": "3",
+            "victims": {
+                "count": "P01",
+                "mainVictim": "ADU",
+                "comment": ""
+            }
+        },
+        "contact": {
+            "type": "",
+            "detail": "15"
+        },
+        "callTaker": {
+            "organization": "SAMU",
+            "controlRoom": "",
+            "calltakerURI": "",
+            "calltakerId": ""
+        },
+        "resource": [
+            {
+                "resourceDesc": "SUIVI",
+                "mimeType": "PDF",
+                "size": "14 KB",
+                "URI": "https://www.docPatient2.bordeau.com",
+                "derefURI": "",
+                "digest": "4466 "
+            }
+        ]
+    },
+    "caseLocation": {
+        "locID": "",
+        "locLabel": "53 Rue Lateste 33200 Bordeaux, Accès A",
+        "name": "Rue Latesta",
+        "address": {
+            "complete": "53 rue Latesta",
+            "number": "53",
+            "wayName": {
+                "complete": "",
+                "type":"Rue",
+                "name": "Lastesta"
+            }
+        },
+        "city": {
+            "name": "Bordeaux",
+            "inseeCode": 33200,
+            "detail": ""
+        },
+        "access": {
+            "floor": "5",
+            "roomNumber": "503",
+            "interphone": "Bastien Blanchet",
+            "accessCode": ["3346A" ],
+            "elevator": "A1",
+            "buildingName": "Batiment A",
+            "entrance": "Porte A",
+            "entity": "None"
+        },
+        "geometry": {
+            "point": {
+                "coord": {
+                    "lat": "44.85983665",
+                    "lon": "-0.6137125",
+                    "height": "40" ,
+                    "heading": "None",
+                    "speed": "None",
+                    "time": "2023-08-07T14:19:10+02:00",
+                    "precision": "Adresse"
+                },
+                "coordsys": "EPSG-4326"
+            },
+            "sketch": "None"
+        },
+        "link": [
+            {
+                "source": "",
+                "type": "",
+                "id": ""
+            }
+        ],
+        "country": "France",
+        "freetext": "Acsenceur petit, 2 personnes max. Un brancart ne rentre pas, ok pour fauteil roulant"
+    },
+    "casualties": [
+        {
+            "identifier": [
+                {
+                    "source": "NIR",
+                    "value": "56"
+                }
+            ],
+            "phoneNumber": "tel:0655667788",
+            "name": "Bastien Blanchet",
+            "birthName": "Batien",
+            "firstName": "Blanchet",
+            "sex": "M",
+            "birthDate": "1941-10-14",
+            "age": "82Y",
+            "weight": 102,
+            "height": 178,
+            "freetext": "Victime peu mobile, problème de tension"
+        }
+    ],
+    "newAlert": [
+        {}
+    ],
+    "severity": "",
+    "additionalInformation": {
+        "customMap": {
+            "key": "",
+            "label": "",
+            "value": "",
+            "freetext": ""
+        }
+    },
+    "freetext": "Perosnne agée vivant seule, aide médicale vient tous les deux jours. Victime affirme avoir bu dans la journée. "
+}
