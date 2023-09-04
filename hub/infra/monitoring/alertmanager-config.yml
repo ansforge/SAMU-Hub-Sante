@@ -6,22 +6,25 @@ metadata:
     #alertmanagerConfig: example
     release: prometheus-operator
 spec:
-  route:
-    groupBy: ['latency']
+  route: # a route is a node in the routing tree that can match alerts and forward them to a list of receivers
+    # https://prometheus.io/docs/alerting/latest/configuration/#route
+    groupBy: ['latency'] # group alerts by a chosen label (defined in the prometheus rule) in order to apply grouped config
     groupWait: 30s
     groupInterval: 5m
     repeatInterval: 12h
     receiver: 'email-notifications'
     matchers:
       - name: latency
-        value: dispatcher
-# Below, will be useful to retain alerts if certain others are firing
+        value: dispatcher # match alerts with the label 'latency' and the value 'dispatcher'
+
+# Below, will be useful to retain alerts if certain others are firing (not implemented yet)
 #  inhibitRules:
 #    - sourceMatch:
 #        severity: 'critical'
 #      targetMatch:
 #        latency: 'warning'
 #      equal: ['alertname', 'dev', 'instance']
+
   receivers:
     - name: 'email-notifications'
       emailConfigs:
