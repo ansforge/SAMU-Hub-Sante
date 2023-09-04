@@ -27,6 +27,7 @@ certs/CA/
 !certs/CA/client.ext
 !certs/dispatcher.tmp.p12
 certs/users/
+certs/sslforfree/
 
 # Needed as GitHub action for AsyncAPI generation installs npm packages
 node_modules/
