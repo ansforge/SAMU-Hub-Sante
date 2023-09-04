@@ -74,7 +74,19 @@ helm repo update
 ```shell
 # deploy Prometheus Operator
 helm install prometheus-operator prometheus-community/kube-prometheus-stack
+```
 
+Then we apply some extra configuration :
+- a ServiceMonitor to allow Prometheus to scrape RabbitMQ metrics
+- a PrometheusRule to define custom alerts
+- an AlertManager config to handle alerts
+
+All these resources will be automatically resolved by the Prometheus Operator, as long as they define the correct property,
+matching the Selectors used by the Operator.
+
+As of today, the Selector scrapes every resource with the label `release=prometheus-operator`.
+
+```shell
 # add ServiceMonitor to allow Prometheus to scrape RabbitMQ metrics
 kubectl apply -f monitoring/rabbitmq-servicemonitor.yml
 
