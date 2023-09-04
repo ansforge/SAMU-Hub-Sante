@@ -123,25 +123,25 @@ export default {
           schemaName: 'schema.json',
           schema: null,
           examples: [{
-            file: 'ExempleDubois.json',
+            file: 'exempleArmaury.json',
+            icon: 'mdi-bike-fast',
+            name: 'Alexandre ARMAURY',
+            caller: 'Épouse appelle pour son mari',
+            context: 'Collision de 2 vélos',
+            environment: 'Voie cyclable à Lyon, gêne de la circulation',
+            victims: '2 victimes, 1 nécessitant assistance SAMU',
+            victim: 'Homme, adulte, 43 ans',
+            medicalSituation: 'Céphalées, migraines, traumatismes sérieux, plaies intermédiaire'
+          }, {
+            file: 'exempleBlanchet.json',
             icon: 'mdi-home-thermometer',
-            name: 'Alexandre DUBOIS',
+            name: 'Bastien BLANCHET',
             caller: 'Aide à la personne appelle pour un de ses patients',
             context: 'Malaise pendant canicule',
             environment: 'appartement de la victime',
             victims: '1 victime',
-            victim: 'Homme, adulte, 83 ans',
-            medicalSituation: 'victime amorphe allongée sur son lit, répond peu, soupçonne une déshydratatio'
-          }, {
-            file: 'ExempleDurand.json',
-            icon: 'mdi-bike-fast',
-            name: 'Marin DURAND',
-            caller: 'Épouse appelle pour son mari',
-            context: 'Collision de 2 vélos',
-            environment: 'Voie cyclable à Lyon, gêne de la circulation',
-            victims: '2 victimes, 1 nécessitant assistance SAMU.',
-            victim: 'Homme, adulte, 43 ans',
-            medicalSituation: 'Céphalées, migraines, traumatismes sérieux, plaies intermédiaire'
+            victim: 'Homme, adulte, 82 ans',
+            medicalSituation: 'victime amorphe allongée sur son lit, répond peu, soupçonne une déshydratation'
           }]
         },
         operationRequest: {

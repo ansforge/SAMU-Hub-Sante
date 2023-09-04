@@ -1,6 +1,6 @@
 {
     "caseId": "SAMU033-20230707-AF4321",
-    "senderCaseId": "? Absence de nomenclature",
+    "senderCaseId": "BBB",
     "createdAt": "2023-08-07T14:17:48+02:00",
     "initialAlert": {
         "alertId": "SAMU033-20230725-AL01234",
@@ -13,9 +13,9 @@
             "spokenLanguage": "Français",
             "callerInformation": "ACCOMP",
             "callerName": {
-                "complete": "Victor Moreau",
-                "callerLastName": "Moreau",
-                "callerFirstName": "Moreau"
+                "complete": "Benjamin Ballard",
+                "callerLastName": "Ballard",
+                "callerFirstName": "Benjamin"
             }
         },
         "alertLocation": {},
@@ -43,22 +43,22 @@
                 "label": "Altération de la conscience, coup de chaleur",
                 "freetext": "Apparaît très déshydraté"
             },
-            "gravity": "3 ? Absence de nomenclature",
+            "gravity": "3",
             "victims": {
-                "count": "1",
-                "mainVictim": "ADULT",
+                "count": "P01",
+                "mainVictim": "ADU",
                 "comment": ""
             }
         },
         "contact": {
-            "type": "Personne ? Absence de nomenclature",
-            "detail": "tel:15"
+            "type": "",
+            "detail": "15"
         },
         "callTaker": {
-            "organization": " SAMU? Absence de nomenclature",
-            "controlRoom": "? Absence de nomenclature",
-            "calltakerURI": "? Absence de nomenclature",
-            "calltakerId": "? Absence de nomenclature"
+            "organization": "SAMU",
+            "controlRoom": "",
+            "calltakerURI": "",
+            "calltakerId": ""
         },
         "resource": [
             {
@@ -66,13 +66,13 @@
                 "mimeType": "PDF",
                 "size": "14 KB",
                 "URI": "https://www.docPatient2.bordeau.com",
-                "derefURI": "??",
+                "derefURI": "",
                 "digest": "4466 "
             }
         ]
     },
     "caseLocation": {
-        "locID": "??",
+        "locID": "",
         "locLabel": "53 Rue Lateste 33200 Bordeaux, Accès A",
         "name": "Rue Latesta",
         "address": {
@@ -92,7 +92,7 @@
         "access": {
             "floor": "5",
             "roomNumber": "503",
-            "interphone": "Alexandre Dubois",
+            "interphone": "Bastien Blanchet",
             "accessCode": ["3346A" ],
             "elevator": "A1",
             "buildingName": "Batiment A",
@@ -106,9 +106,9 @@
                     "lon": "-0.6137125",
                     "height": "40" ,
                     "heading": "None",
-                    "speed": null,
+                    "speed": "None",
                     "time": "2023-08-07T14:19:10+02:00",
-                    "precision": "ADDRESS"
+                    "precision": "Adresse"
                 },
                 "coordsys": "EPSG-4326"
             },
@@ -116,9 +116,9 @@
         },
         "link": [
             {
-                "source": "BAN",
-                "type": "? Absence de nomenclature",
-                "id": "? Absence de nomenclature"
+                "source": "",
+                "type": "",
+                "id": ""
             }
         ],
         "country": "France",
@@ -133,19 +133,21 @@
                 }
             ],
             "phoneNumber": "tel:0655667788",
-            "name": "Alexandre Dubois",
-            "birthName": "Alexandre",
-            "firstName": "Dubois",
+            "name": "Bastien Blanchet",
+            "birthName": "Batien",
+            "firstName": "Blanchet",
             "sex": "M",
             "birthDate": "1941-10-14",
-            "age": "P82Y",
+            "age": "82Y",
             "weight": 102,
             "height": 178,
             "freetext": "Victime peu mobile, problème de tension"
         }
     ],
-    "newAlert": [],
-    "severity": "EXTREME",
+    "newAlert": [
+        {}
+    ],
+    "severity": "",
     "additionalInformation": {
         "customMap": {
             "key": "",

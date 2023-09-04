@@ -1,6 +1,6 @@
 {
     "caseId": "SAMU069-20230725-AF1234",
-    "senderCaseId": "? Absence de nomenclature",
+    "senderCaseId": "AAA",
     "createdAt": "2022-07-25T10:03:34+01:00",
     "initialAlert": {
         "alertId": "SAMU069-20230725-AL01234",
@@ -8,14 +8,14 @@
         "reporting": "STANDARD",
         "alertInformation": " suite collision avec un autre vélo sur piste cyclable, gonflement du geneoux, grosses égratinures, maux de tête",
         "caller": {
-            "callerURI": "0607080901",
-            "callbackURI": "0601020304",
+            "callerURI": "tel:0607080901",
+            "callbackURI": "tel:0601020304",
             "spokenLanguage": "Français",
             "callerInformation": "Epoux",
             "callerName": {
-                "complete": "Louise Durand",
-                "callerLastName": "Durand",
-                "callerFirstName": "Louise"
+                "complete": "Albane Armaury",
+                "callerLastName": "Armaury",
+                "callerFirstName": "Albane"
             }
         },
         "alertLocation": {},
@@ -43,7 +43,7 @@
                 "label": "Céphalée, migraines, Traumatisme sérieux, plaie intermédiaire",
                 "freetext": "Portait un casque de protection"
             },
-            "gravity": "3 ? Absence de nomenclature",
+            "gravity": "3 ",
             "victims": {
                 "count": "P02",
                 "mainVictim": "ADULT",
@@ -51,14 +51,14 @@
             }
         },
         "contact": {
-            "type": "? Absence de nomenclature ",
-            "detail": "? Absence de nomenclature "
+            "type": "",
+            "detail": ""
         },
         "callTaker": {
-            "organization": "? Absence de nomenclature",
-            "controlRoom": "? Absence de nomenclature",
-            "calltakerURI": "? Absence de nomenclature",
-            "calltakerId": "? Absence de nomenclature"
+            "organization": "",
+            "controlRoom": "",
+            "calltakerURI": "",
+            "calltakerId": ""
         },
         "resource": [
             {
@@ -72,8 +72,8 @@
         ]
     },
     "caseLocation": {
-        "locID": "??",
-        "locLabel": "??",
+        "locID": "",
+        "locLabel": "",
         "name": "Quai des célestin",
         "address": {
             "complete": "8 quai des Célestins",
@@ -109,7 +109,7 @@
                     "height": "237" ,
                     "heading": "None",
                     "speed": "None",
-                    "time": "2022-07-25 T10:03:34+01:00",
+                    "time": "2022-07-25T10:03:34+01:00",
                     "precision": "Automatique?"
                 },
                 "coordsys": "EPSG-4326"
@@ -118,9 +118,9 @@
         },
         "link": [
             {
-                "source": "? Absence de nomenclature",
-                "type": "? Absence de nomenclature",
-                "id": "? Absence de nomenclature"
+                "source": "",
+                "type": "",
+                "id": ""
             }
         ],
         "country": "France",
@@ -135,9 +135,9 @@
                 }
             ],
             "phoneNumber": "tel:0607080901",
-            "name": "Marin Durand",
-            "birthName": "Marin",
-            "firstName": "Durand",
+            "name": "Alexandre Armaury",
+            "birthName": "Armaury",
+            "firstName": "Alexandre",
             "sex": "M",
             "birthDate": "1980-06-22",
             "age": "43Y",
