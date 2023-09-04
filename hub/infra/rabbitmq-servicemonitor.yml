@@ -10,10 +10,9 @@ spec:
       app.kubernetes.io/name: rabbitmq  # Match the labels of your RabbitMQ service
   endpoints:
     - port: prometheus-tls
+      scheme: https
       interval: 15s
       scrapeTimeout: 10s
       path: /metrics
-    - port: prometheus # with the RMQ Operator, this port seems to be off
-      interval: 15s
-      scrapeTimeout: 10s
-      path: /metrics
+      tlsConfig:
+        insecureSkipVerify: true
