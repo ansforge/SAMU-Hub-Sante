@@ -64,6 +64,27 @@ kubectl exec -it rabbitmq-server-0 -- rabbitmqctl import_definitions /tmp/rabbit
 kubectl delete pods -l app.kubernetes.io/component=rabbitmq
 ```
 
+# Prometheus operator
+```shell
+# no need to do this every time
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo update
+```
+
+```shell
+helm install prometheus-operator prometheus-community/kube-prometheus-stack
+```
+
+```shell
+kubectl apply -f rabbitmq-servicemonitor.yml
+```
+
+### Access Prometheus UI
+```shell
+# if using minikube
+kubectl port-forward svc/prometheus-operated 9090:9090
+```
+
 # Dispatcher
 ```bash
 # Build and upload image to registry accessible in OVH

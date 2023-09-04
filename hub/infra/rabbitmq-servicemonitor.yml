@@ -13,7 +13,7 @@ spec:
       interval: 15s
       scrapeTimeout: 10s
       path: /metrics
-    - port: prometheus
+    - port: prometheus # with the RMQ Operator, this port seems to be off
       interval: 15s
       scrapeTimeout: 10s
       path: /metrics
