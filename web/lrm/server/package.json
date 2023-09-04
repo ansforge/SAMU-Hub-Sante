@@ -7,7 +7,7 @@
     "dev": "nodemon index.js",
     "prestart": "npm install",
     "start": "node index.js",
-    "setup": "cd ../client && npm install && npm run setup && npm run generate && cp -R dist/. ../server/ui"
+    "setup": "cd ../client && npm ci && npm run setup && npm run generate && cp -R dist/. ../server/ui"
   },
   "keywords": [],
   "author": "",
