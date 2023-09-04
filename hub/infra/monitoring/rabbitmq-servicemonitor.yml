@@ -16,3 +16,20 @@ spec:
       path: /metrics
       tlsConfig:
         insecureSkipVerify: true
+    - port: prometheus-tls
+      scheme: https
+      interval: 15s
+      scrapeTimeout: 10s
+      path: /metrics/detailed
+      tlsConfig:
+        insecureSkipVerify: true
+    - port: prometheus-tls
+      scheme: https
+      interval: 15s
+      scrapeTimeout: 10s
+      path: /metrics/per-object
+      params:
+        queue:
+            - ".*"
+      tlsConfig:
+        insecureSkipVerify: true

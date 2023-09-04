@@ -72,18 +72,25 @@ helm repo update
 ```
 
 ```shell
+# deploy Prometheus Operator
 helm install prometheus-operator prometheus-community/kube-prometheus-stack
+
+# add ServiceMonitor to allow Prometheus to scrape RabbitMQ metrics
+kubectl apply -f monitoring/rabbitmq-servicemonitor.yml
+
+# add PrometheusRule to define custom alerts
+kubectl apply -f monitoring/prometheus-rabbitmq-rules.yml
+
+# add AlertManager config
+kubectl create secret generic smtp-alert-secret  --from-file=password=monitoring/smtp-alert-secret.yml
+kubectl apply -f monitoring/alertmanager-config.yml
 ```
 
-```shell
-kubectl apply -f rabbitmq-servicemonitor.yml
-kubectl label ServiceMonitor rabbitmq release=prometheus-operator
-```
-
-## Access Prometheus UI
+## Access Monitoring UIs
 ```shell
 # if using minikube
 kubectl port-forward svc/prometheus-operated 9090:9090
+kubectl port-forward svc/alertmanager-operated 9093:9093 # not very useful
 kubectl port-forward svc/prometheus-operator-grafana 9091:80  
 ```
 
@@ -208,3 +215,12 @@ kubectl exec -it rabbitmq-server-0 -- rabbitmqctl import_definitions /tmp/rabbit
 For the moment, simple image replace :
 - Build and publish new image (if needed as this is done automatically - with tags - on a GitHub release), new secrets and reapply deployment with new image: see [above](#dispatcher).
 - Get [Pod logs](#dispatcher-logs)
+
+
+# Miscellaneous
+## Troubleshooting
+Syntax errors in manifests can be detected with yamllint
+```bash
+npm install -g yaml-lint   # install yaml-lint
+npx yamllint .\rabbitmq-rules.yml  # lint yaml file
+```

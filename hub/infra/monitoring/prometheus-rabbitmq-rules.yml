@@ -1,0 +1,18 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: prometheus-rabbitmq-rules
+  labels:
+    release: prometheus-operator
+spec:
+  groups:
+    - name: rabbitmq.rules
+      rules:
+        - alert: DispatcherLatency
+          expr: rabbitmq_queue_messages{queue="dispatch"} > 3
+          for: 30s
+          labels:
+            latency: "dispatcher"
+          annotations:
+            summary: "Latency on the dispatcher queue"
+            description: "There are more than 3 messages available in the dispatch queue"
