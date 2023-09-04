@@ -77,12 +77,14 @@ helm install prometheus-operator prometheus-community/kube-prometheus-stack
 
 ```shell
 kubectl apply -f rabbitmq-servicemonitor.yml
+kubectl label ServiceMonitor rabbitmq release=prometheus-operator
 ```
 
-### Access Prometheus UI
+## Access Prometheus UI
 ```shell
 # if using minikube
 kubectl port-forward svc/prometheus-operated 9090:9090
+kubectl port-forward svc/prometheus-operator-grafana 9091:80  
 ```
 
 # Dispatcher
