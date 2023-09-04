@@ -123,16 +123,6 @@ export default {
           schemaName: 'schema.json',
           schema: null,
           examples: [{
-            file: 'exempleBlanchet.json',
-            icon: 'mdi-home-thermometer',
-            name: 'Bastien BLANCHET',
-            caller: 'Aide à la personne appelle pour un de ses patients',
-            context: 'Malaise pendant canicule',
-            environment: 'appartement de la victime',
-            victims: '1 victime',
-            victim: 'Homme, adulte, 82 ans',
-            medicalSituation: 'victime amorphe allongée sur son lit, répond peu, soupçonne une déshydratatio'
-          }, {
             file: 'exempleArmaury.json',
             icon: 'mdi-bike-fast',
             name: 'Jean ARMAURY',
@@ -142,6 +132,16 @@ export default {
             victims: '2 victimes, 1 nécessitant assistance SAMU.',
             victim: 'Homme, adulte, 43 ans',
             medicalSituation: 'Céphalées, migraines, traumatismes sérieux, plaies intermédiaire'
+          }, {
+            file: 'exempleBlanchet.json',
+            icon: 'mdi-home-thermometer',
+            name: 'Bastien BLANCHET',
+            caller: 'Aide à la personne appelle pour un de ses patients',
+            context: 'Malaise pendant canicule',
+            environment: 'appartement de la victime',
+            victims: '1 victime',
+            victim: 'Homme, adulte, 82 ans',
+            medicalSituation: 'victime amorphe allongée sur son lit, répond peu, soupçonne une déshydratatio'
           }]
         },
         operationRequest: {
