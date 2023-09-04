@@ -1,0 +1,37 @@
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: AlertmanagerConfig
+metadata:
+  name: hubsante-alertmanager-config
+  labels:
+    #alertmanagerConfig: example
+    release: prometheus-operator
+spec:
+  route:
+    groupBy: ['latency']
+    groupWait: 30s
+    groupInterval: 5m
+    repeatInterval: 12h
+    receiver: 'email-notifications'
+    matchers:
+      - name: latency
+        value: dispatcher
+# Below, will be useful to retain alerts if certain others are firing
+#  inhibitRules:
+#    - sourceMatch:
+#        severity: 'critical'
+#      targetMatch:
+#        latency: 'warning'
+#      equal: ['alertname', 'dev', 'instance']
+  receivers:
+    - name: 'email-notifications'
+      emailConfigs:
+        - to: benjamin.bonche.ext@esante.gouv.fr,romain.fouilland@esante.gouv.fr
+          from: hubsante.alert@gmail.com
+          smarthost: smtp.gmail.com:587
+          authUsername: hubsante.alert@gmail.com
+          authIdentity: hubsante.alert@gmail.com
+          authPassword:
+            key: password
+            name: smtp-alert-secret
+          sendResolved: true
+          requireTLS: true

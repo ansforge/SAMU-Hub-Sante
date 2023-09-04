@@ -39,3 +39,4 @@ out/
 
 ### Custom files ###
 **/bbo-dispatcher.yaml
+**/smtp-alert-secret.yml
