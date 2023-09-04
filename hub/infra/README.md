@@ -83,6 +83,11 @@ kubectl apply -f monitoring/prometheus-rabbitmq-rules.yml
 
 # add AlertManager config
 kubectl create secret generic smtp-alert-secret  --from-file=password=monitoring/smtp-alert-secret.yml
+# Caution ! The AlertmanagerConfigSpec does not follow exactly the same structure as the native configuration file
+# all the fields seem supported but the case is not always the same (eg. auth_username becomes authUsername)
+#
+# the AlertmanagerConfigSpec is available here:
+# https://docs.openshift.com/container-platform/4.11/rest_api/monitoring_apis/alertmanagerconfig-monitoring-coreos-com-v1beta1.html#spec
 kubectl apply -f monitoring/alertmanager-config.yml
 ```
 
