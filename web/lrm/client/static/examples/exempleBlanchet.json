@@ -45,14 +45,14 @@
             },
             "gravity": "3",
             "victims": {
-                "count": "P01",
-                "mainVictim": "ADU",
+                "count": "1",
+                "mainVictim": "SENIOR",
                 "comment": ""
             }
         },
         "contact": {
             "type": "",
-            "detail": "15"
+            "detail": "tel:15"
         },
         "callTaker": {
             "organization": "SAMU",
@@ -108,18 +108,13 @@
                     "heading": "None",
                     "speed": "None",
                     "time": "2023-08-07T14:19:10+02:00",
-                    "precision": "Adresse"
+                    "precision": "ADDRESS"
                 },
                 "coordsys": "EPSG-4326"
             },
             "sketch": "None"
         },
         "link": [
-            {
-                "source": "",
-                "type": "",
-                "id": ""
-            }
         ],
         "country": "France",
         "freetext": "Acsenceur petit, 2 personnes max. Un brancart ne rentre pas, ok pour fauteil roulant"
@@ -147,7 +142,7 @@
     "newAlert": [
         {}
     ],
-    "severity": "",
+    "severity": "SEVERE",
     "additionalInformation": {
         "customMap": {
             "key": "",

@@ -45,7 +45,7 @@
             },
             "gravity": "3 ",
             "victims": {
-                "count": "P02",
+                "count": "SEVERAL",
                 "mainVictim": "ADULT",
                 "comment": "Deuxième victime présente saignement legers aux mains et genoux"
             }
@@ -66,7 +66,7 @@
                 "mimeType": "PDF",
                 "size": "9 KB",
                 "URI": "https://www.docPatient1.hpLyon.com",
-                "derefURI": "??",
+                "derefURI": "",
                 "digest": "8822 "
             }
         ]
@@ -110,7 +110,7 @@
                     "heading": "None",
                     "speed": "None",
                     "time": "2022-07-25T10:03:34+01:00",
-                    "precision": "Automatique?"
+                    "precision": "ADDRESS"
                 },
                 "coordsys": "EPSG-4326"
             },
@@ -118,7 +118,7 @@
         },
         "link": [
             {
-                "source": "",
+                "source": "BAN",
                 "type": "",
                 "id": ""
             }
@@ -149,7 +149,7 @@
     "newAlert": [
         {}
     ],
-    "severity": "? Absence de nomenclature",
+    "severity": "MODERATE",
     "additionalInformation": {
         "customMap": {
             "key": "neighborhood",
