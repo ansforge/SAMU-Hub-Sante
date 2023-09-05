@@ -111,6 +111,17 @@ kubectl port-forward svc/alertmanager-operated 9093:9093 # not very useful
 kubectl port-forward svc/prometheus-operator-grafana 9091:80  
 ```
 
+## Admin Ingress
+see https://prometheus-operator.dev/docs/kube/exposing-prometheus-alertmanager-grafana-ingress/
+```shell
+helm repo add nginx-stable https://helm.nginx.com/stable
+helm repo update
+helm install admin-nginx-ingress nginx-stable/nginx-ingress -f monitoring/admin-nginx-values.yml
+
+# create admin-cert tls-secret, then
+kubectl apply -f monitoring/admin-ingress.yml
+```
+
 # Dispatcher
 ```bash
 # Build and upload image to registry accessible in OVH

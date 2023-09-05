@@ -1,0 +1,8 @@
+controller:
+  electionID: ingress-controller-leader
+  ingressClass: admin-nginx
+  ingressClassResource:
+    name: admin-nginx  # default: nginx (used by web/ingress.yaml)
+    enabled: true
+    default: false
+    controllerValue: "k8s.io/admin-ingress-nginx" # default: k8s.io/ingress-nginx (used by /web/ingress.yaml)
