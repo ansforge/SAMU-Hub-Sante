@@ -71,7 +71,7 @@ public class Dispatcher {
                 exception.getErrorCode(), exception.getMessage(), new String(message.getBody()));
 
         // send ErrorReport to sender
-        // if the message has been dead-lettered, we retrieve the original sender from the DLQ_REASON header
+        // if the message has been dead-lettered, we retrieve the original sender from the x-death-original-routing-key header
         String senderClientID = exception instanceof DeadLetteredMessageException ?
                 message.getMessageProperties().getHeader(DLQ_ORIGINAL_ROUTING_KEY) :
                 message.getMessageProperties().getReceivedRoutingKey();
