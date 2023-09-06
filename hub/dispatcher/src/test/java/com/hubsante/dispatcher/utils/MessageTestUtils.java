@@ -39,7 +39,7 @@ public class MessageTestUtils {
         return createMessage(filename, getContentTypeFromFilename(filename), receivedRoutingKey);
     }
 
-    public static Message moveToDLQ(Message originalMessage, String dlqReason) {
+    public static Message applyRabbitmqDLQHeaders(Message originalMessage, String dlqReason) {
         originalMessage.getMessageProperties().setHeader(DLQ_REASON, dlqReason);
         originalMessage.getMessageProperties().setHeader(DLQ_ORIGINAL_ROUTING_KEY,
                 originalMessage.getMessageProperties().getReceivedRoutingKey());
