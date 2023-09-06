@@ -75,6 +75,7 @@ public class DispatcherTest {
     @DisplayName("should send message to the right exchange and routing key")
     public void shouldDispatchToRightExchange() throws IOException {
         Message receivedMessage = createMessage("createCaseEdxl.xml", MessageProperties.CONTENT_TYPE_XML, SAMU069_ROUTING_KEY);
+        receivedMessage.getMessageProperties().setReceivedDeliveryMode(MessageDeliveryMode.PERSISTENT);
         dispatcher.dispatch(receivedMessage);
 
         // assert that the message was sent to the right exchange with the right routing key exactly 1 time
@@ -207,21 +208,15 @@ public class DispatcherTest {
     }
 
     @Test
-    @DisplayName("should forward message with persistent delivery mode")
-    public void forwardMessageWithPersistentDeliveryMode() throws IOException {
+    @DisplayName("should reject message without persistent delivery mode")
+    public void rejectMessageWithoutPersistentDeliveryMode() throws IOException {
         Message receivedMessage = createMessage("createCaseEdxl.xml", MessageProperties.CONTENT_TYPE_XML, SAMU069_ROUTING_KEY);
-        receivedMessage.getMessageProperties().setDeliveryMode(MessageDeliveryMode.NON_PERSISTENT);
-        dispatcher.dispatch(receivedMessage);
+        receivedMessage.getMessageProperties().setReceivedDeliveryMode(MessageDeliveryMode.NON_PERSISTENT);
+        assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
 
-        // we test that the message has been forwarded with persistent delivery mode
-        ArgumentCaptor<Message> sentMessage = ArgumentCaptor.forClass(Message.class);
-        Mockito.verify(rabbitTemplate, times(1)).send(
-                eq(DISTRIBUTION_EXCHANGE), eq("fr.fire.nexsis.sdis23.message"), sentMessage.capture());
-        assertEquals(MessageDeliveryMode.PERSISTENT, sentMessage.getValue().getMessageProperties().getDeliveryMode());
-
-        // we test that an error report has been sent alongside the process
-        assertErrorReportHasBeenSent(SAMU069_ROUTING_KEY + ".info", ErrorCode.DELIVERY_MODE_INCONSISTENCY,
-                "message samu069_2608323d-507d-4cbf-bf74-52007f8124ea has been received with non-persistent delivery mode");
+        // we test that an error report has been sent with the correct error code
+        assertErrorReportHasBeenSent("fr.health.samu069.info", ErrorCode.DELIVERY_MODE_INCONSISTENCY,
+                "Message samu069_2608323d-507d-4cbf-bf74-52007f8124ea has been sent with non-persistent delivery mode");
     }
 
     private void assertErrorReportHasBeenSent(String infoQueueName, ErrorCode errorCode, String errorCause) throws JsonProcessingException {

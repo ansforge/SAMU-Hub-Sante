@@ -13,7 +13,7 @@ import java.nio.file.Path;
 import static com.hubsante.Utils.getRouting;
 
 public class ProducerRun {
-    private static final String HUB_HOSTNAME = "hubsante.esante.gouv.fr";
+    private static final String HUB_HOSTNAME = "localhost";
     private static final int HUB_PORT = 5671;
     private static final String EXCHANGE_NAME = "hubsante";
 

@@ -7,6 +7,7 @@ import com.hubsante.model.report.ErrorReport;
 import org.apache.commons.compress.utils.FileNameUtils;
 import org.mockito.ArgumentCaptor;
 import org.springframework.amqp.core.Message;
+import org.springframework.amqp.core.MessageDeliveryMode;
 import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.core.MessagePropertiesBuilder;
 
@@ -26,11 +27,23 @@ public class MessageTestUtils {
 
         String edxlString = Files.readString(edxlFile.toPath());
 
-        MessagePropertiesBuilder builder = MessagePropertiesBuilder.newInstance();
+        MessageProperties properties = new MessageProperties();
+        properties.setReceivedRoutingKey(receivedRoutingKey);
         if (contentType != null) {
-            builder.setContentType(contentType);
+            properties.setContentType(contentType);
         }
-        MessageProperties properties = builder.setReceivedRoutingKey(receivedRoutingKey).build();
+        // this may sound weird but these two properties are not read by the same method of RabbitTemplate
+        // send() uses deliveryMode and receive() uses receivedDeliveryMode
+        //
+        // see https://docs.spring.io/spring-amqp/reference/html/#message-properties-converters
+        //
+        // we want to use this utils method in mocked AND integration tests so we set both of them
+        // (mocked tests check the message passed as a param of the send() method, while integ tests directly
+        // consume the message from the queue)
+        //
+        // The MessagePropertiesBuilder can't be used because it doesn't allow to set the receivedDeliveryMode
+        properties.setDeliveryMode(MessageDeliveryMode.PERSISTENT);
+        properties.setReceivedDeliveryMode(MessageDeliveryMode.PERSISTENT);
 
         return new Message(edxlString.getBytes(StandardCharsets.UTF_8), properties);
     }
