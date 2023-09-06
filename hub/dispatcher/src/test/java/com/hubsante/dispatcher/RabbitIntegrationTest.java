@@ -1,5 +1,6 @@
 package com.hubsante.dispatcher;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.hubsante.hub.service.ContentMessageHandler;
 import com.hubsante.model.edxl.EdxlMessage;
 import com.hubsante.model.report.ErrorCode;
@@ -89,15 +90,8 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
 
         Thread.sleep(DISPATCHER_PROCESS_TIME + DEFAULT_TTL);
         assertRecipientDidNotReceive("sdisZ", SDIS_Z_MESSAGE_QUEUE);
-
-        Message infoMsg = samuB_client.receive(SAMU_B_INFO_QUEUE);
-        assertNotNull(infoMsg);
-
-        String errorJson = new String(infoMsg.getBody());
-        ErrorReport errorReport = (ErrorReport) contentMessageHandler.deserializeJsonMessage(errorJson);
-        assertEquals(ErrorCode.DEAD_LETTER_QUEUED, errorReport.getErrorCode());
-        assertEquals("Message samuB_2608323d-507d-4cbf-bf74-52007f8124ea has been read from dead-letter-queue; reason was expired",
-                errorReport.getErrorCause());
+        assertErrorReportHasBeenReceived(samuB_client, SAMU_B_INFO_QUEUE, ErrorCode.DEAD_LETTER_QUEUED,
+                "Message samuB_2608323d-507d-4cbf-bf74-52007f8124ea has been read from dead-letter-queue; reason was expired");
     }
 
     @Test
@@ -111,15 +105,8 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
         Thread.sleep(DISPATCHER_PROCESS_TIME);
 
         assertRecipientDidNotReceive("sdisZ", SDIS_Z_MESSAGE_QUEUE);
-        Message infoMsg = samuB_client.receive(SAMU_B_INFO_QUEUE);
-        assertNotNull(infoMsg);
-
-        String errorJson = new String(infoMsg.getBody());
-        ErrorReport errorReport = (ErrorReport) contentMessageHandler.deserializeJsonMessage(errorJson);
-
-        assertEquals(ErrorCode.DEAD_LETTER_QUEUED, errorReport.getErrorCode());
-        assertEquals("Message samuB_2608323d-507d-4cbf-bf74-52007f8124ea has been read from dead-letter-queue; reason was expired",
-                errorReport.getErrorCause());
+        assertErrorReportHasBeenReceived(samuB_client, SAMU_B_INFO_QUEUE, ErrorCode.DEAD_LETTER_QUEUED,
+                "Message samuB_2608323d-507d-4cbf-bf74-52007f8124ea has been read from dead-letter-queue; reason was expired");
     }
 
     @Test
@@ -136,15 +123,8 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
 
         Thread.sleep(DISPATCHER_PROCESS_TIME);
         assertRecipientDidNotReceive("sdisZ", SDIS_Z_MESSAGE_QUEUE);
-
-        Message infoMsg = samuB_client.receive(SAMU_B_INFO_QUEUE);
-        assertNotNull(infoMsg);
-
-        String errorJson = new String(infoMsg.getBody());
-        ErrorReport errorReport = (ErrorReport) contentMessageHandler.deserializeJsonMessage(errorJson);
-        assertEquals(ErrorCode.EXPIRED_MESSAGE_BEFORE_ROUTING, errorReport.getErrorCode());
-        assertEquals("Message samuB_2608323d-507d-4cbf-bf74-52007f8124ea has expired before reaching the recipient queue",
-                errorReport.getErrorCause());
+        assertErrorReportHasBeenReceived(samuB_client, SAMU_B_INFO_QUEUE, ErrorCode.EXPIRED_MESSAGE_BEFORE_ROUTING,
+                "Message samuB_2608323d-507d-4cbf-bf74-52007f8124ea has expired before reaching the recipient queue");
     }
 
     @Test
@@ -158,14 +138,8 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
         Thread.sleep(DISPATCHER_PROCESS_TIME);
 
         assertRecipientDidNotReceive("sdisZ", SDIS_Z_MESSAGE_QUEUE);
-        Message infoMsg = samuB_client.receive(SAMU_B_INFO_QUEUE);
-        assertNotNull(infoMsg);
-
-        String errorJson = new String(infoMsg.getBody());
-        ErrorReport errorReport = (ErrorReport) contentMessageHandler.deserializeJsonMessage(errorJson);
-        assertEquals(ErrorCode.NOT_ALLOWED_CONTENT_TYPE, errorReport.getErrorCode());
-        assertEquals("Unhandled Content-Type ! Message Content-Type should be set at 'application/json' or 'application/xml'",
-                errorReport.getErrorCause());
+        assertErrorReportHasBeenReceived(samuB_client, SAMU_B_INFO_QUEUE, ErrorCode.NOT_ALLOWED_CONTENT_TYPE,
+                "Unhandled Content-Type ! Message Content-Type should be set at 'application/json' or 'application/xml'");
     }
 
     private void assertRecipientDidNotReceive(String client, String queueName) throws Exception {
@@ -174,5 +148,16 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
                 client);
         Message received = nexsis_client.receive(queueName);
         assertNull(received);
+    }
+
+    private void assertErrorReportHasBeenReceived(RabbitTemplate rabbitTemplate, String infoQueueName,
+                                                         ErrorCode errorCode, String errorCause) throws JsonProcessingException {
+
+        Message infoMsg = rabbitTemplate.receive(infoQueueName);
+        assertNotNull(infoMsg);
+        String errorJson = new String(infoMsg.getBody());
+        ErrorReport errorReport = (ErrorReport) contentMessageHandler.deserializeJsonMessage(errorJson);
+        assertEquals(errorCode, errorReport.getErrorCode());
+        assertEquals(errorCause, errorReport.getErrorCause());
     }
 }

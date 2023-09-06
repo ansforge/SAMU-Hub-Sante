@@ -216,7 +216,7 @@ public class Dispatcher {
 
     private void reportDeliveryModeError(Message message, String messageId) {
         // create ErrorReport
-        String errorCause = "message " + messageId + "has been received with non-persistent delivery mode";
+        String errorCause = "message " + messageId + " has been received with non-persistent delivery mode";
 
         ErrorReport errorReport = new ErrorReport(
                 ErrorCode.DELIVERY_MODE_INCONSISTENCY,

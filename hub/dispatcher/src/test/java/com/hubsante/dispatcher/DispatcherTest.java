@@ -134,11 +134,10 @@ public class DispatcherTest {
         assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatchDLQ(dlqMessage));
 
         // we test that an error report has been sent with the correct error code
-        ErrorReport errorReport = assertErrorReportHasBeenSent("fr.health.samu069.info");
-        String expected = "Message samu069_2608323d-507d-4cbf-bf74-52007f8124ea has been read from dead-letter-queue;" +
-                " reason was expired";
-        assertEquals(ErrorCode.DEAD_LETTER_QUEUED, errorReport.getErrorCode());
-        assertEquals(expected, errorReport.getErrorCause());
+        assertErrorReportHasBeenSent(
+                "fr.health.samu069.info", ErrorCode.DEAD_LETTER_QUEUED,
+                "Message samu069_2608323d-507d-4cbf-bf74-52007f8124ea has been read from dead-letter-queue;" +
+                        " reason was expired");
     }
 
     @Test
@@ -152,10 +151,9 @@ public class DispatcherTest {
         Message receivedMessage = createMessage("edxlWithMalformedContent.json", SAMU069_ROUTING_KEY);
         assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
 
-        ErrorReport errorReport = assertErrorReportHasBeenSent("fr.health.samu069.info");
-        assertEquals(ErrorCode.UNRECOGNIZED_MESSAGE_FORMAT, errorReport.getErrorCode());
-        assertEquals("Could not parse message, invalid format. \n If you don't want to use HubSanté model" +
-                " for now, please use a \"customContent\" wrapper inside your message.", errorReport.getErrorCause());
+        assertErrorReportHasBeenSent("fr.health.samu069.info", ErrorCode.UNRECOGNIZED_MESSAGE_FORMAT,
+                "Could not parse message, invalid format. \n If you don't want to use HubSanté model" +
+                        " for now, please use a \"customContent\" wrapper inside your message.");
     }
 
     @Test
@@ -166,10 +164,8 @@ public class DispatcherTest {
         assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
 
         // we test that an error report has been sent with the correct error code
-        ErrorReport errorReport = assertErrorReportHasBeenSent("fr.health.samu069.info");
-        assertEquals(ErrorCode.NOT_ALLOWED_CONTENT_TYPE, errorReport.getErrorCode());
-        assertEquals("Unhandled Content-Type ! Message Content-Type should be set at 'application/json' or 'application/xml'",
-                errorReport.getErrorCause());
+        assertErrorReportHasBeenSent("fr.health.samu069.info", ErrorCode.NOT_ALLOWED_CONTENT_TYPE,
+                "Unhandled Content-Type ! Message Content-Type should be set at 'application/json' or 'application/xml'");
     }
 
     @Test
@@ -180,8 +176,8 @@ public class DispatcherTest {
         assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
 
         // we test that an error report has been sent with the correct error code
-        ErrorReport errorReport = assertErrorReportHasBeenSent("fr.health.samu069.info");
-        assertEquals(ErrorCode.NOT_ALLOWED_CONTENT_TYPE, errorReport.getErrorCode());
+        assertErrorReportHasBeenSent("fr.health.samu069.info", ErrorCode.NOT_ALLOWED_CONTENT_TYPE,
+                "Unhandled Content-Type ! Message Content-Type should be set at 'application/json' or 'application/xml'");
     }
 
     @Test
@@ -192,8 +188,9 @@ public class DispatcherTest {
         assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
 
         // we test that an error report has been sent with the correct error code
-        ErrorReport errorReport = assertErrorReportHasBeenSent("fr.health.samu069.info");
-        assertEquals(ErrorCode.UNRECOGNIZED_MESSAGE_FORMAT, errorReport.getErrorCode());
+        assertErrorReportHasBeenSent("fr.health.samu069.info", ErrorCode.UNRECOGNIZED_MESSAGE_FORMAT,
+                "Could not parse message, invalid format. \n If you don't want to use HubSanté model" +
+                        " for now, please use a \"customContent\" wrapper inside your message.");
     }
 
     @Test
@@ -204,8 +201,9 @@ public class DispatcherTest {
         assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
 
         // we test that an error report has been sent with the correct error code
-        ErrorReport errorReport = assertErrorReportHasBeenSent(INCONSISTENT_ROUTING_KEY + ".info");
-        assertEquals(ErrorCode.SENDER_INCONSISTENCY, errorReport.getErrorCode());
+        assertErrorReportHasBeenSent(INCONSISTENT_ROUTING_KEY + ".info", ErrorCode.SENDER_INCONSISTENCY,
+                "Sender inconsistency for message samu069_2608323d-507d-4cbf-bf74-52007f8124ea : " +
+                        "message sender is fr.health.samu069 but received routing key is fr.health.no-samu");
     }
 
     @Test
@@ -222,14 +220,18 @@ public class DispatcherTest {
         assertEquals(MessageDeliveryMode.PERSISTENT, sentMessage.getValue().getMessageProperties().getDeliveryMode());
 
         // we test that an error report has been sent alongside the process
-        ErrorReport errorReport = assertErrorReportHasBeenSent(SAMU069_ROUTING_KEY + ".info");
-        assertEquals(ErrorCode.DELIVERY_MODE_INCONSISTENCY, errorReport.getErrorCode());
+        assertErrorReportHasBeenSent(SAMU069_ROUTING_KEY + ".info", ErrorCode.DELIVERY_MODE_INCONSISTENCY,
+                "message samu069_2608323d-507d-4cbf-bf74-52007f8124ea has been received with non-persistent delivery mode");
     }
 
-    private ErrorReport assertErrorReportHasBeenSent(String infoQueueName) throws JsonProcessingException {
+    private void assertErrorReportHasBeenSent(String infoQueueName, ErrorCode errorCode, String errorCause) throws JsonProcessingException {
+
         ArgumentCaptor<Message> argument = ArgumentCaptor.forClass(Message.class);
         Mockito.verify(rabbitTemplate, times(1)).send(
                 eq(DISTRIBUTION_EXCHANGE), eq(infoQueueName), argument.capture());
-        return getErrorReportFromMessage(contentMessageHandler, argument);
+
+        ErrorReport errorReport = getErrorReportFromMessage(contentMessageHandler, argument);
+        assertEquals(errorCode, errorReport.getErrorCode());
+        assertEquals(errorCause, errorReport.getErrorCause());
     }
 }
