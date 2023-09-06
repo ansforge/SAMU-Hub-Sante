@@ -5,7 +5,7 @@ import com.hubsante.hub.HubApplication;
 import com.hubsante.hub.config.HubClientConfiguration;
 import com.hubsante.hub.service.Dispatcher;
 import com.hubsante.hub.service.EdxlHandler;
-import com.hubsante.hub.service.UseCaseMessageHandler;
+import com.hubsante.hub.service.ContentMessageHandler;
 import com.hubsante.model.CustomMessage;
 import com.hubsante.model.edxl.EdxlMessage;
 import com.hubsante.model.report.ErrorCode;
@@ -51,7 +51,7 @@ public class DispatcherTest {
     @Autowired
     private EdxlHandler converter;
     @Autowired
-    private UseCaseMessageHandler usecaseHandler;
+    private ContentMessageHandler contentMessageHandler;
     @Autowired
     private HubClientConfiguration hubConfig;
     static ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
@@ -68,7 +68,7 @@ public class DispatcherTest {
 
     @PostConstruct
     public void init() {
-        dispatcher = new Dispatcher(rabbitTemplate, converter, usecaseHandler, hubConfig);
+        dispatcher = new Dispatcher(rabbitTemplate, converter, contentMessageHandler, hubConfig);
     }
 
     @Test
@@ -230,6 +230,6 @@ public class DispatcherTest {
         ArgumentCaptor<Message> argument = ArgumentCaptor.forClass(Message.class);
         Mockito.verify(rabbitTemplate, times(1)).send(
                 eq(DISTRIBUTION_EXCHANGE), eq(infoQueueName), argument.capture());
-        return getErrorReportFromMessage(usecaseHandler, argument);
+        return getErrorReportFromMessage(contentMessageHandler, argument);
     }
 }

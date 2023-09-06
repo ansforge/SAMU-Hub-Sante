@@ -3,7 +3,7 @@ package com.hubsante.hub.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import com.hubsante.model.edxl.UseCaseMessage;
+import com.hubsante.model.edxl.ContentMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
-public class UseCaseMessageHandler {
+public class ContentMessageHandler {
 
     @Autowired
     private ObjectMapper jsonMapper;
@@ -20,20 +20,20 @@ public class UseCaseMessageHandler {
     @Qualifier("xmlMapper")
     private XmlMapper xmlMapper;
 
-    public String serializeJsonMessage(UseCaseMessage message) throws JsonProcessingException {
+    public String serializeJsonMessage(ContentMessage message) throws JsonProcessingException {
         return jsonMapper.writeValueAsString(message);
     }
 
-    public String serializeXmlMessage(UseCaseMessage message) throws JsonProcessingException {
+    public String serializeXmlMessage(ContentMessage message) throws JsonProcessingException {
         return xmlMapper.writeValueAsString(message);
     }
 
-    public UseCaseMessage deserializeJsonMessage(String json) throws JsonProcessingException {
-        return jsonMapper.readValue(json, UseCaseMessage.class);
+    public ContentMessage deserializeJsonMessage(String json) throws JsonProcessingException {
+        return jsonMapper.readValue(json, ContentMessage.class);
     }
 
-    public UseCaseMessage deserializeXmlMessage(String xml) throws JsonProcessingException {
-        return xmlMapper.readValue(xml, UseCaseMessage.class);
+    public ContentMessage deserializeXmlMessage(String xml) throws JsonProcessingException {
+        return xmlMapper.readValue(xml, ContentMessage.class);
     }
 
 }

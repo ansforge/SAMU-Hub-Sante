@@ -3,8 +3,7 @@ package com.hubsante.hub.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hubsante.hub.exception.JsonSchemaValidationException;
-import com.hubsante.model.edxl.EdxlMessage;
-import com.hubsante.model.edxl.UseCaseMessage;
+import com.hubsante.model.edxl.ContentMessage;
 import com.networknt.schema.JsonSchema;
 import com.networknt.schema.JsonSchemaFactory;
 import com.networknt.schema.SpecVersion;
@@ -33,9 +32,9 @@ public class Validator {
     private ObjectMapper jsonMapper;
 
     @Autowired
-    private UseCaseMessageHandler useCaseMessageHandler;
+    private ContentMessageHandler contentMessageHandler;
 
-    public void validateUseCaseMessage(UseCaseMessage useCaseMessage, boolean isXML)
+    public void validateContentMessage(ContentMessage useCaseMessage, boolean isXML)
             throws IOException, JsonSchemaValidationException, SAXException {
         UseCaseEnum useCase = UseCaseEnum.getByValue(useCaseMessage.getClass().getSimpleName());
 
@@ -43,12 +42,12 @@ public class Validator {
             case CREATE_CASE:
                 if (isXML) {
                     validateXML(
-                            useCaseMessageHandler.serializeXmlMessage(useCaseMessage),
+                            contentMessageHandler.serializeXmlMessage(useCaseMessage),
                             "cisu/cisu.xsd");
                     break;
                 }
                 validateJSON(
-                        useCaseMessageHandler.serializeJsonMessage(useCaseMessage),
+                        contentMessageHandler.serializeJsonMessage(useCaseMessage),
                         "createCase_schema.json");
                 break;
             case UNKNOWN:

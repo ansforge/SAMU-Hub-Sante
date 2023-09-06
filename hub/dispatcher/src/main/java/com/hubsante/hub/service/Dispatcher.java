@@ -25,12 +25,12 @@ import static com.hubsante.hub.config.AmqpConfiguration.*;
 public class Dispatcher {
     private final RabbitTemplate rabbitTemplate;
     private final EdxlHandler edxlHandler;
-    private final UseCaseMessageHandler useCaseHandler;
+    private final ContentMessageHandler useCaseHandler;
     private final HubClientConfiguration hubConfig;
 
     private static final String HEALTH_PREFIX = "fr.health";
 
-    public Dispatcher(RabbitTemplate rabbitTemplate, EdxlHandler edxlHandler, UseCaseMessageHandler useCaseHandler, HubClientConfiguration hubConfig) {
+    public Dispatcher(RabbitTemplate rabbitTemplate, EdxlHandler edxlHandler, ContentMessageHandler useCaseHandler, HubClientConfiguration hubConfig) {
         this.rabbitTemplate = rabbitTemplate;
         this.edxlHandler = edxlHandler;
         this.useCaseHandler = useCaseHandler;
@@ -158,10 +158,6 @@ public class Dispatcher {
         return message.getMessageProperties().getReceivedRoutingKey();
     }
 
-    private String getSenderInfoQueueName(Message message) {
-        return getSenderID(message) + ".info";
-    }
-
     /*
      ** Deserialize the message according to its content type
      */
@@ -229,7 +225,7 @@ public class Dispatcher {
 
         // We do not propagate an exception here because we want to send the message anyway
         // So we call the logErrorAndSendReport method directly
-        String senderInfoQueueName = getSenderInfoQueueName(message);
+        String senderInfoQueueName = getSenderID(message);
         logErrorAndSendReport(errorReport, senderInfoQueueName);
     }
 
