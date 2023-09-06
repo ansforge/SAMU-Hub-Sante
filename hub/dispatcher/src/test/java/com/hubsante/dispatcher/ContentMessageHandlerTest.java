@@ -1,8 +1,7 @@
 package com.hubsante.dispatcher;
 
 import com.hubsante.hub.HubApplication;
-import com.hubsante.hub.exception.JsonSchemaValidationException;
-import com.hubsante.hub.service.UseCaseMessageHandler;
+import com.hubsante.hub.service.ContentMessageHandler;
 import com.hubsante.hub.service.Validator;
 import com.hubsante.model.cisu.CreateCaseMessage;
 import lombok.extern.slf4j.Slf4j;
@@ -15,7 +14,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.xml.sax.SAXException;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,10 +29,10 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootConfiguration
 @ContextConfiguration(classes = HubApplication.class)
 @SpringRabbitTest
-public class UseCaseMessageHandlerTest {
+public class ContentMessageHandlerTest {
 
     @Autowired
-    private UseCaseMessageHandler converter;
+    private ContentMessageHandler converter;
 
     @Autowired
     private Validator validator;
@@ -113,10 +111,10 @@ public class UseCaseMessageHandlerTest {
         assertDoesNotThrow(() -> converter.deserializeJsonMessage(Files.readString(cisuJsonFile.toPath())));
 
         // TODO bbo : check python script, required fields ar not set in json-schema
-//        assertThrows(JsonSchemaValidationException.class, () -> validator.validateUseCaseMessage(
+//        assertThrows(JsonSchemaValidationException.class, () -> validator.validateContentMessage(
 //                converter.deserializeJsonMessage(Files.readString(cisuJsonFile.toPath())), false));
         // TODO bbo : uncomment next assertion when xsd will be ready
-//        assertThrows(SAXException.class, () -> validator.validateUseCaseMessage(
+//        assertThrows(SAXException.class, () -> validator.validateContentMessage(
 //                converter.deserializeXmlMessage(Files.readString(cisuJsonFile.toPath())), true));
     }
 
@@ -132,9 +130,9 @@ public class UseCaseMessageHandlerTest {
         CreateCaseMessage xmlConverted = (CreateCaseMessage) converter.deserializeXmlMessage(xml);
 
         assertEquals(initialJSON, xmlConverted);
-        assertDoesNotThrow(() -> validator.validateUseCaseMessage(initialJSON, false));
+        assertDoesNotThrow(() -> validator.validateContentMessage(initialJSON, false));
         // TODO bbo : uncomment next assertion when xsd will be ready
-//        assertDoesNotThrow(() -> validator.validateUseCaseMessage(xmlConverted, true));
+//        assertDoesNotThrow(() -> validator.validateContentMessage(xmlConverted, true));
     }
 
 }

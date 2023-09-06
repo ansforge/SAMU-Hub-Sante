@@ -1,7 +1,7 @@
 package com.hubsante.dispatcher.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.hubsante.hub.service.UseCaseMessageHandler;
+import com.hubsante.hub.service.ContentMessageHandler;
 import com.hubsante.model.edxl.EdxlMessage;
 import com.hubsante.model.report.ErrorReport;
 import org.apache.commons.compress.utils.FileNameUtils;
@@ -58,9 +58,9 @@ public class MessageTestUtils {
         }
     }
 
-    public static ErrorReport getErrorReportFromMessage(UseCaseMessageHandler useCaseHandler, ArgumentCaptor<Message> messageArgumentCaptor) throws JsonProcessingException {
+    public static ErrorReport getErrorReportFromMessage(ContentMessageHandler contentMessageHandler, ArgumentCaptor<Message> messageArgumentCaptor) throws JsonProcessingException {
         String json = new String(messageArgumentCaptor.getValue().getBody());
-        return (ErrorReport) useCaseHandler.deserializeJsonMessage(json);
+        return (ErrorReport) contentMessageHandler.deserializeJsonMessage(json);
     }
 
     public static void setCustomExpirationDate(EdxlMessage edxlMessage, long offset) {

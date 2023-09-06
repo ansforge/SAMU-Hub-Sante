@@ -3,17 +3,11 @@ package com.hubsante.hub.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import com.hubsante.hub.exception.JsonSchemaValidationException;
-import com.hubsante.model.edxl.UseCaseMessage;
 import com.hubsante.model.edxl.EdxlMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import org.xml.sax.SAXException;
-
-import java.io.IOException;
-import java.util.Arrays;
 
 @Service
 @Slf4j
@@ -27,7 +21,7 @@ public class EdxlHandler {
     private ObjectMapper jsonMapper;
 
     @Autowired
-    private UseCaseMessageHandler useCaseMessageHandler;
+    private ContentMessageHandler contentMessageHandler;
 
     @Autowired
     private Validator validator;

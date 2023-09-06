@@ -1,6 +1,6 @@
 package com.hubsante.dispatcher;
 
-import com.hubsante.hub.service.UseCaseMessageHandler;
+import com.hubsante.hub.service.ContentMessageHandler;
 import com.hubsante.model.edxl.EdxlMessage;
 import com.hubsante.model.report.ErrorCode;
 import com.hubsante.model.report.ErrorReport;
@@ -11,7 +11,6 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.nio.charset.StandardCharsets;
-import java.time.OffsetDateTime;
 
 import static com.hubsante.dispatcher.utils.MessageTestUtils.createMessage;
 import static com.hubsante.dispatcher.utils.MessageTestUtils.setCustomExpirationDate;
@@ -24,7 +23,7 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
     private static long DEFAULT_TTL = 5000;
 
     @Autowired
-    private UseCaseMessageHandler useCaseHandler;
+    private ContentMessageHandler contentMessageHandler;
 
     @Test
     @DisplayName("message dispatched to exchange is received by a consumer listening to the right queue")
@@ -95,7 +94,7 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
         assertNotNull(infoMsg);
 
         String errorJson = new String(infoMsg.getBody());
-        ErrorReport errorReport = (ErrorReport) useCaseHandler.deserializeJsonMessage(errorJson);
+        ErrorReport errorReport = (ErrorReport) contentMessageHandler.deserializeJsonMessage(errorJson);
         assertEquals(ErrorCode.DEAD_LETTER_QUEUED, errorReport.getErrorCode());
         assertEquals("Message samuB_2608323d-507d-4cbf-bf74-52007f8124ea has been read from dead-letter-queue; reason was expired",
                 errorReport.getErrorCause());
@@ -116,7 +115,7 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
         assertNotNull(infoMsg);
 
         String errorJson = new String(infoMsg.getBody());
-        ErrorReport errorReport = (ErrorReport) useCaseHandler.deserializeJsonMessage(errorJson);
+        ErrorReport errorReport = (ErrorReport) contentMessageHandler.deserializeJsonMessage(errorJson);
 
         assertEquals("Message samuB_2608323d-507d-4cbf-bf74-52007f8124ea has been read from dead-letter-queue; reason was expired",
                 errorReport.getErrorCause());
@@ -141,7 +140,7 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
         assertNotNull(infoMsg);
 
         String errorJson = new String(infoMsg.getBody());
-        ErrorReport errorReport = (ErrorReport) useCaseHandler.deserializeJsonMessage(errorJson);
+        ErrorReport errorReport = (ErrorReport) contentMessageHandler.deserializeJsonMessage(errorJson);
         assertEquals(ErrorCode.EXPIRED_MESSAGE_BEFORE_ROUTING, errorReport.getErrorCode());
         assertEquals("Message samuB_2608323d-507d-4cbf-bf74-52007f8124ea has expired before reaching the recipient queue",
                 errorReport.getErrorCause());
@@ -162,7 +161,7 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
         assertNotNull(infoMsg);
 
         String errorJson = new String(infoMsg.getBody());
-        ErrorReport errorReport = (ErrorReport) useCaseHandler.deserializeJsonMessage(errorJson);
+        ErrorReport errorReport = (ErrorReport) contentMessageHandler.deserializeJsonMessage(errorJson);
         assertEquals(ErrorCode.NOT_ALLOWED_CONTENT_TYPE, errorReport.getErrorCode());
         assertEquals("Unhandled Content-Type ! Message Content-Type should be set at 'application/json' or 'application/xml'",
                 errorReport.getErrorCause());

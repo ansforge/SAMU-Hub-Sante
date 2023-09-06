@@ -6,7 +6,7 @@ import com.hubsante.hub.service.EdxlHandler;
 import com.hubsante.hub.service.Validator;
 import com.hubsante.model.cisu.CreateCaseMessage;
 import com.hubsante.model.edxl.EdxlMessage;
-import com.hubsante.model.edxl.UseCaseMessage;
+import com.hubsante.model.edxl.ContentMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -88,9 +88,9 @@ public class EdxlHandlerTest {
         EdxlMessage deserializedFromXml = converter.deserializeXmlEDXL(xml);
         assertEquals(deserializedFromXml, edxlMessage);
 
-        UseCaseMessage useCaseMessage = edxlMessage
+        ContentMessage contentMessage = edxlMessage
                 .getContent().getContentObject().getContentWrapper().getEmbeddedContent().getMessage();
-        assertDoesNotThrow(() -> validator.validateUseCaseMessage(useCaseMessage, false));
+        assertDoesNotThrow(() -> validator.validateContentMessage(contentMessage, false));
 
         //TODO team: generate xsd for new cisu model
 //        assertDoesNotThrow(() -> converter.validateXML(xml, "edxl/edxl-de-v2.0-wd11.xsd"));
