@@ -42,8 +42,10 @@ public class Dispatcher {
         try {
             // Deserialize the message according to its content type
             EdxlMessage edxlMessage = deserializeMessage(message);
-            // Check if the sender is consistent with the routing key
+            // Reject the message if the sender is consistent with the routing key
             checkSenderConsistency(getSenderID(message), edxlMessage);
+            // Reject the message if the delivery mode is not PERSISTENT
+            checkDeliveryModeIsPersistent(message, edxlMessage.getDistributionID());
             // Forward the message according to the recipient preferences. Conversion JSON <-> XML can happen here
             Message forwardedMsg = forwardedMessage(edxlMessage, message);
             // Extract recipient queue name from the message (explicit address and distribution kind)
@@ -127,17 +129,18 @@ public class Dispatcher {
         }
     }
 
+    private void checkDeliveryModeIsPersistent(Message message, String messageId) {
+        if (!MessageDeliveryMode.PERSISTENT.equals(message.getMessageProperties().getReceivedDeliveryMode())) {
+            String errorCause = "Message " + messageId + " has been sent with non-persistent delivery mode";
+            throw new DeliveryModeInconsistencyException(errorCause);
+        }
+    }
+
     private Message forwardedMessage(EdxlMessage edxlMessage, Message receivedAmqpMessage) {
         MessageProperties receivedAmqpProperties = receivedAmqpMessage.getMessageProperties();
         MessageProperties forwardedMessageProperties =
                 MessagePropertiesBuilder.fromClonedProperties(receivedAmqpProperties).build();
 
-        // we check that the message delivery mode is PERSISTENT and if not,
-        // we set it, log the error and send an ErrorReport to the sender
-        if (!MessageDeliveryMode.PERSISTENT.equals(receivedAmqpProperties.getReceivedDeliveryMode())) {
-            forwardedMessageProperties.setDeliveryMode(MessageDeliveryMode.PERSISTENT);
-            reportDeliveryModeError(receivedAmqpMessage, edxlMessage.getDistributionID());
-        }
         // we set a per-message TTL if the EDXL.dateTimeExpires is before the queue TTL
         overrideExpirationIfNeeded(edxlMessage, forwardedMessageProperties);
         // we serialize the message according to the recipient preferences
@@ -212,21 +215,6 @@ public class Dispatcher {
                     edxlMessage.getDistributionID(),
                     edxlMessage.getDateTimeExpires().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
         }
-    }
-
-    private void reportDeliveryModeError(Message message, String messageId) {
-        // create ErrorReport
-        String errorCause = "message " + messageId + " has been received with non-persistent delivery mode";
-
-        ErrorReport errorReport = new ErrorReport(
-                ErrorCode.DELIVERY_MODE_INCONSISTENCY,
-                errorCause,
-                new String(message.getBody()));
-
-        // We do not propagate an exception here because we want to send the message anyway
-        // So we call the logErrorAndSendReport method directly
-        String senderInfoQueueName = getSenderID(message);
-        logErrorAndSendReport(errorReport, senderInfoQueueName);
     }
 
     private Message getFwdMessageBody(EdxlMessage edxlMessage, Message receivedAmqpMessage, MessageProperties fwdAmqpProperties) {
