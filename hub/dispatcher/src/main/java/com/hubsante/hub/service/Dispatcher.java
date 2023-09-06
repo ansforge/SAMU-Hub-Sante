@@ -76,16 +76,17 @@ public class Dispatcher {
                 message.getMessageProperties().getHeader(DLQ_ORIGINAL_ROUTING_KEY) :
                 message.getMessageProperties().getReceivedRoutingKey();
 
-        String infoQueueName = senderClientID + ".info";
-        logErrorAndSendReport(errorReport, infoQueueName);
+        logErrorAndSendReport(errorReport, senderClientID);
         // throw exception to reject the message
         throw new AmqpRejectAndDontRequeueException(exception);
     }
 
-    private void logErrorAndSendReport(ErrorReport errorReport, String infoQueueName) {
+    private void logErrorAndSendReport(ErrorReport errorReport, String sender) {
+        String infoQueueName = sender + ".info";
         // log error
         // TODO bbo : add a logback pattern to allow structured logging
         log.error(
+                "Error occurred with message published by " + sender + "\n" +
                 "ErrorReport " + errorReport.getErrorCode() + "\n" +
                         "ErrorCause " + errorReport.getErrorCause() + "\n" +
                         "ErrorSourceMessage " + errorReport.getSourceMessage());
