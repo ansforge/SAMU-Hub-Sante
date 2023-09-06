@@ -117,6 +117,7 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
         String errorJson = new String(infoMsg.getBody());
         ErrorReport errorReport = (ErrorReport) contentMessageHandler.deserializeJsonMessage(errorJson);
 
+        assertEquals(ErrorCode.DEAD_LETTER_QUEUED, errorReport.getErrorCode());
         assertEquals("Message samuB_2608323d-507d-4cbf-bf74-52007f8124ea has been read from dead-letter-queue; reason was expired",
                 errorReport.getErrorCause());
     }
