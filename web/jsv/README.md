@@ -4,6 +4,7 @@ _Site de manipulation des structures de données JSON Schema_
 ## Deploy
 ```bash
 cp ../../models/csv_parser/schema.json hub-schemas/
+sed -i '' s/"x-id"/"id"/ hub-schemas/schema.json 
 cp ../../models/csv_parser/example.json hub-schemas/
 docker buildx build --platform linux/amd64 -t romainfd/hub-jsv:latest .
 docker push romainfd/hub-jsv:latest
