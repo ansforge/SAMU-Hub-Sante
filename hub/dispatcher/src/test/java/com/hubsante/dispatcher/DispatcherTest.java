@@ -130,7 +130,7 @@ public class DispatcherTest {
     public void handleDLQMessage() throws Exception {
         // we test that the message has been rejected after the DLQ listener has been called
         Message originalMessage = createMessage("createCaseEdxl.xml", MessageProperties.CONTENT_TYPE_XML, SAMU069_ROUTING_KEY);
-        Message dlqMessage = moveToDLQ(originalMessage, "expired");
+        Message dlqMessage = applyRabbitmqDLQHeaders(originalMessage, "expired");
         assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatchDLQ(dlqMessage));
 
         // we test that an error report has been sent with the correct error code
