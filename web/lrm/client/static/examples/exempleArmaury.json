@@ -146,9 +146,7 @@
             "freetext": "Allergique au doliprane"
         }
     ],
-    "newAlert": [
-        {}
-    ],
+    "newAlert": [],
     "severity": "MODERATE",
     "additionalInformation": {
         "customMap": {

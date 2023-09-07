@@ -139,9 +139,7 @@
             "freetext": "Victime peu mobile, problème de tension"
         }
     ],
-    "newAlert": [
-        {}
-    ],
+    "newAlert": [],
     "severity": "SEVERE",
     "additionalInformation": {
         "customMap": {
