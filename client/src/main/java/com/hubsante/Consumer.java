@@ -96,7 +96,8 @@ public abstract class Consumer {
             // consumeChannel: where messages are received by the client from Hub Santé
 
             this.consumeChannel = connection.createChannel();
-            this.consumeChannel.queueDeclare(this.queueName, true, false, false, null);
+            // passive declare because the user have no rights to create the queue
+            this.consumeChannel.queueDeclarePassive(this.queueName);
 
             // produceChannel: where ack messages are sent to Hub Santé
             this.producerAck = new Producer(this.host, this.port, this.exchangeName);
