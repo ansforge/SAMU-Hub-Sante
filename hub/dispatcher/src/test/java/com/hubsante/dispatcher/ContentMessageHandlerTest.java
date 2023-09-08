@@ -1,6 +1,8 @@
 package com.hubsante.dispatcher;
 
 import com.hubsante.hub.HubApplication;
+import com.hubsante.hub.exception.JsonSchemaValidationException;
+import com.hubsante.hub.exception.SchemaValidationException;
 import com.hubsante.hub.service.ContentMessageHandler;
 import com.hubsante.hub.service.Validator;
 import com.hubsante.model.cisu.CreateCaseMessage;
@@ -111,8 +113,8 @@ public class ContentMessageHandlerTest {
         assertDoesNotThrow(() -> converter.deserializeJsonMessage(Files.readString(cisuJsonFile.toPath())));
 
         // TODO bbo : check python script, required fields ar not set in json-schema
-//        assertThrows(JsonSchemaValidationException.class, () -> validator.validateContentMessage(
-//                converter.deserializeJsonMessage(Files.readString(cisuJsonFile.toPath())), false));
+        assertThrows(SchemaValidationException.class, () -> validator.validateContentMessage(
+                converter.deserializeJsonMessage(Files.readString(cisuJsonFile.toPath())), false));
         // TODO bbo : uncomment next assertion when xsd will be ready
 //        assertThrows(SAXException.class, () -> validator.validateContentMessage(
 //                converter.deserializeXmlMessage(Files.readString(cisuJsonFile.toPath())), true));

@@ -2,6 +2,7 @@ package com.hubsante.dispatcher;
 
 import com.hubsante.hub.HubApplication;
 import com.hubsante.hub.exception.JsonSchemaValidationException;
+import com.hubsante.hub.exception.SchemaValidationException;
 import com.hubsante.hub.service.EdxlHandler;
 import com.hubsante.hub.service.Validator;
 import com.hubsante.model.cisu.CreateCaseMessage;
@@ -105,7 +106,19 @@ public class EdxlHandlerTest {
         // deserialization method does not throw error
         assertDoesNotThrow(() -> converter.deserializeJsonEDXL(json));
         // validation does
-        assertThrows(JsonSchemaValidationException.class, () -> validator.validateJSON(json, "edxl.json"));
+        assertThrows(SchemaValidationException.class, () -> validator.validateJSON(json, "edxl.json"));
+    }
+
+    @Test
+    @DisplayName("validation does not fail if envelope is ok and content is not")
+    public void edxlValidationSucceedsWithWrongJsonContent() throws IOException {
+        File edxlCisuCreateFile = new File(classLoader.getResource("messages/createMessageMissingRequiredField.json").getFile());
+        String json = Files.readString(edxlCisuCreateFile.toPath());
+
+        // deserialization method does not throw error
+        assertDoesNotThrow(() -> converter.deserializeJsonEDXL(json));
+        // neither validation because envelope is ok
+        assertDoesNotThrow(() -> validator.validateJSON(json, "edxl.json"));
     }
 
     private String xmlPrefix() {

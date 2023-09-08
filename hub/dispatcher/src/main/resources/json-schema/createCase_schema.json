@@ -5,6 +5,8 @@
   "version": "0.4.9",
   "example": "example.json#",
   "required": [
+    "caseId",
+    "createdAt",
     "caseLocation"
   ],
   "properties": {

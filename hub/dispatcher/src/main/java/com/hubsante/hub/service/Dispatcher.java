@@ -5,7 +5,6 @@ import com.hubsante.hub.config.HubClientConfiguration;
 import com.hubsante.hub.exception.*;
 import com.hubsante.model.edxl.DistributionKind;
 import com.hubsante.model.edxl.EdxlMessage;
-import com.hubsante.model.report.ErrorCode;
 import com.hubsante.model.report.ErrorReport;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.AmqpRejectAndDontRequeueException;
@@ -13,7 +12,9 @@ import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
+import org.xml.sax.SAXException;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
@@ -27,14 +28,16 @@ public class Dispatcher {
     private final EdxlHandler edxlHandler;
     private final ContentMessageHandler useCaseHandler;
     private final HubClientConfiguration hubConfig;
+    private final Validator validator;
 
     private static final String HEALTH_PREFIX = "fr.health";
 
-    public Dispatcher(RabbitTemplate rabbitTemplate, EdxlHandler edxlHandler, ContentMessageHandler useCaseHandler, HubClientConfiguration hubConfig) {
+    public Dispatcher(RabbitTemplate rabbitTemplate, EdxlHandler edxlHandler, ContentMessageHandler useCaseHandler, HubClientConfiguration hubConfig, Validator validator) {
         this.rabbitTemplate = rabbitTemplate;
         this.edxlHandler = edxlHandler;
         this.useCaseHandler = useCaseHandler;
         this.hubConfig = hubConfig;
+        this.validator = validator;
     }
 
     @RabbitListener(queues = DISPATCH_QUEUE_NAME)
@@ -172,13 +175,19 @@ public class Dispatcher {
             // We deserialize according to the content type
             // It MUST be explicitly set by the client
             if (message.getMessageProperties().getContentType().equals(MessageProperties.CONTENT_TYPE_JSON)) {
+                validator.validateJSON(receivedEdxl, "edxl.json");
                 edxlMessage = edxlHandler.deserializeJsonEDXL(receivedEdxl);
+                validator.validateContentMessage(edxlMessage, false);
+
                 log.info(" [x] Received from '" + message.getMessageProperties().getReceivedRoutingKey() + "': message with distributionID" + edxlMessage.getDistributionID());
                 log.debug(edxlHandler.prettyPrintJsonEDXL(edxlMessage));
+
             } else if (message.getMessageProperties().getContentType().equals(MessageProperties.CONTENT_TYPE_XML)) {
+                // TODO bbo: add XSD validation when ready
                 edxlMessage = edxlHandler.deserializeXmlEDXL(receivedEdxl);
                 log.info(" [x] Received from '" + message.getMessageProperties().getReceivedRoutingKey() + "': message with distributionID " + edxlMessage.getDistributionID());
                 log.debug(edxlHandler.prettyPrintXmlEDXL(edxlMessage));
+
             } else {
                 String errorCause = "Unhandled Content-Type ! Message Content-Type should be set at 'application/json' or 'application/xml'";
                 throw new NotAllowedContentTypeException(errorCause);
@@ -189,6 +198,14 @@ public class Dispatcher {
             String errorCause = "Could not parse message, invalid format. \n " +
                     "If you don't want to use HubSanté model for now, please use a \"customContent\" wrapper inside your message.";
             throw new UnrecognizedMessageFormatException(errorCause);
+
+        } catch (SchemaValidationException e) {
+            // weird rethrow but we want to log the received routing key and we only have it here
+            log.error("Could not validate message " + receivedEdxl + " coming from " + message.getMessageProperties().getReceivedRoutingKey(), e);
+            throw e;
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
         return edxlMessage;
     }
