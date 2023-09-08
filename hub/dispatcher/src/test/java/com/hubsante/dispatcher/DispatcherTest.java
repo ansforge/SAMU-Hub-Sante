@@ -6,6 +6,7 @@ import com.hubsante.hub.config.HubClientConfiguration;
 import com.hubsante.hub.service.Dispatcher;
 import com.hubsante.hub.service.EdxlHandler;
 import com.hubsante.hub.service.ContentMessageHandler;
+import com.hubsante.hub.service.Validator;
 import com.hubsante.model.CustomMessage;
 import com.hubsante.model.edxl.EdxlMessage;
 import com.hubsante.model.report.ErrorCode;
@@ -54,9 +55,12 @@ public class DispatcherTest {
     private ContentMessageHandler contentMessageHandler;
     @Autowired
     private HubClientConfiguration hubConfig;
+    @Autowired
+    private Validator validator;
     static ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
     private Dispatcher dispatcher;
     private final String SAMU069_ROUTING_KEY = "fr.health.samu069";
+    private final String SAMU069_INFO_QUEUE = SAMU069_ROUTING_KEY + ".info";
     private final String INCONSISTENT_ROUTING_KEY = "fr.health.no-samu";
 
     @DynamicPropertySource
@@ -68,7 +72,7 @@ public class DispatcherTest {
 
     @PostConstruct
     public void init() {
-        dispatcher = new Dispatcher(rabbitTemplate, converter, contentMessageHandler, hubConfig);
+        dispatcher = new Dispatcher(rabbitTemplate, converter, contentMessageHandler, hubConfig, validator);
     }
 
     @Test
@@ -136,7 +140,7 @@ public class DispatcherTest {
 
         // we test that an error report has been sent with the correct error code
         assertErrorReportHasBeenSent(
-                "fr.health.samu069.info", ErrorCode.DEAD_LETTER_QUEUED,
+                SAMU069_INFO_QUEUE, ErrorCode.DEAD_LETTER_QUEUED,
                 "Message samu069_2608323d-507d-4cbf-bf74-52007f8124ea has been read from dead-letter-queue;" +
                         " reason was expired");
     }
@@ -152,7 +156,7 @@ public class DispatcherTest {
         Message receivedMessage = createMessage("edxlWithMalformedContent.json", SAMU069_ROUTING_KEY);
         assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
 
-        assertErrorReportHasBeenSent("fr.health.samu069.info", ErrorCode.UNRECOGNIZED_MESSAGE_FORMAT,
+        assertErrorReportHasBeenSent(SAMU069_INFO_QUEUE, ErrorCode.UNRECOGNIZED_MESSAGE_FORMAT,
                 "Could not parse message, invalid format. \n If you don't want to use HubSanté model" +
                         " for now, please use a \"customContent\" wrapper inside your message.");
     }
@@ -165,7 +169,7 @@ public class DispatcherTest {
         assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
 
         // we test that an error report has been sent with the correct error code
-        assertErrorReportHasBeenSent("fr.health.samu069.info", ErrorCode.NOT_ALLOWED_CONTENT_TYPE,
+        assertErrorReportHasBeenSent(SAMU069_INFO_QUEUE, ErrorCode.NOT_ALLOWED_CONTENT_TYPE,
                 "Unhandled Content-Type ! Message Content-Type should be set at 'application/json' or 'application/xml'");
     }
 
@@ -177,7 +181,7 @@ public class DispatcherTest {
         assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
 
         // we test that an error report has been sent with the correct error code
-        assertErrorReportHasBeenSent("fr.health.samu069.info", ErrorCode.NOT_ALLOWED_CONTENT_TYPE,
+        assertErrorReportHasBeenSent(SAMU069_INFO_QUEUE, ErrorCode.NOT_ALLOWED_CONTENT_TYPE,
                 "Unhandled Content-Type ! Message Content-Type should be set at 'application/json' or 'application/xml'");
     }
 
@@ -189,7 +193,7 @@ public class DispatcherTest {
         assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
 
         // we test that an error report has been sent with the correct error code
-        assertErrorReportHasBeenSent("fr.health.samu069.info", ErrorCode.UNRECOGNIZED_MESSAGE_FORMAT,
+        assertErrorReportHasBeenSent(SAMU069_INFO_QUEUE, ErrorCode.UNRECOGNIZED_MESSAGE_FORMAT,
                 "Could not parse message, invalid format. \n If you don't want to use HubSanté model" +
                         " for now, please use a \"customContent\" wrapper inside your message.");
     }
@@ -215,8 +219,33 @@ public class DispatcherTest {
         assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
 
         // we test that an error report has been sent with the correct error code
-        assertErrorReportHasBeenSent("fr.health.samu069.info", ErrorCode.DELIVERY_MODE_INCONSISTENCY,
+        assertErrorReportHasBeenSent(SAMU069_INFO_QUEUE, ErrorCode.DELIVERY_MODE_INCONSISTENCY,
                 "Message samu069_2608323d-507d-4cbf-bf74-52007f8124ea has been sent with non-persistent delivery mode");
+    }
+
+    @Test
+    @DisplayName("should reject message with invalid json EDXL envelope")
+    public void invalidJsonEDXLFails() throws IOException {
+        Message receivedMessage = createMessage("missingRootAndChildRequiredValues_CreateCaseEDXL.json",
+                MessageProperties.CONTENT_TYPE_JSON, SAMU069_ROUTING_KEY);
+        assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
+
+        assertErrorReportHasBeenSent(SAMU069_INFO_QUEUE, ErrorCode.INVALID_MESSAGE,
+                "Could not validate message against schema : errors occurred. \n" +
+                        "$.distributionID est un champ obligatoire mais manquant\n" +
+                        "$.descriptor.explicitAddress.explicitAddressValue est un champ obligatoire mais manquant\n");
+    }
+
+    @Test
+    @DisplayName("should reject message with invalid json content")
+    public void invalidJsonContentFails() throws IOException {
+        Message receivedMessage = createMessage("createMessageMissingRequiredField.json",
+                MessageProperties.CONTENT_TYPE_JSON, SAMU069_ROUTING_KEY);
+        assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
+
+        assertErrorReportHasBeenSent(SAMU069_INFO_QUEUE, ErrorCode.INVALID_MESSAGE,
+                "Could not validate message against schema : errors occurred. \n" +
+                "$.createdAt est un champ obligatoire mais manquant\n");
     }
 
     private void assertErrorReportHasBeenSent(String infoQueueName, ErrorCode errorCode, String errorCause) throws JsonProcessingException {
