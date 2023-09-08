@@ -646,72 +646,72 @@
     {
       "user": "local.test",
       "vhost": "/",
-      "configure": "^(fr.health.samuA.*|fr.health.samuB.*|fr.fire.nexsis.sdisZ.*)$",
+      "configure": "",
       "write": "hubsante",
       "read": "^(fr.health.samuA.*|fr.health.samuB.*|fr.fire.nexsis.sdisZ.*)$"
     },
     {
       "user": "fr.health.samu570",
       "vhost": "/",
-      "configure": "fr.health.samu570.*",
+      "configure": "",
       "write": "hubsante",
-      "read": "fr.health.samu570.*"
+      "read": "^(fr.health.samu570.message|fr.health.samu570.info|fr.health.samu570.ack)$"
     },
     {
       "user": "fr.health.samu800",
       "vhost": "/",
-      "configure": "fr.health.samu800.*",
+      "configure": "",
       "write": "hubsante",
-      "read": "fr.health.samu800.*"
+      "read": "^(fr.health.samu800.message|fr.health.samu800.info|fr.health.samu800.ack)$"
     },
     {
       "user": "fr.health.exos",
       "vhost": "/",
-      "configure": "fr.health.exos.*",
+      "configure": "",
       "write": "hubsante",
-      "read": "fr.health.exos.*"
+      "read": "^(fr.health.exos.message|fr.health.exos.info|fr.health.exos.ack)$"
     },
     {
       "user": "fr.health.samu090",
       "vhost": "/",
-      "configure": "fr.health.samu090.*",
+      "configure": "",
       "write": "hubsante",
-      "read": "fr.health.samu090.*"
+      "read": "^(fr.health.samu090.message|fr.health.samu090.info|fr.health.samu090.ack)$"
     },
     {
       "user": "fr.health.samu091",
       "vhost": "/",
-      "configure": "fr.health.samu091.*",
+      "configure": "",
       "write": "hubsante",
-      "read": "fr.health.samu091.*"
+      "read": "^(fr.health.samu091.message|fr.health.samu091.info|fr.health.samu091.ack)$"
     },
     {
       "user": "fr.health.bisom",
       "vhost": "/",
-      "configure": "^(fr.health.samu091.*|fr.health.samu090.*)$",
+      "configure": "",
       "write": "hubsante",
-      "read": "^(fr.health.samu091.*|fr.health.samu090.*)$"
+      "read": "^(fr.health.samu091.message|fr.health.samu091.info|fr.health.samu091.ack|fr.health.samu090.message|fr.health.samu090.info|fr.health.samu090.ack)$"
     },
     {
       "user": "fr.health.normandie",
       "vhost": "/",
-      "configure": "^(fr.health.normandie.*|fr.health.samu76A.*|fr.health.samu76B.*)$",
+      "configure": "",
       "write": "hubsante",
-      "read": "^(fr.health.normandie.*|fr.health.samu76A.*|fr.health.samu76B.*)$"
+      "read": "^(fr.health.normandie.message|fr.health.normandie.info|fr.health.normandie.ack|fr.health.samu76A.message|fr.health.samu76A.info|fr.health.samu76A.ack|fr.health.samu76B.message|fr.health.samu76B.info|fr.health.samu76B.ack)$"
     },
     {
       "user": "fr.health.samu76A",
       "vhost": "/",
-      "configure": "fr.health.samu76A.*",
+      "configure": "",
       "write": "hubsante",
-      "read": "fr.health.samu76A.*"
+      "read": "^(fr.health.samu76A.message|fr.health.samu76A.info|fr.health.samu76A.ack)$"
     },
     {
       "user": "fr.health.samu76B",
       "vhost": "/",
-      "configure": "fr.health.samu76B.*",
+      "configure": "",
       "write": "hubsante",
-      "read": "fr.health.samu76B.*"
+      "read": "^(fr.health.samu76B.message|fr.health.samu76B.info|fr.health.samu76B.ack)$"
     },
     {
       "user": "fr.fire.nexsis.test",
