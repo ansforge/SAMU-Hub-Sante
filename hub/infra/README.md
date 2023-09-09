@@ -66,14 +66,11 @@ kubectl delete pods -l app.kubernetes.io/component=rabbitmq
 
 # Prometheus operator
 ```shell
-# no need to do this every time
-helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-helm repo update
-```
-
-```shell
-# deploy Prometheus Operator
-helm install prometheus-operator prometheus-community/kube-prometheus-stack
+# Deploy and configure Prometheus Operator
+helm upgrade --install prometheus-operator kube-prometheus-stack \
+  --repo https://prometheus-community.github.io/helm-charts \
+  --namespace monitoring --create-namespace \
+  -f monitoring/prometheus-operator-values.yml
 ```
 
 Then we apply some extra configuration :
@@ -114,9 +111,10 @@ kubectl port-forward svc/prometheus-operator-grafana 9091:80
 ## Admin Ingress
 see https://prometheus-operator.dev/docs/kube/exposing-prometheus-alertmanager-grafana-ingress/
 ```shell
-helm repo add nginx-stable https://helm.nginx.com/stable
-helm repo update
-helm install admin-nginx-ingress nginx-stable/nginx-ingress -f monitoring/admin-nginx-values.yml
+helm upgrade --install admin-nginx-ingress ingress-nginx \
+  --repo https://kubernetes.github.io/ingress-nginx \
+  --namespace ingress-nginx-admin --create-namespace \
+  -f monitoring/admin-nginx-ingress-controller-values.yml
 
 # create admin-cert tls-secret, then
 kubectl apply -f monitoring/admin-ingress.yml

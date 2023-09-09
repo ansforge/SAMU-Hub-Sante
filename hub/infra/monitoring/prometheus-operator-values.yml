@@ -1,0 +1,112 @@
+# Ref.: https://github.com/grafana/helm-charts/issues/2383
+defaultRules:
+  create: true
+  rules:
+    alertmanager: true
+    etcd: true
+    configReloaders: true
+    general: true
+    k8s: true
+    kubeApiserverAvailability: true
+    kubeApiserverBurnrate: true
+    kubeApiserverHistogram: true
+    kubeApiserverSlos: true
+    kubeControllerManager: true
+    kubelet: true
+    kubeProxy: true
+    kubePrometheusGeneral: true
+    kubePrometheusNodeRecording: true
+    kubernetesApps: true
+    kubernetesResources: true
+    kubernetesStorage: true
+    kubernetesSystem: true
+    kubeSchedulerAlerting: true
+    kubeSchedulerRecording: true
+    kubeStateMetrics: true
+    network: true
+    node: true
+    nodeExporterAlerting: true
+    nodeExporterRecording: true
+    prometheus: true
+    prometheusOperator: true
+
+prometheus:
+  enabled: true
+  ingress:
+    # Ref.: https://artifacthub.io/packages/helm/prometheus-community/kube-prometheus-stack?modal=template&template=prometheus/ingress.yaml
+    enabled: true
+    ingressClassName: nginx-admin
+    #      hosts:
+    #        - prometheus.nnpi.beast-code.com
+    paths:
+      - /
+      - /prometheus
+    pathType: Prefix
+
+grafana:
+  enabled: true
+  ingress:
+    enabled: true
+    ingressClassName: nginx-admin
+    #      hosts:
+    #        - grafana.nnpi.beast-code.com
+    path: /grafana
+  persistence:
+    enabled: true
+    # size: 10Gi
+  grafana.ini:
+    server:
+      root_url: http://51.91.81.136/grafana
+
+alertmanager:
+  enabled: true
+  ingress:
+    enabled: true
+    ingressClassName: nginx-admin
+    #      hosts:
+    #        - alerts.nnpi.beast-code.com
+    paths:
+      - /alertmanager
+    pathType: Prefix
+#    config:
+#      global:
+#        slack_api_url: <path:arc/data/alertmanager#SLACK_API_URL>
+#      route:
+#        receiver: "slack-default"
+#        group_by:
+#          - alertname
+#          - cluster
+#          - service
+#        group_wait: 30s # 30s
+#        group_interval: 5m # 5m
+#        repeat_interval: 1h # 4h
+#        routes:
+#          - receiver: "null"
+#            matchers:
+#              - alertname =~ "InfoInhibitor|Watchdog"
+#          - receiver: "slack-warn-critical"
+#            matchers:
+#              - severity =~ "warning|critical"
+#            continue: true
+#      receivers:
+#        - name: "null"
+#        - name: "slack-default"
+#          slack_configs:
+#            - send_resolved: true # false
+#              channel: "#notify-arc-alerts"
+#              text: |-
+#                {{range .Alerts}}
+#                Alert: {{.Labels.alertname}}, Severity: {{.Labels.severity}}
+#                Summary: {{.Annotations.summary}}
+#                Description: {{.Annotations.description}}
+#                {{end}}
+#        - name: "slack-warn-critical"
+#          slack_configs:
+#            - send_resolved: true # false
+#              channel: "#notify-arc-alerts"
+#              text: |-
+#                {{range .Alerts}}
+#                Alert: {{.Labels.alertname}}, Severity: {{.Labels.severity}}
+#                Summary: {{.Annotations.summary}}
+#                Description: {{.Annotations.description}}
+#                {{end}}
