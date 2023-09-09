@@ -45,7 +45,7 @@ public class Dispatcher {
         try {
             // Deserialize the message according to its content type
             EdxlMessage edxlMessage = deserializeMessage(message);
-            // Reject the message if the sender is consistent with the routing key
+            // Reject the message if the sender is not consistent with the routing key
             checkSenderConsistency(getSenderID(message), edxlMessage);
             // Reject the message if the delivery mode is not PERSISTENT
             checkDeliveryModeIsPersistent(message, edxlMessage.getDistributionID());
