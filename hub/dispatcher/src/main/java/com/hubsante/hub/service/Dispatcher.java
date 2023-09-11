@@ -3,8 +3,7 @@ package com.hubsante.hub.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.hubsante.hub.config.HubClientConfiguration;
 import com.hubsante.hub.exception.*;
-import com.hubsante.model.edxl.DistributionKind;
-import com.hubsante.model.edxl.EdxlMessage;
+import com.hubsante.model.edxl.*;
 import com.hubsante.model.report.ErrorReport;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.AmqpRejectAndDontRequeueException;
@@ -18,8 +17,10 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.UUID;
 
 import static com.hubsante.hub.config.AmqpConfiguration.*;
+import static com.hubsante.hub.utils.EdxlUtils.edxlMessageFromHub;
 
 @Service
 @Slf4j
@@ -97,11 +98,13 @@ public class Dispatcher {
                         "ErrorSourceMessage " + errorReport.getSourceMessage());
 
         try {
-            rabbitTemplate.send(DISTRIBUTION_EXCHANGE, infoQueueName, new Message(
-                    useCaseHandler.serializeJsonMessage(errorReport).getBytes(),
+            EdxlMessage errorEdxlMessage = edxlMessageFromHub(sender, errorReport);
+            Message errorAmqpMessage = new Message(edxlHandler.serializeJsonEDXL(errorEdxlMessage).getBytes(),
                     // TODO bbo : add a default RabbitTemplate configuration to avoid setting content type for each message
                     //  (only XML ones should be explicitly set)
-                    MessagePropertiesBuilder.newInstance().setContentType(MessageProperties.CONTENT_TYPE_JSON).build()));
+                    MessagePropertiesBuilder.newInstance().setContentType(MessageProperties.CONTENT_TYPE_JSON).build());
+            
+            rabbitTemplate.send(DISTRIBUTION_EXCHANGE, infoQueueName, errorAmqpMessage);
         } catch (JsonProcessingException e) {
             // This should never happen : we are serializing a POJO with 2 String attributes and a single enum
             log.error("Could not serialize ErrorReport for message " + errorReport.getSourceMessage(), e);
