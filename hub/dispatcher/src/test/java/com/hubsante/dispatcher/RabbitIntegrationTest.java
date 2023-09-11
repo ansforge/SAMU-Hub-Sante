@@ -33,7 +33,7 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
     @Test
     @DisplayName("message dispatched to exchange is received by a consumer listening to the right queue")
     public void dispatchTest() throws Exception {
-        Message published = createMessage("samuB_to_nexsis.xml", SAMU_B_OUTER_MESSAGE_ROUTING_KEY);
+        Message published = createMessage("valid/edxl_encapsulated/samuB_to_nexsis.xml", SAMU_B_OUTER_MESSAGE_ROUTING_KEY);
         RabbitTemplate samuB_client = getCustomRabbitTemplate(classLoader.getResource("config/certs/samuB/samuB.p12").getPath(), "samuB");
         samuB_client.send(HUBSANTE_EXCHANGE, SAMU_B_OUTER_MESSAGE_ROUTING_KEY, published);
 
@@ -59,7 +59,7 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
             }
         });
 
-        Message published = createMessage("samuB_to_nexsis.xml", SAMU_B_WRONG_OUTER_MESSAGE_ROUTING_KEY);
+        Message published = createMessage("valid/edxl_encapsulated/samuB_to_nexsis.xml", SAMU_B_WRONG_OUTER_MESSAGE_ROUTING_KEY);
         samuB_client.send(HUBSANTE_EXCHANGE, SAMU_B_WRONG_OUTER_MESSAGE_ROUTING_KEY, published);
         Thread.sleep(DISPATCHER_PROCESS_TIME);
 
@@ -78,7 +78,7 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
             }
         });
 
-        Message published = createMessage("samuA_to_nexsis.xml", SAMU_B_OUTER_MESSAGE_ROUTING_KEY);
+        Message published = createMessage("valid/edxl_encapsulated/samuA_to_nexsis.xml", SAMU_B_OUTER_MESSAGE_ROUTING_KEY);
         samuB_client.send(HUBSANTE_EXCHANGE, SAMU_A_OUTER_MESSAGE_ROUTING_KEY, published);
         Thread.sleep(DISPATCHER_PROCESS_TIME);
 
@@ -88,7 +88,7 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
     @Test
     @DisplayName("expired message should be rejected")
     public void rejectExpiredMessage() throws Exception {
-        Message published = createMessage("samuB_to_nexsis.xml", SAMU_B_OUTER_MESSAGE_ROUTING_KEY);
+        Message published = createMessage("valid/edxl_encapsulated/samuB_to_nexsis.xml", SAMU_B_OUTER_MESSAGE_ROUTING_KEY);
         RabbitTemplate samuB_client = getCustomRabbitTemplate(classLoader.getResource("config/certs/samuB/samuB.p12").getPath(), "samuB");
         samuB_client.send(HUBSANTE_EXCHANGE, SAMU_B_OUTER_MESSAGE_ROUTING_KEY, published);
 
@@ -101,7 +101,7 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
     @Test
     @DisplayName("message expired by publisher rule should be rejected")
     public void rejectExpiredMessageWithPublisherExpirationLowerThanHubTTL() throws Exception {
-        Message published = createMessage("samuB_to_nexsis.xml", SAMU_B_OUTER_MESSAGE_ROUTING_KEY);
+        Message published = createMessage("valid/edxl_encapsulated/samuB_to_nexsis.xml", SAMU_B_OUTER_MESSAGE_ROUTING_KEY);
         published.getMessageProperties().setExpiration("100");
         RabbitTemplate samuB_client = getCustomRabbitTemplate(classLoader.getResource("config/certs/samuB/samuB.p12").getPath(), "samuB");
         samuB_client.send(HUBSANTE_EXCHANGE, SAMU_B_OUTER_MESSAGE_ROUTING_KEY, published);
@@ -116,7 +116,7 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
     @Test
     @DisplayName("message expired according to EDXL.dateTimeExpires should be rejected")
     public void rejectExpiredMessageWithEdxlDateTimeExpiresLowerThanHubTTL() throws Exception {
-        Message source = createMessage("samuB_to_nexsis.xml", SAMU_B_OUTER_MESSAGE_ROUTING_KEY);
+        Message source = createMessage("valid/edxl_encapsulated/samuB_to_nexsis.xml", SAMU_B_OUTER_MESSAGE_ROUTING_KEY);
         EdxlMessage edxlMessage = converter.deserializeXmlEDXL(new String(source.getBody(), StandardCharsets.UTF_8));
         setCustomExpirationDate(edxlMessage, 100000);
         String xml = converter.serializeXmlEDXL(edxlMessage);
@@ -134,7 +134,7 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
     @Test
     @DisplayName("message without Content-type should be dlq")
     public void messageWithoutContentTypeIsDLQ() throws Exception {
-        Message noContentTypeMsg = createMessage("samuB_to_nexsis.xml", null, SAMU_B_OUTER_MESSAGE_ROUTING_KEY);
+        Message noContentTypeMsg = createMessage("valid/edxl_encapsulated/samuB_to_nexsis.xml", null, SAMU_B_OUTER_MESSAGE_ROUTING_KEY);
         RabbitTemplate samuB_client = getCustomRabbitTemplate(classLoader.getResource("config/certs/samuB/samuB.p12").getPath(), "samuB");
         assertNull(samuB_client.receive(SAMU_B_INFO_QUEUE));
         samuB_client.send(HUBSANTE_EXCHANGE, SAMU_B_OUTER_MESSAGE_ROUTING_KEY, noContentTypeMsg);

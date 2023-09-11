@@ -187,7 +187,9 @@ public class Dispatcher {
 
             } else if (message.getMessageProperties().getContentType().equals(MessageProperties.CONTENT_TYPE_XML)) {
                 // TODO bbo: add XSD validation when ready
+//                validator.validateXML(receivedEdxl, "edxl/edxl-de-v2.0-wd11.xsd");
                 edxlMessage = edxlHandler.deserializeXmlEDXL(receivedEdxl);
+//                validator.validateContentMessage(edxlMessage, true);
                 log.info(" [x] Received from '" + message.getMessageProperties().getReceivedRoutingKey() + "': message with distributionID " + edxlMessage.getDistributionID());
                 log.debug(edxlHandler.prettyPrintXmlEDXL(edxlMessage));
 
