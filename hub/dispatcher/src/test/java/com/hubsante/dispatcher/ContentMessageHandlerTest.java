@@ -51,7 +51,7 @@ public class ContentMessageHandlerTest {
     @DisplayName("should deserialize JSON CreateCaseMessage")
     public void deserializeJSONCreateCaseMessage() throws IOException {
         // deserialize JSON message
-        File cisuJsonFile = new File(classLoader.getResource("messages/createCaseMessage.json").getFile());
+        File cisuJsonFile = new File(classLoader.getResource("messages/valid/create_case/createCaseMessage.json").getFile());
         CreateCaseMessage deserializedJsonMessage = (CreateCaseMessage) converter.deserializeJsonMessage(Files.readString(cisuJsonFile.toPath()));
 
         String xml = converter.serializeXmlMessage(deserializedJsonMessage);
@@ -70,7 +70,7 @@ public class ContentMessageHandlerTest {
     @DisplayName("should deserialize XML CreateCaseMessage")
     public void deserializeXMLCreateCaseMessage() throws IOException {
         // deserialize XML message
-        File cisuXmlFile = new File(classLoader.getResource("messages/createCaseMessage.xml").getFile());
+        File cisuXmlFile = new File(classLoader.getResource("messages/valid/create_case/createCaseMessage.xml").getFile());
         CreateCaseMessage deserializedXmlMessage = (CreateCaseMessage) converter.deserializeXmlMessage(Files.readString(cisuXmlFile.toPath()));
 
         // check String deserialization
@@ -87,7 +87,7 @@ public class ContentMessageHandlerTest {
     @DisplayName("should serialize JSON CreateCaseMessage")
     public void serializeJSONCreateCaseMessage() throws IOException {
         // deserialize JSON message
-        File cisuJsonFile = new File(classLoader.getResource("messages/createCaseMessage.json").getFile());
+        File cisuJsonFile = new File(classLoader.getResource("messages/valid/create_case/createCaseMessage.json").getFile());
         CreateCaseMessage deserializedJsonMessage = (CreateCaseMessage) converter.deserializeJsonMessage(Files.readString(cisuJsonFile.toPath()));
 
         // serialize JSON message
@@ -98,7 +98,7 @@ public class ContentMessageHandlerTest {
     @DisplayName("should serialize XML CreateCaseMessage")
     public void serializeXMLCreateCaseMessage() throws IOException {
         // deserialize XML message
-        File cisuXmlFile = new File(classLoader.getResource("messages/createCaseMessage.xml").getFile());
+        File cisuXmlFile = new File(classLoader.getResource("messages/valid/create_case/createCaseMessage.xml").getFile());
         CreateCaseMessage deserializedXmlMessage = (CreateCaseMessage) converter.deserializeXmlMessage(Files.readString(cisuXmlFile.toPath()));
 
         // serialize XML message
@@ -108,7 +108,7 @@ public class ContentMessageHandlerTest {
     @Test
     @DisplayName("missing required fields fails validation")
     public void missingRequiredFieldsValidationFails() throws IOException {
-        File cisuJsonFile = new File(classLoader.getResource("messages/missingRequiredCreateMessage.json").getFile());
+        File cisuJsonFile = new File(classLoader.getResource("messages/invalid/create_case/missingRequiredFieldCreateMessage.json").getFile());
 
         assertDoesNotThrow(() -> converter.deserializeJsonMessage(Files.readString(cisuJsonFile.toPath())));
 
@@ -123,7 +123,7 @@ public class ContentMessageHandlerTest {
     @Test
     @DisplayName("should convert message from JSON to XML to JSON")
     public void endToEndConversionTest() throws IOException {
-        File cisuJsonFile = new File(classLoader.getResource("messages/createCaseMessage.json").getFile());
+        File cisuJsonFile = new File(classLoader.getResource("messages/valid/create_case/createCaseMessage.json").getFile());
 
         String json = Files.readString(cisuJsonFile.toPath());
         CreateCaseMessage initialJSON = (CreateCaseMessage) converter.deserializeJsonMessage(json);

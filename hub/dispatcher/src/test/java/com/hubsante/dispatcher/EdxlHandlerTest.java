@@ -1,7 +1,6 @@
 package com.hubsante.dispatcher;
 
 import com.hubsante.hub.HubApplication;
-import com.hubsante.hub.exception.JsonSchemaValidationException;
 import com.hubsante.hub.exception.SchemaValidationException;
 import com.hubsante.hub.service.EdxlHandler;
 import com.hubsante.hub.service.Validator;
@@ -54,7 +53,7 @@ public class EdxlHandlerTest {
     @DisplayName("should deserialize Json EDXL - Cisu Create")
     public void deserializeCreateJsonEDXL() throws IOException {
 
-        File edxlCisuCreateFile = new File(classLoader.getResource("messages/createCaseEdxl.json").getFile());
+        File edxlCisuCreateFile = new File(classLoader.getResource("messages/valid/edxl_encapsulated/createCaseEdxl.json").getFile());
         EdxlMessage edxlMessage = converter.deserializeJsonEDXL(Files.readString(edxlCisuCreateFile.toPath()));
 
         assertEquals("fr.health.samu069", edxlMessage.getSenderID());
@@ -79,7 +78,7 @@ public class EdxlHandlerTest {
     @Test
     @DisplayName("should serialize XML EDXL - Cisu Create")
     public void serializeCreateXmlEDXL() throws IOException {
-        File edxlCisuCreateFile = new File(classLoader.getResource("messages/createCaseEdxl.json").getFile());
+        File edxlCisuCreateFile = new File(classLoader.getResource("messages/valid/edxl_encapsulated/createCaseEdxl.json").getFile());
         String json = Files.readString(edxlCisuCreateFile.toPath());
         EdxlMessage edxlMessage = converter.deserializeJsonEDXL(json);
 
@@ -98,9 +97,9 @@ public class EdxlHandlerTest {
     }
 
     @Test
-    @DisplayName("validation should failed if Json Edxl is malfromatted")
+    @DisplayName("validation should failed if Json Edxl is malformatted")
     public void wrongJsonValidationFailed() throws IOException {
-        File edxlCisuCreateFile = new File(classLoader.getResource("messages/missingRootAndChildRequiredValues_CreateCaseEDXL.json").getFile());
+        File edxlCisuCreateFile = new File(classLoader.getResource("messages/invalid/missingEDXLRequiredValues.json").getFile());
         String json = Files.readString(edxlCisuCreateFile.toPath());
 
         // deserialization method does not throw error
@@ -112,7 +111,7 @@ public class EdxlHandlerTest {
     @Test
     @DisplayName("validation does not fail if envelope is ok and content is not")
     public void edxlValidationSucceedsWithWrongJsonContent() throws IOException {
-        File edxlCisuCreateFile = new File(classLoader.getResource("messages/createMessageMissingRequiredField.json").getFile());
+        File edxlCisuCreateFile = new File(classLoader.getResource("messages/invalid/invalidCreateMessageValidEdxlEnvelope.json").getFile());
         String json = Files.readString(edxlCisuCreateFile.toPath());
 
         // deserialization method does not throw error
