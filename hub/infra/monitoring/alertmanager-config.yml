@@ -3,7 +3,6 @@ kind: AlertmanagerConfig
 metadata:
   name: hubsante-alertmanager-config
   labels:
-    #alertmanagerConfig: example
     release: prometheus-operator
 spec:
   route: # a route is a node in the routing tree that can match alerts and forward them to a list of receivers
