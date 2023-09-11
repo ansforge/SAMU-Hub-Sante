@@ -3,6 +3,7 @@ package com.hubsante.hub.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import com.hubsante.model.edxl.ContentMessage;
 import com.hubsante.model.edxl.EdxlMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,12 +21,6 @@ public class EdxlHandler {
     @Autowired
     private ObjectMapper jsonMapper;
 
-    @Autowired
-    private ContentMessageHandler contentMessageHandler;
-
-    @Autowired
-    private Validator validator;
-
     public EdxlHandler() {
     }
 
@@ -33,8 +28,20 @@ public class EdxlHandler {
         return jsonMapper.readValue(json, EdxlMessage.class);
     }
 
+    public ContentMessage deserializeJsonContentMessage(String json) throws JsonProcessingException {
+        EdxlMessage edxlMessage = deserializeJsonEDXL(json);
+        return edxlMessage.getContent().getContentObject().getContentWrapper()
+                .getEmbeddedContent().getMessage();
+    }
+
     public EdxlMessage deserializeXmlEDXL(String xml) throws JsonProcessingException {
         return xmlMapper.readValue(xml, EdxlMessage.class);
+    }
+
+    public ContentMessage deserializeXmlContentMessage(String xml) throws JsonProcessingException {
+        EdxlMessage edxlMessage = deserializeXmlEDXL(xml);
+        return edxlMessage.getContent().getContentObject().getContentWrapper()
+                .getEmbeddedContent().getMessage();
     }
 
     public String serializeJsonEDXL(EdxlMessage edxlMessage) throws JsonProcessingException {

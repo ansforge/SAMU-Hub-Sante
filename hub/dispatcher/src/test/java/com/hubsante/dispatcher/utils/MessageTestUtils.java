@@ -1,7 +1,7 @@
 package com.hubsante.dispatcher.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.hubsante.hub.service.ContentMessageHandler;
+import com.hubsante.hub.service.EdxlHandler;
 import com.hubsante.model.edxl.EdxlMessage;
 import com.hubsante.model.report.ErrorReport;
 import org.apache.commons.compress.utils.FileNameUtils;
@@ -9,7 +9,6 @@ import org.mockito.ArgumentCaptor;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageDeliveryMode;
 import org.springframework.amqp.core.MessageProperties;
-import org.springframework.amqp.core.MessagePropertiesBuilder;
 
 import java.io.File;
 import java.io.IOException;
@@ -71,9 +70,9 @@ public class MessageTestUtils {
         }
     }
 
-    public static ErrorReport getErrorReportFromMessage(ContentMessageHandler contentMessageHandler, ArgumentCaptor<Message> messageArgumentCaptor) throws JsonProcessingException {
+    public static ErrorReport getErrorReportFromMessage(EdxlHandler edxlHandler, ArgumentCaptor<Message> messageArgumentCaptor) throws JsonProcessingException {
         String json = new String(messageArgumentCaptor.getValue().getBody());
-        return (ErrorReport) contentMessageHandler.deserializeJsonMessage(json);
+        return (ErrorReport) edxlHandler.deserializeJsonContentMessage(json);
     }
 
     public static void setCustomExpirationDate(EdxlMessage edxlMessage, long offset) {

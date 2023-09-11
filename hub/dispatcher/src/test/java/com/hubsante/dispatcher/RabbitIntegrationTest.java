@@ -2,6 +2,7 @@ package com.hubsante.dispatcher;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.hubsante.hub.service.ContentMessageHandler;
+import com.hubsante.hub.service.EdxlHandler;
 import com.hubsante.model.edxl.EdxlMessage;
 import com.hubsante.model.report.ErrorCode;
 import com.hubsante.model.report.ErrorReport;
@@ -24,7 +25,7 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
     private static long DEFAULT_TTL = 5000;
 
     @Autowired
-    private ContentMessageHandler contentMessageHandler;
+    private EdxlHandler edxlHandler;
 
     @Test
     @DisplayName("message dispatched to exchange is received by a consumer listening to the right queue")
@@ -156,7 +157,8 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
         Message infoMsg = rabbitTemplate.receive(infoQueueName);
         assertNotNull(infoMsg);
         String errorJson = new String(infoMsg.getBody());
-        ErrorReport errorReport = (ErrorReport) contentMessageHandler.deserializeJsonMessage(errorJson);
+
+        ErrorReport errorReport = (ErrorReport) edxlHandler.deserializeJsonContentMessage(errorJson);
         assertEquals(errorCode, errorReport.getErrorCode());
         assertEquals(errorCause, errorReport.getErrorCause());
     }
