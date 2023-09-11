@@ -32,6 +32,7 @@ import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
+import java.util.Arrays;
 import java.util.Objects;
 
 import static com.hubsante.dispatcher.utils.MessageTestUtils.*;
@@ -141,8 +142,8 @@ public class DispatcherTest {
         // we test that an error report has been sent with the correct error code
         assertErrorReportHasBeenSent(
                 SAMU069_INFO_QUEUE, ErrorCode.DEAD_LETTER_QUEUED,
-                "Message samu069_2608323d-507d-4cbf-bf74-52007f8124ea has been read from dead-letter-queue;" +
-                        " reason was expired");
+                "samu069_2608323d-507d-4cbf-bf74-52007f8124ea",
+                "has been read from dead-letter-queue; reason was expired");
     }
 
     @Test
@@ -207,8 +208,7 @@ public class DispatcherTest {
 
         // we test that an error report has been sent with the correct error code
         assertErrorReportHasBeenSent(INCONSISTENT_ROUTING_KEY + ".info", ErrorCode.SENDER_INCONSISTENCY,
-                "Sender inconsistency for message samu069_2608323d-507d-4cbf-bf74-52007f8124ea : " +
-                        "message sender is fr.health.samu069 but received routing key is fr.health.no-samu");
+                "message sender is fr.health.samu069", "received routing key is fr.health.no-samu");
     }
 
     @Test
@@ -220,7 +220,7 @@ public class DispatcherTest {
 
         // we test that an error report has been sent with the correct error code
         assertErrorReportHasBeenSent(SAMU069_INFO_QUEUE, ErrorCode.DELIVERY_MODE_INCONSISTENCY,
-                "Message samu069_2608323d-507d-4cbf-bf74-52007f8124ea has been sent with non-persistent delivery mode");
+                "samu069_2608323d-507d-4cbf-bf74-52007f8124ea", "non-persistent delivery mode");
     }
 
     @Test
@@ -230,7 +230,9 @@ public class DispatcherTest {
                 MessageProperties.CONTENT_TYPE_JSON, SAMU069_ROUTING_KEY);
         assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
 
-        assertErrorReportHasBeenSent(SAMU069_INFO_QUEUE, ErrorCode.INVALID_MESSAGE, null);
+        assertErrorReportHasBeenSent(SAMU069_INFO_QUEUE, ErrorCode.INVALID_MESSAGE,
+                "$.distributionID est un champ obligatoire mais manquant",
+                "$.descriptor.explicitAddress.explicitAddressValue est un champ obligatoire mais manquant");
     }
 
     @Test
@@ -240,10 +242,11 @@ public class DispatcherTest {
                 MessageProperties.CONTENT_TYPE_JSON, SAMU069_ROUTING_KEY);
         assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
 
-        assertErrorReportHasBeenSent(SAMU069_INFO_QUEUE, ErrorCode.INVALID_MESSAGE,null);
+        assertErrorReportHasBeenSent(SAMU069_INFO_QUEUE, ErrorCode.INVALID_MESSAGE,
+                "$.createdAt est un champ obligatoire mais manquant");
     }
 
-    private void assertErrorReportHasBeenSent(String infoQueueName, ErrorCode errorCode, String errorCause) throws JsonProcessingException {
+    private void assertErrorReportHasBeenSent(String infoQueueName, ErrorCode errorCode, String... errorCause) throws JsonProcessingException {
 
         ArgumentCaptor<Message> argument = ArgumentCaptor.forClass(Message.class);
         Mockito.verify(rabbitTemplate, times(1)).send(
@@ -252,7 +255,7 @@ public class DispatcherTest {
         ErrorReport errorReport = getErrorReportFromMessage(converter, argument);
         assertEquals(errorCode, errorReport.getErrorCode());
         if (errorCause != null) {
-            assertEquals(errorCause, errorReport.getErrorCause());
+            Arrays.stream(errorCause).forEach(cause -> assertTrue(errorReport.getErrorCause().contains(cause)));
         }
     }
 }

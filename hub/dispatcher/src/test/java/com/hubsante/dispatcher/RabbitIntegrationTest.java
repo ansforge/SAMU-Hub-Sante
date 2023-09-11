@@ -13,6 +13,7 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 import static com.hubsante.dispatcher.utils.MessageTestUtils.createMessage;
 import static com.hubsante.dispatcher.utils.MessageTestUtils.setCustomExpirationDate;
@@ -92,7 +93,7 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
         Thread.sleep(DISPATCHER_PROCESS_TIME + DEFAULT_TTL);
         assertRecipientDidNotReceive("sdisZ", SDIS_Z_MESSAGE_QUEUE);
         assertErrorReportHasBeenReceived(samuB_client, SAMU_B_INFO_QUEUE, ErrorCode.DEAD_LETTER_QUEUED,
-                "Message samuB_2608323d-507d-4cbf-bf74-52007f8124ea has been read from dead-letter-queue; reason was expired");
+                "samuB_2608323d-507d-4cbf-bf74-52007f8124ea", "dead-letter-queue; reason was expired");
     }
 
     @Test
@@ -107,7 +108,7 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
 
         assertRecipientDidNotReceive("sdisZ", SDIS_Z_MESSAGE_QUEUE);
         assertErrorReportHasBeenReceived(samuB_client, SAMU_B_INFO_QUEUE, ErrorCode.DEAD_LETTER_QUEUED,
-                "Message samuB_2608323d-507d-4cbf-bf74-52007f8124ea has been read from dead-letter-queue; reason was expired");
+                "samuB_2608323d-507d-4cbf-bf74-52007f8124ea", "dead-letter-queue; reason was expired");
     }
 
     @Test
@@ -125,7 +126,7 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
         Thread.sleep(DISPATCHER_PROCESS_TIME);
         assertRecipientDidNotReceive("sdisZ", SDIS_Z_MESSAGE_QUEUE);
         assertErrorReportHasBeenReceived(samuB_client, SAMU_B_INFO_QUEUE, ErrorCode.EXPIRED_MESSAGE_BEFORE_ROUTING,
-                "Message samuB_2608323d-507d-4cbf-bf74-52007f8124ea has expired before reaching the recipient queue");
+                "samuB_2608323d-507d-4cbf-bf74-52007f8124ea",  "has expired before reaching the recipient queue");
     }
 
     @Test
@@ -152,7 +153,7 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
     }
 
     private void assertErrorReportHasBeenReceived(RabbitTemplate rabbitTemplate, String infoQueueName,
-                                                         ErrorCode errorCode, String errorCause) throws JsonProcessingException {
+                                                         ErrorCode errorCode, String... errorCause) throws JsonProcessingException {
 
         Message infoMsg = rabbitTemplate.receive(infoQueueName);
         assertNotNull(infoMsg);
@@ -160,6 +161,6 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
 
         ErrorReport errorReport = (ErrorReport) edxlHandler.deserializeJsonContentMessage(errorJson);
         assertEquals(errorCode, errorReport.getErrorCode());
-        assertEquals(errorCause, errorReport.getErrorCause());
+        Arrays.stream(errorCause).forEach(cause -> assertTrue(errorReport.getErrorCause().contains(cause)));
     }
 }
