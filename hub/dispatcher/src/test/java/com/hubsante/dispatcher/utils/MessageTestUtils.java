@@ -31,17 +31,12 @@ public class MessageTestUtils {
         if (contentType != null) {
             properties.setContentType(contentType);
         }
-        // this may sound weird but these two properties are not read by the same method of RabbitTemplate
-        // send() uses deliveryMode and receive() uses receivedDeliveryMode
+        // Spring AMQP uses receivedDeliveryMode on consumers, and deliveryMode on producers
+        // When testing consumers (aka the SpringAMPQ Message passed as a method parameter),
+        // we need to set the receivedDeliveryMode, which is PERSISTENT by default
         //
-        // see https://docs.spring.io/spring-amqp/reference/html/#message-properties-converters
-        //
-        // we want to use this utils method in mocked AND integration tests so we set both of them
-        // (mocked tests check the message passed as a param of the send() method, while integ tests directly
-        // consume the message from the queue)
-        //
-        // The MessagePropertiesBuilder can't be used because it doesn't allow to set the receivedDeliveryMode
-        properties.setDeliveryMode(MessageDeliveryMode.PERSISTENT);
+        // When testing producers we would need to set the deliveryMode only to test the CheckDeliveryMode method
+        // (already tested in DispatcherTest)
         properties.setReceivedDeliveryMode(MessageDeliveryMode.PERSISTENT);
 
         return new Message(edxlString.getBytes(StandardCharsets.UTF_8), properties);

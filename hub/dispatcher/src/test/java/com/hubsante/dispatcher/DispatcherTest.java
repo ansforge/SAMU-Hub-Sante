@@ -53,8 +53,6 @@ public class DispatcherTest {
     @Autowired
     private EdxlHandler converter;
     @Autowired
-    private ContentMessageHandler contentMessageHandler;
-    @Autowired
     private HubClientConfiguration hubConfig;
     @Autowired
     private Validator validator;
@@ -73,14 +71,13 @@ public class DispatcherTest {
 
     @PostConstruct
     public void init() {
-        dispatcher = new Dispatcher(rabbitTemplate, converter, contentMessageHandler, hubConfig, validator);
+        dispatcher = new Dispatcher(rabbitTemplate, converter, hubConfig, validator);
     }
 
     @Test
     @DisplayName("should send message to the right exchange and routing key")
     public void shouldDispatchToRightExchange() throws IOException {
         Message receivedMessage = createMessage("createCaseEdxl.xml", MessageProperties.CONTENT_TYPE_XML, SAMU069_ROUTING_KEY);
-        receivedMessage.getMessageProperties().setReceivedDeliveryMode(MessageDeliveryMode.PERSISTENT);
         dispatcher.dispatch(receivedMessage);
 
         // assert that the message was sent to the right exchange with the right routing key exactly 1 time

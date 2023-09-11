@@ -11,13 +11,11 @@ import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
-import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.UUID;
 
 import static com.hubsante.hub.config.AmqpConfiguration.*;
 import static com.hubsante.hub.utils.EdxlUtils.edxlMessageFromHub;
@@ -27,16 +25,14 @@ import static com.hubsante.hub.utils.EdxlUtils.edxlMessageFromHub;
 public class Dispatcher {
     private final RabbitTemplate rabbitTemplate;
     private final EdxlHandler edxlHandler;
-    private final ContentMessageHandler useCaseHandler;
     private final HubClientConfiguration hubConfig;
     private final Validator validator;
 
     private static final String HEALTH_PREFIX = "fr.health";
 
-    public Dispatcher(RabbitTemplate rabbitTemplate, EdxlHandler edxlHandler, ContentMessageHandler useCaseHandler, HubClientConfiguration hubConfig, Validator validator) {
+    public Dispatcher(RabbitTemplate rabbitTemplate, EdxlHandler edxlHandler, HubClientConfiguration hubConfig, Validator validator) {
         this.rabbitTemplate = rabbitTemplate;
         this.edxlHandler = edxlHandler;
-        this.useCaseHandler = useCaseHandler;
         this.hubConfig = hubConfig;
         this.validator = validator;
     }
@@ -47,7 +43,7 @@ public class Dispatcher {
             // Deserialize the message according to its content type
             EdxlMessage edxlMessage = deserializeMessage(message);
             // Reject the message if the sender is not consistent with the routing key
-            checkSenderConsistency(getSenderID(message), edxlMessage);
+            checkSenderConsistency(getSenderFromRoutingKey(message), edxlMessage);
             // Reject the message if the delivery mode is not PERSISTENT
             checkDeliveryModeIsPersistent(message, edxlMessage.getDistributionID());
             // Forward the message according to the recipient preferences. Conversion JSON <-> XML can happen here
@@ -88,7 +84,7 @@ public class Dispatcher {
     }
 
     private void logErrorAndSendReport(ErrorReport errorReport, String sender) {
-        String infoQueueName = sender + ".info";
+        String infoQueueName = getInfoQueueNameFromRecipient(sender);
         // log error
         // TODO bbo : add a logback pattern to allow structured logging
         log.error(
@@ -163,8 +159,12 @@ public class Dispatcher {
         return getRecipientID(edxlMessage) + "." + queueType;
     }
 
-    private String getSenderID(Message message) {
+    private String getSenderFromRoutingKey(Message message) {
         return message.getMessageProperties().getReceivedRoutingKey();
+    }
+
+    private String getInfoQueueNameFromRecipient(String recipientID) {
+        return recipientID + ".info";
     }
 
     /*
@@ -239,7 +239,7 @@ public class Dispatcher {
 
     private Message getFwdMessageBody(EdxlMessage edxlMessage, Message receivedAmqpMessage, MessageProperties fwdAmqpProperties) {
         String recipientID = getRecipientID(edxlMessage);
-        String senderID = getSenderID(receivedAmqpMessage);
+        String senderID = getSenderFromRoutingKey(receivedAmqpMessage);
         String edxlString;
 
         try {
@@ -253,7 +253,7 @@ public class Dispatcher {
             log.info("  ↳ [x] Forwarding to '" + recipientID + "': message with distributionID " + edxlMessage.getDistributionID());
             log.debug(edxlString);
 
-            fwdAmqpProperties.setHeader(DLQ_ORIGINAL_ROUTING_KEY, getSenderID(receivedAmqpMessage));
+            fwdAmqpProperties.setHeader(DLQ_ORIGINAL_ROUTING_KEY, senderID);
             return new Message(edxlString.getBytes(StandardCharsets.UTF_8), fwdAmqpProperties);
 
         } catch (JsonProcessingException e) {
