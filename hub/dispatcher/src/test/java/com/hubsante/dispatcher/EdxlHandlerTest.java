@@ -65,9 +65,11 @@ public class EdxlHandlerTest {
         CreateCaseMessage createCaseMessage = edxlMessage
                 .getContent().getContentObject().getContentWrapper().getEmbeddedContent().getMessage();
 
+
         assertEquals(
                 "Céphalée, migraines, Traumatisme sérieux, plaie intermédiaire",
                 createCaseMessage
+                        .getCreateCaseEvent()
                         .getInitialAlert()
                         .getAlertCode()
                         .getHealthMotive()
@@ -105,7 +107,7 @@ public class EdxlHandlerTest {
         // deserialization method does not throw error
         assertDoesNotThrow(() -> converter.deserializeJsonEDXL(json));
         // validation does
-        assertThrows(SchemaValidationException.class, () -> validator.validateJSON(json, "edxl.json"));
+        assertThrows(SchemaValidationException.class, () -> validator.validateJSON(json, "EDXL-DE_schema.json"));
     }
 
     @Test
@@ -117,7 +119,7 @@ public class EdxlHandlerTest {
         // deserialization method does not throw error
         assertDoesNotThrow(() -> converter.deserializeJsonEDXL(json));
         // neither validation because envelope is ok
-        assertDoesNotThrow(() -> validator.validateJSON(json, "edxl.json"));
+        assertDoesNotThrow(() -> validator.validateJSON(json, "EDXL-DE_schema.json"));
     }
 
     private String xmlPrefix() {

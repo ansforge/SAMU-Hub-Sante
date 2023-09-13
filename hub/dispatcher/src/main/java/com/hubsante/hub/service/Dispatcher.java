@@ -178,7 +178,7 @@ public class Dispatcher {
             // We deserialize according to the content type
             // It MUST be explicitly set by the client
             if (message.getMessageProperties().getContentType().equals(MessageProperties.CONTENT_TYPE_JSON)) {
-                validator.validateJSON(receivedEdxl, "edxl.json");
+                validator.validateJSON(receivedEdxl, "EDXL-DE_schema.json");
                 edxlMessage = edxlHandler.deserializeJsonEDXL(receivedEdxl);
                 validator.validateContentMessage(edxlMessage, false);
 

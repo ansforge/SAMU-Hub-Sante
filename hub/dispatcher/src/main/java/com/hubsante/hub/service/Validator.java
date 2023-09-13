@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hubsante.hub.exception.JsonSchemaValidationException;
 import com.hubsante.hub.exception.SchemaValidationException;
+import com.hubsante.model.cisu.CreateCaseEvent;
 import com.hubsante.model.edxl.ContentMessage;
 import com.hubsante.model.edxl.EdxlMessage;
 import com.networknt.schema.JsonSchema;
@@ -42,21 +43,21 @@ public class Validator {
                 .getContent().getContentObject().getContentWrapper().getEmbeddedContent().getMessage();
         validateContentMessage(contentMessage, isXML);
     }
-    public void validateContentMessage(ContentMessage useCaseMessage, boolean isXML)
+    public void validateContentMessage(ContentMessage contentMessage, boolean isXML)
             throws IOException {
-        UseCaseEnum useCase = UseCaseEnum.getByValue(useCaseMessage.getClass().getSimpleName());
+        UseCaseEnum useCase = UseCaseEnum.getByValue(contentMessage.getClass().getSimpleName());
 
         switch (useCase) {
             case CREATE_CASE:
                 if (isXML) {
                     validateXML(
-                            contentMessageHandler.serializeXmlMessage(useCaseMessage),
+                            contentMessageHandler.serializeXmlMessage(contentMessage),
                             "cisu/createCase.xsd");
                     break;
                 }
                 validateJSON(
-                        contentMessageHandler.serializeJsonMessage(useCaseMessage),
-                        "createCase_schema.json");
+                        contentMessageHandler.serializeJsonMessage(contentMessage),
+                        "RC-DE_schema.json");
                 break;
             //TODO bbo: generate json-schema & xsd for ACK and REPORT
             case CUSTOM:
@@ -66,11 +67,11 @@ public class Validator {
             default:
                 if (isXML) {
                     log.error("Can't validate against XSD : class {} has no specified xsd spec",
-                            useCaseMessage.getClass().getSimpleName());
+                            contentMessage.getClass().getSimpleName());
                     break;
                 }
                 log.error("Can't validate against Json-schema : class {} has no specified schema",
-                        useCaseMessage.getClass().getSimpleName());
+                        contentMessage.getClass().getSimpleName());
                 break;
         }
     }
@@ -111,7 +112,7 @@ public class Validator {
 
     public enum UseCaseEnum {
         CREATE_CASE("CreateCaseMessage"),
-        GENERIC_ACK("GenericAckMessage"),
+        GENERIC_ACK("CisuAckMessage"),
         CUSTOM("CustomMessage"),
         ERROR_REPORT("ErrorReport"),
         UNKNOWN("Unknown");
