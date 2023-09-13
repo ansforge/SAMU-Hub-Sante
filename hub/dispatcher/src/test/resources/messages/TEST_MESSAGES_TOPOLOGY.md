@@ -6,16 +6,15 @@ These messages are written in json & xml to test both interfaces. Here is a brei
 
 <u>*Passing cases*:</u>
 
-[createCaseEdxl.json](valid/edxl_encapsulated/createCaseEdxl.json) and [createCaseEdxl.xml](valid/edxl_encapsulated/createCaseEdxl.xml) - A passing createCase message encapsulated in an EDXL-DE wrapper.
+[samuA_to_nexsis.json](valid/edxl_encapsulated/samuA_to_nexsis.json) - A passing json EDXL to serve as a template for several tests (on TTL, DLQs, etc)
+
+[samuB_to_nexsis.xml](valid/edxl_encapsulated/samuB_to_nexsis.xml) - A passing xml EDXL to serve as a template for several tests (on TTL, DLQs, etc)
+
+[samuA_to_nexsis.xml](valid/edxl_encapsulated/samuA_to_nexsis.xml) - A passing xml EDXL with samuA sender to test sending with samuB routing key, in xml (samuB language)
 
 [createCaseMessage.json](valid/create_case/createCaseMessage.json) and [createCaseMessage.xml](valid/create_case/createCaseMessage.xml) - A passing createCase message (ContentMessage only, for Use case testing purposes).
 
 [genericMessage.json](valid/edxl_encapsulated/genericMessage.json) - A custom message encapsulated in an EDXL-DE wrapper, to test that the Custom Message can be deserialized
-
-[samuA_to_nexsis.xml](valid/edxl_encapsulated/samuA_to_nexsis.xml) - A passing EDXL with samuA sender to test sending with samuB routing key
-
-[samuB_to_nexsis.xml](valid/edxl_encapsulated/samuB_to_nexsis.xml) - A passing EDXL to serve as a template for several tests (on TTL, DLQs, etc)
-
 
 <u>*Failing deserialization*:</u>
 

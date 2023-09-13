@@ -53,10 +53,10 @@ public class EdxlHandlerTest {
     @DisplayName("should deserialize Json EDXL - Cisu Create")
     public void deserializeCreateJsonEDXL() throws IOException {
 
-        File edxlCisuCreateFile = new File(classLoader.getResource("messages/valid/edxl_encapsulated/createCaseEdxl.json").getFile());
+        File edxlCisuCreateFile = new File(classLoader.getResource("messages/valid/edxl_encapsulated/samuA_to_nexsis.json").getFile());
         EdxlMessage edxlMessage = converter.deserializeJsonEDXL(Files.readString(edxlCisuCreateFile.toPath()));
 
-        assertEquals("fr.health.samu069", edxlMessage.getSenderID());
+        assertEquals("fr.health.samuA", edxlMessage.getSenderID());
         assertEquals(
                 OffsetDateTime.parse("2022-07-25T10:04:34+01:00"),
                 edxlMessage.getDateTimeSent()
@@ -78,7 +78,7 @@ public class EdxlHandlerTest {
     @Test
     @DisplayName("should serialize XML EDXL - Cisu Create")
     public void serializeCreateXmlEDXL() throws IOException {
-        File edxlCisuCreateFile = new File(classLoader.getResource("messages/valid/edxl_encapsulated/createCaseEdxl.json").getFile());
+        File edxlCisuCreateFile = new File(classLoader.getResource("messages/valid/edxl_encapsulated/samuA_to_nexsis.json").getFile());
         String json = Files.readString(edxlCisuCreateFile.toPath());
         EdxlMessage edxlMessage = converter.deserializeJsonEDXL(json);
 
