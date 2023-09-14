@@ -9,7 +9,7 @@
     "language": "fr-FR",
     "explicitAddress": {
       "explicitAddressScheme": "hubex",
-      "explicitAddressValue": "fr.fire.nexsis.sdis23"
+      "explicitAddressValue": "fr.fire.nexsis.sdisZ"
     }
   },
   "content": {
@@ -27,8 +27,8 @@
             "status": "Actual",
             "recipients": [
               {
-                "name": "sdis23",
-                "URI": "hubex:fr.fire.nexsis.sdis23"
+                "name": "sdisZ",
+                "URI": "hubex:fr.fire.nexsis.sdisZ"
               }
             ],
             "createCaseEvent": {
@@ -51,7 +51,13 @@
                     "callerFirstName": "Louise"
                   }
                 },
-                "alertLocation": {},
+                "alertLocation": {
+                  "locID": "BA-15478-21455789",
+                  "locLabel": "devanture",
+                  "name": "Quai des Célestins",
+                  "country": "France",
+                  "freetext": "Devant la boulangerie Quai des Célestin"
+                },
                 "alertCode": {
                   "cisuVersion": "1.19",
                   "whatsHappen": {
@@ -106,13 +112,13 @@
               },
               "caseLocation": {
                 "locID": "BA-15478-21455789",
-                "locLabel": null,
+                "locLabel": "devanture",
                 "name": "Quai des Célestins",
                 "address": {
                   "complete": "8 quai des Célestins",
                   "number": "8",
                   "wayName": {
-                    "complete": null,
+                    "complete": "Quai des Célestins",
                     "type": "Quai",
                     "name": "des Célestins"
                   }
@@ -150,7 +156,7 @@
                 "link": [
                   {
                     "source": "BAN",
-                    "type": null,
+                    "type": "check_type",
                     "id": "id1234"
                   }
                 ],

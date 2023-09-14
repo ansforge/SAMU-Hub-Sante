@@ -111,7 +111,7 @@ public class EdxlHandlerTest {
     }
 
     @Test
-    @DisplayName("validation does not fail if envelope is ok and content is not")
+    @DisplayName("envelope and header validation do not fail if envelope is ok and content is not")
     public void edxlValidationSucceedsWithWrongJsonContent() throws IOException {
         File edxlCisuCreateFile = new File(classLoader.getResource("messages/invalid/invalidCreateMessageValidEdxlEnvelope.json").getFile());
         String json = Files.readString(edxlCisuCreateFile.toPath());
@@ -120,6 +120,8 @@ public class EdxlHandlerTest {
         assertDoesNotThrow(() -> converter.deserializeJsonEDXL(json));
         // neither validation because envelope is ok
         assertDoesNotThrow(() -> validator.validateJSON(json, "EDXL-DE_schema.json"));
+        CreateCaseMessage createCaseMessage = (CreateCaseMessage) converter.deserializeJsonContentMessage(json);
+        assertThrows(SchemaValidationException.class, () -> validator.validateContentMessage(createCaseMessage, false));
     }
 
     private String xmlPrefix() {

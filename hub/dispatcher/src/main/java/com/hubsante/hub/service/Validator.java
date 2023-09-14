@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hubsante.hub.exception.JsonSchemaValidationException;
 import com.hubsante.hub.exception.SchemaValidationException;
 import com.hubsante.model.cisu.CreateCaseEvent;
+import com.hubsante.model.cisu.CreateCaseMessage;
 import com.hubsante.model.edxl.ContentMessage;
 import com.hubsante.model.edxl.EdxlMessage;
 import com.networknt.schema.JsonSchema;
@@ -58,6 +59,8 @@ public class Validator {
                 validateJSON(
                         contentMessageHandler.serializeJsonMessage(contentMessage),
                         "RC-DE_schema.json");
+                validateJSON(contentMessageHandler.serializeJsonCreateCaseEvent((CreateCaseMessage) contentMessage),
+                        "RC-EDA_schema.json");
                 break;
             //TODO bbo: generate json-schema & xsd for ACK and REPORT
             case CUSTOM:

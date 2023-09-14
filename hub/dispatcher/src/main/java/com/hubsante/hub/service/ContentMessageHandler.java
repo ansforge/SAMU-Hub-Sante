@@ -3,6 +3,8 @@ package com.hubsante.hub.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import com.hubsante.model.cisu.CreateCaseEvent;
+import com.hubsante.model.cisu.CreateCaseMessage;
 import com.hubsante.model.edxl.ContentMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +24,11 @@ public class ContentMessageHandler {
 
     public String serializeJsonMessage(ContentMessage message) throws JsonProcessingException {
         return jsonMapper.writeValueAsString(message);
+    }
+
+    public String serializeJsonCreateCaseEvent(CreateCaseMessage message) throws JsonProcessingException {
+        CreateCaseEvent createCaseEvent = message.getCreateCaseEvent();
+        return jsonMapper.writeValueAsString(createCaseEvent);
     }
 
     public String serializeXmlMessage(ContentMessage message) throws JsonProcessingException {

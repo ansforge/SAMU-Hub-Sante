@@ -59,7 +59,7 @@ public class ContentMessageHandlerTest {
         String xml = converter.serializeXmlMessage(deserializedJsonMessage);
         System.out.println(xml);
         // check String deserialization
-        assertEquals("SAMU069-20230725-AF1234", createCaseEvent.getCaseId());
+        assertEquals("SAMUA-20230725-AF1234", createCaseEvent.getCaseId());
         // check date time deserialization
         assertEquals(OffsetDateTime.parse("2022-07-25T10:03:34+01:00"), createCaseEvent.getCreatedAt());
         // check number deserialization
