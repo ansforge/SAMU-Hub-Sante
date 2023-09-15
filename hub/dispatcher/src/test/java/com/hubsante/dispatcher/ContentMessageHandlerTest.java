@@ -2,7 +2,8 @@ package com.hubsante.dispatcher;
 
 import com.hubsante.hub.HubApplication;
 import com.hubsante.hub.exception.JsonSchemaValidationException;
-import com.hubsante.hub.service.UseCaseMessageHandler;
+import com.hubsante.hub.exception.SchemaValidationException;
+import com.hubsante.hub.service.ContentMessageHandler;
 import com.hubsante.hub.service.Validator;
 import com.hubsante.model.cisu.CreateCaseMessage;
 import lombok.extern.slf4j.Slf4j;
@@ -15,7 +16,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.xml.sax.SAXException;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,10 +31,10 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootConfiguration
 @ContextConfiguration(classes = HubApplication.class)
 @SpringRabbitTest
-public class UseCaseMessageHandlerTest {
+public class ContentMessageHandlerTest {
 
     @Autowired
-    private UseCaseMessageHandler converter;
+    private ContentMessageHandler converter;
 
     @Autowired
     private Validator validator;
@@ -51,7 +51,7 @@ public class UseCaseMessageHandlerTest {
     @DisplayName("should deserialize JSON CreateCaseMessage")
     public void deserializeJSONCreateCaseMessage() throws IOException {
         // deserialize JSON message
-        File cisuJsonFile = new File(classLoader.getResource("messages/createCaseMessage.json").getFile());
+        File cisuJsonFile = new File(classLoader.getResource("messages/valid/create_case/createCaseMessage.json").getFile());
         CreateCaseMessage deserializedJsonMessage = (CreateCaseMessage) converter.deserializeJsonMessage(Files.readString(cisuJsonFile.toPath()));
 
         String xml = converter.serializeXmlMessage(deserializedJsonMessage);
@@ -70,7 +70,7 @@ public class UseCaseMessageHandlerTest {
     @DisplayName("should deserialize XML CreateCaseMessage")
     public void deserializeXMLCreateCaseMessage() throws IOException {
         // deserialize XML message
-        File cisuXmlFile = new File(classLoader.getResource("messages/createCaseMessage.xml").getFile());
+        File cisuXmlFile = new File(classLoader.getResource("messages/valid/create_case/createCaseMessage.xml").getFile());
         CreateCaseMessage deserializedXmlMessage = (CreateCaseMessage) converter.deserializeXmlMessage(Files.readString(cisuXmlFile.toPath()));
 
         // check String deserialization
@@ -87,7 +87,7 @@ public class UseCaseMessageHandlerTest {
     @DisplayName("should serialize JSON CreateCaseMessage")
     public void serializeJSONCreateCaseMessage() throws IOException {
         // deserialize JSON message
-        File cisuJsonFile = new File(classLoader.getResource("messages/createCaseMessage.json").getFile());
+        File cisuJsonFile = new File(classLoader.getResource("messages/valid/create_case/createCaseMessage.json").getFile());
         CreateCaseMessage deserializedJsonMessage = (CreateCaseMessage) converter.deserializeJsonMessage(Files.readString(cisuJsonFile.toPath()));
 
         // serialize JSON message
@@ -98,7 +98,7 @@ public class UseCaseMessageHandlerTest {
     @DisplayName("should serialize XML CreateCaseMessage")
     public void serializeXMLCreateCaseMessage() throws IOException {
         // deserialize XML message
-        File cisuXmlFile = new File(classLoader.getResource("messages/createCaseMessage.xml").getFile());
+        File cisuXmlFile = new File(classLoader.getResource("messages/valid/create_case/createCaseMessage.xml").getFile());
         CreateCaseMessage deserializedXmlMessage = (CreateCaseMessage) converter.deserializeXmlMessage(Files.readString(cisuXmlFile.toPath()));
 
         // serialize XML message
@@ -108,22 +108,22 @@ public class UseCaseMessageHandlerTest {
     @Test
     @DisplayName("missing required fields fails validation")
     public void missingRequiredFieldsValidationFails() throws IOException {
-        File cisuJsonFile = new File(classLoader.getResource("messages/missingRequiredCreateMessage.json").getFile());
+        File cisuJsonFile = new File(classLoader.getResource("messages/invalid/create_case/missingRequiredFieldCreateMessage.json").getFile());
 
         assertDoesNotThrow(() -> converter.deserializeJsonMessage(Files.readString(cisuJsonFile.toPath())));
 
         // TODO bbo : check python script, required fields ar not set in json-schema
-//        assertThrows(JsonSchemaValidationException.class, () -> validator.validateUseCaseMessage(
-//                converter.deserializeJsonMessage(Files.readString(cisuJsonFile.toPath())), false));
+        assertThrows(SchemaValidationException.class, () -> validator.validateContentMessage(
+                converter.deserializeJsonMessage(Files.readString(cisuJsonFile.toPath())), false));
         // TODO bbo : uncomment next assertion when xsd will be ready
-//        assertThrows(SAXException.class, () -> validator.validateUseCaseMessage(
+//        assertThrows(SAXException.class, () -> validator.validateContentMessage(
 //                converter.deserializeXmlMessage(Files.readString(cisuJsonFile.toPath())), true));
     }
 
     @Test
     @DisplayName("should convert message from JSON to XML to JSON")
     public void endToEndConversionTest() throws IOException {
-        File cisuJsonFile = new File(classLoader.getResource("messages/createCaseMessage.json").getFile());
+        File cisuJsonFile = new File(classLoader.getResource("messages/valid/create_case/createCaseMessage.json").getFile());
 
         String json = Files.readString(cisuJsonFile.toPath());
         CreateCaseMessage initialJSON = (CreateCaseMessage) converter.deserializeJsonMessage(json);
@@ -132,9 +132,9 @@ public class UseCaseMessageHandlerTest {
         CreateCaseMessage xmlConverted = (CreateCaseMessage) converter.deserializeXmlMessage(xml);
 
         assertEquals(initialJSON, xmlConverted);
-        assertDoesNotThrow(() -> validator.validateUseCaseMessage(initialJSON, false));
+        assertDoesNotThrow(() -> validator.validateContentMessage(initialJSON, false));
         // TODO bbo : uncomment next assertion when xsd will be ready
-//        assertDoesNotThrow(() -> validator.validateUseCaseMessage(xmlConverted, true));
+//        assertDoesNotThrow(() -> validator.validateContentMessage(xmlConverted, true));
     }
 
 }

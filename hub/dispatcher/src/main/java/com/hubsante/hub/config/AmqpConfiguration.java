@@ -16,7 +16,7 @@ public class AmqpConfiguration {
     public static final String DISPATCH_DLQ_NAME = "dispatch.dlq";
     public static final String DISTRIBUTION_DLX = "distribution.dlx";
     public static final String DLQ_REASON = "x-first-death-reason";
-    public static final String DLQ_MESSAGE_ORIGIN = "x-first-death-queue";
+    public static final String DLQ_ORIGINAL_ROUTING_KEY = "x-death-original-routing-key";
 
     private final CachingConnectionFactory connectionFactory;
 

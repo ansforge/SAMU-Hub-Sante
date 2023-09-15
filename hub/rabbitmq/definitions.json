@@ -1108,7 +1108,7 @@
       "definition": {
         "message-ttl": 86400000,
         "dead-letter-exchange": "distribution.dlx"
-      },
+      }
       "priority": 0
     }
   ]

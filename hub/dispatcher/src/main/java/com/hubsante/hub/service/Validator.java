@@ -3,13 +3,15 @@ package com.hubsante.hub.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hubsante.hub.exception.JsonSchemaValidationException;
+import com.hubsante.hub.exception.SchemaValidationException;
+import com.hubsante.model.edxl.ContentMessage;
 import com.hubsante.model.edxl.EdxlMessage;
-import com.hubsante.model.edxl.UseCaseMessage;
 import com.networknt.schema.JsonSchema;
 import com.networknt.schema.JsonSchemaFactory;
 import com.networknt.schema.SpecVersion;
 import com.networknt.schema.ValidationMessage;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.xml.sax.SAXException;
@@ -33,24 +35,33 @@ public class Validator {
     private ObjectMapper jsonMapper;
 
     @Autowired
-    private UseCaseMessageHandler useCaseMessageHandler;
+    private ContentMessageHandler contentMessageHandler;
 
-    public void validateUseCaseMessage(UseCaseMessage useCaseMessage, boolean isXML)
-            throws IOException, JsonSchemaValidationException, SAXException {
+    public void validateContentMessage(EdxlMessage edxlMessage, boolean isXML) throws IOException {
+        ContentMessage contentMessage = edxlMessage
+                .getContent().getContentObject().getContentWrapper().getEmbeddedContent().getMessage();
+        validateContentMessage(contentMessage, isXML);
+    }
+    public void validateContentMessage(ContentMessage useCaseMessage, boolean isXML)
+            throws IOException {
         UseCaseEnum useCase = UseCaseEnum.getByValue(useCaseMessage.getClass().getSimpleName());
 
         switch (useCase) {
             case CREATE_CASE:
                 if (isXML) {
                     validateXML(
-                            useCaseMessageHandler.serializeXmlMessage(useCaseMessage),
-                            "cisu/cisu.xsd");
+                            contentMessageHandler.serializeXmlMessage(useCaseMessage),
+                            "cisu/createCase.xsd");
                     break;
                 }
                 validateJSON(
-                        useCaseMessageHandler.serializeJsonMessage(useCaseMessage),
+                        contentMessageHandler.serializeJsonMessage(useCaseMessage),
                         "createCase_schema.json");
                 break;
+            //TODO bbo: generate json-schema & xsd for ACK and REPORT
+            case CUSTOM:
+            case GENERIC_ACK:
+            case ERROR_REPORT:
             case UNKNOWN:
             default:
                 if (isXML) {
@@ -64,9 +75,15 @@ public class Validator {
         }
     }
 
-    public void validateXML(String message, String xsdFile) throws SAXException, IOException {
-        javax.xml.validation.Validator validator = initValidator(xsdFile);
-        validator.validate(new StreamSource(new StringReader(message)));
+    public void validateXML(String message, String xsdFile) throws IOException {
+        try {
+            javax.xml.validation.Validator validator = initValidator(xsdFile);
+            validator.validate(new StreamSource(new StringReader(message)));
+        } catch (SAXException e) {
+            // TODO bbo: check what message is wrapped by SAXException
+            throw new SchemaValidationException("Could not validate message against schema : errors occurred. \n" + e.getMessage());
+        }
+
     }
 
     private javax.xml.validation.Validator initValidator(String xsdPath) throws SAXException {
@@ -76,7 +93,7 @@ public class Validator {
         return schema.newValidator();
     }
 
-    public void validateJSON(String message, String jsonSchemaFile) throws IOException, JsonSchemaValidationException {
+    public void validateJSON(String message, String jsonSchemaFile) throws IOException {
         JsonSchemaFactory factory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7);
         JsonSchema jsonSchema = factory.getSchema(Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream("json-schema/" + jsonSchemaFile));
@@ -88,12 +105,15 @@ public class Validator {
             for (ValidationMessage errorMsg : validationMessages) {
                 errors.append(errorMsg.getMessage()).append("\n");
             }
-            throw new JsonSchemaValidationException(errors.toString());
+            throw new SchemaValidationException("Could not validate message against schema : errors occurred. \n" + errors);
         }
     }
 
     public enum UseCaseEnum {
         CREATE_CASE("CreateCaseMessage"),
+        GENERIC_ACK("GenericAckMessage"),
+        CUSTOM("CustomMessage"),
+        ERROR_REPORT("ErrorReport"),
         UNKNOWN("Unknown");
 
         private String clazzName;
