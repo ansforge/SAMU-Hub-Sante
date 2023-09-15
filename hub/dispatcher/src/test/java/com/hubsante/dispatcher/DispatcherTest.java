@@ -307,7 +307,10 @@ public class DispatcherTest {
         ErrorReport errorReport = getErrorReportFromMessage(converter, argument);
         assertEquals(errorCode, errorReport.getErrorCode());
         if (errorCause != null) {
-            Arrays.stream(errorCause).forEach(cause -> assertTrue(errorReport.getErrorCause().contains(cause)));
+            Arrays.stream(errorCause).forEach(cause -> {
+                log.error(errorReport.getErrorCause());
+                assertTrue(errorReport.getErrorCause().contains(cause));
+            });
         }
     }
 }

@@ -1,11 +1,10 @@
 package com.hubsante.dispatcher;
 
 import com.hubsante.hub.HubApplication;
-import com.hubsante.hub.exception.JsonSchemaValidationException;
 import com.hubsante.hub.exception.SchemaValidationException;
 import com.hubsante.hub.service.ContentMessageHandler;
 import com.hubsante.hub.service.Validator;
-import com.hubsante.model.cisu.CreateCaseEvent;
+import com.hubsante.model.cisu.CreateCase;
 import com.hubsante.model.cisu.CreateCaseMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
@@ -54,18 +53,18 @@ public class ContentMessageHandlerTest {
         // deserialize JSON message
         File cisuJsonFile = new File(classLoader.getResource("messages/valid/create_case/createCaseMessage.json").getFile());
         CreateCaseMessage deserializedJsonMessage = (CreateCaseMessage) converter.deserializeJsonMessage(Files.readString(cisuJsonFile.toPath()));
-        CreateCaseEvent createCaseEvent = deserializedJsonMessage.getCreateCaseEvent();
+        CreateCase createCase = deserializedJsonMessage.getCreateCase();
 
         String xml = converter.serializeXmlMessage(deserializedJsonMessage);
         System.out.println(xml);
         // check String deserialization
-        assertEquals("SAMUA-20230725-AF1234", createCaseEvent.getCaseId());
+        assertEquals("SAMUA-20230725-AF1234", createCase.getCaseId());
         // check date time deserialization
-        assertEquals(OffsetDateTime.parse("2022-07-25T10:03:34+01:00"), createCaseEvent.getCreatedAt());
+        assertEquals(OffsetDateTime.parse("2022-07-25T10:03:34+01:00"), createCase.getCreatedAt());
         // check number deserialization
-        assertEquals(BigDecimal.valueOf(237), createCaseEvent.getCaseLocation().getGeometry().getPoint().getCoord().getHeight());
+        assertEquals(BigDecimal.valueOf(237), createCase.getCaseLocation().getGeometry().getPoint().getCoord().getHeight());
         // check list deserialization
-//        assertEquals(2, createCaseEvent.getCasualties().size());
+//        assertEquals(2, createCase.getCasualties().size());
     }
 
     @Test
@@ -74,14 +73,14 @@ public class ContentMessageHandlerTest {
         // deserialize XML message
         File cisuXmlFile = new File(classLoader.getResource("messages/valid/create_case/createCaseMessage.xml").getFile());
         CreateCaseMessage deserializedXmlMessage = (CreateCaseMessage) converter.deserializeXmlMessage(Files.readString(cisuXmlFile.toPath()));
-        CreateCaseEvent createCaseEvent = deserializedXmlMessage.getCreateCaseEvent();
+        CreateCase createCase = deserializedXmlMessage.getCreateCase();
 
         // check String deserialization
-        assertEquals("SAMU069-20230725-AF1234", createCaseEvent.getCaseId());
+        assertEquals("SAMU069-20230725-AF1234", createCase.getCaseId());
         // check date time deserialization
-        assertEquals(OffsetDateTime.parse("2022-07-25T10:03:34+01:00"), createCaseEvent.getCreatedAt());
+        assertEquals(OffsetDateTime.parse("2022-07-25T10:03:34+01:00"), createCase.getCreatedAt());
         // check number deserialization
-        assertEquals(BigDecimal.valueOf(237), createCaseEvent.getCaseLocation().getGeometry().getPoint().getCoord().getHeight());
+        assertEquals(BigDecimal.valueOf(237), createCase.getCaseLocation().getGeometry().getPoint().getCoord().getHeight());
         // check list deserialization
 //        assertEquals(2, deserializedXmlMessage.getCasualties().size());
     }

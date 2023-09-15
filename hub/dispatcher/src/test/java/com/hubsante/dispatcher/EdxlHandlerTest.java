@@ -69,7 +69,7 @@ public class EdxlHandlerTest {
         assertEquals(
                 "Céphalée, migraines, Traumatisme sérieux, plaie intermédiaire",
                 createCaseMessage
-                        .getCreateCaseEvent()
+                        .getCreateCase()
                         .getInitialAlert()
                         .getAlertCode()
                         .getHealthMotive()

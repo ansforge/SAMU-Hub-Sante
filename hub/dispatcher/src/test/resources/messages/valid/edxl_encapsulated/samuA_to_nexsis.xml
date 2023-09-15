@@ -32,7 +32,7 @@
                                 <URI>hubex:fr.fire.nexsis.sdisZ</URI>
                             </recipient>
                         </recipients>
-                        <createCaseEvent>
+                        <createCase>
                             <caseId>SAMU069-20230725-AF1234</caseId>
                             <senderCaseId>SAMU069-20230725-AF1234</senderCaseId>
                             <createdAt>2022-07-25T10:03:34+01:00</createdAt>
@@ -162,7 +162,7 @@
                                 </customMap>
                             </additionalInformation>
                             <freetext>choc à la tête mais portait un casque de protection. 2ème victime n'a pas de blessures apparantes.</freetext>
-                        </createCaseEvent>
+                        </createCase>
                     </message>
                 </embeddedXMLContent>
             </contentXML>

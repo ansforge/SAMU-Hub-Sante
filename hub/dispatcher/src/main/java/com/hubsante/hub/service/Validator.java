@@ -2,9 +2,8 @@ package com.hubsante.hub.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hubsante.hub.exception.JsonSchemaValidationException;
 import com.hubsante.hub.exception.SchemaValidationException;
-import com.hubsante.model.cisu.CreateCaseEvent;
+import com.hubsante.model.cisu.CreateCase;
 import com.hubsante.model.cisu.CreateCaseMessage;
 import com.hubsante.model.edxl.ContentMessage;
 import com.hubsante.model.edxl.EdxlMessage;
@@ -13,7 +12,6 @@ import com.networknt.schema.JsonSchemaFactory;
 import com.networknt.schema.SpecVersion;
 import com.networknt.schema.ValidationMessage;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.xml.sax.SAXException;
@@ -59,7 +57,7 @@ public class Validator {
                 validateJSON(
                         contentMessageHandler.serializeJsonMessage(contentMessage),
                         "RC-DE_schema.json");
-                validateJSON(contentMessageHandler.serializeJsonCreateCaseEvent((CreateCaseMessage) contentMessage),
+                validateJSON(contentMessageHandler.serializeJsonCreateCase((CreateCaseMessage) contentMessage),
                         "RC-EDA_schema.json");
                 break;
             //TODO bbo: generate json-schema & xsd for ACK and REPORT
