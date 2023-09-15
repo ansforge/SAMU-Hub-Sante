@@ -119,7 +119,7 @@ public class Dispatcher {
         if (!recipientID.startsWith(HEALTH_PREFIX)) {
             return true;
         }
-        // for reception, use client preference (default to JSON)
+        // sending message to health clients is based on client preference (default to JSON)
         return hubConfig.getClientPreferences().get(recipientID) != null
                         && hubConfig.getClientPreferences().get(recipientID);
     }
