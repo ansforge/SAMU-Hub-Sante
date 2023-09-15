@@ -17,13 +17,13 @@ public class EdxlUtilsTest {
 
         EdxlMessage edxlMessage = EdxlUtils.edxlMessageFromHub(recipientId, null);
 
-        assertTrue(edxlMessage.getDistributionID().startsWith("fr.health.hubsante_"));
-        assertEquals(edxlMessage.getSenderID(), "fr.health.hubsante");
+        assertTrue(edxlMessage.getDistributionID().startsWith("fr.health.hub_"));
+        assertEquals(edxlMessage.getSenderID(), "fr.health.hub");
         assertEquals(edxlMessage.getDateTimeSent().plusDays(1), edxlMessage.getDateTimeExpires());
         assertEquals(DistributionStatus.ACTUAL, edxlMessage.getDistributionStatus());
         assertEquals(DistributionKind.ERROR, edxlMessage.getDistributionKind());
         assertEquals("fr-FR", edxlMessage.getDescriptor().getLanguage());
-        assertEquals("hubsante", edxlMessage.getDescriptor().getExplicitAddress().getExplicitAddressScheme());
+        assertEquals("hubex", edxlMessage.getDescriptor().getExplicitAddress().getExplicitAddressScheme());
         assertEquals(recipientId, edxlMessage.getDescriptor().getExplicitAddress().getExplicitAddressValue());
     }
 }

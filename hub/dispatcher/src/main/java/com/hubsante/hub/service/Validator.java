@@ -52,8 +52,8 @@ public class Validator {
             case CREATE_CASE:
                 if (isXML) {
                     validateXML(
-                            contentMessageHandler.serializeXmlMessage(contentMessage),
-                            "cisu/createCase.xsd");
+                        contentMessageHandler.serializeXmlMessage(contentMessage),
+                        "cisu/createCase.xsd");
                     break;
                 }
                 validateJSON(

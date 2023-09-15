@@ -130,6 +130,12 @@ public class DispatcherTest {
     @DisplayName("should send Json message to the right exchange and routing key")
     public void shouldDispatchJsonToRightExchange() throws IOException {
         Message receivedMessage = createMessage("valid/edxl_encapsulated/samuA_to_nexsis.json", SAMU_A_ROUTING_KEY);
+    }
+
+    @Test
+    @DisplayName("should send message to the right exchange and routing key")
+    public void shouldDispatchToRightExchange() throws IOException {
+        Message receivedMessage = createMessage("valid/edxl_encapsulated/samuB_to_nexsis.xml", MessageProperties.CONTENT_TYPE_XML, SAMU_B_ROUTING_KEY);
         dispatcher.dispatch(receivedMessage);
 
         // assert that the message was sent to the right exchange with the right routing key exactly 1 time
