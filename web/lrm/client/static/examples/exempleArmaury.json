@@ -18,7 +18,55 @@
                 "callerFirstName": "Albane"
             }
         },
-        "alertLocation": {},
+        "alertLocation": {
+          "locID": "SAMU069-20230725-LOC1234",
+          "locLabel": "8 quai des Célestins, 69002 Lyon",
+          "name": "Quai des Célestins",
+          "address": {
+            "complete": "8 quai des Célestins",
+            "number": "8",
+            "wayName": {
+              "complete": "quai des Célestins",
+              "type": "quai",
+              "name": "des Célestins"
+            }
+          },
+          "city": {
+            "name": "Lyon",
+            "inseeCode": 69002,
+            "detail": ""
+          },
+          "access": {
+            "floor": "None",
+            "roomNumber": "None",
+            "interphone": "None",
+            "accessCode": [
+              "None"
+            ],
+            "elevator": "None",
+            "buildingName": "None",
+            "entrance": "None",
+            "entity": "None"
+          },
+          "geometry": {
+            "point": {
+              "coord": {
+                "lat": 45.7602368,
+                "lon": 4.8310551,
+                "height": "237" ,
+                "heading": "None",
+                "speed": "None",
+                "time": "2022-07-25T10:03:34+01:00",
+                "precision": "ADDRESS"
+              },
+              "coordsys": "EPSG-4326"
+            },
+            "sketch": "None"
+          },
+          "link": [],
+          "country": "France",
+          "freetext": "Devant la boulangerie Quai des Célestin"
+        },
         "alertCode": {
             "cisuVersion": "1.19",
             "whatsHappen": {
@@ -55,8 +103,8 @@
             "detail": ""
         },
         "callTaker": {
-            "organization": "",
-            "controlRoom": "",
+            "organization": "SAMU",
+            "controlRoom": "CRRA A",
             "calltakerURI": "",
             "calltakerId": ""
         },
@@ -72,22 +120,22 @@
         ]
     },
     "caseLocation": {
-        "locID": "",
-        "locLabel": "",
-        "name": "Quai des célestin",
+        "locID": "SAMU069-20230725-LOC1234",
+        "locLabel": "8 quai des Célestins, 69002 Lyon",
+        "name": "Quai des Célestins",
         "address": {
             "complete": "8 quai des Célestins",
             "number": "8",
             "wayName": {
-                "complete": "",
-                "type": "Quai",
+                "complete": "quai des Célestins",
+                "type": "quai",
                 "name": "des Célestins"
             }
         },
         "city": {
             "name": "Lyon",
             "inseeCode": 69002,
-            "detail": "deuxième arrondissement"
+            "detail": ""
         },
         "access": {
             "floor": "None",
@@ -104,8 +152,8 @@
         "geometry": {
             "point": {
                 "coord": {
-                    "lat": "45.7602368",
-                    "lon": "4.8310551",
+                    "lat": 45.7602368,
+                    "lon": 4.8310551,
                     "height": "237" ,
                     "heading": "None",
                     "speed": "None",
@@ -116,13 +164,7 @@
             },
             "sketch": "None"
         },
-        "link": [
-            {
-                "source": "BAN",
-                "type": "",
-                "id": ""
-            }
-        ],
+        "link": [],
         "country": "France",
         "freetext": "Devant la boulangerie Quai des Célestin"
     },

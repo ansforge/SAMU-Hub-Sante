@@ -9,9 +9,16 @@ const moduleDir = __dirname;
 const HUB_SANTE_URL = process.env.HUB_URL || 'amqps://messaging.hub.esante.gouv.fr';
 const HUB_SANTE_EXCHANGE = 'hubsante';
 const DEMO_CLIENT_IDS = {
-  SAMU_A: 'fr.health.samuA', // fr.health.demo.samuA
-  SAMU_B: 'fr.health.samuB', // fr.health.demo.samuB
-  SDIS_Z: 'fr.fire.nexsis.sdisZ', // fr.health.demo.sdisZ
+  SAMU_A: 'fr.health.samuA',
+  SAMU_B: 'fr.health.samuB',
+  SAMU_C: 'fr.health.samuC',
+  SDIS_Z: 'fr.fire.nexsis.sdisZ',
+  APPLIGOS: 'fr.health.test.appligos',
+  BISOM: 'fr.health.test.bisom',
+  EXOS: 'fr.health.test.exos',
+  INETUM: 'fr.health.test.inetum',
+  RRAMU: 'fr.health.test.rramu',
+  SCRIPTAL: 'fr.health.test.scriptal',
 };
 
 const opts = {

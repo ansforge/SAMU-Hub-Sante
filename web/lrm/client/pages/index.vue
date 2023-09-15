@@ -26,8 +26,8 @@
               <v-combobox
                 v-model="form.targetId"
                 label="ID du système cible"
-                :items="clientIds"
-                :rules="[rules.required]"
+                :items="targetClientIds"
+                :rules="[rules.required, rules.testTargetId]"
               />
               <v-checkbox
                 v-model="form.tester"
@@ -71,20 +71,51 @@ export default {
       clientIds: [
         'fr.health.samuA',
         'fr.health.samuB',
-        'fr.fire.nexsis.sdisZ'
+        'fr.health.samuC',
+        'fr.fire.nexsis.sdisZ',
+        'fr.health.test.appligos',
+        'fr.health.test.bisom',
+        'fr.health.test.exos',
+        'fr.health.test.inetum',
+        'fr.health.test.rramu',
+        'fr.health.test.scriptal'
       ],
       form: {
         clientId: 'fr.health.samuA',
-        targetId: 'fr.health.samuB',
+        targetId: 'fr.health.samuC',
         tester: false
       },
       rules: {
-        required: v => !!v || 'This field is required'
+        required: v => !!v || 'This field is required',
+        testTargetId: (v) => {
+          if (this.form.clientId.startsWith('fr.health.test') && !this.targetClientIds.includes(v)) {
+            return "Tests are only allowed on editor's systems"
+          }
+          return true
+        }
       }
     }
   },
   head () {
     return { title: 'Connexion' }
+  },
+  computed: {
+    targetClientIds () {
+      switch (this.form.clientId) {
+        case 'fr.health.test.appligos':
+          return []
+        case 'fr.health.test.bisom':
+          return ['fr.health.samu090', 'fr.health.samu091']
+        case 'fr.health.test.exos':
+          return ['fr.health.samu800', 'fr.health.samu570']
+        case 'fr.health.test.inetum':
+          return ['fr.health.samu440', 'fr.health.samu350']
+        case 'fr.health.test.rramu':
+          return ['fr.health.samu76A', 'fr.health.samu76B', 'fr.health.normandie']
+        case 'fr.health.test.scriptal':
+          return []
+      }
+    }
   },
   methods: {
     async login () {

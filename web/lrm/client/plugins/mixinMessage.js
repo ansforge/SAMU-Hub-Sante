@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid'
 import moment from 'moment/moment'
-import { WRONG_EDXL_ENVELOPE, EDXL_ENVELOPE, DIRECTIONS } from '@/constants'
+import { EDXL_ENVELOPE, DIRECTIONS } from '@/constants'
 
 export default {
   mounted () {
@@ -61,23 +61,24 @@ export default {
       }
     },
     buildMessage (innerMessage, distributionKind = 'Report') {
-      return this.buildWrongMessage('createEvent' in innerMessage ? innerMessage.createEvent : innerMessage, distributionKind)
-      // ToDo: remove above line once messages are built with the correct full EDXL envelope
       const message = JSON.parse(JSON.stringify(EDXL_ENVELOPE)) // Deep copy
-      message.content.contentObject.jsonContent.embeddedJsonContent.message = innerMessage
+      message.content.contentObject.jsonContent.embeddedJsonContent.message = {
+        ...message.content.contentObject.jsonContent.embeddedJsonContent.message,
+        ...innerMessage
+      }
       const name = this.userInfos.name
-      const messageId = uuidv4()
       const targetId = this.clientInfos(this.user.targetId).id
       const sentAt = moment().format()
-      message.distributionID = `${name}_${messageId}`
+      message.distributionID = `${this.user.clientId}_${uuidv4()}`
       message.distributionKind = distributionKind
       message.senderID = this.user.clientId
       message.dateTimeSent = sentAt
       message.descriptor.explicitAddress.explicitAddressValue = targetId
-      message.content.contentObject.jsonContent.embeddedJsonContent.message.messageId = messageId
-      message.content.contentObject.jsonContent.embeddedJsonContent.message.sender = { name, uri: `hubsante:${this.user.clientId}}` }
+      message.content.contentObject.jsonContent.embeddedJsonContent.message.messageId = message.distributionID
+      message.content.contentObject.jsonContent.embeddedJsonContent.message.kind = message.distributionKind
+      message.content.contentObject.jsonContent.embeddedJsonContent.message.sender = { name, URI: `hubex:${this.user.clientId}` }
       message.content.contentObject.jsonContent.embeddedJsonContent.message.sentAt = sentAt
-      message.content.contentObject.jsonContent.embeddedJsonContent.message.recipients.recipient = [{ name: this.clientInfos(this.user.targetId).name, uri: `hubsante:${targetId}}` }]
+      message.content.contentObject.jsonContent.embeddedJsonContent.message.recipients = [{ name: this.clientInfos(this.user.targetId).name, URI: `hubex:${targetId}` }]
       return message
     },
     buildWrongMessage (innerMessage, distributionKind = 'Report') {

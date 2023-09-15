@@ -268,6 +268,27 @@
       "arguments": {}
     },
     {
+      "name": "fr.health.samuC.message",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "fr.health.samuC.info",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "fr.health.samuC.ack",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
       "name": "fr.fire.nexsis.sdisZ.message",
       "vhost": "/",
       "durable": true,
@@ -757,6 +778,30 @@
     {
       "source": "distribution",
       "vhost": "/",
+      "destination": "fr.health.samuC.message",
+      "destination_type": "queue",
+      "routing_key": "fr.health.samuC.message",
+      "arguments": {}
+    },
+    {
+      "source": "distribution",
+      "vhost": "/",
+      "destination": "fr.health.samuC.ack",
+      "destination_type": "queue",
+      "routing_key": "fr.health.samuC.ack",
+      "arguments": {}
+    },
+    {
+      "source": "distribution",
+      "vhost": "/",
+      "destination": "fr.health.samuC.info",
+      "destination_type": "queue",
+      "routing_key": "fr.health.samuC.info",
+      "arguments": {}
+    },
+    {
+      "source": "distribution",
+      "vhost": "/",
       "destination": "fr.fire.nexsis.sdisZ.message",
       "destination_type": "queue",
       "routing_key": "fr.fire.nexsis.sdisZ.message",
@@ -1016,7 +1061,7 @@
       "vhost": "/",
       "configure": "",
       "write": "hubsante",
-      "read": "^(fr.health.samuA.*|fr.health.samuB.*|fr.fire.nexsis.sdisZ.*|fr.health.test.bisom.*|fr.health.test.scriptal.*|fr.health.test.appligos.*|fr.health.test.exos.*|fr.health.test.inetum.*|fr.health.test.rramu.*)$"
+      "read": "^(fr.health.samuA.*|fr.health.samuB.*|fr.health.samuC.*|fr.fire.nexsis.sdisZ.*|fr.health.test.bisom.*|fr.health.test.scriptal.*|fr.health.test.appligos.*|fr.health.test.exos.*|fr.health.test.inetum.*|fr.health.test.rramu.*)$"
     },
     {
       "user": "fr.health.samu570",
@@ -1185,7 +1230,7 @@
       "exchange": "hubsante",
       "vhost": "/",
       "user": "local.test",
-      "write": "^(fr.health.samuA|fr.health.samuB|fr.fire.nexsis.sdisZ|fr.health.test.bisom.*|fr.health.test.scriptal.*|fr.health.test.appligos.*|fr.health.test.exos.*|fr.health.test.inetum.*|fr.health.test.rramu.*)$",
+      "write": "^(fr.health.samuA|fr.health.samuB|fr.health.samuC|fr.fire.nexsis.sdisZ|fr.health.test.bisom.*|fr.health.test.scriptal.*|fr.health.test.appligos.*|fr.health.test.exos.*|fr.health.test.inetum.*|fr.health.test.rramu.*)$",
       "read": ""
     }
   ],

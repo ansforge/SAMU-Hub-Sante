@@ -44,6 +44,7 @@
           />
           <v-spacer />
           <v-switch
+            v-if="isAdvanced"
             v-model="autoAckConfig"
             inset
             :label="'Auto ack'"
@@ -132,7 +133,7 @@ export default {
             victims: '2 victimes, 1 nécessitant assistance SAMU',
             victim: 'Homme, adulte, 43 ans',
             medicalSituation: 'Céphalées, migraines, traumatismes sérieux, plaies intermédiaire'
-          }, {
+          } /* {
             file: 'exempleBlanchet.json',
             icon: 'mdi-home-thermometer',
             name: 'Bastien BLANCHET',
@@ -142,7 +143,7 @@ export default {
             victims: '1 victime',
             victim: 'Homme, adulte, 82 ans',
             medicalSituation: 'victime amorphe allongée sur son lit, répond peu, soupçonne une déshydratation'
-          }]
+          } */ ]
         },
         operationRequest: {
           label: 'Demande de concours',
@@ -176,7 +177,7 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['messages']),
+    ...mapGetters(['messages', 'isAdvanced']),
     showSentMessagesConfig: {
       get () {
         return this.showSentMessages

@@ -14,7 +14,7 @@ Vue.mixin({
   methods: {
     clientInfos (clientId) {
       return {
-        name: clientId.split('.')[2],
+        name: clientId.split('.').splice(2).join('.'), // Remove the first two parts of the clientId (ex: fr.health)
         icon: clientId.split('.')[1] === 'health' ? 'mdi-heart-pulse' : 'mdi-fire',
         id: clientId.split('.').slice(0, 3).join('.')
       }
