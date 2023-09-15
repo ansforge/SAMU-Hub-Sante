@@ -48,7 +48,7 @@ public class ConsumerRun {
 
                 // Sending back functional ack as info has been processed on the Consumer side
                 if (!edxlMessage.getDistributionKind().equals(DistributionKind.ACK)) {
-                    EdxlMessage ackEdxl = this.generateFunctionalAckMessage(edxlMessage);
+                    EdxlMessage ackEdxl = referenceMessageFromReceivedMessage(edxlMessage);
                     if (isJsonScheme) {
                         this.producerAck.publish(this.clientId, ackEdxl);
                     } else {

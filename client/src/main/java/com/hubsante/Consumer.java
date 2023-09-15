@@ -96,7 +96,7 @@ public abstract class Consumer {
             // consumeChannel: where messages are received by the client from Hub Santé
 
             this.consumeChannel = connection.createChannel();
-            this.consumeChannel.queueDeclare(this.queueName, true, false, false, null);
+            this.consumeChannel.queueDeclarePassive(this.queueName);
 
             // produceChannel: where ack messages are sent to Hub Santé
             this.producerAck = new Producer(this.host, this.port, this.exchangeName);
@@ -121,29 +121,4 @@ public abstract class Consumer {
      * @return
      */
     protected abstract void deliverCallback(String consumerTag, Delivery delivery) throws IOException;
-
-    protected EdxlMessage generateFunctionalAckMessage(EdxlMessage receivedMessage) {
-
-        GenericAckMessage cisuAckMessage = new GenericAckMessage(receivedMessage.getDistributionID());
-
-        // TODO bbo/rfd : choose what to do with scheme : senderID ? hubsante ?
-        ExplicitAddress explicitAddress = new ExplicitAddress();
-        explicitAddress.setExplicitAddressScheme(receivedMessage.getSenderID());
-        explicitAddress.setExplicitAddressValue(receivedMessage.getSenderID());
-
-        Descriptor descriptor = new Descriptor();
-        descriptor.setLanguage(receivedMessage.getDescriptor().getLanguage());
-        descriptor.setExplicitAddress(explicitAddress);
-
-        return new EdxlMessage(
-                clientId + "_" + UUID.randomUUID(),
-                clientId,
-                OffsetDateTime.of(LocalDateTime.now(), ZoneOffset.of("+02")),
-                OffsetDateTime.of(LocalDateTime.now().plusYears(50), ZoneOffset.of("+02")),
-                receivedMessage.getDistributionStatus(),
-                DistributionKind.ACK,
-                descriptor,
-                cisuAckMessage
-        );
-    }
 }

@@ -115,40 +115,6 @@
             <country>France</country>
             <freetext>Devant la boulangerie Quai des Célestin</freetext>
         </caseLocation>
-        <casualties>
-            <casualties>
-                <identifier>
-                    <source>NIR</source>
-                    <value>37</value>
-                </identifier>
-                <phoneNumber>tel:+330607080901</phoneNumber>
-                <name>Marin Durand</name>
-                <birthName>Marin</birthName>
-                <firstName>Durand</firstName>
-                <sex>M</sex>
-                <birthDate>1980-06-22</birthDate>
-                <age>43Y</age>
-                <weight>80</weight>
-                <height>184</height>
-                <freetext>Allergique au doliprane</freetext>
-            </casualties>
-            <casualties>
-                <identifier>
-                    <source>NIR</source>
-                    <value>38</value>
-                </identifier>
-                <phoneNumber>tel:+330607080901</phoneNumber>
-                <name>Marinette Durand</name>
-                <birthName>Marinette</birthName>
-                <firstName>Durand</firstName>
-                <sex>F</sex>
-                <birthDate>1980-06-23</birthDate>
-                <age>42Y</age>
-                <weight>80</weight>
-                <height>179</height>
-                <freetext>RAS</freetext>
-            </casualties>
-        </casualties>
         <severity>MINOR</severity>
         <additionalInformation>
             <customMap>

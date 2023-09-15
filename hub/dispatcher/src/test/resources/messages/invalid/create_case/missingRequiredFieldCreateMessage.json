@@ -137,44 +137,6 @@
       "country": "France",
       "freetext": "Devant la boulangerie Quai des Célestin"
     },
-    "casualties": [
-      {
-        "identifier": [
-          {
-            "source": "NIR",
-            "value": "37"
-          }
-        ],
-        "phoneNumber": "tel:+330607080901",
-        "name": "Marin Durand",
-        "birthName": "Marin",
-        "firstName": "Durand",
-        "sex": "M",
-        "birthDate": "1980-06-22",
-        "age": "43Y",
-        "weight": 80,
-        "height": 184,
-        "freetext": "Allergique au doliprane"
-      },
-      {
-        "identifier": [
-          {
-            "source": "NIR",
-            "value": "38"
-          }
-        ],
-        "phoneNumber": "tel:+330607080901",
-        "name": "Marinette Durand",
-        "birthName": "Marinette",
-        "firstName": "Durand",
-        "sex": "F",
-        "birthDate": "1980-06-23",
-        "age": "42Y",
-        "weight": 80,
-        "height": 179,
-        "freetext": "RAS"
-      }
-    ],
     "newAlert": null,
     "severity": "MINOR",
     "additionalInformation": {
