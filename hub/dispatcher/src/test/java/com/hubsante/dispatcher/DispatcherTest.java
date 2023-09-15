@@ -304,7 +304,7 @@ public class DispatcherTest {
         Mockito.verify(rabbitTemplate, times(1)).send(
                 eq(DISTRIBUTION_EXCHANGE), eq(infoQueueName), argument.capture());
 
-        ErrorReport errorReport = getErrorReportFromMessage(converter, argument);
+        ErrorReport errorReport = getErrorReportFromMessage(converter, argument.getValue());
         assertEquals(errorCode, errorReport.getErrorCode());
         if (errorCause != null) {
             Arrays.stream(errorCause).forEach(cause -> assertTrue(errorReport.getErrorCause().contains(cause)));

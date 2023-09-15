@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.*;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageDeliveryMode;
+import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -159,9 +160,11 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
 
         Message infoMsg = rabbitTemplate.receive(infoQueueName);
         assertNotNull(infoMsg);
-        String errorJson = new String(infoMsg.getBody());
+        String errorString = new String(infoMsg.getBody());
 
-        ErrorReport errorReport = (ErrorReport) edxlHandler.deserializeJsonContentMessage(errorJson);
+        ErrorReport errorReport = infoMsg.getMessageProperties().getContentType().equals(MessageProperties.CONTENT_TYPE_XML) ?
+                (ErrorReport) edxlHandler.deserializeXmlContentMessage(errorString) :
+                (ErrorReport) edxlHandler.deserializeJsonContentMessage(errorString);
         assertEquals(errorCode, errorReport.getErrorCode());
         Arrays.stream(errorCause).forEach(cause -> assertTrue(errorReport.getErrorCause().contains(cause)));
     }
