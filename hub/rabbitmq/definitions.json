@@ -331,84 +331,84 @@
       "arguments": {}
     },
     {
-      "name": "fr.health.bisom.test.message",
+      "name": "fr.health.test.bisom.message",
       "vhost": "/",
       "durable": true,
       "auto_delete": false,
       "arguments": {}
     },
     {
-      "name": "fr.health.bisom.test.info",
+      "name": "fr.health.test.bisom.info",
       "vhost": "/",
       "durable": true,
       "auto_delete": false,
       "arguments": {}
     },
     {
-      "name": "fr.health.bisom.test.ack",
+      "name": "fr.health.test.bisom.ack",
       "vhost": "/",
       "durable": true,
       "auto_delete": false,
       "arguments": {}
     },
     {
-      "name": "fr.health.exos.test.message",
+      "name": "fr.health.test.exos.message",
       "vhost": "/",
       "durable": true,
       "auto_delete": false,
       "arguments": {}
     },
     {
-      "name": "fr.health.exos.test.info",
+      "name": "fr.health.test.exos.info",
       "vhost": "/",
       "durable": true,
       "auto_delete": false,
       "arguments": {}
     },
     {
-      "name": "fr.health.exos.test.ack",
+      "name": "fr.health.test.exos.ack",
       "vhost": "/",
       "durable": true,
       "auto_delete": false,
       "arguments": {}
     },
     {
-      "name": "fr.health.inetum.test.message",
+      "name": "fr.health.test.inetum.message",
       "vhost": "/",
       "durable": true,
       "auto_delete": false,
       "arguments": {}
     },
     {
-      "name": "fr.health.inetum.test.info",
+      "name": "fr.health.test.inetum.info",
       "vhost": "/",
       "durable": true,
       "auto_delete": false,
       "arguments": {}
     },
     {
-      "name": "fr.health.inetum.test.ack",
+      "name": "fr.health.test.inetum.ack",
       "vhost": "/",
       "durable": true,
       "auto_delete": false,
       "arguments": {}
     },
     {
-      "name": "fr.health.rramu.test.message",
+      "name": "fr.health.test.rramu.message",
       "vhost": "/",
       "durable": true,
       "auto_delete": false,
       "arguments": {}
     },
     {
-      "name": "fr.health.rramu.test.info",
+      "name": "fr.health.test.rramu.info",
       "vhost": "/",
       "durable": true,
       "auto_delete": false,
       "arguments": {}
     },
     {
-      "name": "fr.health.rramu.test.ack",
+      "name": "fr.health.test.rramu.ack",
       "vhost": "/",
       "durable": true,
       "auto_delete": false,
@@ -739,25 +739,25 @@
     {
       "source": "distribution",
       "vhost": "/",
-      "destination": "fr.health.bisom.test.message",
+      "destination": "fr.health.test.bisom.message",
       "destination_type": "queue",
-      "routing_key": "fr.health.bisom.test.message",
+      "routing_key": "fr.health.test.bisom.message",
       "arguments": {}
     },
     {
       "source": "distribution",
       "vhost": "/",
-      "destination": "fr.health.bisom.test.info",
+      "destination": "fr.health.test.bisom.info",
       "destination_type": "queue",
-      "routing_key": "fr.health.bisom.test.info",
+      "routing_key": "fr.health.test.bisom.info",
       "arguments": {}
     },
     {
       "source": "distribution",
       "vhost": "/",
-      "destination": "fr.health.bisom.test.ack",
+      "destination": "fr.health.test.bisom.ack",
       "destination_type": "queue",
-      "routing_key": "fr.health.bisom.test.ack",
+      "routing_key": "fr.health.test.bisom.ack",
       "arguments": {}
     },
     {
@@ -771,73 +771,73 @@
     {
       "source": "distribution",
       "vhost": "/",
-      "destination": "fr.health.exos.test.message",
+      "destination": "fr.health.test.exos.message",
       "destination_type": "queue",
-      "routing_key": "fr.health.exos.test.message",
+      "routing_key": "fr.health.test.exos.message",
       "arguments": {}
     },
     {
       "source": "distribution",
       "vhost": "/",
-      "destination": "fr.health.exos.test.info",
+      "destination": "fr.health.test.exos.info",
       "destination_type": "queue",
-      "routing_key": "fr.health.exos.test.info",
+      "routing_key": "fr.health.test.exos.info",
       "arguments": {}
     },
     {
       "source": "distribution",
       "vhost": "/",
-      "destination": "fr.health.exos.test.ack",
+      "destination": "fr.health.test.exos.ack",
       "destination_type": "queue",
-      "routing_key": "fr.health.exos.test.ack",
+      "routing_key": "fr.health.test.exos.ack",
       "arguments": {}
     },
     {
       "source": "distribution",
       "vhost": "/",
-      "destination": "fr.health.inetum.test.message",
+      "destination": "fr.health.test.inetum.message",
       "destination_type": "queue",
-      "routing_key": "fr.health.inetum.test.message",
+      "routing_key": "fr.health.test.inetum.message",
       "arguments": {}
     },
     {
       "source": "distribution",
       "vhost": "/",
-      "destination": "fr.health.inetum.test.info",
+      "destination": "fr.health.test.inetum.info",
       "destination_type": "queue",
-      "routing_key": "fr.health.inetum.test.info",
+      "routing_key": "fr.health.test.inetum.info",
       "arguments": {}
     },
     {
       "source": "distribution",
       "vhost": "/",
-      "destination": "fr.health.inetum.test.ack",
+      "destination": "fr.health.test.inetum.ack",
       "destination_type": "queue",
-      "routing_key": "fr.health.inetum.test.ack",
+      "routing_key": "fr.health.test.inetum.ack",
       "arguments": {}
     },
     {
       "source": "distribution",
       "vhost": "/",
-      "destination": "fr.health.rramu.test.message",
+      "destination": "fr.health.test.rramu.message",
       "destination_type": "queue",
-      "routing_key": "fr.health.rramu.test.message",
+      "routing_key": "fr.health.test.rramu.message",
       "arguments": {}
     },
     {
       "source": "distribution",
       "vhost": "/",
-      "destination": "fr.health.rramu.test.info",
+      "destination": "fr.health.test.rramu.info",
       "destination_type": "queue",
-      "routing_key": "fr.health.rramu.test.info",
+      "routing_key": "fr.health.test.rramu.info",
       "arguments": {}
     },
     {
       "source": "distribution",
       "vhost": "/",
-      "destination": "fr.health.rramu.test.ack",
+      "destination": "fr.health.test.rramu.ack",
       "destination_type": "queue",
-      "routing_key": "fr.health.rramu.test.ack",
+      "routing_key": "fr.health.test.rramu.ack",
       "arguments": {}
     }
   ],
@@ -926,7 +926,7 @@
       "vhost": "/",
       "configure": "",
       "write": "hubsante",
-      "read": "^(fr.health.samuA.*|fr.health.samuB.*|fr.fire.nexsis.sdisZ.*|fr.health.bisom.test.*|fr.health.exos.test.*|fr.health.inetum.test.*|fr.health.rramu.test.*)$"
+      "read": "^(fr.health.samuA.*|fr.health.samuB.*|fr.fire.nexsis.sdisZ.*|fr.health.test.bisom.*|fr.health.test.exos.*|fr.health.test.inetum.*|fr.health.test.rramu.*)$"
     },
     {
       "user": "fr.health.samu570",
@@ -1095,7 +1095,7 @@
       "exchange": "hubsante",
       "vhost": "/",
       "user": "local.test",
-      "write": "^(fr.health.samuA|fr.health.samuB|fr.fire.nexsis.sdisZ|fr.health.bisom.test.*|fr.health.exos.test.*|fr.health.inetum.test.*|fr.health.rramu.test.*)$",
+      "write": "^(fr.health.samuA|fr.health.samuB|fr.fire.nexsis.sdisZ|fr.health.test.bisom.*|fr.health.test.exos.*|fr.health.test.inetum.*|fr.health.test.rramu.*)$",
       "read": ""
     }
   ],
