@@ -287,6 +287,174 @@
       "durable": true,
       "auto_delete": false,
       "arguments": {}
+    },
+    {
+      "name": "fr.health.samu350.message",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "fr.health.samu350.info",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "fr.health.samu350.ack",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "fr.health.samu440.message",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "fr.health.samu440.info",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "fr.health.samu440.ack",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "fr.health.test.bisom.message",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "fr.health.test.bisom.info",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "fr.health.test.bisom.ack",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "fr.health.test.scriptal.message",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "fr.health.test.scriptal.info",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "fr.health.test.scriptal.ack",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "fr.health.test.appligos.message",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "fr.health.test.appligos.info",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "fr.health.test.appligos.ack",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "fr.health.test.exos.message",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "fr.health.test.exos.info",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "fr.health.test.exos.ack",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "fr.health.test.inetum.message",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "fr.health.test.inetum.info",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "fr.health.test.inetum.ack",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "fr.health.test.rramu.message",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "fr.health.test.rramu.info",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "fr.health.test.rramu.ack",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
     }
   ],
   "bindings": [
@@ -493,6 +661,54 @@
     {
       "source": "distribution",
       "vhost": "/",
+      "destination": "fr.health.samu350.message",
+      "destination_type": "queue",
+      "routing_key": "fr.health.samu350.message",
+      "arguments": {}
+    },
+    {
+      "source": "distribution",
+      "vhost": "/",
+      "destination": "fr.health.samu350.info",
+      "destination_type": "queue",
+      "routing_key": "fr.health.samu350.info",
+      "arguments": {}
+    },
+    {
+      "source": "distribution",
+      "vhost": "/",
+      "destination": "fr.health.samu350.ack",
+      "destination_type": "queue",
+      "routing_key": "fr.health.samu350.ack",
+      "arguments": {}
+    },
+    {
+      "source": "distribution",
+      "vhost": "/",
+      "destination": "fr.health.samu440.message",
+      "destination_type": "queue",
+      "routing_key": "fr.health.samu440.message",
+      "arguments": {}
+    },
+    {
+      "source": "distribution",
+      "vhost": "/",
+      "destination": "fr.health.samu440.info",
+      "destination_type": "queue",
+      "routing_key": "fr.health.samu440.info",
+      "arguments": {}
+    },
+    {
+      "source": "distribution",
+      "vhost": "/",
+      "destination": "fr.health.samu440.ack",
+      "destination_type": "queue",
+      "routing_key": "fr.health.samu440.ack",
+      "arguments": {}
+    },
+    {
+      "source": "distribution",
+      "vhost": "/",
       "destination": "fr.health.samuA.message",
       "destination_type": "queue",
       "routing_key": "fr.health.samuA.message",
@@ -563,11 +779,155 @@
       "arguments": {}
     },
     {
+      "source": "distribution",
+      "vhost": "/",
+      "destination": "fr.health.test.bisom.message",
+      "destination_type": "queue",
+      "routing_key": "fr.health.test.bisom.message",
+      "arguments": {}
+    },
+    {
+      "source": "distribution",
+      "vhost": "/",
+      "destination": "fr.health.test.bisom.info",
+      "destination_type": "queue",
+      "routing_key": "fr.health.test.bisom.info",
+      "arguments": {}
+    },
+    {
+      "source": "distribution",
+      "vhost": "/",
+      "destination": "fr.health.test.bisom.ack",
+      "destination_type": "queue",
+      "routing_key": "fr.health.test.bisom.ack",
+      "arguments": {}
+    },
+    {
+      "source": "distribution",
+      "vhost": "/",
+      "destination": "fr.health.test.scriptal.message",
+      "destination_type": "queue",
+      "routing_key": "fr.health.test.scriptal.message",
+      "arguments": {}
+    },
+    {
+      "source": "distribution",
+      "vhost": "/",
+      "destination": "fr.health.test.scriptal.info",
+      "destination_type": "queue",
+      "routing_key": "fr.health.test.scriptal.info",
+      "arguments": {}
+    },
+    {
+      "source": "distribution",
+      "vhost": "/",
+      "destination": "fr.health.test.scriptal.ack",
+      "destination_type": "queue",
+      "routing_key": "fr.health.test.scriptal.ack",
+      "arguments": {}
+    },
+    {
+      "source": "distribution",
+      "vhost": "/",
+      "destination": "fr.health.test.appligos.message",
+      "destination_type": "queue",
+      "routing_key": "fr.health.test.appligos.message",
+      "arguments": {}
+    },
+    {
+      "source": "distribution",
+      "vhost": "/",
+      "destination": "fr.health.test.appligos.info",
+      "destination_type": "queue",
+      "routing_key": "fr.health.test.appligos.info",
+      "arguments": {}
+    },
+    {
+      "source": "distribution",
+      "vhost": "/",
+      "destination": "fr.health.test.appligos.ack",
+      "destination_type": "queue",
+      "routing_key": "fr.health.test.appligos.ack",
+      "arguments": {}
+    },
+    {
       "source": "distribution.dlx",
       "vhost": "/",
       "destination": "dispatch.dlq",
       "destination_type": "queue",
       "routing_key": "",
+      "arguments": {}
+    },
+    {
+      "source": "distribution",
+      "vhost": "/",
+      "destination": "fr.health.test.exos.message",
+      "destination_type": "queue",
+      "routing_key": "fr.health.test.exos.message",
+      "arguments": {}
+    },
+    {
+      "source": "distribution",
+      "vhost": "/",
+      "destination": "fr.health.test.exos.info",
+      "destination_type": "queue",
+      "routing_key": "fr.health.test.exos.info",
+      "arguments": {}
+    },
+    {
+      "source": "distribution",
+      "vhost": "/",
+      "destination": "fr.health.test.exos.ack",
+      "destination_type": "queue",
+      "routing_key": "fr.health.test.exos.ack",
+      "arguments": {}
+    },
+    {
+      "source": "distribution",
+      "vhost": "/",
+      "destination": "fr.health.test.inetum.message",
+      "destination_type": "queue",
+      "routing_key": "fr.health.test.inetum.message",
+      "arguments": {}
+    },
+    {
+      "source": "distribution",
+      "vhost": "/",
+      "destination": "fr.health.test.inetum.info",
+      "destination_type": "queue",
+      "routing_key": "fr.health.test.inetum.info",
+      "arguments": {}
+    },
+    {
+      "source": "distribution",
+      "vhost": "/",
+      "destination": "fr.health.test.inetum.ack",
+      "destination_type": "queue",
+      "routing_key": "fr.health.test.inetum.ack",
+      "arguments": {}
+    },
+    {
+      "source": "distribution",
+      "vhost": "/",
+      "destination": "fr.health.test.rramu.message",
+      "destination_type": "queue",
+      "routing_key": "fr.health.test.rramu.message",
+      "arguments": {}
+    },
+    {
+      "source": "distribution",
+      "vhost": "/",
+      "destination": "fr.health.test.rramu.info",
+      "destination_type": "queue",
+      "routing_key": "fr.health.test.rramu.info",
+      "arguments": {}
+    },
+    {
+      "source": "distribution",
+      "vhost": "/",
+      "destination": "fr.health.test.rramu.ack",
+      "destination_type": "queue",
+      "routing_key": "fr.health.test.rramu.ack",
       "arguments": {}
     }
   ],
@@ -624,6 +984,14 @@
       "tags": []
     },
     {
+      "name": "fr.health.samu350",
+      "tags": []
+    },
+    {
+      "name": "fr.health.samu440",
+      "tags": []
+    },
+    {
       "name": "fr.fire.nexsis.test",
       "tags": []
     }
@@ -646,72 +1014,86 @@
     {
       "user": "local.test",
       "vhost": "/",
-      "configure": "^(fr.health.samuA.*|fr.health.samuB.*|fr.fire.nexsis.sdisZ.*)$",
+      "configure": "",
       "write": "hubsante",
-      "read": "^(fr.health.samuA.*|fr.health.samuB.*|fr.fire.nexsis.sdisZ.*)$"
+      "read": "^(fr.health.samuA.*|fr.health.samuB.*|fr.fire.nexsis.sdisZ.*|fr.health.test.bisom.*|fr.health.test.scriptal.*|fr.health.test.appligos.*|fr.health.test.exos.*|fr.health.test.inetum.*|fr.health.test.rramu.*)$"
     },
     {
       "user": "fr.health.samu570",
       "vhost": "/",
-      "configure": "fr.health.samu570.*",
+      "configure": "",
       "write": "hubsante",
-      "read": "fr.health.samu570.*"
+      "read": "^(fr.health.samu570.message|fr.health.samu570.info|fr.health.samu570.ack)$"
     },
     {
       "user": "fr.health.samu800",
       "vhost": "/",
-      "configure": "fr.health.samu800.*",
+      "configure": "",
       "write": "hubsante",
-      "read": "fr.health.samu800.*"
+      "read": "^(fr.health.samu800.message|fr.health.samu800.info|fr.health.samu800.ack)$"
     },
     {
       "user": "fr.health.exos",
       "vhost": "/",
-      "configure": "fr.health.exos.*",
+      "configure": "",
       "write": "hubsante",
-      "read": "fr.health.exos.*"
+      "read": "^(fr.health.exos.message|fr.health.exos.info|fr.health.exos.ack)$"
     },
     {
       "user": "fr.health.samu090",
       "vhost": "/",
-      "configure": "fr.health.samu090.*",
+      "configure": "",
       "write": "hubsante",
-      "read": "fr.health.samu090.*"
+      "read": "^(fr.health.samu090.message|fr.health.samu090.info|fr.health.samu090.ack)$"
     },
     {
       "user": "fr.health.samu091",
       "vhost": "/",
-      "configure": "fr.health.samu091.*",
+      "configure": "",
       "write": "hubsante",
-      "read": "fr.health.samu091.*"
+      "read": "^(fr.health.samu091.message|fr.health.samu091.info|fr.health.samu091.ack)$"
     },
     {
       "user": "fr.health.bisom",
       "vhost": "/",
-      "configure": "^(fr.health.samu091.*|fr.health.samu090.*)$",
+      "configure": "",
       "write": "hubsante",
-      "read": "^(fr.health.samu091.*|fr.health.samu090.*)$"
+      "read": "^(fr.health.samu091.message|fr.health.samu091.info|fr.health.samu091.ack|fr.health.samu090.message|fr.health.samu090.info|fr.health.samu090.ack)$"
     },
     {
       "user": "fr.health.normandie",
       "vhost": "/",
-      "configure": "^(fr.health.normandie.*|fr.health.samu76A.*|fr.health.samu76B.*)$",
+      "configure": "",
       "write": "hubsante",
-      "read": "^(fr.health.normandie.*|fr.health.samu76A.*|fr.health.samu76B.*)$"
+      "read": "^(fr.health.normandie.message|fr.health.normandie.info|fr.health.normandie.ack|fr.health.samu76A.message|fr.health.samu76A.info|fr.health.samu76A.ack|fr.health.samu76B.message|fr.health.samu76B.info|fr.health.samu76B.ack)$"
     },
     {
       "user": "fr.health.samu76A",
       "vhost": "/",
-      "configure": "fr.health.samu76A.*",
+      "configure": "",
       "write": "hubsante",
-      "read": "fr.health.samu76A.*"
+      "read": "^(fr.health.samu76A.message|fr.health.samu76A.info|fr.health.samu76A.ack)$"
     },
     {
       "user": "fr.health.samu76B",
       "vhost": "/",
-      "configure": "fr.health.samu76B.*",
+      "configure": "",
       "write": "hubsante",
-      "read": "fr.health.samu76B.*"
+      "read": "^(fr.health.samu76B.message|fr.health.samu76B.info|fr.health.samu76B.ack)$"
+    },
+    {
+      "user": "fr.health.samu350",
+      "vhost": "/",
+      "configure": "",
+      "write": "hubsante",
+      "read": "^(fr.health.samu350.message|fr.health.samu350.info|fr.health.samu350.ack)$"
+    },
+    {
+      "user": "fr.health.samu440",
+      "vhost": "/",
+      "configure": "",
+      "write": "hubsante",
+      "read": "^(fr.health.samu440.message|fr.health.samu440.info|fr.health.samu440.ack)$"
     },
     {
       "user": "fr.fire.nexsis.test",
@@ -788,8 +1170,22 @@
     {
       "exchange": "hubsante",
       "vhost": "/",
+      "user": "fr.health.samu350",
+      "write": "^fr.health.samu350$",
+      "read": ""
+    },
+    {
+      "exchange": "hubsante",
+      "vhost": "/",
+      "user": "fr.health.samu440",
+      "write": "^fr.health.samu440$",
+      "read": ""
+    },
+    {
+      "exchange": "hubsante",
+      "vhost": "/",
       "user": "local.test",
-      "write": "^(fr.health.samuA|fr.health.samuB|fr.fire.nexsis.sdisZ)$",
+      "write": "^(fr.health.samuA|fr.health.samuB|fr.fire.nexsis.sdisZ|fr.health.test.bisom.*|fr.health.test.scriptal.*|fr.health.test.appligos.*|fr.health.test.exos.*|fr.health.test.inetum.*|fr.health.test.rramu.*)$",
       "read": ""
     }
   ],
@@ -801,7 +1197,8 @@
       "apply-to": "queues",
       "definition": {
         "message-ttl": 86400000,
-        "dead-letter-exchange": "distribution.dlx"},
+        "dead-letter-exchange": "distribution.dlx"
+      },
       "priority": 0
     }
   ]
