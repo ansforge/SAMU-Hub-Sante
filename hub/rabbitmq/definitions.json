@@ -352,6 +352,48 @@
       "arguments": {}
     },
     {
+      "name": "fr.health.test.scriptal.message",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "fr.health.test.scriptal.info",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "fr.health.test.scriptal.ack",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "fr.health.test.appligos.message",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "fr.health.test.appligos.info",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "fr.health.test.appligos.ack",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
       "name": "fr.health.test.exos.message",
       "vhost": "/",
       "durable": true,
@@ -761,6 +803,54 @@
       "arguments": {}
     },
     {
+      "source": "distribution",
+      "vhost": "/",
+      "destination": "fr.health.test.scriptal.message",
+      "destination_type": "queue",
+      "routing_key": "fr.health.test.scriptal.message",
+      "arguments": {}
+    },
+    {
+      "source": "distribution",
+      "vhost": "/",
+      "destination": "fr.health.test.scriptal.info",
+      "destination_type": "queue",
+      "routing_key": "fr.health.test.scriptal.info",
+      "arguments": {}
+    },
+    {
+      "source": "distribution",
+      "vhost": "/",
+      "destination": "fr.health.test.scriptal.ack",
+      "destination_type": "queue",
+      "routing_key": "fr.health.test.scriptal.ack",
+      "arguments": {}
+    },
+    {
+      "source": "distribution",
+      "vhost": "/",
+      "destination": "fr.health.test.appligos.message",
+      "destination_type": "queue",
+      "routing_key": "fr.health.test.appligos.message",
+      "arguments": {}
+    },
+    {
+      "source": "distribution",
+      "vhost": "/",
+      "destination": "fr.health.test.appligos.info",
+      "destination_type": "queue",
+      "routing_key": "fr.health.test.appligos.info",
+      "arguments": {}
+    },
+    {
+      "source": "distribution",
+      "vhost": "/",
+      "destination": "fr.health.test.appligos.ack",
+      "destination_type": "queue",
+      "routing_key": "fr.health.test.appligos.ack",
+      "arguments": {}
+    },
+    {
       "source": "distribution.dlx",
       "vhost": "/",
       "destination": "dispatch.dlq",
@@ -926,7 +1016,7 @@
       "vhost": "/",
       "configure": "",
       "write": "hubsante",
-      "read": "^(fr.health.samuA.*|fr.health.samuB.*|fr.fire.nexsis.sdisZ.*|fr.health.test.bisom.*|fr.health.test.exos.*|fr.health.test.inetum.*|fr.health.test.rramu.*)$"
+      "read": "^(fr.health.samuA.*|fr.health.samuB.*|fr.fire.nexsis.sdisZ.*|fr.health.test.bisom.*|fr.health.test.scriptal.*|fr.health.test.appligos.*|fr.health.test.exos.*|fr.health.test.inetum.*|fr.health.test.rramu.*)$"
     },
     {
       "user": "fr.health.samu570",
@@ -1095,7 +1185,7 @@
       "exchange": "hubsante",
       "vhost": "/",
       "user": "local.test",
-      "write": "^(fr.health.samuA|fr.health.samuB|fr.fire.nexsis.sdisZ|fr.health.test.bisom.*|fr.health.test.exos.*|fr.health.test.inetum.*|fr.health.test.rramu.*)$",
+      "write": "^(fr.health.samuA|fr.health.samuB|fr.fire.nexsis.sdisZ|fr.health.test.bisom.*|fr.health.test.scriptal.*|fr.health.test.appligos.*|fr.health.test.exos.*|fr.health.test.inetum.*|fr.health.test.rramu.*)$",
       "read": ""
     }
   ],
@@ -1108,7 +1198,7 @@
       "definition": {
         "message-ttl": 86400000,
         "dead-letter-exchange": "distribution.dlx"
-      }
+      },
       "priority": 0
     }
   ]
