@@ -8,7 +8,7 @@
   "descriptor": {
     "language": "fr-FR",
     "explicitAddress": {
-      "explicitAddressScheme": "hubsante",
+      "explicitAddressScheme": "hubex",
       "explicitAddressValue": "fr.fire.nexsis.sdis23"
     }
   },
