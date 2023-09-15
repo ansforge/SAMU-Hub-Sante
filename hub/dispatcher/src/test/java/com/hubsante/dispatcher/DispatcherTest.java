@@ -89,6 +89,44 @@ public class DispatcherTest {
     }
 
     @Test
+    @DisplayName("should convert message from xml to json according to client preferences")
+    public void shouldConvertMessageFromXmlToJson() throws IOException {
+        Message receivedMessage = createMessage("valid/edxl_encapsulated/samuB_to_samuA.xml", SAMU_B_ROUTING_KEY);
+        assertEquals(MessageProperties.CONTENT_TYPE_XML, receivedMessage.getMessageProperties().getContentType());
+        dispatcher.dispatch(receivedMessage);
+
+        // assert that the message was sent to the right exchange with the right routing key exactly 1 time
+        ArgumentCaptor<Message> argCaptor = ArgumentCaptor.forClass(Message.class);
+        Mockito.verify(rabbitTemplate, times(1)).send(
+                eq(DISTRIBUTION_EXCHANGE), eq("fr.health.samuA.message"), argCaptor.capture());
+        Message sentMessage = argCaptor.getValue();
+        assertEquals(MessageProperties.CONTENT_TYPE_JSON, sentMessage.getMessageProperties().getContentType());
+
+        EdxlMessage publishedEDXLMessage = converter.deserializeXmlEDXL(new String(receivedMessage.getBody(), StandardCharsets.UTF_8));
+        EdxlMessage sentEDXLMessage = converter.deserializeJsonEDXL(new String(sentMessage.getBody(), StandardCharsets.UTF_8));
+        assertEquals(publishedEDXLMessage, sentEDXLMessage);
+    }
+
+    @Test
+    @DisplayName("should convert message from json to xml according to client preferences")
+    public void shouldConvertMessageFromJsonToXml() throws IOException {
+        Message receivedMessage = createMessage("valid/edxl_encapsulated/samuA_to_samuB.json", SAMU_A_ROUTING_KEY);
+        assertEquals(MessageProperties.CONTENT_TYPE_JSON, receivedMessage.getMessageProperties().getContentType());
+        dispatcher.dispatch(receivedMessage);
+
+        // assert that the message was sent to the right exchange with the right routing key exactly 1 time
+        ArgumentCaptor<Message> argCaptor = ArgumentCaptor.forClass(Message.class);
+        Mockito.verify(rabbitTemplate, times(1)).send(
+                eq(DISTRIBUTION_EXCHANGE), eq("fr.health.samuB.message"), argCaptor.capture());
+        Message sentMessage = argCaptor.getValue();
+        assertEquals(MessageProperties.CONTENT_TYPE_XML, sentMessage.getMessageProperties().getContentType());
+
+        EdxlMessage jsonEDXLMessage = converter.deserializeJsonEDXL(new String(receivedMessage.getBody(), StandardCharsets.UTF_8));
+        EdxlMessage xmlEDXLMessage = converter.deserializeXmlEDXL(new String(sentMessage.getBody(), StandardCharsets.UTF_8));
+        assertEquals(jsonEDXLMessage, xmlEDXLMessage);
+    }
+
+    @Test
     @DisplayName("should send Json message to the right exchange and routing key")
     public void shouldDispatchJsonToRightExchange() throws IOException {
         Message receivedMessage = createMessage("valid/edxl_encapsulated/samuA_to_nexsis.json", SAMU_A_ROUTING_KEY);

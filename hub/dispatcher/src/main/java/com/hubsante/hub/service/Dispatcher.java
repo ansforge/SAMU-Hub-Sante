@@ -109,14 +109,13 @@ public class Dispatcher {
     }
 
     private boolean convertToXML(String senderID, String recipientID) {
-        // inter forces messaging is always XML
+        // sending message to outer hubex is always XML
         if (!recipientID.startsWith(HEALTH_PREFIX)) {
             return true;
         }
-        // for outside -> hubsante messaging, use client preference (default to JSON)
-        return !senderID.startsWith(HEALTH_PREFIX) &&
-                (hubConfig.getClientPreferences().get(recipientID) != null
-                        && hubConfig.getClientPreferences().get(recipientID));
+        // for reception, use client preference (default to JSON)
+        return hubConfig.getClientPreferences().get(recipientID) != null
+                        && hubConfig.getClientPreferences().get(recipientID);
     }
 
     private void checkSenderConsistency(String receivedRoutingKey, EdxlMessage edxlMessage) {
