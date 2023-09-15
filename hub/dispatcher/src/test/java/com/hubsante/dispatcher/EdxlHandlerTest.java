@@ -65,9 +65,11 @@ public class EdxlHandlerTest {
         CreateCaseMessage createCaseMessage = edxlMessage
                 .getContent().getContentObject().getContentWrapper().getEmbeddedContent().getMessage();
 
+
         assertEquals(
                 "Céphalée, migraines, Traumatisme sérieux, plaie intermédiaire",
                 createCaseMessage
+                        .getCreateCase()
                         .getInitialAlert()
                         .getAlertCode()
                         .getHealthMotive()
@@ -105,11 +107,11 @@ public class EdxlHandlerTest {
         // deserialization method does not throw error
         assertDoesNotThrow(() -> converter.deserializeJsonEDXL(json));
         // validation does
-        assertThrows(SchemaValidationException.class, () -> validator.validateJSON(json, "edxl.json"));
+        assertThrows(SchemaValidationException.class, () -> validator.validateJSON(json, "EDXL-DE_schema.json"));
     }
 
     @Test
-    @DisplayName("validation does not fail if envelope is ok and content is not")
+    @DisplayName("envelope and header validation do not fail if envelope is ok and content is not")
     public void edxlValidationSucceedsWithWrongJsonContent() throws IOException {
         File edxlCisuCreateFile = new File(classLoader.getResource("messages/invalid/invalidCreateMessageValidEdxlEnvelope.json").getFile());
         String json = Files.readString(edxlCisuCreateFile.toPath());
@@ -117,7 +119,9 @@ public class EdxlHandlerTest {
         // deserialization method does not throw error
         assertDoesNotThrow(() -> converter.deserializeJsonEDXL(json));
         // neither validation because envelope is ok
-        assertDoesNotThrow(() -> validator.validateJSON(json, "edxl.json"));
+        assertDoesNotThrow(() -> validator.validateJSON(json, "EDXL-DE_schema.json"));
+        CreateCaseMessage createCaseMessage = (CreateCaseMessage) converter.deserializeJsonContentMessage(json);
+        assertThrows(SchemaValidationException.class, () -> validator.validateContentMessage(createCaseMessage, false));
     }
 
     private String xmlPrefix() {

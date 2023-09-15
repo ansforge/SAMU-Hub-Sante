@@ -1,0 +1,189 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<edxlDistribution xmlns:ct="urn:oasis:names:tc:emergency:edxl:ct:1.0" xmlns:xlink="http://www.w3.org/1999/xlink"
+                  xlink:type="extended" xmlns="urn:oasis:names:tc:emergency:EDXL:DE:2.0">
+    <distributionID>fr.health.hub_6f860bed-565f-49d1-ac3b-648aca7c9e10</distributionID>
+    <senderID>fr.health.hub</senderID>
+    <dateTimeSent>2023-09-15T18:57:10.5360608+02:00</dateTimeSent>
+    <dateTimeExpires>2023-09-16T18:57:10.5360608+02:00</dateTimeExpires>
+    <distributionStatus>Actual</distributionStatus>
+    <distributionKind>Error</distributionKind>
+    <descriptor xlink:type="resource">
+        <language>fr-FR</language>
+        <explicitAddress>
+            <explicitAddressScheme>hubex</explicitAddressScheme>
+            <explicitAddressValue>fr.health.samuB</explicitAddressValue>
+        </explicitAddress>
+    </descriptor>
+    <content xlink:type="resource">
+        <contentObject xlink:type="resource">
+            <contentXML>
+                <embeddedXMLContent>
+                    <message>
+                        <errorCode>SENDER_INCONSISTENCY</errorCode>
+                        <errorCause>Sender inconsistency for message samuB_2608323d-507d-4cbf-bf74-52007f8124ea :
+                            message sender is fr.health.wrong-samu but received routing key is fr.health.samuB
+                        </errorCause>
+                        <sourceMessage>&lt;?xml version='1.0' encoding='UTF-8'?>&#xd;
+                            &lt;edxlDistribution xlink:type="extended" xmlns="urn:oasis:names:tc:emergency:EDXL:DE:2.0"
+                            xmlns:xlink="http://www.w3.org/1999/xlink"
+                            xmlns:ct="urn:oasis:names:tc:emergency:edxl:ct:1.0">&#xd;
+                            &lt;distributionID>wrong-samu_2608323d-507d-4cbf-bf74-52007f8124ea&lt;/distributionID>&#xd;
+                            &lt;senderID>fr.health.wrong-samu&lt;/senderID>&#xd;
+                            &lt;dateTimeSent>2022-07-25T10:04:34+01:00&lt;/dateTimeSent>&#xd;
+                            &lt;dateTimeExpires>2072-07-25T10:04:34+01:00&lt;/dateTimeExpires>&#xd;
+                            &lt;distributionStatus>Actual&lt;/distributionStatus>&#xd;
+                            &lt;distributionKind>Report&lt;/distributionKind>&#xd;
+                            &lt;descriptor xlink:type="resource">&#xd;
+                            &lt;language>fr-FR&lt;/language>&#xd;
+                            &lt;explicitAddress>&#xd;
+                            &lt;explicitAddressScheme>hubex&lt;/explicitAddressScheme>&#xd;
+                            &lt;explicitAddressValue>fr.fire.nexsis.sdisZ&lt;/explicitAddressValue>&#xd;
+                            &lt;/explicitAddress>&#xd;
+                            &lt;/descriptor>&#xd;
+                            &lt;content xlink:type="resource">&#xd;
+                            &lt;contentObject xlink:type="resource">&#xd;
+                            &lt;contentXML>&#xd;
+                            &lt;embeddedXMLContent>&#xd;
+                            &lt;message xmlns="urn:emergency:cisu:2.0">&#xd;
+                            &lt;messageId>samuB_2608323d-507d-4cbf-bf74-52007f8124ea&lt;/messageId>&#xd;
+                            &lt;sender>&#xd;
+                            &lt;name>samuB&lt;/name>&#xd;
+                            &lt;URI>hubex:fr.health.wrongsamu&lt;/URI>&#xd;
+                            &lt;/sender>&#xd;
+                            &lt;sentAt>2022-07-25T10:04:34+01:00&lt;/sentAt>&#xd;
+                            &lt;kind>Report&lt;/kind>&#xd;
+                            &lt;status>Actual&lt;/status>&#xd;
+                            &lt;recipients>&#xd;
+                            &lt;recipient>&#xd;
+                            &lt;name>sdisZ&lt;/name>&#xd;
+                            &lt;URI>hubex:fr.fire.nexsis.sdisZ&lt;/URI>&#xd;
+                            &lt;/recipient>&#xd;
+                            &lt;/recipients>&#xd;
+                            &lt;createCase>&#xd;
+                            &lt;caseId>SAMU069-20230725-AF1234&lt;/caseId>&#xd;
+                            &lt;senderCaseId>SAMU069-20230725-AF1234&lt;/senderCaseId>&#xd;
+                            &lt;createdAt>2022-07-25T10:03:34+01:00&lt;/createdAt>&#xd;
+                            &lt;initialAlert>&#xd;
+                            &lt;alertId>SAMU069-20230725-AL01234&lt;/alertId>&#xd;
+                            &lt;receivedAt>2022-07-25T10:01:22+01:00&lt;/receivedAt>&#xd;
+                            &lt;reporting>STANDARD&lt;/reporting>&#xd;
+                            &lt;alertInformation>suite collision avec un autre vélo sur piste cyclable, gonflement du
+                            genou, grosses égratignures, maux de tête&lt;/alertInformation>&#xd;
+                            &lt;caller&gt;&#xd;
+                            &lt;callerURI>tel:+330607080901&lt;/callerURI>&#xd;
+                            &lt;callbackURI>tel:+330601020304&lt;/callbackURI>&#xd;
+                            &lt;spokenLanguage>Français&lt;/spokenLanguage>&#xd;
+                            &lt;callerInformation>Epoux&lt;/callerInformation>&#xd;
+                            &lt;callerName>&#xd;
+                            &lt;complete>Louise Durand&lt;/complete>&#xd;
+                            &lt;callerLastName>Durand&lt;/callerLastName>&#xd;
+                            &lt;callerFirstName>Louise&lt;/callerFirstName>&#xd;
+                            &lt;/callerName>&#xd;
+                            &lt;/caller>&#xd;
+                            &lt;alertLocation/>&#xd;
+                            &lt;alertCode>&#xd;
+                            &lt;cisuVersion>1.19&lt;/cisuVersion>&#xd;
+                            &lt;whatsHappen>&#xd;
+                            &lt;code>C01.01.04&lt;/code>&#xd;
+                            &lt;label>2-roues&lt;/label>&#xd;
+                            &lt;freetext>pas d'autres types de véhicules impliqués&lt;/freetext>&#xd;
+                            &lt;/whatsHappen>&#xd;
+                            &lt;locationKind>&#xd;
+                            &lt;code>L02.01.00&lt;/code>&#xd;
+                            &lt;label>Voie publique hors voie rapide&lt;/label>&#xd;
+                            &lt;freetext>Voie vélo le long d'une route &lt;/freetext>&#xd;
+                            &lt;/locationKind>&#xd;
+                            &lt;riskThreat>&#xd;
+                            &lt;code>R22&lt;/code>&#xd;
+                            &lt;label>Gêne à la circulation&lt;/label>&#xd;
+                            &lt;freetext>vélos débordent sur la route, rsique lié aux voitures&lt;/freetext>&#xd;
+                            &lt;/riskThreat>&#xd;
+                            &lt;healthMotive>&#xd;
+                            &lt;code>M03.11, M02.07&lt;/code>&#xd;
+                            &lt;label>Céphalée, migraines, Traumatisme sérieux, plaie intermédiaire&lt;/label>&#xd;
+                            &lt;freetext>Portait un casque de protection&lt;/freetext>&#xd;
+                            &lt;/healthMotive>&#xd;
+                            &lt;gravity>faible&lt;/gravity>&#xd;
+                            &lt;victims>&#xd;
+                            &lt;count>MANY&lt;/count>&#xd;
+                            &lt;mainVictim>ADULT&lt;/mainVictim>&#xd;
+                            &lt;comment>Deuxième victime présente saignement legers aux mains et genoux&lt;/comment>&#xd;
+                            &lt;/victims>&#xd;
+                            &lt;/alertCode>&#xd;
+                            &lt;contact>&#xd;
+                            &lt;type>Personne&lt;/type>&#xd;
+                            &lt;detail>tel:+330607080901&lt;/detail>&#xd;
+                            &lt;/contact>&#xd;
+                            &lt;callTaker>&#xd;
+                            &lt;organization>SAMU069&lt;/organization>&#xd;
+                            &lt;controlRoom>Régulation&lt;/controlRoom>&#xd;
+                            &lt;/callTaker>&#xd;
+                            &lt;resource>&#xd;
+                            &lt;resourceDesc>DISPMED&lt;/resourceDesc>&#xd;
+                            &lt;mimeType>pdf&lt;/mimeType>&#xd;
+                            &lt;size>9&lt;/size>&#xd;
+                            &lt;URI>https://www.docPatient1.hpLyon.com/share?res=123456&lt;/URI>&#xd;
+                            &lt;digest>84feb54a7ab868484feb54a7ab868484feb54a7ab868484feb54a7ab868484feb54a7ab868484feb54a7ab868484feb54a7ab868484feb54a7ab868484feb54a7ab8684&lt;/digest>&#xd;
+                            &lt;/resource>&#xd;
+                            &lt;/initialAlert>&#xd;
+                            &lt;caseLocation>&#xd;
+                            &lt;locID>BA-15478-21455789&lt;/locID>&#xd;
+                            &lt;name>Quai des Célestins&lt;/name>&#xd;
+                            &lt;address>&#xd;
+                            &lt;complete>8 quai des Célestins&lt;/complete>&#xd;
+                            &lt;number>8&lt;/number>&#xd;
+                            &lt;wayName>&#xd;
+                            &lt;type>Quai&lt;/type>&#xd;
+                            &lt;name>des Célestins&lt;/name>&#xd;
+                            &lt;/wayName>&#xd;
+                            &lt;/address>&#xd;
+                            &lt;city>&#xd;
+                            &lt;name>Lyon&lt;/name>&#xd;
+                            &lt;inseeCode>69002&lt;/inseeCode>&#xd;
+                            &lt;detail>deuxième arrondissement&lt;/detail>&#xd;
+                            &lt;/city>&#xd;
+                            &lt;access/>&#xd;
+                            &lt;geometry>&#xd;
+                            &lt;point>&#xd;
+                            &lt;coord>&#xd;
+                            &lt;lat>45.7602368&lt;/lat>&#xd;
+                            &lt;lon>4.8310551&lt;/lon>&#xd;
+                            &lt;height>237&lt;/height>&#xd;
+                            &lt;time>2022-07-25T10:03:34+01:00&lt;/time>&#xd;
+                            &lt;precision>ADDRESS&lt;/precision>&#xd;
+                            &lt;/coord>&#xd;
+                            &lt;coordsys>EPSG-4326&lt;/coordsys>&#xd;
+                            &lt;/point>&#xd;
+                            &lt;/geometry>&#xd;
+                            &lt;link>&#xd;
+                            &lt;source>BAN&lt;/source>&#xd;
+                            &lt;id>id1234&lt;/id>&#xd;
+                            &lt;/link>&#xd;
+                            &lt;country>France&lt;/country>&#xd;
+                            &lt;freetext>Devant la boulangerie Quai des Célestin&lt;/freetext>&#xd;
+                            &lt;/caseLocation>&#xd;
+                            &lt;severity>MINOR&lt;/severity>&#xd;
+                            &lt;additionalInformation>&#xd;
+                            &lt;customMap>&#xd;
+                            &lt;key>neighborhood&lt;/key>&#xd;
+                            &lt;label>Quartier&lt;/label>&#xd;
+                            &lt;value>SECT.QUARTIER HISTORIQUE&lt;/value>&#xd;
+                            &lt;freetext>Une voix sens unique pour voiture + une voix bus&lt;/freetext>&#xd;
+                            &lt;/customMap>&#xd;
+                            &lt;/additionalInformation>&#xd;
+                            &lt;freetext>choc à la tête mais portait un casque de protection. 2ème victime n'a pas de
+                            blessures apparantes.&lt;/freetext>&#xd;
+                            &lt;/createCase>&#xd;
+                            &lt;/message>&#xd;
+                            &lt;/embeddedXMLContent>&#xd;
+                            &lt;/contentXML>&#xd;
+                            &lt;/contentObject>&#xd;
+                            &lt;/content>&#xd;
+                            &lt;/edxlDistribution>&#xd;
+                        </sourceMessage>
+                    </message>
+                </embeddedXMLContent>
+            </contentXML>
+        </contentObject>
+    </content>
+</edxlDistribution>

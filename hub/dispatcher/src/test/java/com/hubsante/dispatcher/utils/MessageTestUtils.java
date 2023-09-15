@@ -65,9 +65,13 @@ public class MessageTestUtils {
         }
     }
 
-    public static ErrorReport getErrorReportFromMessage(EdxlHandler edxlHandler, ArgumentCaptor<Message> messageArgumentCaptor) throws JsonProcessingException {
-        String json = new String(messageArgumentCaptor.getValue().getBody());
-        return (ErrorReport) edxlHandler.deserializeJsonContentMessage(json);
+    public static ErrorReport getErrorReportFromMessage(EdxlHandler edxlHandler, Message message) throws JsonProcessingException {
+
+        String msgString = new String(message.getBody());
+
+        return message.getMessageProperties().getContentType().equals(MessageProperties.CONTENT_TYPE_XML) ?
+                (ErrorReport) edxlHandler.deserializeXmlContentMessage(msgString) :
+                (ErrorReport) edxlHandler.deserializeJsonContentMessage(msgString);
     }
 
     public static void setCustomExpirationDate(EdxlMessage edxlMessage, long offset) {

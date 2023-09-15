@@ -18,6 +18,7 @@ import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 
 import static com.hubsante.hub.config.AmqpConfiguration.*;
+import static com.hubsante.hub.utils.EdxlUtils.HUB_ID;
 import static com.hubsante.hub.utils.EdxlUtils.edxlMessageFromHub;
 
 @Service
@@ -85,6 +86,7 @@ public class Dispatcher {
 
     private void logErrorAndSendReport(ErrorReport errorReport, String sender) {
         String infoQueueName = getInfoQueueNameFromClientId(sender);
+
         // log error
         // TODO bbo : add a logback pattern to allow structured logging
         log.error(
@@ -95,10 +97,14 @@ public class Dispatcher {
 
         try {
             EdxlMessage errorEdxlMessage = edxlMessageFromHub(sender, errorReport);
-            Message errorAmqpMessage = new Message(edxlHandler.serializeJsonEDXL(errorEdxlMessage).getBytes(),
-                    // TODO bbo : add a default RabbitTemplate configuration to avoid setting content type for each message
-                    //  (only XML ones should be explicitly set)
-                    MessagePropertiesBuilder.newInstance().setContentType(MessageProperties.CONTENT_TYPE_JSON).build());
+            Message errorAmqpMessage;
+            if (convertToXML(HUB_ID, sender)) {
+                errorAmqpMessage = new Message(edxlHandler.serializeXmlEDXL(errorEdxlMessage).getBytes(),
+                        MessagePropertiesBuilder.newInstance().setContentType(MessageProperties.CONTENT_TYPE_XML).build());
+            } else {
+                errorAmqpMessage = new Message(edxlHandler.serializeJsonEDXL(errorEdxlMessage).getBytes(),
+                        MessagePropertiesBuilder.newInstance().setContentType(MessageProperties.CONTENT_TYPE_JSON).build());
+            }
             
             rabbitTemplate.send(DISTRIBUTION_EXCHANGE, infoQueueName, errorAmqpMessage);
         } catch (JsonProcessingException e) {
@@ -109,14 +115,13 @@ public class Dispatcher {
     }
 
     private boolean convertToXML(String senderID, String recipientID) {
-        // inter forces messaging is always XML
+        // sending message to outer hubex is always XML
         if (!recipientID.startsWith(HEALTH_PREFIX)) {
             return true;
         }
-        // for outside -> hubsante messaging, use client preference (default to JSON)
-        return !senderID.startsWith(HEALTH_PREFIX) &&
-                (hubConfig.getClientPreferences().get(recipientID) != null
-                        && hubConfig.getClientPreferences().get(recipientID));
+        // sending message to health clients is based on client preference (default to JSON)
+        return hubConfig.getClientPreferences().get(recipientID) != null
+                        && hubConfig.getClientPreferences().get(recipientID);
     }
 
     private void checkSenderConsistency(String receivedRoutingKey, EdxlMessage edxlMessage) {
@@ -178,7 +183,7 @@ public class Dispatcher {
             // We deserialize according to the content type
             // It MUST be explicitly set by the client
             if (message.getMessageProperties().getContentType().equals(MessageProperties.CONTENT_TYPE_JSON)) {
-                validator.validateJSON(receivedEdxl, "edxl.json");
+                validator.validateJSON(receivedEdxl, "EDXL-DE_schema.json");
                 edxlMessage = edxlHandler.deserializeJsonEDXL(receivedEdxl);
                 validator.validateContentMessage(edxlMessage, false);
 
