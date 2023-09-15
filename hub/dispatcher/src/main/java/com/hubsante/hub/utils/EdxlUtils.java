@@ -6,8 +6,8 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 
 public class EdxlUtils {
-    private static final String HUBSANTE_ID = "fr.health.hubsante";
-    private static final String HUBSANTE_SCHEME = "hubsante";
+    private static final String HUB_ID = "fr.health.hub";
+    private static final String HUBEX_SCHEME = "hubex";
     private static final long DEFAULT_ERROR_EXPIRATION = 1L;
     private static final String DEFAULT_HUB_LANGUAGE = "fr-FR";
 
