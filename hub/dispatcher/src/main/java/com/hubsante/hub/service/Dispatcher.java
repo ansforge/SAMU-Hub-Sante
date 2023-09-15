@@ -84,7 +84,7 @@ public class Dispatcher {
     }
 
     private void logErrorAndSendReport(ErrorReport errorReport, String sender) {
-        String infoQueueName = getInfoQueueNameFromRecipient(sender);
+        String infoQueueName = getInfoQueueNameFromClientId(sender);
         // log error
         // TODO bbo : add a logback pattern to allow structured logging
         log.error(
@@ -163,8 +163,8 @@ public class Dispatcher {
         return message.getMessageProperties().getReceivedRoutingKey();
     }
 
-    private String getInfoQueueNameFromRecipient(String recipientID) {
-        return recipientID + ".info";
+    private String getInfoQueueNameFromClientId(String clientId) {
+        return clientId + ".info";
     }
 
     /*
