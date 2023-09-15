@@ -8,7 +8,7 @@ else
   openssl genrsa -out "$DOMAIN".key 2048
 
   echo "2. Generate a Certificate Signing Request (CSR)"
-  openssl req -key "$DOMAIN".key -new -out "$DOMAIN".csr
+  openssl req -key "$DOMAIN".key -new -out "$DOMAIN".csr -subj "/C=FR/CN=$DOMAIN"
 
   echo "3. Generate a Self-Signed Certificate (ie signed with its own private key)"
   openssl x509 -signkey "$DOMAIN".key -in "$DOMAIN".csr -req -days 1095 -out "$DOMAIN"_self-signed.crt
