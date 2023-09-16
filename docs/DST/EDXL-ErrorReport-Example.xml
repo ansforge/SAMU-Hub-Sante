@@ -20,7 +20,7 @@
                 <embeddedXMLContent>
                     <message>
                         <errorCode>SENDER_INCONSISTENCY</errorCode>
-                        <errorCause>Sender inconsistency for message samuB_2608323d-507d-4cbf-bf74-52007f8124ea :
+                        <errorCause>Sender inconsistency for message fr.health.samuB_2608323d-507d-4cbf-bf74-52007f8124ea :
                             message sender is fr.health.wrong-samu but received routing key is fr.health.samuB
                         </errorCause>
                         <sourceMessage>&lt;?xml version='1.0' encoding='UTF-8'?>&#xd;
@@ -45,7 +45,7 @@
                             &lt;contentXML>&#xd;
                             &lt;embeddedXMLContent>&#xd;
                             &lt;message xmlns="urn:emergency:cisu:2.0">&#xd;
-                            &lt;messageId>samuB_2608323d-507d-4cbf-bf74-52007f8124ea&lt;/messageId>&#xd;
+                            &lt;messageId>fr.health.samuB_2608323d-507d-4cbf-bf74-52007f8124ea&lt;/messageId>&#xd;
                             &lt;sender>&#xd;
                             &lt;name>samuB&lt;/name>&#xd;
                             &lt;URI>hubex:fr.health.wrongsamu&lt;/URI>&#xd;
