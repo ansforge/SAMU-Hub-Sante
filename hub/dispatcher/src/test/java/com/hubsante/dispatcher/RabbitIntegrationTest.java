@@ -96,7 +96,7 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
         Thread.sleep(DISPATCHER_PROCESS_TIME + DEFAULT_TTL);
         assertRecipientDidNotReceive("sdisZ", SDIS_Z_MESSAGE_QUEUE);
         assertErrorReportHasBeenReceived(samuB_client, SAMU_B_INFO_QUEUE, ErrorCode.DEAD_LETTER_QUEUED,
-                "samuB_2608323d-507d-4cbf-bf74-52007f8124ea", "dead-letter-queue; reason was expired");
+                "fr.health.samuB_2608323d-507d-4cbf-bf74-52007f8124ea", "dead-letter-queue; reason was expired");
     }
 
     @Test
@@ -111,7 +111,7 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
 
         assertRecipientDidNotReceive("sdisZ", SDIS_Z_MESSAGE_QUEUE);
         assertErrorReportHasBeenReceived(samuB_client, SAMU_B_INFO_QUEUE, ErrorCode.DEAD_LETTER_QUEUED,
-                "samuB_2608323d-507d-4cbf-bf74-52007f8124ea", "dead-letter-queue; reason was expired");
+                "fr.health.samuB_2608323d-507d-4cbf-bf74-52007f8124ea", "dead-letter-queue; reason was expired");
     }
 
     @Test
@@ -129,7 +129,7 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
         Thread.sleep(DISPATCHER_PROCESS_TIME);
         assertRecipientDidNotReceive("sdisZ", SDIS_Z_MESSAGE_QUEUE);
         assertErrorReportHasBeenReceived(samuB_client, SAMU_B_INFO_QUEUE, ErrorCode.EXPIRED_MESSAGE_BEFORE_ROUTING,
-                "samuB_2608323d-507d-4cbf-bf74-52007f8124ea",  "has expired before reaching the recipient queue");
+                "fr.health.samuB_2608323d-507d-4cbf-bf74-52007f8124ea",  "has expired before reaching the recipient queue");
     }
 
     @Test

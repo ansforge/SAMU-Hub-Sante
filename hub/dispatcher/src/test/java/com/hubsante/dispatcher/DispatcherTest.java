@@ -191,7 +191,7 @@ public class DispatcherTest {
         // we test that an error report has been sent with the correct error code
         assertErrorReportHasBeenSent(
                 SAMU_B_INFO_QUEUE, ErrorCode.DEAD_LETTER_QUEUED,
-                "samuB_2608323d-507d-4cbf-bf74-52007f8124ea",
+                "fr.health.samuB_2608323d-507d-4cbf-bf74-52007f8124ea",
                 "has been read from dead-letter-queue; reason was expired");
     }
 
@@ -266,7 +266,7 @@ public class DispatcherTest {
 
         // we test that an error report has been sent with the correct error code
         assertErrorReportHasBeenSent(SAMU_B_INFO_QUEUE, ErrorCode.DELIVERY_MODE_INCONSISTENCY,
-                "samuB_2608323d-507d-4cbf-bf74-52007f8124ea", "non-persistent delivery mode");
+                "fr.health.samuB_2608323d-507d-4cbf-bf74-52007f8124ea", "non-persistent delivery mode");
     }
 
     @Test
@@ -277,8 +277,8 @@ public class DispatcherTest {
         assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
 
         assertErrorReportHasBeenSent(SAMU_A_INFO_QUEUE, ErrorCode.INVALID_MESSAGE,
-                "$.distributionID est un champ obligatoire mais manquant",
-                "$.descriptor.explicitAddress.explicitAddressValue est un champ obligatoire mais manquant");
+                "$.distributionID: is missing but it is required",
+                "$.descriptor.explicitAddress.explicitAddressValue: is missing but it is required");
     }
 
     @Test
@@ -289,7 +289,7 @@ public class DispatcherTest {
         assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
 
         assertErrorReportHasBeenSent(SAMU_A_INFO_QUEUE, ErrorCode.INVALID_MESSAGE,
-                "$.createdAt est un champ obligatoire mais manquant");
+                "$.createdAt: is missing but it is required");
     }
 
     private void assertErrorReportHasBeenSent(String infoQueueName, ErrorCode errorCode, String... errorCause) throws JsonProcessingException {
