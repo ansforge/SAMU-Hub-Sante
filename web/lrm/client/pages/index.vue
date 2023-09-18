@@ -113,7 +113,7 @@ export default {
         case 'fr.health.test.rramu':
           return ['fr.health.samu76A', 'fr.health.samu76B', 'fr.health.normandie']
         case 'fr.health.test.scriptal':
-          return []
+          return ['fr.health.scriptal']
       }
     }
   },
