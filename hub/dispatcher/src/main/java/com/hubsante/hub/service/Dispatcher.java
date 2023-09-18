@@ -55,6 +55,9 @@ public class Dispatcher {
             rabbitTemplate.send(DISTRIBUTION_EXCHANGE, queueName, forwardedMsg);
         } catch (AbstractHubException e) {
             handleError(e, message);
+        } catch (Exception e) {
+            log.error("Unexpected error occurred while dispatching message from " + message.getMessageProperties().getReceivedRoutingKey(), e);
+            throw new RuntimeException(e);
         }
     }
 
