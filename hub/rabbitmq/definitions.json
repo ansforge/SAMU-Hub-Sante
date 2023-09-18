@@ -1136,21 +1136,21 @@
     {
       "user": "fr.health.samu090",
       "vhost": "/",
-      "configure": "",
+      "configure": "^(fr.health.samu090.message|fr.health.samu090.info|fr.health.samu090.ack)$",
       "write": "hubsante",
       "read": "^(fr.health.samu090.message|fr.health.samu090.info|fr.health.samu090.ack)$"
     },
     {
       "user": "fr.health.samu091",
       "vhost": "/",
-      "configure": "",
+      "configure": "^(fr.health.samu091.message|fr.health.samu091.info|fr.health.samu091.ack)$",
       "write": "hubsante",
       "read": "^(fr.health.samu091.message|fr.health.samu091.info|fr.health.samu091.ack)$"
     },
     {
       "user": "fr.health.bisom",
       "vhost": "/",
-      "configure": "",
+      "configure": "^(fr.health.samu091.message|fr.health.samu091.info|fr.health.samu091.ack|fr.health.samu090.message|fr.health.samu090.info|fr.health.samu090.ack)$",
       "write": "hubsante",
       "read": "^(fr.health.samu091.message|fr.health.samu091.info|fr.health.samu091.ack|fr.health.samu090.message|fr.health.samu090.info|fr.health.samu090.ack)$"
     },
