@@ -182,7 +182,7 @@ public class Dispatcher {
         try {
             // We deserialize according to the content type
             // It MUST be explicitly set by the client
-            if (message.getMessageProperties().getContentType().equals(MessageProperties.CONTENT_TYPE_JSON)) {
+            if (MessageProperties.CONTENT_TYPE_JSON.equals(message.getMessageProperties().getContentType())) {
                 validator.validateJSON(receivedEdxl, "EDXL-DE_schema.json");
                 edxlMessage = edxlHandler.deserializeJsonEDXL(receivedEdxl);
                 validator.validateContentMessage(edxlMessage, false);
@@ -190,7 +190,7 @@ public class Dispatcher {
                 log.info(" [x] Received from '" + message.getMessageProperties().getReceivedRoutingKey() + "': message with distributionID" + edxlMessage.getDistributionID());
                 log.debug(edxlHandler.prettyPrintJsonEDXL(edxlMessage));
 
-            } else if (message.getMessageProperties().getContentType().equals(MessageProperties.CONTENT_TYPE_XML)) {
+            } else if (MessageProperties.CONTENT_TYPE_XML.equals(message.getMessageProperties().getContentType())) {
                 // TODO bbo: add XSD validation when ready
 //                validator.validateXML(receivedEdxl, "edxl/edxl-de-v2.0-wd11.xsd");
                 edxlMessage = edxlHandler.deserializeXmlEDXL(receivedEdxl);
