@@ -213,7 +213,6 @@ public class DispatcherTest {
     public void rejectMessageWithoutContentType() throws IOException {
         // we test that the message has been rejected if the content-type is not set
         Message receivedMessage = createMessage("valid/edxl_encapsulated/samuA_to_nexsis.json", null, SAMU_B_ROUTING_KEY);
-        receivedMessage.getMessageProperties().setContentType(null);
         assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
 
         // we test that an error report has been sent with the correct error code

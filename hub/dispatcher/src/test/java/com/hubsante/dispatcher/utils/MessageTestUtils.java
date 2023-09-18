@@ -28,9 +28,6 @@ public class MessageTestUtils {
 
         MessageProperties properties = new MessageProperties();
         properties.setReceivedRoutingKey(receivedRoutingKey);
-        if (contentType != null) {
-            properties.setContentType(contentType);
-        }
         // Spring AMQP uses receivedDeliveryMode on consumers, and deliveryMode on producers
         // When testing consumers (aka the SpringAMPQ Message passed as a method parameter),
         // we need to set the receivedDeliveryMode, which is PERSISTENT by default
@@ -39,7 +36,10 @@ public class MessageTestUtils {
         // (already tested in DispatcherTest)
         properties.setReceivedDeliveryMode(MessageDeliveryMode.PERSISTENT);
 
-        return new Message(edxlString.getBytes(StandardCharsets.UTF_8), properties);
+        Message createdMessage = new Message(edxlString.getBytes(StandardCharsets.UTF_8), properties);
+        createdMessage.getMessageProperties().setContentType(contentType);
+
+        return createdMessage;
     }
 
     public static Message createMessage(String filename, String receivedRoutingKey) throws IOException {
