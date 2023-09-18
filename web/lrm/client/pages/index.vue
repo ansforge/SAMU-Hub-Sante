@@ -103,7 +103,7 @@ export default {
     targetClientIds () {
       switch (this.form.clientId) {
         case 'fr.health.test.appligos':
-          return []
+          return ['fr.health.samu780']
         case 'fr.health.test.bisom':
           return ['fr.health.samu090', 'fr.health.samu091']
         case 'fr.health.test.exos':
