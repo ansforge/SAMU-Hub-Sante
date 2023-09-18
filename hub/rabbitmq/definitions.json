@@ -352,6 +352,27 @@
       "arguments": {}
     },
     {
+      "name": "fr.health.samu780.message",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "fr.health.samu780.info",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "fr.health.samu780.ack",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
       "name": "fr.health.test.bisom.message",
       "vhost": "/",
       "durable": true,
@@ -730,6 +751,30 @@
     {
       "source": "distribution",
       "vhost": "/",
+      "destination": "fr.health.samu780.message",
+      "destination_type": "queue",
+      "routing_key": "fr.health.samu780.message",
+      "arguments": {}
+    },
+    {
+      "source": "distribution",
+      "vhost": "/",
+      "destination": "fr.health.samu780.info",
+      "destination_type": "queue",
+      "routing_key": "fr.health.samu780.info",
+      "arguments": {}
+    },
+    {
+      "source": "distribution",
+      "vhost": "/",
+      "destination": "fr.health.samu780.ack",
+      "destination_type": "queue",
+      "routing_key": "fr.health.samu780.ack",
+      "arguments": {}
+    },
+    {
+      "source": "distribution",
+      "vhost": "/",
       "destination": "fr.health.samuA.message",
       "destination_type": "queue",
       "routing_key": "fr.health.samuA.message",
@@ -1037,6 +1082,10 @@
       "tags": []
     },
     {
+      "name": "fr.health.samu780",
+      "tags": []
+    },
+    {
       "name": "fr.fire.nexsis.test",
       "tags": []
     }
@@ -1141,6 +1190,13 @@
       "read": "^(fr.health.samu440.message|fr.health.samu440.info|fr.health.samu440.ack)$"
     },
     {
+      "user": "fr.health.samu780",
+      "vhost": "/",
+      "configure": "",
+      "write": "hubsante",
+      "read": "^(fr.health.samu780.message|fr.health.samu780.info|fr.health.samu780.ack)$"
+    },
+    {
       "user": "fr.fire.nexsis.test",
       "vhost": "/",
       "configure": "^(hubfire|federation: hubfire.*)$",
@@ -1224,6 +1280,13 @@
       "vhost": "/",
       "user": "fr.health.samu440",
       "write": "^fr.health.samu440$",
+      "read": ""
+    },
+    {
+      "exchange": "hubsante",
+      "vhost": "/",
+      "user": "fr.health.samu780",
+      "write": "^fr.health.samu780$",
       "read": ""
     },
     {
