@@ -154,6 +154,27 @@
       "arguments": {}
     },
     {
+      "name": "fr.health.scriptal.message",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "fr.health.scriptal.info",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "fr.health.scriptal.ack",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
       "name": "fr.health.normandie.message",
       "vhost": "/",
       "durable": true,
@@ -655,6 +676,30 @@
     {
       "source": "distribution",
       "vhost": "/",
+      "destination": "fr.health.scriptal.message",
+      "destination_type": "queue",
+      "routing_key": "fr.health.scriptal.message",
+      "arguments": {}
+    },
+    {
+      "source": "distribution",
+      "vhost": "/",
+      "destination": "fr.health.scriptal.ack",
+      "destination_type": "queue",
+      "routing_key": "fr.health.scriptal.ack",
+      "arguments": {}
+    },
+    {
+      "source": "distribution",
+      "vhost": "/",
+      "destination": "fr.health.scriptal.info",
+      "destination_type": "queue",
+      "routing_key": "fr.health.scriptal.info",
+      "arguments": {}
+    },
+    {
+      "source": "distribution",
+      "vhost": "/",
       "destination": "fr.health.samu76A.message",
       "destination_type": "queue",
       "routing_key": "fr.health.samu76A.message",
@@ -1062,6 +1107,10 @@
       "tags": []
     },
     {
+      "name": "fr.health.scriptal",
+      "tags": []
+    },
+    {
       "name": "fr.health.normandie",
       "tags": []
     },
@@ -1155,6 +1204,13 @@
       "read": "^(fr.health.samu091.message|fr.health.samu091.info|fr.health.samu091.ack|fr.health.samu090.message|fr.health.samu090.info|fr.health.samu090.ack)$"
     },
     {
+      "user": "fr.health.scriptal",
+      "vhost": "/",
+      "configure": "",
+      "write": "hubsante",
+      "read": "^(fr.health.scriptal.message|fr.health.scriptal.info|fr.health.scriptal.ack)$"
+    },
+    {
       "user": "fr.health.normandie",
       "vhost": "/",
       "configure": "",
@@ -1245,6 +1301,13 @@
       "vhost": "/",
       "user": "fr.health.bisom",
       "write": "^(fr.health.samu091|fr.health.samu090)$",
+      "read": ""
+    },
+    {
+      "exchange": "hubsante",
+      "vhost": "/",
+      "user": "fr.health.scriptal",
+      "write": "^fr.health.scriptal$",
       "read": ""
     },
     {
