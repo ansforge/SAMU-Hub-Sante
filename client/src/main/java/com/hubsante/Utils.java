@@ -22,7 +22,7 @@ public class Utils {
     * Dans le contexte de ce code exemple, cette méthode permet de récupérer un clientId à partir
     * de la routing key fournie en argument de run
      */
-    static String getClientId(String[] strings) {
+    public static String getClientId(String[] strings) {
         String[] routing = getRouting(strings).split("[.]");
         List<String> routingKey = Arrays.stream(routing).limit(routing.length-1).collect(Collectors.toList());
         return String.join(".", routingKey);
@@ -32,13 +32,13 @@ public class Utils {
     * Dans le contexte de ce code exemple, cette méthode permet de récupérer la routing key
     * passée en argument de run
      */
-    static String getRouting(String[] strings) {
+    public static String getRouting(String[] strings) {
         if (strings.length < 1)
             return "anonymous.info";
         return strings[0];
     }
 
-    static EdxlMessage referenceMessageFromReceivedMessage(EdxlMessage receivedMessage) {
+    public static EdxlMessage referenceMessageFromReceivedMessage(EdxlMessage receivedMessage) {
         String referencedMessageRecipient = receivedMessage.getDescriptor().getExplicitAddress().getExplicitAddressValue();
         String referencedMessageSender = receivedMessage.getSenderID();
         String referencedMessageDistributionID = receivedMessage.getDistributionID();
