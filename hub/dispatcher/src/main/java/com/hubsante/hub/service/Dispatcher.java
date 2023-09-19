@@ -57,7 +57,7 @@ public class Dispatcher {
             handleError(e, message);
         } catch (Exception e) {
             log.error("Unexpected error occurred while dispatching message from " + message.getMessageProperties().getReceivedRoutingKey(), e);
-            throw new RuntimeException(e);
+            throw new AmqpRejectAndDontRequeueException(e);
         }
     }
 
