@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.hubsante.hub.config.HubClientConfiguration;
 import com.hubsante.hub.exception.*;
 import com.hubsante.model.edxl.*;
+import com.hubsante.model.report.ErrorCode;
 import com.hubsante.model.report.ErrorReport;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.AmqpRejectAndDontRequeueException;
@@ -36,6 +37,20 @@ public class Dispatcher {
         this.edxlHandler = edxlHandler;
         this.hubConfig = hubConfig;
         this.validator = validator;
+        initReturnsCallback();
+    }
+
+    public void initReturnsCallback() {
+        // set returns callback to track undistributed messages
+        rabbitTemplate.setReturnsCallback(returned -> {
+            ErrorReport errorReport = new ErrorReport(
+                    ErrorCode.UNROUTABLE_MESSAGE,
+                    "unable do deliver message to " + returned.getRoutingKey(),
+                    new String(returned.getMessage().getBody()));
+
+            String senderRoutingKey = returned.getMessage().getMessageProperties().getHeader(DLQ_ORIGINAL_ROUTING_KEY);
+            logErrorAndSendReport(errorReport, senderRoutingKey);
+        });
     }
 
     @RabbitListener(queues = DISPATCH_QUEUE_NAME)
@@ -63,12 +78,17 @@ public class Dispatcher {
 
     @RabbitListener(queues = DISPATCH_DLQ_NAME)
     public void dispatchDLQ(Message message) {
-        EdxlMessage edxlMessage = deserializeMessage(message);
-        // log message & error
-        String errorCause = "Message " + edxlMessage.getDistributionID() + " has been read from dead-letter-queue; reason was " +
-                message.getMessageProperties().getHeader(DLQ_REASON);
-        DeadLetteredMessageException exception = new DeadLetteredMessageException(errorCause);
-        handleError(exception, message);
+        try {
+            EdxlMessage edxlMessage = deserializeMessage(message);
+            // log message & error
+            String errorCause = "Message " + edxlMessage.getDistributionID() + " has been read from dead-letter-queue; reason was " +
+                    message.getMessageProperties().getHeader(DLQ_REASON);
+            DeadLetteredMessageException exception = new DeadLetteredMessageException(errorCause);
+            handleError(exception, message);
+        } catch (Exception e) {
+            log.error("Unexpected error occurred while dispatching message from " + message.getMessageProperties().getReceivedRoutingKey(), e);
+            throw new AmqpRejectAndDontRequeueException(e);
+        }
     }
 
     private void handleError(AbstractHubException exception, Message message) {

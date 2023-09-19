@@ -87,6 +87,20 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
     }
 
     @Test
+    @DisplayName("publish to inexistent recipient")
+    public void publishToInexistentRecipientFails() throws Exception {
+        String p12Path = classLoader.getResource("config/certs/samuB/samuB.p12").getPath();
+        RabbitTemplate samuB_client = getCustomRabbitTemplate(p12Path, "samuB");
+
+        Message published = createMessage("routing/inexistent_recipient_queue.xml", SAMU_B_OUTER_MESSAGE_ROUTING_KEY);
+        samuB_client.send(HUBSANTE_EXCHANGE, SAMU_B_OUTER_MESSAGE_ROUTING_KEY, published);
+        Thread.sleep(DISPATCHER_PROCESS_TIME);
+
+        assertErrorReportHasBeenReceived(samuB_client, SAMU_B_INFO_QUEUE, ErrorCode.UNROUTABLE_MESSAGE,
+                "unable do deliver message to fr.health.inexistent.message");
+    }
+
+    @Test
     @DisplayName("expired message should be rejected")
     public void rejectExpiredMessage() throws Exception {
         Message published = createMessage("valid/edxl_encapsulated/samuB_to_nexsis.xml", SAMU_B_OUTER_MESSAGE_ROUTING_KEY);

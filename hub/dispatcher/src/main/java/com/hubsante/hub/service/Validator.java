@@ -7,10 +7,7 @@ import com.hubsante.model.cisu.CreateCase;
 import com.hubsante.model.cisu.CreateCaseMessage;
 import com.hubsante.model.edxl.ContentMessage;
 import com.hubsante.model.edxl.EdxlMessage;
-import com.networknt.schema.JsonSchema;
-import com.networknt.schema.JsonSchemaFactory;
-import com.networknt.schema.SpecVersion;
-import com.networknt.schema.ValidationMessage;
+import com.networknt.schema.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.Set;
 
 @Slf4j
@@ -96,6 +94,7 @@ public class Validator {
     }
 
     public void validateJSON(String message, String jsonSchemaFile) throws IOException {
+        Locale.setDefault(Locale.ENGLISH);
         JsonSchemaFactory factory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7);
         JsonSchema jsonSchema = factory.getSchema(Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream("json-schema/" + jsonSchemaFile));
