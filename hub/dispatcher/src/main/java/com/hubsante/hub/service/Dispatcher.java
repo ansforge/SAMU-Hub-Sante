@@ -101,7 +101,7 @@ public class Dispatcher {
         try {
             EdxlMessage errorEdxlMessage = edxlMessageFromHub(sender, errorReport);
             Message errorAmqpMessage;
-            if (convertToXML(HUB_ID, sender)) {
+            if (convertToXML(sender)) {
                 errorAmqpMessage = new Message(edxlHandler.serializeXmlEDXL(errorEdxlMessage).getBytes(),
                         MessagePropertiesBuilder.newInstance().setContentType(MessageProperties.CONTENT_TYPE_XML).build());
             } else {
@@ -117,7 +117,7 @@ public class Dispatcher {
         }
     }
 
-    private boolean convertToXML(String senderID, String recipientID) {
+    private boolean convertToXML(String recipientID) {
         // sending message to outer hubex is always XML
         if (!recipientID.startsWith(HEALTH_PREFIX)) {
             return true;
@@ -253,7 +253,7 @@ public class Dispatcher {
         String edxlString;
 
         try {
-            if (convertToXML(senderID, recipientID)) {
+            if (convertToXML(recipientID)) {
                 edxlString = edxlHandler.prettyPrintXmlEDXL(edxlMessage);
                 fwdAmqpProperties.setContentType(MessageProperties.CONTENT_TYPE_XML);
             } else {

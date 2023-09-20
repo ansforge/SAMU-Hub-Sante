@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.Set;
 
 @Slf4j
@@ -96,6 +97,7 @@ public class Validator {
     }
 
     public void validateJSON(String message, String jsonSchemaFile) throws IOException {
+        Locale.setDefault(Locale.ENGLISH);
         JsonSchemaFactory factory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7);
         JsonSchema jsonSchema = factory.getSchema(Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream("json-schema/" + jsonSchemaFile));
