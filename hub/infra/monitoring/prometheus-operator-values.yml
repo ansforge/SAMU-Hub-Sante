@@ -32,16 +32,24 @@ defaultRules:
 
 prometheus:
   enabled: true
+  # Ref.: https://github.com/helm/charts/issues/11471
+  prometheusSpec:
+    externalUrl: 'https://admin.hub.esante.gouv.fr/prometheus/'
+    routePrefix: '/prometheus'
   ingress:
     # Ref.: https://artifacthub.io/packages/helm/prometheus-community/kube-prometheus-stack?modal=template&template=prometheus/ingress.yaml
     enabled: true
     ingressClassName: nginx-admin
+    tls:
+      - hosts:
+          - admin.hub.esante.gouv.fr
+        secretName: admin-cert
     #      hosts:
     #        - prometheus.nnpi.beast-code.com
+    hosts:
+      - admin.hub.esante.gouv.fr
     paths:
-      - /
       - /prometheus
-    pathType: Prefix
 
 grafana:
   enabled: true
