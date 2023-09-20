@@ -9,7 +9,7 @@
     <descriptor xlink:type="resource">
         <language>fr-FR</language>
         <explicitAddress>
-            <explicitAddressScheme>hubfire</explicitAddressScheme>
+            <explicitAddressScheme>hubex</explicitAddressScheme>
             <explicitAddressValue>fr.health.inexistent</explicitAddressValue>
         </explicitAddress>
     </descriptor>
