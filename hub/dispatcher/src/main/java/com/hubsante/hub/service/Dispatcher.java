@@ -1,7 +1,7 @@
 package com.hubsante.hub.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.hubsante.hub.config.HubClientConfiguration;
+import com.hubsante.hub.config.HubConfiguration;
 import com.hubsante.hub.exception.*;
 import com.hubsante.model.edxl.*;
 import com.hubsante.model.report.ErrorCode;
@@ -27,12 +27,12 @@ import static com.hubsante.hub.utils.EdxlUtils.edxlMessageFromHub;
 public class Dispatcher {
     private final RabbitTemplate rabbitTemplate;
     private final EdxlHandler edxlHandler;
-    private final HubClientConfiguration hubConfig;
+    private final HubConfiguration hubConfig;
     private final Validator validator;
 
     private static final String HEALTH_PREFIX = "fr.health";
 
-    public Dispatcher(RabbitTemplate rabbitTemplate, EdxlHandler edxlHandler, HubClientConfiguration hubConfig, Validator validator) {
+    public Dispatcher(RabbitTemplate rabbitTemplate, EdxlHandler edxlHandler, HubConfiguration hubConfig, Validator validator) {
         this.rabbitTemplate = rabbitTemplate;
         this.edxlHandler = edxlHandler;
         this.hubConfig = hubConfig;

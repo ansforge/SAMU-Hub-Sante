@@ -3,7 +3,6 @@ package com.hubsante.hub.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hubsante.hub.exception.SchemaValidationException;
-import com.hubsante.model.cisu.CreateCase;
 import com.hubsante.model.cisu.CreateCaseMessage;
 import com.hubsante.model.edxl.ContentMessage;
 import com.hubsante.model.edxl.EdxlMessage;
@@ -20,9 +19,9 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringReader;
 import java.util.Arrays;
-import java.util.Locale;
 import java.util.Set;
 
 @Slf4j
@@ -45,7 +44,7 @@ public class Validator {
         UseCaseEnum useCase = UseCaseEnum.getByValue(contentMessage.getClass().getSimpleName());
 
         switch (useCase) {
-            case CREATE_CASE:
+            case RC_EDA:
                 if (isXML) {
                     validateXML(
                         contentMessageHandler.serializeXmlMessage(contentMessage),
@@ -60,7 +59,7 @@ public class Validator {
                 break;
             //TODO bbo: generate json-schema & xsd for ACK and REPORT
             case CUSTOM:
-            case GENERIC_ACK:
+            case REFERENCE_MESSAGE:
             case ERROR_REPORT:
             case UNKNOWN:
             default:
@@ -94,10 +93,10 @@ public class Validator {
     }
 
     public void validateJSON(String message, String jsonSchemaFile) throws IOException {
-        Locale.setDefault(Locale.ENGLISH);
         JsonSchemaFactory factory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7);
-        JsonSchema jsonSchema = factory.getSchema(Thread.currentThread().getContextClassLoader()
-                .getResourceAsStream("json-schema/" + jsonSchemaFile));
+        InputStream schemaStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("json-schema/" + jsonSchemaFile);
+        JsonSchema jsonSchema = factory.getSchema(schemaStream);
+
         JsonNode jsonNode = jsonMapper.readTree(message);
         Set<ValidationMessage> validationMessages = jsonSchema.validate(jsonNode);
 
@@ -111,8 +110,8 @@ public class Validator {
     }
 
     public enum UseCaseEnum {
-        CREATE_CASE("CreateCaseMessage"),
-        GENERIC_ACK("CisuAckMessage"),
+        RC_EDA("CreateCaseMessage"),
+        REFERENCE_MESSAGE("ReferenceMessage"),
         CUSTOM("CustomMessage"),
         ERROR_REPORT("ErrorReport"),
         UNKNOWN("Unknown");

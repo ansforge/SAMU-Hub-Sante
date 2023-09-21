@@ -2,10 +2,9 @@ package com.hubsante.dispatcher;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.hubsante.hub.HubApplication;
-import com.hubsante.hub.config.HubClientConfiguration;
+import com.hubsante.hub.config.HubConfiguration;
 import com.hubsante.hub.service.Dispatcher;
 import com.hubsante.hub.service.EdxlHandler;
-import com.hubsante.hub.service.ContentMessageHandler;
 import com.hubsante.hub.service.Validator;
 import com.hubsante.model.CustomMessage;
 import com.hubsante.model.edxl.EdxlMessage;
@@ -53,7 +52,7 @@ public class DispatcherTest {
     @Autowired
     private EdxlHandler converter;
     @Autowired
-    private HubClientConfiguration hubConfig;
+    private HubConfiguration hubConfig;
     @Autowired
     private Validator validator;
     static ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
