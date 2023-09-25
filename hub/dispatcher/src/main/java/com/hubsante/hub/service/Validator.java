@@ -65,7 +65,6 @@ public class Validator {
             case CUSTOM:
             case GENERIC_ACK:
             case ERROR_REPORT:
-            case UNKNOWN:
             default:
                 if (isXML) {
                     log.warn("Can't validate against XSD : class {} has no specified xsd spec",
@@ -97,7 +96,6 @@ public class Validator {
     }
 
     public void validateJSON(String message, String jsonSchemaFile) throws IOException {
-        Locale.setDefault(Locale.ENGLISH);
         JsonSchemaFactory factory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7);
         JsonSchema jsonSchema = factory.getSchema(Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream("json-schema/" + jsonSchemaFile));
@@ -117,8 +115,7 @@ public class Validator {
         CREATE_CASE("CreateCaseMessage"),
         GENERIC_ACK("CisuAckMessage"),
         CUSTOM("CustomMessage"),
-        ERROR_REPORT("ErrorReport"),
-        UNKNOWN("Unknown");
+        ERROR_REPORT("ErrorReport");
 
         private String clazzName;
 
@@ -126,9 +123,9 @@ public class Validator {
             this.clazzName = clazzName;
         }
 
-        public static final UseCaseEnum getByValue(String clazzName) {
+        public static UseCaseEnum getByValue(String clazzName) {
             return Arrays.stream(UseCaseEnum.values())
-                    .filter(useCaseEnum -> useCaseEnum.clazzName.equals(clazzName)).findFirst().orElse(UNKNOWN);
+                    .filter(useCaseEnum -> useCaseEnum.clazzName.equals(clazzName)).findFirst().orElseThrow();
         }
     }
 }
