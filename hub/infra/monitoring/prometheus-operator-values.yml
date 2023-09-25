@@ -43,7 +43,7 @@ prometheus:
     tls:
       - hosts:
           - admin.hub.esante.gouv.fr
-        secretName: admin-cert
+        secretName: admin-tls-secret
     #      hosts:
     #        - prometheus.nnpi.beast-code.com
     hosts:
@@ -61,7 +61,7 @@ alertmanager:
     tls:
       - hosts:
           - admin.hub.esante.gouv.fr
-        secretName: admin-cert
+        secretName: admin-tls-secret
     hosts:
       - admin.hub.esante.gouv.fr
     paths:
@@ -78,7 +78,7 @@ grafana:
     tls:
       - hosts:
           - admin.hub.esante.gouv.fr
-        secretName: admin-cert
+        secretName: admin-tls-secret
     hosts:
       - admin.hub.esante.gouv.fr
     path: "/grafana(/|$)(.*)"
