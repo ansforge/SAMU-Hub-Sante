@@ -51,70 +51,41 @@ prometheus:
     paths:
       - /prometheus
 
+alertmanager:
+  enabled: true
+  ingress:
+    enabled: true
+    annotations:
+      nginx.ingress.kubernetes.io/rewrite-target: /$2
+    ingressClassName: nginx-admin
+    tls:
+      - hosts:
+          - admin.hub.esante.gouv.fr
+        secretName: admin-cert
+    hosts:
+      - admin.hub.esante.gouv.fr
+    paths:
+      - "/alertmanager(/|$)(.*)"
+    pathType: Prefix
+
 grafana:
   enabled: true
   ingress:
     enabled: true
     ingressClassName: nginx-admin
-    #      hosts:
-    #        - grafana.nnpi.beast-code.com
-    path: /grafana
+    annotations:
+      nginx.ingress.kubernetes.io/rewrite-target: /$2
+    tls:
+      - hosts:
+          - admin.hub.esante.gouv.fr
+        secretName: admin-cert
+    hosts:
+      - admin.hub.esante.gouv.fr
+    path: "/grafana(/|$)(.*)"
   persistence:
     enabled: true
     # size: 10Gi
   grafana.ini:
     server:
-      root_url: http://51.91.81.136/grafana
-
-alertmanager:
-  enabled: true
-  ingress:
-    enabled: true
-    ingressClassName: nginx-admin
-    #      hosts:
-    #        - alerts.nnpi.beast-code.com
-    paths:
-      - /alertmanager
-    pathType: Prefix
-#    config:
-#      global:
-#        slack_api_url: <path:arc/data/alertmanager#SLACK_API_URL>
-#      route:
-#        receiver: "slack-default"
-#        group_by:
-#          - alertname
-#          - cluster
-#          - service
-#        group_wait: 30s # 30s
-#        group_interval: 5m # 5m
-#        repeat_interval: 1h # 4h
-#        routes:
-#          - receiver: "null"
-#            matchers:
-#              - alertname =~ "InfoInhibitor|Watchdog"
-#          - receiver: "slack-warn-critical"
-#            matchers:
-#              - severity =~ "warning|critical"
-#            continue: true
-#      receivers:
-#        - name: "null"
-#        - name: "slack-default"
-#          slack_configs:
-#            - send_resolved: true # false
-#              channel: "#notify-arc-alerts"
-#              text: |-
-#                {{range .Alerts}}
-#                Alert: {{.Labels.alertname}}, Severity: {{.Labels.severity}}
-#                Summary: {{.Annotations.summary}}
-#                Description: {{.Annotations.description}}
-#                {{end}}
-#        - name: "slack-warn-critical"
-#          slack_configs:
-#            - send_resolved: true # false
-#              channel: "#notify-arc-alerts"
-#              text: |-
-#                {{range .Alerts}}
-#                Alert: {{.Labels.alertname}}, Severity: {{.Labels.severity}}
-#                Summary: {{.Annotations.summary}}
-#                Description: {{.Annotations.description}}
-#                {{end}}
+      root_url: "%(protocol)s://%(domain)s:%(http_port)s/grafana/"
+      serve_from_sub_path: true
