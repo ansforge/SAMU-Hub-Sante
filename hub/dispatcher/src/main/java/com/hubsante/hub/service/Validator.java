@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.Set;
 
 @Slf4j
@@ -61,14 +62,13 @@ public class Validator {
             case CUSTOM:
             case REFERENCE_MESSAGE:
             case ERROR_REPORT:
-            case UNKNOWN:
             default:
                 if (isXML) {
-                    log.error("Can't validate against XSD : class {} has no specified xsd spec",
+                    log.warn("Can't validate against XSD : class {} has no specified xsd spec",
                             contentMessage.getClass().getSimpleName());
                     break;
                 }
-                log.error("Can't validate against Json-schema : class {} has no specified schema",
+                log.warn("Can't validate against Json-schema : class {} has no specified schema",
                         contentMessage.getClass().getSimpleName());
                 break;
         }
@@ -113,8 +113,7 @@ public class Validator {
         RC_EDA("CreateCaseMessage"),
         REFERENCE_MESSAGE("ReferenceMessage"),
         CUSTOM("CustomMessage"),
-        ERROR_REPORT("ErrorReport"),
-        UNKNOWN("Unknown");
+        ERROR_REPORT("ErrorReport");
 
         private String clazzName;
 
@@ -122,9 +121,9 @@ public class Validator {
             this.clazzName = clazzName;
         }
 
-        public static final UseCaseEnum getByValue(String clazzName) {
+        public static UseCaseEnum getByValue(String clazzName) {
             return Arrays.stream(UseCaseEnum.values())
-                    .filter(useCaseEnum -> useCaseEnum.clazzName.equals(clazzName)).findFirst().orElse(UNKNOWN);
+                    .filter(useCaseEnum -> useCaseEnum.clazzName.equals(clazzName)).findFirst().orElseThrow();
         }
     }
 }
