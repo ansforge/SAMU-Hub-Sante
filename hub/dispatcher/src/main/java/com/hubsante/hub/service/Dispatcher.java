@@ -45,7 +45,7 @@ public class Dispatcher {
         rabbitTemplate.setReturnsCallback(returned -> {
             ErrorReport errorReport = new ErrorReport(
                     ErrorCode.UNROUTABLE_MESSAGE,
-                    "unable do deliver message to " + returned.getRoutingKey(),
+                    "unable do deliver message to " + returned.getRoutingKey() + ", cause was " + returned.getReplyText() + " (" + returned.getReplyCode() + ")",
                     new String(returned.getMessage().getBody()));
 
             String senderRoutingKey = returned.getMessage().getMessageProperties().getHeader(DLQ_ORIGINAL_ROUTING_KEY);
@@ -86,7 +86,9 @@ public class Dispatcher {
             DeadLetteredMessageException exception = new DeadLetteredMessageException(errorCause);
             handleError(exception, message);
         } catch (Exception e) {
-            log.error("Unexpected error occurred while dispatching message from " + message.getMessageProperties().getReceivedRoutingKey(), e);
+            String originalRoutingKey = message.getMessageProperties().getHeader(DLQ_ORIGINAL_ROUTING_KEY) != null ?
+                    message.getMessageProperties().getHeader(DLQ_ORIGINAL_ROUTING_KEY) : "Unknown routing key";
+            log.error("Unexpected error occurred while DLQ-dispatching message from " + originalRoutingKey, e);
             throw new AmqpRejectAndDontRequeueException(e);
         }
     }
