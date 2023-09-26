@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.util.Arrays;
-import java.util.Locale;
 import java.util.Set;
 
 @Slf4j
@@ -60,7 +59,7 @@ public class Validator {
                 break;
             //TODO bbo: generate json-schema & xsd for ACK and REPORT
             case CUSTOM:
-            case REFERENCE_MESSAGE:
+            case RC_REF:
             case ERROR_REPORT:
             default:
                 if (isXML) {
@@ -111,7 +110,7 @@ public class Validator {
 
     public enum UseCaseEnum {
         RC_EDA("CreateCaseMessage"),
-        REFERENCE_MESSAGE("ReferenceMessage"),
+        RC_REF("ReferenceMessage"),
         CUSTOM("CustomMessage"),
         ERROR_REPORT("ErrorReport");
 

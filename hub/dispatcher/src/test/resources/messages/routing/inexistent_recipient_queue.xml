@@ -28,8 +28,8 @@
                         <status>Actual</status>
                         <recipients>
                             <recipient>
-                                <name>sdisZ</name>
-                                <URI>hubex:fr.fire.nexsis.sdisZ</URI>
+                                <name>inexistent-samu</name>
+                                <URI>hubex:fr.health.inexistent</URI>
                             </recipient>
                         </recipients>
                         <createCase>

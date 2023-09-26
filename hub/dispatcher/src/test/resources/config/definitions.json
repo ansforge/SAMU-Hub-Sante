@@ -130,7 +130,7 @@
       "pattern": "^.*\\.info",
       "apply-to": "queues",
       "definition": {
-        "message-ttl": 10000,
+        "message-ttl": 5000,
         "dead-letter-exchange": "distribution.dlx"
       },
       "priority": 0

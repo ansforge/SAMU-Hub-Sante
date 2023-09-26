@@ -1,4 +1,4 @@
-package com.hubsante.dispatcher.utils;
+package com.hubsante.hub.service.utils;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;

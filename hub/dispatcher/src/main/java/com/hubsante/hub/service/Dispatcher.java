@@ -79,6 +79,10 @@ public class Dispatcher {
     @RabbitListener(queues = DISPATCH_DLQ_NAME)
     public void dispatchDLQ(Message message) {
         try {
+            String deadFromQueue = message.getMessageProperties().getHeader("x-first-death-queue");
+            if (deadFromQueue.endsWith(".info")) {
+                return;
+            }
             EdxlMessage edxlMessage = deserializeMessage(message);
             // log message & error
             String errorCause = "Message " + edxlMessage.getDistributionID() + " has been read from dead-letter-queue; reason was " +
