@@ -69,7 +69,7 @@ public class RabbitIntegrationAbstract {
 
     @AfterEach
     public void cleanUp() throws IOException, InterruptedException {
-        String[] queues = {SAMU_B_ACK_QUEUE, SAMU_B_INFO_QUEUE, SDIS_Z_MESSAGE_QUEUE};
+        String[] queues = {SAMU_A_INFO_QUEUE, SAMU_B_ACK_QUEUE, SAMU_B_INFO_QUEUE, SDIS_Z_MESSAGE_QUEUE};
         for (String queue : queues) {
             rabbitMQContainer.execInContainer("rabbitmqctl", "purge_queue", queue);
         }

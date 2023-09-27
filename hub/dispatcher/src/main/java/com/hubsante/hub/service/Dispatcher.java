@@ -79,7 +79,10 @@ public class Dispatcher {
     @RabbitListener(queues = DISPATCH_DLQ_NAME)
     public void dispatchDLQ(Message message) {
         try {
-            String deadFromQueue = message.getMessageProperties().getHeader("x-first-death-queue");
+            // TODO bbo
+            //  Simple fix to avoid infinite loop if info expires with no header original routing key set
+            //  The real fix will be to have two DLQ policies and a specific infoDLQ listener
+            String deadFromQueue = message.getMessageProperties().getHeader(DLQ_ORIGINAL_ROUTING_KEY);
             if (deadFromQueue.endsWith(".info")) {
                 return;
             }
@@ -90,9 +93,13 @@ public class Dispatcher {
             DeadLetteredMessageException exception = new DeadLetteredMessageException(errorCause);
             handleError(exception, message);
         } catch (Exception e) {
-            String originalRoutingKey = message.getMessageProperties().getHeader(DLQ_ORIGINAL_ROUTING_KEY) != null ?
-                    message.getMessageProperties().getHeader(DLQ_ORIGINAL_ROUTING_KEY) : "Unknown routing key";
-            log.error("Unexpected error occurred while DLQ-dispatching message from " + originalRoutingKey, e);
+            // We don't want to log again the error if it has been thrown by handleError
+            // We just log the unexpecteds errors
+            if (! (e instanceof AmqpRejectAndDontRequeueException)) {
+                String originalRoutingKey = message.getMessageProperties().getHeader(DLQ_ORIGINAL_ROUTING_KEY) != null ?
+                        message.getMessageProperties().getHeader(DLQ_ORIGINAL_ROUTING_KEY) : "Unknown routing key";
+                log.error("Unexpected error occurred while DLQ-dispatching message from " + originalRoutingKey, e);
+            }
             throw new AmqpRejectAndDontRequeueException(e);
         }
     }
