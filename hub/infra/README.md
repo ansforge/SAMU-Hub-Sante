@@ -109,6 +109,13 @@ kubectl create secret generic smtp-alert-secret  --from-file=password=monitoring
 # the AlertmanagerConfigSpec is available here:
 # https://docs.openshift.com/container-platform/4.11/rest_api/monitoring_apis/alertmanagerconfig-monitoring-coreos-com-v1beta1.html#spec
 kubectl apply -f monitoring/alertmanager-config.yml
+
+# add Grafana dashboard for RabbitMQ overview
+# ref: https://grafana.com/grafana/dashboards/10991-rabbitmq-overview/
+# we can either import the dashboard in th UI with the ID 10991 or create a ConfigMap with the JSON
+# with the JSON we could customize it if needed
+kubectl -n monitoring create cm grafana-rabbitmq-overview --from-file=monitoring/rabbitmq-grafana-dashboard.json
+kubectl -n monitoring label cm grafana-rabbitmq-overview grafana_dashboard="1"
 ```
 
 ## Access Monitoring UIs
