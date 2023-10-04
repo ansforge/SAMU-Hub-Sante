@@ -1,0 +1,20 @@
+{{ $clusterNamespace := .Values.clusterNamespace }}
+{{- range .Values.clients }}
+apiVersion: rabbitmq.com/v1beta1
+kind: TopicPermission
+metadata:
+  name: {{ .client_id | lower }}-topic-permission
+  namespace: {{ $clusterNamespace }}
+spec:
+  vhost: "/"
+  userReference:
+    name: {{ .client_id | lower }}-user # should be the same as the metadata.name of the user
+  permissions:
+    exchange: "hubsante"
+    write:  {{ printf "^fr.health.%s$" (.client_id | lower) }}
+    read: ""
+  rabbitmqClusterReference:
+    name: rabbitmq
+    namespace: {{ $clusterNamespace }}
+---
+{{- end }}

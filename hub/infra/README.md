@@ -37,20 +37,24 @@ Ref.: https://www.rabbitmq.com/kubernetes/operator/quickstart-operator.html
 ```bash
 # Install the RabbitMQ Cluster Operator
 kubectl apply -f "https://github.com/rabbitmq/cluster-operator/releases/latest/download/cluster-operator.yml"
+kubectl apply -f "https://github.com/jetstack/cert-manager/releases/download/v1.13.1/cert-manager.yaml"
+kubectl apply -f "https://github.com/rabbitmq/messaging-topology-operator/releases/latest/download/messaging-topology-operator-with-certmanager.yaml"
 
+kubectl create ns rabbitmq
 # Create TLS secrets
 # Ref.: https://www.rabbitmq.com/kubernetes/operator/using-operator.html#one-way-tls
 # Ref.: https://www.rabbitmq.com/kubernetes/operator/using-operator.html#mutual-tls
-kubectl create secret tls tls-secret --cert=../rabbitmq/certs/hub.crt --key=../rabbitmq/certs/hub.key
-kubectl create secret generic ca-secret --from-file=ca.crt=../rabbitmq/certs/rootCA.crt
+kubectl create secret tls tls-secret --cert=../rabbitmq/certs/hub.crt --key=../rabbitmq/certs/hub.key -n rabbitmq
+kubectl create secret generic ca-secret --from-file=ca.crt=../rabbitmq/certs/rootCA.crt -n rabbitmq
 
 # Create definitions.json ConfigMap
 # Ref.: https://github.com/rabbitmq/cluster-operator/blob/main/docs/examples/import-definitions/setup.sh
-kubectl create configmap definitions --from-file=../rabbitmq/definitions.json
+kubectl create configmap definitions --from-file=../rabbitmq/definitions.json -n rabbitmq
 
 # Find/build the correct Custom Resource Definition yaml and install it
 # https://github.com/rabbitmq/cluster-operator/tree/main/docs/examples
 kubectl apply -f rabbitmq.yaml
+helm upgrade -i hubsante-topology ./rabbitmq/hubsante-topology
 ```
 
 ## Updates

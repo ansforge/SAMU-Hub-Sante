@@ -1,0 +1,43 @@
+{{ $clusterNamespace := .Values.clusterNamespace }}
+{{- range .Values.clients }}
+apiVersion: rabbitmq.com/v1beta1
+kind: Queue
+metadata:
+  name: {{ .client_id | lower }}.message-queue
+  namespace: {{ $clusterNamespace }}
+spec:
+  name: fr.health.{{ .client_id }}.message
+  autoDelete: false
+  durable: true
+  rabbitmqClusterReference:
+    namespace: {{ $clusterNamespace }}
+    name: rabbitmq
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: Queue
+metadata:
+  name: {{ .client_id | lower }}.ack-queue
+  namespace: {{ $clusterNamespace }}
+spec:
+  name: fr.health.{{ .client_id }}.ack
+  autoDelete: false
+  durable: true
+  rabbitmqClusterReference:
+    namespace: {{ $clusterNamespace }}
+    name: rabbitmq
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: Queue
+metadata:
+  name: {{ .client_id | lower }}.info-queue
+  namespace: {{ $clusterNamespace }}
+spec:
+  name: fr.health.{{ .client_id }}.info
+  autoDelete: false
+  durable: true
+  rabbitmqClusterReference:
+    namespace: {{ $clusterNamespace }}
+    name: rabbitmq
+---
+
+    {{- end }}

@@ -1,0 +1,8 @@
+clients:
+  - client_id: samuA
+    common_name: urgences.departementA.fr
+  - client_id: samuB
+    common_name: urgences.departementB.fr
+  - client_id: samuC
+    common_name: urgences.departementC.fr
+clusterNamespace: rabbitmq

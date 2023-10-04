@@ -1,0 +1,137 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: rabbitmq-dispatcher-secret
+  namespace: {{ .Values.clusterNamespace }}
+type: Opaque
+stringData:
+  username: 'dispatcher'
+  password: ''
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: User
+metadata:
+  name: dispatcher-user
+  namespace: {{ .Values.clusterNamespace }}
+spec:
+  importCredentialsSecret:
+    name: rabbitmq-dispatcher-secret
+  tags: []
+  rabbitmqClusterReference:
+    name: rabbitmq
+    namespace: {{ .Values.clusterNamespace }}
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: Exchange
+metadata:
+  name: hubsante-exchange
+  namespace: {{ .Values.clusterNamespace }}
+spec:
+  name: hubsante
+  type: topic
+  autoDelete: false
+  durable: true
+  rabbitmqClusterReference:
+    name: rabbitmq
+    namespace: {{ .Values.clusterNamespace }}
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: Exchange
+metadata:
+  name: distribution-exchange
+  namespace: {{ .Values.clusterNamespace }}
+spec:
+  name: distribution
+  type: direct
+  autoDelete: false
+  durable: true
+  rabbitmqClusterReference:
+    name: rabbitmq
+    namespace: {{ .Values.clusterNamespace }}
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: Exchange
+metadata:
+  name: distribution.dlx-exchange
+  namespace: {{ .Values.clusterNamespace }}
+spec:
+  name: distribution.dlx
+  type: fanout
+  autoDelete: false
+  durable: true
+  rabbitmqClusterReference:
+    name: rabbitmq
+    namespace: {{ .Values.clusterNamespace }}
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: Queue
+metadata:
+  name: dispatch-queue
+  namespace: {{ .Values.clusterNamespace }}
+spec:
+  name: dispatch
+  autoDelete: false
+  durable: true
+  rabbitmqClusterReference:
+    namespace: {{ .Values.clusterNamespace }}
+    name: rabbitmq
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: Queue
+metadata:
+  name: dispatch.dlq-queue
+  namespace: {{ .Values.clusterNamespace }}
+spec:
+  name: dispatch.dlq
+  autoDelete: false
+  durable: true
+  rabbitmqClusterReference:
+    namespace: {{ .Values.clusterNamespace }}
+    name: rabbitmq
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: Binding
+metadata:
+  name: dispatch-queue-binding
+  namespace: {{ .Values.clusterNamespace }}
+spec:
+  source: hubsante
+  destination: dispatch
+  destinationType: queue
+  routingKey: "#"
+  vhost: "/"
+  rabbitmqClusterReference:
+    namespace: {{ .Values.clusterNamespace }}
+    name: rabbitmq
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: Binding
+metadata:
+  name: dispatch.dlq-queue-binding
+  namespace: {{ .Values.clusterNamespace }}
+spec:
+  source: distribution.dlx
+  destination: dispatch.dlq
+  destinationType: queue
+  routingKey: ""
+  vhost: "/"
+  rabbitmqClusterReference:
+    namespace: {{ .Values.clusterNamespace }}
+    name: rabbitmq
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: Permission
+metadata:
+  name: dispatcher-permission
+  namespace: {{ .Values.clusterNamespace }}
+spec:
+  vhost: "/"
+  user: dispatcher # name of the RabbitMQ user
+  permissions:
+    write:  distribution
+    configure: ""
+    read: dispatch
+  rabbitmqClusterReference:
+    name: rabbitmq
+    namespace: {{ .Values.clusterNamespace }}
+---

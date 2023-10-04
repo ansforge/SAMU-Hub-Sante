@@ -1,0 +1,4 @@
+# usage : kubectl patch <resourceType>/<resourceName> --patch-file <pathToThisFile> --type=merge
+# it will remove the finalizers and then allow deletion of the resource
+metadata:
+  finalizers: []
