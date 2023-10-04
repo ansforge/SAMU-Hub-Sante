@@ -446,7 +446,7 @@ components:
       - reception
       - reporting
       - caller
-      - sourceContact
+      - alertSource
       - location
       - qualification
       - callTaker
@@ -513,8 +513,8 @@ components:
           - "D\xE9clenchement t\xE9l\xE9alarme, voisine sur les liens"
         caller:
           $ref: '#/definitions/caller'
-        sourceContact:
-          $ref: '#/definitions/contact'
+        alertSource:
+          $ref: '#/definitions/contactSource'
         location:
           $ref: '#/definitions/location'
         qualification:
@@ -788,6 +788,12 @@ components:
           title: "Formes g\xE9om\xE9triques"
           x-cols: 6
           example: example.json#/location/geometry/sketch
+          description: "Objet gml (\xE9quivalent xml du geojson). Le langage GML permet\
+            \ de d\xE9crire une forme dans un syst\xE8me de projection donn\xE9. \n\
+            Dans le cas d'une alerte donn\xE9e sur une zone g\xE9ographique non pr\xE9\
+            cise (par exemple une section d'autoroute ou une zone sur un chemin de\
+            \ randonn\xE9e), une indication sur la zone de recherche peut \xEAtre\
+            \ fournie.\nA VENIR Plus de d\xE9tails et exemple"
           examples:
           - None
       example: example.json#/location/geometry
@@ -1004,21 +1010,29 @@ components:
         detailedName:
           $ref: '#/definitions/detailedName'
       example: example.json#/initialAlert/caller
-    contact:
+    contactSource:
       type: object
-      title: Source de contact
+      title: Source de l'alerte
       x-display: expansion-panels
       required:
-      - type
-      - detail
+      - channel
       - type
       - detail
       properties:
+        channel:
+          type: string
+          title: Canal
+          x-cols: 6
+          example: example.json#/initialAlert/alertSource/channel
+          description: "Permet d'indiquer l'origine du canal \xE9tablit : Personne,\
+            \ application, DAU, BAU, d\xE9fibrillateur, ecall"
+          examples:
+          - Personne
         type:
           type: string
           title: Type de contact de la source
           x-cols: 6
-          example: example.json#/initialAlert/sourceContact/type
+          example: example.json#/initialAlert/alertSource/type
           description: "Type de l'URI utilis\xE9e par la source, cf. nomenclature\
             \ EMSI"
           enum:
@@ -1036,13 +1050,14 @@ components:
           type: string
           title: URI de contact de la source
           x-cols: 6
-          example: example.json#/initialAlert/sourceContact/detail
+          example: example.json#/initialAlert/alertSource/detail
           description: "Valeur de l'URI utilis\xE9e par la source"
           examples:
           - 0671830530
-      example: example.json#/initialAlert/sourceContact
+      example: example.json#/initialAlert/alertSource
       examples:
-      - type: PHNADD
+      - channel: Personne
+        type: PHNADD
         detail: 0671830530
     callTaker:
       type: object
@@ -1158,6 +1173,44 @@ components:
         URI: https://hub.esante.gouv.fr/resourceExample
         derefURI: None
         digest: None
+    contact:
+      type: object
+      title: "Contact requ\xE9rant"
+      x-display: expansion-panels
+      required:
+      - type
+      - detail
+      properties:
+        type:
+          type: string
+          title: "Type de contact du requ\xE9rant"
+          x-cols: 6
+          example: example.json#/initialAlert/caller/callerContact/type
+          description: "Type de l'URI utilis\xE9e par le requ\xE9rant, cf. nomenclature\
+            \ EMSI"
+          enum:
+          - PSTADD
+          - EMLADD
+          - IPADD
+          - FTPADD
+          - WWWADD
+          - PHNADD
+          - FAXADD
+          - PMRADD
+          examples:
+          - PHNADD
+        detail:
+          type: string
+          title: "URI du contact requ\xE9rant"
+          x-cols: 6
+          example: example.json#/initialAlert/caller/callerContact/detail
+          description: "Valeur de l'URI utilis\xE9e pour contacter le partenaire"
+          examples:
+          - 0671830530
+      example: example.json#/initialAlert/caller/callerContact
+      examples:
+      - type: PHNADD
+        detail: 0671830530
     detailedName:
       type: object
       title: "Pr\xE9nom & nom usuel du requ\xE9rant"

@@ -329,7 +329,7 @@ components:
           - UNCLAS
           - UNMARK
           examples:
-          - None
+          - RESTRC
         FREETEXT:
           type: string
           title: Texte libre
@@ -339,7 +339,7 @@ components:
 
             Dans le cadre d''une demande de concours, optionnel'
           examples:
-          - None
+          - "Contexte de grand incendie \xE0 Nantes"
         ORIGIN:
           $ref: '#/definitions/origin'
         EXTERNAL_INFO:
@@ -384,7 +384,7 @@ components:
           description: "Dans le cadre d'une demande de concours, optionnel. Le champ\
             \ peut ne pas \xEAtre \xE9mis ni interpr\xE9t\xE9"
           examples:
-          - None
+          - samuA:CA126B445579GD4A67AV
         ETYPE:
           $ref: '#/definitions/etype'
         SOURCE:
@@ -394,8 +394,13 @@ components:
           example: example.json#/EVENT/SOURCE
           description: "Dans le cadre d'une demande de concours, optionnel. Le champ\
             \ peut ne pas \xEAtre \xE9mis ni interpr\xE9t\xE9"
+          enum:
+          - COMFOR
+          - HUMDED
+          - HUMOBS
+          - SENSOR
           examples:
-          - None
+          - COMFOR
         SCALE:
           type: string
           title: "Echelle de s\xE9v\xE9rit\xE9 de l'environnement"
@@ -410,7 +415,7 @@ components:
           - '4'
           - '5'
           examples:
-          - None
+          - 3
         CERTAINTY:
           type: integer
           title: "Fiabilit\xE9"
@@ -419,7 +424,7 @@ components:
           description: "Prend une valeur enti\xE8re entre 0 et 100\nDans le cadre\
             \ d'une demande de concours, optionnel"
           examples:
-          - None
+          - 95
         DECL_DATIME:
           type: string
           title: "Date de d\xE9claration de l'event"
@@ -524,7 +529,7 @@ components:
           description: "Dans le cadre d'une demande de concours, optionnel. Le champ\
             \ peut ne pas \xEAtre \xE9mis ni interpr\xE9t\xE9"
           examples:
-          - None
+          - "Maison sur le c\xF4t\xE9 droit de la route"
       example: example.json#/EVENT
     mission:
       type: object
@@ -576,7 +581,7 @@ components:
           x-cols: 6
           example: example.json#/MISSION/0/ORG_ID
           examples:
-          - None
+          - sis44
         NAME:
           type: string
           title: Nom de la mission
@@ -641,7 +646,7 @@ components:
             description: "Non trait\xE9 dans cette version du mod\xE8le de donn\xE9\
               e"
             examples:
-            - None
+            - "Non trait\xE9"
         PARENT_MISSION_ID:
           type: string
           title: Missions parentes
@@ -652,7 +657,7 @@ components:
             \ des missions filles mais leurs d\xE9tails ne doivent pas \xEAtre n\xE9\
             cessaires pour traiter la demande de concours dans le syst\xE8me du partenaire."
           examples:
-          - None
+          - "Non trait\xE9"
         CHILD_MISSION_ID:
           type: string
           title: Missions filles
@@ -661,7 +666,7 @@ components:
           description: "Dans le cadre d'une demande de concours, optionnel. Le champ\
             \ peut ne pas \xEAtre \xE9mis ni interpr\xE9t\xE9."
           examples:
-          - None
+          - "Non trait\xE9"
         MAIN_MISSION_ID:
           type: string
           title: Mission principale
@@ -670,7 +675,7 @@ components:
           description: "Dans le cadre d'une demande de concours, ne doit pas \xEA\
             tre renseign\xE9"
           examples:
-          - None
+          - "Non trait\xE9"
         POSITION:
           $ref: '#/definitions/positionRgeo'
         PRIORITY:
@@ -690,7 +695,7 @@ components:
           - '4'
           - '5'
           examples:
-          - None
+          - 4
       example: example.json#/MISSION/0
     link:
       type: object
@@ -716,12 +721,16 @@ components:
           x-cols: 6
           example: example.json#/CONTEXT/LINK/0/LEVEL
           description: Dans le cadre d'une demande de concours, optionnel
+          enum:
+          - STRTGC
+          - OPR
+          - TACTCL
           examples:
-          - None
+          - OPR
       example: example.json#/CONTEXT/LINK/0
       examples:
       - LINK_ROLE: ADDSTO
-        LEVEL: None
+        LEVEL: OPR
     origin:
       type: object
       title: Origine
@@ -735,7 +744,7 @@ components:
           example: example.json#/CONTEXT/ORIGIN/ORG_ID
           description: Dans le cadre d'une demande de concours, optionnel
           examples:
-          - None
+          - samuA
         NAME:
           type: string
           title: 'Nom Origine '
@@ -743,11 +752,11 @@ components:
           example: example.json#/CONTEXT/ORIGIN/NAME
           description: Dans le cadre d'une demande de concours, optionnel
           examples:
-          - None
+          - Samu A
       example: example.json#/CONTEXT/ORIGIN
       examples:
-      - ORG_ID: None
-        NAME: None
+      - ORG_ID: samuA
+        NAME: Samu A
     externalInfo:
       type: object
       title: 'Informations exterieures '
@@ -776,7 +785,7 @@ components:
             description: "Dans le cadre d'une demande de concours, optionnel. Le champ\
               \ peut ne pas \xEAtre \xE9mis ni interpr\xE9t\xE9"
             examples:
-            - None
+            - FIR
         ACTOR:
           type: array
           items:
@@ -799,7 +808,7 @@ components:
               \ deux nomenclature est d\xE9crit dans l'annexe \"R\xE9f\xE9rentiel\
               \ Effets \xE0 Obtenir - correspondance EMSI\""
             examples:
-            - None
+            - PPL
         LOCTYPE:
           type: array
           items:
@@ -810,7 +819,7 @@ components:
             description: "Dans le cadre d'une demande de concours, optionnel. Le champ\
               \ peut ne pas \xEAtre \xE9mis ni interpr\xE9t\xE9"
             examples:
-            - None
+            - FLAM
         ENV:
           type: string
           title: Environnement
@@ -819,7 +828,7 @@ components:
           description: "Dans le cadre d'une demande de concours, optionnel. Le champ\
             \ peut ne pas \xEAtre \xE9mis ni interpr\xE9t\xE9"
           examples:
-          - None
+          - CDIS/RIOT
       example: example.json#/EVENT/ETYPE
     reference:
       type: object
@@ -837,7 +846,7 @@ components:
           description: "Dans le cadre d'une demande de concours, optionnel. Le champ\
             \ peut ne pas \xEAtre \xE9mis ni interpr\xE9t\xE9"
           examples:
-          - None
+          - samuC
         OTHER_EVENT_ID:
           type: array
           items:
@@ -848,7 +857,7 @@ components:
             description: "Dans le cadre d'une demande de concours, optionnel. Le champ\
               \ peut ne pas \xEAtre \xE9mis ni interpr\xE9t\xE9"
             examples:
-            - None
+            - samuC:DB326B5RC279GD4A67ZY
       example: example.json#/EVENT/REFERENCE/0
     casualties:
       type: object
@@ -865,7 +874,7 @@ components:
           description: "Dans le cadre d'une demande de concours, optionnel. Le champ\
             \ peut ne pas \xEAtre \xE9mis ni interpr\xE9t\xE9"
           examples:
-          - None
+          - REQ_ACTION
         DATIME:
           type: string
           title: Timestamp du contexte
@@ -876,7 +885,7 @@ components:
           pattern: \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[\-+]\d{2}:\d{2}
           format: date-time
           examples:
-          - None
+          - '2022-09-27T08:00:00+02:00'
         DECONT:
           type: integer
           title: "D\xE9contamination"
@@ -885,7 +894,7 @@ components:
           description: "Dans le cadre d'une demande de concours, optionnel. Le champ\
             \ peut ne pas \xEAtre \xE9mis ni interpr\xE9t\xE9"
           examples:
-          - None
+          - 0
         TRIAGERED:
           type: integer
           title: Triage Rouge
@@ -894,7 +903,7 @@ components:
           description: "Dans le cadre d'une demande de concours, optionnel. Le champ\
             \ peut ne pas \xEAtre \xE9mis ni interpr\xE9t\xE9"
           examples:
-          - None
+          - 0
         TRIAGEYELLOW:
           type: integer
           title: Jaune
@@ -903,7 +912,7 @@ components:
           description: "Dans le cadre d'une demande de concours, optionnel. Le champ\
             \ peut ne pas \xEAtre \xE9mis ni interpr\xE9t\xE9"
           examples:
-          - None
+          - 1
         TRIAGEGREEN:
           type: integer
           title: Vert
@@ -912,7 +921,7 @@ components:
           description: "Dans le cadre d'une demande de concours, optionnel. Le champ\
             \ peut ne pas \xEAtre \xE9mis ni interpr\xE9t\xE9"
           examples:
-          - None
+          - 0
         TRIAGEBLACK:
           type: integer
           title: Noir
@@ -921,7 +930,7 @@ components:
           description: "Dans le cadre d'une demande de concours, optionnel. Le champ\
             \ peut ne pas \xEAtre \xE9mis ni interpr\xE9t\xE9"
           examples:
-          - None
+          - 0
         MISSING:
           type: integer
           title: Disparus
@@ -930,17 +939,17 @@ components:
           description: "Dans le cadre d'une demande de concours, optionnel. Le champ\
             \ peut ne pas \xEAtre \xE9mis ni interpr\xE9t\xE9"
           examples:
-          - None
+          - 0
       example: example.json#/EVENT/CASUALTIES/0
       examples:
-      - CONTEXT: None
-        DATIME: None
-        DECONT: None
-        TRIAGERED: None
-        TRIAGEYELLOW: None
-        TRIAGEGREEN: None
-        TRIAGEBLACK: None
-        MISSING: None
+      - CONTEXT: REQ_ACTION
+        DATIME: '2022-09-27T08:00:00+02:00'
+        DECONT: 0
+        TRIAGERED: 0
+        TRIAGEYELLOW: 1
+        TRIAGEGREEN: 0
+        TRIAGEBLACK: 0
+        MISSING: 0
     evac:
       type: object
       title: "Evacu\xE9s"
@@ -957,7 +966,7 @@ components:
           pattern: \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[\-+]\d{2}:\d{2}
           format: date-time
           examples:
-          - None
+          - '2022-09-27T10:00:00+02:00'
         DISPLACED:
           type: integer
           title: "d\xE9plac\xE9s"
@@ -966,7 +975,7 @@ components:
           description: "Dans le cadre d'une demande de concours, optionnel. Le champ\
             \ peut ne pas \xEAtre \xE9mis ni interpr\xE9t\xE9"
           examples:
-          - None
+          - 0
         EVACUATED:
           type: integer
           title: "\xE9vacu\xE9s"
@@ -975,12 +984,12 @@ components:
           description: "Dans le cadre d'une demande de concours, optionnel. Le champ\
             \ peut ne pas \xEAtre \xE9mis ni interpr\xE9t\xE9"
           examples:
-          - None
+          - 1
       example: example.json#/EVENT/EVAC/0
       examples:
-      - DATIME: None
-        DISPLACED: None
-        EVACUATED: None
+      - DATIME: '2022-09-27T10:00:00+02:00'
+        DISPLACED: 0
+        EVACUATED: 1
     egeo:
       type: object
       title: "Localisation de l'\xE9v\xE9nement"
@@ -1000,7 +1009,7 @@ components:
           pattern: \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[\-+]\d{2}:\d{2}
           format: date-time
           examples:
-          - None
+          - '2022-09-27T08:26:00+02:00'
         TYPE:
           type: string
           title: Type de localisation
@@ -1055,7 +1064,7 @@ components:
             \ peut ne pas \xEAtre \xE9mis ni interpr\xE9t\xE9.\nEn effet, la localisation\
             \ de l'affaire est d\xE9j\xE0 renseign\xE9 dans un objet MISSION"
           examples:
-          - '48.710757'
+          - '47.221866'
         LONG:
           type: number
           title: Longitude
@@ -1065,7 +1074,7 @@ components:
             \ peut ne pas \xEAtre \xE9mis ni interpr\xE9t\xE9.\nEn effet, la localisation\
             \ de l'affaire est d\xE9j\xE0 renseign\xE9 dans un objet MISSION"
           examples:
-          - '3.054377'
+          - '-1.575807'
         HEIGHT:
           type: number
           title: Altitude
@@ -1075,7 +1084,7 @@ components:
             \ peut ne pas \xEAtre \xE9mis ni interpr\xE9t\xE9.\nEn effet, la localisation\
             \ de l'affaire est d\xE9j\xE0 renseign\xE9 dans un objet MISSION"
           examples:
-          - None
+          - 1
         ADRESSE:
           type: array
           items:
@@ -1086,7 +1095,7 @@ components:
             description: "Dans le cadre d'une demande de concours, optionnel. Le champ\
               \ peut ne pas \xEAtre \xE9mis ni interpr\xE9t\xE9."
             examples:
-            - None
+            - Nantes centre ville
       example: example.json#/EVENT/EGEO/0/POSITION
     positionRgeo:
       type: object
@@ -1135,7 +1144,7 @@ components:
           description: "Dans le cas o\xF9 aucun LOC_ID n'est transf\xE9r\xE9, permet\
             \ de localiser l'affaire pour la demande de concours"
           examples:
-          - '48.710757'
+          - '47.221866'
         LONG:
           type: number
           title: Longitude
@@ -1144,18 +1153,18 @@ components:
           description: "Dans le cas o\xF9 aucun LOC_ID n'est transf\xE9r\xE9, permet\
             \ de localiser l'affaire pour la demande de concours"
           examples:
-          - '3.054377'
+          - '-1.575807'
         HEIGHT:
           type: number
           title: Altitude
           x-cols: 6
           example: example.json#/MISSION/0/POSITION/HEIGHT
           examples:
-          - None
+          - 1
       example: example.json#/MISSION/0/POSITION
       examples:
       - LOC_ID: 111fb03a-6fd9-41e0-8e81-990c45188887
         TYPE: POINT
-        LAT: '48.710757'
-        LONG: '3.054377'
-        HEIGHT: None
+        LAT: '47.221866'
+        LONG: '-1.575807'
+        HEIGHT: 1
