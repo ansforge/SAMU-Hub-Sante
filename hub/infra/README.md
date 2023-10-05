@@ -86,12 +86,11 @@ As of today, the Selector scrapes every resource with the label `release=prometh
 ## Loki stack
 ```shell
 # I merely followed this guide: https://questdb.io/blog/2022/12/13/using-prometheus-loki-grafana-monitor-questdb-kubernetes/
-helm repo add grafana https://grafana.github.io/helm-charts
-helm repo update
-# be careful to use the same namespace as the Prometheus Operator
-helm install loki grafana/loki-stack -n monitoring
-# enable data_source discovery in grafana
-helm upgrade -f monitoring/loki-values.yml loki grafana/loki-stack -n monitoring 
+# Be careful to use the same namespace as the Prometheus Operator
+helm upgrade --install loki loki-stack \
+  --repo https://grafana.github.io/helm-charts \
+  --namespace monitoring --create-namespace \
+  -f monitoring/loki-values.yml
 ```
 
 ```shell
