@@ -154,6 +154,27 @@
       "arguments": {}
     },
     {
+      "name": "fr.health.scriptal.message",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "fr.health.scriptal.info",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "fr.health.scriptal.ack",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
       "name": "fr.health.normandie.message",
       "vhost": "/",
       "durable": true,
@@ -346,6 +367,27 @@
     },
     {
       "name": "fr.health.samu440.ack",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "fr.health.samu780.message",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "fr.health.samu780.info",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "fr.health.samu780.ack",
       "vhost": "/",
       "durable": true,
       "auto_delete": false,
@@ -634,6 +676,30 @@
     {
       "source": "distribution",
       "vhost": "/",
+      "destination": "fr.health.scriptal.message",
+      "destination_type": "queue",
+      "routing_key": "fr.health.scriptal.message",
+      "arguments": {}
+    },
+    {
+      "source": "distribution",
+      "vhost": "/",
+      "destination": "fr.health.scriptal.ack",
+      "destination_type": "queue",
+      "routing_key": "fr.health.scriptal.ack",
+      "arguments": {}
+    },
+    {
+      "source": "distribution",
+      "vhost": "/",
+      "destination": "fr.health.scriptal.info",
+      "destination_type": "queue",
+      "routing_key": "fr.health.scriptal.info",
+      "arguments": {}
+    },
+    {
+      "source": "distribution",
+      "vhost": "/",
       "destination": "fr.health.samu76A.message",
       "destination_type": "queue",
       "routing_key": "fr.health.samu76A.message",
@@ -725,6 +791,30 @@
       "destination": "fr.health.samu440.ack",
       "destination_type": "queue",
       "routing_key": "fr.health.samu440.ack",
+      "arguments": {}
+    },
+    {
+      "source": "distribution",
+      "vhost": "/",
+      "destination": "fr.health.samu780.message",
+      "destination_type": "queue",
+      "routing_key": "fr.health.samu780.message",
+      "arguments": {}
+    },
+    {
+      "source": "distribution",
+      "vhost": "/",
+      "destination": "fr.health.samu780.info",
+      "destination_type": "queue",
+      "routing_key": "fr.health.samu780.info",
+      "arguments": {}
+    },
+    {
+      "source": "distribution",
+      "vhost": "/",
+      "destination": "fr.health.samu780.ack",
+      "destination_type": "queue",
+      "routing_key": "fr.health.samu780.ack",
       "arguments": {}
     },
     {
@@ -1017,6 +1107,10 @@
       "tags": []
     },
     {
+      "name": "fr.health.scriptal",
+      "tags": []
+    },
+    {
       "name": "fr.health.normandie",
       "tags": []
     },
@@ -1034,6 +1128,10 @@
     },
     {
       "name": "fr.health.samu440",
+      "tags": []
+    },
+    {
+      "name": "fr.health.samu780",
       "tags": []
     },
     {
@@ -1087,23 +1185,30 @@
     {
       "user": "fr.health.samu090",
       "vhost": "/",
-      "configure": "",
+      "configure": "^(fr.health.samu090.message|fr.health.samu090.info|fr.health.samu090.ack)$",
       "write": "hubsante",
       "read": "^(fr.health.samu090.message|fr.health.samu090.info|fr.health.samu090.ack)$"
     },
     {
       "user": "fr.health.samu091",
       "vhost": "/",
-      "configure": "",
+      "configure": "^(fr.health.samu091.message|fr.health.samu091.info|fr.health.samu091.ack)$",
       "write": "hubsante",
       "read": "^(fr.health.samu091.message|fr.health.samu091.info|fr.health.samu091.ack)$"
     },
     {
       "user": "fr.health.bisom",
       "vhost": "/",
-      "configure": "",
+      "configure": "^(fr.health.samu091.message|fr.health.samu091.info|fr.health.samu091.ack|fr.health.samu090.message|fr.health.samu090.info|fr.health.samu090.ack)$",
       "write": "hubsante",
       "read": "^(fr.health.samu091.message|fr.health.samu091.info|fr.health.samu091.ack|fr.health.samu090.message|fr.health.samu090.info|fr.health.samu090.ack)$"
+    },
+    {
+      "user": "fr.health.scriptal",
+      "vhost": "/",
+      "configure": "",
+      "write": "hubsante",
+      "read": "^(fr.health.scriptal.message|fr.health.scriptal.info|fr.health.scriptal.ack)$"
     },
     {
       "user": "fr.health.normandie",
@@ -1139,6 +1244,13 @@
       "configure": "",
       "write": "hubsante",
       "read": "^(fr.health.samu440.message|fr.health.samu440.info|fr.health.samu440.ack)$"
+    },
+    {
+      "user": "fr.health.samu780",
+      "vhost": "/",
+      "configure": "",
+      "write": "hubsante",
+      "read": "^(fr.health.samu780.message|fr.health.samu780.info|fr.health.samu780.ack)$"
     },
     {
       "user": "fr.fire.nexsis.test",
@@ -1194,6 +1306,13 @@
     {
       "exchange": "hubsante",
       "vhost": "/",
+      "user": "fr.health.scriptal",
+      "write": "^fr.health.scriptal$",
+      "read": ""
+    },
+    {
+      "exchange": "hubsante",
+      "vhost": "/",
       "user": "fr.health.normandie",
       "write": "^(fr.health.normandie|fr.health.samu76A|fr.health.samu76B)$",
       "read": ""
@@ -1224,6 +1343,13 @@
       "vhost": "/",
       "user": "fr.health.samu440",
       "write": "^fr.health.samu440$",
+      "read": ""
+    },
+    {
+      "exchange": "hubsante",
+      "vhost": "/",
+      "user": "fr.health.samu780",
+      "write": "^fr.health.samu780$",
       "read": ""
     },
     {
