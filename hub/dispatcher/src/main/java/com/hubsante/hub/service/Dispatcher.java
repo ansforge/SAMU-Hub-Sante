@@ -1,9 +1,10 @@
 package com.hubsante.hub.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.hubsante.hub.config.HubClientConfiguration;
+import com.hubsante.hub.config.HubConfiguration;
 import com.hubsante.hub.exception.*;
 import com.hubsante.model.edxl.*;
+import com.hubsante.model.report.ErrorCode;
 import com.hubsante.model.report.ErrorReport;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.AmqpRejectAndDontRequeueException;
@@ -26,16 +27,30 @@ import static com.hubsante.hub.utils.EdxlUtils.edxlMessageFromHub;
 public class Dispatcher {
     private final RabbitTemplate rabbitTemplate;
     private final EdxlHandler edxlHandler;
-    private final HubClientConfiguration hubConfig;
+    private final HubConfiguration hubConfig;
     private final Validator validator;
 
     private static final String HEALTH_PREFIX = "fr.health";
 
-    public Dispatcher(RabbitTemplate rabbitTemplate, EdxlHandler edxlHandler, HubClientConfiguration hubConfig, Validator validator) {
+    public Dispatcher(RabbitTemplate rabbitTemplate, EdxlHandler edxlHandler, HubConfiguration hubConfig, Validator validator) {
         this.rabbitTemplate = rabbitTemplate;
         this.edxlHandler = edxlHandler;
         this.hubConfig = hubConfig;
         this.validator = validator;
+        initReturnsCallback();
+    }
+
+    public void initReturnsCallback() {
+        // set returns callback to track undistributed messages
+        rabbitTemplate.setReturnsCallback(returned -> {
+            ErrorReport errorReport = new ErrorReport(
+                    ErrorCode.UNROUTABLE_MESSAGE,
+                    "unable do deliver message to " + returned.getRoutingKey() + ", cause was " + returned.getReplyText() + " (" + returned.getReplyCode() + ")",
+                    new String(returned.getMessage().getBody()));
+
+            String senderRoutingKey = returned.getMessage().getMessageProperties().getHeader(DLQ_ORIGINAL_ROUTING_KEY);
+            logErrorAndSendReport(errorReport, senderRoutingKey);
+        });
     }
 
     @RabbitListener(queues = DISPATCH_QUEUE_NAME)
@@ -63,12 +78,30 @@ public class Dispatcher {
 
     @RabbitListener(queues = DISPATCH_DLQ_NAME)
     public void dispatchDLQ(Message message) {
-        EdxlMessage edxlMessage = deserializeMessage(message);
-        // log message & error
-        String errorCause = "Message " + edxlMessage.getDistributionID() + " has been read from dead-letter-queue; reason was " +
-                message.getMessageProperties().getHeader(DLQ_REASON);
-        DeadLetteredMessageException exception = new DeadLetteredMessageException(errorCause);
-        handleError(exception, message);
+        try {
+            // TODO bbo
+            //  Simple fix to avoid infinite loop if info expires with no header original routing key set
+            //  The real fix will be to have two DLQ policies and a specific infoDLQ listener
+            String deadFromQueue = message.getMessageProperties().getHeader(DLQ_ORIGINAL_ROUTING_KEY);
+            if (deadFromQueue.endsWith(".info")) {
+                return;
+            }
+            EdxlMessage edxlMessage = deserializeMessage(message);
+            // log message & error
+            String errorCause = "Message " + edxlMessage.getDistributionID() + " has been read from dead-letter-queue; reason was " +
+                    message.getMessageProperties().getHeader(DLQ_REASON);
+            DeadLetteredMessageException exception = new DeadLetteredMessageException(errorCause);
+            handleError(exception, message);
+        } catch (Exception e) {
+            // We don't want to log again the error if it has been thrown by handleError
+            // We just log the unexpecteds errors
+            if (! (e instanceof AmqpRejectAndDontRequeueException)) {
+                String originalRoutingKey = message.getMessageProperties().getHeader(DLQ_ORIGINAL_ROUTING_KEY) != null ?
+                        message.getMessageProperties().getHeader(DLQ_ORIGINAL_ROUTING_KEY) : "Unknown routing key";
+                log.error("Unexpected error occurred while DLQ-dispatching message from " + originalRoutingKey, e);
+            }
+            throw new AmqpRejectAndDontRequeueException(e);
+        }
     }
 
     private void handleError(AbstractHubException exception, Message message) {
@@ -101,7 +134,7 @@ public class Dispatcher {
         try {
             EdxlMessage errorEdxlMessage = edxlMessageFromHub(sender, errorReport);
             Message errorAmqpMessage;
-            if (convertToXML(HUB_ID, sender)) {
+            if (convertToXML(sender)) {
                 errorAmqpMessage = new Message(edxlHandler.serializeXmlEDXL(errorEdxlMessage).getBytes(),
                         MessagePropertiesBuilder.newInstance().setContentType(MessageProperties.CONTENT_TYPE_XML).build());
             } else {
@@ -117,7 +150,7 @@ public class Dispatcher {
         }
     }
 
-    private boolean convertToXML(String senderID, String recipientID) {
+    private boolean convertToXML(String recipientID) {
         // sending message to outer hubex is always XML
         if (!recipientID.startsWith(HEALTH_PREFIX)) {
             return true;
@@ -253,7 +286,7 @@ public class Dispatcher {
         String edxlString;
 
         try {
-            if (convertToXML(senderID, recipientID)) {
+            if (convertToXML(recipientID)) {
                 edxlString = edxlHandler.prettyPrintXmlEDXL(edxlMessage);
                 fwdAmqpProperties.setContentType(MessageProperties.CONTENT_TYPE_XML);
             } else {

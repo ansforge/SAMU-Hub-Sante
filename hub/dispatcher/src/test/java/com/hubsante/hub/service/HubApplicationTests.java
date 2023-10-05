@@ -1,4 +1,4 @@
-package com.hubsante.dispatcher;
+package com.hubsante.hub.service;
 
 import com.hubsante.hub.HubApplication;
 import lombok.val;

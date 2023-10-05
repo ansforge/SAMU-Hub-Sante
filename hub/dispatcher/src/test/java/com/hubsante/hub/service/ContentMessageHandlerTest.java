@@ -1,4 +1,4 @@
-package com.hubsante.dispatcher;
+package com.hubsante.hub.service;
 
 import com.hubsante.hub.HubApplication;
 import com.hubsante.hub.exception.SchemaValidationException;
@@ -6,6 +6,7 @@ import com.hubsante.hub.service.ContentMessageHandler;
 import com.hubsante.hub.service.Validator;
 import com.hubsante.model.cisu.CreateCase;
 import com.hubsante.model.cisu.CreateCaseMessage;
+import com.hubsante.model.report.ErrorReport;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -137,6 +138,26 @@ public class ContentMessageHandlerTest {
         assertDoesNotThrow(() -> validator.validateContentMessage(initialJSON, false));
         // TODO bbo : uncomment next assertion when xsd will be ready
 //        assertDoesNotThrow(() -> validator.validateContentMessage(xmlConverted, true));
+    }
+
+    @Test
+    @DisplayName("should deserialize JSON ErrorReport")
+    public void _de_serializeErrorReport() throws IOException {
+        File errorReportJsonFile = new File(classLoader.getResource("messages/valid/error_report/errorReport.json").getFile());
+        String json = Files.readString(errorReportJsonFile.toPath());
+        File errorReportXmlFile = new File(classLoader.getResource("messages/valid/error_report/errorReport.xml").getFile());
+        String xml = Files.readString(errorReportXmlFile.toPath());
+
+        ErrorReport errorReportFromJson = (ErrorReport) converter.deserializeJsonMessage(json);
+        ErrorReport errorReportFromXML = (ErrorReport) converter.deserializeXmlMessage(xml);
+
+        String convertedXML = converter.serializeXmlMessage(errorReportFromJson);
+        ErrorReport errorReportFromConvertedXML = (ErrorReport) converter.deserializeXmlMessage(convertedXML);
+
+        assertEquals(errorReportFromJson.getErrorCode(), errorReportFromXML.getErrorCode());
+        assertEquals(errorReportFromXML.getErrorCode(), errorReportFromConvertedXML.getErrorCode());
+
+        assertDoesNotThrow(() -> validator.validateContentMessage(errorReportFromJson, false));
     }
 
 }

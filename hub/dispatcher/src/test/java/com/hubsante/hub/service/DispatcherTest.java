@@ -1,12 +1,8 @@
-package com.hubsante.dispatcher;
+package com.hubsante.hub.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.hubsante.hub.HubApplication;
-import com.hubsante.hub.config.HubClientConfiguration;
-import com.hubsante.hub.service.Dispatcher;
-import com.hubsante.hub.service.EdxlHandler;
-import com.hubsante.hub.service.ContentMessageHandler;
-import com.hubsante.hub.service.Validator;
+import com.hubsante.hub.config.HubConfiguration;
 import com.hubsante.model.CustomMessage;
 import com.hubsante.model.edxl.EdxlMessage;
 import com.hubsante.model.report.ErrorCode;
@@ -15,11 +11,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.amqp.AmqpRejectAndDontRequeueException;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageDeliveryMode;
 import org.springframework.amqp.core.MessageProperties;
+import org.springframework.amqp.core.MessagePropertiesBuilder;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.rabbit.test.context.SpringRabbitTest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,18 +27,20 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 
 import javax.annotation.PostConstruct;
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.Objects;
 
-import static com.hubsante.dispatcher.utils.MessageTestUtils.*;
 import static com.hubsante.hub.config.AmqpConfiguration.*;
+import static com.hubsante.hub.service.utils.MessageTestUtils.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.*;
 
 @SpringBootTest
 @ContextConfiguration(classes = HubApplication.class)
@@ -53,7 +53,7 @@ public class DispatcherTest {
     @Autowired
     private EdxlHandler converter;
     @Autowired
-    private HubClientConfiguration hubConfig;
+    private HubConfiguration hubConfig;
     @Autowired
     private Validator validator;
     static ClassLoader classLoader = Thread.currentThread().getContextClassLoader();

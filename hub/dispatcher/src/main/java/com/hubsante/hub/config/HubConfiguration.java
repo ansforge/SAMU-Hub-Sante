@@ -12,9 +12,10 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Locale;
 
 @Configuration
-public class HubClientConfiguration {
+public class HubConfiguration {
 
     private static final int TOGGLE_ROW_LENGTH = 2;
 
@@ -32,6 +33,9 @@ public class HubClientConfiguration {
         try {
             // We first get the parameterized default message TTL
             defaultTTL = Long.parseLong(this.ttlProperty);
+
+            // We explicitly set the Locale to ensure cross platform consistency
+            Locale.setDefault(Locale.ENGLISH);
 
             // We define a custom row processor to read the config file
             // we override the rowProcessed method on the fly to store the config in a HashMap
