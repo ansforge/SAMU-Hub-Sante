@@ -152,12 +152,6 @@ kubectl apply -f dispatcher.yaml
 # Reapply deployment with new image
 kubectl replace --force -f dispatcher.yaml
 
-# pause/resume pod
-# technically we can't stop/pause a pod, but the workaround is to scale the deployments to zero, then back to the desired number
-# (cf https://stackoverflow.com/questions/54821044/how-to-stop-pause-a-pod-in-kubernetes)
-kubectl scale --replicas=0 deployment/dispatcher
-kubectl scale --replicas=1 deployment/dispatcher
-
 # Get Pod logs
 kubectl logs -l app=dispatcher --prefix --tail -1 -f
 ```
@@ -217,6 +211,12 @@ kubectl logs -l app=dispatcher --prefix --tail -1 -f
 kubectl describe pods -l app=dispatcher
 # All events
 kubectl get events --all-namespaces  --sort-by='.metadata.creationTimestamp'
+
+# pause/resume pod
+# technically we can't stop/pause a pod, but the workaround is to scale the deployments to zero, then back to the desired number
+# (cf https://stackoverflow.com/questions/54821044/how-to-stop-pause-a-pod-in-kubernetes)
+kubectl scale --replicas=0 deployment/dispatcher
+kubectl scale --replicas=1 deployment/dispatcher
 ```
 
 
