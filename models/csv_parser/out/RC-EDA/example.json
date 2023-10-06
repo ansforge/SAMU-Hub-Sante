@@ -24,7 +24,7 @@
         "locID": "111fb03a-6fd9-41e0-8e81-990c45188887",
         "locLabel": "Lyc\u00e9e Pierre de Coubertin - 12 rue de l'Amiti\u00e9 77288 Melun, Mus\u00e9e Bossuet - Acc\u00e8s 2 - 77048 Saint-Albray",
         "name": "Carrefour Toison d'Or, EPHAD Belle Fontaine, Quartier Melun Nord, Disneyland, \u2026",
-        "addressDetailed": {
+        "detailedAdress": {
             "complete": "9 Bd du Montparnasse",
             "number": "9, 4bis, PK10, \u2026",
             "wayName": {
@@ -51,6 +51,7 @@
             "entity": "Infirmerie, service finance, service cardiologie, \u2026"
         },
         "geometry": {
+            "obsDatime": "2022-09-27T08:23:34+02:00",
             "point": {
                 "coord": {
                     "lat": "48.866667",
@@ -88,7 +89,7 @@
             "language": "FR",
             "freetext": "P\u00e8re",
             "detailedName": {
-                "completeName": "Jean Dupont",
+                "complete": "Jean Dupont",
                 "lastName": "Dupont",
                 "firstName": "Jean"
             }
@@ -103,7 +104,8 @@
         "callTaker": {
             "organization": "samu44:chuNantes:crra:regulationN3",
             "controlRoom": "CGA, CGO 21, CRRA 44, ...",
-            "calltakerURI": {},
+            "role": "ARM",
+            "calltakeContact": {},
             "calltakerId": "id1234, carte CPx (Sant\u00e9), id d'affectation, \u2026"
         },
         "attachment": [

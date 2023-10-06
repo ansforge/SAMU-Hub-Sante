@@ -38,10 +38,10 @@
             "properties": {
                 "ID": {
                     "type": "string",
-                    "title": "Identifiant local d'affaire ",
+                    "title": "Identifiant du message",
                     "x-cols": 6,
                     "example": "example.json#/CONTEXT/ID",
-                    "description": "Identifiant d'affaire du message RC-EDA transmis en amont de la demande de concours : \u00e0 valoriser comme le champ \"caseId\" du message RC-EDA\nCe champ permet de lier une demande de concours \u00e0 une affaire d\u00e9j\u00e0 partag\u00e9e par un syst\u00e8me partenaire"
+                    "description": "A constituer par le r\u00e9dacteur du pr\u00e9sent EMSI pour \u00eatre unique, peut reprendre messageId de l'en t\u00eate RC-DE."
                 },
                 "MODE": {
                     "type": "string",
@@ -125,17 +125,15 @@
             "x-display": "expansion-panels",
             "required": [
                 "ID",
-                "DECL_DATIME",
-                "OCC_DATIME",
-                "OBS_DATIME"
+                "MAIN_EVENT_ID"
             ],
             "properties": {
                 "ID": {
                     "type": "string",
-                    "title": "ID de l'\u00e9v\u00e9nement",
+                    "title": "Identifiant local de l'affaire",
                     "x-cols": 6,
                     "example": "example.json#/EVENT/ID",
-                    "description": "Dans le cadre d'une demande de concours, optionnel. Le champ peut ne pas \u00eatre \u00e9mis ni interpr\u00e9t\u00e9.\nIl peut \u00eatre renseign\u00e9 avec l'identifiant local de l'affaire du partenaire requ\u00e9rant"
+                    "description": "Il peut \u00eatre renseign\u00e9 avec l'identifiant local de l'affaire du partenaire requ\u00e9rant"
                 },
                 "NAME": {
                     "type": "string",
@@ -146,10 +144,10 @@
                 },
                 "MAIN_EVENT_ID": {
                     "type": "string",
-                    "title": "ID de l'\u00e9v\u00e9nement principal",
+                    "title": "Identifiant de l'affaire",
                     "x-cols": 6,
                     "example": "example.json#/EVENT/MAIN_EVENT_ID",
-                    "description": "Dans le cadre d'une demande de concours, optionnel. Le champ peut ne pas \u00eatre \u00e9mis ni interpr\u00e9t\u00e9"
+                    "description": "Identifiant d\u2019affaire partag\u00e9 issu du message RC-EDA transmis en amont"
                 },
                 "ETYPE": {
                     "$ref": "#/definitions/etype"
@@ -193,7 +191,7 @@
                     "title": "Date de d\u00e9claration de l'event",
                     "x-cols": 6,
                     "example": "example.json#/EVENT/DECL_DATIME",
-                    "description": "Dans le cadre d'une demande de concours, ce champ est valoris\u00e9 avec la date de r\u00e9ception de la premi\u00e8re alerte relative \u00e0 l'affaire",
+                    "description": "Dans le cadre d'une demande de concours, ce champ est valoris\u00e9 avec la date/heure de cr\u00e9ation de l'affaire ou de l'op\u00e9ration. NexSIS transmettra la date/heure de cr\u00e9ation de l'op\u00e9ration dans ses syst\u00e8mes (qui peut diverger de la date/heure de cr\u00e9ation de l'affaire)",
                     "pattern": "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}[\\-+]\\d{2}:\\d{2}",
                     "format": "date-time"
                 },
@@ -202,7 +200,7 @@
                     "title": "D\u00e9crit la date et le lieu de l'\u00e9v\u00e9nement",
                     "x-cols": 6,
                     "example": "example.json#/EVENT/OCC_DATIME",
-                    "description": "Dans le cadre d'une demande de concours, ce champ est valoris\u00e9 avec la date \u00e9valu\u00e9e de d\u00e9but de l'affaire.\nPar exemple :\nSi un incendie est d\u00e9clar\u00e9 est 9h02, il a pu d\u00e9marr\u00e9 \u00e0 8h55 par exemple.",
+                    "description": "Dans le cadre d'une demande de concours, ce champ est valoris\u00e9 avec la date de la premi\u00e8re alerte ou la date \u00e9valu\u00e9e de d\u00e9but de la situation d'urgence.\nPar exemple :\nSi un incendie est d\u00e9clar\u00e9 est 9h02, il a pu d\u00e9marr\u00e9 \u00e0 8h55 par exemple.",
                     "pattern": "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}[\\-+]\\d{2}:\\d{2}",
                     "format": "date-time"
                 },
@@ -211,7 +209,7 @@
                     "title": "Date \u00e0 laquelle l'observation la plus r\u00e9cente a \u00e9t\u00e9 r\u00e9alis\u00e9e",
                     "x-cols": 6,
                     "example": "example.json#/EVENT/OBS_DATIME",
-                    "description": "Dans le cadre d'une demande de concours, ce champ est valoris\u00e9 avec la date \u00e0 laquelle l'observation de la situation d'urgence la plus r\u00e9cente a \u00e9t\u00e9 r\u00e9alis\u00e9e",
+                    "description": "Dans le cadre d'une demande de concours, ce champ est id\u00e9alement \u00e0 valoriser avec la date/heure \u00e0 laquelle l'observation de la situation d'urgence la plus r\u00e9cente a \u00e9t\u00e9 r\u00e9alis\u00e9e.\nNexSIS transmettra la date/heure d'envoi de la demande de concours dans son syst\u00e8me.",
                     "pattern": "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}[\\-+]\\d{2}:\\d{2}",
                     "format": "date-time"
                 },
@@ -330,7 +328,7 @@
                     "title": "Nom de la mission",
                     "x-cols": 6,
                     "example": "example.json#/MISSION/0/NAME",
-                    "description": "Le nom de la mission est construit \u00e0 partir de l'expression r\u00e9guli\u00e8re suivante :\n\"#DEMANDE_CONCOURS#\"{libelle_cadre_conventionnel}\"#\"{code_cadre_conventionnel}\"#\"\no\u00f9 le code_cadre_conventionnel est issue d'une nomenclature CISU-Cadre Conventionnel (A Venir)\nNB : ce champ est d\u00e9tourn\u00e9 par rapport au standard EMSI pour permettre l'expression d'une demande de concours"
+                    "description": "Le nom de la mission est construit \u00e0 partir de l'expression r\u00e9guli\u00e8re suivante :\n\"#DEMANDE_CONCOURS#\"{libelle_cadre_conventionnel}\"#\"{code_cadre_conventionnel}\"#\"\no\u00f9 le code_cadre_conventionnel est issue d'une nomenclature CISU-Cadre Conventionnel (A Venir)\nNB : ce champ est d\u00e9tourn\u00e9 par rapport au standard EMSI pour permettre l'expression d'une demande de concours et indiquer le cadre conventionnel dans lequel elle est effectu\u00e9e"
                 },
                 "STATUS": {
                     "type": "string",
@@ -351,7 +349,7 @@
                     "title": "D\u00e9but de la mission",
                     "x-cols": 6,
                     "example": "example.json#/MISSION/0/START_TIME",
-                    "description": "Indique l'horaire de d\u00e9marrage souhait\u00e9 pour l'intervention.\nLe d\u00e9lai d'intervention en est d\u00e9duit en calculant le d\u00e9lai entre la date et heure de cr\u00e9ation (cf. CONTEXT.CREATION) et le champ MISSION.START_TIME.\nSi la date de cr\u00e9ation du message EMSI est identique \u00e0 celui de la mission, la demande de concours demande un d\u00e9part imm\u00e9diat",
+                    "description": "Indique l'heure d\u2019arriv\u00e9e sur le lieu\u00a0de la Demande de concours.\nLe d\u00e9lai d'intervention en est d\u00e9duit en calculant le d\u00e9lai entre la date et heure de cr\u00e9ation (cf. CONTEXT.CREATION) et le champ MISSION.START_TIME.\nSi la date de cr\u00e9ation du message EMSI est identique \u00e0 celui de la mission, la demande de concours demande un d\u00e9part imm\u00e9diat",
                     "pattern": "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}[\\-+]\\d{2}:\\d{2}",
                     "format": "date-time"
                 },
@@ -496,7 +494,7 @@
                         "title": "Cat\u00e9gorie d'\u00e9v\u00e9nement",
                         "x-cols": 6,
                         "example": "example.json#/EVENT/ETYPE/CATEGORY/0",
-                        "description": "Dans le cadre d'une demande de concours, optionnel. Le champ peut ne pas \u00eatre \u00e9mis ni interpr\u00e9t\u00e9"
+                        "description": "Le champ peut ne pas \u00eatre interpr\u00e9t\u00e9 ou renseign\u00e9 avec une valeur comme 'UKN' = 'UNKOWN'"
                     }
                 },
                 "ACTOR": {
@@ -516,7 +514,7 @@
                         "title": "Type de localisation",
                         "x-cols": 6,
                         "example": "example.json#/EVENT/ETYPE/LOCTYPE/0",
-                        "description": "Dans le cadre d'une demande de concours, optionnel. Le champ peut ne pas \u00eatre \u00e9mis ni interpr\u00e9t\u00e9"
+                        "description": "Le champ peut ne pas \u00eatre affich\u00e9. Par d\u00e9faut, possible de renvoyer le code \"OTH\" =  \"OTHER\""
                     }
                 },
                 "ENV": {
@@ -552,7 +550,7 @@
                         "title": "ID des autres event",
                         "x-cols": 6,
                         "example": "example.json#/EVENT/REFERENCE/0/OTHER_EVENT_ID/0",
-                        "description": "Dans le cadre d'une demande de concours, optionnel. Le champ peut ne pas \u00eatre \u00e9mis ni interpr\u00e9t\u00e9"
+                        "description": "Indique d'autres identifiants utilis\u00e9s pour l'affaire dans d'autre syst\u00e8me. Renseigner au moins l'identifiant local"
                     }
                 }
             },
@@ -571,7 +569,7 @@
                     "title": "contexte",
                     "x-cols": 6,
                     "example": "example.json#/EVENT/CASUALTIES/0/CONTEXT",
-                    "description": "Dans le cadre d'une demande de concours, optionnel. Le champ peut ne pas \u00eatre \u00e9mis ni interpr\u00e9t\u00e9"
+                    "description": "Le champ doit \u00eatre renseign\u00e9 mais peut ne pas \u00eatre interpr\u00e9t\u00e9"
                 },
                 "DATIME": {
                     "type": "string",

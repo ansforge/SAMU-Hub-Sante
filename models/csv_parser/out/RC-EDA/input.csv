@@ -29,7 +29,7 @@ Dans le cas où un système n'est pas en mesure de reconnaître un code, il peut
 18,19.0,,Résumé de la localisation,,,,,"Correspond à l'étiquette associée à la localisation (plutôt à destination des humains).
 Elle va souvent correspondre à la concaténation suivant des règles métiers de différentes informations, dont le ""name"" (toponyme) et l'adresse.","Lycée Pierre de Coubertin - 12 rue de l'Amitié 77288 Melun, Musée Bossuet - Accès 2 - 77048 Saint-Albray",locLabel,,,,,,,1..1,,string,,,X,X
 19,20.0,,Nom du lieu,,,,,"Indique le nom de lieu : nom commercial, lieu-dit, lac, forêt, nom de quartier (plutôt à destination des systèmes).","Carrefour Toison d'Or, EPHAD Belle Fontaine, Quartier Melun Nord, Disneyland, …",name,,LE/L4,Nom de l'établissement répertorié/point d'intérêt,,,,1..1,,string,,,X,X
-20,21.0,,Détails de l'adresse,,,,,,,,addressDetailed,,,,,,0..1,X,address,,,X,X
+20,21.0,,Détails de l'adresse,,,,,,,,detailedAdress,,,,,,0..1,X,detailedAdress,,,X,X
 21,22.0,,,"Numéro, type et nom de voie",,,,"Numéro, type et nom de la voie. 
 Utilisé pour tout type de voie :  autoroute (PK, nom et sens), voie ferrée, voie navigable…
 Obligatoire et seule valeur des détails de l'adresse fournie par NexSIS.",9 Bd du Montparnasse,address,complete,,,,,,1..1,,string,,TEMPLATE: {number} {wayName},X,X
@@ -54,7 +54,7 @@ NB : dans tous les cas, la localisation GPS de la commune doit être fournie afi
 38,39.0,,,Entrée,,,,,"Zone Sud, Porte 1, …",,entrance,,,,,,0..1,,string,,,X,X
 39,40.0,,,Service,,,,Nom du service concerné au sein de l'établissement,"Infirmerie, service finance, service cardiologie, …",,entity,,,,,,0..1,,string,,,X,X
 40,41.0,,Géometrie associée,,,,,,,objectGeometry,geometry,,,,,,0..1,X,geometry,,,X,X
-41,42.0,,,Heure du dernier relevé,,,,Groupe date heure de renseignement des coordonnées du point clé de la localisation. Permet de connaître la fraîcheur et donc pertinence des informations pour intervenir.,2022-09-27T08:23:34+02:00,,obsDatime,,,,,,1..1,,datetime,,,,
+41,42.0,,,Heure du dernier relevé,,,,Groupe date heure de renseignement des coordonnées du point clé de la localisation. Permet de connaître la fraîcheur et donc pertinence des informations pour intervenir.,2022-09-27T08:23:34+02:00,,obsDatime,,,,,,1..1,,datetime,,,X,X
 42,43.0,,,Point ,,,,"Fournir au maximum même s'il est imprécis (et adapter le champs ""Précision"" en fonction). 
 Par exemple, sans adresse, il est possible de fournir le point GPS de la commune et d'adapter et préciser l'adresse en cours d'intervention.
 Sera toujours fourni par NexSIS.",,point,point,,,,,,0..1,X,point,,,X,X
@@ -111,7 +111,7 @@ Les informations peuvent être passées sous forme de texte libre ou via une lis
 70,71.0,,,Prénom & nom usuel du requérant,,,,,,callerName,detailedName,,,,,,0..1,X,detailedName,,,X,X
 71,72.0,,,,Prénom et nom,,,"Prénom et nom usuel du requérant.
 Si les champs callerLastName et callerFirstName sont renseignés, le champ callerName doit être valorisé ainsi : ""{callerFirstName} {callerLastName}"".
-Note : NexSIS ne dispose que de ces informations (concaténées) et pas de deux champs séparés.",Jean Dupont,,completeName,AN/AP,"Nom
+Note : NexSIS ne dispose que de ces informations (concaténées) et pas de deux champs séparés.",Jean Dupont,,complete,AN/AP,"Nom
 Prénom",,,,1..1,,string,,TEMPLATE: {callerLastName} {callerFirstName},X,X
 72,73.0,,,,Nom,,,Nom du requérant,Dupont,,lastName,,,,,,0..1,,string,,,X,X
 73,74.0,,,,Prénom,,,"Prénom du réquérant.
@@ -127,8 +127,8 @@ Dans le cas où le requérant est à l'origine de l'alerte les objets contactSou
 81,79.0,,,Service d'urgence,,,,"Décrit la structure ou le service à laquelle est rattachée l'agent (en fonction du niveau de précision disponible).
 Se référer au DSF pour la structure normée du champ ""organization""",samu44:chuNantes:crra:regulationN3,organization,,,,,,,1..1,,string,,,X,X
 82,80.0,,,Centre d'appels,,,,Décrit le centre d'appel auquel est rattaché l'agent,"CGA, CGO 21, CRRA 44, ...",controlRoom,,,,,,,1..1,,string,,,X,X
-83,81.0,,,Rôle agent,,,,Décrit le rôle de l'agent au sein du service selon la nomenclature PERSO (nomenclature SI-SAMU),,callTakerRole,role,,,,,,0..1,,string,,NOMENCLATURE : PERSO (nomenclature SI-SAMU),,
-84,82.0,,,Contact de l'agent,,,,Objet contact permettant d'indiquer le contact de l'agent,,calltakerURI,,,,,,,0..1,X,contact,,,X,X
+83,81.0,,,Rôle agent,,,,Décrit le rôle de l'agent au sein du service selon la nomenclature PERSO (nomenclature SI-SAMU),ARM,callTakerRole,role,,,,,,0..1,,string,,NOMENCLATURE : PERSO (nomenclature SI-SAMU),X,X
+84,82.0,,,Contact de l'agent,,,,Objet contact permettant d'indiquer le contact de l'agent,,calltakerURI,calltakeContact,,,,,,0..1,X,contact,,,X,X
 85,83.0,,,ID de l'agent,,,,Identifiant unique de l'opérateur ayant traité l'alerte,"id1234, carte CPx (Santé), id d'affectation, …",calltakerId,,O1,Code de l'opérateur ayant pris l'appel,,,,0..1,,string,,,X,X
 86,84.0,,Pièces jointes,,,,,"Permet d'envoyer tout type de fichiers (photos, vidéos, sons, …) par lien.
 Les URI doivent correspondre à des espaces sécurisés auxquels les accès ont déjà été fournies ou doivent être fournies avec des tokens éphémères si besoin de sécuriser l'accès aux ressources tout en en garantissant l'accès par tous les destinataires des messages.

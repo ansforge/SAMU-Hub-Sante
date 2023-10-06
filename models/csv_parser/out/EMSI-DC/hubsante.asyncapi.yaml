@@ -261,15 +261,13 @@ components:
       properties:
         ID:
           type: string
-          title: 'Identifiant local d''affaire '
+          title: Identifiant du message
           x-cols: 6
           example: example.json#/CONTEXT/ID
-          description: "Identifiant d'affaire du message RC-EDA transmis en amont\
-            \ de la demande de concours : \xE0 valoriser comme le champ \"caseId\"\
-            \ du message RC-EDA\nCe champ permet de lier une demande de concours \xE0\
-            \ une affaire d\xE9j\xE0 partag\xE9e par un syst\xE8me partenaire"
+          description: "A constituer par le r\xE9dacteur du pr\xE9sent EMSI pour \xEA\
+            tre unique, peut reprendre messageId de l'en t\xEAte RC-DE."
           examples:
-          - samuA:CA126B445579GD4A67AV
+          - d350c9d2-9d76-4568-b0b7-a747ffadc949
         MODE:
           type: string
           title: Mode
@@ -353,18 +351,15 @@ components:
       x-display: expansion-panels
       required:
       - ID
-      - DECL_DATIME
-      - OCC_DATIME
-      - OBS_DATIME
+      - MAIN_EVENT_ID
       properties:
         ID:
           type: string
-          title: "ID de l'\xE9v\xE9nement"
+          title: Identifiant local de l'affaire
           x-cols: 6
           example: example.json#/EVENT/ID
-          description: "Dans le cadre d'une demande de concours, optionnel. Le champ\
-            \ peut ne pas \xEAtre \xE9mis ni interpr\xE9t\xE9.\nIl peut \xEAtre renseign\xE9\
-            \ avec l'identifiant local de l'affaire du partenaire requ\xE9rant"
+          description: "Il peut \xEAtre renseign\xE9 avec l'identifiant local de l'affaire\
+            \ du partenaire requ\xE9rant"
           examples:
           - samuA:CA126B445579GD4A67AV
         NAME:
@@ -378,11 +373,11 @@ components:
           - Grand incendie Nantes
         MAIN_EVENT_ID:
           type: string
-          title: "ID de l'\xE9v\xE9nement principal"
+          title: Identifiant de l'affaire
           x-cols: 6
           example: example.json#/EVENT/MAIN_EVENT_ID
-          description: "Dans le cadre d'une demande de concours, optionnel. Le champ\
-            \ peut ne pas \xEAtre \xE9mis ni interpr\xE9t\xE9"
+          description: "Identifiant d\u2019affaire partag\xE9 issu du message RC-EDA\
+            \ transmis en amont"
           examples:
           - samuA:CA126B445579GD4A67AV
         ETYPE:
@@ -431,8 +426,10 @@ components:
           x-cols: 6
           example: example.json#/EVENT/DECL_DATIME
           description: "Dans le cadre d'une demande de concours, ce champ est valoris\xE9\
-            \ avec la date de r\xE9ception de la premi\xE8re alerte relative \xE0\
-            \ l'affaire"
+            \ avec la date/heure de cr\xE9ation de l'affaire ou de l'op\xE9ration.\
+            \ NexSIS transmettra la date/heure de cr\xE9ation de l'op\xE9ration dans\
+            \ ses syst\xE8mes (qui peut diverger de la date/heure de cr\xE9ation de\
+            \ l'affaire)"
           pattern: \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[\-+]\d{2}:\d{2}
           format: date-time
           examples:
@@ -443,9 +440,9 @@ components:
           x-cols: 6
           example: example.json#/EVENT/OCC_DATIME
           description: "Dans le cadre d'une demande de concours, ce champ est valoris\xE9\
-            \ avec la date \xE9valu\xE9e de d\xE9but de l'affaire.\nPar exemple :\n\
-            Si un incendie est d\xE9clar\xE9 est 9h02, il a pu d\xE9marr\xE9 \xE0\
-            \ 8h55 par exemple."
+            \ avec la date de la premi\xE8re alerte ou la date \xE9valu\xE9e de d\xE9\
+            but de la situation d'urgence.\nPar exemple :\nSi un incendie est d\xE9\
+            clar\xE9 est 9h02, il a pu d\xE9marr\xE9 \xE0 8h55 par exemple."
           pattern: \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[\-+]\d{2}:\d{2}
           format: date-time
           examples:
@@ -456,9 +453,11 @@ components:
             \ r\xE9alis\xE9e"
           x-cols: 6
           example: example.json#/EVENT/OBS_DATIME
-          description: "Dans le cadre d'une demande de concours, ce champ est valoris\xE9\
-            \ avec la date \xE0 laquelle l'observation de la situation d'urgence la\
-            \ plus r\xE9cente a \xE9t\xE9 r\xE9alis\xE9e"
+          description: "Dans le cadre d'une demande de concours, ce champ est id\xE9\
+            alement \xE0 valoriser avec la date/heure \xE0 laquelle l'observation\
+            \ de la situation d'urgence la plus r\xE9cente a \xE9t\xE9 r\xE9alis\xE9\
+            e.\nNexSIS transmettra la date/heure d'envoi de la demande de concours\
+            \ dans son syst\xE8me."
           pattern: \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[\-+]\d{2}:\d{2}
           format: date-time
           examples:
@@ -592,7 +591,8 @@ components:
             #\"{code_cadre_conventionnel}\"#\"\no\xF9 le code_cadre_conventionnel\
             \ est issue d'une nomenclature CISU-Cadre Conventionnel (A Venir)\nNB\
             \ : ce champ est d\xE9tourn\xE9 par rapport au standard EMSI pour permettre\
-            \ l'expression d'une demande de concours"
+            \ l'expression d'une demande de concours et indiquer le cadre conventionnel\
+            \ dans lequel elle est effectu\xE9e"
           examples:
           - '#DEMANDE_CONCOURS#CARENCE#'
         STATUS:
@@ -616,11 +616,12 @@ components:
           title: "D\xE9but de la mission"
           x-cols: 6
           example: example.json#/MISSION/0/START_TIME
-          description: "Indique l'horaire de d\xE9marrage souhait\xE9 pour l'intervention.\n\
-            Le d\xE9lai d'intervention en est d\xE9duit en calculant le d\xE9lai entre\
-            \ la date et heure de cr\xE9ation (cf. CONTEXT.CREATION) et le champ MISSION.START_TIME.\n\
-            Si la date de cr\xE9ation du message EMSI est identique \xE0 celui de\
-            \ la mission, la demande de concours demande un d\xE9part imm\xE9diat"
+          description: "Indique l'heure d\u2019arriv\xE9e sur le lieu\_de la Demande\
+            \ de concours.\nLe d\xE9lai d'intervention en est d\xE9duit en calculant\
+            \ le d\xE9lai entre la date et heure de cr\xE9ation (cf. CONTEXT.CREATION)\
+            \ et le champ MISSION.START_TIME.\nSi la date de cr\xE9ation du message\
+            \ EMSI est identique \xE0 celui de la mission, la demande de concours\
+            \ demande un d\xE9part imm\xE9diat"
           pattern: \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[\-+]\d{2}:\d{2}
           format: date-time
           examples:
@@ -782,8 +783,8 @@ components:
             title: "Cat\xE9gorie d'\xE9v\xE9nement"
             x-cols: 6
             example: example.json#/EVENT/ETYPE/CATEGORY/0
-            description: "Dans le cadre d'une demande de concours, optionnel. Le champ\
-              \ peut ne pas \xEAtre \xE9mis ni interpr\xE9t\xE9"
+            description: "Le champ peut ne pas \xEAtre interpr\xE9t\xE9 ou renseign\xE9\
+              \ avec une valeur comme 'UKN' = 'UNKOWN'"
             examples:
             - FIR
         ACTOR:
@@ -816,8 +817,8 @@ components:
             title: Type de localisation
             x-cols: 6
             example: example.json#/EVENT/ETYPE/LOCTYPE/0
-            description: "Dans le cadre d'une demande de concours, optionnel. Le champ\
-              \ peut ne pas \xEAtre \xE9mis ni interpr\xE9t\xE9"
+            description: "Le champ peut ne pas \xEAtre affich\xE9. Par d\xE9faut,\
+              \ possible de renvoyer le code \"OTH\" =  \"OTHER\""
             examples:
             - FLAM
         ENV:
@@ -854,8 +855,8 @@ components:
             title: ID des autres event
             x-cols: 6
             example: example.json#/EVENT/REFERENCE/0/OTHER_EVENT_ID/0
-            description: "Dans le cadre d'une demande de concours, optionnel. Le champ\
-              \ peut ne pas \xEAtre \xE9mis ni interpr\xE9t\xE9"
+            description: "Indique d'autres identifiants utilis\xE9s pour l'affaire\
+              \ dans d'autre syst\xE8me. Renseigner au moins l'identifiant local"
             examples:
             - samuC:DB326B5RC279GD4A67ZY
       example: example.json#/EVENT/REFERENCE/0
@@ -871,8 +872,8 @@ components:
           title: contexte
           x-cols: 6
           example: example.json#/EVENT/CASUALTIES/0/CONTEXT
-          description: "Dans le cadre d'une demande de concours, optionnel. Le champ\
-            \ peut ne pas \xEAtre \xE9mis ni interpr\xE9t\xE9"
+          description: "Le champ doit \xEAtre renseign\xE9 mais peut ne pas \xEAtre\
+            \ interpr\xE9t\xE9"
           examples:
           - REQ_ACTION
         DATIME:
