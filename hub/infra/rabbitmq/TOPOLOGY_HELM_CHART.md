@@ -52,3 +52,9 @@ Next, we could generate multiple values.yaml files, like a sandbox.values.yaml (
 
 values.yaml also contains a 'clusterNamespace' field, which should allow us to deploy a rabbitmq-sandbox and a rabbitmq-staging cluster in the same environment (it could be a good reason to look
 on how to deploy the Rabbitmq Cluster Operator with helm too, for the same purpose)
+
+
+### IMPORTANT NOTE
+By default, the operator automatically and randomly generates credentials for newly created users, unless we reference an existing secret.
+The credentials are read-only, so can not be updated since the user has been created. So we need to create a secret first with no password
+(in the same namespace as the object).
