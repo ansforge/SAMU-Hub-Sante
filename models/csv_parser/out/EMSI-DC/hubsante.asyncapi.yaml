@@ -313,6 +313,18 @@ components:
           type: array
           items:
             $ref: '#/definitions/link'
+        LEVEL:
+          type: string
+          title: Niveau
+          x-cols: 6
+          example: example.json#/CONTEXT/LEVEL
+          description: Dans le cadre d'une demande de concours, optionnel
+          enum:
+          - STRTGC
+          - OPR
+          - TACTCL
+          examples:
+          - OPR
         SECLASS:
           type: string
           title: Niveau de classification
@@ -702,8 +714,18 @@ components:
       type: object
       title: Lien
       x-display: expansion-panels
-      required: []
+      required:
+      - ID
       properties:
+        ID:
+          type: string
+          title: ID
+          x-cols: 6
+          example: example.json#/CONTEXT/LINK/0/ID
+          description: "A renseigner avec l'identifiant local de l'affaire du partenaire\
+            \ requ\xE9rant"
+          examples:
+          - samuA:CA126B445579GD4A67AV
         LINK_ROLE:
           type: string
           title: "R\xF4le du lien"
@@ -716,22 +738,10 @@ components:
           - SPRSDS
           examples:
           - ADDSTO
-        LEVEL:
-          type: string
-          title: Niveau
-          x-cols: 6
-          example: example.json#/CONTEXT/LINK/0/LEVEL
-          description: Dans le cadre d'une demande de concours, optionnel
-          enum:
-          - STRTGC
-          - OPR
-          - TACTCL
-          examples:
-          - OPR
       example: example.json#/CONTEXT/LINK/0
       examples:
-      - LINK_ROLE: ADDSTO
-        LEVEL: OPR
+      - ID: samuA:CA126B445579GD4A67AV
+        LINK_ROLE: ADDSTO
     origin:
       type: object
       title: Origine
@@ -746,6 +756,14 @@ components:
           description: Dans le cadre d'une demande de concours, optionnel
           examples:
           - samuA
+        USER_ID:
+          type: string
+          title: ID d'utilisateur de l'origine
+          x-cols: 6
+          example: example.json#/CONTEXT/ORIGIN/USER_ID
+          description: Dans le cadre d'une demande de concours, optionnel
+          examples:
+          - samuA:crra:poste1234
         NAME:
           type: string
           title: 'Nom Origine '
@@ -757,6 +775,7 @@ components:
       example: example.json#/CONTEXT/ORIGIN
       examples:
       - ORG_ID: samuA
+        USER_ID: samuA:crra:poste1234
         NAME: Samu A
     externalInfo:
       type: object

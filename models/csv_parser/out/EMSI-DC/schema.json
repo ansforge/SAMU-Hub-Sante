@@ -85,6 +85,18 @@
                         "$ref": "#/definitions/link"
                     }
                 },
+                "LEVEL": {
+                    "type": "string",
+                    "title": "Niveau",
+                    "x-cols": 6,
+                    "example": "example.json#/CONTEXT/LEVEL",
+                    "description": "Dans le cadre d'une demande de concours, optionnel",
+                    "enum": [
+                        "STRTGC",
+                        "OPR",
+                        "TACTCL"
+                    ]
+                },
                 "SECLASS": {
                     "type": "string",
                     "title": "Niveau de classification",
@@ -418,8 +430,17 @@
             "type": "object",
             "title": "Lien",
             "x-display": "expansion-panels",
-            "required": [],
+            "required": [
+                "ID"
+            ],
             "properties": {
+                "ID": {
+                    "type": "string",
+                    "title": "ID",
+                    "x-cols": 6,
+                    "example": "example.json#/CONTEXT/LINK/0/ID",
+                    "description": "A renseigner avec l'identifiant local de l'affaire du partenaire requ\u00e9rant"
+                },
                 "LINK_ROLE": {
                     "type": "string",
                     "title": "R\u00f4le du lien",
@@ -429,18 +450,6 @@
                     "enum": [
                         "ADDSTO",
                         "SPRSDS"
-                    ]
-                },
-                "LEVEL": {
-                    "type": "string",
-                    "title": "Niveau",
-                    "x-cols": 6,
-                    "example": "example.json#/CONTEXT/LINK/0/LEVEL",
-                    "description": "Dans le cadre d'une demande de concours, optionnel",
-                    "enum": [
-                        "STRTGC",
-                        "OPR",
-                        "TACTCL"
                     ]
                 }
             },
@@ -457,6 +466,13 @@
                     "title": "Origine ID",
                     "x-cols": 6,
                     "example": "example.json#/CONTEXT/ORIGIN/ORG_ID",
+                    "description": "Dans le cadre d'une demande de concours, optionnel"
+                },
+                "USER_ID": {
+                    "type": "string",
+                    "title": "ID d'utilisateur de l'origine",
+                    "x-cols": 6,
+                    "example": "example.json#/CONTEXT/ORIGIN/USER_ID",
                     "description": "Dans le cadre d'une demande de concours, optionnel"
                 },
                 "NAME": {
