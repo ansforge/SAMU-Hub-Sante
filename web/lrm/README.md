@@ -3,7 +3,7 @@ _LRM basique afin de pouvoir tester l'envoi / réception de messages_
 
 ## Deploy
 ```bash
-# Copy models and build UI
+# Build UI
 cd server && npm run setup && cd ..
 # Build & push docker image
 docker buildx build --platform linux/amd64 -t romainfd/hub-lrm:latest .

@@ -6,10 +6,20 @@ pip install -r requirements.txt
 
 ## Usage
 ```bash
-cp "/Users/romainfouilland/Library/CloudStorage/OneDrive-SharedLibraries-ANS/Espace Projets - Espace Programme SI-SAMU/01 - Equipe projet/07 - Innovation et prospectif/12 - Hub Santé/17 - MDD/MDD Hub Santé.xlsx" model.xlsx
+# Params to specify the sheet and version
+python csv_parser.py -s RC-DE -v 0.5  
+python csv_parser.py --sheet RC-DE --version 0.5
+# Defaults to RC-EDA and today (YY.MM.DD)
+python csv_parser.py
+```
+
+```bash
+cp "/Users/romainfouilland/Library/CloudStorage/OneDrive-SharedLibraries-ANS/Espace Projets - Espace Programme SI-SAMU/01 - Equipe projet/07 - Innovation et prospectif/12 - Hub Santé/17 - MDD/MDD - Hub Santé.xlsx" model.xlsx
 python csv_parser.py
 # AsyncAPI cleaning and generation
-awk '!/example: /' hubsante.asyncapi.yaml > tmpfile && mv tmpfile hubsante.asyncapi.yaml
-awk '{sub("#/definitions/","#/components/schemas/")} {print}' hubsante.asyncapi.yaml > tmpfile && mv tmpfile hubsante.asyncapi.yaml
-ag hubsante.asyncapi.yaml @asyncapi/html-template -o ../../web/specs --force-write
+awk '!/example: /' out/RC-EDA/hubsante.asyncapi.yaml > tmpfile && mv tmpfile out/RC-EDA/hubsante.asyncapi.yaml
+awk '!/example: /' out/RC-DE/hubsante.asyncapi.yaml > tmpfile && mv tmpfile out/RC-DE/hubsante.asyncapi.yaml
+awk '{sub("#/definitions/","#/components/schemas/")} {print}' out/RC-EDA/hubsante.asyncapi.yaml > tmpfile && mv tmpfile out/RC-EDA/hubsante.asyncapi.yaml
+awk '{sub("#/definitions/","#/components/schemas/")} {print}' out/RC-DE/hubsante.asyncapi.yaml > tmpfile && mv tmpfile out/RC-DE/hubsante.asyncapi.yaml
+ag out/RC-EDA/hubsante.asyncapi.yaml @asyncapi/html-template -o ../../web/specs --force-write
 ```

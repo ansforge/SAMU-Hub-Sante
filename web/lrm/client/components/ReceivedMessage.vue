@@ -95,14 +95,14 @@ export default {
       return this.messages.filter(
         message => this.getMessageType(message) === 'ack'
       ).find(
-        message => message.body.content.contentObject.jsonContent.embeddedJsonContent.message.ackDistributionId === this.body.distributionID
+        message => message.body.content.contentObject.jsonContent.embeddedJsonContent.message.reference.distributionID === this.body.distributionID
       )
     }
   },
   methods: {
     sendAck () {
       try {
-        const msg = this.buildMessage({ ackDistributionId: this.body.distributionID }, 'Ack')
+        const msg = this.buildMessage({ reference: { distributionID: this.body.distributionID } }, 'Ack')
         this.sendMessage(msg)
       } catch (error) {
         console.error("Erreur lors de l'envoi de l'acquittement", error)

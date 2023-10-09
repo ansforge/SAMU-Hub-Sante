@@ -3,18 +3,74 @@ import json
 from jsonpath_ng import parse
 import yaml
 import docx
+import argparse
+from datetime import date
+import warnings
 
-MODEL_NAME = 'CreateCaseMessage'
+# Ignoring Openpyxl Excel's warnings | Ref.: https://stackoverflow.com/a/64420416
+warnings.filterwarnings('ignore', category=UserWarning, module='openpyxl')
+
+parser = argparse.ArgumentParser(
+    prog='Model Parser',
+    description='Parses and converts the Excel model to the other needed formats',
+)
+parser.add_argument('-v', '--version', help='the version number to be used in model. Defaults to today.')
+parser.add_argument('-s', '--sheet', default="RC-EDA", help='the Excel sheet to be parsed.')
+args = parser.parse_args()
+
+
+class Color:
+    PURPLE = '\033[95m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+    END = '\033[0m'
+
+
+args.version = args.version or date.today().strftime("%y.%m.%d")
+print(f'{Color.BOLD}{Color.UNDERLINE}{Color.PURPLE}Building version {args.version} of {args.sheet} sheet...{Color.END}')
+
+RUN_DOCX_OUTPUT_EXAMPLES = False
+
+DATA_DEPTH = 6  # nombre de niveaux de données
+
+def get_params_from_sheet(sheet):
+    """ Automatically get the number of rows and columns to use for this sheet. """
+    full_df = pd.read_excel('model.xlsx', sheet_name=sheet, header=None)
+    # Getting modelName from cell A1
+    modelName = full_df.iloc[0, 0]
+    # Computing number of rows in table
+    # rows = df.iloc[7:, 0]
+    # Simply remove initial rows & total row
+    rows = full_df.shape[0] - 8 - 1
+    # Compute number of columns in table
+    try:
+        # By finding the CUT column
+        cols = full_df.iloc[7, :].tolist().index('CUT')
+    except ValueError:
+        # Simply by removing the 6 last editor feedback columns
+        cols = full_df.shape[1] - 6
+    return {
+        'modelName': modelName,
+        'cols': cols,
+        'rows': rows
+    }
+
+params = get_params_from_sheet(args.sheet)
+MODEL_NAME = params['modelName']
+NB_ROWS = params['rows']
+NB_COLS = params['cols']
 
 # DATA COLLECTION AND CLEANING
 # Read CSV, skipping useless first and last lines
-df = pd.read_excel('model.xlsx', sheet_name="createCase", skiprows=7, nrows=135)
+df = pd.read_excel('model.xlsx', sheet_name=args.sheet, skiprows=7, nrows=NB_ROWS)
 # Dropping useless columns
-df = df.iloc[:, :35]
+df = df.iloc[:, :NB_COLS]
+# Storing input data in a file to track versions
+df.to_csv(f'out/{args.sheet}/input.csv')
 # Keeping only 15-NexSIS fields
 df = df[df['15-18'] == 'X']
 # Replacing comment cells (starting with '# ') with NaN in 'Donnée xx' columns
-df.iloc[:, 1:6] = df.iloc[:, 1:6].applymap(lambda x: pd.NA if str(x).startswith('# ') else x)
+df.iloc[:, 1:1 + DATA_DEPTH] = df.iloc[:, 1:1 + DATA_DEPTH].applymap(lambda x: pd.NA if str(x).startswith('# ') else x)
 # Adding a name column (NexSIS by default, overriden by 'Nouvelle Balise' if exists)
 df['name'] = df['Balise NexSIS']
 df.loc[df['Nouvelle balise'].notnull(), 'name'] = df['Nouvelle balise']
@@ -22,7 +78,7 @@ df.loc[df['Nouvelle balise'].notnull(), 'name'] = df['Nouvelle balise']
 # DATA ENRICHMENT
 # Get level in data hierarchy
 df['level_shift'] = -1
-for i in range(1, 6):
+for i in range(1, 1 + DATA_DEPTH):
     df[f"level_{i}"] = df[f"Donnée (Niveau {i})"].notnull().cumsum()
     df[f"previous_level_{i}"] = df[f"level_{i}"].shift(periods=1, fill_value=0)
     df["level_shift"] = df.apply(
@@ -115,7 +171,6 @@ def build_example(elem):
             return 'None'
         return elem['Exemples']
     elif 'children' not in elem:
-        print(elem['name'])
         return {}
     else:
         children = {}
@@ -128,7 +183,7 @@ def build_example(elem):
 
 
 json_example = build_example(rootObject)
-with open('example.json', 'w') as outfile:
+with open(f'out/{args.sheet}/example.json', 'w') as outfile:
     json.dump(json_example, outfile, indent=4)
 
 # Go through data (list or tree) and use it to build the expected JSON schema
@@ -136,7 +191,7 @@ json_schema = {
     '$schema': 'http://json-schema.org/draft-07/schema#',
     '$id': 'http://json-schema.org/draft-07/schema#',
     'x-id': 'schema.json#',  # required by JSV to find the schema file locally
-    'version': '0.4.9',
+    'version': args.version,
     'example': 'example.json#',
     'type': 'object',
     'title': MODEL_NAME,
@@ -173,8 +228,10 @@ def get_parent_example_path(parent):
     return json_schema['definitions'][parent['true_type']]['example']
 
 
-def add_field_child_property(parent, child, properties):
-    """Update parent properties by adding the child information for a field child"""
+def add_field_child_property(parent, child, definitions):
+    """Update parent definitions (required and properties) by adding the child information for a field child"""
+    if child['Cardinalité'].startswith('1'):
+        definitions['required'].append(child['name'])
     typeName, pattern, format = type_matching(child)
     parentExamplePath = get_parent_example_path(parent)
     childDetails = {
@@ -191,6 +248,7 @@ def add_field_child_property(parent, child, properties):
         childDetails['format'] = format
     if has_format_details(child, 'ENUM: '):
         childDetails['enum'] = child['Détails de format'][6:].split(', ')
+    properties = definitions['properties']
     if is_array(child):
         properties[child['name']] = {
             'type': 'array',
@@ -236,7 +294,7 @@ def add_object_child_definition(parent, child, definitions):
 def add_child(parent, child, definitions):
     """Update parent definitions by adding the child information"""
     if child['Objet'] != 'X':
-        add_field_child_property(parent, child, definitions['properties'])
+        add_field_child_property(parent, child, definitions)
     else:
         add_object_child_definition(parent, child, definitions)
 
@@ -313,7 +371,7 @@ def DFS(root, use_elem):
 
 print('Generating JSON schema...')
 DFS(rootObject, build_json_schema)
-with open('schema.json', 'w') as outfile:
+with open(f'out/{args.sheet}/schema.json', 'w') as outfile:
     json.dump(json_schema, outfile, indent=4)
 print('JSON schema generated.')
 
@@ -345,17 +403,19 @@ full_yaml['components']['schemas'] = {
     **full_yaml['components']['schemas'],
     **build_asyncapi_schema()
 }
-with open('hubsante.asyncapi.yaml', 'w') as file:
+with open(f'out/{args.sheet}/hubsante.asyncapi.yaml', 'w') as file:
     documents = yaml.dump(full_yaml, file, sort_keys=False)
 print('AsyncAPI schema generated.')
-
 
 named_df = df.copy().set_index(['parent_type', 'name']).fillna('')
 
 
 def get_excel_line(parent_type, name):
-    # iloc[0] necessary even if there is only one line per name as it returns a DataFrame
-    return named_df.loc[(parent_type, name)].iloc[0].to_dict()
+    try:
+        # iloc[0] necessary even if there is only one line per name as it returns a DataFrame
+        return named_df.loc[(parent_type, name)].iloc[0].to_dict()
+    except AttributeError:
+        return named_df.loc[(parent_type, name)].to_dict()
 
 
 def set_col_widths(table, widths):
@@ -423,113 +483,114 @@ def_to_table(MODEL_NAME, json_schema, title=f"Objet {MODEL_NAME}", doc=doc)
 # Then all Json Schema definitions are types tables
 for elem_name, definition in json_schema['definitions'].items():
     def_to_table(elem_name, definition, title=f"Type {elem_name}", doc=doc)
-doc.save('schema.docx')
+doc.save(f'out/{args.sheet}/schema.docx')
 
 print('Docx tables generated.')
 
-# Build styles comparison
-for style in [
-    # 'Table Normal',
-    'Colorful Grid',
-    'Colorful Grid Accent 1',
-    'Colorful Grid Accent 2',
-    'Colorful Grid Accent 3',
-    'Colorful Grid Accent 4',
-    'Colorful Grid Accent 5',
-    'Colorful Grid Accent 6',
-    'Colorful List',
-    'Colorful List Accent 1',
-    'Colorful List Accent 2',
-    'Colorful List Accent 3',
-    'Colorful List Accent 4',
-    'Colorful List Accent 5',
-    'Colorful List Accent 6',
-    'Colorful Shading',
-    'Colorful Shading Accent 1',
-    'Colorful Shading Accent 2',
-    'Colorful Shading Accent 3',
-    'Colorful Shading Accent 4',
-    'Colorful Shading Accent 5',
-    'Colorful Shading Accent 6',
-    'Dark List',
-    'Dark List Accent 1',
-    'Dark List Accent 2',
-    'Dark List Accent 3',
-    'Dark List Accent 4',
-    'Dark List Accent 5',
-    'Dark List Accent 6',
-    'Light Grid',
-    'Light Grid Accent 1',
-    'Light Grid Accent 2',
-    'Light Grid Accent 3',
-    'Light Grid Accent 4',
-    'Light Grid Accent 5',
-    'Light Grid Accent 6',
-    'Light List',
-    'Light List Accent 1',
-    'Light List Accent 2',
-    'Light List Accent 3',
-    'Light List Accent 4',
-    'Light List Accent 5',
-    'Light List Accent 6',
-    'Light Shading',
-    'Light Shading Accent 1',
-    'Light Shading Accent 2',
-    'Light Shading Accent 3',
-    'Light Shading Accent 4',
-    'Light Shading Accent 5',
-    'Light Shading Accent 6',
-    'Medium Grid 1',
-    'Medium Grid 1 Accent 1',
-    'Medium Grid 1 Accent 2',
-    'Medium Grid 1 Accent 3',
-    'Medium Grid 1 Accent 4',
-    'Medium Grid 1 Accent 5',
-    'Medium Grid 1 Accent 6',
-    'Medium Grid 2',
-    'Medium Grid 2 Accent 1',
-    'Medium Grid 2 Accent 2',
-    'Medium Grid 2 Accent 3',
-    'Medium Grid 2 Accent 4',
-    'Medium Grid 2 Accent 5',
-    'Medium Grid 2 Accent 6',
-    'Medium Grid 3',
-    'Medium Grid 3 Accent 1',
-    'Medium Grid 3 Accent 2',
-    'Medium Grid 3 Accent 3',
-    'Medium Grid 3 Accent 4',
-    'Medium Grid 3 Accent 5',
-    'Medium Grid 3 Accent 6',
-    'Medium List 1',
-    'Medium List 1 Accent 1',
-    'Medium List 1 Accent 2',
-    'Medium List 1 Accent 3',
-    'Medium List 1 Accent 4',
-    'Medium List 1 Accent 5',
-    'Medium List 1 Accent 6',
-    'Medium List 2',
-    'Medium List 2 Accent 1',
-    'Medium List 2 Accent 2',
-    'Medium List 2 Accent 3',
-    'Medium List 2 Accent 4',
-    'Medium List 2 Accent 5',
-    'Medium List 2 Accent 6',
-    'Medium Shading 1',
-    'Medium Shading 1 Accent 1',
-    'Medium Shading 1 Accent 2',
-    'Medium Shading 1 Accent 3',
-    'Medium Shading 1 Accent 4',
-    'Medium Shading 1 Accent 5',
-    'Medium Shading 1 Accent 6',
-    'Medium Shading 2',
-    'Medium Shading 2 Accent 1',
-    'Medium Shading 2 Accent 2',
-    'Medium Shading 2 Accent 3',
-    'Medium Shading 2 Accent 4',
-    'Medium Shading 2 Accent 5',
-    'Medium Shading 2 Accent 6',
-]:
-    if 'Accent 1' in style:
-        def_to_table(MODEL_NAME, json_schema, style=style).save(f'docx-styles/schema-{style}.docx')
-    else:
-        def_to_table(MODEL_NAME, json_schema, style=style).save(f'docx-styles/others/schema-{style}.docx')
+if RUN_DOCX_OUTPUT_EXAMPLES:
+    # Build styles comparison
+    for style in [
+        # 'Table Normal',
+        'Colorful Grid',
+        'Colorful Grid Accent 1',
+        'Colorful Grid Accent 2',
+        'Colorful Grid Accent 3',
+        'Colorful Grid Accent 4',
+        'Colorful Grid Accent 5',
+        'Colorful Grid Accent 6',
+        'Colorful List',
+        'Colorful List Accent 1',
+        'Colorful List Accent 2',
+        'Colorful List Accent 3',
+        'Colorful List Accent 4',
+        'Colorful List Accent 5',
+        'Colorful List Accent 6',
+        'Colorful Shading',
+        'Colorful Shading Accent 1',
+        'Colorful Shading Accent 2',
+        'Colorful Shading Accent 3',
+        'Colorful Shading Accent 4',
+        'Colorful Shading Accent 5',
+        'Colorful Shading Accent 6',
+        'Dark List',
+        'Dark List Accent 1',
+        'Dark List Accent 2',
+        'Dark List Accent 3',
+        'Dark List Accent 4',
+        'Dark List Accent 5',
+        'Dark List Accent 6',
+        'Light Grid',
+        'Light Grid Accent 1',
+        'Light Grid Accent 2',
+        'Light Grid Accent 3',
+        'Light Grid Accent 4',
+        'Light Grid Accent 5',
+        'Light Grid Accent 6',
+        'Light List',
+        'Light List Accent 1',
+        'Light List Accent 2',
+        'Light List Accent 3',
+        'Light List Accent 4',
+        'Light List Accent 5',
+        'Light List Accent 6',
+        'Light Shading',
+        'Light Shading Accent 1',
+        'Light Shading Accent 2',
+        'Light Shading Accent 3',
+        'Light Shading Accent 4',
+        'Light Shading Accent 5',
+        'Light Shading Accent 6',
+        'Medium Grid 1',
+        'Medium Grid 1 Accent 1',
+        'Medium Grid 1 Accent 2',
+        'Medium Grid 1 Accent 3',
+        'Medium Grid 1 Accent 4',
+        'Medium Grid 1 Accent 5',
+        'Medium Grid 1 Accent 6',
+        'Medium Grid 2',
+        'Medium Grid 2 Accent 1',
+        'Medium Grid 2 Accent 2',
+        'Medium Grid 2 Accent 3',
+        'Medium Grid 2 Accent 4',
+        'Medium Grid 2 Accent 5',
+        'Medium Grid 2 Accent 6',
+        'Medium Grid 3',
+        'Medium Grid 3 Accent 1',
+        'Medium Grid 3 Accent 2',
+        'Medium Grid 3 Accent 3',
+        'Medium Grid 3 Accent 4',
+        'Medium Grid 3 Accent 5',
+        'Medium Grid 3 Accent 6',
+        'Medium List 1',
+        'Medium List 1 Accent 1',
+        'Medium List 1 Accent 2',
+        'Medium List 1 Accent 3',
+        'Medium List 1 Accent 4',
+        'Medium List 1 Accent 5',
+        'Medium List 1 Accent 6',
+        'Medium List 2',
+        'Medium List 2 Accent 1',
+        'Medium List 2 Accent 2',
+        'Medium List 2 Accent 3',
+        'Medium List 2 Accent 4',
+        'Medium List 2 Accent 5',
+        'Medium List 2 Accent 6',
+        'Medium Shading 1',
+        'Medium Shading 1 Accent 1',
+        'Medium Shading 1 Accent 2',
+        'Medium Shading 1 Accent 3',
+        'Medium Shading 1 Accent 4',
+        'Medium Shading 1 Accent 5',
+        'Medium Shading 1 Accent 6',
+        'Medium Shading 2',
+        'Medium Shading 2 Accent 1',
+        'Medium Shading 2 Accent 2',
+        'Medium Shading 2 Accent 3',
+        'Medium Shading 2 Accent 4',
+        'Medium Shading 2 Accent 5',
+        'Medium Shading 2 Accent 6',
+    ]:
+        if 'Accent 1' in style:
+            def_to_table(MODEL_NAME, json_schema, style=style).save(f'docx-styles/schema-{style}.docx')
+        else:
+            def_to_table(MODEL_NAME, json_schema, style=style).save(f'docx-styles/others/schema-{style}.docx')

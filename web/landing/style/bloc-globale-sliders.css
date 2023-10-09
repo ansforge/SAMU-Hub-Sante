@@ -1,0 +1,207 @@
+.tns-outer {
+    padding: 0 !important
+}
+
+.tns-outer [hidden] {
+    display: none !important
+}
+
+.tns-outer [aria-controls],
+.tns-outer [data-action] {
+    cursor: pointer
+}
+
+.tns-slider {
+    transition: all 0s
+}
+
+.tns-slider>.tns-item {
+    box-sizing: border-box
+}
+
+.tns-horizontal.tns-subpixel {
+    white-space: nowrap
+}
+
+.tns-horizontal.tns-subpixel>.tns-item {
+    display: inline-block;
+    vertical-align: top;
+    white-space: normal
+}
+
+.tns-horizontal.tns-no-subpixel:after {
+    clear: both;
+    content: "";
+    display: table
+}
+
+.tns-horizontal.tns-no-subpixel>.tns-item {
+    float: left
+}
+
+.tns-horizontal.tns-carousel.tns-no-subpixel>.tns-item {
+    margin-right: -100%
+}
+
+.tns-gallery,
+.tns-no-calc {
+    left: 0;
+    position: relative
+}
+
+.tns-gallery {
+    min-height: 1px
+}
+
+.tns-gallery>.tns-item {
+    left: -100%;
+    position: absolute;
+    transition: opacity 0s, -webkit-transform 0s;
+    transition: transform 0s, opacity 0s;
+    transition: transform 0s, opacity 0s, -webkit-transform 0s
+}
+
+.tns-gallery>.tns-slide-active {
+    left: auto !important;
+    position: relative
+}
+
+.tns-gallery>.tns-moving {
+    transition: all .25s
+}
+
+.tns-autowidth {
+    display: inline-block
+}
+
+.tns-lazy-img {
+    opacity: .6;
+    transition: opacity .6s
+}
+
+.tns-lazy-img.tns-complete {
+    opacity: 1
+}
+
+.tns-ah {
+    transition: height 0s
+}
+
+.tns-ovh {
+    overflow: hidden
+}
+
+.tns-visually-hidden {
+    left: -10000em;
+    position: absolute
+}
+
+.tns-transparent {
+    opacity: 0;
+    visibility: hidden
+}
+
+.tns-fadeIn {
+    filter: alpha(opacity=100);
+    opacity: 1;
+    z-index: 0
+}
+
+.tns-fadeOut,
+.tns-normal {
+    filter: alpha(opacity=0);
+    opacity: 0;
+    z-index: -1
+}
+
+.tns-vpfix {
+    white-space: nowrap
+}
+
+.tns-vpfix>div,
+.tns-vpfix>li {
+    display: inline-block
+}
+
+.tns-t-subp2 {
+    height: 10px;
+    margin: 0 auto;
+    overflow: hidden;
+    position: relative;
+    width: 310px
+}
+
+.tns-t-ct {
+    position: absolute;
+    right: 0;
+    width: 2333.3333333%;
+    width: 2333.33333%
+}
+
+.tns-t-ct:after {
+    clear: both;
+    content: "";
+    display: table
+}
+
+.tns-t-ct>div {
+    float: left;
+    height: 10px;
+    width: 1.4285714%;
+    width: 1.42857%
+}
+
+.tns-outer {
+    position: relative
+}
+
+.tns-controls {
+    margin-bottom: 3rem;
+    text-align: right
+}
+
+.text-center .tns-controls {
+    text-align: center
+}
+
+.tns-controls [data-controls=next],
+.tns-controls [data-controls=prev] {
+    background-color: #fff;
+    border-radius: 100%
+}
+
+.tns-controls [data-controls=next]:before,
+.tns-controls [data-controls=prev]:before {
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 9 16'%3E%3Cpath fill='%231D71B8' d='M8.554 13.294 3.02 7.759 8.53 2.13c.36-.357.466-.892.271-1.362A1.251 1.251 0 0 0 7.635 0c-.33 0-.64.126-.875.357L.364 6.861a1.274 1.274 0 0 0-.006 1.777l6.425 6.425c.234.234.548.363.886.363a1.241 1.241 0 0 0 1.247-1.258 1.212 1.212 0 0 0-.362-.874'/%3E%3C/svg%3E");
+    background-position: 50%;
+    background-repeat: no-repeat;
+    content: "";
+    display: inline-block;
+    height: 1.5rem;
+    vertical-align: middle;
+    width: 1.5rem
+}
+
+.tns-controls [data-controls=next]:hover:before,
+.tns-controls [data-controls=prev]:hover:before {
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 9 16'%3E%3Cpath fill='%23FFF' d='M8.554 13.294 3.02 7.759 8.53 2.13c.36-.357.466-.892.271-1.362A1.251 1.251 0 0 0 7.635 0c-.33 0-.64.126-.875.357L.364 6.861a1.274 1.274 0 0 0-.006 1.777l6.425 6.425c.234.234.548.363.886.363a1.241 1.241 0 0 0 1.247-1.258 1.212 1.212 0 0 0-.362-.874'/%3E%3C/svg%3E")
+}
+
+.tns-controls [data-controls=next]:disabled,
+.tns-controls [data-controls=prev]:disabled {
+    cursor: not-allowed
+}
+
+.tns-controls [data-controls=next]:disabled:before,
+.tns-controls [data-controls=prev]:disabled:before {
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 9 16'%3E%3Cpath fill='%23697097' d='M8.554 13.294 3.02 7.759 8.53 2.13c.36-.357.466-.892.271-1.362A1.251 1.251 0 0 0 7.635 0c-.33 0-.64.126-.875.357L.364 6.861a1.274 1.274 0 0 0-.006 1.777l6.425 6.425c.234.234.548.363.886.363a1.241 1.241 0 0 0 1.247-1.258 1.212 1.212 0 0 0-.362-.874'/%3E%3C/svg%3E")
+}
+
+.tns-controls [data-controls=prev] {
+    margin-right: 1rem
+}
+
+.tns-controls [data-controls=next]:before {
+    -webkit-transform: scaleX(-1);
+    transform: scaleX(-1)
+}

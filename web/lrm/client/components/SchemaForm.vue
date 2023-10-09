@@ -53,7 +53,7 @@ export default {
     submit () {
       try {
         // const data = await (await fetch('samuA_to_samuB.json')).json()
-        const data = this.buildMessage({ createEvent: this.form })
+        const data = this.buildMessage({ createCase: this.form })
         this.sendMessage(data)
       } catch (error) {
         console.error("Erreur lors de l'envoi du message", error)

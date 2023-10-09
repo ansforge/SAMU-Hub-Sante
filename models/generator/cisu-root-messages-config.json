@@ -4,7 +4,7 @@
   "generatorName": "java",
   "templateDir": "templates/root-messages/",
   "globalProperties": {
-    "models": "CreateCaseMessage",
+    "models": "DistributionElement",
     "apis": false,
     "apiTests": false,
     "apiDocs": false,
