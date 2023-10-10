@@ -68,6 +68,18 @@ kubectl exec -it rabbitmq-server-0 -- rabbitmqctl import_definitions /tmp/rabbit
 kubectl delete pods -l app.kubernetes.io/component=rabbitmq
 ```
 
+## Admin Ingress
+see https://prometheus-operator.dev/docs/kube/exposing-prometheus-alertmanager-grafana-ingress/
+```shell
+# create secret used for basic auth, in the controller namespace
+kubectl create secret generic basic-auth --from-file=monitoring/auth -n ingress-nginx-admin
+# Install with Helm
+helm upgrade --install admin-nginx-ingress ingress-nginx \
+  --repo https://kubernetes.github.io/ingress-nginx \
+  --namespace ingress-nginx-admin --create-namespace \
+  -f monitoring/admin-nginx-ingress-controller-values.yml
+```
+
 # Prometheus operator
 ```shell
 # Deploy and configure Prometheus Operator
@@ -127,15 +139,6 @@ kubectl -n monitoring label cm grafana-rabbitmq-overview grafana_dashboard="1"
 kubectl port-forward svc/prometheus-operated 9090:9090
 kubectl port-forward svc/alertmanager-operated 9093:9093 # not very useful
 kubectl port-forward svc/prometheus-operator-grafana 9091:80  
-```
-
-## Admin Ingress
-see https://prometheus-operator.dev/docs/kube/exposing-prometheus-alertmanager-grafana-ingress/
-```shell
-helm upgrade --install admin-nginx-ingress ingress-nginx \
-  --repo https://kubernetes.github.io/ingress-nginx \
-  --namespace ingress-nginx-admin --create-namespace \
-  -f monitoring/admin-nginx-ingress-controller-values.yml
 ```
 
 # Dispatcher

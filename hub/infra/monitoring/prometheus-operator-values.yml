@@ -39,6 +39,11 @@ prometheus:
   ingress:
     # Ref.: https://artifacthub.io/packages/helm/prometheus-community/kube-prometheus-stack?modal=template&template=prometheus/ingress.yaml
     enabled: true
+    annotations:
+      # these annotations set the auth-type handled by the nginx ingress controller
+      nginx.ingress.kubernetes.io/auth-type: basic
+      nginx.ingress.kubernetes.io/auth-secret: ingress-nginx-admin/basic-auth
+      nginx.ingress.kubernetes.io/auth-realm: 'Veuillez vous authentifier pour accéder à Prometheus'
     ingressClassName: nginx-admin
     tls:
       - hosts:
@@ -57,6 +62,9 @@ alertmanager:
     enabled: true
     annotations:
       nginx.ingress.kubernetes.io/rewrite-target: /$2
+      nginx.ingress.kubernetes.io/auth-type: basic
+      nginx.ingress.kubernetes.io/auth-secret: ingress-nginx-admin/basic-auth
+      nginx.ingress.kubernetes.io/auth-realm: 'Veuillez vous authentifier pour accéder à Prometheus'
     ingressClassName: nginx-admin
     tls:
       - hosts:
