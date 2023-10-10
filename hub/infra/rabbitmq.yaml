@@ -11,6 +11,8 @@ spec:
   tls:
     secretName: tls-secret
     caSecretName: ca-secret
+    disableNonTLSListeners: true  # disable non tls port on the service level but let the port 15692 (prometheus) open on the container
+                                  # Ref.:   https://github.com/rabbitmq/cluster-operator/pull/477
   service:
     # Exposed though own LoadBalancer | Ref.: https://www.rabbitmq.com/kubernetes/operator/using-operator.html#service-type
     type: LoadBalancer
