@@ -20,7 +20,7 @@ public class ProducerRun {
     public static void main(String[] args) throws Exception {
         String routingKey = getRouting(args);
         String messageString = Files.readString(Path.of(args[1]));
-        boolean isJsonScheme = Path.of(args[1]).endsWith("json");
+        boolean isJsonScheme = args[1].endsWith("json");
 
         TLSConf tlsConf = new TLSConf(
                 "TLSv1.2",

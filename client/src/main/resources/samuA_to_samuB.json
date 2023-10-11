@@ -14,7 +14,7 @@
   },
   "content": {
     "contentObject": {
-      "JsonContent": {
+      "jsonContent": {
         "embeddedJsonContent": {
           "message": {
             "caseId": "SAMUA-20230725-AF1234",
