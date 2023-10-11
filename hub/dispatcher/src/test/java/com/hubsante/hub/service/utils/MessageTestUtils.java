@@ -74,9 +74,9 @@ public class MessageTestUtils {
                 (ErrorReport) edxlHandler.deserializeJsonContentMessage(msgString);
     }
 
-    public static void setCustomExpirationDate(EdxlMessage edxlMessage, long offset) {
+    public static void setCustomExpirationDate(EdxlMessage edxlMessage, long offset_in_nanos) {
         OffsetDateTime now = OffsetDateTime.now();
         edxlMessage.setDateTimeSent(now);
-        edxlMessage.setDateTimeExpires(now.plusNanos(offset));
+        edxlMessage.setDateTimeExpires(now.plusNanos(offset_in_nanos));
     }
 }

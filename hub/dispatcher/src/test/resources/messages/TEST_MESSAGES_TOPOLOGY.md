@@ -14,7 +14,7 @@ These messages are written in json & xml to test both interfaces. Here is a brei
 
 [samuA_to_samuB.json](valid/edxl_encapsulated/samuA_to_samuB.json) - A passing json EDXL with xml recipient to test xml conversion
 
-[valid/edxl_encapsulated/samuB_to_samuA.xml](valid/edxl_encapsulated/samuB_to_samuA.xml) - A passing xml EDXL with json recipient to test json conversion
+[samuB_to_samuA.xml](valid/edxl_encapsulated/samuB_to_samuA.xml) - A passing xml EDXL with json recipient to test json conversion
 
 [createCaseMessage.json](valid/create_case/createCaseMessage.json) and [createCaseMessage.xml](valid/create_case/createCaseMessage.xml) - A passing createCase message (ContentMessage only, for Use case testing purposes).
 
