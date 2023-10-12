@@ -6,6 +6,8 @@ import com.hubsante.model.cisu.CreateCase;
 import com.hubsante.model.cisu.CreateCaseMessage;
 import com.hubsante.model.report.ErrorReport;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.amqp.rabbit.test.context.SpringRabbitTest;
@@ -135,7 +137,7 @@ public class ContentMessageHandlerTest {
         assertEquals(initialJSON, xmlConverted);
         assertDoesNotThrow(() -> validator.validateContentMessage(initialJSON, false));
         // TODO bbo : uncomment next assertion when xsd will be ready
-//        assertDoesNotThrow(() -> validator.validateContentMessage(xmlConverted, true));
+        assertDoesNotThrow(() -> validator.validateContentMessage(xmlConverted, true));
     }
 
     @Test
@@ -157,5 +159,4 @@ public class ContentMessageHandlerTest {
 
         assertDoesNotThrow(() -> validator.validateContentMessage(errorReportFromJson, false));
     }
-
 }

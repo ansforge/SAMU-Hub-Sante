@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<schema xmlns:x="https://hub.esante.gouv.fr/createCase.xsd" elementFormDefault="qualified"
-        targetNamespace="https://hub.esante.gouv.fr/createCase.xsd" xmlns="http://www.w3.org/2001/XMLSchema">
+<schema xmlns:x="urn:emergency:cisu:2.0" elementFormDefault="qualified"
+        targetNamespace="urn:emergency:cisu:2.0" xmlns="http://www.w3.org/2001/XMLSchema">
+    <element name="message" type="x:message"/>
+    <complexType name="message">
+        <sequence>
+            <element minOccurs="1" name="createCase" type="x:createCase"/>
+        </sequence>
+    </complexType>
     <complexType name="createCase">
         <sequence>
             <element minOccurs="0" name="caseId" type="string">
@@ -314,10 +320,10 @@
             </element>
             <element name="whatsHappen" type="x:nomenclature"/>
             <element minOccurs="0" name="locationKind" type="x:nomenclature"/>
-            <element minOccurs="0" name="riskThreat">
+            <element minOccurs="0" name="riskThreats">
                 <complexType>
                     <sequence>
-                        <element maxOccurs="unbounded" minOccurs="0" name="nomenclature" type="x:nomenclature"/>
+                        <element maxOccurs="unbounded" minOccurs="0" name="riskThreat" type="x:nomenclature"/>
                     </sequence>
                 </complexType>
             </element>

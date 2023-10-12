@@ -93,6 +93,10 @@ public class Validator {
 
     public void validateJSON(String message, String jsonSchemaFile) throws IOException {
         JsonSchemaFactory factory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7);
+        // If the schema file references local sub-schema, it must reference the classpath as its id
+        // the library behavior is to construct an URI from the id, and then add the schema file name to it
+        // if the id is a http URI, it will try to download the subschema online
+        // Ref.: https://github.com/networknt/json-schema-validator/issues/55
         InputStream schemaStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("json-schema/" + jsonSchemaFile);
         JsonSchema jsonSchema = factory.getSchema(schemaStream);
 
