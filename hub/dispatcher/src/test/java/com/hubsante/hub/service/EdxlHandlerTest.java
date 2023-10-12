@@ -2,8 +2,6 @@ package com.hubsante.hub.service;
 
 import com.hubsante.hub.HubApplication;
 import com.hubsante.hub.exception.SchemaValidationException;
-import com.hubsante.hub.service.EdxlHandler;
-import com.hubsante.hub.service.Validator;
 import com.hubsante.model.cisu.CreateCaseMessage;
 import com.hubsante.model.edxl.EdxlMessage;
 import com.hubsante.model.edxl.ContentMessage;

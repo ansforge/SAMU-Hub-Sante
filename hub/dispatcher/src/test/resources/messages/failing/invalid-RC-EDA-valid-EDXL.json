@@ -1,6 +1,6 @@
 {
-  "distributionID": "fr.health.samuB_2608323d-507d-4cbf-bf74-52007f8124ea",
-  "senderID": "fr.health.samuB",
+  "distributionID": "fr.health.samuA_2608323d-507d-4cbf-bf74-52007f8124ea",
+  "senderID": "fr.health.samuA",
   "dateTimeSent": "2022-07-25T10:04:34+01:00",
   "dateTimeExpires": "2072-07-25T10:04:34+01:00",
   "distributionStatus": "Actual",
@@ -32,11 +32,10 @@
               }
             ],
             "createCase": {
-              "caseId": "SAMUB-20230725-AF1234",
-              "senderCaseId": "SAMUB-20230725-AF1234",
-              "createdAt": "2022-07-25T10:03:34+01:00",
+              "caseId": "SAMUA-20230725-AF1234",
+              "senderCaseId": "SAMUA-20230725-AF1234",
               "initialAlert": {
-                "alertId": "SAMUB-20230725-AL01234",
+                "alertId": "SAMUA-20230725-AL01234",
                 "receivedAt": "2022-07-25T10:01:22+01:00",
                 "reporting": "STANDARD",
                 "alertInformation": "suite collision avec un autre vélo sur piste cyclable, gonflement du genou, grosses égratignures, maux de tête",
@@ -88,7 +87,7 @@
                   "detail": "tel:+330607080901"
                 },
                 "callTaker": {
-                  "organization": "SAMUB",
+                  "organization": "SAMUA",
                   "controlRoom": "Régulation",
                   "calltakerURI": null,
                   "calltakerId": null
@@ -158,7 +157,7 @@
                 "freetext": "Devant la boulangerie Quai des Célestin"
               },
               "newAlert": null,
-              "severity": "Unknown_enum_value",
+              "severity": "MINOR",
               "additionalInformation": {
                 "customMap": {
                   "key": "neighborhood",

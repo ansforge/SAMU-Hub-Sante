@@ -22,7 +22,7 @@ These messages are written in json & xml to test both interfaces. Here is a brei
 
 <u>*Failing deserialization*:</u>
 
-[edxlWithMalformedContent.json](serialization/edxlWithMalformedContent.json) - A passing EDXL-DE message with malformed content: the createCase.severity value "unknown_enum_value" is not a valid value for this enum.
+[unparsable-content.json](failing/unparsable-content.json) - A passing EDXL-DE message with malformed content: an unknown property has been added.
 Deserialization should fail before validation method call.
 
 

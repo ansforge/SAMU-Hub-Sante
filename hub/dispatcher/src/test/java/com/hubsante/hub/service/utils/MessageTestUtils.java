@@ -5,7 +5,6 @@ import com.hubsante.hub.service.EdxlHandler;
 import com.hubsante.model.edxl.EdxlMessage;
 import com.hubsante.model.report.ErrorReport;
 import org.apache.commons.compress.utils.FileNameUtils;
-import org.mockito.ArgumentCaptor;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageDeliveryMode;
 import org.springframework.amqp.core.MessageProperties;
@@ -74,9 +73,9 @@ public class MessageTestUtils {
                 (ErrorReport) edxlHandler.deserializeJsonContentMessage(msgString);
     }
 
-    public static void setCustomExpirationDate(EdxlMessage edxlMessage, long offset_in_nanos) {
+    public static void setCustomExpirationDate(EdxlMessage edxlMessage, long offset_in_seconds) {
         OffsetDateTime now = OffsetDateTime.now();
         edxlMessage.setDateTimeSent(now);
-        edxlMessage.setDateTimeExpires(now.plusNanos(offset_in_nanos));
+        edxlMessage.setDateTimeExpires(now.plusSeconds(offset_in_seconds));
     }
 }
