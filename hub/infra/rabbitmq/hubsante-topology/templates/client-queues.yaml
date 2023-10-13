@@ -1,5 +1,6 @@
 {{ $clusterNamespace := .Values.clusterNamespace }}
 {{- range .Values.clients }}
+---
 apiVersion: rabbitmq.com/v1beta1
 kind: Queue
 metadata:
@@ -39,5 +40,4 @@ spec:
     namespace: {{ $clusterNamespace }}
     name: rabbitmq
 ---
-
-    {{- end }}
+{{- end }}
