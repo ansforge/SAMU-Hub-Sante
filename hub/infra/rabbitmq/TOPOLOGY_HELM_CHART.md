@@ -29,9 +29,9 @@ while the "business" objects lay in the 'rabbitmq' namespace.
 
 For each of these objects, we specify a RabbitmqClusterReference, which points to the cluster instance we want the operator to interact with.
 By default, the topology objects must lay in the same namespace as the cluster instance, but we can override this behavior by adding an annotation in the RabbitmqCluster manifest
-(so not in this helm chart perimeter): "rabbitmq.com/topology-allowed-namespaces".
+(so not in this helm chart perimeter): "rabbitmq.com/topology-allowed-namespaces". (Ref.: https://www.rabbitmq.com/kubernetes/operator/using-topology-operator.html#namespace-scope)
 
-We chose to put the RabbitmqCluster in the 'rabbitmq' namespace too, but added this annotation and comment it in the RabbitmqCluster manifest for further reference.
+We chose to put the RabbitmqCluster in the 'rabbitmq' namespace too.
 
 After applying the topology objects, we can check that they have been created by running:
 ```bash
@@ -57,4 +57,4 @@ on how to deploy the Rabbitmq Cluster Operator with helm too, for the same purpo
 ### IMPORTANT NOTE
 By default, the operator automatically and randomly generates credentials for newly created users, unless we reference an existing secret.
 The credentials are read-only, so can not be updated since the user has been created. So we need to create a secret first with no password
-(in the same namespace as the object).
+(in the same namespace as the object) (Ref.: https://www.rabbitmq.com/passwords.html#passwordless-users).

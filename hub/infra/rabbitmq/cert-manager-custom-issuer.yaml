@@ -1,8 +1,0 @@
-apiVersion: cert-manager.io/v1
-kind: issuer
-metadata:
-  name: my-issuer
-  namespace: rabbitmq-system
-spec:
-  ca:
-    secretName: rmq-root-ca

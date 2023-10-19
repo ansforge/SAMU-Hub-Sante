@@ -71,13 +71,13 @@ kubectl delete pods -l app.kubernetes.io/component=rabbitmq
 ## Admin Ingress
 see https://prometheus-operator.dev/docs/kube/exposing-prometheus-alertmanager-grafana-ingress/
 ```shell
-# create secret used for basic auth, in the controller namespace
-kubectl create secret generic basic-auth --from-file=monitoring/auth -n ingress-nginx-admin
 # Install with Helm
 helm upgrade --install admin-nginx-ingress ingress-nginx \
   --repo https://kubernetes.github.io/ingress-nginx \
   --namespace ingress-nginx-admin --create-namespace \
   -f monitoring/admin-nginx-ingress-controller-values.yml
+# create secret used for basic auth, in the controller namespace
+kubectl create secret generic basic-auth --from-file=monitoring/auth -n ingress-nginx-admin
 ```
 
 # Prometheus operator
