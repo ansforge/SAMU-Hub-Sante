@@ -131,13 +131,16 @@
             <element name="alertCode" type="x:alertCode"/>
             <element minOccurs="0" name="contact" type="x:contact"/>
             <element name="callTaker" type="x:callTaker"/>
-            <element minOccurs="0" name="resource">
-                <complexType>
-                    <sequence>
-                        <element maxOccurs="unbounded" minOccurs="0" name="resource" type="x:resource"/>
-                    </sequence>
-                </complexType>
-            </element>
+            <sequence>
+                <element maxOccurs="unbounded" minOccurs="0" name="resource" type="x:resource"/>
+            </sequence>
+<!--            <element minOccurs="0" name="resource">-->
+<!--                <complexType>-->
+<!--                    <sequence>-->
+<!--                        <element maxOccurs="unbounded" minOccurs="0" name="resource" type="x:resource"/>-->
+<!--                    </sequence>-->
+<!--                </complexType>-->
+<!--            </element>-->
         </sequence>
     </complexType>
     <complexType name="location">
@@ -320,13 +323,16 @@
             </element>
             <element name="whatsHappen" type="x:nomenclature"/>
             <element minOccurs="0" name="locationKind" type="x:nomenclature"/>
-            <element minOccurs="0" name="riskThreats">
-                <complexType>
-                    <sequence>
-                        <element maxOccurs="unbounded" minOccurs="0" name="riskThreat" type="x:nomenclature"/>
-                    </sequence>
-                </complexType>
-            </element>
+            <sequence>
+                <element maxOccurs="unbounded" minOccurs="0" name="riskThreat" type="x:nomenclature"/>
+            </sequence>
+<!--            <element minOccurs="0" name="riskThreat">-->
+<!--                <complexType>-->
+<!--                    <sequence>-->
+<!--                        <element maxOccurs="unbounded" minOccurs="0" name="riskThreat" type="x:nomenclature"/>-->
+<!--                    </sequence>-->
+<!--                </complexType>-->
+<!--            </element>-->
             <element minOccurs="0" name="healthMotive" type="x:nomenclature"/>
             <element minOccurs="0" name="gravity" type="string">
                 <annotation>

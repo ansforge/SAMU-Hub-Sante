@@ -378,7 +378,7 @@ public class Alert {
      **/
     @JsonProperty(JSON_PROPERTY_RESOURCE)
     @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
+    @JacksonXmlElementWrapper(useWrapping = false)
     public List<Resource> getResource() {
         return resource;
     }
