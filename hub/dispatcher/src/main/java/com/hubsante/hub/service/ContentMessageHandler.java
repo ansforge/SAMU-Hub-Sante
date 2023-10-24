@@ -26,11 +26,6 @@ public class ContentMessageHandler {
         return jsonMapper.writeValueAsString(message);
     }
 
-    public String serializeJsonCreateCase(CreateCaseMessage message) throws JsonProcessingException {
-        CreateCase createCase = message.getCreateCase();
-        return jsonMapper.writeValueAsString(createCase);
-    }
-
     public String serializeXmlMessage(ContentMessage message) throws JsonProcessingException {
         return xmlMapper.writeValueAsString(message);
     }

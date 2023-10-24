@@ -52,7 +52,7 @@
           "label": "Voie publique hors voie rapide",
           "freetext": "Voie vélo le long d'une route "
         },
-        "riskThreats": [
+        "riskThreat": [
           {
             "code": "R22",
             "label": "Gêne à la circulation",

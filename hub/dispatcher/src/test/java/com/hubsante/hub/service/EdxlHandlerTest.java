@@ -99,7 +99,7 @@ public class EdxlHandlerTest {
     @Test
     @DisplayName("validation should failed if Json Edxl is malformatted")
     public void wrongJsonValidationFailed() throws IOException {
-        File edxlCisuCreateFile = new File(classLoader.getResource("messages/invalid/missingEDXLRequiredValues.json").getFile());
+        File edxlCisuCreateFile = new File(classLoader.getResource("messages/failing/EDXL-DE/missing-EDXL-required-field.json").getFile());
         String json = Files.readString(edxlCisuCreateFile.toPath());
 
         // deserialization method does not throw error
@@ -111,7 +111,7 @@ public class EdxlHandlerTest {
     @Test
     @DisplayName("envelope and header validation do not fail if envelope is ok and content is not")
     public void edxlValidationSucceedsWithWrongJsonContent() throws IOException {
-        File edxlCisuCreateFile = new File(classLoader.getResource("messages/invalid/invalidCreateMessageValidEdxlEnvelope.json").getFile());
+        File edxlCisuCreateFile = new File(classLoader.getResource("messages/failing/RC-EDA/invalid-RC-EDA-valid-EDXL.json").getFile());
         String json = Files.readString(edxlCisuCreateFile.toPath());
 
         // deserialization method does not throw error

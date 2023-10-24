@@ -176,7 +176,7 @@ public class DispatcherTest {
     public void malformedMessagefailed() throws IOException {
 
         // we test that the message has been rejected if we can't parse it
-        Message receivedMessage = createMessage("failing/unparsable-content.json", SAMU_A_ROUTING_KEY);
+        Message receivedMessage = createMessage("failing/EDXL-DE/unparsable-content.json", SAMU_A_ROUTING_KEY);
         assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
 
         assertErrorReportHasBeenSent(SAMU_A_INFO_QUEUE, ErrorCode.UNRECOGNIZED_MESSAGE_FORMAT,
@@ -248,23 +248,23 @@ public class DispatcherTest {
     @Test
     @DisplayName("should reject message with invalid json EDXL envelope")
     public void invalidJsonEDXLFails() throws IOException {
-        Message receivedMessage = createMessage("failing/missing-EDXL-required-field.json", SAMU_A_ROUTING_KEY);
+        Message receivedMessage = createMessage("failing/EDXL-DE/missing-EDXL-required-field.json", SAMU_A_ROUTING_KEY);
         assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
 
         assertErrorReportHasBeenSent(SAMU_A_INFO_QUEUE, ErrorCode.INVALID_MESSAGE,
-                "$.distributionID: is missing but it is required",
-                "$.descriptor.explicitAddress.explicitAddressValue: is missing but it is required");
+                "distributionID: is missing but it is required",
+                "descriptor.explicitAddress.explicitAddressValue: is missing but it is required");
     }
 
     @Test
     @DisplayName("should reject message with invalid json content")
     public void invalidJsonContentFails() throws IOException {
-        Message receivedMessage = createMessage("failing/invalid-RC-EDA-valid-EDXL.json",
+        Message receivedMessage = createMessage("failing/RC-EDA/invalid-RC-EDA-valid-EDXL.json",
                 MessageProperties.CONTENT_TYPE_JSON, SAMU_A_ROUTING_KEY);
         assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
 
         assertErrorReportHasBeenSent(SAMU_A_INFO_QUEUE, ErrorCode.INVALID_MESSAGE,
-                "$.createdAt: is missing but it is required");
+                "createdAt: is missing but it is required");
     }
 
     private void assertErrorReportHasBeenSent(String infoQueueName, ErrorCode errorCode, String... errorCause) throws JsonProcessingException {

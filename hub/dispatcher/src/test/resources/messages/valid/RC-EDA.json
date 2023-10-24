@@ -103,7 +103,7 @@
                   {
                     "resourceDesc": "DISPMED",
                     "mimeType": "pdf",
-                    "size": "9",
+                    "size": 9,
                     "URI": "https://www.docPatient1.hpLyon.com/share?res=123456",
                     "derefURI": null,
                     "digest": "84feb54a7ab868484feb54a7ab868484feb54a7ab868484feb54a7ab868484feb54a7ab868484feb54a7ab868484feb54a7ab868484feb54a7ab868484feb54a7ab8684"
@@ -125,7 +125,7 @@
                 },
                 "city": {
                   "name": "Lyon",
-                  "inseeCode": 69002,
+                  "inseeCode": "69002",
                   "detail": "deuxième arrondissement"
                 },
                 "access": {

@@ -4,10 +4,11 @@ import com.hubsante.hub.HubApplication;
 import com.hubsante.hub.exception.SchemaValidationException;
 import com.hubsante.model.cisu.CreateCase;
 import com.hubsante.model.cisu.CreateCaseMessage;
+import com.hubsante.model.cisu.ReferenceMessage;
+import com.hubsante.model.edxl.ContentMessage;
+import com.hubsante.model.edxl.EdxlMessage;
 import com.hubsante.model.report.ErrorReport;
 import lombok.extern.slf4j.Slf4j;
-import lombok.val;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.amqp.rabbit.test.context.SpringRabbitTest;
@@ -17,6 +18,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.xml.sax.SAXException;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,6 +38,9 @@ public class ContentMessageHandlerTest {
 
     @Autowired
     private ContentMessageHandler converter;
+
+    @Autowired
+    private EdxlHandler edxlHandler;
 
     @Autowired
     private Validator validator;
@@ -109,35 +114,43 @@ public class ContentMessageHandlerTest {
     }
 
     @Test
-    @DisplayName("missing required fields fails validation")
-    public void missingRequiredFieldsValidationFails() throws IOException {
-        File cisuJsonFile = new File(classLoader.getResource("messages/invalid/create_case/missingRequiredFieldCreateMessage.json").getFile());
+    @DisplayName("should validate full EDXL")
+    public void validateFullEDXL() throws IOException {
+        File RC_EDA_jsonFile = new File(classLoader.getResource("messages/valid/RC-EDA.json").getFile());
+        String json = Files.readString(RC_EDA_jsonFile.toPath());
 
-        assertDoesNotThrow(() -> converter.deserializeJsonMessage(Files.readString(cisuJsonFile.toPath())));
-
-        // TODO bbo : check python script, required fields ar not set in json-schema
-        assertThrows(SchemaValidationException.class, () -> validator.validateContentMessage(
-                converter.deserializeJsonMessage(Files.readString(cisuJsonFile.toPath())), false));
-        // TODO bbo : uncomment next assertion when xsd will be ready
-//        assertThrows(SAXException.class, () -> validator.validateContentMessage(
-//                converter.deserializeXmlMessage(Files.readString(cisuJsonFile.toPath())), true));
+        assertDoesNotThrow(() -> validator.validateJSON(json, "EDXL-DE-full_schema.json"));
     }
 
     @Test
-    @DisplayName("should convert message from JSON to XML to JSON")
-    public void endToEndConversionTest() throws IOException {
-        File cisuJsonFile = new File(classLoader.getResource("messages/valid/create_case/createCaseMessage.json").getFile());
+    @DisplayName("missing required fields fails validation")
+    public void missingRequiredFieldsValidationFails() throws IOException {
+        File cisuJsonFile = new File(classLoader.getResource("messages/failing/RC-EDA/RC-EDA-missing-required-fields.json").getFile());
 
-        String json = Files.readString(cisuJsonFile.toPath());
-        CreateCaseMessage initialJSON = (CreateCaseMessage) converter.deserializeJsonMessage(json);
+        assertDoesNotThrow(() -> edxlHandler.deserializeJsonEDXL((Files.readString(cisuJsonFile.toPath()))));
 
+        CreateCaseMessage createCaseMessage = (CreateCaseMessage) edxlHandler
+                .deserializeJsonEDXL((Files.readString(cisuJsonFile.toPath()))).getContentMessage();
+
+        assertThrows(SchemaValidationException.class, () -> validator.validateContentMessage(createCaseMessage, false));
+        // TODO bbo : uncomment next assertion when xsd will be ready
+//        assertThrows(SAXException.class, () -> validator.validateContentMessage(createCaseMessage, true));
+    }
+
+    @Test
+    @DisplayName("should convert and validate RC-REF from JSON to XML to JSON")
+    public void RC_REF_e2e_conversionTest() throws IOException {
+        File RC_REF_jsonFile = new File(classLoader.getResource("messages/valid/RC-REF.json").getFile());
+        String json = Files.readString(RC_REF_jsonFile.toPath());
+
+        ReferenceMessage initialJSON = (ReferenceMessage) edxlHandler.deserializeJsonEDXL(json).getContentMessage();
         String xml = converter.serializeXmlMessage(initialJSON);
-        CreateCaseMessage xmlConverted = (CreateCaseMessage) converter.deserializeXmlMessage(xml);
+        ReferenceMessage xmlConverted = (ReferenceMessage) converter.deserializeXmlMessage(xml);
 
         assertEquals(initialJSON, xmlConverted);
         assertDoesNotThrow(() -> validator.validateContentMessage(initialJSON, false));
-        // TODO bbo : uncomment next assertion when xsd will be ready
-        assertDoesNotThrow(() -> validator.validateContentMessage(xmlConverted, true));
+        // TODO bbo: uncomment next assertion when xsd will be ready
+//        assertDoesNotThrow(() -> validator.validateContentMessage(xmlConverted, true));
     }
 
     @Test

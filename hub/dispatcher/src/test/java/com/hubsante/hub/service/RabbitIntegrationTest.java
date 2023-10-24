@@ -68,7 +68,7 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
         String p12Path = classLoader.getResource("config/certs/samuA/samuA.p12").getPath();
         RabbitTemplate samuA_publisher = getCustomRabbitTemplate(p12Path, "samuA");
 
-        Message published = createMessage("failing/inexistent-recipient-queue.json", SAMU_A_ROUTING_KEY);
+        Message published = createMessage("failing/EDXL-DE/inexistent-recipient-queue.json", SAMU_A_ROUTING_KEY);
         samuA_publisher.send(HUBSANTE_EXCHANGE, SAMU_A_ROUTING_KEY, published);
         Thread.sleep(DISPATCHER_PROCESS_TIME);
 

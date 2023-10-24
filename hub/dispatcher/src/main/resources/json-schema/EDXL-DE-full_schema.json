@@ -1,7 +1,7 @@
 {
-  "$schema" : "http://json-schema.org/draft-07/schema#",
-  "$id": "https://json-schema.org/draft-07/schema#",
-  "definitions" : {
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "classpath:/json-schema/schema#",
+  "definitions": {
     "EdxlEnvelope": {
       "type": "object",
       "properties": {
@@ -29,7 +29,15 @@
           "$ref": "#/definitions/Descriptor"
         }
       },
-      "required": ["senderID", "distributionID", "dateTimeSent", "dateTimeExpires", "distributionStatus", "distributionKind", "descriptor"]
+      "required": [
+        "senderID",
+        "distributionID",
+        "dateTimeSent",
+        "dateTimeExpires",
+        "distributionStatus",
+        "distributionKind",
+        "descriptor"
+      ]
     },
     "EdxlMessage": {
       "type": "object",
@@ -43,7 +51,9 @@
           "$ref": "#/definitions/Content"
         }
       },
-      "required": ["content"]
+      "required": [
+        "content"
+      ]
     },
     "Content": {
       "type": "object",
@@ -52,11 +62,15 @@
           "$ref": "#/definitions/ContentObject"
         }
       },
-      "required": ["contentObject"]
+      "required": [
+        "contentObject"
+      ]
     },
     "ContentObject": {
       "type": "object",
-      "required": ["jsonContent"],
+      "required": [
+        "jsonContent"
+      ],
       "properties": {
         "jsonContent": {
           "$ref": "#/definitions/JsonContent"
@@ -65,7 +79,9 @@
     },
     "JsonContent": {
       "type": "object",
-      "required": ["embeddedJsonContent"],
+      "required": [
+        "embeddedJsonContent"
+      ],
       "properties": {
         "embeddedJsonContent": {
           "$ref": "#/definitions/EmbeddedJsonContent"
@@ -73,7 +89,23 @@
       }
     },
     "EmbeddedJsonContent": {
-      "type": "object"
+      "type": "object",
+      "oneOf": [
+        {
+          "properties": {
+            "message": {
+              "$ref": "RC-EDA_schema.json"
+            }
+          }
+        },
+        {
+          "properties": {
+            "message": {
+              "$ref": "RC-REF_schema.json"
+            }
+          }
+        }
+      ]
     },
     "Descriptor": {
       "type": "object",
@@ -85,15 +117,27 @@
           "type": "string"
         }
       },
-      "required": ["explicitAddress", "language"]
+      "required": [
+        "explicitAddress",
+        "language"
+      ]
     },
     "DistributionKind": {
-      "type" : "string",
-      "enum" : [ "Report", "Update", "Cancel", "Ack", "Error" ]
+      "type": "string",
+      "enum": [
+        "Report",
+        "Update",
+        "Cancel",
+        "Ack",
+        "Error"
+      ]
     },
     "DistributionStatus": {
-      "type" : "string",
-      "enum" : [ "Actual", "Exercise" ]
+      "type": "string",
+      "enum": [
+        "Actual",
+        "Exercise"
+      ]
     },
     "ExplicitAddress": {
       "type": "object",
@@ -105,10 +149,13 @@
           "type": "string"
         }
       },
-      "required": ["explicitAddressScheme", "explicitAddressValue"]
+      "required": [
+        "explicitAddressScheme",
+        "explicitAddressValue"
+      ]
     }
   },
-  "properties" : {
+  "properties": {
     "edxlMessage": {
       "$ref": "#/definitions/EdxlMessage"
     },
@@ -141,6 +188,13 @@
     }
   },
   "required": [
-    "senderID", "distributionID", "dateTimeSent", "dateTimeExpires", "distributionStatus", "distributionKind", "descriptor", "content"
+    "senderID",
+    "distributionID",
+    "dateTimeSent",
+    "dateTimeExpires",
+    "distributionStatus",
+    "distributionKind",
+    "descriptor",
+    "content"
   ]
 }

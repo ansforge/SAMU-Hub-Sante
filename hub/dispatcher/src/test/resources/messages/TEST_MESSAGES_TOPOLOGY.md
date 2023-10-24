@@ -22,23 +22,23 @@ These messages are written in json & xml to test both interfaces. Here is a brei
 
 <u>*Failing deserialization*:</u>
 
-[unparsable-content.json](failing/unparsable-content.json) - A passing EDXL-DE message with malformed content: an unknown property has been added.
+[unparsable-content.json](failing/EDXL-DE/unparsable-content.json) - A passing EDXL-DE message with malformed content: an unknown property has been added.
 Deserialization should fail before validation method call.
 
 
 <u>*Failing validation at EDXL-DE level*:</u>
 
-[missingEDXLRequiredValues](invalid/missingEDXLRequiredValues.json) - A create message encapsulated in an EDXL-DE wrapper with edxl missing fields:
+[missing-EDXL-required-field.json](failing/EDXL-DE/missing-EDXL-required-field.json) - A create message encapsulated in an EDXL-DE wrapper with edxl missing fields:
 "edxl.distributionID" and "edxl.descriptor.explicitAddress.explicitAddressValue" are missing
 
 <u>*Failing validation at Use case levels*:</u>
-- CreateCase: [missingRequiredFieldCreateMessage.json](invalid/create_case/missingRequiredFieldCreateMessage.json) - A create message (use Case only) with "createdAt" missing field
+- CreateCase: [missingRequiredFieldCreateMessage.json](failing/RC-EDA/RC-EDA-missing-required-fields.json) - A create message (use Case only) with "createdAt" missing field
 
 
 
 <u>*Edxl validation works when content is not compliant*:</u>
 
-[invalidCreateMessageValidEdxlEnvelope.json](invalid/invalidCreateMessageValidEdxlEnvelope.json) - A create message encapsulated in an EDXL-DE wrapper, with "createdAt" missing field
+[invalid-RC-EDA-valid-EDXL.json](failing/RC-EDA/invalid-RC-EDA-valid-EDXL.json) - A create message encapsulated in an EDXL-DE wrapper, with "createdAt" missing field
 
 
 

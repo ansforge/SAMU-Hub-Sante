@@ -35,10 +35,10 @@ public class Validator {
     private ContentMessageHandler contentMessageHandler;
 
     public void validateContentMessage(EdxlMessage edxlMessage, boolean isXML) throws IOException {
-        ContentMessage contentMessage = edxlMessage
-                .getContent().getContentObject().getContentWrapper().getEmbeddedContent().getMessage();
+        ContentMessage contentMessage = edxlMessage.getContentMessage();
         validateContentMessage(contentMessage, isXML);
     }
+
     public void validateContentMessage(ContentMessage contentMessage, boolean isXML)
             throws IOException {
         UseCaseEnum useCase = UseCaseEnum.getByValue(contentMessage.getClass().getSimpleName());
@@ -47,20 +47,26 @@ public class Validator {
             case RC_EDA:
                 if (isXML) {
                     validateXML(
-                        contentMessageHandler.serializeXmlMessage(contentMessage),
-                        "cisu/createCase.xsd");
+                            contentMessageHandler.serializeXmlMessage(contentMessage),
+                            "cisu/createCase.xsd");
                     break;
                 }
                 validateJSON(
                         contentMessageHandler.serializeJsonMessage(contentMessage),
-                        "RC-DE_schema.json");
-                validateJSON(contentMessageHandler.serializeJsonCreateCase((CreateCaseMessage) contentMessage),
                         "RC-EDA_schema.json");
                 break;
             //TODO bbo: generate json-schema & xsd for ACK and REPORT
-            case CUSTOM:
             case RC_REF:
+                if (isXML) {
+                    validateXML(contentMessageHandler.serializeXmlMessage(contentMessage),
+                            "cisu/RC-REF.xsd");
+                    break;
+                }
+                validateJSON(
+                        contentMessageHandler.serializeJsonMessage(contentMessage),
+                        "RC-REF_schema.json");
             case ERROR_REPORT:
+            case CUSTOM:
             default:
                 if (isXML) {
                     log.warn("Can't validate against XSD : class {} has no specified xsd spec",
