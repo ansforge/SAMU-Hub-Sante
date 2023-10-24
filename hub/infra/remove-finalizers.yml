@@ -1,4 +1,0 @@
-# usage : kubectl patch rabbitmqcluster.rabbitmq.com/rabbitmq --patch-file <pathToThisFile> --type=merge
-# it will remove the finalizers and then allow deletion of the resource
-metadata:
-  finalizers: []

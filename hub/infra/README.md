@@ -54,6 +54,11 @@ kubectl create configmap definitions --from-file=../rabbitmq/definitions.json -n
 # Find/build the correct Custom Resource Definition yaml and install it
 # https://github.com/rabbitmq/cluster-operator/tree/main/docs/examples
 kubectl apply -f rabbitmq.yaml
+# remove load balancer cleanup finalizer
+# CAUTION: this will prevent the load balancer from being deleted when the service is deleted
+# it is NOT the default behaviour, and probably not the good practice
+# we shouLd consider it as temporary
+kubectl patch svc rabbitmq -n rabbitmq -p '{\"metadata\":{\"finalizers\": []}}' --type=merge
 helm upgrade -i hubsante-topology ./rabbitmq/hubsante-topology
 ```
 
@@ -78,6 +83,12 @@ helm upgrade --install admin-nginx-ingress ingress-nginx \
   -f monitoring/admin-nginx-ingress-controller-values.yml
 # create secret used for basic auth, in the controller namespace
 kubectl create secret generic basic-auth --from-file=monitoring/auth -n ingress-nginx-admin
+
+# remove load balancer cleanup finalizer
+# CAUTION: this will prevent the load balancer from being deleted when the service is deleted
+# it is NOT the default behaviour, and probably not the good practice
+# we shouLd consider it as temporary
+kubectl patch svc admin-nginx-ingress-ingress-nginx-controller -n ingress-nginx-admin -p '{\"metadata\":{\"finalizers\": []}}' --type=merge
 ```
 
 # Prometheus operator
@@ -186,6 +197,11 @@ kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/cont
 
 # Deploy Ingress
 kubectl apply -f web/ingress.yaml
+# remove load balancer cleanup finalizer
+# CAUTION: this will prevent the load balancer from being deleted when the service is deleted
+# it is NOT the default behaviour, and probably not the good practice
+# we shouLd consider it as temporary
+kubectl patch svc ingress-nginx-controller -n ingress-nginx -p '{\"metadata\":{\"finalizers\": []}}' --type=merge
 ```
 
 ## Landing page website
