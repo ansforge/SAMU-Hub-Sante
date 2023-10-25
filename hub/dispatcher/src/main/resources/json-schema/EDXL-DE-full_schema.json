@@ -104,6 +104,13 @@
               "$ref": "RC-REF_schema.json"
             }
           }
+        },
+        {
+          "properties": {
+            "message":{
+              "$ref": "RS-INFO_schema.json"
+            }
+          }
         }
       ]
     },

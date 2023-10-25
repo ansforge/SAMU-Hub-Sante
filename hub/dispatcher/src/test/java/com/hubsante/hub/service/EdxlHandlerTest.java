@@ -122,6 +122,15 @@ public class EdxlHandlerTest {
         assertThrows(SchemaValidationException.class, () -> validator.validateContentMessage(createCaseMessage, false));
     }
 
+    @Test
+    @DisplayName("should validate full EDXL")
+    public void validateFullEDXL() throws IOException {
+        File RC_EDA_jsonFile = new File(classLoader.getResource("messages/valid/RC-EDA.json").getFile());
+        String json = Files.readString(RC_EDA_jsonFile.toPath());
+
+        assertDoesNotThrow(() -> validator.validateJSON(json, "EDXL-DE-full_schema.json"));
+    }
+
     private String xmlPrefix() {
         return "<?xml version='1.0' encoding='UTF-8'?>";
     }

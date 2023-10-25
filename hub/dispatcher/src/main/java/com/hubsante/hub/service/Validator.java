@@ -3,7 +3,7 @@ package com.hubsante.hub.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hubsante.hub.exception.SchemaValidationException;
-import com.hubsante.model.cisu.CreateCaseMessage;
+import com.hubsante.model.UseCaseEnum;
 import com.hubsante.model.edxl.ContentMessage;
 import com.hubsante.model.edxl.EdxlMessage;
 import com.networknt.schema.*;
@@ -65,7 +65,7 @@ public class Validator {
                 validateJSON(
                         contentMessageHandler.serializeJsonMessage(contentMessage),
                         "RC-REF_schema.json");
-            case ERROR_REPORT:
+            case RS_INFO:
             case CUSTOM:
             default:
                 if (isXML) {
@@ -115,24 +115,6 @@ public class Validator {
                 errors.append(errorMsg.getMessage()).append("\n");
             }
             throw new SchemaValidationException("Could not validate message against schema : errors occurred. \n" + errors);
-        }
-    }
-
-    public enum UseCaseEnum {
-        RC_EDA("CreateCaseMessage"),
-        RC_REF("ReferenceMessage"),
-        CUSTOM("CustomMessage"),
-        ERROR_REPORT("ErrorReport");
-
-        private String clazzName;
-
-        UseCaseEnum(String clazzName) {
-            this.clazzName = clazzName;
-        }
-
-        public static UseCaseEnum getByValue(String clazzName) {
-            return Arrays.stream(UseCaseEnum.values())
-                    .filter(useCaseEnum -> useCaseEnum.clazzName.equals(clazzName)).findFirst().orElseThrow();
         }
     }
 }
