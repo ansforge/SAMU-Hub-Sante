@@ -1,8 +1,0 @@
-{
-  "errorCode": {
-    "statusCode": 100,
-    "statusString": "DELIVERY_MODE_INCONSISTENCY"
-  },
-  "errorCause": "cause",
-  "sourceMessage": "source"
-}

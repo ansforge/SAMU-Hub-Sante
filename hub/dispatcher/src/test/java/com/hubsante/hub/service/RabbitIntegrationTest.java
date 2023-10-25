@@ -29,7 +29,7 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
     @Test
     @DisplayName("message dispatched to exchange is received by a consumer listening to the right queue")
     public void dispatchTest() throws Exception {
-        Message published = createMessage("valid/EDXL-DE.json", SAMU_A_ROUTING_KEY);
+        Message published = createMessage("valid/EDXL-DE/EDXL-DE.json", SAMU_A_ROUTING_KEY);
         RabbitTemplate samuA_publisher = getCustomRabbitTemplate(classLoader.getResource("config/certs/samuA/samuA.p12").getPath(), "samuA");
         samuA_publisher.send(HUBSANTE_EXCHANGE, SAMU_A_ROUTING_KEY, published);
 
@@ -55,7 +55,7 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
             }
         });
 
-        Message published = createMessage("valid/EDXL-DE.json", SAMU_A_ROUTING_KEY);
+        Message published = createMessage("valid/EDXL-DE/EDXL-DE.json", SAMU_A_ROUTING_KEY);
         samuA_publisher.send(HUBSANTE_EXCHANGE, SAMU_B_ROUTING_KEY, published);
         Thread.sleep(DISPATCHER_PROCESS_TIME);
 
@@ -80,7 +80,7 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
     @Test
     @DisplayName("expired message should be rejected")
     public void rejectExpiredMessage() throws Exception {
-        Message published = createMessage("valid/EDXL-DE.json", SAMU_A_ROUTING_KEY);
+        Message published = createMessage("valid/EDXL-DE/EDXL-DE.json", SAMU_A_ROUTING_KEY);
         RabbitTemplate samuA_publisher = getCustomRabbitTemplate(classLoader.getResource("config/certs/samuA/samuA.p12").getPath(), "samuA");
         samuA_publisher.send(HUBSANTE_EXCHANGE, SAMU_A_ROUTING_KEY, published);
 
@@ -93,7 +93,7 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
     @Test
     @DisplayName("message rejected by client is DLQ handled")
     public void clientRejectsMessageToDLQ() throws Exception {
-        Message published = createMessage("valid/EDXL-DE.json", SAMU_A_ROUTING_KEY);
+        Message published = createMessage("valid/EDXL-DE/EDXL-DE.json", SAMU_A_ROUTING_KEY);
         RabbitTemplate samuA_publisher = getCustomRabbitTemplate(classLoader.getResource("config/certs/samuA/samuA.p12").getPath(), "samuA");
         RabbitTemplate samuB_consumer = getCustomRabbitTemplate(classLoader.getResource("config/certs/samuB/samuB.p12").getPath(), "samuB");
 

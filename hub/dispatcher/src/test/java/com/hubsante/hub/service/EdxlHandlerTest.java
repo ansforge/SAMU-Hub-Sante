@@ -1,5 +1,6 @@
 package com.hubsante.hub.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.hubsante.hub.HubApplication;
 import com.hubsante.hub.exception.SchemaValidationException;
 import com.hubsante.model.cisu.CreateCaseMessage;
@@ -23,6 +24,9 @@ import java.nio.file.Files;
 import java.time.OffsetDateTime;
 import java.util.Objects;
 
+import static com.hubsante.hub.config.Constants.EDXL_SCHEMA;
+import static com.hubsante.hub.config.Constants.ENVELOPE_SCHEMA;
+import static com.hubsante.hub.service.utils.TestFileUtils.getMessageString;
 import static org.junit.jupiter.api.Assertions.*;
 
 
@@ -38,9 +42,6 @@ public class EdxlHandlerTest {
     @Autowired
     private EdxlHandler converter;
 
-    @Autowired
-    private Validator validator;
-
     @DynamicPropertySource
     static void registerPgProperties(DynamicPropertyRegistry propertiesRegistry) {
         propertiesRegistry.add("client.preferences.file",
@@ -48,87 +49,73 @@ public class EdxlHandlerTest {
     }
 
     @Test
-    @DisplayName("should deserialize Json EDXL - Cisu Create")
-    public void deserializeCreateJsonEDXL() throws IOException {
-
-        File edxlCisuCreateFile = new File(classLoader.getResource("messages/valid/edxl_encapsulated/samuA_to_nexsis.json").getFile());
-        EdxlMessage edxlMessage = converter.deserializeJsonEDXL(Files.readString(edxlCisuCreateFile.toPath()));
-
-        assertEquals("fr.health.samuA", edxlMessage.getSenderID());
-        assertEquals(
-                OffsetDateTime.parse("2022-07-25T10:04:34+01:00"),
-                edxlMessage.getDateTimeSent()
-        );
-
-        CreateCaseMessage createCaseMessage = edxlMessage
-                .getContent().getContentObject().getContentWrapper().getEmbeddedContent().getMessage();
-
-
-        assertEquals(
-                "Céphalée, migraines, Traumatisme sérieux, plaie intermédiaire",
-                createCaseMessage
-                        .getCreateCase()
-                        .getInitialAlert()
-                        .getAlertCode()
-                        .getHealthMotive()
-                        .getLabel()
-        );
+    @DisplayName("should consistently deserialize then serialize JSON RC-EDA")
+    public void end2end_RC_EDA_JSON() throws IOException {
+        String json = getMessageString(true, "RC-EDA", false);
+        endToEndDeserializationCheck(json, false);
     }
 
     @Test
-    @DisplayName("should serialize XML EDXL - Cisu Create")
-    public void serializeCreateXmlEDXL() throws IOException {
-        File edxlCisuCreateFile = new File(classLoader.getResource("messages/valid/edxl_encapsulated/samuA_to_nexsis.json").getFile());
-        String json = Files.readString(edxlCisuCreateFile.toPath());
-        EdxlMessage edxlMessage = converter.deserializeJsonEDXL(json);
-
-        String xml = converter.serializeXmlEDXL(edxlMessage);
-        Assertions.assertTrue(() -> xml.startsWith(xmlPrefix()));
-
-        EdxlMessage deserializedFromXml = converter.deserializeXmlEDXL(xml);
-        assertEquals(deserializedFromXml, edxlMessage);
-
-        ContentMessage contentMessage = edxlMessage
-                .getContent().getContentObject().getContentWrapper().getEmbeddedContent().getMessage();
-        assertDoesNotThrow(() -> validator.validateContentMessage(contentMessage, false));
-
-        //TODO team: generate xsd for new cisu model
-//        assertDoesNotThrow(() -> converter.validateXML(xml, "edxl/edxl-de-v2.0-wd11.xsd"));
+    @DisplayName("should consistently deserialize then serialize XML RC-EDA")
+    public void end2end_RC_EDA_XML() throws IOException {
+        String xml = getMessageString(true, "RC-EDA", true);
+        endToEndDeserializationCheck(xml, true);
     }
 
     @Test
-    @DisplayName("validation should failed if Json Edxl is malformatted")
-    public void wrongJsonValidationFailed() throws IOException {
-        File edxlCisuCreateFile = new File(classLoader.getResource("messages/failing/EDXL-DE/missing-EDXL-required-field.json").getFile());
-        String json = Files.readString(edxlCisuCreateFile.toPath());
-
-        // deserialization method does not throw error
-        assertDoesNotThrow(() -> converter.deserializeJsonEDXL(json));
-        // validation does
-        assertThrows(SchemaValidationException.class, () -> validator.validateJSON(json, "EDXL-DE_schema.json"));
+    @DisplayName("should consistently deserialize then serialize JSON RC-REF")
+    public void end2end_RC_REF_JSON() throws IOException {
+        String json =getMessageString(true, "RC-REF", false);
+        endToEndDeserializationCheck(json, false);
     }
 
     @Test
-    @DisplayName("envelope and header validation do not fail if envelope is ok and content is not")
-    public void edxlValidationSucceedsWithWrongJsonContent() throws IOException {
-        File edxlCisuCreateFile = new File(classLoader.getResource("messages/failing/RC-EDA/invalid-RC-EDA-valid-EDXL.json").getFile());
-        String json = Files.readString(edxlCisuCreateFile.toPath());
-
-        // deserialization method does not throw error
-        assertDoesNotThrow(() -> converter.deserializeJsonEDXL(json));
-        // neither validation because envelope is ok
-        assertDoesNotThrow(() -> validator.validateJSON(json, "EDXL-DE_schema.json"));
-        CreateCaseMessage createCaseMessage = (CreateCaseMessage) converter.deserializeJsonContentMessage(json);
-        assertThrows(SchemaValidationException.class, () -> validator.validateContentMessage(createCaseMessage, false));
+    @DisplayName("should consistently deserialize then serialize XML RC-REF")
+    public void end2end_RC_REF_XML() throws IOException {
+        String xml = getMessageString(true, "RC-REF", true);
+        endToEndDeserializationCheck(xml, true);
     }
 
     @Test
-    @DisplayName("should validate full EDXL")
-    public void validateFullEDXL() throws IOException {
-        File RC_EDA_jsonFile = new File(classLoader.getResource("messages/valid/RC-EDA.json").getFile());
-        String json = Files.readString(RC_EDA_jsonFile.toPath());
+    @DisplayName("should consistently deserialize then serialize JSON RS-INFO")
+    public void end2end_RS_INFO_JSON() throws IOException {
+        String json =getMessageString(true, "RS-INFO", false);
+        endToEndDeserializationCheck(json, false);
+    }
 
-        assertDoesNotThrow(() -> validator.validateJSON(json, "EDXL-DE-full_schema.json"));
+    @Test
+    @DisplayName("should consistently deserialize then serialize XML RS-INFO")
+    public void end2end_RS_INFO_XML() throws IOException {
+        String xml = getMessageString(true, "RS-INFO", true);
+        endToEndDeserializationCheck(xml, true);
+    }
+
+    @Test
+    @DisplayName("should add XML prefix")
+    public void verifyXmlPrefix() throws IOException {
+        File jsonFile = new File(classLoader.getResource("messages/valid/RC-EDA/RC-EDA.json").getFile());
+        String json = Files.readString(jsonFile.toPath());
+
+        EdxlMessage messageFromInput = converter.deserializeJsonEDXL(json);
+        String xml = converter.serializeXmlEDXL(messageFromInput);
+        assertTrue(() -> xml.startsWith(xmlPrefix()));
+    }
+
+    private void endToEndDeserializationCheck(String input, boolean isXML) throws JsonProcessingException {
+        EdxlMessage messageFromInput;
+        EdxlMessage messageFromOutput;
+
+        if (isXML) {
+            messageFromInput = converter.deserializeXmlEDXL(input);
+            String output = converter.serializeXmlEDXL(messageFromInput);
+            messageFromOutput = converter.deserializeXmlEDXL(output);
+        } else {
+            messageFromInput = converter.deserializeJsonEDXL(input);
+            String output = converter.serializeJsonEDXL(messageFromInput);
+            messageFromOutput = converter.deserializeJsonEDXL(output);
+        }
+
+        assertEquals(messageFromInput, messageFromOutput);
     }
 
     private String xmlPrefix() {

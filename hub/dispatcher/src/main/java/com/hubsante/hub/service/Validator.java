@@ -31,54 +31,6 @@ public class Validator {
     @Autowired
     private ObjectMapper jsonMapper;
 
-    @Autowired
-    private ContentMessageHandler contentMessageHandler;
-
-    public void validateContentMessage(EdxlMessage edxlMessage, boolean isXML) throws IOException {
-        ContentMessage contentMessage = edxlMessage.getContentMessage();
-        validateContentMessage(contentMessage, isXML);
-    }
-
-    public void validateContentMessage(ContentMessage contentMessage, boolean isXML)
-            throws IOException {
-        UseCaseEnum useCase = UseCaseEnum.getByValue(contentMessage.getClass().getSimpleName());
-
-        switch (useCase) {
-            case RC_EDA:
-                if (isXML) {
-                    validateXML(
-                            contentMessageHandler.serializeXmlMessage(contentMessage),
-                            "cisu/createCase.xsd");
-                    break;
-                }
-                validateJSON(
-                        contentMessageHandler.serializeJsonMessage(contentMessage),
-                        "RC-EDA_schema.json");
-                break;
-            //TODO bbo: generate json-schema & xsd for ACK and REPORT
-            case RC_REF:
-                if (isXML) {
-                    validateXML(contentMessageHandler.serializeXmlMessage(contentMessage),
-                            "cisu/RC-REF.xsd");
-                    break;
-                }
-                validateJSON(
-                        contentMessageHandler.serializeJsonMessage(contentMessage),
-                        "RC-REF_schema.json");
-            case RS_INFO:
-            case CUSTOM:
-            default:
-                if (isXML) {
-                    log.warn("Can't validate against XSD : class {} has no specified xsd spec",
-                            contentMessage.getClass().getSimpleName());
-                    break;
-                }
-                log.warn("Can't validate against Json-schema : class {} has no specified schema",
-                        contentMessage.getClass().getSimpleName());
-                break;
-        }
-    }
-
     public void validateXML(String message, String xsdFile) throws IOException {
         try {
             javax.xml.validation.Validator validator = initValidator(xsdFile);
@@ -87,7 +39,6 @@ public class Validator {
             // TODO bbo: check what message is wrapped by SAXException
             throw new SchemaValidationException("Could not validate message against schema : errors occurred. \n" + e.getMessage());
         }
-
     }
 
     private javax.xml.validation.Validator initValidator(String xsdPath) throws SAXException {

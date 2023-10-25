@@ -79,7 +79,7 @@ public class DispatcherTest {
     @DisplayName("should send json message to the right exchange and routing key")
     public void shouldDispatchJsonToRightExchange() throws IOException {
         // generate input message and check that it has the expected content type
-        Message receivedMessage = createMessage("valid/EDXL-DE.json", SAMU_A_ROUTING_KEY);
+        Message receivedMessage = createMessage("valid/EDXL-DE/EDXL-DE.json", SAMU_A_ROUTING_KEY);
         assertEquals(MessageProperties.CONTENT_TYPE_JSON, receivedMessage.getMessageProperties().getContentType());
         // dispatch message
         dispatcher.dispatch(receivedMessage);
@@ -103,7 +103,7 @@ public class DispatcherTest {
     @DisplayName("should send xml message to the right exchange and routing key")
     public void shouldDispatchXmlToRightExchange() throws IOException {
         // generate input message and check that it has the expected content type
-        Message receivedMessage = createMessage("valid/EDXL-DE.xml", SAMU_B_ROUTING_KEY);
+        Message receivedMessage = createMessage("valid/EDXL-DE/EDXL-DE.xml", SAMU_B_ROUTING_KEY);
         assertEquals(MessageProperties.CONTENT_TYPE_XML, receivedMessage.getMessageProperties().getContentType());
         // dispatch message
         dispatcher.dispatch(receivedMessage);
@@ -127,7 +127,7 @@ public class DispatcherTest {
     @DisplayName("should reset TTL if edxl dateTimeExpires is lower")
     public void shouldResetTTL() throws IOException {
         // get message and override dateTimeExpires field with sooner value
-        Message base = createMessage("valid/EDXL-DE.json", SAMU_A_ROUTING_KEY);
+        Message base = createMessage("valid/EDXL-DE/EDXL-DE.json", SAMU_A_ROUTING_KEY);
         EdxlMessage edxlMessage = converter.deserializeJsonEDXL(new String(base.getBody(), StandardCharsets.UTF_8));
         setCustomExpirationDate(edxlMessage, 2);
         Message customTTLMessage = new Message(converter.serializeJsonEDXL(edxlMessage).getBytes(), base.getMessageProperties());
@@ -149,7 +149,7 @@ public class DispatcherTest {
     @DisplayName("should send info to sender of DLQed message - expiration")
     public void handleDLQMessage() throws Exception {
         // we test that the message has been rejected after the DLQ listener has been called
-        Message originalMessage = createMessage("valid/EDXL-DE.json", SAMU_A_ROUTING_KEY);
+        Message originalMessage = createMessage("valid/EDXL-DE/EDXL-DE.json", SAMU_A_ROUTING_KEY);
         Message dlqMessage = applyRabbitmqDLQHeaders(originalMessage, "expired");
         assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatchDLQ(dlqMessage));
 
@@ -163,7 +163,7 @@ public class DispatcherTest {
     @Test
     @DisplayName("should not send info if info itself is DLQed")
     public void handleDLQInfo() throws Exception {
-        Message originalInfo = createMessage("valid/RS-INFO.json", SAMU_A_INFO_QUEUE);
+        Message originalInfo = createMessage("valid/RS-INFO/RS-INFO.json", SAMU_A_INFO_QUEUE);
         Message dlqMessage = applyRabbitmqDLQHeaders(originalInfo, "expired");
 
         assertDoesNotThrow(() -> dispatcher.dispatchDLQ(dlqMessage));
@@ -188,7 +188,7 @@ public class DispatcherTest {
     @DisplayName("message without content-type is rejected")
     public void rejectMessageWithoutContentType() throws IOException {
         // we test that the message has been rejected if the content-type is not set
-        Message receivedMessage = createMessage("valid/EDXL-DE.json", null, SAMU_A_ROUTING_KEY);
+        Message receivedMessage = createMessage("valid/EDXL-DE/EDXL-DE.json", null, SAMU_A_ROUTING_KEY);
         assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
 
         // we test that an error report has been sent with the correct error code
@@ -200,7 +200,7 @@ public class DispatcherTest {
     @DisplayName("message with unhandled content-type is rejected")
     public void rejectMessageWithUnhandledContentType() throws IOException {
         // we test that the message has been rejected if the content-type is neither json nor xml
-        Message receivedMessage = createMessage("valid/EDXL-DE.json", MessageProperties.DEFAULT_CONTENT_TYPE, SAMU_A_ROUTING_KEY);
+        Message receivedMessage = createMessage("valid/EDXL-DE/EDXL-DE.json", MessageProperties.DEFAULT_CONTENT_TYPE, SAMU_A_ROUTING_KEY);
         assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
 
         // we test that an error report has been sent with the correct error code
@@ -212,7 +212,7 @@ public class DispatcherTest {
     @DisplayName("message body inconsistent with content-type is rejected")
     public void rejectMessageWithInconsistentBody() throws IOException {
         // we test that the message has been rejected if the body is not consistent with the content-type
-        Message receivedMessage = createMessage("valid/EDXL-DE.json", MessageProperties.CONTENT_TYPE_XML, SAMU_A_ROUTING_KEY);
+        Message receivedMessage = createMessage("valid/EDXL-DE/EDXL-DE.json", MessageProperties.CONTENT_TYPE_XML, SAMU_A_ROUTING_KEY);
         assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
 
         // we test that an error report has been sent with the correct error code
@@ -225,7 +225,7 @@ public class DispatcherTest {
     @DisplayName("outer routing key inconsistent with sender ID")
     public void outerRoutingKeyInconsistentWithSenderId() throws IOException {
         // we test that the message has been rejected if the sender ID is not consistent with the outer routing key
-        Message receivedMessage = createMessage("valid/EDXL-DE.json", INCONSISTENT_ROUTING_KEY);
+        Message receivedMessage = createMessage("valid/EDXL-DE/EDXL-DE.json", INCONSISTENT_ROUTING_KEY);
         assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
 
         // we test that an error report has been sent with the correct error code
@@ -236,7 +236,7 @@ public class DispatcherTest {
     @Test
     @DisplayName("should reject message without persistent delivery mode")
     public void rejectMessageWithoutPersistentDeliveryMode() throws IOException {
-        Message receivedMessage = createMessage("valid/EDXL-DE.json", SAMU_A_ROUTING_KEY);
+        Message receivedMessage = createMessage("valid/EDXL-DE/EDXL-DE.json", SAMU_A_ROUTING_KEY);
         receivedMessage.getMessageProperties().setReceivedDeliveryMode(MessageDeliveryMode.NON_PERSISTENT);
         assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
 

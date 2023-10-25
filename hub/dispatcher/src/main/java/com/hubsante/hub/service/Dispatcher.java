@@ -19,6 +19,8 @@ import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 
 import static com.hubsante.hub.config.AmqpConfiguration.*;
+import static com.hubsante.hub.config.Constants.EDXL_SCHEMA;
+import static com.hubsante.hub.config.Constants.ENVELOPE_SCHEMA;
 import static com.hubsante.hub.utils.EdxlUtils.edxlMessageFromHub;
 
 @Service
@@ -227,9 +229,10 @@ public class Dispatcher {
             // We deserialize according to the content type
             // It MUST be explicitly set by the client
             if (MessageProperties.CONTENT_TYPE_JSON.equals(message.getMessageProperties().getContentType())) {
-                validator.validateJSON(receivedEdxl, "EDXL-DE_schema.json");
+                validator.validateJSON(receivedEdxl, ENVELOPE_SCHEMA);
                 edxlMessage = edxlHandler.deserializeJsonEDXL(receivedEdxl);
-                validator.validateContentMessage(edxlMessage, false);
+                validator.validateJSON(receivedEdxl, EDXL_SCHEMA);
+//                validator.validateContentMessage(edxlMessage, false);
 
                 log.info(" [x] Received from '" + message.getMessageProperties().getReceivedRoutingKey() + "': message with distributionID" + edxlMessage.getDistributionID());
                 log.debug(edxlHandler.prettyPrintJsonEDXL(edxlMessage));
@@ -239,6 +242,7 @@ public class Dispatcher {
 //                validator.validateXML(receivedEdxl, "edxl/edxl-de-v2.0-wd11.xsd");
                 edxlMessage = edxlHandler.deserializeXmlEDXL(receivedEdxl);
 //                validator.validateContentMessage(edxlMessage, true);
+//                validator.validateXML(receivedEdxl, EDXL_SCHEMA);
                 log.info(" [x] Received from '" + message.getMessageProperties().getReceivedRoutingKey() + "': message with distributionID " + edxlMessage.getDistributionID());
                 log.debug(edxlHandler.prettyPrintXmlEDXL(edxlMessage));
 
