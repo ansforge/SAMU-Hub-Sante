@@ -1,0 +1,90 @@
+# Ref.: https://github.com/grafana/helm-charts/issues/2383
+defaultRules:
+  create: true
+  rules:
+    alertmanager: true
+    etcd: true
+    configReloaders: true
+    general: true
+    k8s: true
+    kubeApiserverAvailability: true
+    kubeApiserverBurnrate: true
+    kubeApiserverHistogram: true
+    kubeApiserverSlos: true
+    kubeControllerManager: true
+    kubelet: true
+    kubeProxy: true
+    kubePrometheusGeneral: true
+    kubePrometheusNodeRecording: true
+    kubernetesApps: true
+    kubernetesResources: true
+    kubernetesStorage: true
+    kubernetesSystem: true
+    kubeSchedulerAlerting: true
+    kubeSchedulerRecording: true
+    kubeStateMetrics: true
+    network: true
+    node: true
+    nodeExporterAlerting: true
+    nodeExporterRecording: true
+    prometheus: true
+    prometheusOperator: true
+
+prometheus:
+  enabled: true
+  # Ref.: https://github.com/helm/charts/issues/11471
+  prometheusSpec:
+    externalUrl: 'https://admin.hub.esante.gouv.fr/prometheus/'
+    routePrefix: '/prometheus'
+  ingress:
+    # Ref.: https://artifacthub.io/packages/helm/prometheus-community/kube-prometheus-stack?modal=template&template=prometheus/ingress.yaml
+    enabled: true
+    ingressClassName: nginx-admin
+    tls:
+      - hosts:
+          - admin.hub.esante.gouv.fr
+        secretName: admin-tls-secret
+    #      hosts:
+    #        - prometheus.nnpi.beast-code.com
+    hosts:
+      - admin.hub.esante.gouv.fr
+    paths:
+      - /prometheus
+
+alertmanager:
+  enabled: true
+  ingress:
+    enabled: true
+    annotations:
+      nginx.ingress.kubernetes.io/rewrite-target: /$2
+    ingressClassName: nginx-admin
+    tls:
+      - hosts:
+          - admin.hub.esante.gouv.fr
+        secretName: admin-tls-secret
+    hosts:
+      - admin.hub.esante.gouv.fr
+    paths:
+      - "/alertmanager(/|$)(.*)"
+    pathType: Prefix
+
+grafana:
+  enabled: true
+  ingress:
+    enabled: true
+    ingressClassName: nginx-admin
+    annotations:
+      nginx.ingress.kubernetes.io/rewrite-target: /$2
+    tls:
+      - hosts:
+          - admin.hub.esante.gouv.fr
+        secretName: admin-tls-secret
+    hosts:
+      - admin.hub.esante.gouv.fr
+    path: "/grafana(/|$)(.*)"
+  persistence:
+    enabled: true
+    # size: 10Gi
+  grafana.ini:
+    server:
+      root_url: "%(protocol)s://%(domain)s:%(http_port)s/grafana/"

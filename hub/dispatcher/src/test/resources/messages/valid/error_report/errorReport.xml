@@ -1,0 +1,8 @@
+<message xmlns="urn:emergency:cisu:2.0" xmlns:hs="urn:emergency:hubsante:1.0">
+    <hs:errorCode>
+        <hs:statusCode>100</hs:statusCode>
+        <hs:statusString>DELIVERY_MODE_INCONSISTENCY</hs:statusString>
+    </hs:errorCode>
+    <hs:errorCause>cause</hs:errorCause>
+    <hs:sourceMessage>source</hs:sourceMessage>
+</message>

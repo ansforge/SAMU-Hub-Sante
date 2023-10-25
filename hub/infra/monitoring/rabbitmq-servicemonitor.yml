@@ -1,0 +1,35 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: rabbitmq-monitor
+  labels:
+    release: prometheus-operator
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: rabbitmq  # Match the labels of your RabbitMQ service
+  endpoints:
+    - port: prometheus-tls
+      scheme: https
+      interval: 15s
+      scrapeTimeout: 10s
+      path: /metrics
+      tlsConfig:
+        insecureSkipVerify: true
+    - port: prometheus-tls
+      scheme: https
+      interval: 15s
+      scrapeTimeout: 10s
+      path: /metrics/detailed
+      tlsConfig:
+        insecureSkipVerify: true
+    - port: prometheus-tls
+      scheme: https
+      interval: 15s
+      scrapeTimeout: 10s
+      path: /metrics/per-object
+      params:
+        queue:
+            - ".*"
+      tlsConfig:
+        insecureSkipVerify: true

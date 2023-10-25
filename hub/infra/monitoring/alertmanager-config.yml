@@ -1,0 +1,39 @@
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: AlertmanagerConfig
+metadata:
+  name: hubsante-alertmanager-config
+  labels:
+    release: prometheus-operator
+spec:
+  route: # a route is a node in the routing tree that can match alerts and forward them to a list of receivers
+    # https://prometheus.io/docs/alerting/latest/configuration/#route
+    groupBy: ['latency'] # group alerts by a chosen label (defined in the prometheus rule) in order to apply grouped config
+    groupWait: 30s
+    groupInterval: 5m
+    repeatInterval: 12h
+    receiver: 'email-notifications'
+    matchers:
+      - name: latency
+        value: dispatcher # match alerts with the label 'latency' and the value 'dispatcher'
+
+# Below, will be useful to retain alerts if certain others are firing (not implemented yet)
+#  inhibitRules:
+#    - sourceMatch:
+#        severity: 'critical'
+#      targetMatch:
+#        latency: 'warning'
+#      equal: ['alertname', 'dev', 'instance']
+
+  receivers:
+    - name: 'email-notifications'
+      emailConfigs:
+        - to: benjamin.bonche.ext@esante.gouv.fr,romain.fouilland@esante.gouv.fr
+          from: hubsante.alert@gmail.com
+          smarthost: smtp.gmail.com:587
+          authUsername: hubsante.alert@gmail.com
+          authIdentity: hubsante.alert@gmail.com
+          authPassword:
+            key: password
+            name: smtp-alert-secret
+          sendResolved: true
+          requireTLS: true

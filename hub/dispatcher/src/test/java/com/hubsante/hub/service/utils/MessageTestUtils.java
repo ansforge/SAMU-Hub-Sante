@@ -1,4 +1,4 @@
-package com.hubsante.dispatcher.utils;
+package com.hubsante.hub.service.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.hubsante.hub.service.EdxlHandler;

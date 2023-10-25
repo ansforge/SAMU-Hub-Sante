@@ -1,7 +1,7 @@
-package com.hubsante.dispatcher;
+package com.hubsante.hub.service;
 
 import com.hubsante.hub.HubApplication;
-import com.hubsante.hub.service.EdxlHandler;
+import com.hubsante.hub.service.utils.SSLTestUtils;
 import com.rabbitmq.client.DefaultSaslConfig;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -24,8 +24,6 @@ import org.testcontainers.utility.MountableFile;
 import javax.net.ssl.SSLContext;
 import java.io.IOException;
 
-import static com.hubsante.dispatcher.utils.SSLTestUtils.getSSlContext;
-
 @SpringBootTest
 @ContextConfiguration(classes = HubApplication.class, initializers = RabbitIntegrationTest.Initializer.class)
 @Testcontainers
@@ -37,6 +35,7 @@ public class RabbitIntegrationAbstract {
     protected static final String SAMU_B_OUTER_MESSAGE_ROUTING_KEY = "fr.health.samuB";
     protected static final String SAMU_B_WRONG_OUTER_MESSAGE_ROUTING_KEY = "fr.health.samuB.suffix";
     protected static final String SAMU_A_OUTER_MESSAGE_ROUTING_KEY = "fr.health.samuA";
+    protected static final String SAMU_A_INFO_QUEUE = "fr.health.samuA.info";
     protected static final String SAMU_B_ACK_QUEUE = "fr.health.samuB.ack";
     protected static final String SAMU_B_INFO_QUEUE = "fr.health.samuB.info";
     protected static final String SDIS_Z_MESSAGE_QUEUE = "fr.fire.nexsis.sdisZ.message";
@@ -70,7 +69,7 @@ public class RabbitIntegrationAbstract {
 
     @AfterEach
     public void cleanUp() throws IOException, InterruptedException {
-        String[] queues = {SAMU_B_ACK_QUEUE, SAMU_B_INFO_QUEUE, SDIS_Z_MESSAGE_QUEUE};
+        String[] queues = {SAMU_A_INFO_QUEUE, SAMU_B_ACK_QUEUE, SAMU_B_INFO_QUEUE, SDIS_Z_MESSAGE_QUEUE};
         for (String queue : queues) {
             rabbitMQContainer.execInContainer("rabbitmqctl", "purge_queue", queue);
         }
@@ -83,7 +82,7 @@ public class RabbitIntegrationAbstract {
         cf.setPort(rabbitMQContainer.getAmqpsPort());
         cf.setVirtualHost("/");
 
-        SSLContext sslContext = getSSlContext(p12Path, p12Passphrase);
+        SSLContext sslContext = SSLTestUtils.getSSlContext(p12Path, p12Passphrase);
         cf.useSslProtocol(sslContext);
 
         cf.setSaslConfig(DefaultSaslConfig.EXTERNAL);

@@ -64,6 +64,76 @@ kubectl exec -it rabbitmq-server-0 -- rabbitmqctl import_definitions /tmp/rabbit
 kubectl delete pods -l app.kubernetes.io/component=rabbitmq
 ```
 
+# Prometheus operator
+```shell
+# Deploy and configure Prometheus Operator
+helm upgrade --install prometheus-operator kube-prometheus-stack \
+  --repo https://prometheus-community.github.io/helm-charts \
+  --namespace monitoring --create-namespace \
+  -f monitoring/prometheus-operator-values.yml
+```
+
+Then we apply some extra configuration :
+- a ServiceMonitor to allow Prometheus to scrape RabbitMQ metrics
+- a PrometheusRule to define custom alerts
+- an AlertManager config to handle alerts
+
+All these resources will be automatically resolved by the Prometheus Operator, as long as they define the correct property,
+matching the Selectors used by the Operator.
+
+As of today, the Selector scrapes every resource with the label `release=prometheus-operator`.
+
+## Loki stack
+```shell
+# I merely followed this guide: https://questdb.io/blog/2022/12/13/using-prometheus-loki-grafana-monitor-questdb-kubernetes/
+# Be careful to use the same namespace as the Prometheus Operator
+helm upgrade --install loki loki-stack \
+  --repo https://grafana.github.io/helm-charts \
+  --namespace monitoring --create-namespace \
+  -f monitoring/loki-values.yml
+```
+
+```shell
+# add ServiceMonitor to allow Prometheus to scrape RabbitMQ metrics
+kubectl apply -f monitoring/rabbitmq-servicemonitor.yml
+
+# add PrometheusRule to define custom alerts
+kubectl apply -f monitoring/prometheus-rabbitmq-rules.yml
+
+# add AlertManager config
+kubectl create secret generic smtp-alert-secret  --from-file=password=monitoring/smtp-alert-secret.yml
+# Caution ! The AlertmanagerConfigSpec does not follow exactly the same structure as the native configuration file
+# all the fields seem supported but the case is not always the same (eg. auth_username becomes authUsername)
+#
+# the AlertmanagerConfigSpec is available here:
+# https://docs.openshift.com/container-platform/4.11/rest_api/monitoring_apis/alertmanagerconfig-monitoring-coreos-com-v1beta1.html#spec
+kubectl apply -f monitoring/alertmanager-config.yml
+
+# add Grafana dashboard for RabbitMQ overview
+# ref: https://grafana.com/grafana/dashboards/10991-rabbitmq-overview/
+# we can either import the dashboard in th UI with the ID 10991 or create a ConfigMap with the JSON
+# with the JSON we could customize it if needed
+kubectl -n monitoring create cm grafana-rabbitmq-overview --from-file=monitoring/rabbitmq-grafana-dashboard.json
+kubectl -n monitoring label cm grafana-rabbitmq-overview grafana_dashboard="1"
+```
+
+## Access Monitoring UIs
+```shell
+# if using minikube
+kubectl port-forward svc/prometheus-operated 9090:9090
+kubectl port-forward svc/alertmanager-operated 9093:9093 # not very useful
+kubectl port-forward svc/prometheus-operator-grafana 9091:80  
+```
+
+## Admin Ingress
+see https://prometheus-operator.dev/docs/kube/exposing-prometheus-alertmanager-grafana-ingress/
+```shell
+helm upgrade --install admin-nginx-ingress ingress-nginx \
+  --repo https://kubernetes.github.io/ingress-nginx \
+  --namespace ingress-nginx-admin --create-namespace \
+  -f monitoring/admin-nginx-ingress-controller-values.yml
+```
+
 # Dispatcher
 ```bash
 # Build and upload image to registry accessible in OVH
@@ -140,6 +210,12 @@ kubectl logs -l app=dispatcher --prefix --tail -1 -f
 kubectl describe pods -l app=dispatcher
 # All events
 kubectl get events --all-namespaces  --sort-by='.metadata.creationTimestamp'
+
+# pause/resume pod
+# technically we can't stop/pause a pod, but the workaround is to scale the deployments to zero, then back to the desired number
+# (cf https://stackoverflow.com/questions/54821044/how-to-stop-pause-a-pod-in-kubernetes)
+kubectl scale --replicas=0 deployment/dispatcher
+kubectl scale --replicas=1 deployment/dispatcher
 ```
 
 
@@ -185,3 +261,12 @@ kubectl exec -it rabbitmq-server-0 -- rabbitmqctl import_definitions /tmp/rabbit
 For the moment, simple image replace :
 - Build and publish new image (if needed as this is done automatically - with tags - on a GitHub release), new secrets and reapply deployment with new image: see [above](#dispatcher).
 - Get [Pod logs](#dispatcher-logs)
+
+
+# Miscellaneous
+## Troubleshooting
+Syntax errors in manifests can be detected with yamllint
+```bash
+npm install -g yaml-lint   # install yaml-lint
+npx yamllint .\rabbitmq-rules.yml  # lint yaml file
+```

@@ -3,14 +3,10 @@ package com.hubsante.hub.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hubsante.hub.exception.SchemaValidationException;
-import com.hubsante.model.cisu.CreateCase;
 import com.hubsante.model.cisu.CreateCaseMessage;
 import com.hubsante.model.edxl.ContentMessage;
 import com.hubsante.model.edxl.EdxlMessage;
-import com.networknt.schema.JsonSchema;
-import com.networknt.schema.JsonSchemaFactory;
-import com.networknt.schema.SpecVersion;
-import com.networknt.schema.ValidationMessage;
+import com.networknt.schema.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -23,6 +19,7 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringReader;
 import java.util.Arrays;
 import java.util.Set;
@@ -47,7 +44,7 @@ public class Validator {
         UseCaseEnum useCase = UseCaseEnum.getByValue(contentMessage.getClass().getSimpleName());
 
         switch (useCase) {
-            case CREATE_CASE:
+            case RC_EDA:
                 if (isXML) {
                     validateXML(
                         contentMessageHandler.serializeXmlMessage(contentMessage),
@@ -62,16 +59,15 @@ public class Validator {
                 break;
             //TODO bbo: generate json-schema & xsd for ACK and REPORT
             case CUSTOM:
-            case GENERIC_ACK:
+            case RC_REF:
             case ERROR_REPORT:
-            case UNKNOWN:
             default:
                 if (isXML) {
-                    log.error("Can't validate against XSD : class {} has no specified xsd spec",
+                    log.warn("Can't validate against XSD : class {} has no specified xsd spec",
                             contentMessage.getClass().getSimpleName());
                     break;
                 }
-                log.error("Can't validate against Json-schema : class {} has no specified schema",
+                log.warn("Can't validate against Json-schema : class {} has no specified schema",
                         contentMessage.getClass().getSimpleName());
                 break;
         }
@@ -97,8 +93,9 @@ public class Validator {
 
     public void validateJSON(String message, String jsonSchemaFile) throws IOException {
         JsonSchemaFactory factory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7);
-        JsonSchema jsonSchema = factory.getSchema(Thread.currentThread().getContextClassLoader()
-                .getResourceAsStream("json-schema/" + jsonSchemaFile));
+        InputStream schemaStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("json-schema/" + jsonSchemaFile);
+        JsonSchema jsonSchema = factory.getSchema(schemaStream);
+
         JsonNode jsonNode = jsonMapper.readTree(message);
         Set<ValidationMessage> validationMessages = jsonSchema.validate(jsonNode);
 
@@ -112,11 +109,10 @@ public class Validator {
     }
 
     public enum UseCaseEnum {
-        CREATE_CASE("CreateCaseMessage"),
-        GENERIC_ACK("CisuAckMessage"),
+        RC_EDA("CreateCaseMessage"),
+        RC_REF("ReferenceMessage"),
         CUSTOM("CustomMessage"),
-        ERROR_REPORT("ErrorReport"),
-        UNKNOWN("Unknown");
+        ERROR_REPORT("ErrorReport");
 
         private String clazzName;
 
@@ -124,9 +120,9 @@ public class Validator {
             this.clazzName = clazzName;
         }
 
-        public static final UseCaseEnum getByValue(String clazzName) {
+        public static UseCaseEnum getByValue(String clazzName) {
             return Arrays.stream(UseCaseEnum.values())
-                    .filter(useCaseEnum -> useCaseEnum.clazzName.equals(clazzName)).findFirst().orElse(UNKNOWN);
+                    .filter(useCaseEnum -> useCaseEnum.clazzName.equals(clazzName)).findFirst().orElseThrow();
         }
     }
 }
