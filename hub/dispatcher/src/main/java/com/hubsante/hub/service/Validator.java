@@ -3,9 +3,6 @@ package com.hubsante.hub.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hubsante.hub.exception.SchemaValidationException;
-import com.hubsante.model.UseCaseEnum;
-import com.hubsante.model.edxl.ContentMessage;
-import com.hubsante.model.edxl.EdxlMessage;
 import com.networknt.schema.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +18,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
-import java.util.Arrays;
 import java.util.Set;
 
 @Slf4j

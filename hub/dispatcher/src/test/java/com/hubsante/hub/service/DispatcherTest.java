@@ -3,7 +3,7 @@ package com.hubsante.hub.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.hubsante.hub.HubApplication;
 import com.hubsante.hub.config.HubConfiguration;
-import com.hubsante.model.CustomMessage;
+import com.hubsante.model.custom.CustomMessage;
 import com.hubsante.model.edxl.EdxlMessage;
 import com.hubsante.model.report.ErrorCode;
 import com.hubsante.model.report.ErrorReport;
