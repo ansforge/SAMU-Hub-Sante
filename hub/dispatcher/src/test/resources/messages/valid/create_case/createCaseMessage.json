@@ -11,6 +11,10 @@
     {
       "name": "sdisZ",
       "URI": "hubex:fr.fire.nexsis.sdisZ"
+    },
+    {
+      "name": "test",
+      "URI": "hubex:fr.fire.nexsis.test"
     }
   ],
   "createCase": {
@@ -52,7 +56,7 @@
           "label": "Voie publique hors voie rapide",
           "freetext": "Voie vélo le long d'une route "
         },
-        "riskThreat": [
+        "riskThreats": [
           {
             "code": "R22",
             "label": "Gêne à la circulation",

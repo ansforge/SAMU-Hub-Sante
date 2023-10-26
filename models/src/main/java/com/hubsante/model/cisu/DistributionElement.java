@@ -291,7 +291,8 @@ public class DistributionElement extends ContentMessage {
      **/
     @JsonProperty(JSON_PROPERTY_RECIPIENTS)
     @JsonInclude(value = JsonInclude.Include.ALWAYS)
-    @JacksonXmlElementWrapper(useWrapping = true)
+    @JacksonXmlElementWrapper(useWrapping = true, localName = "recipients")
+    @JacksonXmlProperty(localName = "recipient")
     public List<Recipient> getRecipients() {
         return recipients;
     }
@@ -299,7 +300,8 @@ public class DistributionElement extends ContentMessage {
 
     @JsonProperty(JSON_PROPERTY_RECIPIENTS)
     @JsonInclude(value = JsonInclude.Include.ALWAYS)
-    @JacksonXmlElementWrapper(useWrapping = true)
+    @JacksonXmlElementWrapper(useWrapping = true, localName = "recipients")
+    @JacksonXmlProperty(localName = "recipient")
     public void setRecipients(List<Recipient> recipients) {
         this.recipients = recipients;
     }

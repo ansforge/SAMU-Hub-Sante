@@ -47,8 +47,8 @@ public class AlertCode {
     public static final String JSON_PROPERTY_LOCATION_KIND = "locationKind";
     private Nomenclature locationKind;
 
-    public static final String JSON_PROPERTY_RISK_THREAT = "riskThreat";
-    private List<Nomenclature> riskThreat;
+    public static final String JSON_PROPERTY_RISK_THREAT = "riskThreats";
+    private List<RiskThreat> riskThreats;
 
     public static final String JSON_PROPERTY_HEALTH_MOTIVE = "healthMotive";
     private Nomenclature healthMotive;
@@ -140,17 +140,17 @@ public class AlertCode {
     }
 
 
-    public AlertCode riskThreat(List<Nomenclature> riskThreat) {
+    public AlertCode riskThreat(List<RiskThreat> riskThreat) {
 
-        this.riskThreat = riskThreat;
+        this.riskThreats = riskThreat;
         return this;
     }
 
-    public AlertCode addRiskThreatItem(Nomenclature riskThreatItem) {
-        if (this.riskThreat == null) {
-            this.riskThreat = new ArrayList<>();
+    public AlertCode addRiskThreatItem(RiskThreat riskThreatItem) {
+        if (this.riskThreats == null) {
+            this.riskThreats = new ArrayList<>();
         }
-        this.riskThreat.add(riskThreatItem);
+        this.riskThreats.add(riskThreatItem);
         return this;
     }
 
@@ -159,24 +159,27 @@ public class AlertCode {
      *
      * @return riskThreat
      **/
-//    @JsonProperty(JSON_PROPERTY_RISK_THREAT)
+    @JsonProperty(JSON_PROPERTY_RISK_THREAT)
     @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-    @JacksonXmlElementWrapper(useWrapping = false)
-    public List<Nomenclature> getRiskThreat() {
-        return riskThreat;
+    @JacksonXmlElementWrapper(useWrapping = true, localName = "riskThreats")
+    @JacksonXmlProperty(localName = "riskThreat")
+    public List<RiskThreat> getRiskThreats() {
+        return riskThreats;
     }
 
     @JsonProperty(JSON_PROPERTY_RISK_THREAT)
     @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-    @JacksonXmlElementWrapper(useWrapping = false)
-    public void setRiskThreat(List<Nomenclature> riskThreat) {
-        if (riskThreat == null) {
-            return;
-        }
-        if (this.riskThreat == null) {
-            this.riskThreat = new ArrayList<>();
-        }
-        this.riskThreat.addAll(riskThreat);
+    @JacksonXmlElementWrapper(useWrapping = true, localName = "riskThreats")
+    @JacksonXmlProperty(localName = "riskThreat")
+    public void setRiskThreats(List<RiskThreat> riskThreats) {
+        this.riskThreats = riskThreats;
+//        if (riskThreats == null) {
+//            return;
+//        }
+//        if (this.riskThreats == null) {
+//            this.riskThreats = new ArrayList<>();
+//        }
+//        this.riskThreats.addAll(riskThreats);
     }
 
 
@@ -269,7 +272,7 @@ public class AlertCode {
         return Objects.equals(this.cisuVersion, alertCode.cisuVersion) &&
                 Objects.equals(this.whatsHappen, alertCode.whatsHappen) &&
                 Objects.equals(this.locationKind, alertCode.locationKind) &&
-                Objects.equals(this.riskThreat, alertCode.riskThreat) &&
+                Objects.equals(this.riskThreats, alertCode.riskThreats) &&
                 Objects.equals(this.healthMotive, alertCode.healthMotive) &&
                 Objects.equals(this.gravity, alertCode.gravity) &&
                 Objects.equals(this.victims, alertCode.victims);
@@ -280,7 +283,7 @@ public class AlertCode {
         return Objects.hash(cisuVersion
                 , whatsHappen
                 , locationKind
-                , riskThreat
+                , riskThreats
                 , healthMotive
                 , gravity
                 , victims);
@@ -293,7 +296,7 @@ public class AlertCode {
         sb.append("    cisuVersion: ").append(toIndentedString(cisuVersion)).append("\n");
         sb.append("    whatsHappen: ").append(toIndentedString(whatsHappen)).append("\n");
         sb.append("    locationKind: ").append(toIndentedString(locationKind)).append("\n");
-        sb.append("    riskThreats: ").append(toIndentedString(riskThreat)).append("\n");
+        sb.append("    riskThreats: ").append(toIndentedString(riskThreats)).append("\n");
         sb.append("    healthMotive: ").append(toIndentedString(healthMotive)).append("\n");
         sb.append("    gravity: ").append(toIndentedString(gravity)).append("\n");
         sb.append("    victims: ").append(toIndentedString(victims)).append("\n");
