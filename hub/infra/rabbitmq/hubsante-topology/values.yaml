@@ -1,0 +1,37 @@
+clients:
+  - client_id: samu570
+    common_name: fr.health.samu570
+  - client_id: samu800
+    common_name: fr.health.samu800
+  - client_id: samu090
+    common_name: fr.health.samu090
+  - client_id: samu091
+    common_name: fr.health.samu091
+  - client_id: samu350
+    common_name: fr.health.samu350
+  - client_id: samu440
+    common_name: fr.health.samu440
+  - client_id: samu780
+    common_name: fr.health.samu780
+  - client_id: normandie
+    common_name: fr.health.normandie
+    additional_permissions:
+      - samu76A
+      - samu76B
+  - client_id: samu76A
+    common_name: fr.health.samu76A
+  - client_id: samu76B
+    common_name: fr.health.samu76B
+
+editors:
+  - client_id: exos
+  - client_id: inetum
+  - client_id: bisom
+  - client_id: scriptal
+  - client_id: appligos
+  - client_id: rramu
+
+clusterNamespace: rabbitmq
+
+test_lrm:
+  enabled: true
