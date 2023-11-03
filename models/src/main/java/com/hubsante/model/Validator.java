@@ -1,12 +1,19 @@
-package com.hubsante.hub.service;
+package com.hubsante.model;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hubsante.hub.exception.SchemaValidationException;
-import com.networknt.schema.*;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.hubsante.model.exception.ValidationException;
+import com.networknt.schema.JsonSchema;
+import com.networknt.schema.JsonSchemaFactory;
+import com.networknt.schema.SpecVersion;
+import com.networknt.schema.ValidationMessage;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+//import org.springframework.beans.factory.annotation.Autowired;
+//import org.springframework.stereotype.Service;
 import org.xml.sax.SAXException;
 
 import javax.xml.XMLConstants;
@@ -21,19 +28,37 @@ import java.io.StringReader;
 import java.util.Set;
 
 @Slf4j
-@Service
+//@Service
 public class Validator {
 
-    @Autowired
+//    @Autowired
     private ObjectMapper jsonMapper;
+    private XmlMapper xmlMapper;
 
-    public void validateXML(String message, String xsdFile) throws IOException {
+    public Validator() {
+        xmlMapper = (XmlMapper) new XmlMapper()
+                .registerModule(new JavaTimeModule())
+                .enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+                .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+                .disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE);
+
+        xmlMapper.configure(com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator.Feature.WRITE_XML_DECLARATION, true);
+
+        jsonMapper = new ObjectMapper()
+                .registerModule(new JavaTimeModule())
+                .enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+                .disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE);
+    }
+
+    public void validateXML(String message, String xsdFile) throws IOException, ValidationException {
         try {
             javax.xml.validation.Validator validator = initValidator(xsdFile);
             validator.validate(new StreamSource(new StringReader(message)));
         } catch (SAXException e) {
             // TODO bbo: check what message is wrapped by SAXException
-            throw new SchemaValidationException("Could not validate message against schema : errors occurred. \n" + e.getMessage());
+            throw new ValidationException("Could not validate message against schema : errors occurred. \n" + e.getMessage());
         }
     }
 
@@ -44,7 +69,7 @@ public class Validator {
         return schema.newValidator();
     }
 
-    public void validateJSON(String message, String jsonSchemaFile) throws IOException {
+    public void validateJSON(String message, String jsonSchemaFile) throws IOException, ValidationException {
         JsonSchemaFactory factory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7);
         // If the schema file references local sub-schema, it must reference the classpath as its id
         // the library behavior is to construct an URI from the id, and then add the schema file name to it
@@ -61,7 +86,7 @@ public class Validator {
             for (ValidationMessage errorMsg : validationMessages) {
                 errors.append(errorMsg.getMessage()).append("\n");
             }
-            throw new SchemaValidationException("Could not validate message against schema : errors occurred. \n" + errors);
+            throw new ValidationException("Could not validate message against schema : errors occurred. \n" + errors);
         }
     }
 }

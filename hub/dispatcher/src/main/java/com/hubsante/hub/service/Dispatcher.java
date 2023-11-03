@@ -3,7 +3,10 @@ package com.hubsante.hub.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.hubsante.hub.config.HubConfiguration;
 import com.hubsante.hub.exception.*;
+import com.hubsante.model.EdxlHandler;
+import com.hubsante.model.Validator;
 import com.hubsante.model.edxl.*;
+import com.hubsante.model.exception.ValidationException;
 import com.hubsante.model.report.ErrorCode;
 import com.hubsante.model.report.ErrorReport;
 import lombok.extern.slf4j.Slf4j;
@@ -257,10 +260,10 @@ public class Dispatcher {
                     "If you don't want to use HubSanté model for now, please use a \"customContent\" wrapper inside your message.";
             throw new UnrecognizedMessageFormatException(errorCause);
 
-        } catch (SchemaValidationException e) {
+        } catch (ValidationException e) {
             // weird rethrow but we want to log the received routing key and we only have it here
             log.error("Could not validate message " + receivedEdxl + " coming from " + message.getMessageProperties().getReceivedRoutingKey(), e);
-            throw e;
+            throw new SchemaValidationException(e.getMessage());
 
         } catch (IOException e) {
             throw new RuntimeException(e);

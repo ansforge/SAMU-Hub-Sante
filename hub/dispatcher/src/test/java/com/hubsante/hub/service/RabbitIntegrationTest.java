@@ -1,6 +1,7 @@
 package com.hubsante.hub.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.edxl.EdxlMessage;
 import com.hubsante.model.report.ErrorCode;
 import com.hubsante.model.report.ErrorReport;
@@ -14,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
+import static com.hubsante.hub.service.utils.MessageTestUtils.createInvalidMessage;
 import static com.hubsante.hub.service.utils.MessageTestUtils.createMessage;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -23,13 +25,15 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
     private static long DISPATCHER_PROCESS_TIME = 1000;
     private static long DEFAULT_TTL = 5000;
 
+    private final String JSON = MessageProperties.CONTENT_TYPE_JSON;
+
     @Autowired
     private EdxlHandler edxlHandler;
 
     @Test
     @DisplayName("message dispatched to exchange is received by a consumer listening to the right queue")
     public void dispatchTest() throws Exception {
-        Message published = createMessage("valid/EDXL-DE/EDXL-DE.json", SAMU_A_ROUTING_KEY);
+        Message published = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
         RabbitTemplate samuA_publisher = getCustomRabbitTemplate(classLoader.getResource("config/certs/samuA/samuA.p12").getPath(), "samuA");
         samuA_publisher.send(HUBSANTE_EXCHANGE, SAMU_A_ROUTING_KEY, published);
 
@@ -55,7 +59,7 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
             }
         });
 
-        Message published = createMessage("valid/EDXL-DE/EDXL-DE.json", SAMU_A_ROUTING_KEY);
+        Message published = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
         samuA_publisher.send(HUBSANTE_EXCHANGE, SAMU_B_ROUTING_KEY, published);
         Thread.sleep(DISPATCHER_PROCESS_TIME);
 
@@ -68,7 +72,7 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
         String p12Path = classLoader.getResource("config/certs/samuA/samuA.p12").getPath();
         RabbitTemplate samuA_publisher = getCustomRabbitTemplate(p12Path, "samuA");
 
-        Message published = createMessage("failing/EDXL-DE/inexistent-recipient-queue.json", SAMU_A_ROUTING_KEY);
+        Message published = createInvalidMessage("EDXL-DE/inexistent-recipient-queue.json", SAMU_A_ROUTING_KEY);
         samuA_publisher.send(HUBSANTE_EXCHANGE, SAMU_A_ROUTING_KEY, published);
         Thread.sleep(DISPATCHER_PROCESS_TIME);
 
@@ -80,7 +84,7 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
     @Test
     @DisplayName("expired message should be rejected")
     public void rejectExpiredMessage() throws Exception {
-        Message published = createMessage("valid/EDXL-DE/EDXL-DE.json", SAMU_A_ROUTING_KEY);
+        Message published = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
         RabbitTemplate samuA_publisher = getCustomRabbitTemplate(classLoader.getResource("config/certs/samuA/samuA.p12").getPath(), "samuA");
         samuA_publisher.send(HUBSANTE_EXCHANGE, SAMU_A_ROUTING_KEY, published);
 
@@ -93,7 +97,7 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
     @Test
     @DisplayName("message rejected by client is DLQ handled")
     public void clientRejectsMessageToDLQ() throws Exception {
-        Message published = createMessage("valid/EDXL-DE/EDXL-DE.json", SAMU_A_ROUTING_KEY);
+        Message published = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
         RabbitTemplate samuA_publisher = getCustomRabbitTemplate(classLoader.getResource("config/certs/samuA/samuA.p12").getPath(), "samuA");
         RabbitTemplate samuB_consumer = getCustomRabbitTemplate(classLoader.getResource("config/certs/samuB/samuB.p12").getPath(), "samuB");
 
