@@ -12,7 +12,7 @@ public class EdxlUtils {
 
     public static EdxlMessage edxlMessageFromHub(String recipientId, ContentMessage contentMessage) {
         return new EDXL_DE_Builder(UUID(),HUB_ID, recipientId)
-                .dateTimeSentAndExpiresAfterDays(OffsetDateTime.now(), DEFAULT_HUB_MESSAGE_EXPIRATION)
+                .dateTimeSentNowWithOffsetInDays(DEFAULT_HUB_MESSAGE_EXPIRATION)
                 .distributionKind(DistributionKind.ERROR)
                 .contentMessage(contentMessage)
                 .build();
