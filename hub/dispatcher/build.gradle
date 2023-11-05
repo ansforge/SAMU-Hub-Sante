@@ -36,6 +36,13 @@ configurations {
 repositories {
 //    mavenLocal()
     mavenCentral()
+    maven {
+        url = uri("https://maven.pkg.github.com/ansforge/SAMU-Hub-Sante")
+        credentials {
+            username = System.getenv('GITHUB_ACTOR')
+            password = System.getenv('GITHUB_TOKEN')
+        }
+    }
 }
 
 ext {
