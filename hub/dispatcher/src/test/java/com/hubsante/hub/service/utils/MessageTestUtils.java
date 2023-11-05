@@ -12,7 +12,6 @@ import org.springframework.amqp.core.MessageDeliveryMode;
 import org.springframework.amqp.core.MessageProperties;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 
@@ -21,7 +20,7 @@ import static com.hubsante.hub.config.AmqpConfiguration.*;
 public class MessageTestUtils {
     public static Message createMessage(String filename, String contentType, String receivedRoutingKey) throws IOException {
         boolean isXML = MessageProperties.CONTENT_TYPE_XML.equals(contentType);
-        String edxlString = TestMessagesHelper.getSampleMessageAsStream(filename, isXML);
+        String edxlString = TestMessagesHelper.getSampleMessage(filename, isXML);
 
         MessageProperties properties = getMessageProperties(receivedRoutingKey);
 
@@ -40,7 +39,7 @@ public class MessageTestUtils {
     }
 
     public static Message createInvalidMessage(String filename, String contentType, String receivedRoutingKey) throws IOException {
-        String edxlString = TestMessagesHelper.getInvalidMessageAsStream(filename);
+        String edxlString = TestMessagesHelper.getInvalidMessage(filename);
 
         MessageProperties properties = getMessageProperties(receivedRoutingKey);
 
@@ -88,8 +87,8 @@ public class MessageTestUtils {
         String msgString = new String(message.getBody());
 
         return message.getMessageProperties().getContentType().equals(MessageProperties.CONTENT_TYPE_XML) ?
-                (ErrorReport) edxlHandler.deserializeXmlContentMessage(msgString) :
-                (ErrorReport) edxlHandler.deserializeJsonContentMessage(msgString);
+                (ErrorReport) edxlHandler.deserializeXmlEDXL(msgString).getContentMessage() :
+                (ErrorReport) edxlHandler.deserializeJsonEDXL(msgString).getContentMessage();
     }
 
     public static void setCustomExpirationDate(EdxlMessage edxlMessage, long offset_in_seconds) {

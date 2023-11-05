@@ -238,7 +238,7 @@ public class Dispatcher {
 //                validator.validateContentMessage(edxlMessage, false);
 
                 log.info(" [x] Received from '" + message.getMessageProperties().getReceivedRoutingKey() + "': message with distributionID" + edxlMessage.getDistributionID());
-                log.debug(edxlHandler.prettyPrintJsonEDXL(edxlMessage));
+                log.debug(edxlHandler.serializeJsonEDXL(edxlMessage));
 
             } else if (MessageProperties.CONTENT_TYPE_XML.equals(message.getMessageProperties().getContentType())) {
                 // TODO bbo: add XSD validation when ready
@@ -247,7 +247,7 @@ public class Dispatcher {
 //                validator.validateContentMessage(edxlMessage, true);
 //                validator.validateXML(receivedEdxl, EDXL_SCHEMA);
                 log.info(" [x] Received from '" + message.getMessageProperties().getReceivedRoutingKey() + "': message with distributionID " + edxlMessage.getDistributionID());
-                log.debug(edxlHandler.prettyPrintXmlEDXL(edxlMessage));
+                log.debug(edxlHandler.serializeXmlEDXL(edxlMessage));
 
             } else {
                 String errorCause = "Unhandled Content-Type ! Message Content-Type should be set at 'application/json' or 'application/xml'";
@@ -302,10 +302,10 @@ public class Dispatcher {
 
         try {
             if (convertToXML(recipientID)) {
-                edxlString = edxlHandler.prettyPrintXmlEDXL(edxlMessage);
+                edxlString = edxlHandler.serializeXmlEDXL(edxlMessage);
                 fwdAmqpProperties.setContentType(MessageProperties.CONTENT_TYPE_XML);
             } else {
-                edxlString = edxlHandler.prettyPrintJsonEDXL(edxlMessage);
+                edxlString = edxlHandler.serializeJsonEDXL(edxlMessage);
                 fwdAmqpProperties.setContentType(MessageProperties.CONTENT_TYPE_JSON);
             }
             log.info("  ↳ [x] Forwarding to '" + recipientID + "': message with distributionID " + edxlMessage.getDistributionID());
