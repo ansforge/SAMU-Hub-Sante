@@ -43,7 +43,6 @@ ext {
 }
 
 dependencies {
-//    implementation project(':models')
     implementation 'com.hubsante:models:0.2-SNAPSHOT'
 
     implementation 'org.codehaus.groovy:groovy-json:3.0.9'
