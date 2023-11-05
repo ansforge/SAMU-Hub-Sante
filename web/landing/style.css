@@ -55,3 +55,8 @@ h3 {
 .bg-gray-100 {
     background-color: var(--gray-100)
 }
+
+.m-teaser__img img {
+    max-height: 190px;
+    object-fit: cover;
+}

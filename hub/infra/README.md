@@ -37,20 +37,29 @@ Ref.: https://www.rabbitmq.com/kubernetes/operator/quickstart-operator.html
 ```bash
 # Install the RabbitMQ Cluster Operator
 kubectl apply -f "https://github.com/rabbitmq/cluster-operator/releases/latest/download/cluster-operator.yml"
+kubectl apply -f "https://github.com/jetstack/cert-manager/releases/download/v1.13.1/cert-manager.yaml"
+kubectl apply -f "https://github.com/rabbitmq/messaging-topology-operator/releases/latest/download/messaging-topology-operator-with-certmanager.yaml"
 
+kubectl create ns rabbitmq
 # Create TLS secrets
 # Ref.: https://www.rabbitmq.com/kubernetes/operator/using-operator.html#one-way-tls
 # Ref.: https://www.rabbitmq.com/kubernetes/operator/using-operator.html#mutual-tls
-kubectl create secret tls tls-secret --cert=../rabbitmq/certs/hub.crt --key=../rabbitmq/certs/hub.key
-kubectl create secret generic ca-secret --from-file=ca.crt=../rabbitmq/certs/rootCA.crt
+kubectl create secret tls tls-secret --cert=../rabbitmq/certs/hub.crt --key=../rabbitmq/certs/hub.key -n rabbitmq
+kubectl create secret generic ca-secret --from-file=ca.crt=../rabbitmq/certs/rootCA.crt -n rabbitmq
 
 # Create definitions.json ConfigMap
 # Ref.: https://github.com/rabbitmq/cluster-operator/blob/main/docs/examples/import-definitions/setup.sh
-kubectl create configmap definitions --from-file=../rabbitmq/definitions.json
+kubectl create configmap definitions --from-file=../rabbitmq/definitions.json -n rabbitmq
 
 # Find/build the correct Custom Resource Definition yaml and install it
 # https://github.com/rabbitmq/cluster-operator/tree/main/docs/examples
 kubectl apply -f rabbitmq.yaml
+# remove load balancer cleanup finalizer
+# CAUTION: this will prevent the load balancer from being deleted when the service is deleted
+# it is NOT the default behaviour, and probably not the good practice
+# we shouLd consider it as temporary
+kubectl patch svc rabbitmq -n rabbitmq -p '{\"metadata\":{\"finalizers\": []}}' --type=merge
+helm upgrade -i hubsante-topology ./rabbitmq/hubsante-topology
 ```
 
 ## Updates
@@ -62,6 +71,24 @@ kubectl create configmap definitions --from-file=../rabbitmq/definitions.json
 kubectl exec -it rabbitmq-server-0 -- rabbitmqctl import_definitions /tmp/rabbitmq/config/definitions.json
 # Or full Pod restart (to be avoided)
 kubectl delete pods -l app.kubernetes.io/component=rabbitmq
+```
+
+## Admin Ingress
+see https://prometheus-operator.dev/docs/kube/exposing-prometheus-alertmanager-grafana-ingress/
+```shell
+# Install with Helm
+helm upgrade --install admin-nginx-ingress ingress-nginx \
+  --repo https://kubernetes.github.io/ingress-nginx \
+  --namespace ingress-nginx-admin --create-namespace \
+  -f monitoring/admin-nginx-ingress-controller-values.yml
+# create secret used for basic auth, in the controller namespace
+kubectl create secret generic basic-auth --from-file=monitoring/auth -n ingress-nginx-admin
+
+# remove load balancer cleanup finalizer
+# CAUTION: this will prevent the load balancer from being deleted when the service is deleted
+# it is NOT the default behaviour, and probably not the good practice
+# we shouLd consider it as temporary
+kubectl patch svc admin-nginx-ingress-ingress-nginx-controller -n ingress-nginx-admin -p '{\"metadata\":{\"finalizers\": []}}' --type=merge
 ```
 
 # Prometheus operator
@@ -125,15 +152,6 @@ kubectl port-forward svc/alertmanager-operated 9093:9093 # not very useful
 kubectl port-forward svc/prometheus-operator-grafana 9091:80  
 ```
 
-## Admin Ingress
-see https://prometheus-operator.dev/docs/kube/exposing-prometheus-alertmanager-grafana-ingress/
-```shell
-helm upgrade --install admin-nginx-ingress ingress-nginx \
-  --repo https://kubernetes.github.io/ingress-nginx \
-  --namespace ingress-nginx-admin --create-namespace \
-  -f monitoring/admin-nginx-ingress-controller-values.yml
-```
-
 # Dispatcher
 ```bash
 # Build and upload image to registry accessible in OVH
@@ -179,6 +197,11 @@ kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/cont
 
 # Deploy Ingress
 kubectl apply -f web/ingress.yaml
+# remove load balancer cleanup finalizer
+# CAUTION: this will prevent the load balancer from being deleted when the service is deleted
+# it is NOT the default behaviour, and probably not the good practice
+# we shouLd consider it as temporary
+kubectl patch svc ingress-nginx-controller -n ingress-nginx -p '{\"metadata\":{\"finalizers\": []}}' --type=merge
 ```
 
 ## Landing page website

@@ -1,3 +1,5 @@
 controller:
+  allowSnippetAnnotations: true # Ref.: https://github.com/kubernetes/ingress-nginx/blob/main/charts/ingress-nginx/values.yaml
+                                # required to propagate annotations set in ingress snippets in the operator (cf prometheus-operator-values.yml)
   ingressClassResource:
     name: nginx-admin

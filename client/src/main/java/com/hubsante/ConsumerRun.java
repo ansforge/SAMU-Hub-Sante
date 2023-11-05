@@ -11,7 +11,7 @@ import static com.hubsante.Utils.*;
 public class ConsumerRun {
 
     private static final String EXCHANGE_NAME = "hubsante";
-    private static final String HUB_HOSTNAME = "hubsante.esante.gouv.fr";
+    private static final String HUB_HOSTNAME = "messaging.hub.esante.gouv.fr";
     private static final int HUB_PORT = 5671;
 
     public static void main(String[] args) throws Exception {

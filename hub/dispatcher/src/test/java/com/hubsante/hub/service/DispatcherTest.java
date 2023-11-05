@@ -189,7 +189,7 @@ public class DispatcherTest {
     }
 
     @Test
-    @DisplayName("message without content-type is rejected")
+    @DisplayName("message without content-type is rejected ")
     public void rejectMessageWithoutContentType() throws IOException {
         // we test that the message has been rejected if the content-type is not set
         Message receivedMessage = createMessage("EDXL-DE", null, SAMU_A_ROUTING_KEY);
