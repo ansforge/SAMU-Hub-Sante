@@ -1,0 +1,181 @@
+{
+  "createCase": {
+    "caseId": "samuA:CA126B445579GD4A67AV",
+    "senderCaseId": "20231103-AF1234",
+    "creation": "2023-11-03T10:03:00+01:00",
+    "referenceVersion": "1.2",
+    "qualification": {
+      "whatsHappen": {
+        "code": "C01.01.04",
+        "label": "2-roues",
+        "freetext": "autres véhicules présents sur site d'intervention sont génés à la circulation"
+      },
+      "locationKind": {
+        "code": "L02.01.00",
+        "label": "Voie publique hors voie rapide",
+        "freetext": "Voie vélo le long d'une route"
+      },
+      "riskThreat": [
+        {
+          "code": "R22",
+          "label": "Gêne à la circulation",
+          "freetext": "risque lié aux voitures"
+        }
+      ],
+      "healthMotive": {
+        "code": "M03.11, M02.07",
+        "label": "Céphalée, migraines, Traumatisme sérieux, plaie intermédiaire",
+        "freetext": "Portait un casque de protection"
+      },
+      "victims": {
+        "count": "SEVERAL",
+        "mainVictim": "ADULT",
+        "freetext": "Deuxième victime présente saignements legers aux mains et genoux"
+      }
+    },
+    "location": {
+      "locID": "111fb03a-6fd9-41e0-8e81-990c45188887",
+      "locLabel": "8 quai des Célestins - 69002 Lyon",
+      "name": "8 quai des Célestins",
+      "detailedAdress": {
+        "complete": "8 quai des Célestins",
+        "number": "8",
+        "wayName": {
+          "complete": "quai des Célestins",
+          "type": "quai",
+          "name": "des Célestins"
+        }
+      },
+      "city": {
+        "name": "Lyon",
+        "inseeCode": 65002,
+        "detail": null
+      },
+      "access": {
+        "floor": null,
+        "roomNumber": null,
+        "interphone": null,
+        "accessCode": null,
+        "elevator": null,
+        "buildingName": null,
+        "entrance": null,
+        "entity": null
+      },
+      "geometry": {
+        "obsDatime": "2023-11-03T10:04:00+01:0",
+        "point": {
+          "coord": {
+            "lat": "48.866667",
+            "lon": "2.333333",
+            "height": null,
+            "heading": 96,
+            "speed": null,
+            "precision": "ADDRESS"
+          },
+          "sysCoord": "EPSG-4326"
+        },
+        "sketch": null
+      },
+      "externalInfo": [
+        {
+          "freetext": null,
+          "type": null,
+          "uri": null
+        }
+      ],
+      "country": "France",
+      "freetext": null
+    },
+    "initialAlert": {
+      "id": "SAMU069-20231103-AL01234",
+      "reception": "2023-11-03T10:02:00+01:00",
+      "reporting": "STANDARD",
+      "freetext": null,
+      "caller": {
+        "callerContact": {
+          "type": "PHNADD",
+          "detail": "0102030304"
+        },
+        "callbackContact": null,
+        "language": "FR",
+        "freetext": "épouse",
+        "detailedName": {
+          "complete": "Albane Armaury",
+          "lastName": "Armaury",
+          "firstName": "Albane"
+        }
+      },
+      "alertSource": {
+        "channel": "Personne",
+        "type": "PHNADD",
+        "detail": "calltakerContact"
+      },
+      "location": {
+        "locID": "111fb03a-6fd9-41e0-8e81-990c45188887",
+        "locLabel": "8 quai des Célestins - 69002 Lyon",
+        "name": "8 quai des Célestins"
+      },
+      "qualification": {
+        "whatsHappen": {
+          "code": "C01.01.04",
+          "label": "2-roues",
+          "freetext": "autres véhicules présents sur site d'intervention sont génés à la circulation"
+        },
+        "locationKind": {
+          "code": "L02.01.00",
+          "label": "Voie publique hors voie rapide",
+          "freetext": "Voie vélo le long d'une route"
+        },
+        "riskThreat": [
+          {
+            "code": "R22",
+            "label": "Gêne à la circulation",
+            "freetext": "risque lié aux voitures"
+          }
+        ],
+        "healthMotive": {
+          "code": "M03.11, M02.07",
+          "label": "Céphalée, migraines, Traumatisme sérieux, plaie intermédiaire",
+          "freetext": "Portait un casque de protection"
+        },
+        "victims": {
+          "count": "SEVERAL",
+          "mainVictim": "ADULT",
+          "freetext": "Deuxième victime présente saignement legers aux mains et genoux"
+        }
+      },
+      "callTaker": {
+        "organization": "FR:Administration:69:samu69:crra:supportN3",
+        "controlRoom": "CRRA 69.",
+        "callTakerRole": "ARM",
+        "calltakerContact": {
+          "type": "PHNADD",
+          "detail": "0607080901"
+        },
+        "calltakerId": "id1234"
+      },
+      "attachment": [
+        {
+          "description": "photo",
+          "mimeType": "JPEG",
+          "size": "35",
+          "URI": "https://hub.esante.gouv.fr/resourceExample",
+          "derefURI": null,
+          "digest": null
+        }
+      ]
+    },
+    "newAlert": [
+    ],
+    "severity": null,
+    "additionalInformation": {
+      "customMap": {
+        "key": "neighborhood",
+        "label": "Quartier",
+        "value": "Lyon 2e arrondissement",
+        "freetext": null
+      }
+    },
+    "freetext": "Une voix sens unique pour voiture + une voix bus"
+  }
+}

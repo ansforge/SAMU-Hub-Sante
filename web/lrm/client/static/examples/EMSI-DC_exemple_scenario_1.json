@@ -1,0 +1,114 @@
+{
+    "CONTEXT": {
+        "ID": "samu69:CA126B445579GD4A67AV",
+        "MODE": "ACTUAL",
+        "MSGTYPE": "UPDATE",
+        "CREATION": "2023-11-03T11:10:06+01:00",
+        "LEVEL": "OPR",
+        "SECLASS": "RESTRC",
+        "FREETEXT": "Gène de plus en plus importante à la circulation, risque accident",
+        "ORIGIN": {
+            "ORG_ID": "FR:Administration:69:samu69",
+            "USER_ID": "FR:Administration:69:samu69:crra:poste123",
+            "NAME": "Samu A"
+        },
+        "EXTERNAL_INFO": [
+            {}
+        ]
+    },
+    "EVENT": {
+        "ID": "samuA:CA126B445579GD4A67AV",
+        "NAME": "Incident sur voix cyclable",
+        "MAIN_EVENT_ID": "samuA:CA126B445579GD4A67AV",
+        "ETYPE": {
+            "CATEGORY": [
+                "TRP/COL"
+            ],
+            "ACTOR": [
+                "PPL"
+            ],
+            "LOCTYPE": [
+                "OTH"
+            ],
+            "ENV": "/DIS/TRSPRT"
+        },
+        "SOURCE": "COMFOR",
+        "SCALE": 2,
+        "CERTAINTY": 95,
+        "DECL_DATIME": "2023-11-03T10:03:00+01:00",
+        "OCC_DATIME": "2023-11-03T10:01:00+01:0",
+        "OBS_DATIME": "2023-11-03T10:04:00+01:0",
+        "STATUS": "IPR",
+        "RISK_ASSESMENT": "STABLE",
+        "REFERENCE": [
+            {
+                "ORG_ID": "FR:Administration:69:CGO",
+                "OTHER_EVENT_ID": [
+                    "FR:NEXSIS:69:CGO:20231103_00002"
+                ]
+            }
+        ],
+        "CASUALTIES": [
+            {
+                "CONTEXT": "REQ_ACTION",
+                "DATIME": "??",
+                "DECONT": 0,
+                "TRIAGERED": 0,
+                "TRIAGEYELLOW": 1,
+                "TRIAGEGREEN": 1,
+                "TRIAGEBLACK": 0,
+                "MISSING": 0
+            }
+        ],
+        "EVAC": [
+            {
+                "DATIME": null,
+                "DISPLACED": 0,
+                "EVACUATED": 0
+            }
+        ],
+        "EGEO": [
+            {
+                "DATIME": "2023-11-03T10:04:00+01:0",
+                "TYPE": "/GEN/ROUTE",
+                "POSITION": {
+                    "LOC_ID": "111fb03a-6fd9-41e0-8e81-990c45188887",
+                    "TYPE": "POINT",
+                    "LAT": "45.760169",
+                    "LONG": "4.830608",
+                    "HEIGHT": 168,
+                    "ADRESSE": [
+                        "8 quai des Célestins, Lyon"
+                    ]
+                }
+            }
+        ],
+        "CAUSE": "ACC",
+        "FREETEXT": null
+    },
+    "MISSION": [
+        {
+            "TYPE": "/GEN/SCNMNG",
+            "FREETEXT": "Besoin d'assisance terrain pour gérer perturbations et sécuriser le site d'intervention.",
+            "ID": "ABC1YU3454",
+            "ORG_ID": "FR:Administration:69:CGO",
+            "NAME": "#DEMANDE_CONCOURS#CARENCE#Z.01.00.00#",
+            "STATUS": "IPR",
+            "START_TIME": "2022-07-25T10:11:00+02:0",
+            "END_TIME": null,
+            "RESOURCE_ID": [
+            ],
+            "PARENT_MISSION_ID": [],
+            "CHILD_MISSION_ID": [],
+            "MAIN_MISSION_ID": [],
+            "POSITION": {
+                "LOC_ID": "111fb03a-6fd9-41e0-8e81-990c45188887",
+                "TYPE": "POINT",
+                "LAT": "45.760169",
+                "LONG": "4.830608",
+                "HEIGHT": 168
+            },
+            "PRIORITY": 3
+        }
+    ]
+}
