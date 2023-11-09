@@ -99,7 +99,7 @@ public class DispatcherTest {
         EdxlMessage sentXML = converter.deserializeXmlEDXL(new String(sentMessage.getBody(), StandardCharsets.UTF_8));
         assertEquals(publishedJSON, sentXML);
 
-        CustomMessage custom = (CustomMessage) sentXML.getContentMessage();
+        CustomMessage custom = (CustomMessage) sentXML.getFirstContentMessage();
         assertEquals("value", custom.getCustomContent().get("key").asText());
     }
 
@@ -123,7 +123,7 @@ public class DispatcherTest {
         EdxlMessage sentJSON = converter.deserializeJsonEDXL(new String(sentMessage.getBody(), StandardCharsets.UTF_8));
         assertEquals(publishedXML, sentJSON);
 
-        CustomMessage custom = (CustomMessage) sentJSON.getContentMessage();
+        CustomMessage custom = (CustomMessage) sentJSON.getFirstContentMessage();
         assertEquals("value", custom.getCustomContent().get("key").asText());
     }
 
