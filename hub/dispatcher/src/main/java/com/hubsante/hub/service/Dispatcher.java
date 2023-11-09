@@ -22,8 +22,8 @@ import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 
 import static com.hubsante.hub.config.AmqpConfiguration.*;
-import static com.hubsante.hub.config.Constants.EDXL_SCHEMA;
-import static com.hubsante.hub.config.Constants.ENVELOPE_SCHEMA;
+import static com.hubsante.hub.config.Constants.FULL_EDXL_SCHEMA;
+import static com.hubsante.hub.config.Constants.ENVELOPE_ONLY_SCHEMA;
 import static com.hubsante.hub.utils.EdxlUtils.edxlMessageFromHub;
 
 @Service
@@ -232,9 +232,9 @@ public class Dispatcher {
             // We deserialize according to the content type
             // It MUST be explicitly set by the client
             if (MessageProperties.CONTENT_TYPE_JSON.equals(message.getMessageProperties().getContentType())) {
-                validator.validateJSON(receivedEdxl, ENVELOPE_SCHEMA);
+                validator.validateJSON(receivedEdxl, ENVELOPE_ONLY_SCHEMA);
                 edxlMessage = edxlHandler.deserializeJsonEDXL(receivedEdxl);
-                validator.validateJSON(receivedEdxl, EDXL_SCHEMA);
+                validator.validateJSON(receivedEdxl, FULL_EDXL_SCHEMA);
 //                validator.validateContentMessage(edxlMessage, false);
 
                 log.info(" [x] Received from '" + message.getMessageProperties().getReceivedRoutingKey() + "': message with distributionID" + edxlMessage.getDistributionID());
