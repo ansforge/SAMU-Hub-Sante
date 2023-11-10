@@ -7,24 +7,41 @@
   "type": "object",
   "title": "emsi",
   "required": [
-    "CONTEXT",
-    "EVENT"
+    "emsi"
+  ],
+  "allOf": [
+    {
+      "$ref": "RC-DE_schema.json"
+    }
   ],
   "properties": {
-    "CONTEXT": {
-      "$ref": "#/definitions/context"
-    },
-    "EVENT": {
-      "$ref": "#/definitions/event"
-    },
-    "MISSION": {
-      "type": "array",
-      "items": {
-        "$ref": "#/definitions/mission"
-      }
+    "emsi": {
+      "$ref": "#/definitions/emsi"
     }
   },
   "definitions": {
+    "emsi": {
+      "type": "object",
+      "title": "emsi",
+      "required": [
+        "CONTEXT",
+        "EVENT"
+      ],
+      "properties": {
+        "CONTEXT": {
+          "$ref": "#/definitions/context"
+        },
+        "EVENT": {
+          "$ref": "#/definitions/event"
+        },
+        "MISSION": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mission"
+          }
+        }
+      }
+    },
     "context": {
       "type": "object",
       "title": "Contexte",
@@ -113,7 +130,10 @@
           ]
         },
         "FREETEXT": {
-          "type": "string",
+          "type": [
+            "string",
+            "null"
+          ],
           "title": "Texte libre",
           "x-cols": 6,
           "example": "example.json#/CONTEXT/FREETEXT",
@@ -148,7 +168,10 @@
           "description": "Il peut \u00eatre renseign\u00e9 avec l'identifiant local de l'affaire du partenaire requ\u00e9rant"
         },
         "NAME": {
-          "type": "string",
+          "type": [
+            "string",
+            "null"
+          ],
           "title": "Nom donn\u00e9 \u00e0 l'\u00e9v\u00e9nement",
           "x-cols": 6,
           "example": "example.json#/EVENT/NAME",
@@ -199,7 +222,10 @@
           "description": "Prend une valeur enti\u00e8re entre 0 et 100\nDans le cadre d'une demande de concours, optionnel"
         },
         "DECL_DATIME": {
-          "type": "string",
+          "type": [
+            "string",
+            "null"
+          ],
           "title": "Date de d\u00e9claration de l'event",
           "x-cols": 6,
           "example": "example.json#/EVENT/DECL_DATIME",
@@ -208,7 +234,10 @@
           "format": "date-time"
         },
         "OCC_DATIME": {
-          "type": "string",
+          "type": [
+            "string",
+            "null"
+          ],
           "title": "D\u00e9crit la date et le lieu de l'\u00e9v\u00e9nement",
           "x-cols": 6,
           "example": "example.json#/EVENT/OCC_DATIME",
@@ -217,7 +246,10 @@
           "format": "date-time"
         },
         "OBS_DATIME": {
-          "type": "string",
+          "type": [
+            "string",
+            "null"
+          ],
           "title": "Date \u00e0 laquelle l'observation la plus r\u00e9cente a \u00e9t\u00e9 r\u00e9alis\u00e9e",
           "x-cols": 6,
           "example": "example.json#/EVENT/OBS_DATIME",
@@ -287,7 +319,10 @@
           ]
         },
         "FREETEXT": {
-          "type": "string",
+          "type": [
+            "string",
+            "null"
+          ],
           "title": "Texte libre",
           "x-cols": 6,
           "example": "example.json#/EVENT/FREETEXT",
@@ -480,7 +515,10 @@
           ]
         },
         "FREETEXT": {
-          "type": "string",
+          "type": [
+            "string",
+            "null"
+          ],
           "title": "Texte libre",
           "x-cols": 6,
           "example": "example.json#/MISSION/0/FREETEXT",
@@ -494,7 +532,10 @@
           "description": "Contient un identifiant de demande de concours unique. Cet identifiant sera r\u00e9utilisable par le partenaire pour r\u00e9pondre \u00e0 cette demande."
         },
         "ORG_ID": {
-          "type": "string",
+          "type": [
+            "string",
+            "null"
+          ],
           "title": "Identifiant de l'organisation propri\u00e9taire",
           "x-cols": 6,
           "example": "example.json#/MISSION/0/ORG_ID",
@@ -514,10 +555,11 @@
           "example": "example.json#/MISSION/0/STATUS",
           "description": "D\u00e9finit le statut de la demande de concours. La demande de concours \u00e9tant en cours, le champ doit \u00eatre valoris\u00e9 avec le libell\u00e9 \"IPR\"",
           "enum": [
-            " ABO",
+            "ABO",
             "CANCLD",
             "COM",
             "IPR",
+            "NST",
             "PAU"
           ]
         },
@@ -531,7 +573,10 @@
           "format": "date-time"
         },
         "END_TIME": {
-          "type": "string",
+          "type": [
+            "string",
+            "null"
+          ],
           "title": "Fin de la mission",
           "x-cols": 6,
           "example": "example.json#/MISSION/0/END_TIME",
@@ -542,7 +587,10 @@
         "RESOURCE_ID": {
           "type": "array",
           "items": {
-            "type": "string",
+            "type": [
+              "string",
+              "null"
+            ],
             "title": "Ressource engag\u00e9e",
             "x-cols": 6,
             "example": "example.json#/MISSION/0/RESOURCE_ID/0",
@@ -552,7 +600,10 @@
         "PARENT_MISSION_ID": {
           "type": "array",
           "items": {
-            "type": "string",
+            "type": [
+              "string",
+              "null"
+            ],
             "title": "Missions parentes",
             "x-cols": 6,
             "example": "example.json#/MISSION/0/PARENT_MISSION_ID/0",
@@ -562,7 +613,10 @@
         "CHILD_MISSION_ID": {
           "type": "array",
           "items": {
-            "type": "string",
+            "type": [
+              "string",
+              "null"
+            ],
             "title": "Missions filles",
             "x-cols": 6,
             "example": "example.json#/MISSION/0/CHILD_MISSION_ID/0",
@@ -570,7 +624,10 @@
           }
         },
         "MAIN_MISSION_ID": {
-          "type": "string",
+          "type": [
+            "string",
+            "null"
+          ],
           "title": "Mission principale",
           "x-cols": 6,
           "example": "example.json#/MISSION/0/MAIN_MISSION_ID",
@@ -633,21 +690,30 @@
       "required": [],
       "properties": {
         "ORG_ID": {
-          "type": "string",
+          "type": [
+            "string",
+            "null"
+          ],
           "title": "Origine ID",
           "x-cols": 6,
           "example": "example.json#/CONTEXT/ORIGIN/ORG_ID",
           "description": "D\u00e9crit la structure ou le service \u00e0 laquelle est rattach\u00e9e la demande de concours.\nSe r\u00e9f\u00e9rer au DSF pour la structure norm\u00e9e des organisations\nLe format est le suivant {pays}:{domaine}:{code d\u00e9partement}:{organisation}:{structure interne}*:{unit\u00e9 fonctionnelle}*."
         },
         "USER_ID": {
-          "type": "string",
+          "type": [
+            "string",
+            "null"
+          ],
           "title": "ID d'utilisateur de l'origine",
           "x-cols": 6,
           "example": "example.json#/CONTEXT/ORIGIN/USER_ID",
           "description": "Optionnel, identifiant de l'op\u00e9rateur du service \u00e0 l'origine de l'EMSI"
         },
         "NAME": {
-          "type": "string",
+          "type": [
+            "string",
+            "null"
+          ],
           "title": "Nom Origine ",
           "x-cols": 6,
           "example": "example.json#/CONTEXT/ORIGIN/NAME",
@@ -766,58 +832,160 @@
             "example": "example.json#/EVENT/ETYPE/ACTOR/0",
             "description": "Dans de futures versions de NexSIS, les demandes de concours seront diffus\u00e9es \u00e0 plusieurs partenaires. Seul le syst\u00e8me de la force concern\u00e9e par la demande de concours devra r\u00e9pondre effectivement \u00e0 la demande. Ce syst\u00e8me de la force concern\u00e9e sera identifi\u00e9 comme le \"concourant\" \u00e0 la demande de concours. \nLe libell\u00e9 du champ ACTOR permet d'identifier le concourant souhait\u00e9 dans la demande de concours. Pour les premi\u00e8res impl\u00e9mentations du contrat d'interface 15-18, il n'y a pas de n\u00e9cessit\u00e9 pour les syst\u00e8mes r\u00e9cepteurs de filtrer les demandes de concours re\u00e7ues via le Hub Sant\u00e9.\nLe champ MISSION TYPE permet en compl\u00e9ment d'identifier l'effet \u00e0 obtenir souhait\u00e9 \u00e0 partir de la combinaison du code ACTOR et du code TYPE.\nLe transcodage entre ces deux nomenclature est d\u00e9crit dans l'annexe \"R\u00e9f\u00e9rentiel Effets \u00e0 Obtenir - correspondance EMSI\"",
             "enum": [
-              "COAST",
-              "INW",
-              "NAT",
-              "OSEA",
-              "OTH",
-              "RAIL",
-              "ROAD",
-              "UDGN",
-              "URB",
-              "/COAST/BNK",
-              "/COAST/CLF",
-              "/COAST/CSTW",
-              "/COAST/EST",
-              "/COAST/FEN",
-              "/INW/BOG",
-              "/INW/CAN",
-              "/INW/ICELK",
-              "/INW/LKE",
-              "/INW/RIV",
-              "/NAT/CRP",
-              "/NAT/GRS",
-              "/NAT/HFR",
-              "/NAT/HLS",
-              "/NAT/HMT",
-              "/NAT/LMT",
-              "/NAT/SSSI",
-              "/OSEA/OFF",
-              "/OTH/CUT",
-              "/OTH/ELV",
-              "/OTH/EMB",
-              "/OTH/LFR",
-              "/OTH/SRB",
-              "/PRIVAT",
-              "/RAIL/TRK",
-              "/ROAD/1RD",
-              "/ROAD/DCA",
-              "/ROAD/NOR",
-              "/ROAD/PTH",
-              "/ROAD/RRD",
-              "/ROAD/SRD",
-              "/ROAD/TRK",
-              "/UDGN/MIN",
-              "/UDGN/TUN",
-              "/UDGN/UND",
-              "/URB/ASR",
-              "/URB/HOSP",
-              "/URB/IND",
-              "/URB/MALL",
-              "/URB/OFF",
-              "/URB/PRK",
-              "/URB/RES",
-              "/URB/STRT"
+              "ANI",
+              "BEV",
+              "PPL",
+              "VEH",
+              "/ANI/CON",
+              "/ANI/DEA",
+              "/ANI/DGR",
+              "/ANI/FRM",
+              "/ANI/HRD",
+              "/ANI/INJ",
+              "/ANI/LIV",
+              "/ANI/PET",
+              "/ANI/PRO",
+              "/ANI/SPC",
+              "/ANI/WLD",
+              "/BEV/ASR",
+              "/BEV/IND",
+              "/BEV/NRES",
+              "/BEV/OFF",
+              "/BEV/OTH",
+              "/BEV/RESD",
+              "/BEV/RESIN",
+              "/BEV/RESINT",
+              "/BEV/RESOTH",
+              "/BEV/SHP",
+              "/PPL/1",
+              "/PPL/ADU",
+              "/PPL/CHD",
+              "/PPL/CNT",
+              "/PPL/DED",
+              "/PPL/EVC",
+              "/PPL/GND",
+              "/PPL/GRP",
+              "/PPL/HST",
+              "/PPL/INT",
+              "/PPL/OTH",
+              "/PPL/PRS",
+              "/PPL/SNS",
+              "/PPL/VIO",
+              "/PPL/VLN",
+              "/PPL/WTN",
+              "/PPL/CHD/BAB",
+              "/PPL/CHD/CHILD",
+              "/PPL/CHD/INF",
+              "/PPL/CHD/YOUTH",
+              "/PPL/GND/FML",
+              "/PPL/GND/MAL",
+              "/PPL/GND/UND",
+              "/PPL/HST/PCF",
+              "/PPL/HST/SUI",
+              "/PPL/HST/THT",
+              "/PPL/HST/WPN",
+              "/PPL/PRS/CST",
+              "/PPL/PRS/ESC",
+              "/PPL/PRS/HGS",
+              "/PPL/SNS/ETH",
+              "/PPL/SNS/FOR",
+              "/PPL/SNS/LAN",
+              "/PPL/SNS/REL",
+              "/PPL/SNS/VIP",
+              "/PPL/VLN/BLD",
+              "/PPL/VLN/DEF",
+              "/PPL/VLN/DSB",
+              "/PPL/VLN/ELD",
+              "/PPL/VLN/INJ",
+              "/PPL/VLN/LDF",
+              "/PPL/VLN/OBS",
+              "/PPL/VLN/PAT",
+              "/PPL/VLN/PGN",
+              "/PPL/VLN/SLFPRS",
+              "/PPL/VLN/UNC",
+              "/VEH/AIR",
+              "/VEH/ANI",
+              "/VEH/BIC",
+              "/VEH/CAR",
+              "/VEH/EMG",
+              "/VEH/MBK",
+              "/VEH/MIL",
+              "/VEH/OTH",
+              "/VEH/TRK",
+              "/VEH/TRN",
+              "/VEH/VES",
+              "/VEH/AIR/ARM",
+              "/VEH/AIR/FLBA",
+              "/VEH/AIR/FRG",
+              "/VEH/AIR/FXBA",
+              "/VEH/AIR/GLD",
+              "/VEH/AIR/HEL",
+              "/VEH/AIR/HVY",
+              "/VEH/AIR/JET",
+              "/VEH/AIR/LGT",
+              "/VEH/AIR/MIL",
+              "/VEH/AIR/ORD",
+              "/VEH/AIR/OTH",
+              "/VEH/AIR/PAS",
+              "/VEH/AIR/PRBA",
+              "/VEH/AIR/PST",
+              "/VEH/AIR/RKT",
+              "/VEH/AIR/SEA",
+              "/VEH/AIR/SNO",
+              "/VEH/AIR/TNK",
+              "/VEH/AIR/UAV",
+              "/VEH/AIR/ULG",
+              "/VEH/OTH/HIL",
+              "/VEH/OTH/SNO",
+              "/VEH/TRK/ART",
+              "/VEH/TRK/EXC",
+              "/VEH/TRK/HZD",
+              "/VEH/TRK/NHZ",
+              "/VEH/TRK/NUK",
+              "/VEH/TRK/REF",
+              "/VEH/TRK/UND",
+              "/VEH/TRN/3RL",
+              "/VEH/TRN/DSL",
+              "/VEH/TRN/HZD",
+              "/VEH/TRN/LOC",
+              "/VEH/TRN/NHZ",
+              "/VEH/TRN/NUK",
+              "/VEH/TRN/OVH",
+              "/VEH/TRN/PAS",
+              "/VEH/TRN/REF",
+              "/VEH/TRN/STM",
+              "/VEH/TRN/TRM",
+              "/VEH/TRN/UDG",
+              "/VEH/TRN/UND",
+              "/VEH/TRN/VIP",
+              "/VEH/TRN/VLT",
+              "/VEH/VES/AMB",
+              "/VEH/VES/BOT",
+              "/VEH/VES/CNO",
+              "/VEH/VES/CRG",
+              "/VEH/VES/DSL",
+              "/VEH/VES/FLO",
+              "/VEH/VES/FRY",
+              "/VEH/VES/HOV",
+              "/VEH/VES/HZD",
+              "/VEH/VES/JSK",
+              "/VEH/VES/LEI",
+              "/VEH/VES/LIS",
+              "/VEH/VES/MIL",
+              "/VEH/VES/MPW",
+              "/VEH/VES/NHZ",
+              "/VEH/VES/NUK",
+              "/VEH/VES/PAS",
+              "/VEH/VES/POL",
+              "/VEH/VES/PTL",
+              "/VEH/VES/RSC",
+              "/VEH/VES/SAI",
+              "/VEH/VES/SBM",
+              "/VEH/VES/SINK",
+              "/VEH/VES/SPC",
+              "/VEH/VES/STE",
+              "/VEH/VES/SUNK",
+              "/VEH/VES/UNM"
             ]
           }
         },
@@ -905,7 +1073,10 @@
           "description": "Le champ doit \u00eatre renseign\u00e9 mais peut ne pas \u00eatre interpr\u00e9t\u00e9"
         },
         "DATIME": {
-          "type": "string",
+          "type": [
+            "string",
+            "null"
+          ],
           "title": "Timestamp du contexte",
           "x-cols": 6,
           "example": "example.json#/EVENT/CASUALTIES/0/DATIME",
@@ -965,7 +1136,10 @@
       "required": [],
       "properties": {
         "DATIME": {
-          "type": "string",
+          "type": [
+            "string",
+            "null"
+          ],
           "title": "timestamp",
           "x-cols": 6,
           "example": "example.json#/EVENT/EVAC/0/DATIME",
@@ -1000,7 +1174,10 @@
       ],
       "properties": {
         "DATIME": {
-          "type": "string",
+          "type": [
+            "string",
+            "null"
+          ],
           "title": "Date des derni\u00e8res remont\u00e9es de localisation",
           "x-cols": 6,
           "example": "example.json#/EVENT/EGEO/0/DATIME",
@@ -1105,13 +1282,13 @@
             "example": "example.json#/EVENT/EGEO/0/WEATHER/0",
             "description": "Dans le cadre d'une demande de concours, optionnel. Le champ peut ne pas \u00eatre \u00e9mis ni interpr\u00e9t\u00e9.\nLa localisation de l'affaire est transmise en amont dans un message RC-EDA et le lieu souhait\u00e9 pour l'intervention est syst\u00e9matiquement repr\u00e9cis\u00e9 dans un objet MISSION",
             "enum": [
-              "/HUM",
-              "/ICY",
-              "/TDS",
-              "/TMP",
-              "/VIS",
-              "/Wddsss",
-              "/WIN",
+              "HUM",
+              "ICY",
+              "TDS",
+              "TMP",
+              "VIS",
+              "Wddsss",
+              "WIN",
               "/HUM/CORECT",
               "/HUM/DRZLE",
               "/HUM/FOG",
@@ -1157,7 +1334,10 @@
           }
         },
         "FREETEXT": {
-          "type": "string",
+          "type": [
+            "string",
+            "null"
+          ],
           "title": "Description de l'\u00e9v\u00e9nement",
           "x-cols": 6,
           "example": "example.json#/EVENT/EGEO/0/FREETEXT",
@@ -1185,28 +1365,40 @@
           "description": "Dans le cadre d'un \u00e9change des op\u00e9rations, optionnel. Le champ peut ne pas \u00eatre \u00e9mis ni interpr\u00e9t\u00e9.\nLa localisation de l'affaire est transmise en amont dans un message RC-EDA et le lieu souhait\u00e9 pour l'intervention est syst\u00e9matiquement repr\u00e9cis\u00e9 dans un objet MISSION"
         },
         "NAME": {
-          "type": "string",
+          "type": [
+            "string",
+            "null"
+          ],
           "title": "Nom de position",
           "x-cols": 6,
           "example": "example.json#/EVENT/EGEO/0/POSITION/NAME",
           "description": "Optionnel, non utilis\u00e9 par NexSIS nom de lieu"
         },
         "TYPE": {
-          "type": "string",
+          "type": [
+            "string",
+            "null"
+          ],
           "title": "Type",
           "x-cols": 6,
           "example": "example.json#/EVENT/EGEO/0/POSITION/TYPE",
           "description": "Dans le cadre d'un \u00e9change des op\u00e9rations, optionnel. Le champ peut ne pas \u00eatre \u00e9mis ni interpr\u00e9t\u00e9.\nLa localisation de l'affaire est transmise en amont dans un message RC-EDA et le lieu souhait\u00e9 pour l'intervention est syst\u00e9matiquement repr\u00e9cis\u00e9 dans un objet MISSION"
         },
         "HEIGHT_ROLE": {
-          "type": "string",
+          "type": [
+            "string",
+            "null"
+          ],
           "title": "Indication sur l'utilisation de la balise altitude",
           "x-cols": 6,
           "example": "example.json#/EVENT/EGEO/0/POSITION/HEIGHT_ROLE",
           "description": "Optionnel"
         },
         "COORDSYS": {
-          "type": "string",
+          "type": [
+            "string",
+            "null"
+          ],
           "title": "Syst\u00e8me de coordonn\u00e9es",
           "x-cols": 6,
           "example": "example.json#/EVENT/EGEO/0/POSITION/COORDSYS",
@@ -1221,7 +1413,10 @@
         "ADDRESS": {
           "type": "array",
           "items": {
-            "type": "string",
+            "type": [
+              "string",
+              "null"
+            ],
             "title": "Adresse",
             "x-cols": 6,
             "example": "example.json#/EVENT/EGEO/0/POSITION/ADDRESS/0",
@@ -1271,21 +1466,30 @@
       "required": [],
       "properties": {
         "LOC_ID": {
-          "type": "string",
+          "type": [
+            "string",
+            "null"
+          ],
           "title": "ID position",
           "x-cols": 6,
           "example": "example.json#/MISSION/0/POSITION/LOC_ID",
           "description": "Lorsque le lieu d'intervention est identique \u00e0 celle d'une position de l'affaire partag\u00e9e dans le message RC-EDA, le champ MISSION.RGEO.POSITION.LOC_ID doit \u00eatre aliment\u00e9 valoris\u00e9 comme le champ eventLocation.locId du message RC-EDA envoy\u00e9 en amont"
         },
         "NAME": {
-          "type": "string",
+          "type": [
+            "string",
+            "null"
+          ],
           "title": "Nom de position",
           "x-cols": 6,
           "example": "example.json#/MISSION/0/POSITION/NAME",
           "description": "Optionnel, non utilis\u00e9 par NexSIS nom de lieu"
         },
         "TYPE": {
-          "type": "string",
+          "type": [
+            "string",
+            "null"
+          ],
           "title": "Type",
           "x-cols": 6,
           "example": "example.json#/MISSION/0/POSITION/TYPE",
@@ -1300,14 +1504,20 @@
           ]
         },
         "HEIGHT_ROLE": {
-          "type": "string",
+          "type": [
+            "string",
+            "null"
+          ],
           "title": "Indication sur l'utilisation de la balise altitude",
           "x-cols": 6,
           "example": "example.json#/MISSION/0/POSITION/HEIGHT_ROLE",
           "description": "Optionnel"
         },
         "COORDSYS": {
-          "type": "string",
+          "type": [
+            "string",
+            "null"
+          ],
           "title": "Syst\u00e8me de coordonn\u00e9es",
           "x-cols": 6,
           "example": "example.json#/MISSION/0/POSITION/COORDSYS",
@@ -1322,7 +1532,10 @@
         "ADDRESS": {
           "type": "array",
           "items": {
-            "type": "string",
+            "type": [
+              "string",
+              "null"
+            ],
             "title": "Adresse",
             "x-cols": 6,
             "example": "example.json#/MISSION/0/POSITION/ADDRESS/0",

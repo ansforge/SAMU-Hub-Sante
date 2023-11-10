@@ -38,7 +38,7 @@ export default {
           if (this.autoAck) {
           // Send back acks automatically to received messages
             if (this.getMessageType(message) !== 'ack' && message.routingKey.startsWith(this.user.clientId)) {
-              const msg = this.buildMessage({ ackDistributionId: message.body.distributionID }, 'Ack')
+              const msg = this.buildAck(message.body.distributionID)
               this.sendMessage(msg)
             }
           }
@@ -60,6 +60,9 @@ export default {
         return 'message'
       }
     },
+    buildAck (distributionID) {
+      return this.buildMessage({ reference: { distributionID } }, 'Ack')
+    },
     buildMessage (innerMessage, distributionKind = 'Report') {
       const message = JSON.parse(JSON.stringify(EDXL_ENVELOPE)) // Deep copy
       message.content.contentObject.jsonContent.embeddedJsonContent.message = {
@@ -79,20 +82,6 @@ export default {
       message.content.contentObject.jsonContent.embeddedJsonContent.message.sender = { name, URI: `hubex:${this.user.clientId}` }
       message.content.contentObject.jsonContent.embeddedJsonContent.message.sentAt = sentAt
       message.content.contentObject.jsonContent.embeddedJsonContent.message.recipients = [{ name: this.clientInfos(this.user.targetId).name, URI: `hubex:${targetId}` }]
-      return message
-    },
-    buildWrongMessage (innerMessage, distributionKind = 'Report') {
-      const message = JSON.parse(JSON.stringify(WRONG_EDXL_ENVELOPE)) // Deep copy
-      message.content.contentObject.jsonContent.embeddedJsonContent.message = innerMessage
-      const name = this.userInfos.name
-      const messageId = uuidv4()
-      const targetId = this.clientInfos(this.user.targetId).id
-      const sentAt = moment().format()
-      message.distributionID = `${name}_${messageId}`
-      message.distributionKind = distributionKind
-      message.senderID = this.user.clientId
-      message.dateTimeSent = sentAt
-      message.descriptor.explicitAddress.explicitAddressValue = targetId
       return message
     },
     timeDisplayFormat () {
