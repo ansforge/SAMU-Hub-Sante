@@ -128,6 +128,32 @@ public class DispatcherTest {
     }
 
     @Test
+    @DisplayName("should convert messages according to client preferences")
+    public void shouldConvertMessageAccordingToClientPreferences() throws IOException {
+        // JSON -> XML direction
+        Message receivedJsonMessage = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
+        assertEquals(JSON, receivedJsonMessage.getMessageProperties().getContentType());
+
+        dispatcher.dispatch(receivedJsonMessage);
+
+        ArgumentCaptor<Message> argCaptor = ArgumentCaptor.forClass(Message.class);
+        Mockito.verify(rabbitTemplate, times(1)).send(
+                eq(DISTRIBUTION_EXCHANGE), eq(SAMU_B_MESSAGE_QUEUE), argCaptor.capture());
+        Message sentXmlMessage = argCaptor.getValue();
+        assertEquals(XML, sentXmlMessage.getMessageProperties().getContentType());
+
+        // XML -> JSON direction
+        Message receivedXMLMessage = createMessage("EDXL-DE", XML, SAMU_B_ROUTING_KEY);
+        assertEquals(XML, receivedXMLMessage.getMessageProperties().getContentType());
+
+        dispatcher.dispatch(receivedXMLMessage);
+
+        Mockito.verify(rabbitTemplate, times(1)).send(
+                eq(DISTRIBUTION_EXCHANGE), eq(SAMU_A_MESSAGE_QUEUE), argCaptor.capture());
+        assertEquals(JSON, argCaptor.getValue().getMessageProperties().getContentType());
+    }
+
+    @Test
     @DisplayName("should reset TTL if edxl dateTimeExpires is lower")
     public void shouldResetTTL() throws IOException {
         // get message and override dateTimeExpires field with sooner value
