@@ -8,7 +8,7 @@ plugins {
 
 group = 'com.hubsante'
 archivesBaseName = 'hubsante-dispatcher'
-version = '0.8-SNAPSHOT'
+version = '0.11-SNAPSHOT'
 
 java {
     toolchain {
@@ -34,7 +34,24 @@ configurations {
 }
 
 repositories {
+    /*
+    * We use mavenCentral() for every dependency but the models library, which is published on GitHub Packages.
+    * So we add a additional maven repository to fetch it
+    *
+    * During development, it can be convenient to be able to test changes in the models lib without having to publish it
+    * In this case, we should execute the gradle task publishToMavenLocal() in the models project and then uncomment
+    * the mavenLocal() line below. It will push the models lib to the local .m2 folder, and the gradle build on this project
+    * will fetch it from there
+     */
+//    mavenLocal()
     mavenCentral()
+    maven {
+        url = uri("https://maven.pkg.github.com/ansforge/SAMU-Hub-Sante")
+        credentials {
+            username = System.getenv('GITHUB_ACTOR')
+            password = System.getenv('GITHUB_TOKEN')
+        }
+    }
 }
 
 ext {
@@ -42,7 +59,7 @@ ext {
 }
 
 dependencies {
-    implementation project(':models')
+    implementation 'com.hubsante:models:0.2.1-SNAPSHOT'
 
     implementation 'org.codehaus.groovy:groovy-json:3.0.9'
 

@@ -2,6 +2,7 @@ package com.hubsante.hub.service;
 
 import com.hubsante.hub.HubApplication;
 import com.hubsante.hub.service.utils.SSLTestUtils;
+import com.hubsante.model.EdxlHandler;
 import com.rabbitmq.client.DefaultSaslConfig;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -31,14 +32,12 @@ import java.io.IOException;
 public class RabbitIntegrationAbstract {
 
     protected static final String HUBSANTE_EXCHANGE = "hubsante";
-    protected static final String RABBITMQ_IMAGE = "rabbitmq:3.11-management-alpine";
-    protected static final String SAMU_B_OUTER_MESSAGE_ROUTING_KEY = "fr.health.samuB";
-    protected static final String SAMU_B_WRONG_OUTER_MESSAGE_ROUTING_KEY = "fr.health.samuB.suffix";
-    protected static final String SAMU_A_OUTER_MESSAGE_ROUTING_KEY = "fr.health.samuA";
-    protected static final String SAMU_A_INFO_QUEUE = "fr.health.samuA.info";
-    protected static final String SAMU_B_ACK_QUEUE = "fr.health.samuB.ack";
-    protected static final String SAMU_B_INFO_QUEUE = "fr.health.samuB.info";
-    protected static final String SDIS_Z_MESSAGE_QUEUE = "fr.fire.nexsis.sdisZ.message";
+    protected static final String RABBITMQ_IMAGE = "rabbitmq:latest";
+    protected static final String SAMU_A_ROUTING_KEY = "fr.health.samuA";
+    protected static final String SAMU_A_MESSAGE_QUEUE = SAMU_A_ROUTING_KEY + ".message";
+    protected static final String SAMU_A_INFO_QUEUE = SAMU_A_ROUTING_KEY + ".info";
+    protected static final String SAMU_B_ROUTING_KEY = "fr.health.samuB";
+    protected static final String SAMU_B_MESSAGE_QUEUE = SAMU_B_ROUTING_KEY + ".message";
 
     @Autowired
     protected RabbitTemplate rabbitTemplate;
@@ -69,7 +68,7 @@ public class RabbitIntegrationAbstract {
 
     @AfterEach
     public void cleanUp() throws IOException, InterruptedException {
-        String[] queues = {SAMU_A_INFO_QUEUE, SAMU_B_ACK_QUEUE, SAMU_B_INFO_QUEUE, SDIS_Z_MESSAGE_QUEUE};
+        String[] queues = {SAMU_A_INFO_QUEUE, SAMU_A_MESSAGE_QUEUE, SAMU_B_MESSAGE_QUEUE};
         for (String queue : queues) {
             rabbitMQContainer.execInContainer("rabbitmqctl", "purge_queue", queue);
         }

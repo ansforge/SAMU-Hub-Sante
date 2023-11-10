@@ -3,7 +3,10 @@ package com.hubsante.hub.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.hubsante.hub.config.HubConfiguration;
 import com.hubsante.hub.exception.*;
+import com.hubsante.model.EdxlHandler;
+import com.hubsante.model.Validator;
 import com.hubsante.model.edxl.*;
+import com.hubsante.model.exception.ValidationException;
 import com.hubsante.model.report.ErrorCode;
 import com.hubsante.model.report.ErrorReport;
 import lombok.extern.slf4j.Slf4j;
@@ -19,7 +22,7 @@ import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 
 import static com.hubsante.hub.config.AmqpConfiguration.*;
-import static com.hubsante.hub.utils.EdxlUtils.HUB_ID;
+import static com.hubsante.model.config.Constants.*;
 import static com.hubsante.hub.utils.EdxlUtils.edxlMessageFromHub;
 
 @Service
@@ -95,7 +98,7 @@ public class Dispatcher {
         } catch (Exception e) {
             // We don't want to log again the error if it has been thrown by handleError
             // We just log the unexpecteds errors
-            if (! (e instanceof AmqpRejectAndDontRequeueException)) {
+            if (!(e instanceof AmqpRejectAndDontRequeueException)) {
                 String originalRoutingKey = message.getMessageProperties().getHeader(DLQ_ORIGINAL_ROUTING_KEY) != null ?
                         message.getMessageProperties().getHeader(DLQ_ORIGINAL_ROUTING_KEY) : "Unknown routing key";
                 log.error("Unexpected error occurred while DLQ-dispatching message from " + originalRoutingKey, e);
@@ -127,7 +130,7 @@ public class Dispatcher {
         // TODO bbo : add a logback pattern to allow structured logging
         log.error(
                 "Error occurred with message published by " + sender + "\n" +
-                "ErrorReport " + errorReport.getErrorCode() + "\n" +
+                        "ErrorReport " + errorReport.getErrorCode() + "\n" +
                         "ErrorCause " + errorReport.getErrorCause() + "\n" +
                         "ErrorSourceMessage " + errorReport.getSourceMessage());
 
@@ -141,7 +144,7 @@ public class Dispatcher {
                 errorAmqpMessage = new Message(edxlHandler.serializeJsonEDXL(errorEdxlMessage).getBytes(),
                         MessagePropertiesBuilder.newInstance().setContentType(MessageProperties.CONTENT_TYPE_JSON).build());
             }
-            
+
             rabbitTemplate.send(DISTRIBUTION_EXCHANGE, infoQueueName, errorAmqpMessage);
         } catch (JsonProcessingException e) {
             // This should never happen : we are serializing a POJO with 2 String attributes and a single enum
@@ -157,7 +160,7 @@ public class Dispatcher {
         }
         // sending message to health clients is based on client preference (default to JSON)
         return hubConfig.getClientPreferences().get(recipientID) != null
-                        && hubConfig.getClientPreferences().get(recipientID);
+                && hubConfig.getClientPreferences().get(recipientID);
     }
 
     private void checkSenderConsistency(String receivedRoutingKey, EdxlMessage edxlMessage) {
@@ -195,9 +198,18 @@ public class Dispatcher {
     }
 
     private String getRecipientQueueName(EdxlMessage edxlMessage) {
-        // TODO bbo : refacto this if we want to allow clients to publish to info queues too.
-        String queueType = edxlMessage.getDistributionKind().equals(DistributionKind.ACK) ? "ack" : "message";
-        return getRecipientID(edxlMessage) + "." + queueType;
+        return getRecipientID(edxlMessage) + "." + getQueueType(edxlMessage.getDistributionKind());
+    }
+
+    private String getQueueType(DistributionKind kind) {
+        switch (kind) {
+            case ACK:
+                return "ack";
+            case ERROR:
+                return "info";
+            default:
+                return "message";
+        }
     }
 
     private String getSenderFromRoutingKey(Message message) {
@@ -219,20 +231,22 @@ public class Dispatcher {
             // We deserialize according to the content type
             // It MUST be explicitly set by the client
             if (MessageProperties.CONTENT_TYPE_JSON.equals(message.getMessageProperties().getContentType())) {
-                validator.validateJSON(receivedEdxl, "EDXL-DE_schema.json");
+                validator.validateJSON(receivedEdxl, ENVELOPE_SCHEMA);
                 edxlMessage = edxlHandler.deserializeJsonEDXL(receivedEdxl);
-                validator.validateContentMessage(edxlMessage, false);
+                validator.validateJSON(receivedEdxl, FULL_SCHEMA);
+//                validator.validateContentMessage(edxlMessage, false);
 
                 log.info(" [x] Received from '" + message.getMessageProperties().getReceivedRoutingKey() + "': message with distributionID" + edxlMessage.getDistributionID());
-                log.debug(edxlHandler.prettyPrintJsonEDXL(edxlMessage));
+                log.debug(edxlHandler.serializeJsonEDXL(edxlMessage));
 
             } else if (MessageProperties.CONTENT_TYPE_XML.equals(message.getMessageProperties().getContentType())) {
                 // TODO bbo: add XSD validation when ready
 //                validator.validateXML(receivedEdxl, "edxl/edxl-de-v2.0-wd11.xsd");
                 edxlMessage = edxlHandler.deserializeXmlEDXL(receivedEdxl);
 //                validator.validateContentMessage(edxlMessage, true);
+//                validator.validateXML(receivedEdxl, EDXL_SCHEMA);
                 log.info(" [x] Received from '" + message.getMessageProperties().getReceivedRoutingKey() + "': message with distributionID " + edxlMessage.getDistributionID());
-                log.debug(edxlHandler.prettyPrintXmlEDXL(edxlMessage));
+                log.debug(edxlHandler.serializeXmlEDXL(edxlMessage));
 
             } else {
                 String errorCause = "Unhandled Content-Type ! Message Content-Type should be set at 'application/json' or 'application/xml'";
@@ -245,10 +259,10 @@ public class Dispatcher {
                     "If you don't want to use HubSanté model for now, please use a \"customContent\" wrapper inside your message.";
             throw new UnrecognizedMessageFormatException(errorCause);
 
-        } catch (SchemaValidationException e) {
+        } catch (ValidationException e) {
             // weird rethrow but we want to log the received routing key and we only have it here
             log.error("Could not validate message " + receivedEdxl + " coming from " + message.getMessageProperties().getReceivedRoutingKey(), e);
-            throw e;
+            throw new SchemaValidationException(e.getMessage());
 
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -287,10 +301,10 @@ public class Dispatcher {
 
         try {
             if (convertToXML(recipientID)) {
-                edxlString = edxlHandler.prettyPrintXmlEDXL(edxlMessage);
+                edxlString = edxlHandler.serializeXmlEDXL(edxlMessage);
                 fwdAmqpProperties.setContentType(MessageProperties.CONTENT_TYPE_XML);
             } else {
-                edxlString = edxlHandler.prettyPrintJsonEDXL(edxlMessage);
+                edxlString = edxlHandler.serializeJsonEDXL(edxlMessage);
                 fwdAmqpProperties.setContentType(MessageProperties.CONTENT_TYPE_JSON);
             }
             log.info("  ↳ [x] Forwarding to '" + recipientID + "': message with distributionID " + edxlMessage.getDistributionID());

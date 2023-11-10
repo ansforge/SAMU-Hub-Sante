@@ -1,10 +1,13 @@
 package com.hubsante.hub.config;
 
+import com.hubsante.model.EdxlHandler;
+import com.hubsante.model.Validator;
 import org.junit.jupiter.params.shadow.com.univocity.parsers.common.ParsingContext;
 import org.junit.jupiter.params.shadow.com.univocity.parsers.common.processor.ObjectRowProcessor;
 import org.junit.jupiter.params.shadow.com.univocity.parsers.csv.CsvParser;
 import org.junit.jupiter.params.shadow.com.univocity.parsers.csv.CsvParserSettings;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import javax.annotation.PostConstruct;
@@ -70,5 +73,15 @@ public class HubConfiguration {
 
     public long getDefaultTTL() {
         return defaultTTL;
+    }
+
+    @Bean
+    public EdxlHandler edxlHandler() {
+        return new EdxlHandler();
+    }
+
+    @Bean
+    public Validator validator() {
+        return new Validator();
     }
 }

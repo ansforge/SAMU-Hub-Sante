@@ -1,40 +1,28 @@
 package com.hubsante.hub.service.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.hubsante.hub.service.EdxlHandler;
+import com.hubsante.model.EdxlHandler;
+import com.hubsante.model.TestMessagesHelper;
 import com.hubsante.model.edxl.EdxlMessage;
 import com.hubsante.model.report.ErrorReport;
 import org.apache.commons.compress.utils.FileNameUtils;
-import org.mockito.ArgumentCaptor;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageDeliveryMode;
 import org.springframework.amqp.core.MessageProperties;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.time.OffsetDateTime;
 
 import static com.hubsante.hub.config.AmqpConfiguration.*;
 
 public class MessageTestUtils {
-
-    static ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
     public static Message createMessage(String filename, String contentType, String receivedRoutingKey) throws IOException {
-        File edxlFile = new File(classLoader.getResource("messages/" + filename).getFile());
+        boolean isXML = MessageProperties.CONTENT_TYPE_XML.equals(contentType);
+        String edxlString = TestMessagesHelper.getSampleMessage(filename, isXML);
 
-        String edxlString = Files.readString(edxlFile.toPath());
-
-        MessageProperties properties = new MessageProperties();
-        properties.setReceivedRoutingKey(receivedRoutingKey);
-        // Spring AMQP uses receivedDeliveryMode on consumers, and deliveryMode on producers
-        // When testing consumers (aka the SpringAMPQ Message passed as a method parameter),
-        // we need to set the receivedDeliveryMode, which is PERSISTENT by default
-        //
-        // When testing producers we would need to set the deliveryMode only to test the CheckDeliveryMode method
-        // (already tested in DispatcherTest)
-        properties.setReceivedDeliveryMode(MessageDeliveryMode.PERSISTENT);
+        MessageProperties properties = getMessageProperties(receivedRoutingKey);
 
         Message createdMessage = new Message(edxlString.getBytes(StandardCharsets.UTF_8), properties);
         createdMessage.getMessageProperties().setContentType(contentType);
@@ -44,6 +32,35 @@ public class MessageTestUtils {
 
     public static Message createMessage(String filename, String receivedRoutingKey) throws IOException {
         return createMessage(filename, getContentTypeFromFilename(filename), receivedRoutingKey);
+    }
+
+    public static Message createInvalidMessage(String filename, String receivedRoutingKey) throws IOException {
+        return createInvalidMessage(filename, getContentTypeFromFilename(filename), receivedRoutingKey);
+    }
+
+    public static Message createInvalidMessage(String filename, String contentType, String receivedRoutingKey) throws IOException {
+        String edxlString = TestMessagesHelper.getInvalidMessage(filename);
+
+        MessageProperties properties = getMessageProperties(receivedRoutingKey);
+
+        Message createdMessage = new Message(edxlString.getBytes(StandardCharsets.UTF_8), properties);
+        createdMessage.getMessageProperties().setContentType(contentType);
+
+        return createdMessage;
+    }
+
+    @NotNull
+    private static MessageProperties getMessageProperties(String receivedRoutingKey) {
+        MessageProperties properties = new MessageProperties();
+        properties.setReceivedRoutingKey(receivedRoutingKey);
+        // Spring AMQP uses receivedDeliveryMode on consumers, and deliveryMode on producers
+        // When testing consumers (aka the SpringAMPQ Message passed as a method parameter),
+        // we need to set the receivedDeliveryMode, which is PERSISTENT by default
+        //
+        // When testing producers we would need to set the deliveryMode only to test the CheckDeliveryMode method
+        // (already tested in DispatcherTest)
+        properties.setReceivedDeliveryMode(MessageDeliveryMode.PERSISTENT);
+        return properties;
     }
 
     public static Message applyRabbitmqDLQHeaders(Message originalMessage, String dlqReason) {
@@ -70,13 +87,13 @@ public class MessageTestUtils {
         String msgString = new String(message.getBody());
 
         return message.getMessageProperties().getContentType().equals(MessageProperties.CONTENT_TYPE_XML) ?
-                (ErrorReport) edxlHandler.deserializeXmlContentMessage(msgString) :
-                (ErrorReport) edxlHandler.deserializeJsonContentMessage(msgString);
+                (ErrorReport) edxlHandler.deserializeXmlEDXL(msgString).getFirstContentMessage() :
+                (ErrorReport) edxlHandler.deserializeJsonEDXL(msgString).getFirstContentMessage();
     }
 
-    public static void setCustomExpirationDate(EdxlMessage edxlMessage, long offset) {
+    public static void setCustomExpirationDate(EdxlMessage edxlMessage, long offset_in_seconds) {
         OffsetDateTime now = OffsetDateTime.now();
         edxlMessage.setDateTimeSent(now);
-        edxlMessage.setDateTimeExpires(now.plusNanos(offset));
+        edxlMessage.setDateTimeExpires(now.plusSeconds(offset_in_seconds));
     }
 }
