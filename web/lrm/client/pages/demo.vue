@@ -124,7 +124,7 @@ export default {
           schemaName: 'RC-EDA_schema.json',
           schema: null,
           examples: [{
-            file: 'RC-EDA_exemple_scenario_1.json',
+            file: 'RC-EDA Armaury VF.json',
             icon: 'mdi-bike-fast',
             name: 'Alexandre ARMAURY',
             caller: 'Albane Armaury, témoin accident impliquant son mari,  Alexandre Armaury',
@@ -150,9 +150,19 @@ export default {
           schemaName: 'EMSI-DC_schema.json',
           schema: null,
           examples: [{
-            file: 'EMSI-DC_exemple_scenario_1.json',
+            file: 'EMSI-DC Armaury VF.json',
             icon: 'mdi-bike-fast',
-            name: 'Alexandre ARMAURY',
+            name: 'Alexandre ARMAURY (DC)',
+            caller: 'Albane Armaury, témoin accident impliquant son mari,  Alexandre Armaury',
+            context: 'Collision de 2 vélos',
+            environment: 'Voie cyclable à Lyon, gêne de la circulation',
+            victims: '2 victimes, 1 nécessitant assistance SAMU',
+            victim: 'Homme, adulte, 43 ans',
+            medicalSituation: 'Céphalées, migraines, traumatismes sérieux, plaies intermédiaires'
+          }, {
+            file: 'EMSI-EO Armaury RDC VF.json',
+            icon: 'mdi-bike-fast',
+            name: 'Alexandre ARMAURY (RDC)',
             caller: 'Albane Armaury, témoin accident impliquant son mari,  Alexandre Armaury',
             context: 'Collision de 2 vélos',
             environment: 'Voie cyclable à Lyon, gêne de la circulation',

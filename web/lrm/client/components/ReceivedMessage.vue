@@ -102,7 +102,7 @@ export default {
   methods: {
     sendAck () {
       try {
-        const msg = this.buildMessage({ reference: { distributionID: this.body.distributionID } }, 'Ack')
+        const msg = this.buildAck(this.body.distributionID)
         this.sendMessage(msg)
       } catch (error) {
         console.error("Erreur lors de l'envoi de l'acquittement", error)
