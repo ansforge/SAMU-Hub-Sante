@@ -16,30 +16,28 @@ export const EDXL_ENVELOPE = {
       explicitAddressValue: '{{ fr.health.samuB }}'
     }
   },
-  content: {
-    contentObject: {
-      jsonContent: {
-        embeddedJsonContent: {
-          message: {
-            messageId: '{{ 2608323d-507d-4cbf-bf74-52007f8124ea }}',
-            sender: {
-              name: '{{ samuA }}',
-              URI: '{{ hubsante:fr.health.samuA }}'
-            },
-            sentAt: '{{ 2022-09-27T08:23:34+02:00 }}',
-            status: 'Actual',
-            kind: '{{ Report }}',
-            recipients: {
-              recipient: [
-                {
-                  name: '{{ samuB }}',
-                  URI: '{{ hubsante:fr.health.samuB }}'
-                }
-              ]
-            }
+  content: [{
+    jsonContent: {
+      embeddedJsonContent: {
+        message: {
+          messageId: '{{ 2608323d-507d-4cbf-bf74-52007f8124ea }}',
+          sender: {
+            name: '{{ samuA }}',
+            URI: '{{ hubsante:fr.health.samuA }}'
+          },
+          sentAt: '{{ 2022-09-27T08:23:34+02:00 }}',
+          status: 'Actual',
+          kind: '{{ Report }}',
+          recipients: {
+            recipient: [
+              {
+                name: '{{ samuB }}',
+                URI: '{{ hubsante:fr.health.samuB }}'
+              }
+            ]
           }
         }
       }
     }
-  }
+  }]
 }
