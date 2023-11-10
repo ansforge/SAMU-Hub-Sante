@@ -49,7 +49,7 @@ export default {
       return direction === DIRECTIONS.OUT
     },
     getCaseId (message) {
-      return message.body.content.contentObject.jsonContent.embeddedJsonContent.message.caseId
+      return message.body.content[0].jsonContent.embeddedJsonContent.message.caseId
     },
     getMessageType (message) {
       if (message.body.distributionKind === 'Ack') {
@@ -65,8 +65,8 @@ export default {
     },
     buildMessage (innerMessage, distributionKind = 'Report') {
       const message = JSON.parse(JSON.stringify(EDXL_ENVELOPE)) // Deep copy
-      message.content.contentObject.jsonContent.embeddedJsonContent.message = {
-        ...message.content.contentObject.jsonContent.embeddedJsonContent.message,
+      message.content[0].jsonContent.embeddedJsonContent.message = {
+        ...message.content[0].jsonContent.embeddedJsonContent.message,
         ...innerMessage
       }
       const name = this.userInfos.name
@@ -77,11 +77,11 @@ export default {
       message.senderID = this.user.clientId
       message.dateTimeSent = sentAt
       message.descriptor.explicitAddress.explicitAddressValue = targetId
-      message.content.contentObject.jsonContent.embeddedJsonContent.message.messageId = message.distributionID
-      message.content.contentObject.jsonContent.embeddedJsonContent.message.kind = message.distributionKind
-      message.content.contentObject.jsonContent.embeddedJsonContent.message.sender = { name, URI: `hubex:${this.user.clientId}` }
-      message.content.contentObject.jsonContent.embeddedJsonContent.message.sentAt = sentAt
-      message.content.contentObject.jsonContent.embeddedJsonContent.message.recipients = [{ name: this.clientInfos(this.user.targetId).name, URI: `hubex:${targetId}` }]
+      message.content[0].jsonContent.embeddedJsonContent.message.messageId = message.distributionID
+      message.content[0].jsonContent.embeddedJsonContent.message.kind = message.distributionKind
+      message.content[0].jsonContent.embeddedJsonContent.message.sender = { name, URI: `hubex:${this.user.clientId}` }
+      message.content[0].jsonContent.embeddedJsonContent.message.sentAt = sentAt
+      message.content[0].jsonContent.embeddedJsonContent.message.recipients = [{ name: this.clientInfos(this.user.targetId).name, URI: `hubex:${targetId}` }]
       return message
     },
     timeDisplayFormat () {
