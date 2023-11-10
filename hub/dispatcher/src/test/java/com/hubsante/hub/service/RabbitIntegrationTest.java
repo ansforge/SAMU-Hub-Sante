@@ -131,8 +131,8 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
         String errorString = new String(infoMsg.getBody());
 
         ErrorReport errorReport = infoMsg.getMessageProperties().getContentType().equals(MessageProperties.CONTENT_TYPE_XML) ?
-                (ErrorReport) edxlHandler.deserializeXmlEDXL(errorString).getContentMessage() :
-                (ErrorReport) edxlHandler.deserializeJsonEDXL(errorString).getContentMessage();
+                (ErrorReport) edxlHandler.deserializeXmlEDXL(errorString).getFirstContentMessage() :
+                (ErrorReport) edxlHandler.deserializeJsonEDXL(errorString).getFirstContentMessage();
         assertEquals(errorCode, errorReport.getErrorCode());
         Arrays.stream(errorCause).forEach(cause -> assertTrue(errorReport.getErrorCause().contains(cause)));
     }

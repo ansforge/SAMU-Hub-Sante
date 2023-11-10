@@ -99,7 +99,7 @@ public class DispatcherTest {
         EdxlMessage sentXML = converter.deserializeXmlEDXL(new String(sentMessage.getBody(), StandardCharsets.UTF_8));
         assertEquals(publishedJSON, sentXML);
 
-        CustomMessage custom = (CustomMessage) sentXML.getContentMessage();
+        CustomMessage custom = (CustomMessage) sentXML.getFirstContentMessage();
         assertEquals("value", custom.getCustomContent().get("key").asText());
     }
 
@@ -123,8 +123,34 @@ public class DispatcherTest {
         EdxlMessage sentJSON = converter.deserializeJsonEDXL(new String(sentMessage.getBody(), StandardCharsets.UTF_8));
         assertEquals(publishedXML, sentJSON);
 
-        CustomMessage custom = (CustomMessage) sentJSON.getContentMessage();
+        CustomMessage custom = (CustomMessage) sentJSON.getFirstContentMessage();
         assertEquals("value", custom.getCustomContent().get("key").asText());
+    }
+
+    @Test
+    @DisplayName("should convert messages according to client preferences")
+    public void shouldConvertMessageAccordingToClientPreferences() throws IOException {
+        // JSON -> XML direction
+        Message receivedJsonMessage = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
+        assertEquals(JSON, receivedJsonMessage.getMessageProperties().getContentType());
+
+        dispatcher.dispatch(receivedJsonMessage);
+
+        ArgumentCaptor<Message> argCaptor = ArgumentCaptor.forClass(Message.class);
+        Mockito.verify(rabbitTemplate, times(1)).send(
+                eq(DISTRIBUTION_EXCHANGE), eq(SAMU_B_MESSAGE_QUEUE), argCaptor.capture());
+        Message sentXmlMessage = argCaptor.getValue();
+        assertEquals(XML, sentXmlMessage.getMessageProperties().getContentType());
+
+        // XML -> JSON direction
+        Message receivedXMLMessage = createMessage("EDXL-DE", XML, SAMU_B_ROUTING_KEY);
+        assertEquals(XML, receivedXMLMessage.getMessageProperties().getContentType());
+
+        dispatcher.dispatch(receivedXMLMessage);
+
+        Mockito.verify(rabbitTemplate, times(1)).send(
+                eq(DISTRIBUTION_EXCHANGE), eq(SAMU_A_MESSAGE_QUEUE), argCaptor.capture());
+        assertEquals(JSON, argCaptor.getValue().getMessageProperties().getContentType());
     }
 
     @Test
@@ -271,7 +297,7 @@ public class DispatcherTest {
         assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
 
         assertErrorReportHasBeenSent(SAMU_A_INFO_QUEUE, ErrorCode.INVALID_MESSAGE,
-                "createdAt: is missing but it is required");
+                "creation: is missing but it is required");
     }
 
     private void assertErrorReportHasBeenSent(String infoQueueName, ErrorCode errorCode, String... errorCause) throws JsonProcessingException {

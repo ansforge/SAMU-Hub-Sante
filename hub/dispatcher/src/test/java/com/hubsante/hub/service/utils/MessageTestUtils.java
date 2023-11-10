@@ -87,8 +87,8 @@ public class MessageTestUtils {
         String msgString = new String(message.getBody());
 
         return message.getMessageProperties().getContentType().equals(MessageProperties.CONTENT_TYPE_XML) ?
-                (ErrorReport) edxlHandler.deserializeXmlEDXL(msgString).getContentMessage() :
-                (ErrorReport) edxlHandler.deserializeJsonEDXL(msgString).getContentMessage();
+                (ErrorReport) edxlHandler.deserializeXmlEDXL(msgString).getFirstContentMessage() :
+                (ErrorReport) edxlHandler.deserializeJsonEDXL(msgString).getFirstContentMessage();
     }
 
     public static void setCustomExpirationDate(EdxlMessage edxlMessage, long offset_in_seconds) {
