@@ -22,8 +22,7 @@ import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 
 import static com.hubsante.hub.config.AmqpConfiguration.*;
-import static com.hubsante.hub.config.Constants.FULL_SCHEMA;
-import static com.hubsante.hub.config.Constants.ENVELOPE_SCHEMA;
+import static com.hubsante.model.config.Constants.*;
 import static com.hubsante.hub.utils.EdxlUtils.edxlMessageFromHub;
 
 @Service
