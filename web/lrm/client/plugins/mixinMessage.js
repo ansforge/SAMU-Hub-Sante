@@ -89,14 +89,18 @@ export default {
       return d.toLocaleTimeString('fr').replace(':', 'h') + '.' + String(new Date().getMilliseconds()).padStart(3, '0')
     },
     sendMessage (msg) {
-      console.log('Sending message', msg)
-      this.socket.send(JSON.stringify({ key: this.user.clientId, msg }))
-      this.$store.dispatch('addMessage', {
-        direction: DIRECTIONS.OUT,
-        routingKey: this.user.targetId,
-        time: this.timeDisplayFormat(),
-        body: msg
-      })
+      try {
+        console.log('Sending message', msg)
+        this.socket.send(JSON.stringify({ key: this.user.clientId, msg }))
+        this.$store.dispatch('addMessage', {
+          direction: DIRECTIONS.OUT,
+          routingKey: this.user.targetId,
+          time: this.timeDisplayFormat(),
+          body: msg
+        })
+      } catch (e) {
+        alert(`Erreur lors de l'envoi du message: ${e}`)
+      }
     }
   }
 }
