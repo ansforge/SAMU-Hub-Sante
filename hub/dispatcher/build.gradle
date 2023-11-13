@@ -100,7 +100,7 @@ license {
 
     ext {
         company = "Agence du Numerique en Sante (ANS)"
-        year = "2023-" + new Date().format('yyyy')
+        year = licenseYear()
     }
 
     mapping 'java', 'JAVADOC_STYLE'
@@ -151,6 +151,19 @@ def gitRefs() {
     } catch (Exception e) {
         throw new GradleException('Failed to retrieve Git commit hash.', e)
     }
+}
+
+static def licenseYear() {
+    def currentYear = new Date().format('yyyy')
+    def licenseYear
+
+    if (currentYear != "2023") {
+        licenseYear = "2023-" + currentYear
+    } else {
+        licenseYear = "2023"
+
+    }
+    return licenseYear
 }
 
 static def callGithubAPI(String endpoint) {
