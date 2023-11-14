@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "setup": "cp ../../../models/csv_parser/out/RC-EDA/schema.json static/",
+    "setup": "cp ../../../models/csv_parser/out/RC-EDA/schema.json static/RC-EDA_schema.json && cp ../../../models/csv_parser/out/EMSI-DC/schema.json static/EMSI-DC_schema.json ",
     "dev": "NODE_OPTIONS=--openssl-legacy-provider nuxt",
     "build": "NODE_OPTIONS=--openssl-legacy-provider nuxt build",
     "start": "nuxt start",
