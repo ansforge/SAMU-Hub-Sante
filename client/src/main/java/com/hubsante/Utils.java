@@ -1,15 +1,16 @@
 package com.hubsante;
 
+import com.hubsante.model.builders.DistributionElementBuilder;
+import com.hubsante.model.builders.EDXL_DE_Builder;
+import com.hubsante.model.builders.ReferenceWrapperBuilder;
 import com.hubsante.model.cisu.*;
+import com.hubsante.model.cisu.DistributionElement.*;
 import com.hubsante.model.edxl.Descriptor;
 import com.hubsante.model.edxl.DistributionKind;
 import com.hubsante.model.edxl.EdxlMessage;
 import com.hubsante.model.edxl.ExplicitAddress;
 
-import java.nio.file.Path;
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -45,48 +46,22 @@ public class Utils {
 
         String distributionID = referencedMessageRecipient + "_" + UUID.randomUUID();
 
-        Sender sender = new Sender();
-        sender.setName(referencedMessageRecipient);
-        sender.setURI("hubex:" + referencedMessageRecipient);
-
         Recipient recipient = new Recipient();
         recipient.setName(referencedMessageSender);
         recipient.setURI("hubex:" + referencedMessageSender);
         List<Recipient> recipients = new ArrayList<>();
         recipients.add(recipient);
 
-        OffsetDateTime dateTimeSent = OffsetDateTime.of(LocalDateTime.now(), ZoneOffset.of("+02"));
-        OffsetDateTime dateTimeExpires = dateTimeSent.plusYears(50);
+        DistributionElement distributionElement =
+                new DistributionElementBuilder(distributionID,referencedMessageSender, recipients)
+                        .kind(KindEnum.ACK).status(StatusEnum.SYSTEM).build();
+        ReferenceWrapper referenceWrapper =
+                new ReferenceWrapperBuilder(distributionElement, referencedMessageDistributionID).build();
 
-        Reference reference = new Reference();
-        reference.setDistributionID(referencedMessageDistributionID);
-
-        ReferenceMessage referenceMessage = new ReferenceMessage();
-        referenceMessage.setMessageId(distributionID);
-        referenceMessage.setSender(sender);
-        referenceMessage.setSentAt(dateTimeSent);
-        referenceMessage.setKind(DistributionElement.KindEnum.ACK);
-        referenceMessage.setStatus(DistributionElement.StatusEnum.SYSTEM);
-        referenceMessage.setRecipients(recipients);
-        referenceMessage.setReference(reference);
-
-        ExplicitAddress explicitAddress = new ExplicitAddress();
-        explicitAddress.setExplicitAddressScheme(receivedMessage.getSenderID());
-        explicitAddress.setExplicitAddressValue(receivedMessage.getSenderID());
-
-        Descriptor descriptor = new Descriptor();
-        descriptor.setLanguage(receivedMessage.getDescriptor().getLanguage());
-        descriptor.setExplicitAddress(explicitAddress);
-
-        return new EdxlMessage(
-                distributionID,
-                referencedMessageRecipient,
-                dateTimeSent,
-                dateTimeExpires,
-                receivedMessage.getDistributionStatus(),
-                DistributionKind.ACK,
-                descriptor,
-                referenceMessage
-        );
+        return new EDXL_DE_Builder(distributionID, referencedMessageRecipient, referencedMessageSender)
+                .distributionKind(DistributionKind.ACK)
+                .distributionStatus(receivedMessage.getDistributionStatus())
+                .contentMessage(referenceWrapper)
+                .build();
     }
 }
