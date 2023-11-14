@@ -19,12 +19,6 @@
         </v-icon>
         Specs
       </v-btn>
-      <v-btn class="ml-4" href="https://hub.esante.gouv.fr/jsv/" target="_blank">
-        <v-icon left>
-          mdi-file-tree
-        </v-icon>
-        JSV
-      </v-btn>
       <v-spacer />
       <div class="mx-5" style="height: 20px; width: 20px;" @click="toggleAdvanced" />
       <span v-if="isAuthenticated" class="mr-2" style="cursor: pointer" @click="clickHandler">
