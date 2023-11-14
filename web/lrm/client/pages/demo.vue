@@ -120,19 +120,19 @@ export default {
       messageTypeTabIndex: 0,
       messageTypes: {
         createCase: {
-          label: 'Partage de dossier',
-          schemaName: 'schema.json',
+          label: 'RC-EDA',
+          schemaName: 'RC-EDA_schema.json',
           schema: null,
           examples: [{
-            file: 'exempleArmaury.json',
+            file: 'RC-EDA Armaury VF.json',
             icon: 'mdi-bike-fast',
             name: 'Alexandre ARMAURY',
-            caller: 'Épouse appelle pour son mari',
+            caller: 'Albane Armaury, témoin accident impliquant son mari,  Alexandre Armaury',
             context: 'Collision de 2 vélos',
             environment: 'Voie cyclable à Lyon, gêne de la circulation',
             victims: '2 victimes, 1 nécessitant assistance SAMU',
             victim: 'Homme, adulte, 43 ans',
-            medicalSituation: 'Céphalées, migraines, traumatismes sérieux, plaies intermédiaire'
+            medicalSituation: 'Céphalées, migraines, traumatismes sérieux, plaies intermédiaires'
           } /* {
             file: 'exempleBlanchet.json',
             icon: 'mdi-home-thermometer',
@@ -145,12 +145,38 @@ export default {
             medicalSituation: 'victime amorphe allongée sur son lit, répond peu, soupçonne une déshydratation'
           } */ ]
         },
-        operationRequest: {
-          label: 'Demande de concours',
-          schemaName: 'schema.json',
+        emsi: {
+          label: 'EMSI',
+          schemaName: 'EMSI-DC_schema.json',
+          schema: null,
+          examples: [{
+            file: 'EMSI-DC Armaury VF.json',
+            icon: 'mdi-bike-fast',
+            name: 'Alexandre ARMAURY (DC)',
+            caller: 'Albane Armaury, témoin accident impliquant son mari,  Alexandre Armaury',
+            context: 'Collision de 2 vélos',
+            environment: 'Voie cyclable à Lyon, gêne de la circulation',
+            victims: '2 victimes, 1 nécessitant assistance SAMU',
+            victim: 'Homme, adulte, 43 ans',
+            medicalSituation: 'Céphalées, migraines, traumatismes sérieux, plaies intermédiaires'
+          }, {
+            file: 'EMSI-EO Armaury RDC VF.json',
+            icon: 'mdi-bike-fast',
+            name: 'Alexandre ARMAURY (RDC)',
+            caller: 'Albane Armaury, témoin accident impliquant son mari,  Alexandre Armaury',
+            context: 'Collision de 2 vélos',
+            environment: 'Voie cyclable à Lyon, gêne de la circulation',
+            victims: '2 victimes, 1 nécessitant assistance SAMU',
+            victim: 'Homme, adulte, 43 ans',
+            medicalSituation: 'Céphalées, migraines, traumatismes sérieux, plaies intermédiaires'
+          }]
+        } /* ,
+        info: {
+          label: 'RS-INFO',
+          schemaName: 'RS-INFO_schema.json',
           schema: null,
           examples: []
-        }
+        } */
       },
       selectedMessageType: 'message',
       selectedClientId: null,

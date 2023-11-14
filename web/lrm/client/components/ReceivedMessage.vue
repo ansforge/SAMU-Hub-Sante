@@ -43,7 +43,7 @@
       </v-row>
 
       <json-viewer
-        :value="showFullMessage ? body : body.content.contentObject.jsonContent.embeddedJsonContent.message"
+        :value="showFullMessage ? body : body.content[0].jsonContent.embeddedJsonContent.message"
         :expand-depth="1"
         :copyable="{copyText: 'Copier', copiedText: 'Copié !', timeout: 1000}"
         expanded
@@ -95,21 +95,21 @@ export default {
       return this.messages.filter(
         message => this.getMessageType(message) === 'ack'
       ).find(
-        message => message.body.content.contentObject.jsonContent.embeddedJsonContent.message.reference.distributionID === this.body.distributionID
+        message => message.body.content[0].jsonContent.embeddedJsonContent.message.reference.distributionID === this.body.distributionID
       )
     }
   },
   methods: {
     sendAck () {
       try {
-        const msg = this.buildMessage({ reference: { distributionID: this.body.distributionID } }, 'Ack')
+        const msg = this.buildAck(this.body.distributionID)
         this.sendMessage(msg)
       } catch (error) {
         console.error("Erreur lors de l'envoi de l'acquittement", error)
       }
     },
     useMessageToReply () {
-      this.$emit('useMessageToReply', this.body.content.contentObject.jsonContent.embeddedJsonContent.message)
+      this.$emit('useMessageToReply', this.body.content[0].jsonContent.embeddedJsonContent.message)
     }
   }
 }
