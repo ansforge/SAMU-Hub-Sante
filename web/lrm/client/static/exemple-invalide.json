@@ -4,37 +4,7 @@
     "senderCaseId": "20230725-AF1234",
     "creation": "2022-07-25T10:03:00+01:00",
     "referenceVersion": "1.2",
-    "qualification": {
-      "whatsHappen": {
-        "code": "C01.01.04",
-        "label": "2-roues",
-        "freetext": "autres véhicules présents sur site d'intervention sont génés à la circulation"
-      },
-      "locationKind": {
-        "code": "L02.01.00",
-        "label": "Voie publique hors voie rapide",
-        "freetext": "Voie vélo le long d'une route"
-      },
-      "riskThreat": [
-        {
-          "code": "R22",
-          "label": "Gêne à la circulation",
-          "freetext": "risque lié aux voitures"
-        }
-      ],
-      "healthMotive": {
-        "code": "M03.11, M02.07",
-        "label": "Céphalée, migraines, Traumatisme sérieux, plaie intermédiaire",
-        "freetext": "Portait un casque de protection"
-      },
-      "victims": {
-        "count": "SEVERAL",
-        "mainVictim": "ADULT",
-        "freetext": "Deuxième victime présente saignements legers aux mains et genoux"
-      }
-    },
     "location": {
-      "locID": "111fb03a-6fd9-41e0-8e81-990c45188887",
       "locLabel": "8 quai des Célestins - 69002 Lyon",
       "name": "Quai des Célestins",
       "detailedAdress": {
