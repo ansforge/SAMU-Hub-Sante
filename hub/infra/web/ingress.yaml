@@ -27,13 +27,6 @@ spec:
                 name: web-landing
                 port:
                   number: 80
-          - path: /jsv(/|$)(.*)
-            pathType: Prefix
-            backend:
-              service:
-                name: web-jsv
-                port:
-                  number: 80
           - path: /specs(/|$)(.*)
             pathType: Prefix
             backend:
