@@ -38,7 +38,7 @@ export default {
           if (this.autoAck) {
           // Send back acks automatically to received messages
             if (this.getMessageType(message) !== 'ack' && message.routingKey.startsWith(this.user.clientId)) {
-              const msg = this.buildMessage({ ackDistributionId: message.body.distributionID }, 'Ack')
+              const msg = this.buildAck(message.body.distributionID)
               this.sendMessage(msg)
             }
           }
@@ -49,7 +49,7 @@ export default {
       return direction === DIRECTIONS.OUT
     },
     getCaseId (message) {
-      return message.body.content.contentObject.jsonContent.embeddedJsonContent.message.caseId
+      return message.body.content[0].jsonContent.embeddedJsonContent.message.caseId
     },
     getMessageType (message) {
       if (message.body.distributionKind === 'Ack') {
@@ -60,10 +60,13 @@ export default {
         return 'message'
       }
     },
+    buildAck (distributionID) {
+      return this.buildMessage({ reference: { distributionID } }, 'Ack')
+    },
     buildMessage (innerMessage, distributionKind = 'Report') {
       const message = JSON.parse(JSON.stringify(EDXL_ENVELOPE)) // Deep copy
-      message.content.contentObject.jsonContent.embeddedJsonContent.message = {
-        ...message.content.contentObject.jsonContent.embeddedJsonContent.message,
+      message.content[0].jsonContent.embeddedJsonContent.message = {
+        ...message.content[0].jsonContent.embeddedJsonContent.message,
         ...innerMessage
       }
       const name = this.userInfos.name
@@ -74,25 +77,11 @@ export default {
       message.senderID = this.user.clientId
       message.dateTimeSent = sentAt
       message.descriptor.explicitAddress.explicitAddressValue = targetId
-      message.content.contentObject.jsonContent.embeddedJsonContent.message.messageId = message.distributionID
-      message.content.contentObject.jsonContent.embeddedJsonContent.message.kind = message.distributionKind
-      message.content.contentObject.jsonContent.embeddedJsonContent.message.sender = { name, URI: `hubex:${this.user.clientId}` }
-      message.content.contentObject.jsonContent.embeddedJsonContent.message.sentAt = sentAt
-      message.content.contentObject.jsonContent.embeddedJsonContent.message.recipients = [{ name: this.clientInfos(this.user.targetId).name, URI: `hubex:${targetId}` }]
-      return message
-    },
-    buildWrongMessage (innerMessage, distributionKind = 'Report') {
-      const message = JSON.parse(JSON.stringify(WRONG_EDXL_ENVELOPE)) // Deep copy
-      message.content.contentObject.jsonContent.embeddedJsonContent.message = innerMessage
-      const name = this.userInfos.name
-      const messageId = uuidv4()
-      const targetId = this.clientInfos(this.user.targetId).id
-      const sentAt = moment().format()
-      message.distributionID = `${name}_${messageId}`
-      message.distributionKind = distributionKind
-      message.senderID = this.user.clientId
-      message.dateTimeSent = sentAt
-      message.descriptor.explicitAddress.explicitAddressValue = targetId
+      message.content[0].jsonContent.embeddedJsonContent.message.messageId = message.distributionID
+      message.content[0].jsonContent.embeddedJsonContent.message.kind = message.distributionKind
+      message.content[0].jsonContent.embeddedJsonContent.message.sender = { name, URI: `hubex:${this.user.clientId}` }
+      message.content[0].jsonContent.embeddedJsonContent.message.sentAt = sentAt
+      message.content[0].jsonContent.embeddedJsonContent.message.recipients = [{ name: this.clientInfos(this.user.targetId).name, URI: `hubex:${targetId}` }]
       return message
     },
     timeDisplayFormat () {
@@ -100,14 +89,18 @@ export default {
       return d.toLocaleTimeString('fr').replace(':', 'h') + '.' + String(new Date().getMilliseconds()).padStart(3, '0')
     },
     sendMessage (msg) {
-      console.log('Sending message', msg)
-      this.socket.send(JSON.stringify({ key: this.user.clientId, msg }))
-      this.$store.dispatch('addMessage', {
-        direction: DIRECTIONS.OUT,
-        routingKey: this.user.targetId,
-        time: this.timeDisplayFormat(),
-        body: msg
-      })
+      try {
+        console.log('Sending message', msg)
+        this.socket.send(JSON.stringify({ key: this.user.clientId, msg }))
+        this.$store.dispatch('addMessage', {
+          direction: DIRECTIONS.OUT,
+          routingKey: this.user.targetId,
+          time: this.timeDisplayFormat(),
+          body: msg
+        })
+      } catch (e) {
+        alert(`Erreur lors de l'envoi du message: ${e}`)
+      }
     }
   }
 }
