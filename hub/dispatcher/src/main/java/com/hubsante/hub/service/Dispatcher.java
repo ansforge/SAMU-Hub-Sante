@@ -231,9 +231,8 @@ public class Dispatcher {
             // We deserialize according to the content type
             // It MUST be explicitly set by the client
             if (MessageProperties.CONTENT_TYPE_JSON.equals(message.getMessageProperties().getContentType())) {
-                validator.validateJSON(receivedEdxl, ENVELOPE_SCHEMA);
-                edxlMessage = edxlHandler.deserializeJsonEDXL(receivedEdxl);
                 validator.validateJSON(receivedEdxl, FULL_SCHEMA);
+                edxlMessage = edxlHandler.deserializeJsonEDXL(receivedEdxl);
 //                validator.validateContentMessage(edxlMessage, false);
 
                 log.info(" [x] Received from '" + message.getMessageProperties().getReceivedRoutingKey() + "': message with distributionID" + edxlMessage.getDistributionID());
@@ -252,18 +251,27 @@ public class Dispatcher {
                 String errorCause = "Unhandled Content-Type ! Message Content-Type should be set at 'application/json' or 'application/xml'";
                 throw new NotAllowedContentTypeException(errorCause);
             }
-
+        } catch (ValidationException e) {
+            // We couldn't validate the message against the full schema, so we try to validate it against the envelope schema
+            try {
+                validator.validateJSON(receivedEdxl, ENVELOPE_SCHEMA);
+                edxlMessage = edxlHandler.deserializeJsonEDXL(receivedEdxl);
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            } catch (ValidationException ex) {
+                log.error("Could not validate message " + receivedEdxl + " coming from " + message.getMessageProperties().getReceivedRoutingKey(), e);
+                throw new SchemaValidationException(e.getMessage());
+            }
+            // weird rethrow but we want to log the received routing key and we only have it here
+            log.error("Could not validate message " + receivedEdxl +
+                    " coming from " + message.getMessageProperties().getReceivedRoutingKey() +
+                    " with distributionId " + edxlMessage.getDistributionID(), e);
+            throw new SchemaValidationException(e.getMessage());
         } catch (JsonProcessingException e) {
             log.error("Could not parse message " + receivedEdxl + " coming from " + message.getMessageProperties().getReceivedRoutingKey(), e);
             String errorCause = "Could not parse message, invalid format. \n " +
                     "If you don't want to use HubSanté model for now, please use a \"customContent\" wrapper inside your message.";
             throw new UnrecognizedMessageFormatException(errorCause);
-
-        } catch (ValidationException e) {
-            // weird rethrow but we want to log the received routing key and we only have it here
-            log.error("Could not validate message " + receivedEdxl + " coming from " + message.getMessageProperties().getReceivedRoutingKey(), e);
-            throw new SchemaValidationException(e.getMessage());
-
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
