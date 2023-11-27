@@ -1,0 +1,87 @@
+name: generate-model
+
+on:
+  schedule: # run every 24 hours
+    - cron: '0 0 * * *'
+
+jobs:
+  generate-spec-files:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./models/generator
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Generate OpenAPI specs
+        working-directory: ./models/csv_parser
+        run: |
+          pip install -r ./requirements.txt
+          python3 ./csv_parser.py -s RC-EDA -v 1.3
+
+        # we'd rather should iterate over a list of tabs
+
+        # Emsi-DC is not ready yet (examples method does not work)
+        # python3 ./csv_parser.py -s EMSI-DC -v 1.3
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v1
+        with:
+          java-version: 11
+          distribution: 'temurin'
+
+      - name: Setup node env 🏗
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - name: install openapi-generator-cli
+        run: npm install -g @openapitools/openapi-generator-cli
+
+      - name: prepare linter
+        run: export JAVA_POST_PROCESS_FILE="/usr/local/bin/clang-format -i"
+
+      - name: Generate Java classes
+        run: |
+          npx @openapitools/openapi-generator-cli generate -c ./config/common/common.generator-config.json --skip-validate-spec
+          npx @openapitools/openapi-generator-cli generate -c ./config/common/common.wrapper.generator-config.json --skip-validate-spec
+          npx @openapitools/openapi-generator-cli generate -c ./config/common/common.distributionElement.generator-config.json --skip-validate-spec
+
+          npx @openapitools/openapi-generator-cli generate -c ./config/RC-EDA/RC-EDA.generator-config.json --skip-validate-spec
+          npx @openapitools/openapi-generator-cli generate -c ./config/RC-EDA/RC-EDA.wrapper.generator-config.json --skip-validate-spec
+
+        # we could do less verbose eventually
+
+        # we also could add a linter in the generator config (I don't know how to do it for now but the option exists)
+
+        # Emsi-DC is not ready yet (examples method does not work)
+        # npx @openapitools/openapi-generator-cli generate -c ./config/EMSI-DC/EMSI-DC.generator-config.json --skip-validate-spec
+        # npx @openapitools/openapi-generator-cli generate -c ./config/EMSI-DC/EMSI-DC.wrapper.generator-config.json --skip-validate-spec
+
+      # about below: the strategy is still unclear to me
+      # I think we should commit models/csv_parser/out (json schemas, openapi specs) and models/generator/classes (java classes)
+      # we should also commit the full asyncapi spec (not concatenated at this point)
+
+      # but should we commit these files on the same branch as the one we are working on or on a dedicated one ?
+      # if it's on a dedicated one, we should add some steps:
+      # - override the classes in src/main/java
+      # - run gradlew build at least, or gradlew test
+      # - if changes, tests must fail because we didn't update the test examples
+      # - if new tab, there won't be any test
+
+      # or do we just want to compare the spec files on a weekly basis ?
+
+#      - name: Commit files ✅
+#        run: |
+#          git config --local user.email "Model-Generator[bot]@users.noreply.github.com"
+#          git config --local user.name "Model-Generator[bot]"
+#          git add classes
+#          git add ../csv_parser/out
+#          # Commit only if needed | Ref.: https://stackoverflow.com/a/8123841/10115198
+#          git diff-index --quiet HEAD || git commit -m "⚙️ Auto-génération des classes"
+#
+#      - name: Push changes ⬆️
+#        uses: ad-m/github-push-action@master
+#        with:
+#          branch: ${{ github.head_ref }}
