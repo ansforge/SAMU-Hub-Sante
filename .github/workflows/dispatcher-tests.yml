@@ -26,9 +26,6 @@ jobs:
           java-version: '11'
           distribution: 'temurin'
 
-#      - name: Go to dispatcher sub-project
-#        run: cd hub/dispatcher
-
       - name: Grant execute permission for Gradlew
         run: chmod +x gradlew
 

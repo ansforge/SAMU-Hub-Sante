@@ -10,6 +10,9 @@ on:
 jobs:
   build-image:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: hub/dispatcher
 
     steps:
       - name: Checkout
@@ -21,9 +24,6 @@ jobs:
           java-version: '11'
           distribution: 'temurin'
 
-      - name: Go to dispatcher sub-project
-        run: cd hub/dispatcher
-
       - name: Grant execute permission for Gradlew
         run: chmod +x gradlew
 
@@ -31,4 +31,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DOCKERHUB_TOKEN: ${{ secrets. DOCKER_HUB_KEY }}
-        run: ./gradlew jib --stacktrace
+        run: ./gradlew jib
