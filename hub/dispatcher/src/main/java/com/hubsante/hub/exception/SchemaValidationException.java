@@ -4,7 +4,7 @@ import com.hubsante.model.report.ErrorCode;
 
 public class SchemaValidationException extends AbstractHubException {
 
-    public SchemaValidationException(String message) {
-        super(message, ErrorCode.INVALID_MESSAGE);
+    public SchemaValidationException(String message, String referencedDistributionID) {
+        super(message, ErrorCode.INVALID_MESSAGE, referencedDistributionID);
     }
 }
