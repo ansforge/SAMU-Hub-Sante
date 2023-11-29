@@ -31,23 +31,23 @@
       </v-btn>
     </v-list-item>
     <v-card-text class="pt-0">
-      <div class="py-1">
+      <div class="py-1" v-if="caller">
         <v-icon>mdi-phone</v-icon>
         {{ caller }}
       </div>
-      <div class="py-1">
+      <div class="py-1" v-if="environment">
         <v-icon>mdi-map-marker</v-icon>
         {{ environment }}
       </div>
-      <div class="py-1">
+      <div class="py-1" v-if="victims">
         <v-icon>mdi-account-multiple</v-icon>
         {{ victims }}
       </div>
-      <div class="py-1">
+      <div class="py-1" v-if="victim">
         <v-icon>mdi-account-injury</v-icon>
         {{ victim }}
       </div>
-      <div class="py-1">
+      <div class="py-1" v-if="medicalSituation">
         <v-icon>mdi-heart-pulse</v-icon>
         {{ medicalSituation }}
       </div>

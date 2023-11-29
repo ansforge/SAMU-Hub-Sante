@@ -4,6 +4,7 @@ plugins {
     id 'io.spring.dependency-management' version '1.1.0'
     id 'com.google.cloud.tools.jib' version '3.3.1'
     id 'jacoco'
+    id 'com.github.hierynomus.license' version '0.16.1'
 }
 
 group = 'com.hubsante'
@@ -59,7 +60,7 @@ ext {
 }
 
 dependencies {
-    implementation 'com.hubsante:models:0.2.3-SNAPSHOT'
+    implementation 'com.hubsante:models:0.2.4-SNAPSHOT'
 
     implementation 'org.codehaus.groovy:groovy-json:3.0.9'
     implementation 'org.springframework.boot:spring-boot-starter-amqp'
@@ -93,6 +94,20 @@ tasks.named('test') {
     finalizedBy jacocoTestReport // report is always generated after tests run
 }
 
+license {
+    header = file('LICENSE_HEADER.txt')
+    strictCheck = true
+
+    ext {
+        company = "Agence du Numerique en Sante (ANS)"
+        year = licenseYear()
+    }
+
+    mapping 'java', 'JAVADOC_STYLE'
+    include "**/*.java"
+    exclude "**/test/**"
+}
+
 jib {
     from {
         image 'eclipse-temurin:11-jre'
@@ -104,6 +119,7 @@ jib {
 }
 
 import groovy.json.JsonSlurper
+
 def gitRefs() {
     try {
         def releaseCommitHash = null
@@ -135,6 +151,19 @@ def gitRefs() {
     } catch (Exception e) {
         throw new GradleException('Failed to retrieve Git commit hash.', e)
     }
+}
+
+static def licenseYear() {
+    def currentYear = new Date().format('yyyy')
+    def licenseYear
+
+    if (currentYear != "2023") {
+        licenseYear = "2023-" + currentYear
+    } else {
+        licenseYear = "2023"
+
+    }
+    return licenseYear
 }
 
 static def callGithubAPI(String endpoint) {

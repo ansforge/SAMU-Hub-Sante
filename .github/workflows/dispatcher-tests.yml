@@ -29,6 +29,13 @@ jobs:
       - name: Grant execute permission for Gradlew
         run: chmod +x gradlew
 
+      - name: Check license
+        env:
+          # required to run tests because the whole build.gradle seems to be evaluated, even if the jib task is not executed
+          # so the GITHUB_TOKEN var must be resolved
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./gradlew license
+
       - name: Build and run tests
         env:
           # required to run tests because the whole build.gradle seems to be evaluated, even if the jib task is not executed

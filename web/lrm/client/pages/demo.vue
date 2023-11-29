@@ -121,7 +121,7 @@ export default {
       messageTypes: {
         createCase: {
           label: 'RC-EDA',
-          schemaName: 'RC-EDA_schema.json',
+          schemaName: 'schemas/RC-EDA_schema.json',
           schema: null,
           examples: [{
             file: 'RC-EDA Armaury VF.json',
@@ -133,21 +133,16 @@ export default {
             victims: '2 victimes, 1 nécessitant assistance SAMU',
             victim: 'Homme, adulte, 43 ans',
             medicalSituation: 'Céphalées, migraines, traumatismes sérieux, plaies intermédiaires'
-          } /* {
-            file: 'exempleBlanchet.json',
-            icon: 'mdi-home-thermometer',
-            name: 'Bastien BLANCHET',
-            caller: 'Aide à la personne appelle pour un de ses patients',
-            context: 'Malaise pendant canicule',
-            environment: 'appartement de la victime',
-            victims: '1 victime',
-            victim: 'Homme, adulte, 82 ans',
-            medicalSituation: 'victime amorphe allongée sur son lit, répond peu, soupçonne une déshydratation'
-          } */ ]
+          }, {
+            file: '../exemple-invalide.json',
+            icon: 'mdi-alert-circle-outline',
+            name: 'Champs manquants',
+            context: "Pour illustrer les messages d'INFO sur les erreurs de validation",
+          }]
         },
         emsi: {
           label: 'EMSI',
-          schemaName: 'EMSI-DC_schema.json',
+          schemaName: 'schemas/EMSI-DC_schema.json',
           schema: null,
           examples: [{
             file: 'EMSI-DC Armaury VF.json',
@@ -173,7 +168,7 @@ export default {
         } /* ,
         info: {
           label: 'RS-INFO',
-          schemaName: 'RS-INFO_schema.json',
+          schemaName: 'schemas/RS-INFO_schema.json',
           schema: null,
           examples: []
         } */
