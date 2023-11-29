@@ -70,18 +70,20 @@ public class Dispatcher {
 
         // set returns callback to track undistributed messages
         rabbitTemplate.setReturnsCallback(returned -> {
-            EdxlMessage errorEdxlMessage = null;
+            EdxlMessage returnedEdxlMessage = null;
+            String returnedEdxlString = new String(returned.getMessage().getBody(), StandardCharsets.UTF_8);
+
             try {
-                errorEdxlMessage = edxlHandler.deserializeJsonEDXL(Arrays.toString(returned.getMessage().getBody()));
+                returnedEdxlMessage = edxlHandler.deserializeJsonEDXL(returnedEdxlString);
             } catch ( JsonProcessingException e) {
                 // This should never happen as if we've reached this point, the message has already been deserialized
-                log.error("Could not deserialize message " + Arrays.toString(returned.getMessage().getBody()), e);
+                log.error("Could not deserialize message " + returnedEdxlString, e);
             }
             ErrorReport errorReport = new ErrorReport(
                     ErrorCode.UNROUTABLE_MESSAGE,
                     "unable do deliver message to " + returned.getRoutingKey() + ", cause was " + returned.getReplyText() + " (" + returned.getReplyCode() + ")",
                     new String(returned.getMessage().getBody()),
-                    errorEdxlMessage.getDistributionID());
+                    returnedEdxlMessage.getDistributionID());
 
             String senderRoutingKey = returned.getMessage().getMessageProperties().getHeader(DLQ_ORIGINAL_ROUTING_KEY);
             logErrorAndSendReport(errorReport, senderRoutingKey);
