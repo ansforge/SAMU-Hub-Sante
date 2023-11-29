@@ -70,12 +70,12 @@ public class Dispatcher {
 
         // set returns callback to track undistributed messages
         rabbitTemplate.setReturnsCallback(returned -> {
-            EdxlMessage errorEdxlMessage;
+            EdxlMessage errorEdxlMessage = null;
             try {
                 errorEdxlMessage = edxlHandler.deserializeJsonEDXL(Arrays.toString(returned.getMessage().getBody()));
             } catch ( JsonProcessingException e) {
                 // This should never happen as if we've reached this point, the message has already been deserialized
-                throw new UnrecognizedMessageFormatException("", null);
+                log.error("Could not deserialize message " + Arrays.toString(returned.getMessage().getBody()), e);
             }
             ErrorReport errorReport = new ErrorReport(
                     ErrorCode.UNROUTABLE_MESSAGE,
