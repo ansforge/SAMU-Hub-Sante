@@ -15,6 +15,9 @@ jobs:
       run:
         working-directory: ./models/generator
 
+    env:
+      JAVA_POST_PROCESS_FILE: "/usr/bin/clang-format -i"
+
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -46,8 +49,8 @@ jobs:
       - name: install openapi-generator-cli
         run: npm install -g @openapitools/openapi-generator-cli
 
-      - name: prepare linter
-        run: export JAVA_POST_PROCESS_FILE="/usr/local/bin/clang-format -i"
+      - name: install linter
+        run: apt install -y clang-format
 
       - name: Generate Java classes
         run: |
@@ -60,6 +63,24 @@ jobs:
             npx @openapitools/openapi-generator-cli generate -c ./config/$SCHEMA/$SCHEMA.generator-config.json --skip-validate-spec
             npx @openapitools/openapi-generator-cli generate -c ./config/$SCHEMA/$SCHEMA.wrapper.generator-config.json --skip-validate-spec
           done
+
+      - name: copy generated classes
+        run: |
+          rsync -r --ignore-existing ./classes/src/main/java/com/hubsante/model/* ../src/main/java/com/hubsante/model/
+
+      - name: get current date
+        id: date
+        uses: Kaven-Universe/github-action-current-date-time@v1
+        with:
+          format: 'YYYY-MM-DD'
+
+      - name: create current date branch
+        run: |
+          git checkout -b "${{ steps.date.outputs.time }}-generated"
+          git diff -- ../src/main/java/com/hubsante/model/ > changes.patch
+          git apply changes.patch
+          git add -A
+          git status
 
       # about below: the strategy is still unclear to me
       # I think we should commit models/csv_parser/out (json schemas, openapi specs) and models/generator/classes (java classes)
