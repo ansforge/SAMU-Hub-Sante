@@ -29,6 +29,7 @@ jobs:
           IFS=' ' read -ra SCHEMAS_ARRAY <<< "$SCHEMAS"
           for SCHEMA in "${SCHEMAS_ARRAY[@]}"; do
             python3 ./csv_parser.py -s $SCHEMA -v $SCHEMA_VERSION
+            mv ./out/$SCHEMA/$SCHEMA.openapi.yaml ../generator/input/$SCHEMA.openapi.yaml
           done
 
       - name: Set up JDK 11
