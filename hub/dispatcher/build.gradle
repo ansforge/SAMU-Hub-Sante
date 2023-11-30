@@ -60,7 +60,7 @@ ext {
 }
 
 dependencies {
-    implementation 'com.hubsante:models:0.2.3-SNAPSHOT'
+    implementation 'com.hubsante:models:0.2.4-SNAPSHOT'
 
     implementation 'org.codehaus.groovy:groovy-json:3.0.9'
     implementation 'org.springframework.boot:spring-boot-starter-amqp'
