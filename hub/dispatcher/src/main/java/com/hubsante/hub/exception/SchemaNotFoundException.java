@@ -17,9 +17,8 @@ package com.hubsante.hub.exception;
 
 import com.hubsante.model.report.ErrorCode;
 
-public class SchemaValidationException extends AbstractHubException {
+public class SchemaNotFoundException extends AbstractHubException{
 
-    public SchemaValidationException(String message, String referencedDistributionID) {
-        super(message, ErrorCode.INVALID_MESSAGE, referencedDistributionID);
-    }
+    public SchemaNotFoundException(String message, String referencedDistributionID) {
+        super(message, ErrorCode.SCHEMA_NOT_FOUND, referencedDistributionID); }
 }

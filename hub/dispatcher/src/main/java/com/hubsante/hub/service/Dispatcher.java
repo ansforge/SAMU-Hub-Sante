@@ -15,18 +15,24 @@
  */
 package com.hubsante.hub.service;
 
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.hubsante.hub.config.HubConfiguration;
 import com.hubsante.hub.exception.*;
 import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.Validator;
-import com.hubsante.model.edxl.*;
+import com.hubsante.model.edxl.DistributionKind;
+import com.hubsante.model.edxl.EdxlEnvelope;
+import com.hubsante.model.edxl.EdxlMessage;
 import com.hubsante.model.exception.ValidationException;
 import com.hubsante.model.report.ErrorCode;
 import com.hubsante.model.report.ErrorReport;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.AmqpRejectAndDontRequeueException;
-import org.springframework.amqp.core.*;
+import org.springframework.amqp.core.Message;
+import org.springframework.amqp.core.MessageDeliveryMode;
+import org.springframework.amqp.core.MessageProperties;
+import org.springframework.amqp.core.MessagePropertiesBuilder;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
@@ -35,10 +41,12 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 
 import static com.hubsante.hub.config.AmqpConfiguration.*;
-import static com.hubsante.model.config.Constants.*;
 import static com.hubsante.hub.utils.EdxlUtils.edxlMessageFromHub;
+import static com.hubsante.model.config.Constants.ENVELOPE_SCHEMA;
+import static com.hubsante.model.config.Constants.FULL_SCHEMA;
 
 @Service
 @Slf4j
@@ -59,12 +67,23 @@ public class Dispatcher {
     }
 
     public void initReturnsCallback() {
+
         // set returns callback to track undistributed messages
         rabbitTemplate.setReturnsCallback(returned -> {
+            EdxlMessage returnedEdxlMessage = null;
+            String returnedEdxlString = new String(returned.getMessage().getBody(), StandardCharsets.UTF_8);
+
+            try {
+                returnedEdxlMessage = edxlHandler.deserializeJsonEDXL(returnedEdxlString);
+            } catch ( JsonProcessingException e) {
+                // This should never happen as if we've reached this point, the message has already been deserialized
+                log.error("Could not deserialize message " + returnedEdxlString, e);
+            }
             ErrorReport errorReport = new ErrorReport(
                     ErrorCode.UNROUTABLE_MESSAGE,
                     "unable do deliver message to " + returned.getRoutingKey() + ", cause was " + returned.getReplyText() + " (" + returned.getReplyCode() + ")",
-                    new String(returned.getMessage().getBody()));
+                    new String(returned.getMessage().getBody()),
+                    returnedEdxlMessage.getDistributionID());
 
             String senderRoutingKey = returned.getMessage().getMessageProperties().getHeader(DLQ_ORIGINAL_ROUTING_KEY);
             logErrorAndSendReport(errorReport, senderRoutingKey);
@@ -108,7 +127,7 @@ public class Dispatcher {
             // log message & error
             String errorCause = "Message " + edxlMessage.getDistributionID() + " has been read from dead-letter-queue; reason was " +
                     message.getMessageProperties().getHeader(DLQ_REASON);
-            DeadLetteredMessageException exception = new DeadLetteredMessageException(errorCause);
+            DeadLetteredMessageException exception = new DeadLetteredMessageException(errorCause, edxlMessage.getDistributionID());
             handleError(exception, message);
         } catch (Exception e) {
             // We don't want to log again the error if it has been thrown by handleError
@@ -125,7 +144,7 @@ public class Dispatcher {
     private void handleError(AbstractHubException exception, Message message) {
         // create ErrorReport
         ErrorReport errorReport = new ErrorReport(
-                exception.getErrorCode(), exception.getMessage(), new String(message.getBody()));
+                exception.getErrorCode(), exception.getMessage(), new String(message.getBody()), exception.getReferencedDistributionID());
 
         // send ErrorReport to sender
         // if the message has been dead-lettered, we retrieve the original sender from the x-death-original-routing-key header
@@ -186,14 +205,14 @@ public class Dispatcher {
                     edxlMessage.getSenderID() +
                     " but received routing key is " +
                     receivedRoutingKey;
-            throw new SenderInconsistencyException(errorCause);
+            throw new SenderInconsistencyException(errorCause, edxlMessage.getDistributionID());
         }
     }
 
     private void checkDeliveryModeIsPersistent(Message message, String messageId) {
         if (!MessageDeliveryMode.PERSISTENT.equals(message.getMessageProperties().getReceivedDeliveryMode())) {
             String errorCause = "Message " + messageId + " has been sent with non-persistent delivery mode";
-            throw new DeliveryModeInconsistencyException(errorCause);
+            throw new DeliveryModeInconsistencyException(errorCause, messageId);
         }
     }
 
@@ -243,16 +262,56 @@ public class Dispatcher {
         EdxlMessage edxlMessage;
 
         try {
+            edxlMessage = handleMessage(message, receivedEdxl);
+        } catch (ValidationException e) {
+            // We couldn't validate the message against the full schema, so we try to validate it against the envelope schema
+            // so we can at least extract the distributionID
+            EdxlEnvelope edxlEnvelope;
+            try {
+                validator.validateJSON(receivedEdxl, ENVELOPE_SCHEMA);
+                edxlEnvelope = edxlHandler.deserializeJsonEDXLEnvelope(receivedEdxl);
+            } catch (JsonProcessingException ex) {
+                log.error("Could not parse envelope of message " + receivedEdxl + " coming from " + message.getMessageProperties().getReceivedRoutingKey(), e);
+                String errorCause = "Could not parse message, invalid format. \n " +
+                        "If you don't want to use HubSanté model for now, please use a \"customContent\" wrapper inside your message.";
+                throw new UnrecognizedMessageFormatException(errorCause, null);
+            } catch (IOException ex) {
+                log.error("Could not find schema file", e);
+                throw new SchemaNotFoundException("An internal server error has occurred, please contact the administration team", null);
+            } catch (ValidationException ex) {
+                log.error("Could not validate content or envelope of message " + receivedEdxl + " coming from " + message.getMessageProperties().getReceivedRoutingKey(), e);
+                throw new SchemaValidationException(e.getMessage(), null);
+            }
+            // weird rethrow but we want to log the received routing key and we only have it here
+            log.error("Could not validate content of message " + receivedEdxl +
+                    " coming from " + message.getMessageProperties().getReceivedRoutingKey() +
+                    " with distributionId " + edxlEnvelope.getDistributionID(), e);
+            throw new SchemaValidationException(e.getMessage(), edxlEnvelope.getDistributionID());
+        }
+        return edxlMessage;
+    }
+
+    /**
+     * Attempts to validate and deserialize the message
+     *
+     * @param message      the entire message
+     * @param receivedEdxl the message's body
+     * @return deserialized edxl message
+     * @throws JsonProcessingException when deserialization fails
+     * @throws ValidationException     when validation fails
+     * @throws IOException             when schema file couldn't be found
+     */
+    private EdxlMessage handleMessage(Message message, String receivedEdxl) throws ValidationException {
+        try {
+            EdxlMessage edxlMessage;
             // We deserialize according to the content type
             // It MUST be explicitly set by the client
             if (MessageProperties.CONTENT_TYPE_JSON.equals(message.getMessageProperties().getContentType())) {
-                validator.validateJSON(receivedEdxl, ENVELOPE_SCHEMA);
-                edxlMessage = edxlHandler.deserializeJsonEDXL(receivedEdxl);
                 validator.validateJSON(receivedEdxl, FULL_SCHEMA);
+                edxlMessage = edxlHandler.deserializeJsonEDXL(receivedEdxl);
 //                validator.validateContentMessage(edxlMessage, false);
 
-                log.info(" [x] Received from '" + message.getMessageProperties().getReceivedRoutingKey() + "': message with distributionID" + edxlMessage.getDistributionID());
-                log.debug(edxlHandler.serializeJsonEDXL(edxlMessage));
+                logMessage(message, edxlMessage);
 
             } else if (MessageProperties.CONTENT_TYPE_XML.equals(message.getMessageProperties().getContentType())) {
                 // TODO bbo: add XSD validation when ready
@@ -260,29 +319,27 @@ public class Dispatcher {
                 edxlMessage = edxlHandler.deserializeXmlEDXL(receivedEdxl);
 //                validator.validateContentMessage(edxlMessage, true);
 //                validator.validateXML(receivedEdxl, EDXL_SCHEMA);
-                log.info(" [x] Received from '" + message.getMessageProperties().getReceivedRoutingKey() + "': message with distributionID " + edxlMessage.getDistributionID());
-                log.debug(edxlHandler.serializeXmlEDXL(edxlMessage));
+                logMessage(message, edxlMessage);
 
             } else {
                 String errorCause = "Unhandled Content-Type ! Message Content-Type should be set at 'application/json' or 'application/xml'";
-                throw new NotAllowedContentTypeException(errorCause);
+                throw new NotAllowedContentTypeException(errorCause, null);
             }
-
+            return edxlMessage;
         } catch (JsonProcessingException e) {
-            log.error("Could not parse message " + receivedEdxl + " coming from " + message.getMessageProperties().getReceivedRoutingKey(), e);
+            log.error("Could not parse content of message " + receivedEdxl + " coming from " + message.getMessageProperties().getReceivedRoutingKey(), e);
             String errorCause = "Could not parse message, invalid format. \n " +
                     "If you don't want to use HubSanté model for now, please use a \"customContent\" wrapper inside your message.";
-            throw new UnrecognizedMessageFormatException(errorCause);
-
-        } catch (ValidationException e) {
-            // weird rethrow but we want to log the received routing key and we only have it here
-            log.error("Could not validate message " + receivedEdxl + " coming from " + message.getMessageProperties().getReceivedRoutingKey(), e);
-            throw new SchemaValidationException(e.getMessage());
-
+            throw new UnrecognizedMessageFormatException(errorCause, null);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            log.error("Could not find schema file", e);
+            throw new SchemaNotFoundException("An internal server error has occurred, please contact the administration team", null);
         }
-        return edxlMessage;
+    }
+
+    private void logMessage(Message message, EdxlMessage edxlMessage) throws JsonProcessingException {
+        log.info(" [x] Received from '" + message.getMessageProperties().getReceivedRoutingKey() + "': message with distributionID " + edxlMessage.getDistributionID());
+        log.debug(edxlHandler.serializeXmlEDXL(edxlMessage));
     }
 
     private void overrideExpirationIfNeeded(EdxlMessage edxlMessage, MessageProperties properties) {
@@ -300,7 +357,7 @@ public class Dispatcher {
                     edxlMessage.getDateTimeExpires().toEpochSecond() - OffsetDateTime.now().toEpochSecond());
             if (newTTL == 0) {
                 String errorCause = "Message " + edxlMessage.getDistributionID() + " has expired before reaching the recipient queue";
-                throw new ExpiredBeforeDispatchMessageException(errorCause);
+                throw new ExpiredBeforeDispatchMessageException(errorCause, edxlMessage.getDistributionID());
             }
             properties.setExpiration(String.valueOf(newTTL * 1000));
             log.info("override expiration for message {}: expiration is now {}",
