@@ -18,6 +18,7 @@
               <v-spacer />
               <v-btn
                 color="primary"
+                @click="goToTestCase(testCase)"
               >
                 Sélectionner
               </v-btn>
@@ -76,6 +77,14 @@ export default {
       } catch (error) {
         console.error(error)
       }
+    },
+    goToTestCase (testCase) {
+      this.$router.push({
+        name: 'testcase',
+        params: {
+          testCase
+        }
+      })
     }
   }
 }
