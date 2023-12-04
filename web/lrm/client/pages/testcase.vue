@@ -6,12 +6,23 @@
           Cas de test <span class="font-weight-bold">&nbsp;{{ testCase.label }} </span>
         </v-card-title>
         <v-card-text>
-          <ReceivedMessage
-            v-for="message in selectedTypeCaseMessages"
-            v-bind="message"
-            :key="message.time"
-            class="message mb-4"
-          />
+          <template v-for="(message, index) in selectedTypeCaseMessages">
+            <ReceivedMessage
+              v-bind="message"
+              :key="message.time"
+              class="message mb-4"
+              :class="{ stale: message.stale, validated: message.validated }"
+            />
+            <v-btn v-if="!(message.validated || message.stale)" :key="'button'+index" color="primary" @click="validateMessage(index)">
+              Valider
+            </v-btn>
+            <span v-if="message.validated" :key="'label'+index" class="step-label">
+              {{ testCase.steps[message.validatedStep].label }}
+            </span>
+            <v-icon v-if="message.validated" :key="'icon'+index" class="validated-icon">
+              mdi-check
+            </v-icon>
+          </template>
         </v-card-text>
         <v-card-actions>
           <v-stepper class="stepper">
@@ -30,11 +41,11 @@
     <v-col cols="12" sm="5">
       <v-card style="height: 86vh; overflow-y: auto;">
         <v-card-title>
-          {{ testCase.steps[currentStep].type === 'receive' ? 'Message attendu' : 'Message envoye' }}
+          {{ testCase.steps[currentStep]?.type === 'receive' ? 'Message attendu' : 'Message envoye' }}
         </v-card-title>
         <v-card-text>
           <v-card-text>
-            <pre>{{ testCase.steps[currentStep].json }}</pre>
+            <pre>{{ testCase.steps[currentStep]?.json }}</pre>
           </v-card-text>
         </v-card-text>
       </v-card>
@@ -57,43 +68,52 @@ export default {
       selectedMessageType: 'message',
       selectedClientId: null,
       selectedCaseIds: [],
-      queueTypes: [{
-        name: 'Message',
-        type: 'message',
-        icon: 'mdi-message'
-      }, {
-        name: 'Ack',
-        type: 'ack',
-        icon: 'mdi-check'
-      }, {
-        name: 'Info',
-        type: 'info',
-        icon: 'mdi-information'
-      }]
+      queueTypes: [
+        {
+          name: 'Message',
+          type: 'message',
+          icon: 'mdi-message'
+        },
+        {
+          name: 'Ack',
+          type: 'ack',
+          icon: 'mdi-check'
+        },
+        {
+          name: 'Info',
+          type: 'info',
+          icon: 'mdi-information'
+        }
+      ]
     }
   },
   computed: {
     ...mapGetters(['messages', 'isAdvanced']),
     clientMessages () {
       return this.messages.filter(
-        message => (
-          (this.isOut(message.direction) && message.body.senderID === this.user.clientId) ||
-            (!this.isOut(message.direction) && message.routingKey.startsWith(this.user.clientId))
-        )
+        message =>
+          (this.isOut(message.direction) &&
+            message.body.senderID === this.user.clientId) ||
+          (!this.isOut(message.direction) &&
+            message.routingKey.startsWith(this.user.clientId))
       )
     },
     showableMessages () {
-      return this.showSentMessages ? this.clientMessages : this.clientMessages.filter(message => !this.isOut(message.direction))
+      return this.showSentMessages
+        ? this.clientMessages
+        : this.clientMessages.filter(message => !this.isOut(message.direction))
     },
     selectedTypeMessages () {
-      return this.showableMessages.filter(message => this.getMessageType(message) === this.selectedMessageType)
+      return this.showableMessages.filter(
+        message => this.getMessageType(message) === this.selectedMessageType
+      )
     },
     selectedTypeCaseMessages () {
       if (this.selectedCaseIds.length === 0) {
         return this.selectedTypeMessages
       }
-      return this.selectedTypeMessages.filter(
-        message => this.selectedCaseIds.includes(this.getCaseId(message))
+      return this.selectedTypeMessages.filter(message =>
+        this.selectedCaseIds.includes(this.getCaseId(message))
       )
     },
     caseIds () {
@@ -113,6 +133,17 @@ export default {
         const json = await response.json()
         this.$set(step, 'json', json)
       })
+    },
+    validateMessage (index) {
+      this.selectedTypeCaseMessages.forEach((message, i) => {
+        if (i === index) {
+          message.validatedStep = this.currentStep
+          message.validated = true
+        } else {
+          message.stale = true
+        }
+      })
+      this.currentStep++
     }
   }
 }
@@ -137,5 +168,25 @@ div.stepper.v-stepper {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+}
+
+.message {
+  position: relative;
+}
+
+.message .validated-icon {
+  position: absolute;
+  top: 0;
+  right: 0;
+  color: green;
+}
+
+.message.stale {
+  opacity: 0.5;
+}
+
+.step-label {
+  color: lightgreen;
+  font-weight: bold;
 }
 </style>
