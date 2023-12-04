@@ -72,7 +72,6 @@ export default {
     async loadTestCases () {
       try {
         const response = await this.$axios.get('/test-cases/Receive-EDA-DC-Send-RDC.json')
-        console.log(response.data)
         this.testCases.push(response.data)
       } catch (error) {
         console.error(error)
