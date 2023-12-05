@@ -14,7 +14,7 @@
                 class="message mb-4"
                 :class="{ stale: message.stale, validated: message.validated }"
               />
-              <v-btn v-if="!(message.validated || message.stale)" :key="'button'+index" color="primary" @click="validateMessage(index)">
+              <v-btn v-if="!(message.validated || message.stale)" :key="'button'+index" color="primary" @click="validateMessage(index, true)">
                 Valider
               </v-btn>
               <v-btn v-if="message.validated" :key="'validated-label'+index" color="success" style="pointer-events: none;">
@@ -30,7 +30,7 @@
           <v-stepper v-model="currentStep" class="stepper">
             <v-stepper-header>
               <template v-for="(step, index) in testCase.steps">
-                <v-stepper-step :key="index" :complete="index < currentStep" :step="index+1">
+                <v-stepper-step :key="index" :complete="index < currentStep-1" :step="index+1">
                   {{ step.label }}
                 </v-stepper-step>
                 <v-divider v-if="index < testCase.steps.length - 1" :key="'divider' + index" />
@@ -41,18 +41,27 @@
       </v-card>
     </v-col>
     <v-col cols="12" sm="5">
-      <v-card style="height: 86vh; overflow-y: auto;">
-        <div v-if="currentStep < testCase.steps.length">
+      <v-card class="main-card" style="height: 86vh;">
+        <template v-if="currentStep-1 < testCase.steps.length">
           <v-card-title>
             {{ testCase.steps[currentStep-1]?.type === 'receive' ? 'Message attendu' : 'Message envoyé' }}
           </v-card-title>
-          <v-card-text>
-            <v-card-text>
-              <pre>{{ testCase.steps[currentStep-1]?.json }}</pre>
-            </v-card-text>
+          <v-card-text style="overflow-y: auto;">
+            <json-viewer
+              :value="testCase.steps[currentStep-1]?.json"
+              :expand-depth="10"
+              :copyable="{copyText: 'Copier', copiedText: 'Copié !', timeout: 1000}"
+              expanded
+              theme="json-theme"
+            />
           </v-card-text>
-        </div>
-        <div v-else>
+          <v-card-actions v-if="testCase.steps[currentStep-1]?.type === 'send'">
+            <v-btn color="primary" @click="submitMessage(testCase.steps[currentStep-1].json)">
+              Envoyer
+            </v-btn>
+          </v-card-actions>
+        </template>
+        <template v-else>
           <v-card-title>
             Fin du cas de test
           </v-card-title>
@@ -61,7 +70,7 @@
               <pre>Le cas de test est terminé avec succés</pre>
             </v-card-text>
           </v-card-text>
-        </div>
+        </template>
       </v-card>
     </v-col>
   </v-row>
@@ -150,16 +159,26 @@ export default {
         this.$set(step, 'json', json)
       })
     },
-    validateMessage (index) {
+    validateMessage (index, ack) {
       this.selectedTypeCaseMessages.forEach((message, i) => {
         if (i === index) {
           message.validatedStep = this.currentStep - 1
           message.validated = true
+          if (ack) {
+            if (this.getMessageType(message) !== 'ack' && message.routingKey.startsWith(this.user.clientId)) {
+              const msg = this.buildAck(message.body.distributionID)
+              this.sendMessage(msg)
+            }
+          }
         } else if (!message.validated) {
           message.stale = true
         }
       })
       this.currentStep++
+    },
+    submitMessage (message) {
+      const builtMessage = this.buildMessage(message)
+      this.sendMessage(builtMessage)
     }
   }
 }
