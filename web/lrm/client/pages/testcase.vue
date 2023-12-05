@@ -1,34 +1,36 @@
 <template>
   <v-row justify="center">
     <v-col cols="12" sm="7">
-      <v-card class="main-card" style="height: 86vh; overflow-y: auto;">
+      <v-card class="main-card" style="height: 86vh;">
         <v-card-title class="headline pb-">
           Cas de test <span class="font-weight-bold">&nbsp;{{ testCase.label }} </span>
         </v-card-title>
-        <v-card-text>
+        <v-card-text style="overflow-y: auto;">
           <template v-for="(message, index) in selectedTypeCaseMessages">
-            <ReceivedMessage
-              v-bind="message"
-              :key="message.time"
-              class="message mb-4"
-              :class="{ stale: message.stale, validated: message.validated }"
-            />
-            <v-btn v-if="!(message.validated || message.stale)" :key="'button'+index" color="primary" @click="validateMessage(index)">
-              Valider
-            </v-btn>
-            <span v-if="message.validated" :key="'label'+index" class="step-label">
-              {{ testCase.steps[message.validatedStep].label }}
-            </span>
-            <v-icon v-if="message.validated" :key="'icon'+index" class="validated-icon">
-              mdi-check
-            </v-icon>
+            <div :key="'wrapper'+index" class="d-flex flex-column flex-wrap pb-3 pt-3">
+              <ReceivedMessage
+                v-bind="message"
+                :key="message.time"
+                class="message mb-4"
+                :class="{ stale: message.stale, validated: message.validated }"
+              />
+              <v-btn v-if="!(message.validated || message.stale)" :key="'button'+index" color="primary" @click="validateMessage(index)">
+                Valider
+              </v-btn>
+              <v-btn v-if="message.validated" :key="'validated-label'+index" color="success" style="pointer-events: none;">
+                <v-icon v-if="message.validated" :key="'icon'+index" class="validated-icon">
+                  mdi-check
+                </v-icon>
+                Validé pour le pas {{ message.validatedStep+1 }}. {{ testCase.steps[message.validatedStep].label }}
+              </v-btn>
+            </div>
           </template>
         </v-card-text>
         <v-card-actions>
-          <v-stepper class="stepper">
+          <v-stepper v-model="currentStep" class="stepper">
             <v-stepper-header>
               <template v-for="(step, index) in testCase.steps">
-                <v-stepper-step :key="index" :complete="index < currentStep" :step="index + 1">
+                <v-stepper-step :key="index" :complete="index < currentStep" :step="index+1">
                   {{ step.label }}
                 </v-stepper-step>
                 <v-divider v-if="index < testCase.steps.length - 1" :key="'divider' + index" />
@@ -40,14 +42,26 @@
     </v-col>
     <v-col cols="12" sm="5">
       <v-card style="height: 86vh; overflow-y: auto;">
-        <v-card-title>
-          {{ testCase.steps[currentStep]?.type === 'receive' ? 'Message attendu' : 'Message envoye' }}
-        </v-card-title>
-        <v-card-text>
+        <div v-if="currentStep < testCase.steps.length">
+          <v-card-title>
+            {{ testCase.steps[currentStep-1]?.type === 'receive' ? 'Message attendu' : 'Message envoyé' }}
+          </v-card-title>
           <v-card-text>
-            <pre>{{ testCase.steps[currentStep]?.json }}</pre>
+            <v-card-text>
+              <pre>{{ testCase.steps[currentStep-1]?.json }}</pre>
+            </v-card-text>
           </v-card-text>
-        </v-card-text>
+        </div>
+        <div v-else>
+          <v-card-title>
+            Fin du cas de test
+          </v-card-title>
+          <v-card-text>
+            <v-card-text>
+              <pre>Le cas de test est terminé avec succés</pre>
+            </v-card-text>
+          </v-card-text>
+        </div>
       </v-card>
     </v-col>
   </v-row>
@@ -64,7 +78,7 @@ export default {
   data () {
     return {
       testCase: null,
-      currentStep: 0,
+      currentStep: 1,
       selectedMessageType: 'message',
       selectedClientId: null,
       selectedCaseIds: [],
@@ -104,9 +118,7 @@ export default {
         : this.clientMessages.filter(message => !this.isOut(message.direction))
     },
     selectedTypeMessages () {
-      return this.showableMessages.filter(
-        message => this.getMessageType(message) === this.selectedMessageType
-      )
+      return this.showableMessages
     },
     selectedTypeCaseMessages () {
       if (this.selectedCaseIds.length === 0) {
@@ -121,12 +133,16 @@ export default {
     }
   },
   created () {
+    this.resetEverything()
     this.testCase = this.$route.params.testCase
   },
   mounted () {
     this.loadJsonSteps()
   },
   methods: {
+    resetEverything () {
+      this.currentStep = 1
+    },
     loadJsonSteps () {
       this.testCase.steps.map(async (step) => {
         const response = await fetch('/examples/' + step.message.file)
@@ -137,9 +153,9 @@ export default {
     validateMessage (index) {
       this.selectedTypeCaseMessages.forEach((message, i) => {
         if (i === index) {
-          message.validatedStep = this.currentStep
+          message.validatedStep = this.currentStep - 1
           message.validated = true
-        } else {
+        } else if (!message.validated) {
           message.stale = true
         }
       })
@@ -189,4 +205,5 @@ div.stepper.v-stepper {
   color: lightgreen;
   font-weight: bold;
 }
+
 </style>
