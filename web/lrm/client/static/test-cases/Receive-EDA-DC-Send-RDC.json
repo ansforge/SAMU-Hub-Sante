@@ -39,7 +39,7 @@
       "label": "Envoi d'un message RDC",
       "message": {
         "label": "EMSI-EO RDC",
-        "file": "EMSI-EO Armaury RDC VF.json",
+        "file": "EMSI-EO Test RDC VF.json",
         "icon": "mdi-bike-fast",
         "name": "Alexandre ARMAURY (RDC)",
         "caller": "Albane Armaury, témoin accident impliquant son mari,  Alexandre Armaury",

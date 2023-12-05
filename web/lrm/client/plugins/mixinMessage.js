@@ -27,7 +27,7 @@ export default {
       }
 
       // demo.vue is in charge of listening to server messages
-      if (this.$options.name === 'Demo') {
+      if (this.$options.name === 'Demo' || this.$options.name === 'Testcase') {
         this.socket.addEventListener('message', (event) => {
           const message = JSON.parse(event.data)
           this.$store.dispatch('addMessage', {

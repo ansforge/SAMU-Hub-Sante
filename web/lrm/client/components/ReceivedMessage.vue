@@ -168,4 +168,7 @@ export default {
     }
   }
 }
+.validated > *:last-child {
+  background-color: rgba(76,175,80,0.2)
+}
 </style>

@@ -18,6 +18,7 @@
               <v-spacer />
               <v-btn
                 color="primary"
+                @click="goToTestCase(testCase)"
               >
                 Sélectionner
               </v-btn>
@@ -71,11 +72,19 @@ export default {
     async loadTestCases () {
       try {
         const response = await this.$axios.get('/test-cases/Receive-EDA-DC-Send-RDC.json')
-        console.log(response.data)
         this.testCases.push(response.data)
       } catch (error) {
         console.error(error)
       }
+    },
+    goToTestCase (testCase) {
+      this.$store.dispatch('resetMessages')
+      this.$router.push({
+        name: 'testcase',
+        params: {
+          testCase
+        }
+      })
     }
   }
 }
