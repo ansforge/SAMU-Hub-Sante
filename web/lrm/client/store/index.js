@@ -1,4 +1,4 @@
-const { SET_CURRENT_USER, TOGGLE_ADVANCED, SET_SHOW_SENT_MESSAGES, ADD_MESSAGE, SET_AUTO_ACK, SET_MESSAGE_JUST_SENT } = require('./constants')
+const { SET_CURRENT_USER, TOGGLE_ADVANCED, SET_SHOW_SENT_MESSAGES, ADD_MESSAGE, SET_AUTO_ACK, SET_MESSAGE_JUST_SENT, RESET_MESSAGES } = require('./constants')
 
 export const state = () => ({
   auth: {
@@ -82,6 +82,10 @@ export const actions = {
         commit(SET_MESSAGE_JUST_SENT, false)
       }, 1000)
     }
+  },
+
+  resetMessages ({ commit }) {
+    commit(RESET_MESSAGES)
   }
 }
 
@@ -118,5 +122,9 @@ export const mutations = {
 
   [SET_MESSAGE_JUST_SENT] (state, messageJustSent) {
     state.messageJustSent = messageJustSent
+  },
+
+  [RESET_MESSAGES] (state) {
+    state.messages = []
   }
 }
