@@ -5,7 +5,7 @@
         <v-card-title class="headline pb-">
           Cas de test <span class="font-weight-bold">&nbsp;{{ testCase.label }} </span>
         </v-card-title>
-        <v-card-text style="overflow-y: auto;">
+        <v-card-text class="main-card-content">
           <template v-for="(message, index) in selectedTypeCaseMessages">
             <div :key="'wrapper'+index" class="d-flex flex-column flex-wrap pb-3 pt-3">
               <ReceivedMessage
@@ -46,7 +46,7 @@
           <v-card-title>
             {{ testCase.steps[currentStep-1]?.type === 'receive' ? 'Message attendu' : 'Message envoyé' }}
           </v-card-title>
-          <v-card-text style="overflow-y: auto;">
+          <v-card-text class="main-card-content">
             <json-viewer
               :value="testCase.steps[currentStep-1]?.json"
               :expand-depth="10"
@@ -65,7 +65,7 @@
           <v-card-title>
             Fin du cas de test
           </v-card-title>
-          <v-card-text>
+          <v-card-text class="main-card-content">
             <v-card-text>
               <pre>Le cas de test est terminé avec succés</pre>
             </v-card-text>
@@ -225,4 +225,8 @@ div.stepper.v-stepper {
   font-weight: bold;
 }
 
+.main-card-content{
+  overflow-y: auto;
+  flex-grow: 1;
+}
 </style>
