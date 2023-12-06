@@ -7,8 +7,8 @@
       <v-list>
         <v-expansion-panels>
           <v-expansion-panel
-            v-for="testCase in testCases"
-            :key="testCase.label"
+            v-for="(testCase, caseIndex) in testCases"
+            :key="testCase.label + '-' + caseIndex"
           >
             <v-expansion-panel-header>
               <v-list-item-content>
