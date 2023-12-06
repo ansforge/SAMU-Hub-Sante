@@ -49,6 +49,8 @@
 
 <script>
 
+import testCaseFile from '~/assets/test-cases.json'
+
 export default {
   name: 'Test',
   data () {
@@ -69,13 +71,8 @@ export default {
     this.loadTestCases()
   },
   methods: {
-    async loadTestCases () {
-      try {
-        const response = await this.$axios.get('/test-cases/Receive-EDA-DC-Send-RDC.json')
-        this.testCases.push(response.data)
-      } catch (error) {
-        console.error(error)
-      }
+    loadTestCases () {
+      this.testCases = testCaseFile
     },
     goToTestCase (testCase) {
       this.$store.dispatch('resetMessages')

@@ -1,0 +1,110 @@
+[
+  {
+    "label": "Cas de test 1",
+    "description": "Réception des messages EDA et DC, envoi d'une réponse RDC",
+    "steps": [
+      {
+        "type": "receive",
+        "label": "Réception d'un message EDA",
+        "message": {
+          "label": "RC-EDA",
+          "file": "RC-EDA Armaury VF.json",
+          "icon": "mdi-bike-fast",
+          "name": "Alexandre ARMAURY",
+          "caller": "Albane Armaury, témoin accident impliquant son mari,  Alexandre Armaury",
+          "context": "Collision de 2 vélos",
+          "environment": "Voie cyclable à Lyon, gêne de la circulation",
+          "victims": "2 victimes, 1 nécessitant assistance SAMU",
+          "victim": "Homme, adulte, 43 ans",
+          "medicalSituation": "Céphalées, migraines, traumatismes sérieux, plaies intermédiaires"
+        }
+      },
+      {
+        "type": "receive",
+        "label": "Réception d'un message DC",
+        "message": {
+          "label": "EMSI-DC",
+          "file": "EMSI-DC Armaury VF.json",
+          "icon": "mdi-bike-fast",
+          "name": "Alexandre ARMAURY (DC)",
+          "caller": "Albane Armaury, témoin accident impliquant son mari,  Alexandre Armaury",
+          "context": "Collision de 2 vélos",
+          "environment": "Voie cyclable à Lyon, gêne de la circulation",
+          "victims": "2 victimes, 1 nécessitant assistance SAMU",
+          "victim": "Homme, adulte, 43 ans",
+          "medicalSituation": "Céphalées, migraines, traumatismes sérieux, plaies intermédiaires"
+        }
+      },
+      {
+        "type": "send",
+        "label": "Envoi d'un message RDC",
+        "message": {
+          "label": "EMSI-EO RDC",
+          "file": "EMSI-EO Test RDC VF.json",
+          "icon": "mdi-bike-fast",
+          "name": "Alexandre ARMAURY (RDC)",
+          "caller": "Albane Armaury, témoin accident impliquant son mari,  Alexandre Armaury",
+          "context": "Collision de 2 vélos",
+          "environment": "Voie cyclable à Lyon, gêne de la circulation",
+          "victims": "2 victimes, 1 nécessitant assistance SAMU",
+          "victim": "Homme, adulte, 43 ans",
+          "medicalSituation": "Céphalées, migraines, traumatismes sérieux, plaies intermédiaires"
+        }
+      }
+    ]
+  },
+  {
+    "label": "Cas de test 1",
+    "description": "Réception des messages EDA et DC, envoi d'une réponse RDC",
+    "steps": [
+      {
+        "type": "receive",
+        "label": "Réception d'un message EDA",
+        "message": {
+          "label": "RC-EDA",
+          "file": "RC-EDA Armaury VF.json",
+          "icon": "mdi-bike-fast",
+          "name": "Alexandre ARMAURY",
+          "caller": "Albane Armaury, témoin accident impliquant son mari,  Alexandre Armaury",
+          "context": "Collision de 2 vélos",
+          "environment": "Voie cyclable à Lyon, gêne de la circulation",
+          "victims": "2 victimes, 1 nécessitant assistance SAMU",
+          "victim": "Homme, adulte, 43 ans",
+          "medicalSituation": "Céphalées, migraines, traumatismes sérieux, plaies intermédiaires"
+        }
+      },
+      {
+        "type": "receive",
+        "label": "Réception d'un message DC",
+        "message": {
+          "label": "EMSI-DC",
+          "file": "EMSI-DC Armaury VF.json",
+          "icon": "mdi-bike-fast",
+          "name": "Alexandre ARMAURY (DC)",
+          "caller": "Albane Armaury, témoin accident impliquant son mari,  Alexandre Armaury",
+          "context": "Collision de 2 vélos",
+          "environment": "Voie cyclable à Lyon, gêne de la circulation",
+          "victims": "2 victimes, 1 nécessitant assistance SAMU",
+          "victim": "Homme, adulte, 43 ans",
+          "medicalSituation": "Céphalées, migraines, traumatismes sérieux, plaies intermédiaires"
+        }
+      },
+      {
+        "type": "send",
+        "label": "Envoi d'un message RDC",
+        "message": {
+          "label": "EMSI-EO RDC",
+          "file": "EMSI-EO Test RDC VF.json",
+          "icon": "mdi-bike-fast",
+          "name": "Alexandre ARMAURY (RDC)",
+          "caller": "Albane Armaury, témoin accident impliquant son mari,  Alexandre Armaury",
+          "context": "Collision de 2 vélos",
+          "environment": "Voie cyclable à Lyon, gêne de la circulation",
+          "victims": "2 victimes, 1 nécessitant assistance SAMU",
+          "victim": "Homme, adulte, 43 ans",
+          "medicalSituation": "Céphalées, migraines, traumatismes sérieux, plaies intermédiaires"
+        }
+      }
+    ]
+  }
+]
