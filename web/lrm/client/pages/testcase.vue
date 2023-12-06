@@ -14,7 +14,8 @@
                 class="message mb-4"
                 :class="{ stale: message.stale, validated: message.validated }"
               />
-              <v-btn v-if="!(message.validated || message.stale)" :key="'button'+index" color="primary" @click="validateMessage(index, true)">
+              <p>Validation result: {{ checkMessageContainsAllValues(message, testCase.steps[currentStep-1]?.type === 'receive' ? testCase?.steps[currentStep-1]?.message?.requiredValues : getAwaitedReferenceDistributionIdJson()) }}</p>
+              <v-btn v-if="!(message.validated || message.stale) && (!isOut(message.direction))" :key="'button'+index" color="primary" @click="validateMessage(index, true)">
                 Valider
               </v-btn>
               <v-btn v-if="message.validated" :key="'validated-label'+index" color="success" style="pointer-events: none;">
@@ -44,11 +45,15 @@
       <v-card class="main-card" style="height: 86vh;">
         <template v-if="currentStep-1 < testCase.steps.length">
           <v-card-title>
-            {{ testCase.steps[currentStep-1]?.type === 'receive' ? 'Message attendu' : 'Message envoyé' }}
+            {{ testCase.steps[currentStep-1]?.type === 'receive' ? 'Valeurs attendus dans le message' : 'Valeurs attendus dans l\'acquittement' }}
           </v-card-title>
           <v-card-text class="main-card-content">
+            <p v-if="getAwaitedValues(testCase.steps[currentStep-1]) === null">
+              En attente de la réception de l'ID de distribution...
+            </p>
             <json-viewer
-              :value="testCase.steps[currentStep-1]?.json"
+              v-else
+              :value="getAwaitedValues(testCase.steps[currentStep-1])"
               :expand-depth="10"
               :copyable="{copyText: 'Copier', copiedText: 'Copié !', timeout: 1000}"
               expanded
@@ -67,7 +72,7 @@
           </v-card-title>
           <v-card-text class="main-card-content">
             <v-card-text>
-              <pre>Le cas de test est terminé avec succés</pre>
+              <p>Le cas de test est terminé avec succés</p>
             </v-card-text>
           </v-card-text>
         </template>
@@ -88,6 +93,7 @@ export default {
     return {
       testCase: null,
       currentStep: 1,
+      distributionIdOfSentMessage: null,
       selectedMessageType: 'message',
       selectedClientId: null,
       selectedCaseIds: [],
@@ -178,7 +184,65 @@ export default {
     },
     submitMessage (message) {
       const builtMessage = this.buildMessage(message)
+      this.distributionIdOfSentMessage = builtMessage.distributionID
       this.sendMessage(builtMessage)
+    },
+    getAwaitedValues (step) {
+      if (step.type === 'receive') {
+        return step.message.requiredValues
+      } else {
+        return this.getAwaitedReferenceDistributionIdJson()
+      }
+    },
+    getAwaitedReferenceDistributionIdJson () {
+      const json = {
+        reference: {
+          distributionID: this.distributionIdOfSentMessage
+        }
+      }
+      return json
+    },
+    flattenObject (ob) {
+      const toReturn = {}
+
+      for (const i in ob) {
+        if (!Object.prototype.hasOwnProperty.call(ob, i)) {
+          continue
+        }
+        if ((typeof ob[i]) === 'object' && ob[i] !== null) {
+          const flatObject = this.flattenObject(ob[i])
+          for (const x in flatObject) {
+            if (!Object.prototype.hasOwnProperty.call(flatObject, x)) {
+              continue
+            }
+            toReturn[i + '.' + x] = flatObject[x]
+          }
+        } else {
+          toReturn[i] = ob[i]
+        }
+      }
+      return toReturn
+    },
+    checkMessageContainsAllValues (message, requiredValues) {
+      const flattenedMessage = this.flattenObject(message)
+      const flattenedRequiredValues = this.flattenObject(requiredValues)
+      for (const requiredProp in flattenedRequiredValues) {
+        let propFound = false
+        for (const messageProp in flattenedMessage) {
+          if (messageProp.endsWith(requiredProp)) {
+            if (flattenedMessage[messageProp] !== flattenedRequiredValues[requiredProp]) {
+              return false
+            } else {
+              propFound = true
+              break
+            }
+          }
+        }
+        if (!propFound) {
+          return false
+        }
+      }
+      return true
     }
   }
 }

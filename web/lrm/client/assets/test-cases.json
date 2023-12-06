@@ -7,6 +7,19 @@
         "type": "receive",
         "label": "Réception d'un message EDA",
         "message": {
+          "requiredValues": {
+            "createCase" : {
+              "qualification" : {
+                "locationKind" : {
+                  "code" : "L02.01.00"
+                }
+              },
+              "initialAlert" : {
+                "reporting" : "STANDARD"
+              },
+              "referenceVersion": "1.2"
+            }
+          },
           "label": "RC-EDA",
           "file": "RC-EDA Armaury VF.json",
           "icon": "mdi-bike-fast",
@@ -23,6 +36,25 @@
         "type": "receive",
         "label": "Réception d'un message DC",
         "message": {
+          "requiredValues": {
+            "emsi" : {
+              "CONTEXT" : {
+                "MODE" : "ACTUAL"
+              },
+              "EVENT" : {
+                "ETYPE" : {
+                  "CATEGORY" : [
+                    "/TRP/COL"
+                  ]
+                }
+              },
+              "MISSION" : [
+                {
+                  "TYPE" : "/GEN/SCNMNG"
+                }
+              ]
+            }
+          },
           "label": "EMSI-DC",
           "file": "EMSI-DC Armaury VF.json",
           "icon": "mdi-bike-fast",
