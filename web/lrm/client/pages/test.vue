@@ -7,8 +7,8 @@
       <v-list>
         <v-expansion-panels>
           <v-expansion-panel
-            v-for="testCase in testCases"
-            :key="testCase.label"
+            v-for="(testCase, caseIndex) in testCases"
+            :key="testCase.label + '-' + caseIndex"
           >
             <v-expansion-panel-header>
               <v-list-item-content>
@@ -49,6 +49,8 @@
 
 <script>
 
+import testCaseFile from '~/assets/test-cases.json'
+
 export default {
   name: 'Test',
   data () {
@@ -69,13 +71,8 @@ export default {
     this.loadTestCases()
   },
   methods: {
-    async loadTestCases () {
-      try {
-        const response = await this.$axios.get('/test-cases/Receive-EDA-DC-Send-RDC.json')
-        this.testCases.push(response.data)
-      } catch (error) {
-        console.error(error)
-      }
+    loadTestCases () {
+      this.testCases = testCaseFile
     },
     goToTestCase (testCase) {
       this.$store.dispatch('resetMessages')
