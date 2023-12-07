@@ -14,7 +14,7 @@
                 class="message mb-4"
                 :class="{ stale: message.stale, validated: message.validated }"
               />
-              <p>Validation result: {{ checkMessageContainsAllValues(message, testCase.steps[currentStep-1]?.type === 'receive' ? testCase?.steps[currentStep-1]?.message?.requiredValues : getAwaitedReferenceDistributionIdJson()) }}</p>
+              <p>Validation result: {{ testCase.steps[currentStep-1]?.type === 'receive' ? checkMessageContainsAllRequiredValues(message, testCase?.steps[currentStep-1]?.message?.requiredValues) : checkAcknowledgementContainsReferenceDistributionId(message, getAwaitedReferenceDistributionIdJson()) }}</p>
               <v-btn v-if="!(message.validated || message.stale) && (!isOut(message.direction))" :key="'button'+index" color="primary" @click="validateMessage(index, true)">
                 Valider
               </v-btn>
@@ -150,6 +150,7 @@ export default {
   created () {
     this.resetEverything()
     this.testCase = this.$route.params.testCase
+    this.selectRandomValuesForTestCase()
   },
   mounted () {
     this.loadJsonSteps()
@@ -157,6 +158,13 @@ export default {
   methods: {
     resetEverything () {
       this.currentStep = 1
+    },
+    selectRandomValuesForTestCase () {
+      this.testCase.steps.forEach((step) => {
+        if (step.type === 'receive') {
+          step.message.requiredValues = this.selectRandomValuesForStep(step.message)
+        }
+      })
     },
     loadJsonSteps () {
       this.testCase.steps.map(async (step) => {
@@ -189,7 +197,11 @@ export default {
     },
     getAwaitedValues (step) {
       if (step.type === 'receive') {
-        return step.message.requiredValues
+        const requiredValuesObject = {}
+        step.message.requiredValues.forEach((entry) => {
+          requiredValuesObject[entry.path] = entry.value
+        })
+        return requiredValuesObject
       } else {
         return this.getAwaitedReferenceDistributionIdJson()
       }
@@ -223,7 +235,17 @@ export default {
       }
       return toReturn
     },
-    checkMessageContainsAllValues (message, requiredValues) {
+    selectRandomValuesForStep (step) {
+      const selectedValues = []
+      step.requiredValues.forEach((entry, index) => {
+        selectedValues[index] = {
+          path: entry.path,
+          value: entry.value[Math.floor(Math.random() * entry.value.length)]
+        }
+      })
+      return selectedValues
+    },
+    checkAcknowledgementContainsReferenceDistributionId (message, requiredValues) {
       const flattenedMessage = this.flattenObject(message)
       const flattenedRequiredValues = this.flattenObject(requiredValues)
       for (const requiredProp in flattenedRequiredValues) {
@@ -243,6 +265,17 @@ export default {
         }
       }
       return true
+    },
+    checkMessageContainsAllRequiredValues (message, requiredValues) {
+      const jp = require('jsonpath')
+      return requiredValues.every(function (element) {
+        const result = jp.query(message.body.content[0].jsonContent.embeddedJsonContent.message, element.path)
+        if (result.length === 0 || !result.includes(element.value)) {
+          return false
+        } else {
+          return true
+        }
+      })
     }
   }
 }

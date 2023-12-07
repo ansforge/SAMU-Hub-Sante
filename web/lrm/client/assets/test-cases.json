@@ -7,19 +7,20 @@
         "type": "receive",
         "label": "Réception d'un message EDA",
         "message": {
-          "requiredValues": {
-            "createCase" : {
-              "qualification" : {
-                "locationKind" : {
-                  "code" : "L02.01.00"
-                }
-              },
-              "initialAlert" : {
-                "reporting" : "STANDARD"
-              },
-              "referenceVersion": "1.2"
+          "requiredValues": [
+            {
+              "path":"$.createCase.qualification.locationKind.code",
+              "value":["L02.01.00","L03.01.00"]
+            },
+            {
+              "path":"$.createCase.initialAlert.reporting",
+              "value": ["STANDARD","ATTENTION"]
+            },
+            {
+              "path":"$.createCase.referenceVersion",
+              "value": ["1.2","1.3"]
             }
-          },
+          ],
           "label": "RC-EDA",
           "file": "RC-EDA Armaury VF.json",
           "icon": "mdi-bike-fast",
@@ -36,25 +37,20 @@
         "type": "receive",
         "label": "Réception d'un message DC",
         "message": {
-          "requiredValues": {
-            "emsi" : {
-              "CONTEXT" : {
-                "MODE" : "ACTUAL"
-              },
-              "EVENT" : {
-                "ETYPE" : {
-                  "CATEGORY" : [
-                    "/TRP/COL"
-                  ]
-                }
-              },
-              "MISSION" : [
-                {
-                  "TYPE" : "/GEN/SCNMNG"
-                }
-              ]
+          "requiredValues": [
+            {
+              "path":"$.emsi.CONTEXT.MODE",
+              "value":["ACTUAL","EXERCS"]
+            },
+            {
+              "path":"$.emsi.EVENT.ETYPE.CATEGORY[0]",
+              "value": ["/TRP/COL","/PSW/PRSUIT"]
+            },
+            {
+              "path":"$.emsi.MISSION.TYPE",
+              "value": ["/GEN/SCNMNG","/C2/DNRSKA"]
             }
-          },
+          ],
           "label": "EMSI-DC",
           "file": "EMSI-DC Armaury VF.json",
           "icon": "mdi-bike-fast",
@@ -86,7 +82,7 @@
     ]
   },
   {
-    "label": "Cas de test 1",
+    "label": "Cas de test 2",
     "description": "Réception des messages EDA et DC, envoi d'une réponse RDC",
     "steps": [
       {
