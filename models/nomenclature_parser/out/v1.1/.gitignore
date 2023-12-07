@@ -1,6 +1,0 @@
-*.csv
-*.pdf
-*.docx
-!sommaire_example.docx
-!csv_example.csv
-!pdf_example.pdf
