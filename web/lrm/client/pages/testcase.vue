@@ -14,10 +14,6 @@
                 class="message mb-4"
                 :class="{ stale: message.stale, validated: message.validated }"
               />
-              <p>Validation result: {{ testCase.steps[currentStep-1]?.type === 'receive' ? checkMessageContainsAllRequiredValues(message, testCase?.steps[currentStep-1]?.message?.requiredValues) : checkAcknowledgementContainsReferenceDistributionId(message, getAwaitedReferenceDistributionIdJson()) }}</p>
-              <v-btn v-if="!(message.validated || message.stale) && (!isOut(message.direction))" :key="'button'+index" color="primary" @click="validateMessage(index, true)">
-                Valider
-              </v-btn>
               <v-btn v-if="message.validated" :key="'validated-label'+index" color="success" style="pointer-events: none;">
                 <v-icon v-if="message.validated" :key="'icon'+index" class="validated-icon">
                   mdi-check
@@ -147,6 +143,21 @@ export default {
       return [...new Set(this.selectedTypeMessages.map(this.getCaseId))]
     }
   },
+  watch: {
+    selectedTypeCaseMessages: {
+      handler (newMessages) {
+        if (newMessages.length > 0) {
+          const lastMessage = newMessages[0]
+          if (!lastMessage.isOut) {
+            if (this.checkMessage(lastMessage)) {
+              this.validateMessage(this.selectedTypeCaseMessages.indexOf(lastMessage), true)
+            }
+          }
+        }
+      },
+      deep: true
+    }
+  },
   created () {
     this.resetEverything()
     this.testCase = this.$route.params.testCase
@@ -244,6 +255,13 @@ export default {
         }
       })
       return selectedValues
+    },
+    checkMessage (message) {
+      if (this.testCase.steps[this.currentStep - 1].type === 'receive') {
+        return this.checkMessageContainsAllRequiredValues(message, this.testCase.steps[this.currentStep - 1].message.requiredValues)
+      } else {
+        return this.checkAcknowledgementContainsReferenceDistributionId(message, this.getAwaitedReferenceDistributionIdJson())
+      }
     },
     checkAcknowledgementContainsReferenceDistributionId (message, requiredValues) {
       const flattenedMessage = this.flattenObject(message)

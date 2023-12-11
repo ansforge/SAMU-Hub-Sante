@@ -47,7 +47,7 @@
               "value": ["/TRP/COL","/PSW/PRSUIT"]
             },
             {
-              "path":"$.emsi.MISSION.TYPE",
+              "path":"$.emsi.MISSION[0].TYPE",
               "value": ["/GEN/SCNMNG","/C2/DNRSKA"]
             }
           ],
