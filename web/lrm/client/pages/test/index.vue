@@ -9,6 +9,7 @@
           <v-expansion-panel
             v-for="(testCase, caseIndex) in testCases"
             :key="testCase.label + '-' + caseIndex"
+            @click="loadTestCaseJsons(testCase)"
           >
             <v-expansion-panel-header>
               <v-list-item-content>
@@ -32,8 +33,25 @@
                   <v-timeline-item v-for="step, index in testCase.steps" :key="step.label" :left="step.type === 'receive'" :right="step.type !== 'receive'">
                     <v-list-item>
                       <v-list-item-content>
-                        <v-list-item-title>{{ index + 1 }}. {{ step.label }}</v-list-item-title>
-                        <exampleDetails v-bind="step.message" />
+                        <v-list-item-title>{{ index + 1 }}. {{ step.label }} {{ step.type==='receive' ? 'contenant les valeurs :' : 'avec le contenu suivant :' }}</v-list-item-title>
+                        <template v-if="step.type === 'receive'">
+                          <v-list>
+                            <v-list-item v-for="requiredValue in step.message.requiredValues" :key="requiredValue.index">
+                              <v-list-item-content>
+                                {{ requiredValue }}
+                              </v-list-item-content>
+                            </v-list-item>
+                          </v-list>
+                        </template>
+                        <template v-else>
+                          <json-viewer
+                            :value="step.json ? step.json : ''"
+                            :expand-depth="10"
+                            :copyable="{copyText: 'Copier', copiedText: 'Copié !', timeout: 1000}"
+                            expanded
+                            theme="json-theme"
+                          />
+                        </template>
                       </v-list-item-content>
                     </v-list-item>
                   </v-timeline-item>
@@ -71,8 +89,22 @@ export default {
     this.loadTestCases()
   },
   methods: {
+    /**
+     * Copies the test cases from the JSON file to the component data,
+     * resetting any potential changes to the test cases made during
+     * test execution.
+     */
     loadTestCases () {
       this.testCases = JSON.parse(JSON.stringify(testCaseFile))
+    },
+    loadTestCaseJsons (testCase) {
+      testCase.steps.forEach(async (step) => {
+        if (step.type === 'send') {
+          const response = await fetch('/examples/' + step.message.file)
+          const json = await response.json()
+          this.$set(step, 'json', json)
+        }
+      })
     },
     goToTestCase (testCase) {
       this.$store.dispatch('resetMessages')
