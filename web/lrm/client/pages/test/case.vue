@@ -144,6 +144,9 @@ export default {
     }
   },
   watch: {
+    /**
+     * Checks and potentially validates the last message if it is not an outgoing message
+     */
     selectedTypeCaseMessages: {
       handler (newMessages) {
         if (newMessages.length > 0) {
@@ -159,7 +162,7 @@ export default {
     }
   },
   created () {
-    this.resetEverything()
+    this.currentStep = 1
     this.testCase = this.$route.params.testCase
     this.selectRandomValuesForTestCase()
   },
@@ -167,9 +170,10 @@ export default {
     this.loadJsonSteps()
   },
   methods: {
-    resetEverything () {
-      this.currentStep = 1
-    },
+    /**
+     * Selects one value randomly from the list of possible values
+     * for each required value in the test case
+     */
     selectRandomValuesForTestCase () {
       this.testCase.steps.forEach((step) => {
         if (step.type === 'receive') {
@@ -177,13 +181,27 @@ export default {
         }
       })
     },
+    /**
+     * Loads the related JSON message for the test case steps.
+     * Should only be necesary for 'send' steps, as 'receive' steps
+     * only expect specific key:value pairs in the message.
+     */
     loadJsonSteps () {
       this.testCase.steps.map(async (step) => {
-        const response = await fetch('/examples/' + step.message.file)
-        const json = await response.json()
-        this.$set(step, 'json', json)
+        if (step.type === 'send') {
+          const response = await fetch('/examples/' + step.message.file)
+          const json = await response.json()
+          this.$set(step, 'json', json)
+        }
       })
     },
+    /**
+     * Marks the message as validated, rcording the test case step at which it was validated
+     * and sends an acknowledgement if the message is not an acknowledgement itself and if
+     * it was indicated in the parameters.
+     * @param {*} index Index of the message in the list of messages
+     * @param {*} ack Indicates if an acknowledgement should be sent
+     */
     validateMessage (index, ack) {
       this.selectedTypeCaseMessages.forEach((message, i) => {
         if (i === index) {
@@ -195,23 +213,35 @@ export default {
               this.sendMessage(msg)
             }
           }
+        // We mark every other message currently present in the message array as stale, making them unvalidable
         } else if (!message.validated) {
           message.stale = true
         }
       })
       this.nextStep()
     },
+    /**
+     * Increments current test case step and sends a message if the step is a 'send' step after incrementing
+     */
     nextStep () {
       this.currentStep++
       if (this.testCase.steps[this.currentStep - 1]?.type === 'send') {
         this.submitMessage(this.testCase.steps[this.currentStep - 1].json)
       }
     },
+    /**
+     * Builds a message from the JSON and sends it
+     * @param {*} message JSON message to send
+     */
     submitMessage (message) {
       const builtMessage = this.buildMessage(message)
       this.distributionIdOfSentMessage = builtMessage.distributionID
       this.sendMessage(builtMessage)
     },
+    /**
+     * Returns the required values for a given step
+     * @param {*} step Step for which to return the required values
+     */
     getAwaitedValues (step) {
       if (step.type === 'receive') {
         const requiredValuesObject = {}
@@ -223,6 +253,10 @@ export default {
         return this.getAwaitedReferenceDistributionIdJson()
       }
     },
+    /**
+     * Returns the JSON object containing the reference distribution ID, which is the verified value
+     * during 'send' type steps
+     */
     getAwaitedReferenceDistributionIdJson () {
       const json = {
         reference: {
@@ -231,6 +265,10 @@ export default {
       }
       return json
     },
+    /**
+     * Utility function to flatten a JSON object
+     * @param {*} ob JSON object to flatten
+     */
     flattenObject (ob) {
       const toReturn = {}
 
@@ -252,6 +290,10 @@ export default {
       }
       return toReturn
     },
+    /**
+     * Select a random value for each required value in a step
+     * @param {*} step Step for which to select random values
+     */
     selectRandomValuesForStep (step) {
       const selectedValues = []
       step.requiredValues.forEach((entry, index) => {
@@ -262,6 +304,10 @@ export default {
       })
       return selectedValues
     },
+    /**
+     * Checks if a message contains all required values
+     * @param {*} message Message to check
+     */
     checkMessage (message) {
       if (this.testCase.steps[this.currentStep - 1].type === 'receive') {
         return this.checkMessageContainsAllRequiredValues(message, this.testCase.steps[this.currentStep - 1].message.requiredValues)
@@ -269,6 +315,11 @@ export default {
         return this.checkAcknowledgementContainsReferenceDistributionId(message, this.getAwaitedReferenceDistributionIdJson())
       }
     },
+    /**
+     * Checks if an acknowledgement contains the indicated reference distribution ID
+     * @param {*} message Acknowledgement to check
+     * @param {*} requiredValues Reference distribution ID to check
+     */
     checkAcknowledgementContainsReferenceDistributionId (message, requiredValues) {
       const flattenedMessage = this.flattenObject(message)
       const flattenedRequiredValues = this.flattenObject(requiredValues)
@@ -290,6 +341,11 @@ export default {
       }
       return true
     },
+    /**
+     * Checks if a message contains all required values
+     * @param {*} message Message to check
+     * @param {*} requiredValues Required values to check
+     */
     checkMessageContainsAllRequiredValues (message, requiredValues) {
       const jp = require('jsonpath')
       return requiredValues.every(function (element) {
