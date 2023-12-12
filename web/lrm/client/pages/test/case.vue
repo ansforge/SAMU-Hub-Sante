@@ -199,7 +199,13 @@ export default {
           message.stale = true
         }
       })
+      this.nextStep()
+    },
+    nextStep () {
       this.currentStep++
+      if (this.testCase.steps[this.currentStep - 1]?.type === 'send') {
+        this.submitMessage(this.testCase.steps[this.currentStep - 1].json)
+      }
     },
     submitMessage (message) {
       const builtMessage = this.buildMessage(message)
