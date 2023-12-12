@@ -257,7 +257,7 @@ export default {
       step.requiredValues.forEach((entry, index) => {
         selectedValues[index] = {
           path: entry.path,
-          value: entry.value[Math.floor(Math.random() * entry.value.length)]
+          value: Array.isArray(entry.value) ? entry.value[Math.floor(Math.random() * entry.value.length)] : entry.value
         }
       })
       return selectedValues

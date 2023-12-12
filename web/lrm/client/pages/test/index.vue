@@ -72,7 +72,7 @@ export default {
   },
   methods: {
     loadTestCases () {
-      this.testCases = testCaseFile
+      this.testCases = JSON.parse(JSON.stringify(testCaseFile))
     },
     goToTestCase (testCase) {
       this.$store.dispatch('resetMessages')
