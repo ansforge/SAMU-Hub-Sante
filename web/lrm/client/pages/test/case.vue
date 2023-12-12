@@ -149,7 +149,7 @@ export default {
      */
     selectedTypeCaseMessages: {
       handler (newMessages) {
-        if (newMessages.length > 0) {
+        if (this.currentStep <= this.testCase.steps.length && newMessages.length > 0) {
           const lastMessage = newMessages[0]
           if (!lastMessage.isOut) {
             if (this.checkMessage(lastMessage)) {
@@ -168,6 +168,9 @@ export default {
   },
   mounted () {
     this.loadJsonSteps()
+    if (this.testCase.steps[this.currentStep - 1]?.type === 'send') {
+      this.submitMessage(this.testCase.steps[this.currentStep - 1].json)
+    }
   },
   methods: {
     /**
