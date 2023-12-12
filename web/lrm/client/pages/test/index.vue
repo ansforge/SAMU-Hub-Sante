@@ -77,7 +77,7 @@ export default {
     goToTestCase (testCase) {
       this.$store.dispatch('resetMessages')
       this.$router.push({
-        name: 'testcase',
+        name: 'test-case',
         params: {
           testCase
         }
