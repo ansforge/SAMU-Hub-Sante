@@ -47,14 +47,11 @@
             <p v-if="getAwaitedValues(testCase.steps[currentStep-1]) === null">
               En attente de la réception de l'ID de distribution...
             </p>
-            <json-viewer
-              v-else
-              :value="getAwaitedValues(testCase.steps[currentStep-1])"
-              :expand-depth="10"
-              :copyable="{copyText: 'Copier', copiedText: 'Copié !', timeout: 1000}"
-              expanded
-              theme="json-theme"
-            />
+            <v-list v-for="(requiredValue, name, index) in getAwaitedValues(testCase.steps[currentStep-1])" :key="'requiredValue' + index">
+              <v-list-item-content :class="{}">
+                {{ name }} : {{ requiredValue }}
+              </v-list-item-content>
+            </v-list>
           </v-card-text>
           <v-card-actions v-if="testCase.steps[currentStep-1]?.type === 'send'">
             <v-btn color="primary" @click="submitMessage(testCase.steps[currentStep-1].json)">
@@ -153,7 +150,7 @@ export default {
           const lastMessage = newMessages[0]
           if (!lastMessage.isOut) {
             if (this.checkMessage(lastMessage)) {
-              this.validateMessage(this.selectedTypeCaseMessages.indexOf(lastMessage), true)
+              this.validateMessage(newMessages.indexOf(lastMessage), true)
             }
           }
         }
