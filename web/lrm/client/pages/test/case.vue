@@ -49,13 +49,36 @@
             </p>
             <v-list v-for="(requiredValue, name, index) in getAwaitedValues(testCase.steps[currentStep-1])" :key="'requiredValue' + index">
               <v-list-item-content class="d-flex flex-wrap">
-                <v-icon v-if="requiredValue.valid" style="flex:0" color="success">
+                <v-icon v-if="requiredValue.valid || testCase.steps[currentStep-1].message.validatedAcknowledgement" style="flex:0" color="success">
                   mdi-check
-                </v-icon> <v-icon v-else-if="requiredValue.valid===false" style="flex:0" color="error">
+                </v-icon> <v-icon v-else style="flex:0" color="error">
                   mdi-close
                 </v-icon>
                 <pre style="flex:0">{{ requiredValue.value ? name : 'distributionID' }} : {{ requiredValue.value ? requiredValue.value : requiredValue.distributionID }}</pre>
               </v-list-item-content>
+            </v-list>
+            <v-list v-if="testCase.steps[currentStep-1]?.type === 'send'">
+              <!-- Generate an input for each requiredValue with the path used as label. User will enter a value for each requiredValue and then press a button to verify that all the values entered correspond to the values in the requiredValues-->
+              <v-list-item v-for="(requiredValue, index) in testCase.steps[currentStep-1].message.requiredValues" :key="'requiredValue' + index">
+                <v-list-item-content>
+                  <v-icon v-if="requiredValue.valid " style="flex:0" color="success">
+                    mdi-check
+                  </v-icon>
+                  <v-icon v-else style="flex:0" color="error">
+                    mdi-close
+                  </v-icon>
+                  <v-text-field
+                    v-model="requiredValue.enteredValue"
+                    :label="requiredValue.path"
+                    :rules="[v => !!v || 'Valeur requise']"
+                    required
+                  />
+                </v-list-item-content>
+              </v-list-item>
+              <!-- Button that would execute the verification of value conformity -->
+              <v-btn v-if="!testCase.steps[currentStep-1].message.validatedReceivedValues" color="primary" @click="validateEnteredValues(currentStep-1)">
+                Valider
+              </v-btn>
             </v-list>
           </v-card-text>
           <v-card-actions v-if="testCase.steps[currentStep-1]?.type === 'send'">
@@ -154,7 +177,8 @@ export default {
           const lastMessage = newMessages[0]
           if (!lastMessage.isOut) {
             if (this.checkMessage(lastMessage)) {
-              this.validateMessage(newMessages.indexOf(lastMessage), true)
+              const shouldStayOnStep = this.testCase.steps[this.currentStep - 1].type === 'send' && !(this.testCase.steps[this.currentStep - 1].message.validatedAcknowledgement && this.testCase.steps[this.currentStep - 1].message.validatedReceivedValues)
+              this.validateMessage(newMessages.indexOf(lastMessage), true, shouldStayOnStep)
             }
           }
         }
@@ -180,9 +204,7 @@ export default {
      */
     selectRandomValuesForTestCase () {
       this.testCase.steps.forEach((step) => {
-        if (step.type === 'receive') {
-          step.message.requiredValues = this.selectRandomValuesForStep(step.message)
-        }
+        step.message.requiredValues = this.selectRandomValuesForStep(step.message)
       })
     },
     /**
@@ -205,8 +227,9 @@ export default {
      * it was indicated in the parameters.
      * @param {*} index Index of the message in the list of messages
      * @param {*} ack Indicates if an acknowledgement should be sent
+     * @param {*} stayOnStep Indicates if the test case should stay on the current step or move to the next one
      */
-    validateMessage (index, ack) {
+    validateMessage (index, ack, stayOnStep = false) {
       this.selectedTypeCaseMessages.forEach((message, i) => {
         if (i === index) {
           message.validatedStep = this.currentStep - 1
@@ -222,7 +245,9 @@ export default {
           message.stale = true
         }
       })
-      this.nextStep()
+      if (!stayOnStep) {
+        this.nextStep()
+      }
     },
     /**
      * Increments current test case step and sends a message if the step is a 'send' step after incrementing
@@ -259,6 +284,31 @@ export default {
       } else {
         return this.getAwaitedReferenceDistributionIdJson(step)
       }
+    },
+    /**
+     * Verifies that the values entered by the user are the same as the required values (for 'send' type steps)
+     * These values are stored in the 'requiredValues' array of the step, and replace the relevant values in the JSON when the message is sent
+     * @param {*} step
+     */
+    validateEnteredValues (step) {
+      const requiredValues = this.testCase.steps[step].message.requiredValues
+      let valid = true
+      requiredValues.forEach((entry) => {
+        if (entry.enteredValue !== entry.value) {
+          valid = false
+          entry.valid = false
+        } else {
+          entry.valid = true
+        }
+      })
+      if (valid) {
+        this.testCase.steps[step].message.validatedReceivedValues = true
+        // Also go to next step if the acknowledgement has already been validated
+        if (this.testCase.steps[step].message.validatedAcknowledgement) {
+          this.nextStep()
+        }
+      }
+      this.$forceUpdate()
     },
     /**
      * Returns the JSON object containing the reference distribution ID for a specific step, which is the verified value
@@ -318,8 +368,14 @@ export default {
     checkMessage (message) {
       if (this.testCase.steps[this.currentStep - 1].type === 'receive') {
         return this.checkMessageContainsAllRequiredValues(message, this.testCase.steps[this.currentStep - 1].message.requiredValues)
-      } else {
-        return this.checkAcknowledgementContainsReferenceDistributionId(message, this.getAwaitedReferenceDistributionIdJson(this.testCase.steps[this.currentStep - 1]))
+      } else if (!this.testCase.steps[this.currentStep - 1].message.validatedAcknowledgement) {
+        message.validatedAcknowledgement = this.checkAcknowledgementContainsReferenceDistributionId(message, this.getAwaitedReferenceDistributionIdJson(this.testCase.steps[this.currentStep - 1]))
+        this.testCase.steps[this.currentStep - 1].message.validatedAcknowledgement = message.validatedAcknowledgement
+        if (message.validatedAcknowledgement) {
+          this.validateMessage(this.selectedTypeCaseMessages.indexOf(message), false, true)
+        }
+        this.$forceUpdate()
+        return this.testCase.steps[this.currentStep - 1].message.validatedAcknowledgement && this.testCase.steps[this.currentStep - 1].message.validatedReceivedValues
       }
     },
     /**

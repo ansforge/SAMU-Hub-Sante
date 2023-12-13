@@ -10,15 +10,15 @@
           "requiredValues": [
             {
               "path":"$.createCase.qualification.locationKind.code",
-              "value":["L02.01.00","L03.01.00"]
+              "value":["L02.01.00"]
             },
             {
               "path":"$.createCase.initialAlert.reporting",
-              "value": ["STANDARD","ATTENTION"]
+              "value": ["STANDARD"]
             },
             {
               "path":"$.createCase.referenceVersion",
-              "value": ["1.2","1.3"]
+              "value": ["1.2"]
             }
           ],
           "label": "RC-EDA",
@@ -40,15 +40,15 @@
           "requiredValues": [
             {
               "path":"$.emsi.CONTEXT.MODE",
-              "value":["ACTUAL","EXERCS"]
+              "value":["ACTUAL"]
             },
             {
               "path":"$.emsi.EVENT.ETYPE.CATEGORY[0]",
-              "value": ["/TRP/COL","/PSW/PRSUIT"]
+              "value": ["/TRP/COL"]
             },
             {
               "path":"$.emsi.MISSION[0].TYPE",
-              "value": ["/GEN/SCNMNG","/C2/DNRSKA"]
+              "value": ["/GEN/SCNMNG"]
             }
           ],
           "label": "EMSI-DC",
@@ -67,6 +67,10 @@
         "type": "send",
         "label": "Envoi d'un message RDC",
         "message": {
+          "requiredValues": [{
+            "path":"$.emsi.CONTEXT.FREETEXT",
+            "value":["TEST"]
+          }],
           "label": "EMSI-EO RDC",
           "file": "EMSI-EO Test RDC VF.json",
           "icon": "mdi-bike-fast",
