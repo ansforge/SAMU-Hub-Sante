@@ -48,8 +48,13 @@
               En attente de la réception de l'ID de distribution...
             </p>
             <v-list v-for="(requiredValue, name, index) in getAwaitedValues(testCase.steps[currentStep-1])" :key="'requiredValue' + index">
-              <v-list-item-content :class="{}">
-                {{ name }} : {{ requiredValue }}
+              <v-list-item-content class="d-flex flex-wrap">
+                <v-icon v-if="requiredValue.valid" style="flex:0" color="success">
+                  mdi-check
+                </v-icon> <v-icon v-else-if="requiredValue.valid===false" style="flex:0" color="error">
+                  mdi-close
+                </v-icon>
+                <pre style="flex:0">{{ requiredValue.value ? name : 'distributionID' }} : {{ requiredValue.value ? requiredValue.value : requiredValue.distributionID }}</pre>
               </v-list-item-content>
             </v-list>
           </v-card-text>
@@ -86,7 +91,6 @@ export default {
     return {
       testCase: null,
       currentStep: 1,
-      distributionIdOfSentMessage: null,
       selectedMessageType: 'message',
       selectedClientId: null,
       selectedCaseIds: [],
@@ -235,7 +239,7 @@ export default {
      */
     submitMessage (message) {
       const builtMessage = this.buildMessage(message)
-      this.distributionIdOfSentMessage = builtMessage.distributionID
+      this.testCase.steps[this.currentStep - 1].message.awaitedReferenceDistributionID = builtMessage.distributionID
       this.sendMessage(builtMessage)
     },
     /**
@@ -246,21 +250,24 @@ export default {
       if (step.type === 'receive') {
         const requiredValuesObject = {}
         step.message.requiredValues.forEach((entry) => {
-          requiredValuesObject[entry.path] = entry.value
+          requiredValuesObject[entry.path] = {
+            value: entry.value,
+            valid: entry.valid
+          }
         })
         return requiredValuesObject
       } else {
-        return this.getAwaitedReferenceDistributionIdJson()
+        return this.getAwaitedReferenceDistributionIdJson(step)
       }
     },
     /**
-     * Returns the JSON object containing the reference distribution ID, which is the verified value
+     * Returns the JSON object containing the reference distribution ID for a specific step, which is the verified value
      * during 'send' type steps
      */
-    getAwaitedReferenceDistributionIdJson () {
+    getAwaitedReferenceDistributionIdJson (step) {
       const json = {
         reference: {
-          distributionID: this.distributionIdOfSentMessage
+          distributionID: step?.message?.awaitedReferenceDistributionID
         }
       }
       return json
@@ -312,7 +319,7 @@ export default {
       if (this.testCase.steps[this.currentStep - 1].type === 'receive') {
         return this.checkMessageContainsAllRequiredValues(message, this.testCase.steps[this.currentStep - 1].message.requiredValues)
       } else {
-        return this.checkAcknowledgementContainsReferenceDistributionId(message, this.getAwaitedReferenceDistributionIdJson())
+        return this.checkAcknowledgementContainsReferenceDistributionId(message, this.getAwaitedReferenceDistributionIdJson(this.testCase.steps[this.currentStep - 1]))
       }
     },
     /**
@@ -348,14 +355,19 @@ export default {
      */
     checkMessageContainsAllRequiredValues (message, requiredValues) {
       const jp = require('jsonpath')
-      return requiredValues.every(function (element) {
+      let valid = true
+
+      requiredValues.forEach(function (element) {
         const result = jp.query(message.body.content[0].jsonContent.embeddedJsonContent.message, element.path)
         if (result.length === 0 || !result.includes(element.value)) {
-          return false
+          valid = false
+          element.valid = false
         } else {
-          return true
+          element.valid = true
         }
       })
+      this.$forceUpdate()
+      return valid
     }
   }
 }
