@@ -6,6 +6,10 @@ export default {
   mounted () {
     this.wsConnect()
   },
+  beforeRouteLeave (to, from, next) {
+    this.wsDisconnect()
+    next()
+  },
   methods: {
     wsConnect () {
       this.socket = new WebSocket(process.env.wssUrl)
@@ -14,6 +18,10 @@ export default {
       }
 
       this.socket.onclose = (e) => {
+        if (this.disconnect) {
+          this.disconnect = false
+          return
+        }
         console.log(`WebSocket ${this.$options.name} connection closed`, e)
         // Retry connection
         setTimeout(() => {
@@ -44,6 +52,11 @@ export default {
           }
         })
       }
+    },
+    wsDisconnect () {
+      console.log(`Disconnecting : WebSocket ${this.$options.name} connection closed`)
+      this.socket.close()
+      this.disconnect = true
     },
     isOut (direction) {
       return direction === DIRECTIONS.OUT
