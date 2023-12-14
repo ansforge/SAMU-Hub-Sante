@@ -255,17 +255,30 @@ export default {
     nextStep () {
       this.currentStep++
       if (this.testCase.steps[this.currentStep - 1]?.type === 'send') {
-        this.submitMessage(this.testCase.steps[this.currentStep - 1].json)
+        this.submitMessage(this.testCase.steps[this.currentStep - 1])
       }
     },
     /**
      * Builds a message from the JSON and sends it
      * @param {*} message JSON message to send
      */
-    submitMessage (message) {
+    submitMessage (step) {
+      let message = step.json
+      // Use the required values to replace the corresponding values in the message
+      message = this.replaceValues(message, step.message.requiredValues)
       const builtMessage = this.buildMessage(message)
       this.testCase.steps[this.currentStep - 1].message.awaitedReferenceDistributionID = builtMessage.distributionID
       this.sendMessage(builtMessage)
+    },
+    /**
+     * Replaces values in a message using path:value pairs
+     */
+    replaceValues (message, requiredValues) {
+      const jp = require('jsonpath')
+      requiredValues.forEach((entry) => {
+        jp.value(message, entry.path, entry.value)
+      })
+      return message
     },
     /**
      * Returns the required values for a given step
