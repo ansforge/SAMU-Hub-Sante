@@ -1,6 +1,6 @@
 [
   {
-    "label": "Cas de test 1",
+    "label": "Reception EDA - DC, Envoi RDC",
     "description": "Réception des messages EDA et DC, envoi d'une réponse RDC",
     "steps": [
       {
@@ -86,7 +86,7 @@
     ]
   },
   {
-    "label": "Cas de test 2",
+    "label": "Placeholder testcase",
     "description": "Réception des messages EDA et DC, envoi d'une réponse RDC",
     "steps": [
       {

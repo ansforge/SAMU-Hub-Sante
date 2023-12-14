@@ -11,13 +11,22 @@
             :key="testCase.label + '-' + caseIndex"
             @click="loadTestCaseJsons(testCase)"
           >
-            <v-expansion-panel-header>
+            <v-expansion-panel-header class="ma-0 pa-0">
               <v-list-item-content>
-                <v-list-item-title><v-card-title>{{ testCase.label }}</v-card-title></v-list-item-title>
-                <v-list-item-subtitle><v-card-text>{{ testCase.description }}</v-card-text></v-list-item-subtitle>
+                <v-list-item-title>
+                  <v-card-title class="pt-0 pb-0">
+                    {{ testCase.label }}
+                  </v-card-title>
+                </v-list-item-title>
+                <v-list-item-subtitle>
+                  <v-card-text class="pt-1 pb-0">
+                    {{ testCase.description }}
+                  </v-card-text>
+                </v-list-item-subtitle>
               </v-list-item-content>
               <v-spacer />
               <v-btn
+                style="flex-grow: 0;"
                 color="primary"
                 @click="goToTestCase(testCase)"
               >
@@ -118,3 +127,8 @@ export default {
   }
 }
 </script>
+<style>
+  div.v-card__text {
+    width: fit-content;
+  }
+</style>
