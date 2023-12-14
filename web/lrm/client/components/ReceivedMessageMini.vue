@@ -9,46 +9,14 @@
       <status-badge :direction="direction" :acked="acked" :distribution-id="body.distributionID" :class="{'ml-5': showSentMessages}" />
     </div>
     <div class="elevation-4 pt-8" :class="{'grey lighten-4': isOut(direction)}">
-      <v-row class="mx-4">
+      <v-row class="mx-4 pb-2">
         <span>
           <v-icon small left>mdi-email-fast</v-icon>{{ direction }} {{ isOut(direction) ? routingKey : body.senderID }}
           <br>
           <v-icon small left>mdi-timer</v-icon>{{ time }} → {{ isOut(direction) ? acked?.time : receivedTime }}
+          <br> {{ messageType }}<span v-if="!isOut(direction)">, Valeurs valides: {{ validatedValuesCount }} / {{ requiredValuesCount }} </span>
         </span>
-        <v-spacer />
-        <div v-if="getMessageType({body}) !== 'ack' && !isOut(direction)">
-          <v-btn
-            icon
-            :color="acked ? 'accent' : 'primary'"
-            @click="sendAck"
-          >
-            <v-icon>mdi-check-all</v-icon>
-          </v-btn>
-        </div>
-        <v-btn
-          v-if="getMessageType({body}) !== 'ack'"
-          icon
-          color="primary"
-          @click="useMessageToReply"
-        >
-          <v-icon>mdi-reply</v-icon>
-        </v-btn>
-        <v-btn
-          icon
-          color="primary"
-          @click="showFullMessage = !showFullMessage"
-        >
-          <v-icon>{{ showFullMessage ? 'mdi-magnify-plus-outline' : 'mdi-magnify-minus-outline' }}</v-icon>
-        </v-btn>
       </v-row>
-
-      <json-viewer
-        :value="showFullMessage ? body : body.content[0].jsonContent.embeddedJsonContent.message"
-        :expand-depth="jsonDepth"
-        :copyable="{copyText: 'Copier', copiedText: 'Copié !', timeout: 1000}"
-        expanded
-        theme="json-theme"
-      />
     </div>
   </div>
 </template>
@@ -65,15 +33,23 @@ export default {
       type: String,
       required: true
     },
-    jsonDepth: {
+    requiredValuesCount: {
       type: Number,
-      default: 1
+      default: 0
+    },
+    validatedValuesCount: {
+      type: Number,
+      default: 0
     },
     routingKey: {
       type: String,
       required: true
     },
     time: {
+      type: String,
+      required: true
+    },
+    messageType: {
       type: String,
       required: true
     },
@@ -175,4 +151,7 @@ export default {
 .validated > *:last-child {
   background-color: rgba(76,175,80,0.2)
 }
+.selected > *.elevation-4:last-child  {
+  box-shadow: 0px 2px 4px -1px rgba(6, 123, 202, 0.6), 0px 4px 5px 0px rgba(6, 123, 202, 0.5), 0px 1px 10px 0px rgba(6, 123, 202, 0.12) !important
+ }
 </style>

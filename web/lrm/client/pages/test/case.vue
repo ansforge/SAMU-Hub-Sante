@@ -5,29 +5,45 @@
         <v-card-title class="headline pb-">
           Cas de test <span class="font-weight-bold">&nbsp;{{ testCase.label }} </span>
         </v-card-title>
-        <v-card-text class="main-card-content">
-          <template v-for="(message, index) in selectedTypeCaseMessages">
-            <div :key="'wrapper'+index" class="d-flex flex-column flex-wrap pb-3 pt-3">
-              <ReceivedMessage
-                v-bind="message"
-                :key="message.time"
-                class="message mb-4"
-                :class="{ stale: message.stale, validated: message.validated }"
-              />
-              <v-btn v-if="message.validated" :key="'validated-label'+index" color="success" style="pointer-events: none;">
-                <v-icon v-if="message.validated" :key="'icon'+index" class="validated-icon">
-                  mdi-check
-                </v-icon>
-                Validé pour le pas {{ message.validatedStep+1 }}. {{ testCase.steps[message.validatedStep].label }}
-              </v-btn>
-            </div>
-          </template>
+        <v-card-text class="main-card-content" style="display: flex; flex-direction: row;">
+          <div style="width:25%; min-width:17rem;" class="flex-column">
+            <template v-for="(message, index) in selectedTypeCaseMessages">
+              <div v-if="message.relatedStep===currentlySelectedStep-1" :key="'wrapper'+index" class="d-flex flex-column flex-wrap pb-1 pt-1" @click="setSelectedMessage(message)">
+                <ReceivedMessageMini
+                  :key="message.time"
+                  :validated-values-count="message?.validatedValuesCount"
+                  :required-values-count="testCase.steps[message.relatedStep]?.message?.requiredValues?.length"
+                  v-bind="message"
+                  class="message mb-4"
+                  :class="{ stale: message.stale, validated: message.validated, selected: selectedMessageIndex === index }"
+                />
+              </div>
+            </template>
+          </div>
+          <div v-if="selectedMessage?.relatedStep===currentlySelectedStep-1" style="width:100%;" class="pl-5 pt-1">
+            <!-- Details of selected message (last received or sent by default)-->
+            <ReceivedMessage
+              v-if="selectedMessage"
+              :key="selectedMessage?.time"
+              :json-depth="10"
+              v-bind="selectedMessage"
+              class="message mb-4"
+              :class="{ stale: selectedMessage?.stale, validated: selectedMessage?.validated }"
+            />
+          </div>
         </v-card-text>
         <v-card-actions>
           <v-stepper v-model="currentStep" class="stepper">
             <v-stepper-header>
               <template v-for="(step, index) in testCase.steps">
-                <v-stepper-step :key="index" :complete="index < currentStep-1" :step="index+1">
+                <v-stepper-step
+                  :key="index"
+                  style="cursor: pointer;"
+                  :color="getStepColor(index)"
+                  :complete="index < currentStep-1"
+                  :step="index+1"
+                  @click="currentlySelectedStep=index+1"
+                >
                   {{ step.label }}
                 </v-stepper-step>
                 <v-divider v-if="index < testCase.steps.length - 1" :key="'divider' + index" />
@@ -113,10 +129,13 @@ export default {
   data () {
     return {
       testCase: null,
+      currentlySelectedStep: 1,
       currentStep: 1,
+      selectedMessageIndex: 0,
       selectedMessageType: 'message',
       selectedClientId: null,
       selectedCaseIds: [],
+      handledLength: 0,
       queueTypes: [
         {
           name: 'Message',
@@ -147,6 +166,9 @@ export default {
             message.routingKey.startsWith(this.user.clientId))
       )
     },
+    selectedMessage () {
+      return this.selectedTypeCaseMessages[this.selectedMessageIndex]
+    },
     showableMessages () {
       return this.showSentMessages
         ? this.clientMessages
@@ -173,14 +195,29 @@ export default {
      */
     selectedTypeCaseMessages: {
       handler (newMessages) {
+        // Reset selected message index whenever we receive a new message
+        this.selectedMessageIndex = 0
+        // We get difference between previously handled length and current length to only check the messages that were added
         if (this.currentStep <= this.testCase.steps.length && newMessages.length > 0) {
-          const lastMessage = newMessages[0]
-          if (!lastMessage.isOut) {
-            if (this.checkMessage(lastMessage)) {
-              const shouldStayOnStep = this.testCase.steps[this.currentStep - 1].type === 'send' && !(this.testCase.steps[this.currentStep - 1].message.validatedAcknowledgement && this.testCase.steps[this.currentStep - 1].message.validatedReceivedValues)
-              this.validateMessage(newMessages.indexOf(lastMessage), true, shouldStayOnStep)
+          // We iterate over the new messages, starting from the furthest one from the beginning of the array
+          for (let i = (newMessages.length - this.handledLength - 1); i >= 0; i--) {
+            const lastMessage = newMessages[i]
+            // We set the relatedStep property to currentStep-1 unless it's an acknowledgement, in which case
+            // we search for the related message and set the relatedStep property to the step at which the message was sent
+            if (this.getMessageType(lastMessage) === 'ack' && this.isOut(lastMessage.direction)) {
+              const relatedMessage = this.messages.find(message => message.body?.content[0]?.jsonContent?.embeddedJsonContent?.message?.messageId === lastMessage.body?.content[0]?.jsonContent?.embeddedJsonContent?.message?.reference?.distributionID)
+              lastMessage.relatedStep = relatedMessage.relatedStep
+            } else {
+              lastMessage.relatedStep = this.currentStep - 1
+            }
+            if (!lastMessage.isOut) {
+              if (this.checkMessage(lastMessage)) {
+                const shouldStayOnStep = this.testCase.steps[this.currentStep - 1].type === 'send' && !(this.testCase.steps[this.currentStep - 1].message.validatedAcknowledgement && this.testCase.steps[this.currentStep - 1].message.validatedReceivedValues)
+                this.validateMessage(newMessages.indexOf(lastMessage), true, shouldStayOnStep)
+              }
             }
           }
+          this.handledLength = newMessages.length
         }
       },
       deep: true
@@ -240,8 +277,8 @@ export default {
               this.sendMessage(msg)
             }
           }
-        // We mark every other message currently present in the message array as stale, making them unvalidable
-        } else if (!message.validated) {
+        // We mark every other message currently present in the message array as stale, making them unvalidatable
+        } else if (!message.validated && message.relatedStep === this.currentStep - 1) {
           message.stale = true
         }
       })
@@ -254,6 +291,7 @@ export default {
      */
     nextStep () {
       this.currentStep++
+      this.currentlySelectedStep = this.currentStep
       if (this.testCase.steps[this.currentStep - 1]?.type === 'send') {
         this.submitMessage(this.testCase.steps[this.currentStep - 1])
       }
@@ -415,6 +453,7 @@ export default {
           return false
         }
       }
+      message.validatedValuesCount = 1
       return true
     },
     /**
@@ -425,6 +464,7 @@ export default {
     checkMessageContainsAllRequiredValues (message, requiredValues) {
       const jp = require('jsonpath')
       let valid = true
+      let validatedValuesCount = 0
 
       requiredValues.forEach(function (element) {
         const result = jp.query(message.body.content[0].jsonContent.embeddedJsonContent.message, element.path)
@@ -433,10 +473,26 @@ export default {
           element.valid = false
         } else {
           element.valid = true
+          validatedValuesCount++
         }
       })
+      message.validatedValuesCount = validatedValuesCount
       this.$forceUpdate()
       return valid
+    },
+    getStepColor (index) {
+      if (index === this.currentlySelectedStep - 1) {
+        return 'primary'
+      } else if (index === this.currentStep - 1) {
+        return '#CFE2F6'
+      } else if (index < this.currentStep - 1) {
+        return 'green'
+      } else {
+        return 'grey'
+      }
+    },
+    setSelectedMessage (message) {
+      this.selectedMessageIndex = this.selectedTypeCaseMessages.indexOf(message)
     }
   }
 }
@@ -478,13 +534,12 @@ div.stepper.v-stepper {
   opacity: 0.5;
 }
 
-.step-label {
-  color: lightgreen;
-  font-weight: bold;
-}
-
 .main-card-content{
   overflow-y: auto;
   flex-grow: 1;
+}
+
+.v-stepper__step--inactive {
+  pointer-events: none;
 }
 </style>

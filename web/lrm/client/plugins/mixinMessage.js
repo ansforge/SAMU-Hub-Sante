@@ -41,6 +41,7 @@ export default {
           this.$store.dispatch('addMessage', {
             ...message,
             direction: DIRECTIONS.IN,
+            messageType: this.getReadableMessageType(message.body.distributionKind),
             receivedTime: this.timeDisplayFormat()
           })
           if (this.autoAck) {
@@ -71,6 +72,16 @@ export default {
         return 'info'
       } else {
         return 'message'
+      }
+    },
+    getReadableMessageType (messageType) {
+      switch (messageType) {
+        case 'Ack':
+          return 'Ack'
+        case 'Error':
+          return 'Info'
+        default:
+          return 'Message'
       }
     },
     buildAck (distributionID) {
@@ -109,6 +120,7 @@ export default {
           direction: DIRECTIONS.OUT,
           routingKey: this.user.targetId,
           time: this.timeDisplayFormat(),
+          messageType: this.getReadableMessageType(msg.distributionKind),
           body: msg
         })
       } catch (e) {
