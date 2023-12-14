@@ -78,19 +78,6 @@ export default {
         message => message.body.content[0].jsonContent.embeddedJsonContent.message.reference.distributionID === this.body.distributionID
       )
     }
-  },
-  methods: {
-    sendAck () {
-      try {
-        const msg = this.buildAck(this.body.distributionID)
-        this.sendMessage(msg)
-      } catch (error) {
-        console.error("Erreur lors de l'envoi de l'acquittement", error)
-      }
-    },
-    useMessageToReply () {
-      this.$emit('useMessageToReply', this.body.content[0].jsonContent.embeddedJsonContent.message)
-    }
   }
 }
 </script>
