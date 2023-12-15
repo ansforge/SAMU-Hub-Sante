@@ -1,7 +1,7 @@
 {
   "emsi": {
     "CONTEXT": {
-      "ID": "samu69:CA126B445579GD4A67AV",
+      "ID": "{senderName}:CA126B445579GD4A67AV",
       "MODE": "ACTUAL",
       "MSGTYPE": "UPDATE",
       "CREATION": "2023-11-03T11:10:06+01:00",
@@ -15,18 +15,18 @@
       "SECLASS": "RESTRC",
       "FREETEXT": "Gène de plus en plus importante à la circulation, risque accident",
       "ORIGIN": {
-        "ORG_ID": "samu69:chuLyon:crra:regulationN3",
-        "USER_ID": "FR:Administration:69:samu69:crra:poste123",
-        "NAME": "samu69"
+        "ORG_ID": "{senderName}:chuLyon:crra:regulationN3",
+        "USER_ID": "FR:Administration:69:{senderName}:crra:poste123",
+        "NAME": "{senderName}"
       },
       "EXTERNAL_INFO": [
         {}
       ]
     },
     "EVENT": {
-      "ID": "samu69:CA126B445579GD4A67AV",
+      "ID": "{senderName}:CA126B445579GD4A67AV",
       "NAME": "Incident sur voix cyclable",
-      "MAIN_EVENT_ID": "samu69:CA126B445579GD4A67AV",
+      "MAIN_EVENT_ID": "{senderName}:CA126B445579GD4A67AV",
       "ETYPE": {
         "CATEGORY": [
           "/TRP/COL"

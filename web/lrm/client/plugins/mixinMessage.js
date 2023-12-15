@@ -89,9 +89,10 @@ export default {
     },
     buildMessage (innerMessage, distributionKind = 'Report') {
       const message = JSON.parse(JSON.stringify(EDXL_ENVELOPE)) // Deep copy
+      const formattedInnerMessage = this.formatIdsInMessage(innerMessage)
       message.content[0].jsonContent.embeddedJsonContent.message = {
         ...message.content[0].jsonContent.embeddedJsonContent.message,
-        ...innerMessage
+        ...formattedInnerMessage
       }
       const name = this.userInfos.name
       const targetId = this.clientInfos(this.user.targetId).id
@@ -107,6 +108,13 @@ export default {
       message.content[0].jsonContent.embeddedJsonContent.message.sentAt = sentAt
       message.content[0].jsonContent.embeddedJsonContent.message.recipients = [{ name: this.clientInfos(this.user.targetId).name, URI: `hubex:${targetId}` }]
       return message
+    },
+    formatIdsInMessage (innerMessage) {
+      // Check the entire message for occurencesof {senderName} and replaceit with the actual sender name
+      const senderName = this.userInfos.name
+      let jsonString = JSON.stringify(innerMessage)
+      jsonString = jsonString.replaceAll('{senderName}', senderName)
+      return JSON.parse(jsonString)
     },
     timeDisplayFormat () {
       const d = new Date()
