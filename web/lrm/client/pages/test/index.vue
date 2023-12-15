@@ -11,27 +11,32 @@
             :key="testCase.label + '-' + caseIndex"
             @click="loadTestCaseJsons(testCase)"
           >
-            <v-expansion-panel-header class="ma-0 pa-0">
-              <v-list-item-content>
-                <v-list-item-title>
-                  <v-card-title class="pt-0 pb-0">
-                    {{ testCase.label }}
-                  </v-card-title>
-                </v-list-item-title>
-                <v-list-item-subtitle>
-                  <v-card-text class="pt-1 pb-0">
-                    {{ testCase.description }}
-                  </v-card-text>
-                </v-list-item-subtitle>
+            <v-expansion-panel-header class="ma-0 pa-0 pr-10">
+              <v-list-item-content class="flex-row">
+                <div style="flex: 0;">
+                  <v-list-item-title>
+                    <v-card-title class="pt-0 pb-0">
+                      {{ testCase.label }}
+                    </v-card-title>
+                  </v-list-item-title>
+                  <v-list-item-subtitle>
+                    <v-card-text class="pt-1 pb-0">
+                      {{ testCase.description }}
+                    </v-card-text>
+                  </v-list-item-subtitle>
+                  <v-spacer />
+                </div>
+                <div style="flex: 0;">
+                  <v-btn
+                    class="ml-3 mr-3"
+                    style="flex-grow: 0; max-width: fit-content;"
+                    color="primary"
+                    @click="goToTestCase(testCase)"
+                  >
+                    Sélectionner
+                  </v-btn>
+                </div>
               </v-list-item-content>
-              <v-spacer />
-              <v-btn
-                style="flex-grow: 0;"
-                color="primary"
-                @click="goToTestCase(testCase)"
-              >
-                Sélectionner
-              </v-btn>
             </v-expansion-panel-header>
             <v-expansion-panel-content>
               <v-card-title>
