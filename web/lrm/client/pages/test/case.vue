@@ -9,9 +9,10 @@
           <div style="width:25%; min-width:17rem;" class="flex-column">
             <template v-for="(message, index) in selectedTypeCaseMessages">
               <div v-if="message.relatedStep===currentlySelectedStep-1" :key="'wrapper'+index" class="d-flex flex-column flex-wrap pb-1 pt-1" @click="setSelectedMessage(message)">
-                <ReceivedMessageMini
+                <ReceivedMessage
                   :key="message.time"
-                  :validated-values-count="message?.validatedValuesCount"
+                  :dense="true"
+                  :validated-values-count="message?.validatedValues?.filter(value => value.valid).length"
                   :required-values-count="testCase.steps[message.relatedStep]?.message?.requiredValues?.length"
                   v-bind="message"
                   class="message mb-4"
@@ -57,7 +58,7 @@
       <v-card class="main-card" style="height: 86vh;">
         <template v-if="currentStep-1 < testCase.steps.length">
           <v-card-title>
-            {{ testCase.steps[currentStep-1]?.type === 'receive' ? 'Valeurs attendus dans le message' : 'Valeurs attendus dans l\'acquittement' }}
+            {{ testCase.steps[currentStep-1]?.type === 'receive' ? 'Valeurs attendues dans le message' : 'Valeurs attendues dans l\'acquittement' }}
           </v-card-title>
           <v-card-text class="main-card-content">
             <p v-if="getAwaitedValues(testCase.steps[currentStep-1]) === null">
@@ -97,6 +98,25 @@
               </v-btn>
             </v-list>
           </v-card-text>
+
+          <!-- Currently selected message's valid and invalid required values -->
+          <template v-if="selectedMessage&&!selectedMessage.isOut">
+            <v-card-title>
+              {{ 'Valeurs reçues dans le message séléctionné' }}
+            </v-card-title>
+            <v-card-text>
+              <v-list v-for="(validatedValue, name, index) in selectedMessage?.validatedValues" :key="'validatedValue' + index">
+                <v-list-item-content class="d-flex flex-wrap">
+                  <v-icon v-if="validatedValue.valid" style="flex:0" color="success">
+                    mdi-check
+                  </v-icon> <v-icon v-else style="flex:0" color="error">
+                    mdi-close
+                  </v-icon>
+                  <pre style="flex:0">{{ validatedValue?.value?.value ? validatedValue?.value?.path : 'distributionID' }} : {{ validatedValue?.value?.value ? validatedValue?.value?.value : validatedValue?.value?.distributionID }} <span v-if="!validatedValue?.valid" class="wrong-received"> (Reçu: {{ validatedValue?.receivedValue || 'null' }}) </span></pre>
+                </v-list-item-content>
+              </v-list>
+            </v-card-text>
+          </template>
           <v-card-actions v-if="testCase.steps[currentStep-1]?.type === 'send'">
             <v-btn color="primary" @click="submitMessage(testCase.steps[currentStep-1].json)">
               Envoyer
@@ -453,7 +473,7 @@ export default {
           return false
         }
       }
-      message.validatedValuesCount = 1
+      message.validatedValues.push = { valid: true, value: requiredValues }
       return true
     },
     /**
@@ -464,19 +484,20 @@ export default {
     checkMessageContainsAllRequiredValues (message, requiredValues) {
       const jp = require('jsonpath')
       let valid = true
-      let validatedValuesCount = 0
+      const validatedValues = []
 
       requiredValues.forEach(function (element) {
         const result = jp.query(message.body.content[0].jsonContent.embeddedJsonContent.message, element.path)
         if (result.length === 0 || !result.includes(element.value)) {
           valid = false
           element.valid = false
+          validatedValues.push({ valid: false, value: element, receivedValue: result[0] })
         } else {
+          validatedValues.push({ valid: true, value: element })
           element.valid = true
-          validatedValuesCount++
         }
       })
-      message.validatedValuesCount = validatedValuesCount
+      message.validatedValues = JSON.parse(JSON.stringify(validatedValues))
       this.$forceUpdate()
       return valid
     },
@@ -541,5 +562,10 @@ div.stepper.v-stepper {
 
 .v-stepper__step--inactive {
   pointer-events: none;
+}
+
+.wrong-received {
+  color: red;
+  font-weight: bold;
 }
 </style>
