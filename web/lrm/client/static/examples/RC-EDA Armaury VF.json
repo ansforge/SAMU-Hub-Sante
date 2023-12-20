@@ -197,7 +197,7 @@
       },
       "callTaker": {
         "organization": "fr.health.samu690.chuLyon.crra.regulationN3",
-        "controlRoom": "CRRA 69",
+        "controlRoom": "CRRA 690",
         "role": "ARM",
         "calltakeContact": {
           "type": "PHNADD",

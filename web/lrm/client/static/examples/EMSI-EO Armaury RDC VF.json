@@ -11,9 +11,9 @@
       "SECLASS": "RESTRC",
       "FREETEXT": "Gène de plus en plus importante à la circulation, risque accident",
       "ORIGIN": {
-        "ORG_ID": "fr.health.samu690.chuLyon.crra.regulationN3",
-        "USER_ID": "fr.health.samu690.chuLyon.crra.regulationN3.poste123",
-        "NAME": "SAMU 69"
+        "ORG_ID": "fr:health:samu690:chuLyon:crra:regulationN3",
+        "USER_ID": "fr:health:samu690:chuLyon:crra:regulationN3:poste123",
+        "NAME": "samu690"
       },
       "EXTERNAL_INFO": [
         {}
@@ -22,7 +22,7 @@
     "EVENT": {
       "ID": "fr.health.samu690-20231103-AF1234",
       "NAME": "Incident sur voix cyclable",
-      "MAIN_EVENT_ID": "fr.health.samu690-20231103-AF1234",
+      "MAIN_EVENT_ID": "fr:health:samu690-20231103-AF1234",
       "ETYPE": {
         "CATEGORY": [
           "TRP/COL"
@@ -47,7 +47,7 @@
         {
           "ORG_ID": "fr.administration.690.CGO",
           "OTHER_EVENT_ID": [
-            "fr.administration.690.CGO.20231103_00002"
+            "fr:administration:690:CGO:20231103_00002"
           ]
         }
       ],
@@ -110,9 +110,7 @@
         "STATUS": "NST",
         "START_TIME": "2023-11-03T10:20:00+01:00",
         "END_TIME": null,
-        "RESOURCE_ID": [
-          null
-        ],
+        "RESOURCE_ID": "",
         "PARENT_MISSION_ID": [
           null
         ],

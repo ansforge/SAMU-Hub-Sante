@@ -18,8 +18,8 @@ export default {
       }
 
       this.socket.onclose = (e) => {
+        // Prevents infinite loop when closing the connection in an expected way
         if (this.disconnect) {
-          this.disconnect = false
           return
         }
         console.log(`WebSocket ${this.$options.name} connection closed`, e)
@@ -113,7 +113,7 @@ export default {
       // Check the entire message for occurencesof {senderName} and replaceit with the actual sender name
       const senderName = this.userInfos.name
       let jsonString = JSON.stringify(innerMessage)
-      jsonString = jsonString.replaceAll('{senderName}', senderName)
+      jsonString = jsonString.replaceAll('samu690', senderName)
       return JSON.parse(jsonString)
     },
     timeDisplayFormat () {
