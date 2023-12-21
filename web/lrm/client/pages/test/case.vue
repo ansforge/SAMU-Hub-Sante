@@ -394,8 +394,8 @@ export default {
       Vue.set(this, 'testCase', { ...this.testCase })
     },
     /**
-     * Returns the JSON object containing the reference distribution ID for a specific step, which is the verified value
-     * during 'send' type steps
+     * Returns the JSON array containing an object with the same structure as 'requiredValues'
+     * for 'receive' steps, used for validation during 'send' steps
      */
     getAwaitedReferenceDistributionIdJson (step) {
       const json = [
@@ -406,6 +406,12 @@ export default {
       ]
       return json
     },
+    /**
+     * Returns the JSON object containing a property by the name of the path to reference distribution ID in the
+     * acknowledgement message json and its expected value as property 'value' for a specific step, which is the verified value
+     * during 'send' steps
+     * @param {*} step
+     */
     getAwaitedReferenceDistributionObject (step) {
       const json = {
         '$.reference.distributionID': {
