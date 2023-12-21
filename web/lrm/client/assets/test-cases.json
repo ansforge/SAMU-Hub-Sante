@@ -10,15 +10,15 @@
           "requiredValues": [
             {
               "path":"$.createCase.qualification.locationKind.code",
-              "value":["L02.01.00"]
+              "value":["L02.01.00","L03.01.00"]
             },
             {
               "path":"$.createCase.initialAlert.reporting",
-              "value": ["STANDARD"]
+              "value": ["STANDARD","ATTENTION"]
             },
             {
               "path":"$.createCase.referenceVersion",
-              "value": ["1.2"]
+              "value": ["1.2","1.3"]
             }
           ],
           "label": "RC-EDA",
@@ -40,15 +40,15 @@
           "requiredValues": [
             {
               "path":"$.emsi.CONTEXT.MODE",
-              "value":["ACTUAL"]
+              "value":["ACTUAL","EXERCS"]
             },
             {
               "path":"$.emsi.EVENT.ETYPE.CATEGORY[0]",
-              "value": ["/TRP/COL"]
+              "value": ["TRP/COL","ASB"]
             },
             {
               "path":"$.emsi.MISSION[0].TYPE",
-              "value": ["/GEN/SCNMNG"]
+              "value": ["GEN/SCNMNG","C2"]
             }
           ],
           "label": "EMSI-DC",
@@ -69,7 +69,7 @@
         "message": {
           "requiredValues": [{
             "path":"$.emsi.CONTEXT.FREETEXT",
-            "value":["TEST"]
+            "value":["Test de la valeur libre 1","Test de la valeur libre 2"]
           }],
           "label": "EMSI-EO RDC",
           "file": "EMSI-EO Armaury RDC VF.json",
