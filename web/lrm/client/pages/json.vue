@@ -4,12 +4,11 @@
       <v-card style="height: 86vh; overflow-y: auto;">
         <v-card-title class="headline">
           Formulaire
-          <v-spacer />
-          <v-select
+          <v-combobox
             v-model="selectedSource"
             :items="sources"
             label="Source des schémas"
-            class="pt-n4"
+            class="ml-4 pl-4"
             dense
             hide-details
             outlined
@@ -80,11 +79,20 @@ export default {
         text: 'Local',
         value: 'schemas/'
       }, {
-        text: 'GitHub - main',
+        divider: true,
+        header: 'GitHub branches'
+      }, {
+        text: 'main',
         value: 'https://raw.githubusercontent.com/ansforge/SAMU-Hub-Modeles/main/src/main/resources/json-schema/'
       }, {
-        text: 'GitHub - auto',
+        text: 'auto/model_tracker',
         value: 'https://raw.githubusercontent.com/ansforge/SAMU-Hub-Modeles/auto/model_tracker/src/main/resources/json-schema/'
+      }, {
+        divider: true,
+        header: 'Templates'
+      }, {
+        text: 'https://raw.githubusercontent.com/ansforge/SAMU-Hub-Modeles/{branchName}/src/main/resources/json-schema/',
+        value: 'https://raw.githubusercontent.com/ansforge/SAMU-Hub-Modeles/{branchName}/src/main/resources/json-schema/'
       }],
       messageTypeTabIndex: 0,
       // ToDo: load schemas from github branch directly so it is up to date!
@@ -193,6 +201,7 @@ export default {
   methods: {
     loadSchemas () {
       Promise.all(Object.entries(this.messageTypes).map(([name, { schemaName }]) => {
+        console.log(this.selectedSource + schemaName)
         return fetch(this.selectedSource + schemaName).then(response => response.json()).then(schema => ({ name, schema }))
       })).then((schemas) => {
         schemas.forEach(({ name, schema }) => {
