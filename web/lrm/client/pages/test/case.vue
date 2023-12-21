@@ -100,19 +100,19 @@
           </v-card-text>
 
           <!-- Currently selected message's valid and invalid required values -->
-          <template v-if="selectedMessage&&!selectedMessage.isOut">
+          <template v-if="selectedMessage&&!isOut(selectedMessage.direction)">
             <v-card-title>
               {{ 'Valeurs reçues dans le message séléctionné' }}
             </v-card-title>
             <v-card-text>
-              <v-list v-for="(validatedValue, name, index) in selectedMessage?.validatedValues" :key="'validatedValue' + index">
+              <v-list v-for="(validatedValue, index) in selectedMessage?.validatedValues" :key="'validatedValue' + index">
                 <v-list-item-content class="d-flex flex-wrap">
                   <v-icon v-if="validatedValue.valid" style="flex:0" color="success">
                     mdi-check
                   </v-icon> <v-icon v-else style="flex:0" color="error">
                     mdi-close
                   </v-icon>
-                  <pre style="flex:0">{{ validatedValue?.value?.value ? validatedValue?.value?.path : 'distributionID' }} : {{ validatedValue?.value?.value ? validatedValue?.value?.value : validatedValue?.value?.distributionID }} <span v-if="!validatedValue?.valid" class="wrong-received"> (Reçu: {{ validatedValue?.receivedValue || 'null' }}) </span></pre>
+                  <pre style="flex:0">{{ validatedValue?.value?.value ? validatedValue?.value?.path : 'distributionID' }} : {{ validatedValue?.value?.value ? validatedValue?.value?.value : validatedValue?.value?.reference?.distributionID }} <span v-if="!validatedValue?.valid" class="wrong-received"> (Reçu: {{ validatedValue?.receivedValue || 'null' }}) </span></pre>
                 </v-list-item-content>
               </v-list>
             </v-card-text>
@@ -457,11 +457,13 @@ export default {
     checkAcknowledgementContainsReferenceDistributionId (message, requiredValues) {
       const flattenedMessage = this.flattenObject(message)
       const flattenedRequiredValues = this.flattenObject(requiredValues)
+      message.validatedValues = []
       for (const requiredProp in flattenedRequiredValues) {
         let propFound = false
         for (const messageProp in flattenedMessage) {
           if (messageProp.endsWith(requiredProp)) {
             if (flattenedMessage[messageProp] !== flattenedRequiredValues[requiredProp]) {
+              message.validatedValues.push({ valid: false, value: requiredValues })
               return false
             } else {
               propFound = true
@@ -470,10 +472,11 @@ export default {
           }
         }
         if (!propFound) {
+          message.validatedValues.push({ valid: false, value: requiredValues })
           return false
         }
       }
-      message.validatedValues.push = { valid: true, value: requiredValues }
+      message.validatedValues.push({ valid: true, value: requiredValues })
       return true
     },
     /**
