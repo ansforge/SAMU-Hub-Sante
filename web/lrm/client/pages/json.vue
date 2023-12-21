@@ -2,10 +2,18 @@
   <v-row justify="center">
     <v-col cols="12" sm="7">
       <v-card style="height: 86vh; overflow-y: auto;">
-        <v-card-title class="headline pb-">
+        <v-card-title class="headline">
           Formulaire
           <v-spacer />
-          <SendButton class="mt-2" @click="submit" />
+          <v-select
+            v-model="selectedSource"
+            :items="sources"
+            label="Source des schémas"
+            class="pt-n4"
+            dense
+            hide-details
+            outlined
+          />
         </v-card-title>
         <v-card-text>
           <v-tabs
@@ -25,7 +33,7 @@
               v-for="[name, messageTypeDetails] in Object.entries(messageTypes)"
               :key="name"
             >
-              <SchemaForm v-bind="messageTypeDetails" ref="schemaForms" :name="name" />
+              <SchemaForm v-bind="messageTypeDetails" ref="schemaForms" :name="name" no-send-button />
             </v-tab-item>
           </v-tabs-items>
         </v-card-text>
@@ -34,74 +42,23 @@
     <v-col cols="12" sm="5">
       <v-card style="height: 86vh; overflow-y: auto;">
         <v-card-title class="headline">
-          <span class="mb-4">
-            {{ showSentMessagesConfig ? 'Messages' : 'Messages reçus' }}
-          </span>
-          <v-badge
-            v-if="showableMessages.length"
-            class="mb-4"
-            :content="showableMessages.length"
-          />
+          Json live view
           <v-spacer />
-          <v-switch
-            v-if="isAdvanced"
-            v-model="autoAckConfig"
-            inset
-            :label="'Auto ack'"
-            class="my-0 py-0 mr-4"
-          />
-          <v-switch
-            v-model="showSentMessagesConfig"
-            inset
-            :label="'Show sent (' + messagesSentCount + ')'"
-            class="my-0 py-0"
-          />
-        </v-card-title>
-        <v-btn-toggle
-          v-model="selectedMessageType"
-          class="ml-4"
-          dense
-          borderless
-          mandatory
-        >
-          <v-btn v-for="{name, type, icon} in queueTypes" :key="type" :value="type" class="px-4">
+          <v-btn primary @click="saveMessage">
             <v-icon left>
-              {{ icon }}
+              mdi-file-download-outline
             </v-icon>
-            {{ name }}
-            <v-badge
-              v-if="typeMessages(type).length > 0"
-              class="mr-4 ml-1"
-              :content="typeMessages(type).length"
-            />
+            Enregistrer
           </v-btn>
-        </v-btn-toggle>
-        <v-chip-group
-          v-if="selectedMessageType === 'message' && caseIds.length > 1"
-          v-model="selectedCaseIds"
-          class="ml-4"
-          multiple
-        >
-          <v-chip
-            v-for="caseId in caseIds"
-            :key="caseId"
-            :value="caseId"
-            filter
-            outlined
-          >
-            {{ caseId }}
-          </v-chip>
-        </v-chip-group>
+        </v-card-title>
         <v-card-text>
-          <transition-group name="message">
-            <ReceivedMessage
-              v-for="message in selectedTypeCaseMessages"
-              v-bind="message"
-              :key="message.time"
-              class="message mb-4"
-              @useMessageToReply="useMessageToReply"
-            />
-          </transition-group>
+          <json-viewer
+            v-if="currentMessage"
+            :value="currentMessage"
+            :expand-depth="10"
+            :copyable="{copyText: 'Copier', copiedText: 'Copié !', timeout: 1000}"
+            theme="json-theme"
+          />
         </v-card-text>
       </v-card>
     </v-col>
@@ -113,21 +70,37 @@ import { mapGetters } from 'vuex'
 import mixinMessage from '~/plugins/mixinMessage'
 
 export default {
-  name: 'Demo',
+  name: 'JsonCreator',
   mixins: [mixinMessage],
   data () {
     return {
+      mounted: false,
+      selectedSource: 'schemas/',
+      sources: [{
+        text: 'Local',
+        value: 'schemas/'
+      }, {
+        text: 'GitHub - main',
+        value: 'https://raw.githubusercontent.com/ansforge/SAMU-Hub-Modeles/main/src/main/resources/json-schema/'
+      }, {
+        text: 'GitHub - auto',
+        value: 'https://raw.githubusercontent.com/ansforge/SAMU-Hub-Modeles/auto/model_tracker/src/main/resources/json-schema/'
+      }],
       messageTypeTabIndex: 0,
+      // ToDo: load schemas from github branch directly so it is up to date!
+      // ToDo: migrate this to store so they can be reused through pages (demo/ and json/)
+      // ToDo: when message are uploaded, add them in store
+      // ToDo: when message is loaded, add them in store to not load them again later
       messageTypes: {
         createCase: {
           label: 'RC-EDA',
-          schemaName: 'schemas/RC-EDA_schema.json',
+          schemaName: 'RC-EDA.schema.json',
           schema: null,
           examples: [{
             file: 'RC-EDA Armaury VF.json',
             icon: 'mdi-bike-fast',
             name: 'Alexandre ARMAURY',
-            caller: 'Albane Armaury, témoin accident impliquant son mari,  Alexandre Armaury',
+            caller: 'Albane Armaury, témoin accident impliquant son mari, Alexandre Armaury',
             context: 'Collision de 2 vélos',
             environment: 'Voie cyclable à Lyon, gêne de la circulation',
             victims: '2 victimes, 1 nécessitant assistance SAMU',
@@ -142,7 +115,7 @@ export default {
         },
         emsi: {
           label: 'EMSI',
-          schemaName: 'schemas/EMSI-DC_schema.json',
+          schemaName: 'EMSI.schema.json',
           schema: null,
           examples: [{
             file: 'EMSI-DC Armaury VF.json',
@@ -168,7 +141,7 @@ export default {
         } /* ,
         info: {
           label: 'RS-INFO',
-          schemaName: 'schemas/RS-INFO_schema.json',
+          schemaName: 'RS-INFO.schema.json',
           schema: null,
           examples: []
         } */
@@ -194,79 +167,48 @@ export default {
   },
   head () {
     return {
-      title: `Démo [${this.userInfos.name}]`
+      title: 'Json Creator'
     }
   },
   computed: {
     ...mapGetters(['messages', 'isAdvanced']),
-    showSentMessagesConfig: {
-      get () {
-        return this.showSentMessages
-      },
-      set (value) {
-        this.$store.dispatch('setShowSentMessages', value)
+    currentMessage () {
+      if (this.mounted) {
+        // Ref.: https://stackoverflow.com/a/43531779
+        return this.$refs.schemaForms?.[this.messageTypeTabIndex]?.form
       }
-    },
-    autoAckConfig: {
-      get () {
-        return this.autoAck
-      },
-      set (value) {
-        this.$store.dispatch('setAutoAck', value)
-      }
-    },
-    clientMessages () {
-      return this.messages.filter(
-        message => (
-          (this.isOut(message.direction) && message.body.senderID === this.user.clientId) ||
-            (!this.isOut(message.direction) && message.routingKey.startsWith(this.user.clientId))
-        )
-      )
-    },
-    showableMessages () {
-      return this.showSentMessages ? this.clientMessages : this.clientMessages.filter(message => !this.isOut(message.direction))
-    },
-    selectedTypeMessages () {
-      return this.showableMessages.filter(message => this.getMessageType(message) === this.selectedMessageType)
-    },
-    selectedTypeCaseMessages () {
-      if (this.selectedCaseIds.length === 0) {
-        return this.selectedTypeMessages
-      }
-      return this.selectedTypeMessages.filter(
-        message => this.selectedCaseIds.includes(this.getCaseId(message))
-      )
-    },
-    messagesSentCount () {
-      return this.clientMessages.filter(message => this.isOut(message.direction)).length
-    },
-    caseIds () {
-      return [...new Set(this.selectedTypeMessages.map(this.getCaseId))]
+      return null
+    }
+  },
+  watch: {
+    selectedSource () {
+      this.loadSchemas()
     }
   },
   mounted () {
     // To automatically generate the UI and input fields based on the JSON Schema
-    Promise.all(Object.entries(this.messageTypes).map(([name, { schemaName }]) => {
-      return fetch(schemaName).then(response => response.json()).then(schema => ({ name, schema }))
-    })).then((schemas) => {
-      schemas.forEach(({ name, schema }) => {
-        this.messageTypes[name].schema = schema
-      })
-    })
+    this.loadSchemas()
+    this.mounted = true
   },
   methods: {
-    typeMessages (type) {
-      return this.showableMessages.filter(
-        message => this.getMessageType(message) === type
-      )
+    loadSchemas () {
+      Promise.all(Object.entries(this.messageTypes).map(([name, { schemaName }]) => {
+        return fetch(this.selectedSource + schemaName).then(response => response.json()).then(schema => ({ name, schema }))
+      })).then((schemas) => {
+        schemas.forEach(({ name, schema }) => {
+          this.messageTypes[name].schema = schema
+        })
+      })
     },
-    submit () {
-      // Submits current SchemaForm
-      this.$refs.schemaForms[this.messageTypeTabIndex].submit()
-    },
-    useMessageToReply (message) {
-      // Use message to fill the form
-      this.$refs.schemaForms[this.messageTypeTabIndex].load(message)
+    saveMessage () {
+      // Download as file | Ref.: https://stackoverflow.com/a/34156339
+      // JSON pretty-print | Ref.: https://stackoverflow.com/a/7220510
+      const data = JSON.stringify(this.$refs.schemaForms[this.messageTypeTabIndex].form, null, 2)
+      const a = document.createElement('a')
+      const file = new Blob([data], { type: 'application/json' })
+      a.href = URL.createObjectURL(file)
+      a.download = `${this.$refs.schemaForms[this.messageTypeTabIndex].name}-message.json`
+      a.click()
     }
   }
 }
