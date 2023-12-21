@@ -5,102 +5,113 @@
         <v-card-title class="headline pb-">
           Cas de test <span class="font-weight-bold">&nbsp;{{ testCase.label }} </span>
         </v-card-title>
-        <v-card-text class="main-card-content" style="display: flex; flex-direction: row;">
-          <div style="width:25%; min-width:17rem;" class="flex-column">
-            <template v-for="(message, index) in selectedTypeCaseMessages">
-              <div v-if="message.relatedStep===currentlySelectedStep-1" :key="'wrapper'+index" class="d-flex flex-column flex-wrap pb-1 pt-1" @click="setSelectedMessage(message)">
+        <v-card-text class="main-card-content">
+          <v-container full-width>
+            <v-row>
+              <v-col class="small-message">
+                <template v-for="(message, index) in selectedTypeCaseMessages">
+                  <div v-if="message.relatedStep===currentlySelectedStep-1" :key="'wrapper'+index" class="d-flex flex-column flex-wrap pb-1 pt-1" @click="setSelectedMessage(message)">
+                    <ReceivedMessage
+                      :key="message.time"
+                      :dense="true"
+                      :validated-values-count="message?.validatedValues?.filter(value => value.valid).length"
+                      :required-values-count="testCase.steps[message.relatedStep]?.message?.requiredValues?.length"
+                      v-bind="message"
+                      class="message mb-4"
+                      :class="{ stale: message.stale, validated: message.validated, selected: selectedMessageIndex === index }"
+                    />
+                  </div>
+                </template>
+              </v-col>
+              <v-col v-if="selectedMessage?.relatedStep===currentlySelectedStep-1" class="full-message">
+                <!-- Details of selected message (last received or sent by default)-->
                 <ReceivedMessage
-                  :key="message.time"
-                  :dense="true"
-                  :validated-values-count="message?.validatedValues?.filter(value => value.valid).length"
-                  :required-values-count="testCase.steps[message.relatedStep]?.message?.requiredValues?.length"
-                  v-bind="message"
+                  v-if="selectedMessage"
+                  :key="selectedMessage?.time"
+                  :json-depth="10"
+                  v-bind="selectedMessage"
                   class="message mb-4"
-                  :class="{ stale: message.stale, validated: message.validated, selected: selectedMessageIndex === index }"
+                  :class="{ stale: selectedMessage?.stale, validated: selectedMessage?.validated }"
                 />
-              </div>
-            </template>
-          </div>
-          <div v-if="selectedMessage?.relatedStep===currentlySelectedStep-1" style="width:100%;" class="pl-5 pt-1">
-            <!-- Details of selected message (last received or sent by default)-->
-            <ReceivedMessage
-              v-if="selectedMessage"
-              :key="selectedMessage?.time"
-              :json-depth="10"
-              v-bind="selectedMessage"
-              class="message mb-4"
-              :class="{ stale: selectedMessage?.stale, validated: selectedMessage?.validated }"
-            />
-          </div>
+              </v-col>
+            </v-row>
+          </v-container>
         </v-card-text>
         <v-card-actions>
-          <v-stepper v-model="currentStep" class="stepper">
-            <v-stepper-header>
-              <template v-for="(step, index) in testCase.steps">
-                <v-stepper-step
-                  :key="index"
-                  style="cursor: pointer;"
-                  :color="getStepColor(index)"
-                  :complete="index < currentStep-1"
-                  :step="index+1"
-                  @click="currentlySelectedStep=index+1"
-                >
-                  {{ step.label }}
-                </v-stepper-step>
-                <v-divider v-if="index < testCase.steps.length - 1" :key="'divider' + index" />
-              </template>
-            </v-stepper-header>
-          </v-stepper>
+          <v-container full-width>
+            <v-stepper v-model="currentStep" class="stepper">
+              <v-stepper-header>
+                <template v-for="(step, index) in testCase.steps">
+                  <v-col :key="'step' + index">
+                    <v-stepper-step
+                      :key="index"
+                      style="cursor: pointer;"
+                      :color="getStepColor(index)"
+                      :complete="index < currentStep-1"
+                      :step="index+1"
+                      @click="currentlySelectedStep=index+1"
+                    >
+                      {{ step.label }}
+                    </v-stepper-step>
+                  </v-col>
+                  <v-divider v-if="index < testCase.steps.length - 1" :key="'divider' + index" />
+                </template>
+              </v-stepper-header>
+            </v-stepper>
+          </v-container>
         </v-card-actions>
       </v-card>
     </v-col>
     <v-col cols="12" sm="5">
-      <v-card class="main-card" style="height: 86vh;">
+      <v-card class="main-card" style="height: 86vh; overflow-y:auto">
         <template v-if="currentStep-1 < testCase.steps.length">
-          <v-card-title>
-            {{ testCase.steps[currentStep-1]?.type === 'receive' ? 'Valeurs attendues dans le message' : 'Valeurs attendues dans l\'acquittement' }}
-          </v-card-title>
-          <v-card-text class="main-card-content">
-            <p v-if="getAwaitedValues(testCase.steps[currentStep-1]) === null">
-              En attente de la réception de l'ID de distribution...
-            </p>
-            <v-list v-for="(requiredValue, name, index) in getAwaitedValues(testCase.steps[currentStep-1])" :key="'requiredValue' + index">
-              <v-list-item-content class="d-flex flex-wrap">
-                <v-icon v-if="requiredValue.valid || testCase.steps[currentStep-1].message.validatedAcknowledgement" style="flex:0" color="success">
-                  mdi-check
-                </v-icon> <v-icon v-else style="flex:0" color="error">
-                  mdi-close
-                </v-icon>
-                <pre style="flex:0">{{ requiredValue.value ? name : 'distributionID' }} : {{ requiredValue.value ? requiredValue.value : requiredValue.distributionID }}</pre>
-              </v-list-item-content>
-            </v-list>
-            <v-list v-if="testCase.steps[currentStep-1]?.type === 'send'">
-              <!-- Generate an input for each requiredValue with the path used as label. User will enter a value for each requiredValue and then press a button to verify that all the values entered correspond to the values in the requiredValues-->
-              <v-list-item v-for="(requiredValue, index) in testCase.steps[currentStep-1].message.requiredValues" :key="'requiredValue' + index">
+          <span>
+            <v-card-title>
+              {{ testCase.steps[currentStep-1]?.type === 'receive' ? 'Valeurs attendues dans le message' : 'Valeurs attendues dans l\'acquittement' }}
+            </v-card-title>
+            <v-card-text>
+              <p v-if="getAwaitedValues(testCase.steps[currentStep-1]) === null">
+                En attente de la réception de l'ID de distribution...
+              </p>
+              <v-list v-for="(requiredValue, name, index) in getAwaitedValues(testCase.steps[currentStep-1])" :key="'requiredValue' + index">
                 <v-list-item-content>
-                  <v-icon v-if="requiredValue.valid " style="flex:0" color="success">
-                    mdi-check
-                  </v-icon>
-                  <v-icon v-else style="flex:0" color="error">
-                    mdi-close
-                  </v-icon>
-                  <v-text-field
-                    v-model="requiredValue.enteredValue"
-                    :label="requiredValue.path"
-                    :rules="[v => !!v || 'Valeur requise']"
-                    required
-                  />
+                  <span style="display: flex; flex-direction: row; align-items: center;">
+                    <v-icon v-if="requiredValue.valid || testCase.steps[currentStep-1].message.validatedAcknowledgement" style="flex:0" color="success">
+                      mdi-check
+                    </v-icon> <v-icon v-else style="flex:0" color="error">
+                      mdi-close
+                    </v-icon>
+                    <pre class="values">{{ requiredValue.value ? name : 'distributionID' }} : {{ requiredValue.value ? requiredValue.value : requiredValue.distributionID }}</pre>
+                  </span>
                 </v-list-item-content>
-              </v-list-item>
-              <!-- Button that would execute the verification of value conformity -->
-              <v-btn v-if="!testCase.steps[currentStep-1].message.validatedReceivedValues" color="primary" @click="validateEnteredValues(currentStep-1)">
-                Valider
-              </v-btn>
-            </v-list>
-          </v-card-text>
-
+              </v-list>
+              <v-list v-if="testCase.steps[currentStep-1]?.type === 'send'">
+                <!-- Generate an input for each requiredValue with the path used as label. User will enter a value for each requiredValue and then press a button to verify that all the values entered correspond to the values in the requiredValues-->
+                <v-list-item v-for="(requiredValue, index) in testCase.steps[currentStep-1].message.requiredValues" :key="'requiredValue' + index">
+                  <v-list-item-content>
+                    <v-icon v-if="requiredValue.valid " style="flex:0" color="success">
+                      mdi-check
+                    </v-icon>
+                    <v-icon v-else style="flex:0" color="error">
+                      mdi-close
+                    </v-icon>
+                    <v-text-field
+                      v-model="requiredValue.enteredValue"
+                      :label="requiredValue.path"
+                      :rules="[v => !!v || 'Valeur requise']"
+                      required
+                    />
+                  </v-list-item-content>
+                </v-list-item>
+                <!-- Button that would execute the verification of value conformity -->
+                <v-btn v-if="!testCase.steps[currentStep-1].message.validatedReceivedValues" color="primary" @click="validateEnteredValues(currentStep-1)">
+                  Valider
+                </v-btn>
+              </v-list>
+            </v-card-text>
+          </span>
           <!-- Currently selected message's valid and invalid required values -->
-          <template v-if="selectedMessage&&!isOut(selectedMessage.direction)">
+          <span v-if="selectedMessage&&!isOut(selectedMessage.direction)&&selectedMessage?.validatedValues?.length>0">
             <v-card-title>
               {{ 'Valeurs reçues dans le message séléctionné' }}
             </v-card-title>
@@ -112,14 +123,14 @@
                   </v-icon> <v-icon v-else style="flex:0" color="error">
                     mdi-close
                   </v-icon>
-                  <pre style="flex:0">{{ validatedValue?.value?.value ? validatedValue?.value?.path : 'distributionID' }} : {{ validatedValue?.value?.value ? validatedValue?.value?.value : validatedValue?.value?.reference?.distributionID }} <span v-if="!validatedValue?.valid" class="wrong-received"> (Reçu: {{ validatedValue?.receivedValue || 'null' }}) </span></pre>
+                  <pre class="values">{{ validatedValue?.value?.value ? validatedValue?.value?.path : 'distributionID' }} : {{ validatedValue?.value?.value ? validatedValue?.value?.value : validatedValue?.value?.reference?.distributionID }} <span v-if="!validatedValue?.valid" class="wrong-received"> (Reçu: {{ validatedValue?.receivedValue || 'null' }}) </span></pre>
                 </v-list-item-content>
               </v-list>
             </v-card-text>
-          </template>
+          </span>
           <v-card-actions v-if="testCase.steps[currentStep-1]?.type === 'send'">
             <v-btn color="primary" @click="submitMessage(testCase.steps[currentStep-1])">
-              Envoyer
+              Re-envoyer le message
             </v-btn>
           </v-card-actions>
         </template>
@@ -561,6 +572,7 @@ div.stepper.v-stepper {
 .main-card-content{
   overflow-y: auto;
   flex-grow: 1;
+  width: 100%;
 }
 
 .v-stepper__step--inactive {
@@ -570,5 +582,15 @@ div.stepper.v-stepper {
 .wrong-received {
   color: red;
   font-weight: bold;
+}
+
+.small-message {
+  max-width: fit-content;
+}
+
+pre.values {
+  flex: 1;
+  text-wrap: wrap;
+  line-break: anywhere;
 }
 </style>
