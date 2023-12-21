@@ -1,6 +1,6 @@
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '2.7.9'
+    id 'org.springframework.boot' version '3.2.0'
     id 'io.spring.dependency-management' version '1.1.0'
     id 'com.google.cloud.tools.jib' version '3.3.1'
     id 'jacoco'
@@ -13,7 +13,7 @@ version = '0.11-SNAPSHOT'
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(11)
+        languageVersion = JavaLanguageVersion.of(21)
     }
 }
 
@@ -47,7 +47,7 @@ repositories {
 //    mavenLocal()
     mavenCentral()
     maven {
-        url = uri("https://maven.pkg.github.com/ansforge/SAMU-Hub-Sante")
+        url = uri("https://maven.pkg.github.com/ansforge/SAMU-Hub-Modeles")
         credentials {
             username = System.getenv('GITHUB_ACTOR')
             password = System.getenv('GITHUB_TOKEN')
@@ -60,7 +60,7 @@ ext {
 }
 
 dependencies {
-    implementation 'com.hubsante:models:0.2.4-SNAPSHOT'
+    implementation 'com.hubsante:models-2:0.2.6'
 
     implementation 'org.codehaus.groovy:groovy-json:3.0.9'
     implementation 'org.springframework.boot:spring-boot-starter-amqp'
@@ -110,7 +110,7 @@ license {
 
 jib {
     from {
-        image 'eclipse-temurin:11-jre'
+        image 'eclipse-temurin:21-jre'
     }
     to {
         image 'romainfd/dispatcher:latest'

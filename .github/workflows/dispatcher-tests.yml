@@ -12,6 +12,9 @@ on:
 jobs:
   coverage:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: hub/dispatcher
 
     steps:
       - name: Checkout repository
@@ -20,11 +23,8 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v2
         with:
-          java-version: '11'
+          java-version: '21'
           distribution: 'temurin'
-
-      - name: Go to dispatcher sub-project
-        run: cd hub/dispatcher
 
       - name: Grant execute permission for Gradlew
         run: chmod +x gradlew
