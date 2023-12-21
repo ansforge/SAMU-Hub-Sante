@@ -118,7 +118,7 @@
             </v-card-text>
           </template>
           <v-card-actions v-if="testCase.steps[currentStep-1]?.type === 'send'">
-            <v-btn color="primary" @click="submitMessage(testCase.steps[currentStep-1].json)">
+            <v-btn color="primary" @click="submitMessage(testCase.steps[currentStep-1])">
               Envoyer
             </v-btn>
           </v-card-actions>
