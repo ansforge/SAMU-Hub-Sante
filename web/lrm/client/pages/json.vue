@@ -12,6 +12,7 @@
             dense
             hide-details
             outlined
+            :return-object="false"
           />
         </v-card-title>
         <v-card-text>
@@ -201,7 +202,7 @@ export default {
   methods: {
     loadSchemas () {
       Promise.all(Object.entries(this.messageTypes).map(([name, { schemaName }]) => {
-        console.log(this.selectedSource + schemaName)
+        console.log('Loading schema from: ' + this.selectedSource + schemaName)
         return fetch(this.selectedSource + schemaName).then(response => response.json()).then(schema => ({ name, schema }))
       })).then((schemas) => {
         schemas.forEach(({ name, schema }) => {
