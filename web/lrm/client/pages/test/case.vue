@@ -391,7 +391,7 @@ export default {
           this.nextStep()
         }
       }
-      Vue.set(this, 'testCase', { ...this.testCase }) // Update the reactive property
+      Vue.set(this, 'testCase', { ...this.testCase })
     },
     /**
      * Returns the JSON object containing the reference distribution ID for a specific step, which is the verified value
@@ -512,7 +512,7 @@ export default {
         }
       })
       message.validatedValues = JSON.parse(JSON.stringify(validatedValues))
-      Vue.set(this, 'message', message) // Update the reactive property 'message'
+      Vue.set(this, 'message', message)
       return valid
     },
     getStepColor (index) {
