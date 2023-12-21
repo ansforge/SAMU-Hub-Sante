@@ -152,6 +152,7 @@
 <script>
 
 import { mapGetters } from 'vuex'
+import Vue from 'vue'
 import mixinMessage from '~/plugins/mixinMessage'
 
 export default {
@@ -390,7 +391,7 @@ export default {
           this.nextStep()
         }
       }
-      this.$forceUpdate()
+      Vue.set(this, 'testCase', { ...this.testCase }) // Update the reactive property
     },
     /**
      * Returns the JSON object containing the reference distribution ID for a specific step, which is the verified value
@@ -452,11 +453,10 @@ export default {
         return this.checkMessageContainsAllRequiredValues(message, this.testCase.steps[this.currentStep - 1].message.requiredValues)
       } else if (!this.testCase.steps[this.currentStep - 1].message.validatedAcknowledgement) {
         message.validatedAcknowledgement = this.checkAcknowledgementContainsReferenceDistributionId(message, this.getAwaitedReferenceDistributionIdJson(this.testCase.steps[this.currentStep - 1]))
-        this.testCase.steps[this.currentStep - 1].message.validatedAcknowledgement = message.validatedAcknowledgement
+        Vue.set(this.testCase.steps[this.currentStep - 1].message, 'validatedAcknowledgement', message.validatedAcknowledgement)
         if (message.validatedAcknowledgement) {
           this.validateMessage(this.selectedTypeCaseMessages.indexOf(message), false, true)
         }
-        this.$forceUpdate()
         return this.testCase.steps[this.currentStep - 1].message.validatedAcknowledgement && this.testCase.steps[this.currentStep - 1].message.validatedReceivedValues
       }
     },
@@ -512,7 +512,7 @@ export default {
         }
       })
       message.validatedValues = JSON.parse(JSON.stringify(validatedValues))
-      this.$forceUpdate()
+      Vue.set(this, 'message', message) // Update the reactive property 'message'
       return valid
     },
     getStepColor (index) {
