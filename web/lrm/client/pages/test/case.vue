@@ -81,7 +81,7 @@
                     </v-icon> <v-icon v-else style="flex:0" color="error">
                       mdi-close
                     </v-icon>
-                    <pre class="values">{{ requiredValue.value ? name : 'distributionID' }} : {{ requiredValue.value ? requiredValue.value : requiredValue.distributionID }}</pre>
+                    <pre class="values">{{ name }} : {{ requiredValue.value }}</pre>
                   </span>
                 </v-list-item-content>
               </v-list>
@@ -123,7 +123,7 @@
                   </v-icon> <v-icon v-else style="flex:0" color="error">
                     mdi-close
                   </v-icon>
-                  <pre class="values">{{ validatedValue?.value?.value ? validatedValue?.value?.path : 'distributionID' }} : {{ validatedValue?.value?.value ? validatedValue?.value?.value : validatedValue?.value?.reference?.distributionID }} <span v-if="!validatedValue?.valid" class="wrong-received"> (Reçu: {{ validatedValue?.receivedValue || 'null' }}) </span></pre>
+                  <pre class="values">{{ validatedValue?.value?.path }} : {{ validatedValue?.value?.value }} <span v-if="!validatedValue?.valid" class="wrong-received"> (Reçu: {{ validatedValue?.receivedValue || 'null' }}) </span></pre>
                 </v-list-item-content>
               </v-list>
             </v-card-text>
@@ -365,7 +365,7 @@ export default {
         })
         return requiredValuesObject
       } else {
-        return this.getAwaitedReferenceDistributionIdJson(step)
+        return this.getAwaitedReferenceDistributionObject(step)
       }
     },
     /**
@@ -398,9 +398,18 @@ export default {
      * during 'send' type steps
      */
     getAwaitedReferenceDistributionIdJson (step) {
+      const json = [
+        {
+          path: '$.reference.distributionID',
+          value: step?.message?.awaitedReferenceDistributionID
+        }
+      ]
+      return json
+    },
+    getAwaitedReferenceDistributionObject (step) {
       const json = {
-        reference: {
-          distributionID: step?.message?.awaitedReferenceDistributionID
+        '$.reference.distributionID': {
+          value: step?.message?.awaitedReferenceDistributionID
         }
       }
       return json
@@ -452,7 +461,7 @@ export default {
       if (this.testCase.steps[this.currentStep - 1].type === 'receive') {
         return this.checkMessageContainsAllRequiredValues(message, this.testCase.steps[this.currentStep - 1].message.requiredValues)
       } else if (!this.testCase.steps[this.currentStep - 1].message.validatedAcknowledgement) {
-        message.validatedAcknowledgement = this.checkAcknowledgementContainsReferenceDistributionId(message, this.getAwaitedReferenceDistributionIdJson(this.testCase.steps[this.currentStep - 1]))
+        message.validatedAcknowledgement = this.checkMessageContainsAllRequiredValues(message, this.getAwaitedReferenceDistributionIdJson(this.testCase.steps[this.currentStep - 1]))
         Vue.set(this.testCase.steps[this.currentStep - 1].message, 'validatedAcknowledgement', message.validatedAcknowledgement)
         if (message.validatedAcknowledgement) {
           this.validateMessage(this.selectedTypeCaseMessages.indexOf(message), false, true)
