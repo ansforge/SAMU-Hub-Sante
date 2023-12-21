@@ -6,6 +6,7 @@
       :key="exampleLoadDatetime"
       v-model="form"
       :schema="schema"
+      :no-send-button="noSendButton"
       @submit="submit()"
     />
   </div>
@@ -36,6 +37,10 @@ export default {
     examples: {
       type: Array,
       required: true
+    },
+    noSendButton: {
+      type: Boolean,
+      default: false
     }
   },
   data () {
