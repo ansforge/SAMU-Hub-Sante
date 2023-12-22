@@ -51,24 +51,21 @@
                           <span>{{ index + 1 }}. {{ step.label }}</span>
                           <p class="descrption">{{ step.description }}</p>
                         </v-list-item-title>
-                        <template v-if="step.type === 'receive'">
-                          <v-list>
-                            <v-list-item v-for="requiredValue in step.message.requiredValues" :key="requiredValue.index">
-                              <v-list-item-content>
-                                {{ requiredValue.path }} : {{ requiredValue.value }}
-                              </v-list-item-content>
-                            </v-list-item>
-                          </v-list>
-                        </template>
-                        <template v-else>
-                          <json-viewer
-                            :value="step.json ? step.json : ''"
-                            :expand-depth="10"
-                            :copyable="{copyText: 'Copier', copiedText: 'Copié !', timeout: 1000}"
-                            expanded
-                            theme="json-theme"
-                          />
-                        </template>
+                        <v-list>
+                          <v-list-item v-for="requiredValue in step.message.requiredValues" :key="requiredValue.index">
+                            <v-list-item-content>
+                              {{ requiredValue.path }} : {{ requiredValue.value }}
+                            </v-list-item-content>
+                          </v-list-item>
+                        </v-list>
+                        <json-viewer
+                          v-if="step.type === 'send'"
+                          :value="step.json ? step.json : ''"
+                          :expand-depth="3"
+                          :copyable="{copyText: 'Copier', copiedText: 'Copié !', timeout: 1000}"
+                          expanded
+                          theme="json-theme"
+                        />
                       </v-list-item-content>
                     </v-list-item>
                   </v-timeline-item>
