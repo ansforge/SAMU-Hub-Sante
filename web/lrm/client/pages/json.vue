@@ -122,6 +122,27 @@ export default {
             context: "Pour illustrer les messages d'INFO sur les erreurs de validation"
           }]
         },
+        createCaseCisu: {
+          label: 'RC-EDA-CISU',
+          schemaName: 'RC-EDA-CISU.schema.json',
+          schema: null,
+          examples: [{
+            file: 'RC-EDA Armaury VF.json',
+            icon: 'mdi-bike-fast',
+            name: 'Alexandre ARMAURY',
+            caller: 'Albane Armaury, témoin accident impliquant son mari, Alexandre Armaury',
+            context: 'Collision de 2 vélos',
+            environment: 'Voie cyclable à Lyon, gêne de la circulation',
+            victims: '2 victimes, 1 nécessitant assistance SAMU',
+            victim: 'Homme, adulte, 43 ans',
+            medicalSituation: 'Céphalées, migraines, traumatismes sérieux, plaies intermédiaires'
+          }, {
+            file: '../exemple-invalide.json',
+            icon: 'mdi-alert-circle-outline',
+            name: 'Champs manquants',
+            context: "Pour illustrer les messages d'INFO sur les erreurs de validation"
+          }]
+        },
         emsi: {
           label: 'EMSI',
           schemaName: 'EMSI.schema.json',
