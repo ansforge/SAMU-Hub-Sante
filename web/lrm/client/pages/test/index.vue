@@ -47,12 +47,15 @@
                   <v-timeline-item v-for="step, index in testCase.steps" :key="step.label" :left="step.type === 'receive'" :right="step.type !== 'receive'">
                     <v-list-item>
                       <v-list-item-content>
-                        <v-list-item-title>{{ index + 1 }}. {{ step.label }} {{ step.type==='receive' ? 'contenant les valeurs :' : 'avec le contenu suivant :' }}</v-list-item-title>
+                        <v-list-item-title>
+                          <span>{{ index + 1 }}. {{ step.label }}</span>
+                          <p class="descrption">{{ step.description }}</p>
+                        </v-list-item-title>
                         <template v-if="step.type === 'receive'">
                           <v-list>
                             <v-list-item v-for="requiredValue in step.message.requiredValues" :key="requiredValue.index">
                               <v-list-item-content>
-                                {{ requiredValue }}
+                                {{ requiredValue.path }} : {{ requiredValue.value }}
                               </v-list-item-content>
                             </v-list-item>
                           </v-list>
@@ -135,5 +138,9 @@ export default {
 <style>
   div.v-card__text {
     width: fit-content;
+  }
+
+  .descrption {
+    text-wrap: wrap;
   }
 </style>

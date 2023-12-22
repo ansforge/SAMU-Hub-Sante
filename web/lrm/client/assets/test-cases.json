@@ -6,6 +6,7 @@
       {
         "type": "receive",
         "label": "Réception d'un message EDA",
+        "description": "Lorem ipsum dolor sit amet, consectetur adipiscing el it. Nullam auctor, nisl eget ultricies aliquam, nunc nisl aliquet nunc, quis aliquam nisl nunc quis nisl. Nullam auctor, nisl eget ultricies aliquam, nunc nisl aliquet nunc, quis aliquam nisl nunc quis nisl.",
         "message": {
           "requiredValues": [
             {
@@ -14,73 +15,46 @@
             },
             {
               "path":"$.createCase.initialAlert.reporting",
-              "value": ["STANDARD","ATTENTION"]
+              "value": ["STANDARD"]
             },
             {
               "path":"$.createCase.referenceVersion",
-              "value": ["1.2","1.3"]
+              "value": ["1.2"]
             }
-          ],
-          "label": "RC-EDA",
-          "file": "RC-EDA Armaury VF.json",
-          "icon": "mdi-bike-fast",
-          "name": "Alexandre ARMAURY",
-          "caller": "Albane Armaury, témoin accident impliquant son mari,  Alexandre Armaury",
-          "context": "Collision de 2 vélos",
-          "environment": "Voie cyclable à Lyon, gêne de la circulation",
-          "victims": "2 victimes, 1 nécessitant assistance SAMU",
-          "victim": "Homme, adulte, 43 ans",
-          "medicalSituation": "Céphalées, migraines, traumatismes sérieux, plaies intermédiaires"
+          ]
         }
       },
       {
         "type": "receive",
         "label": "Réception d'un message DC",
+        "description": "Duis enim felis, convallis vitae laoreet in, cursus quis libero. Vivamus at molestie erat. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vivamus nulla nunc, porta eget turpis in, feugiat mollis dolor. Nullam consequat orci nibh, vitae sodales enim fringilla eu.",
         "message": {
           "requiredValues": [
             {
               "path":"$.emsi.CONTEXT.MODE",
-              "value":["ACTUAL","EXERCS"]
+              "value":["ACTUAL"]
             },
             {
               "path":"$.emsi.EVENT.ETYPE.CATEGORY[0]",
-              "value": ["TRP/COL","ASB"]
+              "value": ["TRP/COL"]
             },
             {
               "path":"$.emsi.MISSION[0].TYPE",
-              "value": ["GEN/SCNMNG","C2"]
+              "value": ["GEN/SCNMNG"]
             }
-          ],
-          "label": "EMSI-DC",
-          "file": "EMSI-DC Armaury VF.json",
-          "icon": "mdi-bike-fast",
-          "name": "Alexandre ARMAURY (DC)",
-          "caller": "Albane Armaury, témoin accident impliquant son mari,  Alexandre Armaury",
-          "context": "Collision de 2 vélos",
-          "environment": "Voie cyclable à Lyon, gêne de la circulation",
-          "victims": "2 victimes, 1 nécessitant assistance SAMU",
-          "victim": "Homme, adulte, 43 ans",
-          "medicalSituation": "Céphalées, migraines, traumatismes sérieux, plaies intermédiaires"
+          ]
         }
       },
       {
         "type": "send",
         "label": "Envoi d'un message RDC",
+        "description": "Aenean sit amet justo gravida, vulputate leo et, gravida ex. Duis pretium libero vel elit mollis, nec iaculis magna luctus. Integer sit amet magna vitae massa pulvinar porttitor. Donec mi lorem, faucibus eget diam id, faucibus convallis lectus. Nulla pharetra erat sed scelerisque tincidunt. In a massa vitae tortor ultricies aliquam. Duis sagittis non mi id congue.",
         "message": {
           "requiredValues": [{
             "path":"$.emsi.CONTEXT.FREETEXT",
-            "value":["Test de la valeur libre 1","Test de la valeur libre 2"]
+            "value":["Test"]
           }],
-          "label": "EMSI-EO RDC",
-          "file": "EMSI-EO Armaury RDC VF.json",
-          "icon": "mdi-bike-fast",
-          "name": "Alexandre ARMAURY (RDC)",
-          "caller": "Albane Armaury, témoin accident impliquant son mari,  Alexandre Armaury",
-          "context": "Collision de 2 vélos",
-          "environment": "Voie cyclable à Lyon, gêne de la circulation",
-          "victims": "2 victimes, 1 nécessitant assistance SAMU",
-          "victim": "Homme, adulte, 43 ans",
-          "medicalSituation": "Céphalées, migraines, traumatismes sérieux, plaies intermédiaires"
+          "file": "EMSI-EO Armaury RDC VF.json"
         }
       }
     ]
