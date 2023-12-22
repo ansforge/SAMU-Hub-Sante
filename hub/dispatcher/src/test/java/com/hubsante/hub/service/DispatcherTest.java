@@ -78,6 +78,7 @@ public class DispatcherTest {
     private final String SAMU_A_MESSAGE_QUEUE = SAMU_A_ROUTING_KEY + ".message";
     private final String SAMU_A_INFO_QUEUE = SAMU_A_ROUTING_KEY + ".info";
     private final String SAMU_A_ERROR_QUEUE = SAMU_A_ROUTING_KEY + ".error";
+    private final String SAMU_A_DISTRIBUTION_ID = "fr.health.samuA_2608323d-507d-4cbf-bf74-52007f8124ea";
     private final String INCONSISTENT_ROUTING_KEY = "fr.health.no-samu";
     private final String JSON = MessageProperties.CONTENT_TYPE_JSON;
     private final String XML = MessageProperties.CONTENT_TYPE_XML;
@@ -201,6 +202,7 @@ public class DispatcherTest {
         // we test that an error report has been sent with the correct error code
         assertErrorReportHasBeenSent(
                 SAMU_A_INFO_QUEUE, ErrorCode.DEAD_LETTER_QUEUED,
+                SAMU_A_DISTRIBUTION_ID,
                 "fr.health.samuA_2608323d-507d-4cbf-bf74-52007f8124ea",
                 "has been read from dead-letter-queue; reason was expired");
     }
@@ -224,7 +226,7 @@ public class DispatcherTest {
         Message receivedMessage = createInvalidMessage("EDXL-DE/unparsable-content.json",  SAMU_A_ROUTING_KEY);
         assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
 
-        assertErrorReportHasBeenSent(SAMU_A_INFO_QUEUE, ErrorCode.UNRECOGNIZED_MESSAGE_FORMAT,
+        assertErrorReportHasBeenSent(SAMU_A_INFO_QUEUE, ErrorCode.UNRECOGNIZED_MESSAGE_FORMAT, SAMU_A_DISTRIBUTION_ID,
                 "Could not parse message, invalid format. \n If you don't want to use HubSanté model" +
                         " for now, please use a \"customContent\" wrapper inside your message.");
     }
@@ -237,7 +239,7 @@ public class DispatcherTest {
         assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
 
         // we test that an error report has been sent with the correct error code
-        assertErrorReportHasBeenSent(SAMU_A_INFO_QUEUE, ErrorCode.NOT_ALLOWED_CONTENT_TYPE,
+        assertErrorReportHasBeenSent(SAMU_A_INFO_QUEUE, ErrorCode.NOT_ALLOWED_CONTENT_TYPE, null,
                 "Unhandled Content-Type ! Message Content-Type should be set at 'application/json' or 'application/xml'");
     }
 
@@ -249,7 +251,7 @@ public class DispatcherTest {
         assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
 
         // we test that an error report has been sent with the correct error code
-        assertErrorReportHasBeenSent(SAMU_A_INFO_QUEUE, ErrorCode.NOT_ALLOWED_CONTENT_TYPE,
+        assertErrorReportHasBeenSent(SAMU_A_INFO_QUEUE, ErrorCode.NOT_ALLOWED_CONTENT_TYPE, null,
                 "Unhandled Content-Type ! Message Content-Type should be set at 'application/json' or 'application/xml'");
     }
 
@@ -264,7 +266,7 @@ public class DispatcherTest {
         assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
 
         // we test that an error report has been sent with the correct error code
-        assertErrorReportHasBeenSent(SAMU_A_INFO_QUEUE, ErrorCode.UNRECOGNIZED_MESSAGE_FORMAT,
+        assertErrorReportHasBeenSent(SAMU_A_INFO_QUEUE, ErrorCode.UNRECOGNIZED_MESSAGE_FORMAT, SAMU_A_DISTRIBUTION_ID,
                 "Could not parse message, invalid format. \n If you don't want to use HubSanté model" +
                         " for now, please use a \"customContent\" wrapper inside your message.");
     }
@@ -277,7 +279,7 @@ public class DispatcherTest {
         assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
 
         // we test that an error report has been sent with the correct error code
-        assertErrorReportHasBeenSent(INCONSISTENT_ROUTING_KEY + ".info", ErrorCode.SENDER_INCONSISTENCY,
+        assertErrorReportHasBeenSent(INCONSISTENT_ROUTING_KEY + ".info", ErrorCode.SENDER_INCONSISTENCY, SAMU_A_DISTRIBUTION_ID,
                 "message sender is fr.health.samuA", "received routing key is fr.health.no-samu");
     }
 
@@ -289,7 +291,7 @@ public class DispatcherTest {
         assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
 
         // we test that an error report has been sent with the correct error code
-        assertErrorReportHasBeenSent(SAMU_A_INFO_QUEUE, ErrorCode.DELIVERY_MODE_INCONSISTENCY,
+        assertErrorReportHasBeenSent(SAMU_A_INFO_QUEUE, ErrorCode.DELIVERY_MODE_INCONSISTENCY, SAMU_A_DISTRIBUTION_ID,
                 "fr.health.samuA_2608323d-507d-4cbf-bf74-52007f8124ea", "non-persistent delivery mode");
     }
 
@@ -299,7 +301,7 @@ public class DispatcherTest {
         Message receivedMessage = createInvalidMessage("EDXL-DE/missing-EDXL-required-field.json", SAMU_A_ROUTING_KEY);
         assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
 
-        assertErrorReportHasBeenSent(SAMU_A_INFO_QUEUE, ErrorCode.INVALID_MESSAGE,
+        assertErrorReportHasBeenSent(SAMU_A_INFO_QUEUE, ErrorCode.INVALID_MESSAGE, null,
                 "distributionID: is missing but it is required",
                 "descriptor.explicitAddress.explicitAddressValue: is missing but it is required");
     }
@@ -311,11 +313,11 @@ public class DispatcherTest {
                 JSON, SAMU_A_ROUTING_KEY);
         assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
 
-        assertErrorReportHasBeenSent(SAMU_A_INFO_QUEUE, ErrorCode.INVALID_MESSAGE,
+        assertErrorReportHasBeenSent(SAMU_A_INFO_QUEUE, ErrorCode.INVALID_MESSAGE, SAMU_A_DISTRIBUTION_ID,
                 "creation: is missing but it is required");
     }
 
-    private void assertErrorReportHasBeenSent(String infoQueueName, ErrorCode errorCode, String... errorCause) throws JsonProcessingException {
+    private void assertErrorReportHasBeenSent(String infoQueueName, ErrorCode errorCode, String referencedDistributionId, String... errorCause) throws JsonProcessingException {
 
         ArgumentCaptor<Message> argument = ArgumentCaptor.forClass(Message.class);
         Mockito.verify(rabbitTemplate, times(1)).send(
