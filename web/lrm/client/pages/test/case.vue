@@ -5,6 +5,29 @@
         <v-card-title class="headline pb-">
           Cas de test <span class="font-weight-bold">&nbsp;{{ testCase.label }} </span>
         </v-card-title>
+        <v-card-actions>
+          <v-container full-width>
+            <v-stepper v-model="currentStep" class="stepper">
+              <v-stepper-header>
+                <template v-for="(step, index) in testCase.steps">
+                  <v-col :key="'step' + index">
+                    <v-stepper-step
+                      :key="index"
+                      style="cursor: pointer;"
+                      :color="getStepColor(index)"
+                      :complete="index < currentStep-1"
+                      :step="index+1"
+                      @click="currentlySelectedStep=index+1"
+                    >
+                      {{ step.label }}
+                    </v-stepper-step>
+                  </v-col>
+                  <v-divider v-if="index < testCase.steps.length - 1" :key="'divider' + index" />
+                </template>
+              </v-stepper-header>
+            </v-stepper>
+          </v-container>
+        </v-card-actions>
         <v-card-text class="main-card-content">
           <v-container full-width>
             <v-row>
@@ -37,29 +60,6 @@
             </v-row>
           </v-container>
         </v-card-text>
-        <v-card-actions>
-          <v-container full-width>
-            <v-stepper v-model="currentStep" class="stepper">
-              <v-stepper-header>
-                <template v-for="(step, index) in testCase.steps">
-                  <v-col :key="'step' + index">
-                    <v-stepper-step
-                      :key="index"
-                      style="cursor: pointer;"
-                      :color="getStepColor(index)"
-                      :complete="index < currentStep-1"
-                      :step="index+1"
-                      @click="currentlySelectedStep=index+1"
-                    >
-                      {{ step.label }}
-                    </v-stepper-step>
-                  </v-col>
-                  <v-divider v-if="index < testCase.steps.length - 1" :key="'divider' + index" />
-                </template>
-              </v-stepper-header>
-            </v-stepper>
-          </v-container>
-        </v-card-actions>
       </v-card>
     </v-col>
     <v-col cols="12" sm="5">
