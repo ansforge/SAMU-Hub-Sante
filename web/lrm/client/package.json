@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "setup": "cp -R ../../../models/src/main/resources/json-schema/ static/schemas/",
+    "setup": "npm run cp:schemas && npm run cp:examples",
+    "cp:schemas": "cp -R ../../../../SAMU-Hub-Modeles/src/main/resources/json-schema/ static/schemas/",
+    "cp:examples": "cp -R ../../../../SAMU-Hub-Modeles/src/main/resources/sample/examples/ static/examples/",
     "dev": "NODE_OPTIONS=--openssl-legacy-provider nuxt",
     "build": "NODE_OPTIONS=--openssl-legacy-provider nuxt build",
     "start": "nuxt start",
