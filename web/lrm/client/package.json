@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "setup": "npm run cp:schemas && npm run cp:examples",
-    "cp:schemas": "cp -R ../../../../SAMU-Hub-Modeles/src/main/resources/json-schema/ static/schemas/",
-    "cp:examples": "cp -R ../../../../SAMU-Hub-Modeles/src/main/resources/sample/examples/ static/examples/",
+    "cp:schemas": "rm static/schemas/* && cp -R ../../../../SAMU-Hub-Modeles/src/main/resources/json-schema/ static/schemas/",
+    "cp:examples": "rm static/examples/* && cp -R ../../../../SAMU-Hub-Modeles/src/main/resources/sample/examples/ static/examples/",
     "dev": "NODE_OPTIONS=--openssl-legacy-provider nuxt",
     "build": "NODE_OPTIONS=--openssl-legacy-provider nuxt build",
     "start": "nuxt start",

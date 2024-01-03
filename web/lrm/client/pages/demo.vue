@@ -121,7 +121,7 @@ export default {
       messageTypes: {
         createCase: {
           label: 'RC-EDA',
-          schemaName: 'schemas/RC-EDA.schema.json',
+          schemaName: 'schemas/RC-EDA-CISU.schema.json',
           schema: null,
           examples: [{
             file: 'RC-EDA-usecase-Armaury-1.json',

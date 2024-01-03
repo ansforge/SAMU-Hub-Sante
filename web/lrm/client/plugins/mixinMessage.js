@@ -83,7 +83,7 @@ export default {
       message.content[0].jsonContent.embeddedJsonContent.message.kind = message.distributionKind
       message.content[0].jsonContent.embeddedJsonContent.message.sender = { name, URI: `hubex:${this.user.clientId}` }
       message.content[0].jsonContent.embeddedJsonContent.message.sentAt = sentAt
-      message.content[0].jsonContent.embeddedJsonContent.message.recipients = [{ name: this.clientInfos(this.user.targetId).name, URI: `hubex:${targetId}` }]
+      message.content[0].jsonContent.embeddedJsonContent.message.recipient = [{ name: this.clientInfos(this.user.targetId).name, URI: `hubex:${targetId}` }]
       return message
     },
     timeDisplayFormat () {

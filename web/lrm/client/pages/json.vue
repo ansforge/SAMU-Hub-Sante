@@ -14,6 +14,15 @@
             outlined
             :return-object="false"
           />
+          <v-btn
+            v-if="currentSchemaOnGitHub"
+            icon
+            color="primary"
+            :href="currentSchemaOnGitHub"
+            target="_blank"
+          >
+            <v-icon>mdi-open-in-new</v-icon>
+          </v-btn>
         </v-card-title>
         <v-card-text>
           <v-tabs
@@ -208,6 +217,16 @@ export default {
         return this.$refs.schemaForms?.[this.messageTypeTabIndex]?.form
       }
       return null
+    },
+    currentSchemaOnGitHub () {
+      if (this.selectedSource.includes('https://raw.githubusercontent.com/')) {
+        return this.selectedSource.replace(
+          'https://raw.githubusercontent.com/', 'https://github.com/'
+        ).replace(
+          'SAMU-Hub-Modeles/', 'SAMU-Hub-Modeles/tree/'
+        ) + this.$refs.schemaForms[this.messageTypeTabIndex].schemaName
+      }
+      return false
     }
   },
   watch: {

@@ -28,14 +28,12 @@ export const EDXL_ENVELOPE = {
           sentAt: '{{ 2022-09-27T08:23:34+02:00 }}',
           status: 'Actual',
           kind: '{{ Report }}',
-          recipients: {
-            recipient: [
-              {
-                name: '{{ samuB }}',
-                URI: '{{ hubsante:fr.health.samuB }}'
-              }
-            ]
-          }
+          recipient: [
+            {
+              name: '{{ samuB }}',
+              URI: '{{ hubsante:fr.health.samuB }}'
+            }
+          ]
         }
       }
     }
