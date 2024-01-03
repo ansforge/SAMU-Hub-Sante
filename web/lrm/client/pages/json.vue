@@ -14,6 +14,15 @@
             outlined
             :return-object="false"
           />
+          <v-btn
+            v-if="currentSchemaOnGitHub"
+            icon
+            color="primary"
+            :href="currentSchemaOnGitHub"
+            target="_blank"
+          >
+            <v-icon>mdi-open-in-new</v-icon>
+          </v-btn>
         </v-card-title>
         <v-card-text>
           <v-tabs
@@ -106,7 +115,7 @@ export default {
           schemaName: 'RC-EDA.schema.json',
           schema: null,
           examples: [{
-            file: 'RC-EDA Armaury VF.json',
+            file: 'RC-EDA-usecase-Armaury-1.json',
             icon: 'mdi-bike-fast',
             name: 'Alexandre ARMAURY',
             caller: 'Albane Armaury, témoin accident impliquant son mari, Alexandre Armaury',
@@ -127,7 +136,7 @@ export default {
           schemaName: 'RC-EDA-CISU.schema.json',
           schema: null,
           examples: [{
-            file: 'RC-EDA Armaury VF.json',
+            file: 'RC-EDA-usecase-Armaury-1.json',
             icon: 'mdi-bike-fast',
             name: 'Alexandre ARMAURY',
             caller: 'Albane Armaury, témoin accident impliquant son mari, Alexandre Armaury',
@@ -148,7 +157,7 @@ export default {
           schemaName: 'EMSI.schema.json',
           schema: null,
           examples: [{
-            file: 'EMSI-DC Armaury VF.json',
+            file: 'EMSI-DC-usecase-Armaury-2.json',
             icon: 'mdi-bike-fast',
             name: 'Alexandre ARMAURY (DC)',
             caller: 'Albane Armaury, témoin accident impliquant son mari,  Alexandre Armaury',
@@ -158,7 +167,7 @@ export default {
             victim: 'Homme, adulte, 43 ans',
             medicalSituation: 'Céphalées, migraines, traumatismes sérieux, plaies intermédiaires'
           }, {
-            file: 'EMSI-EO Armaury RDC VF.json',
+            file: 'EMSI-EO-usecase-Armaury-3.json',
             icon: 'mdi-bike-fast',
             name: 'Alexandre ARMAURY (RDC)',
             caller: 'Albane Armaury, témoin accident impliquant son mari,  Alexandre Armaury',
@@ -208,6 +217,16 @@ export default {
         return this.$refs.schemaForms?.[this.messageTypeTabIndex]?.form
       }
       return null
+    },
+    currentSchemaOnGitHub () {
+      if (this.selectedSource.includes('https://raw.githubusercontent.com/')) {
+        return this.selectedSource.replace(
+          'https://raw.githubusercontent.com/', 'https://github.com/'
+        ).replace(
+          'SAMU-Hub-Modeles/', 'SAMU-Hub-Modeles/tree/'
+        ) + this.$refs.schemaForms[this.messageTypeTabIndex].schemaName
+      }
+      return false
     }
   },
   watch: {
