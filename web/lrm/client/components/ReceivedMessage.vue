@@ -9,42 +9,51 @@
       <status-badge :direction="direction" :acked="acked" :distribution-id="body.distributionID" :class="{'ml-5': showSentMessages}" />
     </div>
     <div class="elevation-4 pt-8" :class="{'grey lighten-4': isOut(direction)}">
-      <v-row class="mx-4">
+      <v-row class="mx-4" :class="{ 'pb-2':dense }">
         <span>
           <v-icon small left>mdi-email-fast</v-icon>{{ direction }} {{ isOut(direction) ? routingKey : body.senderID }}
           <br>
           <v-icon small left>mdi-timer</v-icon>{{ time }} → {{ isOut(direction) ? acked?.time : receivedTime }}
+          <div v-if="dense && !isOut(direction)">
+            <v-icon small left :color="validatedValuesCount === requiredValuesCount ? 'green' : validatedValuesCount === 0 ? 'red' : 'orange'">
+              {{ validatedValuesCount === requiredValuesCount ? 'mdi-check' : 'mdi-close' }}
+            </v-icon>
+            <span>Valeurs valides: {{ validatedValuesCount }} / {{ requiredValuesCount }} </span>
+          </div>
         </span>
         <v-spacer />
-        <div v-if="getMessageType({body}) !== 'ack' && !isOut(direction)">
+        <span v-if="!dense" class="row" style="flex:unset !important">
+          <div v-if="getMessageType({body}) !== 'ack' && !isOut(direction)">
+            <v-btn
+              icon
+              :color="acked ? 'accent' : 'primary'"
+              @click="sendAck"
+            >
+              <v-icon>mdi-check-all</v-icon>
+            </v-btn>
+          </div>
+          <v-btn
+            v-if="getMessageType({body}) !== 'ack'"
+            icon
+            color="primary"
+            @click="useMessageToReply"
+          >
+            <v-icon>mdi-reply</v-icon>
+          </v-btn>
           <v-btn
             icon
-            :color="acked ? 'accent' : 'primary'"
-            @click="sendAck"
+            color="primary"
+            @click="showFullMessage = !showFullMessage"
           >
-            <v-icon>mdi-check-all</v-icon>
+            <v-icon>{{ showFullMessage ? 'mdi-magnify-plus-outline' : 'mdi-magnify-minus-outline' }}</v-icon>
           </v-btn>
-        </div>
-        <v-btn
-          v-if="getMessageType({body}) !== 'ack'"
-          icon
-          color="primary"
-          @click="useMessageToReply"
-        >
-          <v-icon>mdi-reply</v-icon>
-        </v-btn>
-        <v-btn
-          icon
-          color="primary"
-          @click="showFullMessage = !showFullMessage"
-        >
-          <v-icon>{{ showFullMessage ? 'mdi-magnify-plus-outline' : 'mdi-magnify-minus-outline' }}</v-icon>
-        </v-btn>
+        </span>
       </v-row>
 
       <json-viewer
+        v-if="!dense"
         :value="showFullMessage ? body : body.content[0].jsonContent.embeddedJsonContent.message"
-        :expand-depth="1"
+        :expand-depth="jsonDepth"
         :copyable="{copyText: 'Copier', copiedText: 'Copié !', timeout: 1000}"
         expanded
         theme="json-theme"
@@ -61,9 +70,25 @@ import mixinMessage from '~/plugins/mixinMessage'
 export default {
   mixins: [mixinMessage],
   props: {
+    dense: {
+      type: Boolean,
+      default: false
+    },
     direction: {
       type: String,
       required: true
+    },
+    jsonDepth: {
+      type: Number,
+      default: 1
+    },
+    requiredValuesCount: {
+      type: Number,
+      default: 0
+    },
+    validatedValuesCount: {
+      type: Number,
+      default: 0
     },
     routingKey: {
       type: String,
@@ -167,5 +192,8 @@ export default {
       }
     }
   }
+}
+.validated > *:last-child {
+  background-color: rgba(76,175,80,0.2)
 }
 </style>

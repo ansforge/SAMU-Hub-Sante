@@ -8,6 +8,10 @@ export default {
       this.wsConnect()
     }
   },
+  beforeRouteLeave (to, from, next) {
+    this.wsDisconnect()
+    next()
+  },
   methods: {
     wsConnect () {
       this.socket = new WebSocket(process.env.wssUrl)
@@ -16,6 +20,10 @@ export default {
       }
 
       this.socket.onclose = (e) => {
+        // Prevents infinite loop when closing the connection in an expected way
+        if (this.disconnect) {
+          return
+        }
         console.log(`WebSocket ${this.$options.name} connection closed`, e)
         // Retry connection
         setTimeout(() => {
@@ -29,12 +37,13 @@ export default {
       }
 
       // demo.vue is in charge of listening to server messages
-      if (this.$options.name === 'Demo') {
+      if (this.$options.name === 'Demo' || this.$options.name === 'Testcase') {
         this.socket.addEventListener('message', (event) => {
           const message = JSON.parse(event.data)
           this.$store.dispatch('addMessage', {
             ...message,
             direction: DIRECTIONS.IN,
+            messageType: this.getReadableMessageType(message.body.distributionKind),
             receivedTime: this.timeDisplayFormat()
           })
           if (this.autoAck) {
@@ -46,6 +55,11 @@ export default {
           }
         })
       }
+    },
+    wsDisconnect () {
+      console.log(`Disconnecting : WebSocket ${this.$options.name} connection closed`)
+      this.socket.close()
+      this.disconnect = true
     },
     isOut (direction) {
       return direction === DIRECTIONS.OUT
@@ -62,14 +76,25 @@ export default {
         return 'message'
       }
     },
+    getReadableMessageType (messageType) {
+      switch (messageType) {
+        case 'Ack':
+          return 'Ack'
+        case 'Error':
+          return 'Info'
+        default:
+          return 'Message'
+      }
+    },
     buildAck (distributionID) {
       return this.buildMessage({ reference: { distributionID } }, 'Ack')
     },
     buildMessage (innerMessage, distributionKind = 'Report') {
       const message = JSON.parse(JSON.stringify(EDXL_ENVELOPE)) // Deep copy
+      const formattedInnerMessage = this.formatIdsInMessage(innerMessage)
       message.content[0].jsonContent.embeddedJsonContent.message = {
         ...message.content[0].jsonContent.embeddedJsonContent.message,
-        ...innerMessage
+        ...formattedInnerMessage
       }
       const name = this.userInfos.name
       const targetId = this.clientInfos(this.user.targetId).id
@@ -86,6 +111,13 @@ export default {
       message.content[0].jsonContent.embeddedJsonContent.message.recipient = [{ name: this.clientInfos(this.user.targetId).name, URI: `hubex:${targetId}` }]
       return message
     },
+    formatIdsInMessage (innerMessage) {
+      // Check the entire message for occurencesof {senderName} and replaceit with the actual sender name
+      const senderName = this.userInfos.name
+      let jsonString = JSON.stringify(innerMessage)
+      jsonString = jsonString.replaceAll('samu690', senderName)
+      return JSON.parse(jsonString)
+    },
     timeDisplayFormat () {
       const d = new Date()
       return d.toLocaleTimeString('fr').replace(':', 'h') + '.' + String(new Date().getMilliseconds()).padStart(3, '0')
@@ -98,6 +130,7 @@ export default {
           direction: DIRECTIONS.OUT,
           routingKey: this.user.targetId,
           time: this.timeDisplayFormat(),
+          messageType: this.getReadableMessageType(msg.distributionKind),
           body: msg
         })
       } catch (e) {
