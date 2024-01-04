@@ -13,12 +13,22 @@ kubectl replace --force -f ../../hub/infra/web/lrm.yaml
 ```
 
 ## Local development
+### Client
 ```bash
 # Using local server
 npm run dev
 
 # Using prod remote server
 USE_PROD_SERVER=true npm run dev
+```
+
+### Server
+```bash
+# Using local RabbitMQ
+npm run dev
+
+# Using prod remote RabbitMQ
+HUB_URL=amqps://messaging.hub.esante.gouv.fr npm run dev
 ```
 
 ## ToDo

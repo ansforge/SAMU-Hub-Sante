@@ -6,7 +6,7 @@ const logger = createLogger({
     format.timestamp(),
     format.json(),
     format.errors({ stack: true }), // Ref.: https://stackoverflow.com/a/58475687
-    format.prettyPrint()
+    format.prettyPrint(),
   ),
   defaultMeta: { service: 'user-service' },
   transports: [
@@ -16,6 +16,5 @@ const logger = createLogger({
     new transports.File({ filename: 'combined.log', timestamp: true }),
   ],
 });
-
 
 module.exports = logger;
