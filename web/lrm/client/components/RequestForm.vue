@@ -3,7 +3,7 @@
     <v-jsf v-model="form" :schema="schema" :options="options" />
     <v-card-actions>
       <v-spacer />
-      <SendButton class="mt-2" @click="$emit('submit')" />
+      <SendButton v-if="!noSendButton" class="mt-2" @click="$emit('submit')" />
     </v-card-actions>
   </v-form>
 </template>
@@ -20,6 +20,10 @@ export default {
     schema: {
       type: Object,
       required: true
+    },
+    noSendButton: {
+      type: Boolean,
+      default: false
     }
   },
   data () {

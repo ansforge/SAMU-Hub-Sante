@@ -4,7 +4,9 @@ import { EDXL_ENVELOPE, DIRECTIONS } from '@/constants'
 
 export default {
   mounted () {
-    this.wsConnect()
+    if (this.$route.name !== 'json') {
+      this.wsConnect()
+    }
   },
   beforeRouteLeave (to, from, next) {
     this.wsDisconnect()

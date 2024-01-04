@@ -121,10 +121,10 @@ export default {
       messageTypes: {
         createCase: {
           label: 'RC-EDA',
-          schemaName: 'schemas/RC-EDA_schema.json',
+          schemaName: 'schemas/RC-EDA-CISU.schema.json',
           schema: null,
           examples: [{
-            file: 'RC-EDA Armaury VF.json',
+            file: 'RC-EDA-usecase-Armaury-1.json',
             icon: 'mdi-bike-fast',
             name: 'Alexandre ARMAURY',
             caller: 'Albane Armaury, témoin accident impliquant son mari,  Alexandre Armaury',
@@ -137,15 +137,15 @@ export default {
             file: '../exemple-invalide.json',
             icon: 'mdi-alert-circle-outline',
             name: 'Champs manquants',
-            context: "Pour illustrer les messages d'INFO sur les erreurs de validation",
+            context: "Pour illustrer les messages d'INFO sur les erreurs de validation"
           }]
         },
         emsi: {
           label: 'EMSI',
-          schemaName: 'schemas/EMSI-DC_schema.json',
+          schemaName: 'schemas/EMSI.schema.json',
           schema: null,
           examples: [{
-            file: 'EMSI-DC Armaury VF.json',
+            file: 'EMSI-DC-usecase-Armaury-2.json',
             icon: 'mdi-bike-fast',
             name: 'Alexandre ARMAURY (DC)',
             caller: 'Albane Armaury, témoin accident impliquant son mari,  Alexandre Armaury',
@@ -155,7 +155,7 @@ export default {
             victim: 'Homme, adulte, 43 ans',
             medicalSituation: 'Céphalées, migraines, traumatismes sérieux, plaies intermédiaires'
           }, {
-            file: 'EMSI-EO Armaury RDC VF.json',
+            file: 'EMSI-EO-usecase-Armaury-3.json',
             icon: 'mdi-bike-fast',
             name: 'Alexandre ARMAURY (RDC)',
             caller: 'Albane Armaury, témoin accident impliquant son mari,  Alexandre Armaury',

@@ -88,37 +88,70 @@
       "type": "object",
       "oneOf": [
         {
-          "properties": {
-            "message": {
-              "$ref": "RC-EDA_schema.json"
+          "allOf": [
+            {
+                "properties": {
+                    "message": {
+                    "$ref": "RC-DE.schema.json"
+                    }
+                }
+            },
+            {
+              "properties": {
+                "message": {
+                  "$ref": "RC-EDA.schema.json"
+                }
+              }
             }
-          }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "properties": {
+                "message": {
+                  "$ref": "RC-DE.schema.json"
+                }
+              }
+            },
+            {
+              "properties": {
+                "message": {
+                  "$ref": "RC-REF.schema.json"
+                }
+              }
+            }
+          ]
         },
         {
           "properties": {
             "message": {
-              "$ref": "RC-REF_schema.json"
+              "$ref": "RS-INFO.schema.json"
             }
           }
         },
         {
-          "properties": {
-            "message": {
-              "$ref": "RS-INFO_schema.json"
+          "allOf": [
+            {
+              "properties": {
+                "message": {
+                  "$ref": "RC-DE.schema.json"
+                }
+              }
+            },
+            {
+              "properties": {
+                "message": {
+                  "$ref": "EMSI.schema.json"
+                }
+              }
             }
-          }
+          ]
         },
         {
           "properties": {
             "message": {
-              "$ref": "EMSI-DC_schema.json"
-            }
-          }
-        },
-        {
-          "properties": {
-            "message": {
-              "$ref": "CustomContent_schema.json"
+              "$ref": "CustomContent.schema.json"
             }
           }
         }
