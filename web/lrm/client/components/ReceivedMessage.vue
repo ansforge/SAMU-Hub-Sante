@@ -14,11 +14,12 @@
           <v-icon small left>mdi-email-fast</v-icon>{{ direction }} {{ isOut(direction) ? routingKey : body.senderID }}
           <br>
           <v-icon small left>mdi-timer</v-icon>{{ time }} → {{ isOut(direction) ? acked?.time : receivedTime }}
-          <br v-if="dense&&!isOut(direction)">
-          <v-icon v-if="dense&&!isOut(direction)" small left :color="validatedValuesCount==requiredValuesCount ? 'green' : validatedValuesCount==0 ? 'red' : 'orange'">
-            {{ validatedValuesCount==requiredValuesCount ? 'mdi-check' : 'mdi-close' }}
-          </v-icon>
-          <span v-if="dense&&!isOut(direction)">Valeurs valides: {{ validatedValuesCount }} / {{ requiredValuesCount }} </span>
+          <div v-if="dense && !isOut(direction)">
+            <v-icon small left :color="validatedValuesCount === requiredValuesCount ? 'green' : validatedValuesCount === 0 ? 'red' : 'orange'">
+              {{ validatedValuesCount === requiredValuesCount ? 'mdi-check' : 'mdi-close' }}
+            </v-icon>
+            <span>Valeurs valides: {{ validatedValuesCount }} / {{ requiredValuesCount }} </span>
+          </div>
         </span>
         <v-spacer />
         <span v-if="!dense" class="row" style="flex:unset !important">

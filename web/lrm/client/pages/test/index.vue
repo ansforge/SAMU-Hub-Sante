@@ -1,7 +1,7 @@
 <template>
   <v-row justify="center">
     <v-col cols="12" sm="12">
-      <v-card-title class="headline pb-">
+      <v-card-title class="headline">
         Sélection de cas de test
       </v-card-title>
       <v-list>
@@ -24,7 +24,6 @@
                       {{ testCase.description }}
                     </v-card-text>
                   </v-list-item-subtitle>
-                  <v-spacer />
                 </div>
                 <div style="flex: 0;">
                   <v-btn
@@ -40,34 +39,42 @@
             </v-expansion-panel-header>
             <v-expansion-panel-content>
               <v-card-title>
-                Pas de test:
+                Pas de test
               </v-card-title>
               <v-list>
                 <v-timeline>
-                  <v-timeline-item v-for="step, index in testCase.steps" :key="step.label" :left="step.type === 'receive'" :right="step.type !== 'receive'">
-                    <v-list-item>
-                      <v-list-item-content>
-                        <v-list-item-title>
-                          <span>{{ index + 1 }}. {{ step.label }}</span>
-                          <p class="descrption">{{ step.description }}</p>
-                        </v-list-item-title>
-                        <v-list>
-                          <v-list-item v-for="requiredValue in step.message.requiredValues" :key="requiredValue.index">
-                            <v-list-item-content>
-                              {{ requiredValue.path }} : {{ requiredValue.value }}
-                            </v-list-item-content>
-                          </v-list-item>
-                        </v-list>
-                        <json-viewer
-                          v-if="step.type === 'send'"
-                          :value="step.json ? step.json : ''"
-                          :expand-depth="3"
-                          :copyable="{copyText: 'Copier', copiedText: 'Copié !', timeout: 1000}"
-                          expanded
-                          theme="json-theme"
-                        />
-                      </v-list-item-content>
-                    </v-list-item>
+                  <v-timeline-item
+                    v-for="(step, index) in testCase.steps"
+                    :key="step.label"
+                    :left="step.type === 'receive'"
+                    :right="step.type !== 'receive'"
+                    :icon="step.type === 'receive' ? 'mdi-download' : 'mdi-upload'"
+                  >
+                    <v-card>
+                      <v-card-title>
+                        {{ index + 1 }}. {{ step.label }}
+                      </v-card-title>
+                      <v-card-subtitle>
+                        {{ step.description }}
+                      </v-card-subtitle>
+                      <v-card-text>
+                        <ul v-for="requiredValue in step.message.requiredValues" :key="requiredValue.index">
+                          <li>
+                            {{ requiredValue.path }} : {{ requiredValue.value }}
+                          </li>
+                        </ul>
+                      </v-card-text>
+                    </v-card>
+                  </v-timeline-item>
+                </v-timeline>
+              </v-list>
+            </v-expansion-panel-content>
+          </v-expansion-panel>
+        </v-expansion-panels>
+      </v-list>
+    </v-col>
+  </v-row>
+</template>
                   </v-timeline-item>
                 </v-timeline>
               </v-list>
@@ -133,11 +140,4 @@ export default {
 }
 </script>
 <style>
-  div.v-card__text {
-    width: fit-content;
-  }
-
-  .descrption {
-    text-wrap: wrap;
-  }
 </style>

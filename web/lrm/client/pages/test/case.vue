@@ -140,7 +140,7 @@
           </v-card-title>
           <v-card-text class="main-card-content">
             <v-card-text>
-              <p>Le cas de test est terminé avec succés</p>
+              <p>Le cas de test est terminé avec succès 🥳</p>
             </v-card-text>
           </v-card-text>
         </template>

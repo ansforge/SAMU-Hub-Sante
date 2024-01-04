@@ -54,7 +54,7 @@
             "path":"$.emsi.CONTEXT.FREETEXT",
             "value":["Test"]
           }],
-          "file": "EMSI-EO Armaury RDC VF.json"
+          "file": "EMSI-EO-usecase-Armaury-3.json"
         }
       }
     ]
