@@ -110,7 +110,7 @@ export default {
       // ToDo: when message are uploaded, add them in store
       // ToDo: when message is loaded, add them in store to not load them again later
       messageTypes: {
-        createCase: {
+        createCaseCisu: {
           label: 'RC-EDA',
           schemaName: 'RC-EDA.schema.json',
           schema: null,
@@ -118,28 +118,7 @@ export default {
             file: 'RC-EDA-usecase-Armaury-1.json',
             icon: 'mdi-bike-fast',
             name: 'Alexandre ARMAURY',
-            caller: 'Albane Armaury, témoin accident impliquant son mari, Alexandre Armaury',
-            context: 'Collision de 2 vélos',
-            environment: 'Voie cyclable à Lyon, gêne de la circulation',
-            victims: '2 victimes, 1 nécessitant assistance SAMU',
-            victim: 'Homme, adulte, 43 ans',
-            medicalSituation: 'Céphalées, migraines, traumatismes sérieux, plaies intermédiaires'
-          }, {
-            file: '../exemple-invalide.json',
-            icon: 'mdi-alert-circle-outline',
-            name: 'Champs manquants',
-            context: "Pour illustrer les messages d'INFO sur les erreurs de validation"
-          }]
-        },
-        createCaseCisu: {
-          label: 'RC-EDA-CISU',
-          schemaName: 'RC-EDA-CISU.schema.json',
-          schema: null,
-          examples: [{
-            file: 'RC-EDA-usecase-Armaury-1.json',
-            icon: 'mdi-bike-fast',
-            name: 'Alexandre ARMAURY',
-            caller: 'Albane Armaury, témoin accident impliquant son mari, Alexandre Armaury',
+            caller: 'Albane Armaury, témoin accident impliquant son mari,  Alexandre Armaury',
             context: 'Collision de 2 vélos',
             environment: 'Voie cyclable à Lyon, gêne de la circulation',
             victims: '2 victimes, 1 nécessitant assistance SAMU',
@@ -176,6 +155,22 @@ export default {
             victims: '2 victimes, 1 nécessitant assistance SAMU',
             victim: 'Homme, adulte, 43 ans',
             medicalSituation: 'Céphalées, migraines, traumatismes sérieux, plaies intermédiaires'
+          }]
+        },
+        createCase: {
+          label: 'RS-EDA',
+          schemaName: 'RS-EDA.schema.json',
+          schema: null,
+          examples: [{
+            file: 'RS-EDA-usecase-PartageDossier-1.json',
+            icon: 'mdi-circular-saw',
+            name: 'Didier Morel',
+            caller: 'Sébastien Morel, témoin accident impliquant son père, Didier Morel',
+            context: 'Accident domestique : blessure grave causée par une scie circulaire électrique',
+            environment: 'Domicile, outil scie débranché et sécurisé',
+            victims: '1 victime, nécessitant assistance SAMU',
+            victim: 'Homme, adulte, 65 ans',
+            medicalSituation: 'Plaie traumatique profonde, perte de conscience, hémorragie importante'
           }]
         } /* ,
         info: {
