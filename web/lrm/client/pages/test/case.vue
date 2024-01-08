@@ -2,11 +2,11 @@
   <v-row justify="center">
     <v-col cols="12" sm="7">
       <v-card class="main-card" style="height: 86vh;">
-        <v-card-title class="headline pb-">
+        <v-card-title class="headline pb-0">
           Cas de test <span class="font-weight-bold">&nbsp;{{ testCase.label }} </span>
         </v-card-title>
-        <v-card-actions>
-          <v-container full-width>
+        <v-card-actions class="pt-0" style="flex-direction: column;">
+          <v-container class="pt-0" full-width>
             <v-stepper v-model="currentStep" class="stepper">
               <v-stepper-header>
                 <template v-for="(step, index) in testCase.steps">
@@ -26,6 +26,11 @@
                 </template>
               </v-stepper-header>
             </v-stepper>
+          </v-container>
+          <v-container>
+            <span>
+              {{ testCase.steps[currentlySelectedStep-1]?.description }}
+            </span>
           </v-container>
         </v-card-actions>
         <v-card-text class="main-card-content">
