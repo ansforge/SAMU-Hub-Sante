@@ -263,7 +263,7 @@ export default {
   mounted () {
     // To automatically generate the UI and input fields based on the JSON Schema
     Promise.all(Object.entries(this.messageTypes).map(([name, { schemaName }]) => {
-      return fetch(schemaName).then(response => response.json()).then(schema => ({ name, schema }))
+      return fetch('schemas/' + schemaName).then(response => response.json()).then(schema => ({ name, schema }))
     })).then((schemas) => {
       schemas.forEach(({ name, schema }) => {
         this.messageTypes[name].schema = schema
