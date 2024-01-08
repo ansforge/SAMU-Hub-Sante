@@ -67,7 +67,7 @@
         <template v-if="currentStep-1 < testCase.steps.length">
           <span>
             <v-card-title>
-              {{ testCase.steps[currentStep-1]?.type === 'receive' ? 'Valeurs attendues dans le message' : 'Valeurs attendues dans l\'acquittement' }}
+              {{ testCase.steps[currentStep-1]?.type === 'send' ? 'Valeurs attendues dans le message' : 'Valeurs attendues dans l\'acquittement' }}
             </v-card-title>
             <v-card-text>
               <p v-if="getAwaitedValues(testCase.steps[currentStep-1]) === null">
@@ -85,7 +85,7 @@
                   </span>
                 </v-list-item-content>
               </v-list>
-              <v-list v-if="testCase.steps[currentStep-1]?.type === 'send'">
+              <v-list v-if="testCase.steps[currentStep-1]?.type === 'receive'">
                 <!-- Generate an input for each requiredValue with the path used as label. User will enter a value for each requiredValue and then press a button to verify that all the values entered correspond to the values in the requiredValues-->
                 <v-list-item v-for="(requiredValue, index) in testCase.steps[currentStep-1].message.requiredValues" :key="'requiredValue' + index">
                   <v-list-item-content>
@@ -128,7 +128,7 @@
               </v-list>
             </v-card-text>
           </span>
-          <v-card-actions v-if="testCase.steps[currentStep-1]?.type === 'send'">
+          <v-card-actions v-if="testCase.steps[currentStep-1]?.type === 'receive'">
             <v-btn color="primary" @click="submitMessage(testCase.steps[currentStep-1])">
               Re-envoyer le message
             </v-btn>
@@ -244,7 +244,7 @@ export default {
             }
             if (!lastMessage.isOut) {
               if (this.checkMessage(lastMessage)) {
-                const shouldStayOnStep = this.testCase.steps[this.currentStep - 1].type === 'send' && !(this.testCase.steps[this.currentStep - 1].message.validatedAcknowledgement && this.testCase.steps[this.currentStep - 1].message.validatedReceivedValues)
+                const shouldStayOnStep = this.testCase.steps[this.currentStep - 1].type === 'receive' && !(this.testCase.steps[this.currentStep - 1].message.validatedAcknowledgement && this.testCase.steps[this.currentStep - 1].message.validatedReceivedValues)
                 this.validateMessage(newMessages.indexOf(lastMessage), true, shouldStayOnStep)
               }
             }
@@ -262,7 +262,7 @@ export default {
   },
   mounted () {
     this.loadJsonSteps()
-    if (this.testCase.steps[this.currentStep - 1]?.type === 'send') {
+    if (this.testCase.steps[this.currentStep - 1]?.type === 'receive') {
       this.submitMessage(this.testCase.steps[this.currentStep - 1].json)
     }
   },
@@ -278,12 +278,12 @@ export default {
     },
     /**
      * Loads the related JSON message for the test case steps.
-     * Should only be necesary for 'send' steps, as 'receive' steps
+     * Should only be necesary for 'receive' steps, as 'send' steps
      * only expect specific key:value pairs in the message.
      */
     loadJsonSteps () {
       this.testCase.steps.map(async (step) => {
-        if (step.type === 'send') {
+        if (step.type === 'receive') {
           const response = await fetch('examples/' + step.message.file)
           const json = await response.json()
           this.$set(step, 'json', json)
@@ -319,12 +319,12 @@ export default {
       }
     },
     /**
-     * Increments current test case step and sends a message if the step is a 'send' step after incrementing
+     * Increments current test case step and sends a message if the step is a 'receive' step after incrementing
      */
     nextStep () {
       this.currentStep++
       this.currentlySelectedStep = this.currentStep
-      if (this.testCase.steps[this.currentStep - 1]?.type === 'send') {
+      if (this.testCase.steps[this.currentStep - 1]?.type === 'receive') {
         this.submitMessage(this.testCase.steps[this.currentStep - 1])
       }
     },
@@ -355,7 +355,7 @@ export default {
      * @param {*} step Step for which to return the required values
      */
     getAwaitedValues (step) {
-      if (step.type === 'receive') {
+      if (step.type === 'send') {
         const requiredValuesObject = {}
         step.message.requiredValues.forEach((entry) => {
           requiredValuesObject[entry.path] = {
@@ -369,7 +369,7 @@ export default {
       }
     },
     /**
-     * Verifies that the values entered by the user are the same as the required values (for 'send' type steps)
+     * Verifies that the values entered by the user are the same as the required values (for 'receive' type steps)
      * These values are stored in the 'requiredValues' array of the step, and replace the relevant values in the JSON when the message is sent
      * @param {*} step
      */
@@ -395,7 +395,7 @@ export default {
     },
     /**
      * Returns the JSON array containing an object with the same structure as 'requiredValues'
-     * for 'receive' steps, used for validation during 'send' steps
+     * for 'send' steps, used for validation during 'receive' steps
      */
     getAwaitedReferenceDistributionIdJson (step) {
       const json = [
@@ -409,7 +409,7 @@ export default {
     /**
      * Returns the JSON object containing a property by the name of the path to reference distribution ID in the
      * acknowledgement message json and its expected value as property 'value' for a specific step, which is the verified value
-     * during 'send' steps
+     * during 'receive' steps
      * @param {*} step
      */
     getAwaitedReferenceDistributionObject (step) {
@@ -464,7 +464,7 @@ export default {
      * @param {*} message Message to check
      */
     checkMessage (message) {
-      if (this.testCase.steps[this.currentStep - 1].type === 'receive') {
+      if (this.testCase.steps[this.currentStep - 1].type === 'send') {
         return this.checkMessageContainsAllRequiredValues(message, this.testCase.steps[this.currentStep - 1].message.requiredValues)
       } else if (!this.testCase.steps[this.currentStep - 1].message.validatedAcknowledgement) {
         message.validatedAcknowledgement = this.checkMessageContainsAllRequiredValues(message, this.getAwaitedReferenceDistributionIdJson(this.testCase.steps[this.currentStep - 1]))

@@ -1,11 +1,11 @@
 [
   {
-    "label": "Reception EDA - DC, Envoi RDC",
-    "description": "Réception des messages EDA et DC, envoi d'une réponse RDC",
+    "label": "Envoi EDA - DC, Réception RDC",
+    "description": "Envoi des messages EDA et DC, réception d'une réponse RDC",
     "steps": [
       {
-        "type": "receive",
-        "label": "Réception d'un message EDA",
+        "type": "send",
+        "label": "Envoi d'un message EDA",
         "description": "Lorem ipsum dolor sit amet, consectetur adipiscing el it. Nullam auctor, nisl eget ultricies aliquam, nunc nisl aliquet nunc, quis aliquam nisl nunc quis nisl. Nullam auctor, nisl eget ultricies aliquam, nunc nisl aliquet nunc, quis aliquam nisl nunc quis nisl.",
         "message": {
           "requiredValues": [
@@ -25,8 +25,8 @@
         }
       },
       {
-        "type": "receive",
-        "label": "Réception d'un message DC",
+        "type": "send",
+        "label": "Envoi d'un message DC",
         "description": "Duis enim felis, convallis vitae laoreet in, cursus quis libero. Vivamus at molestie erat. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vivamus nulla nunc, porta eget turpis in, feugiat mollis dolor. Nullam consequat orci nibh, vitae sodales enim fringilla eu.",
         "message": {
           "requiredValues": [
@@ -46,8 +46,8 @@
         }
       },
       {
-        "type": "send",
-        "label": "Envoi d'un message RDC",
+        "type": "receive",
+        "label": "Réception d'un message RDC",
         "description": "Aenean sit amet justo gravida, vulputate leo et, gravida ex. Duis pretium libero vel elit mollis, nec iaculis magna luctus. Integer sit amet magna vitae massa pulvinar porttitor. Donec mi lorem, faucibus eget diam id, faucibus convallis lectus. Nulla pharetra erat sed scelerisque tincidunt. In a massa vitae tortor ultricies aliquam. Duis sagittis non mi id congue.",
         "message": {
           "requiredValues": [{
@@ -61,11 +61,11 @@
   },
   {
     "label": "Placeholder testcase",
-    "description": "Réception des messages EDA et DC, envoi d'une réponse RDC",
+    "description": "Envoi des messages EDA et DC, réception d'une réponse RDC",
     "steps": [
       {
-        "type": "receive",
-        "label": "Réception d'un message EDA",
+        "type": "send",
+        "label": "Envoi d'un message EDA",
         "message": {
           "label": "RC-EDA",
           "file": "RC-EDA Armaury VF.json",
@@ -80,8 +80,8 @@
         }
       },
       {
-        "type": "receive",
-        "label": "Réception d'un message DC",
+        "type": "send",
+        "label": "Envoi d'un message DC",
         "message": {
           "label": "EMSI-DC",
           "file": "EMSI-DC Armaury VF.json",
@@ -96,8 +96,8 @@
         }
       },
       {
-        "type": "send",
-        "label": "Envoi d'un message RDC",
+        "type": "receive",
+        "label": "Réception d'un message RDC",
         "message": {
           "label": "EMSI-EO RDC",
           "file": "EMSI-EO Test RDC VF.json",
