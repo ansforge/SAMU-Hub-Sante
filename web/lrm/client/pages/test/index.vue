@@ -46,9 +46,9 @@
                   <v-timeline-item
                     v-for="(step, index) in testCase.steps"
                     :key="step.label"
-                    :left="step.type === 'receive'"
-                    :right="step.type !== 'receive'"
-                    :icon="step.type === 'receive' ? 'mdi-download' : 'mdi-upload'"
+                    :left="step.type === 'send'"
+                    :right="step.type !== 'send'"
+                    :icon="step.type === 'send' ? 'mdi-download' : 'mdi-upload'"
                   >
                     <v-card>
                       <v-card-title>
@@ -120,7 +120,7 @@ export default {
     },
     loadTestCaseJsons (testCase) {
       testCase.steps.forEach(async (step) => {
-        if (step.type === 'send') {
+        if (step.type === 'receive') {
           const response = await fetch('examples/' + step.message.file)
           const json = await response.json()
           this.$set(step, 'json', json)
