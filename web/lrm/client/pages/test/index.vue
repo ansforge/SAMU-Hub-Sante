@@ -121,7 +121,7 @@ export default {
     loadTestCaseJsons (testCase) {
       testCase.steps.forEach(async (step) => {
         if (step.type === 'send') {
-          const response = await fetch('/examples/' + step.message.file)
+          const response = await fetch('examples/' + step.message.file)
           const json = await response.json()
           this.$set(step, 'json', json)
         }
