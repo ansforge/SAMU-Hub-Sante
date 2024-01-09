@@ -31,9 +31,6 @@ export default {
       valid: false,
       // Passed through v-model
       form: this.value,
-      // Super tricky: schema deep-copy required as VJSF updates it
-      // But it is in Vuex store thus it can't be changed outside of mutations...
-      schemaCopy: JSON.parse(JSON.stringify(this.schema)),
       options: {
         locale: 'fr',
         defaultLocale: 'fr',
@@ -44,6 +41,13 @@ export default {
           'date-time': function (dateTime, _locale) { return moment(new Date(dateTime)).format() }
         }
       }
+    }
+  },
+  computed: {
+    // Super tricky: schema deep-copy required as VJSF updates it somehow
+    // But it is in Vuex store thus it can't be changed outside of mutations...
+    schemaCopy () {
+      return JSON.parse(JSON.stringify(this.schema))
     }
   },
   watch: {
