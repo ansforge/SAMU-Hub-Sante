@@ -31,6 +31,9 @@ export default {
       valid: false,
       // Passed through v-model
       form: this.value,
+      // Super tricky: schema deep-copy required as VJSF updates it
+      // But it is in Vuex store thus it can't be changed outside of mutations...
+      schemaCopy: JSON.parse(JSON.stringify(this.schema)),
       options: {
         locale: 'fr',
         defaultLocale: 'fr',
