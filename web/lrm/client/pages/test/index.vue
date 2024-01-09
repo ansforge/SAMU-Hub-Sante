@@ -48,7 +48,7 @@
                     :key="step.label"
                     :left="step.type === 'send'"
                     :right="step.type !== 'send'"
-                    :icon="step.type === 'send' ? 'mdi-download' : 'mdi-upload'"
+                    :icon="step.type === 'send' ? 'mdi-upload' : 'mdi-download'"
                   >
                     <v-card>
                       <v-card-title>
