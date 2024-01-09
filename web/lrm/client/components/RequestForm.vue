@@ -1,6 +1,6 @@
 <template>
   <v-form v-model="valid">
-    <v-jsf v-model="form" :schema="schema" :options="options" />
+    <v-jsf v-model="form" :schema="schemaCopy" :options="options" />
     <v-card-actions>
       <v-spacer />
       <SendButton v-if="!noSendButton" class="mt-2" @click="$emit('submit')" />
@@ -31,12 +31,15 @@ export default {
       valid: false,
       // Passed through v-model
       form: this.value,
+      // Super tricky: schema deep-copy required as VJSF updates it
+      // But it is in Vuex store thus it can't be changed outside of mutations...
+      schemaCopy: JSON.parse(JSON.stringify(this.schema)),
       options: {
         locale: 'fr',
         defaultLocale: 'fr',
-        rootDisplay: 'expansion-panels',
-        editMode: 'inline',
-        expansionPanelsProps: { mandatory: false },
+        rootDisplay: 'tabs',
+        editMode: 'inline', // edits in place and not in dialog
+        expansionPanelsProps: { mandatory: false }, // collapses all panels
         formats: {
           'date-time': function (dateTime, _locale) { return moment(new Date(dateTime)).format() }
         }

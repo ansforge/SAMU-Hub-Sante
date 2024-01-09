@@ -18,10 +18,6 @@ import mixinMessage from '@/plugins/mixinMessage'
 export default {
   mixins: [mixinMessage],
   props: {
-    name: {
-      type: String,
-      required: true
-    },
     label: {
       type: String,
       required: true

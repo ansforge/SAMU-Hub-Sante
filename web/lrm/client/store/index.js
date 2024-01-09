@@ -1,4 +1,16 @@
-const { SET_CURRENT_USER, TOGGLE_ADVANCED, SET_SHOW_SENT_MESSAGES, ADD_MESSAGE, SET_AUTO_ACK, SET_MESSAGE_JUST_SENT, RESET_MESSAGES } = require('./constants')
+import Vue from 'vue'
+import {
+  SET_CURRENT_USER,
+  TOGGLE_ADVANCED,
+  SET_SHOW_SENT_MESSAGES,
+  ADD_MESSAGE,
+  SET_AUTO_ACK,
+  SET_MESSAGE_JUST_SENT,
+  RESET_MESSAGES,
+  SET_MESSAGE_TYPE_SCHEMA
+} from '~/store/constants'
+
+// export const strict = false
 
 export const state = () => ({
   auth: {
@@ -18,7 +30,77 @@ export const state = () => ({
         receivedTime: this.timeDisplayFormat(),
         body: { body: 'Page loaded successfully!' }
       } */],
-  messageJustSent: false
+  messageJustSent: false,
+  // ToDo: when message are uploaded, add them in store
+  // ToDo: when message is loaded, add them in store to not load them again later
+  messageTypes: [{
+    label: 'RC-EDA',
+    schemaName: 'RC-EDA.schema.json',
+    schema: null,
+    examples: [{
+      file: 'RC-EDA-usecase-Armaury-1.json',
+      icon: 'mdi-bike-fast',
+      name: 'Alexandre ARMAURY',
+      caller: 'Albane Armaury, témoin accident impliquant son mari,  Alexandre Armaury',
+      context: 'Collision de 2 vélos',
+      environment: 'Voie cyclable à Lyon, gêne de la circulation',
+      victims: '2 victimes, 1 nécessitant assistance SAMU',
+      victim: 'Homme, adulte, 43 ans',
+      medicalSituation: 'Céphalées, migraines, traumatismes sérieux, plaies intermédiaires'
+    }, {
+      file: '../exemple-invalide.json',
+      icon: 'mdi-alert-circle-outline',
+      name: 'Champs manquants',
+      context: "Pour illustrer les messages d'INFO sur les erreurs de validation"
+    }]
+  }, {
+    label: 'EMSI',
+    schemaName: 'EMSI.schema.json',
+    schema: null,
+    examples: [{
+      file: 'EMSI-DC-usecase-Armaury-2.json',
+      icon: 'mdi-bike-fast',
+      name: 'Alexandre ARMAURY (DC)',
+      caller: 'Albane Armaury, témoin accident impliquant son mari,  Alexandre Armaury',
+      context: 'Collision de 2 vélos',
+      environment: 'Voie cyclable à Lyon, gêne de la circulation',
+      victims: '2 victimes, 1 nécessitant assistance SAMU',
+      victim: 'Homme, adulte, 43 ans',
+      medicalSituation: 'Céphalées, migraines, traumatismes sérieux, plaies intermédiaires'
+    }, {
+      file: 'EMSI-EO-usecase-Armaury-3.json',
+      icon: 'mdi-bike-fast',
+      name: 'Alexandre ARMAURY (RDC)',
+      caller: 'Albane Armaury, témoin accident impliquant son mari,  Alexandre Armaury',
+      context: 'Collision de 2 vélos',
+      environment: 'Voie cyclable à Lyon, gêne de la circulation',
+      victims: '2 victimes, 1 nécessitant assistance SAMU',
+      victim: 'Homme, adulte, 43 ans',
+      medicalSituation: 'Céphalées, migraines, traumatismes sérieux, plaies intermédiaires'
+    }]
+  }, {
+    label: 'RS-EDA',
+    schemaName: 'RS-EDA.schema.json',
+    schema: null,
+    examples: [{
+      file: 'RS-EDA-usecase-PartageDossier-1.json',
+      icon: 'mdi-circular-saw',
+      name: 'Didier Morel',
+      caller: 'Sébastien Morel, témoin accident impliquant son père, Didier Morel',
+      context: 'Accident domestique : blessure grave causée par une scie circulaire électrique',
+      environment: 'Domicile, outil scie débranché et sécurisé',
+      victims: '1 victime, nécessitant assistance SAMU',
+      victim: 'Homme, adulte, 65 ans',
+      medicalSituation: 'Plaie traumatique profonde, perte de conscience, hémorragie importante'
+    }]
+  } /* ,
+        info: {
+          label: 'RS-INFO',
+          schemaName: 'RS-INFO.schema.json',
+          schema: null,
+          examples: []
+        } */
+  ]
 })
 
 export const getters = {
@@ -48,6 +130,10 @@ export const getters = {
 
   messageJustSent (state) {
     return state.messageJustSent
+  },
+
+  messageTypes (state) {
+    return state.messageTypes
   }
 }
 
@@ -86,6 +172,21 @@ export const actions = {
 
   resetMessages ({ commit }) {
     commit(RESET_MESSAGES)
+  },
+
+  loadSchemas ({ state, commit }, source) {
+    // ToDo: load schemas from github branch directly so it is up to date?
+    source = source || 'schemas/'
+    Promise.all(state.messageTypes.map(async ({ schemaName }, index) => {
+      console.log('Loading schema from: ' + source + schemaName)
+      const response = await fetch(source + schemaName)
+      const schema = await response.json()
+      return ({ index, schema })
+    })).then((schemas) => {
+      schemas.forEach(({ index, schema }) => {
+        commit(SET_MESSAGE_TYPE_SCHEMA, { index, schema })
+      })
+    })
   }
 }
 
@@ -126,5 +227,12 @@ export const mutations = {
 
   [RESET_MESSAGES] (state) {
     state.messages = []
+  },
+
+  [SET_MESSAGE_TYPE_SCHEMA] (state, { index, schema }) {
+    Vue.set(state.messageTypes, index, {
+      ...this.state.messageTypes[index],
+      schema
+    })
   }
 }
