@@ -118,77 +118,6 @@ export default {
   data () {
     return {
       messageTypeTabIndex: 0,
-      messageTypes: {
-        createCaseCisu: {
-          label: 'RC-EDA',
-          schemaName: 'RC-EDA.schema.json',
-          schema: null,
-          examples: [{
-            file: 'RC-EDA-usecase-Armaury-1.json',
-            icon: 'mdi-bike-fast',
-            name: 'Alexandre ARMAURY',
-            caller: 'Albane Armaury, témoin accident impliquant son mari,  Alexandre Armaury',
-            context: 'Collision de 2 vélos',
-            environment: 'Voie cyclable à Lyon, gêne de la circulation',
-            victims: '2 victimes, 1 nécessitant assistance SAMU',
-            victim: 'Homme, adulte, 43 ans',
-            medicalSituation: 'Céphalées, migraines, traumatismes sérieux, plaies intermédiaires'
-          }, {
-            file: '../exemple-invalide.json',
-            icon: 'mdi-alert-circle-outline',
-            name: 'Champs manquants',
-            context: "Pour illustrer les messages d'INFO sur les erreurs de validation"
-          }]
-        },
-        emsi: {
-          label: 'EMSI',
-          schemaName: 'EMSI.schema.json',
-          schema: null,
-          examples: [{
-            file: 'EMSI-DC-usecase-Armaury-2.json',
-            icon: 'mdi-bike-fast',
-            name: 'Alexandre ARMAURY (DC)',
-            caller: 'Albane Armaury, témoin accident impliquant son mari,  Alexandre Armaury',
-            context: 'Collision de 2 vélos',
-            environment: 'Voie cyclable à Lyon, gêne de la circulation',
-            victims: '2 victimes, 1 nécessitant assistance SAMU',
-            victim: 'Homme, adulte, 43 ans',
-            medicalSituation: 'Céphalées, migraines, traumatismes sérieux, plaies intermédiaires'
-          }, {
-            file: 'EMSI-EO-usecase-Armaury-3.json',
-            icon: 'mdi-bike-fast',
-            name: 'Alexandre ARMAURY (RDC)',
-            caller: 'Albane Armaury, témoin accident impliquant son mari,  Alexandre Armaury',
-            context: 'Collision de 2 vélos',
-            environment: 'Voie cyclable à Lyon, gêne de la circulation',
-            victims: '2 victimes, 1 nécessitant assistance SAMU',
-            victim: 'Homme, adulte, 43 ans',
-            medicalSituation: 'Céphalées, migraines, traumatismes sérieux, plaies intermédiaires'
-          }]
-        },
-        createCase: {
-          label: 'RS-EDA',
-          schemaName: 'RS-EDA.schema.json',
-          schema: null,
-          examples: [{
-            file: 'RS-EDA-usecase-PartageDossier-1.json',
-            icon: 'mdi-circular-saw',
-            name: 'Didier Morel',
-            caller: 'Sébastien Morel, témoin accident impliquant son père, Didier Morel',
-            context: 'Accident domestique : blessure grave causée par une scie circulaire électrique',
-            environment: 'Domicile, outil scie débranché et sécurisé',
-            victims: '1 victime, nécessitant assistance SAMU',
-            victim: 'Homme, adulte, 65 ans',
-            medicalSituation: 'Plaie traumatique profonde, perte de conscience, hémorragie importante'
-          }]
-        } /* ,
-        info: {
-          label: 'RS-INFO',
-          schemaName: 'schemas/RS-INFO_schema.json',
-          schema: null,
-          examples: []
-        } */
-      },
       selectedMessageType: 'message',
       selectedClientId: null,
       selectedCaseIds: [],
@@ -214,7 +143,7 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['messages', 'isAdvanced']),
+    ...mapGetters(['messages', 'isAdvanced', 'messageTypes']),
     showSentMessagesConfig: {
       get () {
         return this.showSentMessages
@@ -262,13 +191,7 @@ export default {
   },
   mounted () {
     // To automatically generate the UI and input fields based on the JSON Schema
-    Promise.all(Object.entries(this.messageTypes).map(([name, { schemaName }]) => {
-      return fetch('schemas/' + schemaName).then(response => response.json()).then(schema => ({ name, schema }))
-    })).then((schemas) => {
-      schemas.forEach(({ name, schema }) => {
-        this.messageTypes[name].schema = schema
-      })
-    })
+    this.$store.dispatch('loadSchemas')
   },
   methods: {
     typeMessages (type) {

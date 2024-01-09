@@ -31,18 +31,18 @@
           >
             <v-tabs-slider color="primary" />
             <v-tab
-              v-for="[name, {label}] in Object.entries(messageTypes)"
-              :key="name"
+              v-for="{label} in messageTypes"
+              :key="label"
             >
               {{ label }}
             </v-tab>
           </v-tabs>
           <v-tabs-items v-model="messageTypeTabIndex">
             <v-tab-item
-              v-for="[name, messageTypeDetails] in Object.entries(messageTypes)"
-              :key="name"
+              v-for="messageTypeDetails in messageTypes"
+              :key="messageTypeDetails.label"
             >
-              <SchemaForm v-bind="messageTypeDetails" ref="schemaForms" :name="name" no-send-button />
+              <SchemaForm :ref="'schemaForm_' + messageTypeDetails.label" v-bind="messageTypeDetails" no-send-button />
             </v-tab-item>
           </v-tabs-items>
         </v-card-text>
@@ -105,81 +105,6 @@ export default {
         value: 'https://raw.githubusercontent.com/ansforge/SAMU-Hub-Modeles/{branchName}/src/main/resources/json-schema/'
       }],
       messageTypeTabIndex: 0,
-      // ToDo: load schemas from github branch directly so it is up to date!
-      // ToDo: migrate this to store so they can be reused through pages (demo/ and json/)
-      // ToDo: when message are uploaded, add them in store
-      // ToDo: when message is loaded, add them in store to not load them again later
-      messageTypes: {
-        createCaseCisu: {
-          label: 'RC-EDA',
-          schemaName: 'RC-EDA.schema.json',
-          schema: null,
-          examples: [{
-            file: 'RC-EDA-usecase-Armaury-1.json',
-            icon: 'mdi-bike-fast',
-            name: 'Alexandre ARMAURY',
-            caller: 'Albane Armaury, témoin accident impliquant son mari,  Alexandre Armaury',
-            context: 'Collision de 2 vélos',
-            environment: 'Voie cyclable à Lyon, gêne de la circulation',
-            victims: '2 victimes, 1 nécessitant assistance SAMU',
-            victim: 'Homme, adulte, 43 ans',
-            medicalSituation: 'Céphalées, migraines, traumatismes sérieux, plaies intermédiaires'
-          }, {
-            file: '../exemple-invalide.json',
-            icon: 'mdi-alert-circle-outline',
-            name: 'Champs manquants',
-            context: "Pour illustrer les messages d'INFO sur les erreurs de validation"
-          }]
-        },
-        emsi: {
-          label: 'EMSI',
-          schemaName: 'EMSI.schema.json',
-          schema: null,
-          examples: [{
-            file: 'EMSI-DC-usecase-Armaury-2.json',
-            icon: 'mdi-bike-fast',
-            name: 'Alexandre ARMAURY (DC)',
-            caller: 'Albane Armaury, témoin accident impliquant son mari,  Alexandre Armaury',
-            context: 'Collision de 2 vélos',
-            environment: 'Voie cyclable à Lyon, gêne de la circulation',
-            victims: '2 victimes, 1 nécessitant assistance SAMU',
-            victim: 'Homme, adulte, 43 ans',
-            medicalSituation: 'Céphalées, migraines, traumatismes sérieux, plaies intermédiaires'
-          }, {
-            file: 'EMSI-EO-usecase-Armaury-3.json',
-            icon: 'mdi-bike-fast',
-            name: 'Alexandre ARMAURY (RDC)',
-            caller: 'Albane Armaury, témoin accident impliquant son mari,  Alexandre Armaury',
-            context: 'Collision de 2 vélos',
-            environment: 'Voie cyclable à Lyon, gêne de la circulation',
-            victims: '2 victimes, 1 nécessitant assistance SAMU',
-            victim: 'Homme, adulte, 43 ans',
-            medicalSituation: 'Céphalées, migraines, traumatismes sérieux, plaies intermédiaires'
-          }]
-        },
-        createCase: {
-          label: 'RS-EDA',
-          schemaName: 'RS-EDA.schema.json',
-          schema: null,
-          examples: [{
-            file: 'RS-EDA-usecase-PartageDossier-1.json',
-            icon: 'mdi-circular-saw',
-            name: 'Didier Morel',
-            caller: 'Sébastien Morel, témoin accident impliquant son père, Didier Morel',
-            context: 'Accident domestique : blessure grave causée par une scie circulaire électrique',
-            environment: 'Domicile, outil scie débranché et sécurisé',
-            victims: '1 victime, nécessitant assistance SAMU',
-            victim: 'Homme, adulte, 65 ans',
-            medicalSituation: 'Plaie traumatique profonde, perte de conscience, hémorragie importante'
-          }]
-        } /* ,
-        info: {
-          label: 'RS-INFO',
-          schemaName: 'RS-INFO.schema.json',
-          schema: null,
-          examples: []
-        } */
-      },
       selectedMessageType: 'message',
       selectedClientId: null,
       selectedCaseIds: [],
@@ -205,13 +130,20 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['messages', 'isAdvanced']),
-    currentMessage () {
+    ...mapGetters(['messages', 'isAdvanced', 'messageTypes']),
+    currentMessageType () {
+      return this.messageTypes[this.messageTypeTabIndex]
+    },
+    currentSchemaForm () {
+      // Ref.: https://stackoverflow.com/a/43531779
       if (this.mounted) {
-        // Ref.: https://stackoverflow.com/a/43531779
-        return this.$refs.schemaForms?.[this.messageTypeTabIndex]?.form
+        // $refs is array (in v-for) and non reactive | Ref.: https://v2.vuejs.org/v2/api/#ref
+        return this.$refs['schemaForm_' + this.currentMessageType.label]?.[0]
       }
       return null
+    },
+    currentMessage () {
+      return this.currentSchemaForm?.form
     },
     currentSchemaOnGitHub () {
       if (this.selectedSource.includes('https://raw.githubusercontent.com/')) {
@@ -219,40 +151,30 @@ export default {
           'https://raw.githubusercontent.com/', 'https://github.com/'
         ).replace(
           'SAMU-Hub-Modeles/', 'SAMU-Hub-Modeles/tree/'
-        ) + this.$refs.schemaForms[this.messageTypeTabIndex].schemaName
+        ) + this.currentSchemaForm?.schemaName
       }
       return false
     }
   },
   watch: {
     selectedSource () {
-      this.loadSchemas()
+      this.$store.dispatch('loadSchemas', this.selectedSource)
     }
   },
   mounted () {
     // To automatically generate the UI and input fields based on the JSON Schema
-    this.loadSchemas()
+    this.$store.dispatch('loadSchemas', this.selectedSource)
     this.mounted = true
   },
   methods: {
-    loadSchemas () {
-      Promise.all(Object.entries(this.messageTypes).map(([name, { schemaName }]) => {
-        console.log('Loading schema from: ' + this.selectedSource + schemaName)
-        return fetch(this.selectedSource + schemaName).then(response => response.json()).then(schema => ({ name, schema }))
-      })).then((schemas) => {
-        schemas.forEach(({ name, schema }) => {
-          this.messageTypes[name].schema = schema
-        })
-      })
-    },
     saveMessage () {
       // Download as file | Ref.: https://stackoverflow.com/a/34156339
       // JSON pretty-print | Ref.: https://stackoverflow.com/a/7220510
-      const data = JSON.stringify(this.$refs.schemaForms[this.messageTypeTabIndex].form, null, 2)
+      const data = JSON.stringify(this.currentSchemaForm?.form, null, 2)
       const a = document.createElement('a')
       const file = new Blob([data], { type: 'application/json' })
       a.href = URL.createObjectURL(file)
-      a.download = `${this.$refs.schemaForms[this.messageTypeTabIndex].name}-message.json`
+      a.download = `${this.currentSchemaForm?.label}-message.json`
       a.click()
     }
   }
