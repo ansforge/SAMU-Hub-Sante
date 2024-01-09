@@ -57,8 +57,10 @@ export default {
       }
     },
     wsDisconnect () {
-      console.log(`Disconnecting : WebSocket ${this.$options.name} connection closed`)
-      this.socket.close()
+      if (this.socket) {
+        console.log(`Disconnecting: WebSocket ${this.$options.name} connection closed`)
+        this.socket.close()
+      }
       this.disconnect = true
     },
     isOut (direction) {
