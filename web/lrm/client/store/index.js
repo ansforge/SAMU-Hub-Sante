@@ -58,20 +58,43 @@ export const state = () => ({
     schemaName: 'EMSI.schema.json',
     schema: null,
     examples: [{
-      file: 'EMSI-DC-usecase-Armaury-2.json',
+      file: 'emsi-DC-message.json',
       icon: 'mdi-bike-fast',
       name: 'Alexandre ARMAURY (DC)',
-      caller: 'Albane Armaury, témoin accident impliquant son mari,  Alexandre Armaury',
+      caller: 'Albane Armaury, témoin accident impliquant son mari, Alexandre Armaury',
       context: 'Collision de 2 vélos',
       environment: 'Voie cyclable à Lyon, gêne de la circulation',
       victims: '2 victimes, 1 nécessitant assistance SAMU',
       victim: 'Homme, adulte, 43 ans',
       medicalSituation: 'Céphalées, migraines, traumatismes sérieux, plaies intermédiaires'
-    }, {
-      file: 'EMSI-EO-usecase-Armaury-3.json',
+    },
+    {
+      file: 'EMSI-RDC-message.json',
       icon: 'mdi-bike-fast',
       name: 'Alexandre ARMAURY (RDC)',
-      caller: 'Albane Armaury, témoin accident impliquant son mari,  Alexandre Armaury',
+      caller: 'Albane Armaury, témoin accident impliquant son mari, Alexandre Armaury',
+      context: 'Collision de 2 vélos',
+      environment: 'Voie cyclable à Lyon, gêne de la circulation',
+      victims: '2 victimes, 1 nécessitant assistance SAMU',
+      victim: 'Homme, adulte, 43 ans',
+      medicalSituation: 'Céphalées, migraines, traumatismes sérieux, plaies intermédiaires'
+    },
+    {
+      file: 'EMSI-OPG-message.json',
+      icon: 'mdi-bike-fast',
+      name: 'Alexandre ARMAURY (OPG)',
+      caller: 'Albane Armaury, témoin accident impliquant son mari, Alexandre Armaury',
+      context: 'Collision de 2 vélos',
+      environment: 'Voie cyclable à Lyon, gêne de la circulation',
+      victims: '2 victimes, 1 nécessitant assistance SAMU',
+      victim: 'Homme, adulte, 43 ans',
+      medicalSituation: 'Céphalées, migraines, traumatismes sérieux, plaies intermédiaires'
+    },
+    {
+      file: 'EMSI-Complet-DC-RDC-OPG-message.json',
+      icon: 'mdi-bike-fast',
+      name: 'Alexandre ARMAURY (EMSI)',
+      caller: 'Albane Armaury, témoin accident impliquant son mari, Alexandre Armaury',
       context: 'Collision de 2 vélos',
       environment: 'Voie cyclable à Lyon, gêne de la circulation',
       victims: '2 victimes, 1 nécessitant assistance SAMU',
