@@ -108,13 +108,23 @@ export const state = () => ({
     examples: [{
       file: 'RS-EDA-usecase-PartageDossier-1.json',
       icon: 'mdi-circular-saw',
-      name: 'Didier Morel',
+      name: 'Didier MOREL',
       caller: 'Sébastien Morel, témoin accident impliquant son père, Didier Morel',
       context: 'Accident domestique : blessure grave causée par une scie circulaire électrique',
       environment: 'Domicile, outil scie débranché et sécurisé',
       victims: '1 victime, nécessitant assistance SAMU',
       victim: 'Homme, adulte, 65 ans',
       medicalSituation: 'Plaie traumatique profonde, perte de conscience, hémorragie importante'
+    }, {
+      file: 'RS-EDA-usecase-AppelLimitrophe-2.json',
+      icon: 'mdi-heart-plus-outline',
+      name: 'Ouardia BOUDADI',
+      caller: 'Magda LENA, collègue de la victime, Ouardia BOUDADI',
+      context: 'Suspicion de crise cardiaque',
+      environment: 'Lieu de travail, local administratif de la SARL TOTO',
+      victims: '1 victimes, nécessitant assistance SAMU',
+      victim: 'Femme, adulte, 47 ans',
+      medicalSituation: 'Douleurs thoraciques irradiantes, antécédents de maladie cardiaque'
     }]
   } /* ,
         info: {
