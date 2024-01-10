@@ -608,4 +608,8 @@ pre.values {
   text-wrap: wrap;
   line-break: anywhere;
 }
+
+.v-stepper__header {
+  height: auto;
+}
 </style>
