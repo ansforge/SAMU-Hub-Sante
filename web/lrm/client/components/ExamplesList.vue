@@ -24,6 +24,7 @@
         <v-chip-group
           v-model="selectedDetailIndex"
           active-class="primary--text"
+          column
         >
           <v-chip v-for="{icon, name} in examples" :key="name">
             <v-icon left>
