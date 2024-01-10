@@ -81,11 +81,6 @@
               <v-list v-for="(requiredValue, name, index) in getAwaitedValues(testCase.steps[currentStep-1])" :key="'requiredValue' + index">
                 <v-list-item-content>
                   <span style="display: flex; flex-direction: row; align-items: center;">
-                    <v-icon v-if="requiredValue.valid || testCase.steps[currentStep-1].message.validatedAcknowledgement" style="flex:0" color="success">
-                      mdi-check
-                    </v-icon> <v-icon v-else style="flex:0" color="error">
-                      mdi-close
-                    </v-icon>
                     <pre class="values">{{ name }} : {{ requiredValue.value }}</pre>
                   </span>
                 </v-list-item-content>
