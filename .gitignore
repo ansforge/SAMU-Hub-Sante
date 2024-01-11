@@ -23,7 +23,9 @@ python/templates/4. tls/cert/
 certs/CA/
 !certs/CA/sign.sh
 !certs/CA/rootCA.crt
+!certs/CA/rootCATrue.crt
 !certs/CA/hub.ext
+!certs/CA/hub.preprod.ext
 !certs/CA/client.ext
 !certs/dispatcher.tmp.p12
 certs/users/
