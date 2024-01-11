@@ -125,18 +125,26 @@ export default {
       return d.toLocaleTimeString('fr').replace(':', 'h') + '.' + String(new Date().getMilliseconds()).padStart(3, '0')
     },
     sendMessage (msg) {
-      try {
-        console.log('Sending message', msg)
-        this.socket.send(JSON.stringify({ key: this.user.clientId, msg }))
-        this.$store.dispatch('addMessage', {
-          direction: DIRECTIONS.OUT,
-          routingKey: this.user.targetId,
-          time: this.timeDisplayFormat(),
-          messageType: this.getReadableMessageType(msg.distributionKind),
-          body: msg
-        })
-      } catch (e) {
-        alert(`Erreur lors de l'envoi du message: ${e}`)
+      if (this.socket.readyState === 1) {
+        try {
+          console.log('Sending message', msg)
+          this.socket.send(JSON.stringify({ key: this.user.clientId, msg }))
+          this.$store.dispatch('addMessage', {
+            direction: DIRECTIONS.OUT,
+            routingKey: this.user.targetId,
+            time: this.timeDisplayFormat(),
+            messageType: this.getReadableMessageType(msg.distributionKind),
+            body: msg
+          })
+        } catch (e) {
+          alert(`Erreur lors de l'envoi du message: ${e}`)
+        }
+      } else {
+        // TODO: Add proper retry logic here with either exponential backoff or a retry limit
+        console.log('Socket is not open. Retrying in half a second.')
+        setTimeout(() => {
+          this.sendMessage(msg)
+        }, 500)
       }
     }
   }
