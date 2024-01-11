@@ -43,7 +43,7 @@
                       :key="message.time"
                       :dense="true"
                       :validated-values-count="message?.validatedValues?.filter(value => value.valid).length"
-                      :required-values-count="testCase.steps[message.relatedStep]?.message?.requiredValues?.length"
+                      :required-values-count="testCase.steps[message.relatedStep]?.type === 'send' ? testCase.steps[message.relatedStep]?.message?.requiredValues?.length : 1"
                       v-bind="message"
                       class="message mb-4"
                       :class="{ stale: message.stale, validated: message.validated, selected: selectedMessageIndex === index }"
@@ -261,12 +261,16 @@ export default {
     this.selectRandomValuesForTestCase()
   },
   mounted () {
-    this.loadJsonSteps()
-    if (this.testCase.steps[this.currentStep - 1]?.type === 'receive') {
-      this.submitMessage(this.testCase.steps[this.currentStep - 1].json)
-    }
+    this.initialize()
   },
   methods: {
+    async initialize () {
+      await this.loadJsonSteps()
+
+      if (this.testCase.steps[this.currentStep - 1]?.type === 'receive') {
+        this.submitMessage(this.testCase.steps[this.currentStep - 1])
+      }
+    },
     /**
      * Selects one value randomly from the list of possible values
      * for each required value in the test case
@@ -281,14 +285,14 @@ export default {
      * Should only be necesary for 'receive' steps, as 'send' steps
      * only expect specific key:value pairs in the message.
      */
-    loadJsonSteps () {
-      this.testCase.steps.map(async (step) => {
+    async loadJsonSteps () {
+      for (const step of this.testCase.steps) {
         if (step.type === 'receive') {
           const response = await fetch('examples/' + step.message.file)
           const json = await response.json()
           this.$set(step, 'json', json)
         }
-      })
+      }
     },
     /**
      * Marks the message as validated, rcording the test case step at which it was validated
@@ -377,7 +381,7 @@ export default {
       const requiredValues = this.testCase.steps[step].message.requiredValues
       let valid = true
       requiredValues.forEach((entry) => {
-        if (entry.enteredValue !== entry.value) {
+        if (entry.enteredValue !== String(entry.value)) {
           valid = false
           entry.valid = false
         } else {
