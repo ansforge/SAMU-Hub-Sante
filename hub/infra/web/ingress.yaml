@@ -9,13 +9,14 @@ metadata:
     # Ref.: https://stackoverflow.com/a/65941913
     nginx.ingress.kubernetes.io/configuration-snippet: |
       rewrite ^([^.?]*[^/])$ $1/ redirect;
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
     namespace: default
 spec:
   ingressClassName: nginx
   tls:
     - hosts:
         - hub.esante.gouv.fr
-      secretName: landing-cert
+      secretName: hubsante-letsencrypt-sandbox-tls
   rules:
     - host: "hub.esante.gouv.fr"
       http:
