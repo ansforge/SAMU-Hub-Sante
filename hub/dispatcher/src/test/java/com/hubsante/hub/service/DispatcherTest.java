@@ -309,7 +309,7 @@ public class DispatcherTest {
     @Test
     @DisplayName("should reject message with invalid json content")
     public void invalidJsonContentFails() throws IOException {
-        Message receivedMessage = createInvalidMessage("RC-EDA-CISU/invalid-RC-EDA-CISU-valid-EDXL.json",
+        Message receivedMessage = createInvalidMessage("RC-EDA/invalid-RC-EDA-valid-EDXL.json",
                 JSON, SAMU_A_ROUTING_KEY);
         assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
 
