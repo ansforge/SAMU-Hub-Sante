@@ -2,7 +2,6 @@ const path = require('path');
 const fs = require('fs');
 const amqp = require('amqplib/callback_api');
 const logger = require('../logger');
-require('dotenv').config();
 
 const moduleDir = __dirname;
 
