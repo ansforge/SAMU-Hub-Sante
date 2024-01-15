@@ -11,8 +11,13 @@ else
   openssl req -key "$DOMAIN".key -new -out "$DOMAIN".csr -subj "/C=FR/CN=$DOMAIN"
 
   echo "3. Generate a Self-Signed Certificate (ie signed with its own private key)"
-  openssl x509 -signkey "$DOMAIN".key -in "$DOMAIN".csr -req -days 1095 -out "$DOMAIN"_self-signed.crt
-
+  if [ -z "$EXT" ];  # root.ext for instance
+  then
+    openssl x509 -signkey "$DOMAIN".key -in "$DOMAIN".csr -req -days 1095 -out "$DOMAIN"_self-signed.crt
+  else
+    echo "Running with ext file $EXT"
+    openssl x509 -signkey "$DOMAIN".key -in "$DOMAIN".csr -req -days 1095 -out "$DOMAIN"_self-signed.crt -extfile $EXT
+  fi
   # 1-3. One-liner for Self-Signed Certificate (remove -nodes to encrypt key)
   # openssl req -newkey rsa:2048 -nodes -keyout "$DOMAIN".key -x509 -days 1095 -out "$DOMAIN".crt
 
