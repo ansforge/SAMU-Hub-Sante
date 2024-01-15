@@ -6,7 +6,7 @@ require('dotenv').config();
 
 const moduleDir = __dirname;
 
-const HUB_SANTE_URL = process.env.HUB_URL || 'amqps://messaging.hub.esante.gouv.fr';
+const HUB_SANTE_URL = process.env.HUB_URL || 'amqps://localhost';
 const HUB_SANTE_EXCHANGE = 'hubsante';
 const DEMO_CLIENT_IDS = {
   SAMU_A: 'fr.health.samuA',

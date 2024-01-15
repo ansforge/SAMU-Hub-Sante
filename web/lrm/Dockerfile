@@ -20,7 +20,6 @@ COPY server/ .
 # Setup ENV variable
 ENV NODE_ENV=production
 ENV PORT=80
-ENV HUB_URL=amqps://messaging.hub.esante.gouv.fr
 
 # Expose port 80 to allow incoming traffic
 EXPOSE 80
