@@ -347,13 +347,7 @@ export default {
       // Use the required values to replace the corresponding values in the message
       message = this.replaceValues(message, step.message.requiredValues)
       // Replace the createCase.caseId or emsi.EVENT.ID values with the current case ID if current case ID is already defined
-      if (this.currentCaseId) {
-        if (message.createCase) {
-          message = this.replaceValues(message, [{ path: '$.createCase.caseId', value: this.currentCaseId }])
-        } else if (message.emsi) {
-          message = this.replaceValues(message, [{ path: '$.emsi.EVENT.MAIN_EVENT_ID', value: this.currentCaseId }])
-        }
-      }
+      this.replaceCaseId(message)
       const builtMessage = this.buildMessage(message)
       this.testCase.steps[this.currentStep - 1].message.awaitedReferenceDistributionID = builtMessage.distributionID
       this.sendMessage(builtMessage)
@@ -361,6 +355,38 @@ export default {
       if (!this.currentCaseId) {
         this.currentCaseId = this.getCaseId(builtMessage)
       }
+    },
+    replaceCaseId (message) {
+      if (this.currentCaseId) {
+        this.setCaseId(message)
+      } else {
+        this.generateCurrentCaseId()
+        this.setCaseId(message)
+      }
+    },
+    setCaseId (message) {
+      if (message.createCase) {
+        message = this.replaceValues(message, [{ path: '$.createCase.caseId', value: this.currentCaseId }])
+      } else if (message.emsi) {
+        message = this.replaceValues(message, [{ path: '$.emsi.EVENT.MAIN_EVENT_ID', value: this.currentCaseId }])
+      }
+    },
+    /**
+     * Generates a case ID based on the current date and time:
+     * [client ID]-[Case type (D, DR, DRM)][Country (FR, etc.)][15 - case undertaken by SAMU][Departament code (DD, etc.)]
+     * [SAMU/SAS letter (X)][Time (YYDDDHHMMS)]
+     */
+    generateCurrentCaseId () {
+      const currentDate = new Date()
+      const year = currentDate.getFullYear().toString().slice(-2)
+      const dayOfYear = Math.floor((currentDate - new Date(currentDate.getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24)).toString().padStart(3, '0')
+      const hour = currentDate.getHours().toString().padStart(2, '0')
+      const minutes = currentDate.getMinutes().toString().padStart(2, '0')
+      const seconds = currentDate.getSeconds().toString().slice(-1)
+
+      const time = year + dayOfYear + hour + minutes + seconds
+      const caseId = this.user.clientId + '-' + 'DRMFR15790' + time
+      this.currentCaseId = caseId
     },
     /**
      * Gets the case id from the message, whether it's an rc or emsi message
