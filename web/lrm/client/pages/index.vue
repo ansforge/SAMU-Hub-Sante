@@ -78,7 +78,8 @@ export default {
         'fr.health.test.exos',
         'fr.health.test.inetum',
         'fr.health.test.rramu',
-        'fr.health.test.scriptal'
+        'fr.health.test.scriptal',
+        'fr.health.test.wavestone'
       ],
       form: {
         clientId: 'fr.health.samuA',
@@ -114,6 +115,8 @@ export default {
           return ['fr.health.samu76A', 'fr.health.samu76B', 'fr.health.normandie']
         case 'fr.health.test.scriptal':
           return ['fr.health.scriptal']
+        case 'fr.health.test.wavestone':
+          return ['fr.health.wavestone.single', 'fr.health.wavestone.q2', 'fr.health.wavestone.q3']
       }
     }
   },
