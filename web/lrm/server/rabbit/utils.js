@@ -18,6 +18,7 @@ const DEMO_CLIENT_IDS = {
   INETUM: 'fr.health.test.inetum',
   RRAMU: 'fr.health.test.rramu',
   SCRIPTAL: 'fr.health.test.scriptal',
+  WAVESTONE: 'fr.health.test.wavestone',
 };
 
 const opts = {
