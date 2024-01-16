@@ -160,6 +160,7 @@ export default {
   mixins: [mixinMessage],
   data () {
     return {
+      currentCaseId: null,
       testCase: null,
       currentlySelectedStep: 1,
       currentStep: 1,
@@ -256,6 +257,7 @@ export default {
     }
   },
   created () {
+    this.currentCaseId = null
     this.currentStep = 1
     this.testCase = this.$route.params.testCase
     this.selectRandomValuesForTestCase()
@@ -295,7 +297,7 @@ export default {
       }
     },
     /**
-     * Marks the message as validated, rcording the test case step at which it was validated
+     * Marks the message as validated, recording the test case step at which it was validated
      * and sends an acknowledgement if the message is not an acknowledgement itself and if
      * it was indicated in the parameters.
      * @param {*} index Index of the message in the list of messages
@@ -305,6 +307,10 @@ export default {
     validateMessage (index, ack, stayOnStep = false) {
       this.selectedTypeCaseMessages.forEach((message, i) => {
         if (i === index) {
+          // If we don't have currentCaseId set, we set it to the value of the case Id the sent message
+          if (!this.currentCaseId) {
+            this.currentCaseId = this.getCaseId(message.body)
+          }
           message.validatedStep = this.currentStep - 1
           message.validated = true
           if (ack) {
@@ -340,9 +346,31 @@ export default {
       let message = step.json
       // Use the required values to replace the corresponding values in the message
       message = this.replaceValues(message, step.message.requiredValues)
+      // Replace the createCase.caseId or emsi.EVENT.ID values with the current case ID if current case ID is already defined
+      if (this.currentCaseId) {
+        if (message.createCase) {
+          message = this.replaceValues(message, [{ path: '$.createCase.caseId', value: this.currentCaseId }])
+        } else if (message.emsi) {
+          message = this.replaceValues(message, [{ path: '$.emsi.EVENT.MAIN_EVENT_ID', value: this.currentCaseId }])
+        }
+      }
       const builtMessage = this.buildMessage(message)
       this.testCase.steps[this.currentStep - 1].message.awaitedReferenceDistributionID = builtMessage.distributionID
       this.sendMessage(builtMessage)
+      // If we sent a message but don't currently have current case Id set, we set it to the value of the case Id in the sent message
+      if (!this.currentCaseId) {
+        this.currentCaseId = this.getCaseId(builtMessage)
+      }
+    },
+    /**
+     * Gets the case id from the message, whether it's an rc or emsi message
+     */
+    getCaseId (message) {
+      if (message.content[0].jsonContent.embeddedJsonContent.message.createCase) {
+        return message.content[0].jsonContent.embeddedJsonContent.message.createCase.caseId
+      } else if (message.content[0].jsonContent.embeddedJsonContent.message.emsi) {
+        return message.content[0].jsonContent.embeddedJsonContent.message.emsi.EVENT.MAIN_EVENT_ID
+      }
     },
     /**
      * Replaces values in a message using path:value pairs
