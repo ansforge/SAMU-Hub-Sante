@@ -307,9 +307,9 @@ export default {
     validateMessage (index, ack, stayOnStep = false) {
       this.selectedTypeCaseMessages.forEach((message, i) => {
         if (i === index) {
-          // If we don't have currentCaseId set, we set it to the value of the case Id the sent message
+          // If we don't have currentCaseId set, we set it to the value of the case Id in the sent message
           if (!this.currentCaseId) {
-            this.currentCaseId = this.getCaseId(message.body)
+            this.currentCaseId = this.getCaseId(message.body.content[0].jsonContent.embeddedJsonContent.message)
           }
           message.validatedStep = this.currentStep - 1
           message.validated = true
@@ -346,29 +346,17 @@ export default {
       let message = step.json
       // Use the required values to replace the corresponding values in the message
       message = this.replaceValues(message, step.message.requiredValues)
-      // Replace the createCase.caseId or emsi.EVENT.ID values with the current case ID if current case ID is already defined
-      this.replaceCaseId(message)
+      // Set createCase.caseId or emsi.EVENT.ID to currentCaseId if it's defined
+      if (!this.currentCaseId) {
+        this.generateCurrentCaseId()
+      }
+      this.setCaseId(message)
       const builtMessage = this.buildMessage(message)
       this.testCase.steps[this.currentStep - 1].message.awaitedReferenceDistributionID = builtMessage.distributionID
       this.sendMessage(builtMessage)
       // If we sent a message but don't currently have current case Id set, we set it to the value of the case Id in the sent message
       if (!this.currentCaseId) {
-        this.currentCaseId = this.getCaseId(builtMessage)
-      }
-    },
-    replaceCaseId (message) {
-      if (this.currentCaseId) {
-        this.setCaseId(message)
-      } else {
-        this.generateCurrentCaseId()
-        this.setCaseId(message)
-      }
-    },
-    setCaseId (message) {
-      if (message.createCase) {
-        message = this.replaceValues(message, [{ path: '$.createCase.caseId', value: this.currentCaseId }])
-      } else if (message.emsi) {
-        message = this.replaceValues(message, [{ path: '$.emsi.EVENT.MAIN_EVENT_ID', value: this.currentCaseId }])
+        this.currentCaseId = this.getCaseId(builtMessage.content[0].jsonContent.embeddedJsonContent.message)
       }
     },
     /**
@@ -385,17 +373,51 @@ export default {
       const seconds = currentDate.getSeconds().toString().slice(-1)
 
       const time = year + dayOfYear + hour + minutes + seconds
-      const caseId = this.user.clientId + '-' + 'DRMFR15790' + time
+      const caseId = this.user.clientId + '-' + 'DRMFR15690' + time
       this.currentCaseId = caseId
     },
     /**
+     * Sets the case ID in the message to the current case ID, whether the message is RC-EDA, EMSI or RS-EDA
+     * @param {*} message
+     */
+    setCaseId (message) {
+      switch (this.getMessageType(message)) {
+        case 'RC-EDA':
+          message.createCase.caseId = this.currentCaseId
+          break
+        case 'EMSI':
+          message.emsi.EVENT.MAIN_EVENT_ID = this.currentCaseId
+          break
+        case 'RS-EDA':
+          message.createCaseHealth.caseId = this.currentCaseId
+          break
+      }
+    },
+    /**
      * Gets the case id from the message, whether it's an rc or emsi message
+     * @param {*} message
      */
     getCaseId (message) {
-      if (message.content[0].jsonContent.embeddedJsonContent.message.createCase) {
-        return message.content[0].jsonContent.embeddedJsonContent.message.createCase.caseId
-      } else if (message.content[0].jsonContent.embeddedJsonContent.message.emsi) {
-        return message.content[0].jsonContent.embeddedJsonContent.message.emsi.EVENT.MAIN_EVENT_ID
+      switch (this.getMessageType(message)) {
+        case 'RC-EDA':
+          return message.createCase.caseId
+        case 'EMSI':
+          return message.emsi.EVENT.MAIN_EVENT_ID
+        case 'RS-EDA':
+          return message.createCaseHealth.caseId
+      }
+    },
+    /**
+     * Returns a string representing message type (RC-EDA, EMSI ou RS-EDA)
+     * @param {*} message
+     */
+    getMessageType (message) {
+      if (message.createCase) {
+        return 'RC-EDA'
+      } else if (message.emsi) {
+        return 'EMSI'
+      } else if (message.createCaseHealth) {
+        return 'RS-EDA'
       }
     },
     /**
