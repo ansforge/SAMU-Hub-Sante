@@ -161,6 +161,7 @@ export default {
   data () {
     return {
       currentCaseId: null,
+      localCaseId: null,
       testCase: null,
       currentlySelectedStep: 1,
       currentStep: 1,
@@ -258,6 +259,7 @@ export default {
   },
   created () {
     this.currentCaseId = null
+    this.localCaseId = this.generateCaseId()
     this.currentStep = 1
     this.testCase = this.$route.params.testCase
     this.selectRandomValuesForTestCase()
@@ -346,25 +348,21 @@ export default {
       let message = step.json
       // Use the required values to replace the corresponding values in the message
       message = this.replaceValues(message, step.message.requiredValues)
-      // Generate currentCaseId if it isn't defined then set the message's case Id
+      // We set the message's case Id using either previously set currentCaseId or localCaseId otherwise
       if (!this.currentCaseId) {
-        this.generateCurrentCaseId()
+        this.currentCaseId = this.localCaseId
       }
       this.setCaseId(message)
       const builtMessage = this.buildMessage(message)
       this.testCase.steps[this.currentStep - 1].message.awaitedReferenceDistributionID = builtMessage.distributionID
       this.sendMessage(builtMessage)
-      // If we sent a message but don't currently have current case Id set, we set it to the value of the case Id in the sent message
-      if (!this.currentCaseId) {
-        this.currentCaseId = this.getCaseId(builtMessage.content[0].jsonContent.embeddedJsonContent.message)
-      }
     },
     /**
      * Generates a case ID based on the current date and time:
      * [client ID]-[Case type (D, DR, DRM)][Country (FR, etc.)][15 - case undertaken by SAMU][Departament code (DD, etc.)]
      * [SAMU/SAS letter (X)][Time (YYDDDHHMMS)]
      */
-    generateCurrentCaseId () {
+    generateCaseId () {
       const currentDate = new Date()
       const year = currentDate.getFullYear().toString().slice(-2)
       const dayOfYear = Math.floor((currentDate - new Date(currentDate.getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24)).toString().padStart(3, '0')
@@ -373,8 +371,7 @@ export default {
       const seconds = currentDate.getSeconds().toString().slice(-1)
 
       const time = year + dayOfYear + hour + minutes + seconds
-      const caseId = this.user.clientId + '-' + 'DRMFR15690' + time
-      this.currentCaseId = caseId
+      return this.user.clientId + '-' + 'DRMFR15690' + time
     },
     /**
      * Sets the case ID in the message to the current case ID
@@ -384,12 +381,15 @@ export default {
       switch (this.getMessageType(message)) {
         case 'RC-EDA':
           message.createCase.caseId = this.currentCaseId
+          message.createCase.localCaseId = this.localCaseId
           break
         case 'EMSI':
           message.emsi.EVENT.MAIN_EVENT_ID = this.currentCaseId
+          message.emsi.EVENT.ID = this.localCaseId
           break
         case 'RS-EDA':
           message.createCaseHealth.caseId = this.currentCaseId
+          message.createCaseHealth.localCaseId = this.localCaseId
           break
       }
     },
