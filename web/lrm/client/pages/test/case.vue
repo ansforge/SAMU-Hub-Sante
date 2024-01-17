@@ -346,7 +346,7 @@ export default {
       let message = step.json
       // Use the required values to replace the corresponding values in the message
       message = this.replaceValues(message, step.message.requiredValues)
-      // Set createCase.caseId or emsi.EVENT.ID to currentCaseId if it's defined
+      // Generate currentCaseId if it isn't defined then set the message's case Id
       if (!this.currentCaseId) {
         this.generateCurrentCaseId()
       }
