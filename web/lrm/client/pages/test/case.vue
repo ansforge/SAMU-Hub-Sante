@@ -377,7 +377,7 @@ export default {
       this.currentCaseId = caseId
     },
     /**
-     * Sets the case ID in the message to the current case ID, whether the message is RC-EDA, EMSI or RS-EDA
+     * Sets the case ID in the message to the current case ID
      * @param {*} message
      */
     setCaseId (message) {
@@ -394,7 +394,7 @@ export default {
       }
     },
     /**
-     * Gets the case id from the message, whether it's an rc or emsi message
+     * Gets the case id from the message
      * @param {*} message
      */
     getCaseId (message) {
