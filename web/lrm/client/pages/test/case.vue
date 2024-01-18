@@ -311,7 +311,7 @@ export default {
         if (i === index) {
           // If we don't have currentCaseId set, we set it to the value of the case Id in the message received during current (send) step
           if (!this.currentCaseId) {
-            this.currentCaseId = this.getCaseId(message.body.content[0].jsonContent.embeddedJsonContent.message)
+            this.currentCaseId = this.getCaseIdOfAnyKind(message.body.content[0].jsonContent.embeddedJsonContent.message)
           }
           message.validatedStep = this.currentStep - 1
           message.validated = true
@@ -372,63 +372,6 @@ export default {
 
       const time = year + dayOfYear + hour + minutes + seconds
       return this.user.clientId + '-' + 'DRMFR15690' + time
-    },
-    /**
-     * Sets the case ID in the message to the current case ID
-     * @param {*} message
-     */
-    setCaseId (message) {
-      switch (this.getMessageType(message)) {
-        case 'RC-EDA':
-          message.createCase.caseId = this.currentCaseId
-          message.createCase.localCaseId = this.localCaseId
-          break
-        case 'EMSI':
-          message.emsi.EVENT.MAIN_EVENT_ID = this.currentCaseId
-          message.emsi.EVENT.ID = this.localCaseId
-          break
-        case 'RS-EDA':
-          message.createCaseHealth.caseId = this.currentCaseId
-          message.createCaseHealth.localCaseId = this.localCaseId
-          break
-      }
-    },
-    /**
-     * Gets the case id from the message
-     * @param {*} message
-     */
-    getCaseId (message) {
-      switch (this.getMessageType(message)) {
-        case 'RC-EDA':
-          return message.createCase.caseId
-        case 'EMSI':
-          return message.emsi.EVENT.MAIN_EVENT_ID
-        case 'RS-EDA':
-          return message.createCaseHealth.caseId
-      }
-    },
-    /**
-     * Returns a string representing message type (RC-EDA, EMSI ou RS-EDA)
-     * @param {*} message
-     */
-    getMessageType (message) {
-      if (message.createCase) {
-        return 'RC-EDA'
-      } else if (message.emsi) {
-        return 'EMSI'
-      } else if (message.createCaseHealth) {
-        return 'RS-EDA'
-      }
-    },
-    /**
-     * Replaces values in a message using path:value pairs
-     */
-    replaceValues (message, requiredValues) {
-      const jp = require('jsonpath')
-      requiredValues.forEach((entry) => {
-        jp.value(message, entry.path, entry.value)
-      })
-      return message
     },
     /**
      * Returns the required values for a given step

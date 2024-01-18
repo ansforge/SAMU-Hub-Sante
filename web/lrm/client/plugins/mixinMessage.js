@@ -69,6 +69,40 @@ export default {
     getCaseId (message) {
       return message.body.content[0].jsonContent.embeddedJsonContent.message.caseId
     },
+    /**
+     * Gets the case id from the message whether it's RC-EDA, EMSI or RS-EDA
+     * @param {*} message at the path message.body.content[0].jsonContent.embeddedJsonContent instead of root-level
+     */
+    getCaseIdOfAnyKind (message) {
+      switch (this.getMessageKind(message)) {
+        case 'RC-EDA':
+          return message.createCase.caseId
+        case 'EMSI':
+          return message.emsi.EVENT.MAIN_EVENT_ID
+        case 'RS-EDA':
+          return message.createCaseHealth.caseId
+      }
+    },
+    /**
+     * Sets the case ID in the message to the current case ID
+     * @param {*} message
+     */
+    setCaseId (message) {
+      switch (this.getMessageKind(message)) {
+        case 'RC-EDA':
+          message.createCase.caseId = this.currentCaseId
+          message.createCase.localCaseId = this.localCaseId
+          break
+        case 'EMSI':
+          message.emsi.EVENT.MAIN_EVENT_ID = this.currentCaseId
+          message.emsi.EVENT.ID = this.localCaseId
+          break
+        case 'RS-EDA':
+          message.createCaseHealth.caseId = this.currentCaseId
+          message.createCaseHealth.localCaseId = this.localCaseId
+          break
+      }
+    },
     getMessageType (message) {
       if (message.body.distributionKind === 'Ack') {
         return 'ack'
@@ -77,6 +111,29 @@ export default {
       } else {
         return 'message'
       }
+    },
+    /**
+     * Returns a string representing message type (RC-EDA, EMSI ou RS-EDA)
+     * @param {*} message
+     */
+    getMessageKind (message) {
+      if (message.createCase) {
+        return 'RC-EDA'
+      } else if (message.emsi) {
+        return 'EMSI'
+      } else if (message.createCaseHealth) {
+        return 'RS-EDA'
+      }
+    },
+    /**
+     * Replaces values in a message using jsonpath:value pairs
+     */
+    replaceValues (message, requiredValues) {
+      const jp = require('jsonpath')
+      requiredValues.forEach((entry) => {
+        jp.value(message, entry.path, entry.value)
+      })
+      return message
     },
     getReadableMessageType (messageType) {
       switch (messageType) {
