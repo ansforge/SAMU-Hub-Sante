@@ -309,7 +309,7 @@ export default {
     validateMessage (index, ack, stayOnStep = false) {
       this.selectedTypeCaseMessages.forEach((message, i) => {
         if (i === index) {
-          // If we don't have currentCaseId set, we set it to the value of the case Id in the sent message
+          // If we don't have currentCaseId set, we set it to the value of the case Id in the message received during current (send) step
           if (!this.currentCaseId) {
             this.currentCaseId = this.getCaseId(message.body.content[0].jsonContent.embeddedJsonContent.message)
           }
