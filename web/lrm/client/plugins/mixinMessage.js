@@ -91,7 +91,7 @@ export default {
       switch (this.getMessageKind(message)) {
         case 'RC-EDA':
           message.createCase.caseId = this.currentCaseId
-          message.createCase.localCaseId = this.localCaseId
+          message.createCase.senderCaseId = this.localCaseId
           break
         case 'EMSI':
           message.emsi.EVENT.MAIN_EVENT_ID = this.currentCaseId
@@ -99,7 +99,7 @@ export default {
           break
         case 'RS-EDA':
           message.createCaseHealth.caseId = this.currentCaseId
-          message.createCaseHealth.localCaseId = this.localCaseId
+          message.createCaseHealth.senderCaseId = this.localCaseId
           break
       }
     },
