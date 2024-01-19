@@ -38,16 +38,21 @@ spec:
           env:
             - name: HUB_URL
               valueFrom:
-                secretKeyRef:
-                  name: rabbitmq-url-secret
-                  key: url
+                configMapKeyRef:
+                  name: rabbitmq-url-cm
+                  key: rabbitmq.url
+            - name: LRM_BACKEND_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: rabbitmq-url-cm
+                  key: lrm.backend.url
 ---
 # I added temporarily this secret to be iso between sandbox and preprod.
 # It will be migrated to the Config Repo when migrating sandbox
 apiVersion: v1
-kind: Secret
-type: Opaque
+kind: ConfigMap
 metadata:
-  name: rabbitmq-url-secret
-stringData:
-  url: 'messaging.hub.esante.gouv.fr'
+  name: rabbitmq-url-cm
+data:
+  rabbitmq.url: 'messaging.hub.esante.gouv.fr'
+  lrm.backend.url: 'hub.esante.gouv.fr'
