@@ -179,14 +179,14 @@ export default {
         return this.selectedTypeMessages
       }
       return this.selectedTypeMessages.filter(
-        message => this.selectedCaseIds.includes(this.getCaseId(message))
+        message => this.selectedCaseIds.includes(this.getCaseId(message, true))
       )
     },
     messagesSentCount () {
       return this.clientMessages.filter(message => this.isOut(message.direction)).length
     },
     caseIds () {
-      return [...new Set(this.selectedTypeMessages.map(this.getCaseId))]
+      return [...new Set(this.selectedTypeMessages.map(m => this.getCaseId(m, true)))]
     }
   },
   mounted () {

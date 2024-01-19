@@ -68,9 +68,13 @@ export default {
     },
     /**
      * Gets the case id from the message whether it's RC-EDA, EMSI or RS-EDA
-     * @param {*} message at the path message.body.content[0].jsonContent.embeddedJsonContent instead of root-level
-     */
-    getCaseId (message) {
+     @param {*} message the message to retrieve the caseId from
+     @param {*} isRootMessage True if complete message is provided. Else content from message.body.content[0].jsonContent.embeddedJsonContent is expected
+     * */
+    getCaseId (message, isRootMessage = false) {
+      if (isRootMessage) {
+        message = message.body.content[0].jsonContent.embeddedJsonContent
+      }
       switch (this.getMessageKind(message)) {
         case 'RC-EDA':
           return message.createCase.caseId
