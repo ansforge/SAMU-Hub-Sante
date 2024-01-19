@@ -6,6 +6,7 @@ const logger = require('../logger');
 const moduleDir = __dirname;
 
 const HUB_SANTE_URL = process.env.HUB_URL || 'amqps://rabbitmq.default.svc';
+console.log(`Connecting to RabbitMQ server: ${HUB_SANTE_URL}`);
 const HUB_SANTE_EXCHANGE = 'hubsante';
 const DEMO_CLIENT_IDS = {
   SAMU_A: 'fr.health.samuA',

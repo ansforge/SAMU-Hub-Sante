@@ -99,7 +99,7 @@ export default {
         ...formattedInnerMessage
       }
       const name = this.userInfos.name
-      const targetId = this.clientInfos(this.user.targetId).id
+      const targetId = this.user.targetId
       const sentAt = moment().format()
       message.distributionID = `${this.user.clientId}_${uuidv4()}`
       message.distributionKind = distributionKind
