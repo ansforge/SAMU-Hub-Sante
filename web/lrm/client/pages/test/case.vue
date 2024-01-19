@@ -216,11 +216,13 @@ export default {
         return this.selectedTypeMessages
       }
       return this.selectedTypeMessages.filter(message =>
-        this.selectedCaseIds.includes(this.getCaseId(message))
+        this.selectedCaseIds.includes(this.getCaseId(message, true))
       )
     },
     caseIds () {
-      return [...new Set(this.selectedTypeMessages.map(this.getCaseId))]
+      return [...new Set(this.selectedTypeMessages.map(function (m) {
+        return this.getCaseId(m, true)
+      }))]
     }
   },
   watch: {
@@ -311,7 +313,7 @@ export default {
         if (i === index) {
           // If we don't have currentCaseId set, we set it to the value of the case Id in the message received during current (send) step
           if (!this.currentCaseId) {
-            this.currentCaseId = this.getCaseId(message.body.content[0].jsonContent.embeddedJsonContent.message)
+            this.currentCaseId = this.getCaseId(message, true)
           }
           message.validatedStep = this.currentStep - 1
           message.validated = true

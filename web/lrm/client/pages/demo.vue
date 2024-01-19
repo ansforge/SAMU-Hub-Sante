@@ -186,7 +186,9 @@ export default {
       return this.clientMessages.filter(message => this.isOut(message.direction)).length
     },
     caseIds () {
-      return [...new Set(this.selectedTypeMessages.map(m => this.getCaseId(m, true)))]
+      return [...new Set(this.selectedTypeMessages.map(function (m) {
+        return this.getCaseId(m, true)
+      }))]
     }
   },
   mounted () {
