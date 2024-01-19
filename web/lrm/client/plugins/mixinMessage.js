@@ -73,7 +73,7 @@ export default {
      * */
     getCaseId (message, isRootMessage = false) {
       if (isRootMessage) {
-        message = message.body.content[0].jsonContent.embeddedJsonContent
+        message = message.body.content[0].jsonContent.embeddedJsonContent.message
       }
       switch (this.getMessageKind(message)) {
         case 'RC-EDA':
@@ -86,21 +86,23 @@ export default {
     },
     /**
      * Sets the case ID in the message to the current case ID
-     * @param {*} message
-     */
-    setCaseId (message) {
+     @param {*} message
+     @param {*} caseId
+     @param {*} localCaseId
+     * */
+    setCaseId (message, caseId, localCaseId) {
       switch (this.getMessageKind(message)) {
         case 'RC-EDA':
-          message.createCase.caseId = this.currentCaseId
-          message.createCase.senderCaseId = this.localCaseId
+          message.createCase.caseId = caseId
+          message.createCase.senderCaseId = localCaseId
           break
         case 'EMSI':
-          message.emsi.EVENT.MAIN_EVENT_ID = this.currentCaseId
-          message.emsi.EVENT.ID = this.localCaseId
+          message.emsi.EVENT.MAIN_EVENT_ID = caseId
+          message.emsi.EVENT.ID = localCaseId
           break
         case 'RS-EDA':
-          message.createCaseHealth.caseId = this.currentCaseId
-          message.createCaseHealth.senderCaseId = this.localCaseId
+          message.createCaseHealth.caseId = caseId
+          message.createCaseHealth.senderCaseId = localCaseId
           break
       }
     },

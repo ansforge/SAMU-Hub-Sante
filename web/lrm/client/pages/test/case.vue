@@ -352,7 +352,7 @@ export default {
       if (!this.currentCaseId) {
         this.currentCaseId = this.localCaseId
       }
-      this.setCaseId(message)
+      this.setCaseId(message, this.currentCaseId, this.localCaseId)
       const builtMessage = this.buildMessage(message)
       this.testCase.steps[this.currentStep - 1].message.awaitedReferenceDistributionID = builtMessage.distributionID
       this.sendMessage(builtMessage)
