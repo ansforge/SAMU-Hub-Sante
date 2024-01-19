@@ -66,14 +66,11 @@ export default {
     isOut (direction) {
       return direction === DIRECTIONS.OUT
     },
-    getCaseId (message) {
-      return message.body.content[0].jsonContent.embeddedJsonContent.message.caseId
-    },
     /**
      * Gets the case id from the message whether it's RC-EDA, EMSI or RS-EDA
      * @param {*} message at the path message.body.content[0].jsonContent.embeddedJsonContent instead of root-level
      */
-    getCaseIdOfAnyKind (message) {
+    getCaseId (message) {
       switch (this.getMessageKind(message)) {
         case 'RC-EDA':
           return message.createCase.caseId
