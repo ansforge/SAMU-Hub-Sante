@@ -4,6 +4,7 @@ _LRM basique afin de pouvoir tester l'envoi / réception de messages_
 ## Deploy
 ```bash
 # Build UI
+BACKEND_LRM_SERVER=hub.esante.gouv.fr # or another domain depending on environment (must be explicit in the image tag), as we must pass it at nuxt build time
 cd server && npm run setup && cd ..
 # Build & push docker image
 docker buildx build --platform linux/amd64 -t romainfd/hub-lrm:latest .
