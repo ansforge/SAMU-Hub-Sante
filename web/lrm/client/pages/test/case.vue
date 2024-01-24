@@ -160,6 +160,8 @@ export default {
   mixins: [mixinMessage],
   data () {
     return {
+      currentCaseId: null,
+      localCaseId: null,
       testCase: null,
       currentlySelectedStep: 1,
       currentStep: 1,
@@ -214,11 +216,13 @@ export default {
         return this.selectedTypeMessages
       }
       return this.selectedTypeMessages.filter(message =>
-        this.selectedCaseIds.includes(this.getCaseId(message))
+        this.selectedCaseIds.includes(this.getCaseId(message, true))
       )
     },
     caseIds () {
-      return [...new Set(this.selectedTypeMessages.map(this.getCaseId))]
+      return [...new Set(this.selectedTypeMessages.map(function (m) {
+        return this.getCaseId(m, true)
+      }))]
     }
   },
   watch: {
@@ -256,6 +260,8 @@ export default {
     }
   },
   created () {
+    this.currentCaseId = null
+    this.localCaseId = this.generateCaseId()
     this.currentStep = 1
     this.testCase = this.$route.params.testCase
     this.selectRandomValuesForTestCase()
@@ -295,7 +301,7 @@ export default {
       }
     },
     /**
-     * Marks the message as validated, rcording the test case step at which it was validated
+     * Marks the message as validated, recording the test case step at which it was validated
      * and sends an acknowledgement if the message is not an acknowledgement itself and if
      * it was indicated in the parameters.
      * @param {*} index Index of the message in the list of messages
@@ -305,6 +311,10 @@ export default {
     validateMessage (index, ack, stayOnStep = false) {
       this.selectedTypeCaseMessages.forEach((message, i) => {
         if (i === index) {
+          // If we don't have currentCaseId set, we set it to the value of the case Id in the message received during current (send) step
+          if (!this.currentCaseId) {
+            this.currentCaseId = this.getCaseId(message, true)
+          }
           message.validatedStep = this.currentStep - 1
           message.validated = true
           if (ack) {
@@ -340,19 +350,30 @@ export default {
       let message = step.json
       // Use the required values to replace the corresponding values in the message
       message = this.replaceValues(message, step.message.requiredValues)
+      // We set the message's case Id using either previously set currentCaseId or localCaseId otherwise
+      if (!this.currentCaseId) {
+        this.currentCaseId = this.localCaseId
+      }
+      this.setCaseId(message, this.currentCaseId, this.localCaseId)
       const builtMessage = this.buildMessage(message)
       this.testCase.steps[this.currentStep - 1].message.awaitedReferenceDistributionID = builtMessage.distributionID
       this.sendMessage(builtMessage)
     },
     /**
-     * Replaces values in a message using path:value pairs
+     * Generates a case ID based on the current date and time:
+     * [client ID]-[Case type (D, DR, DRM)][Country (FR, etc.)][15 - case undertaken by SAMU][Departament code (DD, etc.)]
+     * [SAMU/SAS letter (X)][Time (YYDDDHHMMS)]
      */
-    replaceValues (message, requiredValues) {
-      const jp = require('jsonpath')
-      requiredValues.forEach((entry) => {
-        jp.value(message, entry.path, entry.value)
-      })
-      return message
+    generateCaseId () {
+      const currentDate = new Date()
+      const year = currentDate.getFullYear().toString().slice(-2)
+      const dayOfYear = Math.floor((currentDate - new Date(currentDate.getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24)).toString().padStart(3, '0')
+      const hour = currentDate.getHours().toString().padStart(2, '0')
+      const minutes = currentDate.getMinutes().toString().padStart(2, '0')
+      const seconds = currentDate.getSeconds().toString().slice(-1)
+
+      const time = year + dayOfYear + hour + minutes + seconds
+      return this.user.clientId + '-' + 'DRMFR15690' + time
     },
     /**
      * Returns the required values for a given step
