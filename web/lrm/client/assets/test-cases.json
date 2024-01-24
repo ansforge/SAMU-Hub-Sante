@@ -24,6 +24,7 @@
           ]
         }
       },
+      
       {
         "type": "send",
         "label": "Envoi d'un message EMSI-DC",
@@ -296,6 +297,233 @@
             }
           ],
           "file": "EMSI-OPG-message.json"
+        }
+      }
+    
+    ]
+  },
+  {
+    "label": "Envoi RS-EDA - partage de dossier",
+    "description": "Envoi d'un message RS-EDA",
+    "steps": [
+      {
+        "type": "send",
+        "label": "Envoi d'un message RS-EDA",
+        "description": "Envoyer un message simple de partage de dossier pour le périmètre 15-15; qui contient les valeurs obligatoires minimales attendues",
+        "message": {
+          "requiredValues": [
+            {
+              "path": "$.createCaseHealth.caseId",
+              "value": ["fr.health.samu770-DRFR157702400400055"]
+            },
+            {
+              "path": "$.createCaseHealth.creation",
+              "value": ["S2024-01-18T15:15:00+01:00","2024-02-15T20:30:00+01:00","2024-08-24T12:15:00+02:00","2024-10-22T18:12:00+02:00","2024-12-24T04:43:00+01:00"]
+            },
+            {
+              "path": "$.createCaseHealth.referenceVersion",
+              "value": ["1.2", "1.3", "1.4"]
+            },
+            {
+              "path": "$.createCaseHealth.qualification. whatsHappen.code",
+              "value": ["C02.08.05"]
+            },
+            {
+              "path": "$.createCaseHealth.qualification. whatsHappen.label",
+              "value": ["C02.08.05"]
+            },
+            {
+              "path": "$.createCaseHealth.location.locID",
+              "value": ["555fb03a-4df5-8zg6-8e81-990c4511256, sdf4dffs55eds-a59j-7eds-e7qs-abcsdft5ef59, BLU-5678-XYZ, BLU-5678-XYZ, rst456-uvw789-xyz123 "]
+            },
+            {
+              "path": "$.createCaseHealth.location.country",
+              "value": ["FR"]
+            },
+            {
+              "path": "$.createCaseHealth.owner",
+              "value": ["fr.health.samu770"]
+            }
+          ],
+          "file": "RS-EDA-usecase-PartageDossier-1.json"
+        }
+      } 
+    ]
+  },
+  {
+    "label": "Envoi RS-EDA - Réception RS-EDA - transfert de dossier OK",
+    "description": "Envoi d'un message RS-EDA avec demande de transfert, réception d'une réponse RS-EDA d'acceptation ",
+    "steps": [
+      {
+        "type": "send",
+        "label": "Envoi d'un message RS-EDA avec demande de transfert",
+        "description": "Envoyer un message RS-EDA pour le périmètre 15-15; qui contient une demande de transfert de dossier et les valeurs obligatoires minimales attendues",
+        "message": {
+          "requiredValues": [
+            {
+              "path": "$.createCaseHealth.caseId",
+              "value": ["fr.health.samu950-DRFR159502401000233"]
+            },
+            {
+              "path": "$.createCaseHealth.creation",
+              "value": ["S2024-01-10T14:07:00+01:00"]
+            },
+            {
+              "path": "$.createCaseHealth.referenceVersion",
+              "value": ["1.4"]
+            },
+            {
+              "path": "$.createCaseHealth.qualification. whatsHappen.code",
+              "value": ["C02.05.01"]
+            },
+            {
+              "path": "$.createCaseHealth.qualification. whatsHappen.label",
+              "value": ["Pathologie / Maladie - Médicale"]
+            },
+            {
+              "path": "$.createCaseHealth.location.locID",
+              "value": ["555fb03a-4df5-8zg6-8e81-990c4514986"]
+            },
+            {
+              "path": "$.createCaseHealth.location.country",
+              "value": ["FR"]
+            },
+            {
+              "path": "$.createCaseHealth.owner",
+              "value": ["fr.health.samu780"]
+            }
+          ]
+        }
+      },
+      {
+        "type": "receive",
+        "label": "Réception d'un message RS-EDA OK",
+        "description": "Recevoir un message RS-EDA d'acceptation de la demande de transfert, saisir et valider les valeurs spécifiées dans le message recu dans le cadre à droite puis envoyer un aquittement du message",
+        "message": {
+          "requiredValues": [
+            {
+              "path": "$.createCaseHealth.caseId",
+              "value": ["fr.health.samu950-DRFR159502401000233"]
+            },
+            {
+              "path": "$.createCaseHealth.creation",
+              "value": ["S2024-01-10T14:07:00+01:00"]
+            },
+            {
+              "path": "$.createCaseHealth.referenceVersion",
+              "value": ["1.4"]
+            },
+            {
+              "path": "$.createCaseHealth.qualification. whatsHappen.code",
+              "value": ["C02.05.01"]
+            },
+            {
+              "path": "$.createCaseHealth.qualification. whatsHappen.label",
+              "value": ["Pathologie / Maladie - Médicale "]
+            },
+            {
+              "path": "$.createCaseHealth.location.locID",
+              "value": ["555fb03a-4df5-8zg6-8e81-990c4514986"]
+            },
+            {
+              "path": "$.createCaseHealth.location.country",
+              "value": ["FR"]
+            },
+            {
+              "path": "$.createCaseHealth.owner",
+              "value": ["fr.health.samu780"]
+            }
+          ],
+          "file": "RS-EDA-usecase-PartageDossier-1.json"
+        }
+      }
+    ]
+  },
+  {
+    "label": "Envoi RS-EDA - Réception RS-EDA - transfert de dossier KO",
+    "description": "Envoi d'un message RS-EDA avec demande de transfert, réception d'une réponse RS-EDA de refus",
+    "steps": [
+      {
+        "type": "send",
+        "label": "Envoi d'un message RS-EDA avec demande de transfert",
+        "description": "Envoyer un message RS-EDA pour le périmètre 15-15; qui contient une demande de transfert de dossier et les valeurs obligatoires minimales attendues",
+        "message": {
+          "requiredValues": [
+            {
+              "path": "$.createCaseHealth.caseId",
+              "value": ["fr.health.samu950-DRFR159502401000233"]
+            },
+            {
+              "path": "$.createCaseHealth.creation",
+              "value": ["S2024-01-10T14:07:00+01:00"]
+            },
+            {
+              "path": "$.createCaseHealth.referenceVersion",
+              "value": ["1.4"]
+            },
+            {
+              "path": "$.createCaseHealth.qualification. whatsHappen.code",
+              "value": ["C02.05.01"]
+            },
+            {
+              "path": "$.createCaseHealth.qualification. whatsHappen.label",
+              "value": ["Pathologie / Maladie - Médicale"]
+            },
+            {
+              "path": "$.createCaseHealth.location.locID",
+              "value": ["555fb03a-4df5-8zg6-8e81-990c4514986"]
+            },
+            {
+              "path": "$.createCaseHealth.location.country",
+              "value": ["FR"]
+            },
+            {
+              "path": "$.createCaseHealth.owner",
+              "value": ["fr.health.samu780"]
+            }
+          ]
+        }
+      },
+      {
+        "type": "receive",
+        "label": "Réception d'une réponse RS-EDA KO",
+        "description": "Recevoir un message RS-EDA de refus à la demande de transfert, saisir et valider les valeurs spécifiées dans le message recu dans le cadre à droite puis envoyer un aquittement du message",
+        "message": {
+          "requiredValues": [
+            {
+              "path": "$.createCaseHealth.caseId",
+              "value": ["fr.health.samu950-DRFR159502401000233"]
+            },
+            {
+              "path": "$.createCaseHealth.creation",
+              "value": ["S2024-01-10T14:07:00+01:00"]
+            },
+            {
+              "path": "$.createCaseHealth.referenceVersion",
+              "value": ["1.4"]
+            },
+            {
+              "path": "$.createCaseHealth.qualification. whatsHappen.code",
+              "value": ["C02.05.01"]
+            },
+            {
+              "path": "$.createCaseHealth.qualification. whatsHappen.label",
+              "value": ["Pathologie / Maladie - Médicale "]
+            },
+            {
+              "path": "$.createCaseHealth.location.locID",
+              "value": ["555fb03a-4df5-8zg6-8e81-990c4514986"]
+            },
+            {
+              "path": "$.createCaseHealth.location.country",
+              "value": ["FR"]
+            },
+            {
+              "path": "$.createCaseHealth.owner",
+              "value": ["fr.health.samu950"]
+            }
+          ],
+          "file": "RS-EDA-usecase-PartageDossier-1.json"
         }
       }
     ]
