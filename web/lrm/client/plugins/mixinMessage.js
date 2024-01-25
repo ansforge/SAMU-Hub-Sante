@@ -66,8 +66,45 @@ export default {
     isOut (direction) {
       return direction === DIRECTIONS.OUT
     },
-    getCaseId (message) {
-      return message.body.content[0].jsonContent.embeddedJsonContent.message.caseId
+    /**
+     * Gets the case id from the message whether it's RC-EDA, EMSI or RS-EDA
+     @param {*} message the message to retrieve the caseId from
+     @param {*} isRootMessage True if complete message is provided. Else content from message.body.content[0].jsonContent.embeddedJsonContent is expected
+     * */
+    getCaseId (message, isRootMessage = false) {
+      if (isRootMessage) {
+        message = message.body.content[0].jsonContent.embeddedJsonContent.message
+      }
+      switch (this.getMessageKind(message)) {
+        case 'RC-EDA':
+          return message.createCase.caseId
+        case 'EMSI':
+          return message.emsi.EVENT.MAIN_EVENT_ID
+        case 'RS-EDA':
+          return message.createCaseHealth.caseId
+      }
+    },
+    /**
+     * Sets the case ID in the message to the current case ID
+     @param {*} message
+     @param {*} caseId
+     @param {*} localCaseId
+     * */
+    setCaseId (message, caseId, localCaseId) {
+      switch (this.getMessageKind(message)) {
+        case 'RC-EDA':
+          message.createCase.caseId = caseId
+          message.createCase.senderCaseId = localCaseId
+          break
+        case 'EMSI':
+          message.emsi.EVENT.MAIN_EVENT_ID = caseId
+          message.emsi.EVENT.ID = localCaseId
+          break
+        case 'RS-EDA':
+          message.createCaseHealth.caseId = caseId
+          message.createCaseHealth.senderCaseId = localCaseId
+          break
+      }
     },
     getMessageType (message) {
       if (message.body.distributionKind === 'Ack') {
@@ -77,6 +114,29 @@ export default {
       } else {
         return 'message'
       }
+    },
+    /**
+     * Returns a string representing message type (RC-EDA, EMSI ou RS-EDA)
+     * @param {*} message
+     */
+    getMessageKind (message) {
+      if (message.createCase) {
+        return 'RC-EDA'
+      } else if (message.emsi) {
+        return 'EMSI'
+      } else if (message.createCaseHealth) {
+        return 'RS-EDA'
+      }
+    },
+    /**
+     * Replaces values in a message using jsonpath:value pairs
+     */
+    replaceValues (message, requiredValues) {
+      const jp = require('jsonpath')
+      requiredValues.forEach((entry) => {
+        jp.value(message, entry.path, entry.value)
+      })
+      return message
     },
     getReadableMessageType (messageType) {
       switch (messageType) {
@@ -99,7 +159,7 @@ export default {
         ...formattedInnerMessage
       }
       const name = this.userInfos.name
-      const targetId = this.clientInfos(this.user.targetId).id
+      const targetId = this.user.targetId
       const sentAt = moment().format()
       message.distributionID = `${this.user.clientId}_${uuidv4()}`
       message.distributionKind = distributionKind
