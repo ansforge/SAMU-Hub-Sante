@@ -24,6 +24,7 @@
             <v-tab-item
               v-for="[name, messageTypeDetails] in Object.entries(messageTypes)"
               :key="name"
+              :eager="true"
             >
               <SchemaForm v-bind="messageTypeDetails" ref="schemaForms" :name="name" />
             </v-tab-item>
