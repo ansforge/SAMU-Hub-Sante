@@ -40,9 +40,10 @@
   </div>
 </template>
 
+<script>
+
 import { REPOSITORY_URL } from '@/constants'
 
-<script>
 export default {
   props: {
     examples: {
