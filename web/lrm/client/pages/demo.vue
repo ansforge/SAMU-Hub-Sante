@@ -24,7 +24,6 @@
             <v-tab-item
               v-for="[name, messageTypeDetails] in Object.entries(messageTypes)"
               :key="name"
-              :eager="true"
             >
               <SchemaForm v-bind="messageTypeDetails" ref="schemaForms" :name="name" />
             </v-tab-item>
@@ -202,11 +201,11 @@ export default {
     },
     submit () {
       // Submits current SchemaForm
-      this.$refs.schemaForms[this.messageTypeTabIndex].submit()
+      this.$refs.schemaForms.find(schema => schema.label === this.messageTypes[this.messageTypeTabIndex].label).submit()
     },
     useMessageToReply (message) {
       // Use message to fill the form
-      this.$refs.schemaForms[this.messageTypeTabIndex].load(message)
+      this.$refs.schemaForms.find(schema => schema.label === this.messageTypes[this.messageTypeTabIndex].label).load(message)
     }
   }
 }
