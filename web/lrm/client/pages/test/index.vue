@@ -89,6 +89,7 @@
 <script>
 
 import testCaseFile from '~/assets/test-cases.json'
+import { REPOSITORY_URL } from '@/constants'
 
 export default {
   name: 'Test',
@@ -121,7 +122,7 @@ export default {
     loadTestCaseJsons (testCase) {
       testCase.steps.forEach(async (step) => {
         if (step.type === 'receive') {
-          const response = await fetch('https://raw.githubusercontent.com/ansforge/SAMU-Hub-Modeles/main/src/main/resources/sample/examples/' + step.message.file)
+          const response = await fetch(REPOSITORY_URL + 'main/src/main/resources/sample/examples/' + step.message.file)
           const json = await response.json()
           this.$set(step, 'json', json)
         }

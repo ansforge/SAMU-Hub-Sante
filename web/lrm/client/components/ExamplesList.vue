@@ -40,6 +40,8 @@
   </div>
 </template>
 
+import { REPOSITORY_URL } from '@/constants'
+
 <script>
 export default {
   props: {
@@ -97,7 +99,7 @@ export default {
     },
     loadExample (exampleName) {
       if (exampleName) {
-        fetch('https://raw.githubusercontent.com/ansforge/SAMU-Hub-Modeles/main/src/main/resources/sample/examples/' + exampleName)
+        fetch(REPOSITORY_URL + 'main/src/main/resources/sample/examples/' + exampleName)
           .then(response => response.json())
           .then((data) => {
             this.selectedExample = data

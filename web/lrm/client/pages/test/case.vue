@@ -154,6 +154,7 @@
 import { mapGetters } from 'vuex'
 import Vue from 'vue'
 import mixinMessage from '~/plugins/mixinMessage'
+import { REPOSITORY_URL } from '@/constants'
 
 export default {
   name: 'Testcase',
@@ -294,7 +295,7 @@ export default {
     async loadJsonSteps () {
       for (const step of this.testCase.steps) {
         if (step.type === 'receive') {
-          const response = await fetch('https://raw.githubusercontent.com/ansforge/SAMU-Hub-Modeles/main/src/main/resources/sample/examples/' + step.message.file)
+          const response = await fetch(REPOSITORY_URL + 'main/src/main/resources/sample/examples/' + step.message.file)
           const json = await response.json()
           this.$set(step, 'json', json)
         }
