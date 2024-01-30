@@ -24,7 +24,7 @@
       <v-btn
         icon
         color="primary"
-        :href="'examples/' + file"
+        :href="'https://raw.githubusercontent.com/ansforge/SAMU-Hub-Modeles/main/src/main/resources/sample/examples/' + file"
         target="_blank"
       >
         <v-icon>mdi-open-in-new</v-icon>

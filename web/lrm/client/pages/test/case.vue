@@ -294,7 +294,7 @@ export default {
     async loadJsonSteps () {
       for (const step of this.testCase.steps) {
         if (step.type === 'receive') {
-          const response = await fetch('examples/' + step.message.file)
+          const response = await fetch('https://raw.githubusercontent.com/ansforge/SAMU-Hub-Modeles/main/src/main/resources/sample/examples/' + step.message.file)
           const json = await response.json()
           this.$set(step, 'json', json)
         }
