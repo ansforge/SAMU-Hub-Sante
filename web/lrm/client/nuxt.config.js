@@ -4,7 +4,8 @@ import colors from 'vuetify/es5/util/colors'
 // We force the user to set the BACKEND_LRM_SERVER environment variable before running "nuxt generate"
 // The build won't work if the variable is not set
 if (!process.env.BACKEND_LRM_SERVER) {
-  throw new Error('BACKEND_LRM_SERVER environment variable is not set')
+  throw new Error('BACKEND_LRM_SERVER environment variable is not set. It must be set to an actual URL of a remote server,' +
+    ' or to \'dev\' to reach a server running on localhost')
 }
 export default {
   // Target: https://go.nuxtjs.dev/config-target
@@ -100,7 +101,8 @@ export default {
   },
 
   env: {
-    wssUrl: (process.env.BACKEND_LRM_SERVER ? 'wss://' + process.env.BACKEND_LRM_SERVER + '/lrm/'
-      : 'ws://localhost:8081/')
+    wssUrl: (process.env.BACKEND_LRM_SERVER === 'dev' ?
+      'ws://localhost:8081/' :
+      'wss://' + process.env.BACKEND_LRM_SERVER + '/lrm/')
   }
 }
