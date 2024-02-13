@@ -27,6 +27,7 @@ import com.hubsante.model.edxl.EdxlMessage;
 import com.hubsante.model.exception.ValidationException;
 import com.hubsante.model.report.ErrorCode;
 import com.hubsante.model.report.ErrorReport;
+import io.micrometer.core.annotation.Timed;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.AmqpRejectAndDontRequeueException;
 import org.springframework.amqp.core.Message;
@@ -91,6 +92,7 @@ public class Dispatcher {
     }
 
     @RabbitListener(queues = DISPATCH_QUEUE_NAME)
+    @Timed(value = "overall.dispatch.time", description = "Time taken to fully dispatch a message")
     public void dispatch(Message message) {
         try {
             // Deserialize the message according to its content type
@@ -108,12 +110,15 @@ public class Dispatcher {
         } catch (AbstractHubException e) {
             handleError(e, message);
         } catch (Exception e) {
+            // still log.error because it is not one of our AbstractHubExceptions, so there must be
+            // a hole in our error cover
             log.error("Unexpected error occurred while dispatching message from " + message.getMessageProperties().getReceivedRoutingKey(), e);
             throw new AmqpRejectAndDontRequeueException(e);
         }
     }
 
     @RabbitListener(queues = DISPATCH_DLQ_NAME)
+    @Timed(value = "dlq.dispatch.time", description = "Time taken to fully dispatch a dead letter queued message")
     public void dispatchDLQ(Message message) {
         try {
             // TODO bbo
@@ -131,11 +136,11 @@ public class Dispatcher {
             handleError(exception, message);
         } catch (Exception e) {
             // We don't want to log again the error if it has been thrown by handleError
-            // We just log the unexpecteds errors
+            // We just log the unexpected errors
             if (!(e instanceof AmqpRejectAndDontRequeueException)) {
                 String originalRoutingKey = message.getMessageProperties().getHeader(DLQ_ORIGINAL_ROUTING_KEY) != null ?
                         message.getMessageProperties().getHeader(DLQ_ORIGINAL_ROUTING_KEY) : "Unknown routing key";
-                log.error("Unexpected error occurred while DLQ-dispatching message from " + originalRoutingKey, e);
+                log.warn("Unexpected error occurred while DLQ-dispatching message from " + originalRoutingKey, e);
             }
             throw new AmqpRejectAndDontRequeueException(e);
         }
@@ -162,7 +167,7 @@ public class Dispatcher {
 
         // log error
         // TODO bbo : add a logback pattern to allow structured logging
-        log.error(
+        log.warn(
                 "Error occurred with message published by " + sender + "\n" +
                         "ErrorReport " + errorReport.getErrorCode() + "\n" +
                         "ErrorCause " + errorReport.getErrorCause() + "\n" +
@@ -257,6 +262,7 @@ public class Dispatcher {
     /*
      ** Deserialize the message according to its content type
      */
+    @Timed(value = "deserialize.received.message", description = "Deserialize incoming message - include validation")
     private EdxlMessage deserializeMessage(Message message) {
         String receivedEdxl = new String(message.getBody(), StandardCharsets.UTF_8);
         EdxlMessage edxlMessage;
@@ -271,19 +277,20 @@ public class Dispatcher {
                 validator.validateJSON(receivedEdxl, ENVELOPE_SCHEMA);
                 edxlEnvelope = edxlHandler.deserializeJsonEDXLEnvelope(receivedEdxl);
             } catch (JsonProcessingException ex) {
-                log.error("Could not parse envelope of message " + receivedEdxl + " coming from " + message.getMessageProperties().getReceivedRoutingKey(), e);
+                log.warn("Could not parse envelope of message " + receivedEdxl + " coming from " + message.getMessageProperties().getReceivedRoutingKey(), e);
                 String errorCause = "Could not parse message, invalid format. \n " +
                         "If you don't want to use HubSanté model for now, please use a \"customContent\" wrapper inside your message.";
                 throw new UnrecognizedMessageFormatException(errorCause, null);
             } catch (IOException ex) {
+                // The error is on our side
                 log.error("Could not find schema file", e);
                 throw new SchemaNotFoundException("An internal server error has occurred, please contact the administration team", null);
             } catch (ValidationException ex) {
-                log.error("Could not validate content or envelope of message " + receivedEdxl + " coming from " + message.getMessageProperties().getReceivedRoutingKey(), e);
+                log.warn("Could not validate content or envelope of message " + receivedEdxl + " coming from " + message.getMessageProperties().getReceivedRoutingKey(), e);
                 throw new SchemaValidationException(e.getMessage(), null);
             }
             // weird rethrow but we want to log the received routing key and we only have it here
-            log.error("Could not validate content of message " + receivedEdxl +
+            log.warn("Could not validate content of message " + receivedEdxl +
                     " coming from " + message.getMessageProperties().getReceivedRoutingKey() +
                     " with distributionId " + edxlEnvelope.getDistributionID(), e);
             throw new SchemaValidationException(e.getMessage(), edxlEnvelope.getDistributionID());
@@ -327,7 +334,7 @@ public class Dispatcher {
             }
             return edxlMessage;
         } catch (JsonProcessingException e) {
-            log.error("Could not parse content of message " + receivedEdxl + " coming from " + message.getMessageProperties().getReceivedRoutingKey(), e);
+            log.warn("Could not parse content of message " + receivedEdxl + " coming from " + message.getMessageProperties().getReceivedRoutingKey(), e);
             String errorCause = "Could not parse message, invalid format. \n " +
                     "If you don't want to use HubSanté model for now, please use a \"customContent\" wrapper inside your message.";
             throw new UnrecognizedMessageFormatException(errorCause, null);
@@ -366,6 +373,7 @@ public class Dispatcher {
         }
     }
 
+    @Timed(value = "serialize.forwarded.message", description = "Serialize forwarded message and return new AMQP message")
     private Message getFwdMessageBody(EdxlMessage edxlMessage, Message receivedAmqpMessage, MessageProperties fwdAmqpProperties) {
         String recipientID = getRecipientID(edxlMessage);
         String senderID = getSenderFromRoutingKey(receivedAmqpMessage);

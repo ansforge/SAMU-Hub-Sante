@@ -72,9 +72,14 @@ dependencies {
     implementation 'com.networknt:json-schema-validator:1.0.87'
     implementation 'org.projectlombok:lombok'
     implementation 'org.junit.jupiter:junit-jupiter-params'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator:3.1.2'
+    implementation 'org.springframework.boot:spring-boot-starter-web:3.1.2'
+    implementation 'org.springframework.boot:spring-boot-starter-aop:3.1.2'
+    implementation 'org.aspectj:aspectjtools:'
 
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     annotationProcessor 'org.projectlombok:lombok'
+    runtimeOnly 'io.micrometer:micrometer-registry-prometheus:1.11.2'
 
     testAnnotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
