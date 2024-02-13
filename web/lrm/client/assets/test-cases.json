@@ -1,303 +1,314 @@
 [
   {
-    "label": "Envoi EDA - DC, Réception RDC",
-    "description": "Envoi des messages EDA et DC, réception d'une réponse RDC",
-    "steps": [
+    "categoryLabel": "Périmetre 15-18",
+    "testCases": [
       {
-        "type": "send",
-        "label": "Envoi d'un message RC-EDA",
-        "description": "Envoyer un message d'echange de dossier / affaire contenant les valeurs attendues spécifiées",
-        "message": {
-          "requiredValues": [
-            {
-              "path": "$.createCase.initialAlert.caller.detailedName.complete",
-              "value": ["Albane Amaury","Benoit Baudouin","Cyril Chauvin"]
-            },
-            {
-              "path": "$.createCase.initialAlert.reporting",
-              "value": ["STANDARD","ATTENTION"]
-            },
-            {
-              "path": "$.createCase.referenceVersion",
-              "value": ["1.2", "1.3", "1.4"]
+        "label": "Envoi EDA - DC, Réception RDC",
+        "description": "Envoi des messages EDA et DC, réception d'une réponse RDC",
+        "steps": [
+          {
+            "type": "send",
+            "label": "Envoi d'un message RC-EDA",
+            "description": "Envoyer un message d'echange de dossier / affaire contenant les valeurs attendues spécifiées",
+            "message": {
+              "requiredValues": [
+                {
+                  "path": "$.createCase.initialAlert.caller.detailedName.complete",
+                  "value": ["Albane Amaury","Benoit Baudouin","Cyril Chauvin"]
+                },
+                {
+                  "path": "$.createCase.initialAlert.reporting",
+                  "value": ["STANDARD","ATTENTION"]
+                },
+                {
+                  "path": "$.createCase.referenceVersion",
+                  "value": ["1.2", "1.3", "1.4"]
+                }
+              ]
             }
-          ]
-        }
+          },
+          {
+            "type": "send",
+            "label": "Envoi d'un message EMSI-DC",
+            "description": "Envoyer un message de demande de concours contenant les valeurs attendues spécifiées",
+            "message": {
+              "requiredValues": [
+                {
+                  "path": "$.emsi.CONTEXT.MODE",
+                  "value": ["ACTUAL","EXERCS","SYSTEM","TEST"]
+                },
+                {
+                  "path": "$.emsi.EVENT.ETYPE.CATEGORY[0]",
+                  "value": ["TRP/COL","ASB","FLD","EXP/AER"]
+                },
+                {
+                  "path": "$.emsi.MISSION[0].TYPE",
+                  "value": ["GEN/SCNMNG","C2","INT"]
+                }
+              ]
+            }
+          },
+          {
+            "type": "receive",
+            "label": "Réception d'un message EMSI-RDC",
+            "description": "Recevoir un message de réponse à la demande de concours, saisir et valider les valeurs spécifiées dans le message recu dans le cadre à droite puis envoyer un aquittement du message",
+            "message": {
+              "requiredValues": [
+                {
+                  "path": "$.emsi.CONTEXT.FREETEXT",
+                  "value": ["Gène de plus en plus importante à la circulation, risque accident","Accident de la circulation, 2 véhicules impliqués","Accident de la circulation, 1 véhicule impliqué"]
+                }
+              ],
+              "file": "EMSI-RDC-message.json"
+            }
+          }
+        ]
       },
       {
-        "type": "send",
-        "label": "Envoi d'un message EMSI-DC",
-        "description": "Envoyer un message de demande de concours contenant les valeurs attendues spécifiées",
-        "message": {
-          "requiredValues": [
-            {
-              "path": "$.emsi.CONTEXT.MODE",
-              "value": ["ACTUAL","EXERCS","SYSTEM","TEST"]
-            },
-            {
-              "path": "$.emsi.EVENT.ETYPE.CATEGORY[0]",
-              "value": ["TRP/COL","ASB","FLD","EXP/AER"]
-            },
-            {
-              "path": "$.emsi.MISSION[0].TYPE",
-              "value": ["GEN/SCNMNG","C2","INT"]
+        "label": "Envoi EDA - DC, Réception RDC - EO",
+        "description": "Envoi des messages EDA et DC, réception d'une réponse RDC et EO",
+        "steps": [
+          {
+            "type": "send",
+            "label": "Envoi d'un message RC-EDA",
+            "description": "Envoyer un message d'echange de dossier / affaire contenant les valeurs attendues spécifiées",
+            "message": {
+              "requiredValues": [
+                {
+                  "path": "$.createCase.qualification.whatsHappen.label",
+                  "value": ["2-roues","4-roues","Poids-lourd"]
+                },
+                {
+                  "path": "$.createCase.qualification.riskThreat[0].code",
+                  "value": ["R6","R35","R67"]
+                },
+                {
+                  "path": "$.createCase.location.locLabel",
+                  "value": ["73 Rue du Limas, Saint-malo","52 rue des six frères Ruellan, Abbeville","21 rue Pierre De Coubertin, Toulouse"]
+                }
+              ]
             }
-          ]
-        }
+          },
+          {
+            "type": "send",
+            "label": "Envoi d'un message EMSI-DC",
+            "description": "Envoyer un message de demande de concours contenant les valeurs attendues spécifiées",
+            "message": {
+              "requiredValues": [
+                {
+                  "path": "$.emsi.CONTEXT.MSGTYPE",
+                  "value": ["UPDATE","ALERT","CANCEL"]
+                },
+                {
+                  "path": "$.emsi.EVENT.ETYPE.CATEGORY[0]",
+                  "value": ["TRP/COL","EXP/AMM","FLD/PLN"]
+                },
+                {
+                  "path": "$.emsi.MISSION[0].TYPE",
+                  "value": ["GEN/SCNMNG","FF","RSC"]
+                }
+              ]
+            }
+          },
+          {
+            "type": "receive",
+            "label": "Réception d'un message EMSI-RDC",
+            "description": "Recevoir un message de réponse à la demande de concours, saisir et valider les valeurs spécifiées dans le message recu dans le cadre à droite puis envoyer un aquittement du message",
+            "message": {
+              "requiredValues": [
+                {
+                  "path": "$.emsi.MISSION[0].PRIORITY",
+                  "value": ["0","1","2","3","4","5"]
+                },
+                {
+                  "path": "$.emsi.MISSION[0].STATUS",
+                  "value": ["ABO","NST","IPR","PAU"]
+                }
+              ],
+              "file": "EMSI-RDC-message.json"
+            }
+          },
+          {
+            "type": "receive",
+            "label": "Réception d'un message EMSI-EO",
+            "description": "Recevoir un message d'échange des opérations, saisir et valider les valeurs spécifiées dans le message recu dans le cadre à droite puis envoyer un aquittement du message",
+            "message": {
+              "requiredValues": [
+                {
+                  "path": "$.emsi.RESOURCE[0].UM",
+                  "value": ["LSV","OTH","PKG","TIM","WGT"]
+                },
+                {
+                  "path": "$.emsi.RESOURCE[0].QUANTITY",
+                  "value": [1,2,20,500]
+                }
+              ],
+              "file": "EMSI-OPG-message.json"
+            }
+          }
+        ]
       },
       {
-        "type": "receive",
-        "label": "Réception d'un message EMSI-RDC",
-        "description": "Recevoir un message de réponse à la demande de concours, saisir et valider les valeurs spécifiées dans le message recu dans le cadre à droite puis envoyer un aquittement du message",
-        "message": {
-          "requiredValues": [
-            {
-              "path": "$.emsi.CONTEXT.FREETEXT",
-              "value": ["Gène de plus en plus importante à la circulation, risque accident","Accident de la circulation, 2 véhicules impliqués","Accident de la circulation, 1 véhicule impliqué"]
+        "label": "Réception EDA, Envoi EO",
+        "description": "Réception d'un message EDA, envoi d'un message EO",
+        "steps": [
+          {
+            "type": "receive",
+            "label": "Réception d'un message RC-EDA",
+            "description": "Recevoir un message d'echange de dossier / affaire, saisir et valider les valeurs spécifiées dans le message recu dans le cadre à droite puis envoyer un aquittement du message",
+            "message": {
+              "requiredValues": [
+                {
+                  "path": "$.createCase.location.detailedAddress.complete",
+                  "value": ["8 quai des Célestins", "15 avenue Leclerc", "1 rue de la République"]
+                },
+                {
+                  "path": "$.createCase.qualification.healthMotive.label",
+                  "value": ["Traumatisme crânien", "Fracture de la jambe", "Plaies multiples"]
+                },
+                {
+                  "path": "$.createCase.qualification.victims.count",
+                  "value": ["SEVERAL","MANY","UNKNOWN","1","0" ]
+                }
+              ],
+              "file": "RC-EDA-usecase-Armaury-1.json"
             }
-          ],
-          "file": "EMSI-RDC-message.json"
-        }
+          },
+          {
+            "type": "send",
+            "label": "Envoi d'un message EMSI-EO",
+            "description": "Envoyer un message d'échange des opérations contenant les valeurs attendues spécifiées",
+            "message": {
+              "requiredValues": [
+                {
+                  "path": "$.emsi.EVENT.SOURCE",
+                  "value": ["COMFOR","HUMDED","HUMOBS","SENSOR"]
+                },
+                {
+                  "path": "$.emsi.EVENT.SCALE",
+                  "value": ["1","2","3","4","5"]
+                },
+                {
+                  "path": "$.emsi.EVENT.CERTAINTY",
+                  "value": [0, 1, 40, 60, 85, 100]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "label": "Envoi EDA - EO - DC, Réceptin RDC, Envoi EO, Réception EO",
+        "description": "Envoi des messages EDA, EO et DC, réception des réponses RDC et EO",
+        "steps": [
+          {
+            "type": "send",
+            "label": "Envoi d'un message RC-EDA",
+            "description": "Envoyer un message d'echange de dossier / affaire contenant les valeurs attendues spécifiées",
+            "message": {
+              "requiredValues": [
+                {
+                  "path": "$.createCase.qualification.locationKind.code",
+                  "value": ["L02.01.00", "L03.01.00", "L04.01.00"]
+                },
+                {
+                  "path": "$.createCase.initialAlert.alertSource.channel",
+                  "value": ["Personne", "Application", "DAU", "BAU", "Défibrillateur"]
+                }
+              ]
+            }
+          },
+          {
+            "type": "send",
+            "label": "Envoi d'un message EMSI-EO",
+            "description": "Envoyer un message d'échange des opérations contenant les valeurs attendues spécifiées",
+            "message": {
+              "requiredValues": [
+                {
+                  "path": "$.emsi.CONTEXT.LEVEL",
+                  "value": ["OPR","TACTCL","STRTGC"]
+                },
+                {
+                  "path": "$.emsi.CONTEXT.SECLASS",
+                  "value": ["RESTRC","CONFID","TOPSRT","UNCLAS","UNMARK","SECRET"]
+                }
+              ]
+            }
+          },
+          {
+            "type": "send",
+            "label": "Envoi d'un message EMSI-DC",
+            "description": "Envoyer un message de demande de concours contenant les valeurs attendues spécifiées",
+            "message": {
+              "requiredValues": [
+                {
+                  "path": "$.emsi.CONTEXT.FREETEXT",
+                  "value": ["Gène de plus en plus importante à la circulation","Risque important d'accident","Accés impossible pour les véhicules de secours"]
+                },
+                {
+                  "path": "$.emsi.EVENT.NAME",
+                  "value": ["Incident sur la voie publique","Accident de la circulation","Accident sur voix ferrée"]
+                },
+                {
+                  "path": "$.emsi.EVENT.RISK_ASSESMENT",
+                  "value": ["STABLE","NCREA","DECREA"]
+                }
+              ]
+            }
+          },
+          {
+            "type": "receive",
+            "label": "Réception d'un message EMSI-RDC",
+            "description": "Recevoir un message de réponse à la demande de concours, saisir et valider les valeurs spécifiées dans le message recu dans le cadre à droite puis envoyer un aquittement du message",
+            "message": {
+              "requiredValues": [
+                {
+                  "path": "$.emsi.RESOURCE[0].STATUS",
+                  "value": ["AVAILB","UNAV","MAINTC","VIRTUAL","RESERVD"]
+                }
+              ],
+              "file": "EMSI-RDC-message.json"
+            }
+          },
+          {
+            "type": "send",
+            "label": "Envoi d'un message EMSI-EO",
+            "description": "Envoyer un message d'échange des opérations contenant les valeurs attendues spécifiées",
+            "message": {
+              "requiredValues": [
+                {
+                  "path": "$.emsi.RESOURCE[0].NAME",
+                  "value": ["VSAV 1 caserne SDIS35","VSAV 2 caserne SDIS2","VSAV 3 caserne SDIS12"]
+                },
+                {
+                  "path": "$.emsi.RESOURCE[0].FREETEXT",
+                  "value": ["IMMATRICULATION#AJ-75-MZ","IMMATRICULATION#BF-12-UU","IMMATRICULATION#FR-07-AW"]
+                }
+              ]
+            }
+          },
+          {
+            "type": "receive",
+            "label": "Réception d'un message EMSI-EO",
+            "description": "Recevoir un message d'échange des opérations, saisir et valider les valeurs spécifiées dans le message recu dans le cadre à droite puis envoyer un aquittement du message",
+            "message": {
+              "requiredValues": [
+                {
+                  "path": "$.emsi.MISSION[0].",
+                  "value": ["#OPERATION_GLOBALE#", "#ECHANGE_OPERATION#"]
+                }
+              ],
+              "file": "EMSI-OPG-message.json"
+            }
+          }
+        ]
       }
     ]
   },
   {
-    "label": "Envoi EDA - DC, Réception RDC - EO",
-    "description": "Envoi des messages EDA et DC, réception d'une réponse RDC et EO",
-    "steps": [
-      {
-        "type": "send",
-        "label": "Envoi d'un message RC-EDA",
-        "description": "Envoyer un message d'echange de dossier / affaire contenant les valeurs attendues spécifiées",
-        "message": {
-          "requiredValues": [
-            {
-              "path": "$.createCase.qualification.whatsHappen.label",
-              "value": ["2-roues","4-roues","Poids-lourd"]
-            },
-            {
-              "path": "$.createCase.qualification.riskThreat[0].code",
-              "value": ["R6","R35","R67"]
-            },
-            {
-              "path": "$.createCase.location.locLabel",
-              "value": ["73 Rue du Limas, Saint-malo","52 rue des six frères Ruellan, Abbeville","21 rue Pierre De Coubertin, Toulouse"]
-            }
-          ]
-        }
-      },
-      {
-        "type": "send",
-        "label": "Envoi d'un message EMSI-DC",
-        "description": "Envoyer un message de demande de concours contenant les valeurs attendues spécifiées",
-        "message": {
-          "requiredValues": [
-            {
-              "path": "$.emsi.CONTEXT.MSGTYPE",
-              "value": ["UPDATE","ALERT","CANCEL"]
-            },
-            {
-              "path": "$.emsi.EVENT.ETYPE.CATEGORY[0]",
-              "value": ["TRP/COL","EXP/AMM","FLD/PLN"]
-            },
-            {
-              "path": "$.emsi.MISSION[0].TYPE",
-              "value": ["GEN/SCNMNG","FF","RSC"]
-            }
-          ]
-        }
-      },
-      {
-        "type": "receive",
-        "label": "Réception d'un message EMSI-RDC",
-        "description": "Recevoir un message de réponse à la demande de concours, saisir et valider les valeurs spécifiées dans le message recu dans le cadre à droite puis envoyer un aquittement du message",
-        "message": {
-          "requiredValues": [
-            {
-              "path": "$.emsi.MISSION[0].PRIORITY",
-              "value": ["0","1","2","3","4","5"]
-            },
-            {
-              "path": "$.emsi.MISSION[0].STATUS",
-              "value": ["ABO","NST","IPR","PAU"]
-            }
-          ],
-          "file": "EMSI-RDC-message.json"
-        }
-      },
-      {
-        "type": "receive",
-        "label": "Réception d'un message EMSI-EO",
-        "description": "Recevoir un message d'échange des opérations, saisir et valider les valeurs spécifiées dans le message recu dans le cadre à droite puis envoyer un aquittement du message",
-        "message": {
-          "requiredValues": [
-            {
-              "path": "$.emsi.RESOURCE[0].UM",
-              "value": ["LSV","OTH","PKG","TIM","WGT"]
-            },
-            {
-              "path": "$.emsi.RESOURCE[0].QUANTITY",
-              "value": [1,2,20,500]
-            }
-          ],
-          "file": "EMSI-OPG-message.json"
-        }
-      }
-    ]
-  },
-  {
-    "label": "Réception EDA, Envoi EO",
-    "description": "Réception d'un message EDA, envoi d'un message EO",
-    "steps": [
-      {
-        "type": "receive",
-        "label": "Réception d'un message RC-EDA",
-        "description": "Recevoir un message d'echange de dossier / affaire, saisir et valider les valeurs spécifiées dans le message recu dans le cadre à droite puis envoyer un aquittement du message",
-        "message": {
-          "requiredValues": [
-            {
-              "path": "$.createCase.location.detailedAddress.complete",
-              "value": ["8 quai des Célestins", "15 avenue Leclerc", "1 rue de la République"]
-            },
-            {
-              "path": "$.createCase.qualification.healthMotive.label",
-              "value": ["Traumatisme crânien", "Fracture de la jambe", "Plaies multiples"]
-            },
-            {
-              "path": "$.createCase.qualification.victims.count",
-              "value": ["SEVERAL","MANY","UNKNOWN","1","0" ]
-            }
-          ],
-          "file": "RC-EDA-usecase-Armaury-1.json"
-        }
-      },
-      {
-        "type": "send",
-        "label": "Envoi d'un message EMSI-EO",
-        "description": "Envoyer un message d'échange des opérations contenant les valeurs attendues spécifiées",
-        "message": {
-          "requiredValues": [
-            {
-              "path": "$.emsi.EVENT.SOURCE",
-              "value": ["COMFOR","HUMDED","HUMOBS","SENSOR"]
-            },
-            {
-              "path": "$.emsi.EVENT.SCALE",
-              "value": ["1","2","3","4","5"]
-            },
-            {
-              "path": "$.emsi.EVENT.CERTAINTY",
-              "value": [0, 1, 40, 60, 85, 100]
-            }
-          ]
-        }
-      }
-    ]
-  },
-  {
-    "label": "Envoi EDA - EO - DC, Réceptin RDC, Envoi EO, Réception EO",
-    "description": "Envoi des messages EDA, EO et DC, réception des réponses RDC et EO",
-    "steps": [
-      {
-        "type": "send",
-        "label": "Envoi d'un message RC-EDA",
-        "description": "Envoyer un message d'echange de dossier / affaire contenant les valeurs attendues spécifiées",
-        "message": {
-          "requiredValues": [
-            {
-              "path": "$.createCase.qualification.locationKind.code",
-              "value": ["L02.01.00", "L03.01.00", "L04.01.00"]
-            },
-            {
-              "path": "$.createCase.initialAlert.alertSource.channel",
-              "value": ["Personne", "Application", "DAU", "BAU", "Défibrillateur"]
-            }
-          ]
-        }
-      },
-      {
-        "type": "send",
-        "label": "Envoi d'un message EMSI-EO",
-        "description": "Envoyer un message d'échange des opérations contenant les valeurs attendues spécifiées",
-        "message": {
-          "requiredValues": [
-            {
-              "path": "$.emsi.CONTEXT.LEVEL",
-              "value": ["OPR","TACTCL","STRTGC"]
-            },
-            {
-              "path": "$.emsi.CONTEXT.SECLASS",
-              "value": ["RESTRC","CONFID","TOPSRT","UNCLAS","UNMARK","SECRET"]
-            }
-          ]
-        }
-      },
-      {
-        "type": "send",
-        "label": "Envoi d'un message EMSI-DC",
-        "description": "Envoyer un message de demande de concours contenant les valeurs attendues spécifiées",
-        "message": {
-          "requiredValues": [
-            {
-              "path": "$.emsi.CONTEXT.FREETEXT",
-              "value": ["Gène de plus en plus importante à la circulation","Risque important d'accident","Accés impossible pour les véhicules de secours"]
-            },
-            {
-              "path": "$.emsi.EVENT.NAME",
-              "value": ["Incident sur la voie publique","Accident de la circulation","Accident sur voix ferrée"]
-            },
-            {
-              "path": "$.emsi.EVENT.RISK_ASSESMENT",
-              "value": ["STABLE","NCREA","DECREA"]
-            }
-          ]
-        }
-      },
-      {
-        "type": "receive",
-        "label": "Réception d'un message EMSI-RDC",
-        "description": "Recevoir un message de réponse à la demande de concours, saisir et valider les valeurs spécifiées dans le message recu dans le cadre à droite puis envoyer un aquittement du message",
-        "message": {
-          "requiredValues": [
-            {
-              "path": "$.emsi.RESOURCE[0].STATUS",
-              "value": ["AVAILB","UNAV","MAINTC","VIRTUAL","RESERVD"]
-            }
-          ],
-          "file": "EMSI-RDC-message.json"
-        }
-      },
-      {
-        "type": "send",
-        "label": "Envoi d'un message EMSI-EO",
-        "description": "Envoyer un message d'échange des opérations contenant les valeurs attendues spécifiées",
-        "message": {
-          "requiredValues": [
-            {
-              "path": "$.emsi.RESOURCE[0].NAME",
-              "value": ["VSAV 1 caserne SDIS35","VSAV 2 caserne SDIS2","VSAV 3 caserne SDIS12"]
-            },
-            {
-              "path": "$.emsi.RESOURCE[0].FREETEXT",
-              "value": ["IMMATRICULATION#AJ-75-MZ","IMMATRICULATION#BF-12-UU","IMMATRICULATION#FR-07-AW"]
-            }
-          ]
-        }
-      },
-      {
-        "type": "receive",
-        "label": "Réception d'un message EMSI-EO",
-        "description": "Recevoir un message d'échange des opérations, saisir et valider les valeurs spécifiées dans le message recu dans le cadre à droite puis envoyer un aquittement du message",
-        "message": {
-          "requiredValues": [
-            {
-              "path": "$.emsi.MISSION[0].",
-              "value": ["#OPERATION_GLOBALE#", "#ECHANGE_OPERATION#"]
-            }
-          ],
-          "file": "EMSI-OPG-message.json"
-        }
-      }
+    "categoryLabel": "Périmetre 15-15",
+    "testCases": [
+
     ]
   }
 ]
