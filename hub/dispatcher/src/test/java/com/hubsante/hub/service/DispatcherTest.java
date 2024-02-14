@@ -68,6 +68,7 @@ public class DispatcherTest {
     private HubConfiguration hubConfig;
     @Autowired
     private Validator validator;
+    private MessageHandler messageHandler;
     static ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
     private Dispatcher dispatcher;
     private final String SAMU_B_ROUTING_KEY = "fr.health.samuB";
@@ -92,7 +93,8 @@ public class DispatcherTest {
 
     @PostConstruct
     public void init() {
-        dispatcher = new Dispatcher(rabbitTemplate, converter, hubConfig, validator);
+        messageHandler = new MessageHandler(rabbitTemplate, converter, hubConfig, validator);
+        dispatcher = new Dispatcher(messageHandler, rabbitTemplate, converter);
     }
 
     @Test

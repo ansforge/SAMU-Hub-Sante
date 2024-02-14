@@ -1,0 +1,98 @@
+package com.hubsante.hub.utils;
+
+import com.hubsante.hub.exception.DeliveryModeInconsistencyException;
+import com.hubsante.hub.exception.ExpiredBeforeDispatchMessageException;
+import com.hubsante.hub.exception.SenderInconsistencyException;
+import com.hubsante.model.edxl.DistributionKind;
+import com.hubsante.model.edxl.EdxlMessage;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.core.Message;
+import org.springframework.amqp.core.MessageDeliveryMode;
+import org.springframework.amqp.core.MessageProperties;
+
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
+
+@Slf4j
+public class MessageUtils {
+    private static final String HEALTH_PREFIX = "fr.health";
+    public static String getSenderFromRoutingKey(Message message) {
+        return message.getMessageProperties().getReceivedRoutingKey();
+    }
+    public static void checkSenderConsistency(Message message, EdxlMessage edxlMessage) {
+        String receivedRoutingKey = getSenderFromRoutingKey(message);
+        if (!receivedRoutingKey.equals(edxlMessage.getSenderID())) {
+            String errorCause = "Sender inconsistency for message " +
+                    edxlMessage.getDistributionID() +
+                    " : message sender is " +
+                    edxlMessage.getSenderID() +
+                    " but received routing key is " +
+                    receivedRoutingKey;
+            throw new SenderInconsistencyException(errorCause, edxlMessage.getDistributionID());
+        }
+    }
+
+    public static void checkDeliveryModeIsPersistent(Message message, String messageId) {
+        if (!MessageDeliveryMode.PERSISTENT.equals(message.getMessageProperties().getReceivedDeliveryMode())) {
+            String errorCause = "Message " + messageId + " has been sent with non-persistent delivery mode";
+            throw new DeliveryModeInconsistencyException(errorCause, messageId);
+        }
+    }
+
+    public static String getInfoQueueNameFromClientId(String clientId) {
+        return clientId + ".info";
+    }
+
+    public static String getRecipientID(EdxlMessage edxlMessage) {
+        return edxlMessage.getDescriptor().getExplicitAddress().getExplicitAddressValue();
+    }
+
+    public static String getRecipientQueueName(EdxlMessage edxlMessage) {
+        return getRecipientID(edxlMessage) + "." + getQueueType(edxlMessage.getDistributionKind());
+    }
+
+    public static String getQueueType(DistributionKind kind) {
+        switch (kind) {
+            case ACK:
+                return "ack";
+            case ERROR:
+                return "info";
+            default:
+                return "message";
+        }
+    }
+
+    public static boolean convertToXML(String recipientID, Boolean useXML) {
+        // sending message to outer hubex is always XML
+        if (!recipientID.startsWith(HEALTH_PREFIX)) {
+            return true;
+        }
+        // sending message to health clients is based on client preference (default to JSON)
+        return useXML != null
+                && useXML;
+    }
+
+    public static void overrideExpirationIfNeeded(EdxlMessage edxlMessage, MessageProperties properties, long defaultTTL) {
+        // OffsetDateTime comes with seconds and nanos, not millis
+        // We assume that one second is an acceptable interval
+        long queueExpirationDateTime = OffsetDateTime.now().plusSeconds(defaultTTL).toEpochSecond();
+        long edxlCustomExpirationDateTime = edxlMessage.getDateTimeExpires().toEpochSecond();
+
+        // if default expiration (now + queue TTl) outlasts edxl.dateTimeExpires,
+        // we have to override per-message TTL
+        if (queueExpirationDateTime > edxlCustomExpirationDateTime) {
+            // if edxl.dateTimeExpires is in the past, we set TTL to 0
+            // it would be automatically discarded to DLQ (cf https://www.rabbitmq.com/ttl.html)
+            long newTTL = Math.max(0,
+                    edxlMessage.getDateTimeExpires().toEpochSecond() - OffsetDateTime.now().toEpochSecond());
+            if (newTTL == 0) {
+                String errorCause = "Message " + edxlMessage.getDistributionID() + " has expired before reaching the recipient queue";
+                throw new ExpiredBeforeDispatchMessageException(errorCause, edxlMessage.getDistributionID());
+            }
+            properties.setExpiration(String.valueOf(newTTL * 1000));
+            log.info("override expiration for message {}: expiration is now {}",
+                    edxlMessage.getDistributionID(),
+                    edxlMessage.getDateTimeExpires().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+        }
+    }
+}
