@@ -21,6 +21,7 @@ python/templates/4. tls/cert/
 
 # Certificates
 certs/CA/
+certs/environments/
 !certs/CA/sign.sh
 !certs/CA/rootCA.crt
 !certs/CA/rootCATrue.crt

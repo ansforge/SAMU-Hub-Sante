@@ -2,11 +2,13 @@ const path = require('path');
 const fs = require('fs');
 const amqp = require('amqplib/callback_api');
 const logger = require('../logger');
-require('dotenv').config();
 
 const moduleDir = __dirname;
-
-const HUB_SANTE_URL = process.env.HUB_URL || 'amqps://messaging.hub.esante.gouv.fr';
+if (!process.env.HUB_URL) {
+  throw new Error('HUB_URL environment variable is not set. In kubernetes, this might be caused by a missing ConfigMap.');
+}
+const HUB_SANTE_URL = process.env.HUB_URL;
+console.log(`Connecting to RabbitMQ server: ${HUB_SANTE_URL}`);
 const HUB_SANTE_EXCHANGE = 'hubsante';
 const DEMO_CLIENT_IDS = {
   SAMU_A: 'fr.health.samuA',
@@ -19,6 +21,7 @@ const DEMO_CLIENT_IDS = {
   INETUM: 'fr.health.test.inetum',
   RRAMU: 'fr.health.test.rramu',
   SCRIPTAL: 'fr.health.test.scriptal',
+  WAVESTONE: 'fr.health.test.wavestone',
 };
 
 const opts = {
