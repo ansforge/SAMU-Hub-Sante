@@ -58,10 +58,15 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
+
 export default {
   name: 'DefaultLayout',
   data () {
     return {}
+  },
+  computed: {
+    ...mapGetters(['isAuthenticated', 'isAdvanced'])
   },
   methods: {
     toggleAdvanced () {
