@@ -27,16 +27,16 @@ kubectl replace --force -f ../../hub/infra/web/lrm.yaml
 ### Client
 ```bash
 # Using local server
-npm run dev
+BACKEND_LRM_SERVER=localhost npm run dev
 
 # Using prod remote server
-USE_PROD_SERVER=true npm run dev
+BACKEND_LRM_SERVER=hub.esante.gouv.fr npm run dev
 ```
 
 ### Server
 ```bash
-# Using local RabbitMQ
-npm run dev
+# Using local RabbitMQ (within Kubernetes)
+HUB_URL=amqps://rabbitmq.default.svc npm run dev
 
 # Using prod remote RabbitMQ
 HUB_URL=amqps://messaging.hub.esante.gouv.fr npm run dev
