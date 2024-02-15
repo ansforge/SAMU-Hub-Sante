@@ -126,7 +126,32 @@ export const state = () => ({
       victim: 'Femme, adulte, 47 ans',
       medicalSituation: 'Douleurs thoraciques irradiantes, antécédents de maladie cardiaque'
     }]
-  } /* ,
+  } /*, {
+    label: 'RS-GEO',
+    schemaName: 'RS-GEO.schema.json',
+    schema: null,
+    examples: [{
+      file: 'CU1_Geolocalisation.json',
+      icon: 'mdi-car-multiple',
+      name: 'Ressources',
+      context: 'Partage des ressources du SAMU A vers le SAMU B'
+    }, {
+      file: 'CU2_Geolocalisation.json',
+      icon: 'mdi-car-multiple',
+      name: 'Positions',
+      context: 'Partage des positions des ressources du SAMU A vers le SAMU B'
+    }, {
+      file: 'CU3_Geolocalisation.json',
+      icon: 'mdi-car-multiple',
+      name: 'Détails',
+      context: 'Demande de détails de ressources du SAMU B vers le SAMU A'
+    }, {
+      file: 'CU4_Geolocalisation.json',
+      icon: 'mdi-car-multiple',
+      name: 'Mise à jour',
+      context: 'Partage du détails de nouvelles ressources et mise à jour de position vers le SAMU B'
+    }]
+  } */ /* ,
         info: {
           label: 'RS-INFO',
           schemaName: 'RS-INFO.schema.json',
