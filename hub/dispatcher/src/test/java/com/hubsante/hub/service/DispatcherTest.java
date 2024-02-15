@@ -24,7 +24,13 @@ import com.hubsante.model.custom.CustomMessage;
 import com.hubsante.model.edxl.EdxlMessage;
 import com.hubsante.model.report.ErrorCode;
 import com.hubsante.model.report.ErrorReport;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tag;
+import io.micrometer.core.instrument.search.Search;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -44,11 +50,13 @@ import org.springframework.test.context.DynamicPropertySource;
 import jakarta.annotation.PostConstruct;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.Objects;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static com.hubsante.hub.config.AmqpConfiguration.*;
+import static com.hubsante.hub.config.Constants.DISPATCH_ERROR;
 import static com.hubsante.hub.service.utils.MessageTestUtils.*;
+import static com.hubsante.hub.service.utils.MetricsUtils.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -68,6 +76,8 @@ public class DispatcherTest {
     private HubConfiguration hubConfig;
     @Autowired
     private Validator validator;
+    @Autowired
+    private MeterRegistry registry;
     static ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
     private Dispatcher dispatcher;
     private final String SAMU_B_ROUTING_KEY = "fr.health.samuB";
@@ -92,9 +102,17 @@ public class DispatcherTest {
 
     @PostConstruct
     public void init() {
-        dispatcher = new Dispatcher(rabbitTemplate, converter, hubConfig, validator);
+        dispatcher = new Dispatcher(rabbitTemplate, converter, hubConfig, validator, registry);
     }
 
+    @BeforeEach
+    public void cleanMetrics() {
+        registry.forEachMeter(meter -> {
+            if (meter.getId().getName().equalsIgnoreCase(DISPATCH_ERROR)) {
+                registry.remove(meter);
+            }
+        });
+    }
     @Test
     @DisplayName("should send json message to the right exchange and routing key")
     public void shouldDispatchJsonToRightExchange() throws IOException {
@@ -311,10 +329,39 @@ public class DispatcherTest {
     public void invalidJsonContentFails() throws IOException {
         Message receivedMessage = createInvalidMessage("RC-EDA/invalid-RC-EDA-valid-EDXL.json",
                 JSON, SAMU_A_ROUTING_KEY);
-        assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
 
+        assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
         assertErrorReportHasBeenSent(SAMU_A_INFO_QUEUE, ErrorCode.INVALID_MESSAGE, SAMU_A_DISTRIBUTION_ID,
                 "creation: is missing but it is required");
+    }
+
+    @Test
+    @DisplayName("should increment counter")
+    public void wtest() throws IOException {
+        Search errorOverall = targetCounter(registry, "sender", SAMU_A_ROUTING_KEY);
+        Search errorContentType = targetCounter(registry, "reason", ErrorCode.NOT_ALLOWED_CONTENT_TYPE.getStatusString(),
+                "sender", SAMU_A_ROUTING_KEY);
+        Search errorDeliveryMode = targetCounter(registry, "reason", ErrorCode.DELIVERY_MODE_INCONSISTENCY.getStatusString(),
+                "sender", SAMU_A_ROUTING_KEY);
+
+        assertNull(errorOverall.counter());
+        assertNull(errorContentType.counter());
+        assertNull(errorDeliveryMode.counter());
+
+        Message noContentTypeMessage = createMessage("EDXL-DE", null, SAMU_A_ROUTING_KEY);
+        assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(noContentTypeMessage));
+
+        assertEquals(1, getCurrentCount(errorContentType.counter()));
+        assertNull(errorDeliveryMode.counter());
+        assertEquals(1, getOverallCounterForClient(registry, SAMU_A_ROUTING_KEY));
+
+        Message nonPersistentMessage = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
+        nonPersistentMessage.getMessageProperties().setReceivedDeliveryMode(MessageDeliveryMode.NON_PERSISTENT);
+        assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(nonPersistentMessage));
+
+        assertEquals(1, getCurrentCount(errorContentType.counter()));
+        assertEquals(1, getCurrentCount(errorDeliveryMode.counter()));
+        assertEquals(2, getOverallCounterForClient(registry, SAMU_A_ROUTING_KEY));
     }
 
     private void assertErrorReportHasBeenSent(String infoQueueName, ErrorCode errorCode, String referencedDistributionId, String... errorCause) throws JsonProcessingException {
@@ -329,4 +376,6 @@ public class DispatcherTest {
             Arrays.stream(errorCause).forEach(cause -> assertTrue(errorReport.getErrorCause().contains(cause)));
         }
     }
+
+
 }

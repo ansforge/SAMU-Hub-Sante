@@ -28,6 +28,9 @@ import com.hubsante.model.exception.ValidationException;
 import com.hubsante.model.report.ErrorCode;
 import com.hubsante.model.report.ErrorReport;
 import io.micrometer.core.annotation.Timed;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Metrics;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.AmqpRejectAndDontRequeueException;
 import org.springframework.amqp.core.Message;
@@ -45,6 +48,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 
 import static com.hubsante.hub.config.AmqpConfiguration.*;
+import static com.hubsante.hub.config.Constants.*;
 import static com.hubsante.hub.utils.EdxlUtils.edxlMessageFromHub;
 import static com.hubsante.model.config.Constants.ENVELOPE_SCHEMA;
 import static com.hubsante.model.config.Constants.FULL_SCHEMA;
@@ -56,14 +60,16 @@ public class Dispatcher {
     private final EdxlHandler edxlHandler;
     private final HubConfiguration hubConfig;
     private final Validator validator;
+    private final MeterRegistry registry;
 
     private static final String HEALTH_PREFIX = "fr.health";
 
-    public Dispatcher(RabbitTemplate rabbitTemplate, EdxlHandler edxlHandler, HubConfiguration hubConfig, Validator validator) {
+    public Dispatcher(RabbitTemplate rabbitTemplate, EdxlHandler edxlHandler, HubConfiguration hubConfig, Validator validator, MeterRegistry registry) {
         this.rabbitTemplate = rabbitTemplate;
         this.edxlHandler = edxlHandler;
         this.hubConfig = hubConfig;
         this.validator = validator;
+        this.registry = registry;
         initReturnsCallback();
     }
 
@@ -92,7 +98,7 @@ public class Dispatcher {
     }
 
     @RabbitListener(queues = DISPATCH_QUEUE_NAME)
-    @Timed(value = "overall.dispatch.time", description = "Time taken to fully dispatch a message")
+    @Timed(value = DISPATCH_TIMED_METRIC, description = "Time taken to fully dispatch a message")
     public void dispatch(Message message) {
         try {
             // Deserialize the message according to its content type
@@ -118,7 +124,7 @@ public class Dispatcher {
     }
 
     @RabbitListener(queues = DISPATCH_DLQ_NAME)
-    @Timed(value = "dlq.dispatch.time", description = "Time taken to fully dispatch a dead letter queued message")
+    @Timed(value = DLQ_TIMED_METRIC, description = "Time taken to fully dispatch a dead letter queued message")
     public void dispatchDLQ(Message message) {
         try {
             // TODO bbo
@@ -158,8 +164,14 @@ public class Dispatcher {
                 message.getMessageProperties().getReceivedRoutingKey();
 
         logErrorAndSendReport(errorReport, senderClientID);
+        // increment metric like dispatch_error{reason="INVALID_MESSAGE",sender"fr.health.samuXXX"}
+        publishErrorMetric(exception.getErrorCode().getStatusString(), senderClientID);
         // throw exception to reject the message
         throw new AmqpRejectAndDontRequeueException(exception);
+    }
+
+    private void publishErrorMetric(String error, String sender) {
+        registry.counter(DISPATCH_ERROR, REASON_TAG, error, CLIENT_ID_TAG, sender).increment();
     }
 
     private void logErrorAndSendReport(ErrorReport errorReport, String sender) {

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration>
+
+<configuration>
+    <import class="ch.qos.logback.classic.encoder.PatternLayoutEncoder" />
+    <import class="ch.qos.logback.core.ConsoleAppender" />
+
+    <appender name="STDOUT" class="ConsoleAppender">
+        <encoder class="PatternLayoutEncoder">
+            <pattern>%d{HH:mm:ss.SSS} %-5level %logger{36} -- %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- We log at WARN level only except for our own loggers -->
+    <root level="WARN">
+        <appender-ref ref="STDOUT" />
+    </root>
+    <logger name="com.hubsante.hub" level="INFO" additivity="false">
+        <appender-ref ref="Console" />
+    </logger>
+</configuration>
