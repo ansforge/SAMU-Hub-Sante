@@ -285,17 +285,17 @@ export default {
      * for each required value in the test case
      */
     selectRandomValuesForTestCase () {
-      this.selectRequiredValuesIndex()
+      this.selectedRequiredValuesIndex = this.getRequiredValuesIndex()
       this.testCase.steps.forEach((step) => {
         step.message.requiredValues = this.selectRandomValuesForStep(step.message)
       })
     },
     /**
-     * Selects a random index from 0 to the length of the list of possible values for each required value
+     * Gets a random index from 0 to the length of the list of possible values for each required value
      * Every array of possible required values must have the same length so to decide the maximum index we just check the length of the first array
      */
-    selectRequiredValuesIndex () {
-      this.selectedRequiredValuesIndex = Math.floor(Math.random() * this.testCase.steps[0].message.requiredValues[0].value.length)
+    getRequiredValuesIndex () {
+      return Math.floor(Math.random() * this.testCase.steps[0].message.requiredValues[0].value.length)
     },
     /**
      * Loads the related JSON message for the test case steps.
