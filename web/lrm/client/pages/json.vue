@@ -77,6 +77,7 @@
 <script>
 import { mapGetters } from 'vuex'
 import mixinMessage from '~/plugins/mixinMessage'
+import { REPOSITORY_URL } from '@/constants'
 
 export default {
   name: 'JsonCreator',
@@ -93,16 +94,16 @@ export default {
         header: 'GitHub branches'
       }, {
         text: 'main',
-        value: 'https://raw.githubusercontent.com/ansforge/SAMU-Hub-Modeles/main/src/main/resources/json-schema/'
+        value: REPOSITORY_URL + 'main/src/main/resources/json-schema/'
       }, {
         text: 'auto/model_tracker',
-        value: 'https://raw.githubusercontent.com/ansforge/SAMU-Hub-Modeles/auto/model_tracker/src/main/resources/json-schema/'
+        value: REPOSITORY_URL + 'auto/model_tracker/src/main/resources/json-schema/'
       }, {
         divider: true,
         header: 'Templates'
       }, {
-        text: 'https://raw.githubusercontent.com/ansforge/SAMU-Hub-Modeles/{branchName}/src/main/resources/json-schema/',
-        value: 'https://raw.githubusercontent.com/ansforge/SAMU-Hub-Modeles/{branchName}/src/main/resources/json-schema/'
+        text: REPOSITORY_URL + '{branchName}/src/main/resources/json-schema/',
+        value: REPOSITORY_URL + '{branchName}/src/main/resources/json-schema/'
       }],
       messageTypeTabIndex: 0,
       selectedMessageType: 'message',
