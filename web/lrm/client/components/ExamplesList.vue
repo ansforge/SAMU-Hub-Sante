@@ -41,6 +41,9 @@
 </template>
 
 <script>
+
+import { REPOSITORY_URL } from '@/constants'
+
 export default {
   props: {
     examples: {
@@ -97,7 +100,7 @@ export default {
     },
     loadExample (exampleName) {
       if (exampleName) {
-        fetch('examples/' + exampleName)
+        fetch(REPOSITORY_URL + 'main/src/main/resources/sample/examples/' + exampleName)
           .then(response => response.json())
           .then((data) => {
             this.selectedExample = data

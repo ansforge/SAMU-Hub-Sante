@@ -39,3 +39,4 @@ export const EDXL_ENVELOPE = {
     }
   }]
 }
+export const REPOSITORY_URL = 'https://raw.githubusercontent.com/ansforge/SAMU-Hub-Modeles/'
