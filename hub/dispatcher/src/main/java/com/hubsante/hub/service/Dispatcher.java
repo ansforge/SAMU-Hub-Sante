@@ -95,12 +95,12 @@ public class Dispatcher {
         try {
             // Deserialize the message according to its content type
             EdxlMessage edxlMessage = deserializeMessage(message);
-            // Reject the message if distributionID does not respect the format (senderID_internalID)
-            checkDistributionIDFormat(edxlMessage.getDistributionID());
             // Reject the message if the sender is not consistent with the routing key
             checkSenderConsistency(getSenderFromRoutingKey(message), edxlMessage);
             // Reject the message if the delivery mode is not PERSISTENT
             checkDeliveryModeIsPersistent(message, edxlMessage.getDistributionID());
+            // Reject the message if distributionID does not respect the format (senderID_internalID)
+            checkDistributionIDFormat(edxlMessage.getDistributionID());
             // Forward the message according to the recipient preferences. Conversion JSON <-> XML can happen here
             Message forwardedMsg = forwardedMessage(edxlMessage, message);
             // Extract recipient queue name from the message (explicit address and distribution kind)
@@ -125,7 +125,8 @@ public class Dispatcher {
     // Verifies that the distributionID respects the format senderID_internalID (e.g. fr.health.samu1234_5678)
     private void checkDistributionIDFormat(String distributionID) {
         // We use a regex to check the overall structure of the distributionID
-        if (!distributionID.matches("^[a-z]+\\.[a-z]+\\.[a-z0-9]+_[a-z0-9]+$")) {
+        // TODO: Is there a specific format we want internalID to be?
+        if (!distributionID.matches("^.+_.+$")) {
             String errorCause = "Message " + distributionID + " has been sent with an invalid distributionID format. " +
                     "The format should be: senderID_internalID (e.g. fr.health.samuXXX_ID5678)";
             throw new InvalidDistributionIDException(errorCause, distributionID);
