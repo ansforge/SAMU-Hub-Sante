@@ -95,6 +95,8 @@ public class Dispatcher {
         try {
             // Deserialize the message according to its content type
             EdxlMessage edxlMessage = deserializeMessage(message);
+            // Reject the message if distributionID does not respect the format (senderID_internalID)
+            checkDistributionIDFormat(edxlMessage.getDistributionID());
             // Reject the message if the sender is not consistent with the routing key
             checkSenderConsistency(getSenderFromRoutingKey(message), edxlMessage);
             // Reject the message if the delivery mode is not PERSISTENT
@@ -110,6 +112,30 @@ public class Dispatcher {
         } catch (Exception e) {
             log.error("Unexpected error occurred while dispatching message from " + message.getMessageProperties().getReceivedRoutingKey(), e);
             throw new AmqpRejectAndDontRequeueException(e);
+        }
+    }
+
+    String[] knownClientIDS = new String[] {"fr.health.samuA",
+                                            "fr.health.samuB",
+                                            "fr.health.samuC",
+                                            "fr.health.normandie",
+                                            "fr.health.samu76A",
+                                            "fr.health.samu76B"};
+
+    // Verifies that the distributionID respects the format senderID_internalID (e.g. fr.health.samu1234_5678)
+    private void checkDistributionIDFormat(String distributionID) {
+        // We use a regex to check the overall structure of the distributionID
+        if (!distributionID.matches("^[a-z]+\\.[a-z]+\\.[a-z0-9]+_[a-z0-9]+$")) {
+            String errorCause = "Message " + distributionID + " has been sent with an invalid distributionID format. " +
+                    "The format should be: senderID_internalID (e.g. fr.health.samuXXX_ID5678)";
+            throw new InvalidDistributionIDException(errorCause, distributionID);
+        }
+        // We also verify that clientID is among the known clients
+        String clientID = distributionID.split("_")[0];
+        if (!Arrays.asList(knownClientIDS).contains(clientID)) {
+            String errorCause = "Message " + distributionID + " has been sent with an unknown clientID. " +
+                    "The clientID should be one of the known clients: " + Arrays.toString(knownClientIDS);
+            throw new InvalidDistributionIDException(errorCause, distributionID);
         }
     }
 
