@@ -118,26 +118,19 @@ public class Dispatcher {
     // Verifies that the distributionID respects the format senderID_internalID (e.g. fr.health.samu1234_5678)
     private void checkDistributionIDFormat(EdxlMessage message) {
         // We use a regex to check the overall structure of the distributionID
-        // TODO: Is there a specific format we want internalID to be? Should we disallow usage of '_' in both senderID and internalID?
-        if (!message.getDistributionID().matches("^.+_.+$")) {
-            String errorCause = "Message " + message.getDistributionID() + " has been sent with an invalid distributionID format. " +
-                    "The format should be: senderID_internalID (e.g. fr.health.samuXXX_ID5678)";
-            throw new InvalidDistributionIDException(errorCause, message.getDistributionID());
-        }
-        // We also verify that senderID is among the known clients
-        // TODO: Should we though? Perhaps this isn't the place to do it.
-        String distributonSenderID = message.getDistributionID().split("_")[0];
-        if (!hubConfig.getClientPreferences().keySet().contains(distributonSenderID)) {
-            String errorCause = "Message " + message.getDistributionID() + " has been sent with an unknown clientID. " +
-                    "The clientID should be one of the known clients: " + hubConfig.getClientPreferences().keySet();
-            throw new InvalidDistributionIDException(errorCause, message.getDistributionID());
+        String distributionId = message.getDistributionID();
+        if (!distributionId.matches("^.+_.+$")) {
+            String errorCause = "Message " + distributionId + " has been sent with an invalid distributionID format.\n" +
+                    "The format should be: senderID_internalID (e.g. fr.health.samuXXX_YYYY)\n";
+            throw new InvalidDistributionIDException(errorCause, distributionId);
         }
         // We also verify that senderID in the distributionID is the same as the senderID in the message
-        String senderID = message.getSenderID();
-        if (!message.getDistributionID().startsWith(senderID)) {
-            String errorCause = "Message " + message.getDistributionID() + " has been sent with an invalid distributionID format. " +
-                    "The senderID in the distributionID should be the same as the senderID in the message";
-            throw new InvalidDistributionIDException(errorCause, message.getDistributionID());
+        String senderId = message.getSenderID();
+        if (!distributionId.startsWith(senderId)) {
+            String errorCause = "Message " + distributionId + " has been sent with an invalid distributionID format.\n" +
+                    "The senderID in the distributionID should be the same as the senderID in the message.\n" +
+                    "SenderID in the message: " + senderId + ", senderID in the distributionID: " + distributionId.split("_")[0] +"\n";
+            throw new InvalidDistributionIDException(errorCause, distributionId);
         }
     }
 
