@@ -100,7 +100,7 @@ public class Dispatcher {
             // Reject the message if the delivery mode is not PERSISTENT
             checkDeliveryModeIsPersistent(message, edxlMessage.getDistributionID());
             // Reject the message if distributionID does not respect the format (senderID_internalID)
-            checkDistributionIDFormat(edxlMessage.getDistributionID());
+            checkDistributionIDFormat(edxlMessage);
             // Forward the message according to the recipient preferences. Conversion JSON <-> XML can happen here
             Message forwardedMsg = forwardedMessage(edxlMessage, message);
             // Extract recipient queue name from the message (explicit address and distribution kind)
@@ -115,28 +115,29 @@ public class Dispatcher {
         }
     }
 
-    String[] knownClientIDS = new String[] {"fr.health.samuA",
-                                            "fr.health.samuB",
-                                            "fr.health.samuC",
-                                            "fr.health.normandie",
-                                            "fr.health.samu76A",
-                                            "fr.health.samu76B"};
-
     // Verifies that the distributionID respects the format senderID_internalID (e.g. fr.health.samu1234_5678)
-    private void checkDistributionIDFormat(String distributionID) {
+    private void checkDistributionIDFormat(EdxlMessage message) {
         // We use a regex to check the overall structure of the distributionID
-        // TODO: Is there a specific format we want internalID to be?
-        if (!distributionID.matches("^.+_.+$")) {
-            String errorCause = "Message " + distributionID + " has been sent with an invalid distributionID format. " +
+        // TODO: Is there a specific format we want internalID to be? Should we disallow usage of '_' in both senderID and internalID?
+        if (!message.getDistributionID().matches("^.+_.+$")) {
+            String errorCause = "Message " + message.getDistributionID() + " has been sent with an invalid distributionID format. " +
                     "The format should be: senderID_internalID (e.g. fr.health.samuXXX_ID5678)";
-            throw new InvalidDistributionIDException(errorCause, distributionID);
+            throw new InvalidDistributionIDException(errorCause, message.getDistributionID());
         }
-        // We also verify that clientID is among the known clients
-        String clientID = distributionID.split("_")[0];
-        if (!Arrays.asList(knownClientIDS).contains(clientID)) {
-            String errorCause = "Message " + distributionID + " has been sent with an unknown clientID. " +
-                    "The clientID should be one of the known clients: " + Arrays.toString(knownClientIDS);
-            throw new InvalidDistributionIDException(errorCause, distributionID);
+        // We also verify that senderID is among the known clients
+        // TODO: Should we though? Perhaps this isn't the place to do it.
+        String distributonSenderID = message.getDistributionID().split("_")[0];
+        if (!hubConfig.getClientPreferences().keySet().contains(distributonSenderID)) {
+            String errorCause = "Message " + message.getDistributionID() + " has been sent with an unknown clientID. " +
+                    "The clientID should be one of the known clients: " + hubConfig.getClientPreferences().keySet();
+            throw new InvalidDistributionIDException(errorCause, message.getDistributionID());
+        }
+        // We also verify that senderID in the distributionID is the same as the senderID in the message
+        String senderID = message.getSenderID();
+        if (!message.getDistributionID().startsWith(senderID)) {
+            String errorCause = "Message " + message.getDistributionID() + " has been sent with an invalid distributionID format. " +
+                    "The senderID in the distributionID should be the same as the senderID in the message";
+            throw new InvalidDistributionIDException(errorCause, message.getDistributionID());
         }
     }
 
