@@ -119,7 +119,7 @@ public class Dispatcher {
     private void checkDistributionIDFormat(EdxlMessage message) {
         // We use a regex to check the overall structure of the distributionID
         String distributionId = message.getDistributionID();
-        if (!distributionId.matches("^.+_.+$")) {
+        if (!distributionId.matches("^([a-z]|[0-9]|\\.|_|\\-|#)+_([a-z]|[0-9]|\\.|_|\\-|#)+$")) {
             String errorCause = "Message " + distributionId + " has been sent with an invalid distributionID format.\n" +
                     "The format should be: senderID_internalID (e.g. fr.health.samuXXX_YYYY)\n";
             throw new InvalidDistributionIDException(errorCause, distributionId);
