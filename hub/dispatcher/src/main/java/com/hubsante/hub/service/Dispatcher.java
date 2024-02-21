@@ -126,10 +126,11 @@ public class Dispatcher {
         }
         // We also verify that senderID in the distributionID is the same as the senderID in the message
         String senderId = message.getSenderID();
-        if (!distributionId.startsWith(senderId)) {
+        String distributionIdSenderId = distributionId.split("_")[0];
+        if (!distributionIdSenderId.equals(senderId)) {
             String errorCause = "Message " + distributionId + " has been sent with an invalid distributionID format.\n" +
                     "The senderID in the distributionID should be the same as the senderID in the message.\n" +
-                    "SenderID in the message: " + senderId + ", senderID in the distributionID: " + distributionId.split("_")[0] +"\n";
+                    "SenderID in the message: " + senderId + ", senderID in the distributionID: " + distributionIdSenderId +"\n";
             throw new InvalidDistributionIDException(errorCause, distributionId);
         }
     }
