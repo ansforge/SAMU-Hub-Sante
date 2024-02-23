@@ -1,12 +1,119 @@
 [
   {
-    "label": "Envoi EDA - DC, Réception RDC",
-    "description": "Envoi des messages EDA et DC, réception d'une réponse RDC",
+    "label": "CU1.a : Réception RC-EDA",
+    "description": "Réception d'un échange de dossier/affaire",
+    "steps": [
+      {
+        "type": "receive",
+        "label": "Réception d'un message RC-EDA",
+        "description": "Recevoir un message d'échange de dossier/affaire provenant du SIS, saisir et valider les valeurs spécifiées dans le message recu dans le cadre à droite puis envoyer un aquittement du message",
+        "message": {
+          "requiredValues": [
+            {
+              "path": "$.createCase.initialAlert.caller.detailedName.complete",
+              "value": ["Albane Amaury","Benoit Baudouin","Cyril Chauvin"]
+            }
+          ],
+          "file": "RC-EDA-usecase-Armaury-1.json"
+        }
+      }
+    ]
+  },
+  {
+    "label": "CU1.b : Réception RC-EDA, Envoi EMSI-OPG",
+    "description": "Réception d'un échange de dossier/affaire et envoi des ressources engagées",
+    "steps": [
+      {
+        "type": "receive",
+        "label": "Réception d'un message RC-EDA",
+        "description": "Recevoir un message d'échange de dossier / affaire, saisir et valider les valeurs spécifiées dans le message recu dans le cadre à droite puis envoyer un aquittement du message",
+        "message": {
+          "requiredValues": [
+            {
+              "path": "$.createCase.location.detailedAddress.complete",
+              "value": ["8 quai des Célestins", "15 avenue Leclerc", "1 rue de la République"]
+            },
+            {
+              "path": "$.createCase.qualification.healthMotive.label",
+              "value": ["Traumatisme crânien", "Fracture de la jambe", "Plaies multiples"]
+            },
+            {
+              "path": "$.createCase.qualification.victims.count",
+              "value": ["SEVERAL","MANY","UNKNOWN","1","0" ]
+            }
+          ],
+          "file": "RC-EDA-usecase-Armaury-1.json"
+        }
+      },
+      {
+        "type": "send",
+        "label": "Envoi d'un message EMSI-OPG",
+        "description": "Envoyer un message d'échange des opérations contenant les valeurs attendues spécifiées",
+        "message": {
+          "requiredValues": [
+            {
+              "path": "$.emsi.EVENT.SOURCE",
+              "value": ["COMFOR","HUMDED","HUMOBS","SENSOR"]
+            },
+            {
+              "path": "$.emsi.EVENT.SCALE",
+              "value": ["1","2","3","4","5"]
+            },
+            {
+              "path": "$.emsi.EVENT.CERTAINTY",
+              "value": [0, 1, 40, 60, 85, 100]
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "label": "CU2 : Réception RC-EDA et EMSI-OPG",
+    "description": "Réception d'un dossier/affaire et des ressources engagées",
+    "steps": [
+      {
+        "type": "receive",
+        "label": "Réception d'un message RC-EDA",
+        "description": "Recevoir un message d'échange de dossier/affaire provenant du SIS, saisir et valider les valeurs spécifiées dans le message recu dans le cadre à droite puis envoyer un aquittement du message",
+        "message": {
+          "requiredValues": [
+            {
+              "path": "$.createCase.qualification.healthMotive.freetext",
+              "value": ["Portait un casque de protection","Ne portait pas un casque de protection","Le casque de protection s'est cassé"]
+            }
+          ],
+          "file": "RC-EDA-usecase-Armaury-1.json"
+        }
+      },
+      {
+        "type": "receive",
+        "label": "Réception d'un message EMSI-OPG",
+        "description": "Recevoir un message d'échange des opérations du SIS, saisir et valider les valeurs spécifiées dans le message recu dans le cadre à droite puis envoyer un aquittement du message",
+        "message": {
+          "requiredValues": [
+            {
+              "path": "$.emsi.RESOURCE[0].UM",
+              "value": ["LSV","OTH","PKG","TIM","WGT"]
+            },
+            {
+              "path": "$.emsi.RESOURCE[0].QUANTITY",
+              "value": [1,2,20,500]
+            }
+          ],
+          "file": "EMSI-OPG-message.json"
+        }
+      }
+    ]
+  },
+  {
+    "label": "CU3.a: Envoi RC-EDA et EMSI-DC, réception EMSI-RDC",
+    "description": "Demande de concours et réception de sa réponse",
     "steps": [
       {
         "type": "send",
         "label": "Envoi d'un message RC-EDA",
-        "description": "Envoyer un message d'echange de dossier / affaire contenant les valeurs attendues spécifiées",
+        "description": "Envoyer un message d'echange de dossier/affaire contenant les valeurs attendues spécifiées",
         "message": {
           "requiredValues": [
             {
@@ -62,13 +169,13 @@
     ]
   },
   {
-    "label": "Envoi EDA - DC, Réception RDC - EO",
-    "description": "Envoi des messages EDA et DC, réception d'une réponse RDC et EO",
+    "label": "CU3.b: Envoi RC-EDA et EMSI-DC, réception EMSI-RDC et EMSI-OPG",
+    "description": "Demande de concours et réponse à la demande avec les ressources engagées",
     "steps": [
       {
         "type": "send",
         "label": "Envoi d'un message RC-EDA",
-        "description": "Envoyer un message d'echange de dossier / affaire contenant les valeurs attendues spécifiées",
+        "description": "Envoyer un message d'echange de dossier/affaire contenant les valeurs attendues spécifiées",
         "message": {
           "requiredValues": [
             {
@@ -127,7 +234,7 @@
       },
       {
         "type": "receive",
-        "label": "Réception d'un message EMSI-EO",
+        "label": "Réception d'un message EMSI-OPG",
         "description": "Recevoir un message d'échange des opérations, saisir et valider les valeurs spécifiées dans le message recu dans le cadre à droite puis envoyer un aquittement du message",
         "message": {
           "requiredValues": [
@@ -146,62 +253,13 @@
     ]
   },
   {
-    "label": "Réception EDA, Envoi EO",
-    "description": "Réception d'un message EDA, envoi d'un message EO",
-    "steps": [
-      {
-        "type": "receive",
-        "label": "Réception d'un message RC-EDA",
-        "description": "Recevoir un message d'echange de dossier / affaire, saisir et valider les valeurs spécifiées dans le message recu dans le cadre à droite puis envoyer un aquittement du message",
-        "message": {
-          "requiredValues": [
-            {
-              "path": "$.createCase.location.detailedAddress.complete",
-              "value": ["8 quai des Célestins", "15 avenue Leclerc", "1 rue de la République"]
-            },
-            {
-              "path": "$.createCase.qualification.healthMotive.label",
-              "value": ["Traumatisme crânien", "Fracture de la jambe", "Plaies multiples"]
-            },
-            {
-              "path": "$.createCase.qualification.victims.count",
-              "value": ["SEVERAL","MANY","UNKNOWN","1","0" ]
-            }
-          ],
-          "file": "RC-EDA-usecase-Armaury-1.json"
-        }
-      },
-      {
-        "type": "send",
-        "label": "Envoi d'un message EMSI-EO",
-        "description": "Envoyer un message d'échange des opérations contenant les valeurs attendues spécifiées",
-        "message": {
-          "requiredValues": [
-            {
-              "path": "$.emsi.EVENT.SOURCE",
-              "value": ["COMFOR","HUMDED","HUMOBS","SENSOR"]
-            },
-            {
-              "path": "$.emsi.EVENT.SCALE",
-              "value": ["1","2","3","4","5"]
-            },
-            {
-              "path": "$.emsi.EVENT.CERTAINTY",
-              "value": [0, 1, 40, 60, 85, 100]
-            }
-          ]
-        }
-      }
-    ]
-  },
-  {
-    "label": "Envoi EDA - EO - DC, Réceptin RDC, Envoi EO, Réception EO",
-    "description": "Envoi des messages EDA, EO et DC, réception des réponses RDC et EO",
+    "label": "CU4 : Envoi RC-EDA, EMSI-OPG, EMSI-DC, Réception EMSI-RDC, Envoi ise à jour EMSI-OPG, et Réception EMSI-OPG",
+    "description": "Echange de dossier/affaire, des opérations et demande de concours",
     "steps": [
       {
         "type": "send",
         "label": "Envoi d'un message RC-EDA",
-        "description": "Envoyer un message d'echange de dossier / affaire contenant les valeurs attendues spécifiées",
+        "description": "Envoyer un message d'echange de dossier/affaire contenant les valeurs attendues spécifiées",
         "message": {
           "requiredValues": [
             {
@@ -217,7 +275,7 @@
       },
       {
         "type": "send",
-        "label": "Envoi d'un message EMSI-EO",
+        "label": "Envoi d'un message EMSI-OPG",
         "description": "Envoyer un message d'échange des opérations contenant les valeurs attendues spécifiées",
         "message": {
           "requiredValues": [
@@ -269,8 +327,8 @@
       },
       {
         "type": "send",
-        "label": "Envoi d'un message EMSI-EO",
-        "description": "Envoyer un message d'échange des opérations contenant les valeurs attendues spécifiées",
+        "label": "Envoi d'un message EMSI-OPG",
+        "description": "Envoyer un message de mise à jour des opérations contenant les valeurs attendues spécifiées",
         "message": {
           "requiredValues": [
             {
@@ -286,8 +344,8 @@
       },
       {
         "type": "receive",
-        "label": "Réception d'un message EMSI-EO",
-        "description": "Recevoir un message d'échange des opérations, saisir et valider les valeurs spécifiées dans le message recu dans le cadre à droite puis envoyer un aquittement du message",
+        "label": "Réception d'un message EMSI-OPG",
+        "description": "Recevoir un message d'échange des opérations du SIS, saisir et valider les valeurs spécifiées dans le message recu dans le cadre à droite puis envoyer un aquittement du message",
         "message": {
           "requiredValues": [
             {
@@ -298,7 +356,6 @@
           "file": "EMSI-OPG-message.json"
         }
       }
-
     ]
   },
   {
