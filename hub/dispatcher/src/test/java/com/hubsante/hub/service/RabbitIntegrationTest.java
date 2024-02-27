@@ -22,13 +22,20 @@ import com.hubsante.model.report.ErrorCode;
 import com.hubsante.model.report.ErrorReport;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.*;
+import org.springframework.amqp.core.AmqpAdmin;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.testcontainers.containers.Container;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.time.OffsetDateTime;
 import java.util.Arrays;
+import java.util.Objects;
 
 import static com.hubsante.hub.service.utils.MessageTestUtils.createInvalidMessage;
 import static com.hubsante.hub.service.utils.MessageTestUtils.createMessage;
@@ -39,8 +46,6 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
 
     private static long DISPATCHER_PROCESS_TIME = 1000;
     private static long DEFAULT_TTL = 5000;
-
-    private final String JSON = MessageProperties.CONTENT_TYPE_JSON;
 
     @Autowired
     private EdxlHandler edxlHandler;
