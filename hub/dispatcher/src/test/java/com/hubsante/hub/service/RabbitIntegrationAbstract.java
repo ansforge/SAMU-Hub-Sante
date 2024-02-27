@@ -23,6 +23,9 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.ClassOrderer;
+import org.junit.jupiter.api.TestClassOrder;
+import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,12 +50,14 @@ import java.io.IOException;
 public class RabbitIntegrationAbstract {
 
     protected static final String HUBSANTE_EXCHANGE = "hubsante";
-    protected static final String RABBITMQ_IMAGE = "rabbitmq:latest";
+    protected static final String RABBITMQ_IMAGE = "rabbitmq:3.12-management-alpine";
     protected static final String SAMU_A_ROUTING_KEY = "fr.health.samuA";
     protected static final String SAMU_A_MESSAGE_QUEUE = SAMU_A_ROUTING_KEY + ".message";
     protected static final String SAMU_A_INFO_QUEUE = SAMU_A_ROUTING_KEY + ".info";
     protected static final String SAMU_B_ROUTING_KEY = "fr.health.samuB";
     protected static final String SAMU_B_MESSAGE_QUEUE = SAMU_B_ROUTING_KEY + ".message";
+
+    protected static final String JSON = MessageProperties.CONTENT_TYPE_JSON;
 
     @Autowired
     protected RabbitTemplate rabbitTemplate;
@@ -71,6 +76,8 @@ public class RabbitIntegrationAbstract {
                     "/tmp/rabbitmq/config/definitions.json")
             .withCopyFileToContainer(mountFile("config/certs/server/"),
                     "/etc/rabbitmq-tls/")
+            .withCopyFileToContainer(mountFile("config/batch-test.sh"),
+                    "/tmp/rabbitmq/config/batch-test.sh")
             .withRabbitMQConfigSysctl(mountFile("config/rabbitmq.conf"));
 
     @BeforeAll
@@ -79,6 +86,7 @@ public class RabbitIntegrationAbstract {
         // only for debug : to see the management console
         Integer port = rabbitMQContainer.getMappedPort(15672);
         rabbitMQContainer.execInContainer("rabbitmqctl", "import_definitions", "/tmp/rabbitmq/config/definitions.json");
+        rabbitMQContainer.execInContainer("chmod", "+x", "/tmp/rabbitmq/config/batch-test.sh");
     }
 
     @AfterEach
