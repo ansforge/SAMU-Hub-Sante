@@ -33,6 +33,21 @@ import java.nio.charset.StandardCharsets;
 import static com.hubsante.hub.config.AmqpConfiguration.*;
 import static com.hubsante.hub.utils.MessageUtils.*;
 
+/*
+* This class contains the RabbitMQ logic : the two listeners (Dispatch and DispatchDLQ) and the callback method to handle
+* publisher confirms.
+*
+* The rest of the logic is implemented in two other classes in order to maintain reasonable code size in each file : MessageHandler.java
+* and MessageUtils.java
+*
+* The discrimination between these two classes is pretty basic :
+* - static methods who only need parameters in entry to render an output are stored in MessageUtils
+* - MessageHandler class is annotated @Component to be managed by Spring. It allows it to automatically access other Spring managed components,
+* such as EdxlHandler (deserializer), Validator, RabbitTemplate.
+*
+* Therefore, every method who needs to deserialize, validate, or interact with the RabbitMQ broker should lay in MessageHandler class;
+* every method who doesn't should lay in MessageUtils (checkSenderConsistency, getSenderFromRoutingKey, etc.)
+ */
 @Service
 @Slf4j
 public class Dispatcher {
