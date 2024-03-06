@@ -96,6 +96,8 @@ public class Dispatcher {
             checkSenderConsistency(message, edxlMessage);
             // Reject the message if the delivery mode is not PERSISTENT
             checkDeliveryModeIsPersistent(message, edxlMessage.getDistributionID());
+            // Reject the message if distributionID does not respect the format (senderID_internalID)
+            checkDistributionIDFormat(edxlMessage);
             // Forward the message according to the recipient preferences. Conversion JSON <-> XML can happen here
             Message forwardedMsg = messageHandler.forwardedMessage(edxlMessage, message);
             // Extract recipient queue name from the message (explicit address and distribution kind)
@@ -107,6 +109,20 @@ public class Dispatcher {
         } catch (Exception e) {
             log.error("Unexpected error occurred while dispatching message from " + message.getMessageProperties().getReceivedRoutingKey(), e);
             throw new AmqpRejectAndDontRequeueException(e);
+        }
+    }
+
+    // Verifies that the distributionID respects the format senderID_internalID (e.g. fr.health.samu1234_5678)
+    private void checkDistributionIDFormat(EdxlMessage message) {
+        String distributionId = message.getDistributionID();
+        // We  verify that senderID in the distributionID is the same as the senderID in the message
+        String senderId = message.getSenderID();
+        String distributionIdSenderId = distributionId.split("_")[0];
+        if (!distributionIdSenderId.equals(senderId)) {
+            String errorCause = "Message " + distributionId + " has been sent with an invalid distributionID format.\n" +
+                    "The senderID in the distributionID should be the same as the senderID in the message.\n" +
+                    "SenderID in the message: " + senderId + ", senderID in the distributionID: " + distributionIdSenderId +"\n";
+            throw new InvalidDistributionIDException(errorCause, distributionId);
         }
     }
 
