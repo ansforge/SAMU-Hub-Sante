@@ -24,12 +24,9 @@ import com.hubsante.model.custom.CustomMessage;
 import com.hubsante.model.edxl.EdxlMessage;
 import com.hubsante.model.report.ErrorCode;
 import com.hubsante.model.report.ErrorReport;
-import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.search.Search;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.Before;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -51,7 +48,6 @@ import jakarta.annotation.PostConstruct;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
 
 import static com.hubsante.hub.config.AmqpConfiguration.*;
 import static com.hubsante.hub.config.Constants.DISPATCH_ERROR;
@@ -76,6 +72,7 @@ public class DispatcherTest {
     private HubConfiguration hubConfig;
     @Autowired
     private Validator validator;
+    private MessageHandler messageHandler;
     @Autowired
     private MeterRegistry registry;
     static ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
@@ -102,7 +99,8 @@ public class DispatcherTest {
 
     @PostConstruct
     public void init() {
-        dispatcher = new Dispatcher(rabbitTemplate, converter, hubConfig, validator, registry);
+        messageHandler = new MessageHandler(rabbitTemplate, converter, hubConfig, validator, registry);
+        dispatcher = new Dispatcher(messageHandler, rabbitTemplate, converter);
     }
 
     @BeforeEach
@@ -337,7 +335,7 @@ public class DispatcherTest {
 
     @Test
     @DisplayName("should increment counter")
-    public void wtest() throws IOException {
+    public void incrementMetricsCounter() throws IOException {
         Search errorOverall = targetCounter(registry, "sender", SAMU_A_ROUTING_KEY);
         Search errorContentType = targetCounter(registry, "reason", ErrorCode.NOT_ALLOWED_CONTENT_TYPE.getStatusString(),
                 "sender", SAMU_A_ROUTING_KEY);
@@ -376,6 +374,4 @@ public class DispatcherTest {
             Arrays.stream(errorCause).forEach(cause -> assertTrue(errorReport.getErrorCause().contains(cause)));
         }
     }
-
-
 }

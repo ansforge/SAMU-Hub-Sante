@@ -35,3 +35,18 @@ spec:
           image: romainfd/hub-lrm:latest
           ports:
             - containerPort: 80
+          env:
+            - name: HUB_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: rabbitmq-url-cm
+                  key: rabbitmq.url
+---
+# I added temporarily this secret to be iso between sandbox and preprod.
+# It will be migrated to the Config Repo when migrating sandbox
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rabbitmq-url-cm
+data:
+  rabbitmq.url: 'amqps://messaging.hub.esante.gouv.fr'

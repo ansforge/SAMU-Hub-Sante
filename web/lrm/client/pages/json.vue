@@ -94,7 +94,7 @@ export default {
         header: 'GitHub branches'
       }, {
         text: 'main',
-        value: REPOSITORY_URL + 'main/src/main/resources/json-schema/'
+        value: REPOSITORY_URL + '1d2252465ca607f432c8392ecf8ebd57ea93ed5f/src/main/resources/json-schema/'
       }, {
         text: 'auto/model_tracker',
         value: REPOSITORY_URL + 'auto/model_tracker/src/main/resources/json-schema/'

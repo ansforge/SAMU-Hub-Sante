@@ -29,7 +29,8 @@
           "example": "example.json#/caseId",
           "description": "Identifiant unique du message référencé"
         }
-      }
+      },
+      "additionalProperties": false
     }
   }
 }

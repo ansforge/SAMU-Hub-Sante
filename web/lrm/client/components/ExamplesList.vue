@@ -100,7 +100,7 @@ export default {
     },
     loadExample (exampleName) {
       if (exampleName) {
-        fetch(REPOSITORY_URL + 'main/src/main/resources/sample/examples/' + exampleName)
+        fetch(REPOSITORY_URL + '1d2252465ca607f432c8392ecf8ebd57ea93ed5f/src/main/resources/sample/examples/' + exampleName)
           .then(response => response.json())
           .then((data) => {
             this.selectedExample = data
