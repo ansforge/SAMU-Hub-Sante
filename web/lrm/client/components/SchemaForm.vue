@@ -45,11 +45,20 @@ export default {
       form: {}
     }
   },
+  watch: {
+    form: {
+      handler (newValue) {
+        this.$emit('on-form-update', newValue) // Emit the 'on-form-update' event when the form is changed
+      },
+      deep: true
+    }
+  },
   methods: {
     load (example) {
       this.form = example
       // Trigger RequestForm reload with key change | Ref.: https://stackoverflow.com/a/48755228
       this.exampleLoadDatetime = new Date().toISOString()
+      this.$emit('on-form-update', this.form) // Emit the 'on-form-update' event with the updated form
     },
     submit () {
       try {

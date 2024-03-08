@@ -42,7 +42,7 @@
               v-for="messageTypeDetails in messageTypes"
               :key="messageTypeDetails.label"
             >
-              <SchemaForm :ref="'schemaForm_' + messageTypeDetails.label" v-bind="messageTypeDetails" no-send-button />
+              <SchemaForm :ref="'schemaForm_' + messageTypeDetails.label" @on-form-update="updateCurrentMessage" v-bind="messageTypeDetails" no-send-button />
             </v-tab-item>
           </v-tabs-items>
         </v-card-text>
@@ -106,6 +106,7 @@ export default {
         value: REPOSITORY_URL + '{branchName}/src/main/resources/json-schema/'
       }],
       messageTypeTabIndex: 0,
+      currentMessage: null,
       selectedMessageType: 'message',
       selectedClientId: null,
       selectedCaseIds: [],
@@ -143,9 +144,6 @@ export default {
       }
       return null
     },
-    currentMessage () {
-      return this.currentSchemaForm?.form
-    },
     currentSchemaOnGitHub () {
       if (this.selectedSource.includes('https://raw.githubusercontent.com/')) {
         return this.selectedSource.replace(
@@ -158,6 +156,9 @@ export default {
     }
   },
   watch: {
+    currentSchemaForm () {
+      this.currentMessage = this.currentSchemaForm?.form
+    },
     selectedSource () {
       this.$store.dispatch('loadSchemas', this.selectedSource)
     }
@@ -168,6 +169,9 @@ export default {
     this.mounted = true
   },
   methods: {
+    updateCurrentMessage (form) {
+      this.currentMessage = form
+    },
     saveMessage () {
       // Download as file | Ref.: https://stackoverflow.com/a/34156339
       // JSON pretty-print | Ref.: https://stackoverflow.com/a/7220510
