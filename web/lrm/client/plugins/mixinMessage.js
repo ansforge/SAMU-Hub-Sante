@@ -156,7 +156,9 @@ export default {
       const formattedInnerMessage = this.formatIdsInMessage(innerMessage)
       message.content[0].jsonContent.embeddedJsonContent.message = {
         ...message.content[0].jsonContent.embeddedJsonContent.message,
-        ...formattedInnerMessage
+        [this.schema.title]: {
+          ...formattedInnerMessage
+        }
       }
       const name = this.userInfos.name
       const targetId = this.user.targetId
