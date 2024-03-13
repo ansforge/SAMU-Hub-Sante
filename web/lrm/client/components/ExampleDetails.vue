@@ -24,7 +24,7 @@
       <v-btn
         icon
         color="primary"
-        :href="REPOSITORY_URL + '1d2252465ca607f432c8392ecf8ebd57ea93ed5f/src/main/resources/sample/examples/' + file"
+        :href="REPOSITORY_URL + 'main/src/main/resources/sample/examples/' + file"
         target="_blank"
       >
         <v-icon>mdi-open-in-new</v-icon>
