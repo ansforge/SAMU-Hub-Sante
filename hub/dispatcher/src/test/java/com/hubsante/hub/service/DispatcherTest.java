@@ -226,7 +226,7 @@ public class DispatcherTest {
     @Test
     @DisplayName("should not send info if info itself is DLQed")
     public void handleDLQInfo() throws Exception {
-        Message originalInfo = createMessage("RS-INFO", JSON, SAMU_A_INFO_QUEUE);
+        Message originalInfo = createMessage("RS-ERROR", JSON, SAMU_A_INFO_QUEUE);
         Message dlqMessage = applyRabbitmqDLQHeaders(originalInfo, "expired");
 
         assertDoesNotThrow(() -> dispatcher.dispatchDLQ(dlqMessage));

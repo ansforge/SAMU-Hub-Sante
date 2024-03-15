@@ -20,11 +20,13 @@ import com.hubsante.hub.config.HubConfiguration;
 import com.hubsante.hub.exception.*;
 import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.Validator;
+import com.hubsante.model.builders.ErrorWrapperBuilder;
 import com.hubsante.model.edxl.DistributionKind;
 import com.hubsante.model.edxl.EdxlEnvelope;
 import com.hubsante.model.edxl.EdxlMessage;
 import com.hubsante.model.exception.ValidationException;
 import com.hubsante.model.report.ErrorReport;
+import com.hubsante.model.report.ErrorWrapper;
 import io.micrometer.core.annotation.Timed;
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.extern.slf4j.Slf4j;
@@ -93,8 +95,10 @@ public class MessageHandler {
                         "ErrorCause " + errorReport.getErrorCause() + "\n" +
                         "ErrorSourceMessage " + errorReport.getSourceMessage());
 
+        ErrorWrapper wrapper = new ErrorWrapperBuilder(errorReport).build();
+
         try {
-            EdxlMessage errorEdxlMessage = edxlMessageFromHub(sender, errorReport);
+            EdxlMessage errorEdxlMessage = edxlMessageFromHub(sender, wrapper);
             Message errorAmqpMessage;
             if (convertToXML(sender, hubConfig.getClientPreferences().get(sender))) {
                 errorAmqpMessage = new Message(edxlHandler.serializeXmlEDXL(errorEdxlMessage).getBytes(),

@@ -44,15 +44,15 @@ repositories {
     * the mavenLocal() line below. It will push the models lib to the local .m2 folder, and the gradle build on this project
     * will fetch it from there
      */
-//    mavenLocal()
+    mavenLocal()
     mavenCentral()
-    maven {
-        url = uri("https://maven.pkg.github.com/ansforge/SAMU-Hub-Modeles")
-        credentials {
-            username = System.getenv('GITHUB_ACTOR')
-            password = System.getenv('GITHUB_TOKEN')
-        }
-    }
+//    maven {
+//        url = uri("https://maven.pkg.github.com/ansforge/SAMU-Hub-Modeles")
+//        credentials {
+//            username = System.getenv('GITHUB_ACTOR')
+//            password = System.getenv('GITHUB_TOKEN')
+//        }
+//    }
 }
 
 ext {
@@ -60,7 +60,7 @@ ext {
 }
 
 dependencies {
-    implementation 'com.hubsante:models-2:0.3.1'
+    implementation 'com.hubsante:models-2:0.4.0-SNAPSHOT'
 
     implementation 'org.codehaus.groovy:groovy-json:3.0.9'
     implementation 'org.springframework.boot:spring-boot-starter-amqp'

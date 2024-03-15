@@ -20,6 +20,7 @@ import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.TestMessagesHelper;
 import com.hubsante.model.edxl.EdxlMessage;
 import com.hubsante.model.report.ErrorReport;
+import com.hubsante.model.report.ErrorWrapper;
 import org.apache.commons.compress.utils.FileNameUtils;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.amqp.core.Message;
@@ -101,9 +102,11 @@ public class MessageTestUtils {
 
         String msgString = new String(message.getBody());
 
-        return message.getMessageProperties().getContentType().equals(MessageProperties.CONTENT_TYPE_XML) ?
-                (ErrorReport) edxlHandler.deserializeXmlEDXL(msgString).getFirstContentMessage() :
-                (ErrorReport) edxlHandler.deserializeJsonEDXL(msgString).getFirstContentMessage();
+        ErrorWrapper wrapper = message.getMessageProperties().getContentType().equals(MessageProperties.CONTENT_TYPE_XML) ?
+                (ErrorWrapper) edxlHandler.deserializeXmlEDXL(msgString).getFirstContentMessage() :
+                (ErrorWrapper) edxlHandler.deserializeJsonEDXL(msgString).getFirstContentMessage();
+
+        return wrapper.getError();
     }
 
     public static void setCustomExpirationDate(EdxlMessage edxlMessage, long offset_in_seconds) {
