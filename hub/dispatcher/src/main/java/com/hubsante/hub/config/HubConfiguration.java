@@ -17,6 +17,8 @@ package com.hubsante.hub.config;
 
 import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.Validator;
+import io.micrometer.core.aop.TimedAspect;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.junit.jupiter.params.shadow.com.univocity.parsers.common.ParsingContext;
 import org.junit.jupiter.params.shadow.com.univocity.parsers.common.processor.ObjectRowProcessor;
 import org.junit.jupiter.params.shadow.com.univocity.parsers.csv.CsvParser;
@@ -98,5 +100,10 @@ public class HubConfiguration {
     @Bean
     public Validator validator() {
         return new Validator();
+    }
+
+    @Bean
+    public TimedAspect timedAspect(MeterRegistry registry) {
+        return new TimedAspect(registry);
     }
 }

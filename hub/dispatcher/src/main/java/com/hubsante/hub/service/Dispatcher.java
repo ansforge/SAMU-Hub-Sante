@@ -16,11 +16,17 @@
 package com.hubsante.hub.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.hubsante.hub.config.HubConfiguration;
 import com.hubsante.hub.exception.*;
 import com.hubsante.model.EdxlHandler;
+import com.hubsante.model.Validator;
 import com.hubsante.model.edxl.EdxlMessage;
 import com.hubsante.model.report.ErrorCode;
 import com.hubsante.model.report.ErrorReport;
+import io.micrometer.core.annotation.Timed;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Metrics;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.AmqpRejectAndDontRequeueException;
 import org.springframework.amqp.core.Message;
@@ -32,6 +38,10 @@ import java.nio.charset.StandardCharsets;
 
 import static com.hubsante.hub.config.AmqpConfiguration.*;
 import static com.hubsante.hub.utils.MessageUtils.*;
+import static com.hubsante.hub.config.Constants.*;
+import static com.hubsante.hub.utils.EdxlUtils.edxlMessageFromHub;
+import static com.hubsante.model.config.Constants.ENVELOPE_SCHEMA;
+import static com.hubsante.model.config.Constants.FULL_SCHEMA;
 
 /*
 * This class contains the RabbitMQ logic : the two listeners (Dispatch and DispatchDLQ) and the callback method to handle
@@ -55,6 +65,7 @@ public class Dispatcher {
     private final MessageHandler messageHandler;
     private final RabbitTemplate rabbitTemplate;
     private final EdxlHandler edxlHandler;
+    private static final String HEALTH_PREFIX = "fr.health";
 
     public Dispatcher(MessageHandler messageHandler, RabbitTemplate rabbitTemplate, EdxlHandler edxlHandler) {
         this.messageHandler = messageHandler;
@@ -88,6 +99,7 @@ public class Dispatcher {
     }
 
     @RabbitListener(queues = DISPATCH_QUEUE_NAME)
+    @Timed(value = DISPATCH_TIMED_METRIC, description = "Time taken to fully dispatch a message")
     public void dispatch(Message message) {
         try {
             // Deserialize the message according to its content type
@@ -107,6 +119,8 @@ public class Dispatcher {
         } catch (AbstractHubException e) {
             messageHandler.handleError(e, message);
         } catch (Exception e) {
+            // still log.error because it is not one of our AbstractHubExceptions, so there must be
+            // a hole in our error cover
             log.error("Unexpected error occurred while dispatching message from " + message.getMessageProperties().getReceivedRoutingKey(), e);
             throw new AmqpRejectAndDontRequeueException(e);
         }
@@ -127,6 +141,7 @@ public class Dispatcher {
     }
 
     @RabbitListener(queues = DISPATCH_DLQ_NAME)
+    @Timed(value = DLQ_TIMED_METRIC, description = "Time taken to fully dispatch a dead letter queued message")
     public void dispatchDLQ(Message message) {
         try {
             // TODO bbo
@@ -144,17 +159,13 @@ public class Dispatcher {
             messageHandler.handleError(exception, message);
         } catch (Exception e) {
             // We don't want to log again the error if it has been thrown by handleError
-            // We just log the unexpecteds errors
+            // We just log the unexpected errors
             if (!(e instanceof AmqpRejectAndDontRequeueException)) {
                 String originalRoutingKey = message.getMessageProperties().getHeader(DLQ_ORIGINAL_ROUTING_KEY) != null ?
                         message.getMessageProperties().getHeader(DLQ_ORIGINAL_ROUTING_KEY) : "Unknown routing key";
-                log.error("Unexpected error occurred while DLQ-dispatching message from " + originalRoutingKey, e);
+                log.warn("Unexpected error occurred while DLQ-dispatching message from " + originalRoutingKey, e);
             }
             throw new AmqpRejectAndDontRequeueException(e);
         }
     }
-
-
-
-
 }

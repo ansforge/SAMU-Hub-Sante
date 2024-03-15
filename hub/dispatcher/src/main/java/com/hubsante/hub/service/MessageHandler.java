@@ -25,6 +25,8 @@ import com.hubsante.model.edxl.EdxlEnvelope;
 import com.hubsante.model.edxl.EdxlMessage;
 import com.hubsante.model.exception.ValidationException;
 import com.hubsante.model.report.ErrorReport;
+import io.micrometer.core.annotation.Timed;
+import io.micrometer.core.instrument.MeterRegistry;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.AmqpRejectAndDontRequeueException;
 import org.springframework.amqp.core.Message;
@@ -40,6 +42,7 @@ import java.time.format.DateTimeFormatter;
 
 import static com.hubsante.hub.config.AmqpConfiguration.DISTRIBUTION_EXCHANGE;
 import static com.hubsante.hub.config.AmqpConfiguration.DLQ_ORIGINAL_ROUTING_KEY;
+import static com.hubsante.hub.config.Constants.*;
 import static com.hubsante.hub.utils.EdxlUtils.edxlMessageFromHub;
 import static com.hubsante.hub.utils.MessageUtils.*;
 import static com.hubsante.model.config.Constants.ENVELOPE_SCHEMA;
@@ -52,12 +55,14 @@ public class MessageHandler {
     private final EdxlHandler edxlHandler;
     private final HubConfiguration hubConfig;
     private final Validator validator;
+    private final MeterRegistry registry;
 
-    public MessageHandler(RabbitTemplate rabbitTemplate, EdxlHandler edxlHandler, HubConfiguration hubConfig, Validator validator) {
+    public MessageHandler(RabbitTemplate rabbitTemplate, EdxlHandler edxlHandler, HubConfiguration hubConfig, Validator validator, MeterRegistry registry) {
         this.rabbitTemplate = rabbitTemplate;
         this.edxlHandler = edxlHandler;
         this.hubConfig = hubConfig;
         this.validator = validator;
+        this.registry = registry;
     }
 
     protected void handleError(AbstractHubException exception, Message message) {
@@ -72,6 +77,8 @@ public class MessageHandler {
                 message.getMessageProperties().getReceivedRoutingKey();
 
         logErrorAndSendReport(errorReport, senderClientID);
+        // increment metric like dispatch_error{reason="INVALID_MESSAGE",sender="fr.health.samuXXX"}
+        publishErrorMetric(exception.getErrorCode().getStatusString(), senderClientID);
         // throw exception to reject the message
         throw new AmqpRejectAndDontRequeueException(exception);
     }
@@ -119,6 +126,7 @@ public class MessageHandler {
     /*
      ** Deserialize the message according to its content type
      */
+    @Timed(value = "deserialize.received.message", description = "Deserialize incoming message - include validation")
     protected EdxlMessage deserializeMessage(Message message) {
         String receivedEdxl = new String(message.getBody(), StandardCharsets.UTF_8);
         EdxlMessage edxlMessage;
@@ -198,6 +206,7 @@ public class MessageHandler {
             throw new SchemaNotFoundException("An internal server error has occurred, please contact the administration team", null);
         }
     }
+    @Timed(value = "serialize.forwarded.message", description = "Serialize forwarded message and return new AMQP message")
     private Message getFwdMessageBody(EdxlMessage edxlMessage, Message receivedAmqpMessage, MessageProperties fwdAmqpProperties) {
         String recipientID = getRecipientID(edxlMessage);
         String senderID = getSenderFromRoutingKey(receivedAmqpMessage);
@@ -226,6 +235,10 @@ public class MessageHandler {
     private void logMessage(Message message, EdxlMessage edxlMessage) throws JsonProcessingException {
         log.info(" [x] Received from '" + message.getMessageProperties().getReceivedRoutingKey() + "': message with distributionID " + edxlMessage.getDistributionID());
         log.debug(edxlHandler.serializeXmlEDXL(edxlMessage));
+    }
+
+    private void publishErrorMetric(String error, String sender) {
+        registry.counter(DISPATCH_ERROR, REASON_TAG, error, CLIENT_ID_TAG, sender).increment();
     }
 
 }
