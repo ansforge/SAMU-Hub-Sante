@@ -44,15 +44,15 @@ repositories {
     * the mavenLocal() line below. It will push the models lib to the local .m2 folder, and the gradle build on this project
     * will fetch it from there
      */
-    mavenLocal()
+//    mavenLocal()
     mavenCentral()
-//    maven {
-//        url = uri("https://maven.pkg.github.com/ansforge/SAMU-Hub-Modeles")
-//        credentials {
-//            username = System.getenv('GITHUB_ACTOR')
-//            password = System.getenv('GITHUB_TOKEN')
-//        }
-//    }
+    maven {
+        url = uri("https://maven.pkg.github.com/ansforge/SAMU-Hub-Modeles")
+        credentials {
+            username = System.getenv('GITHUB_ACTOR')
+            password = System.getenv('GITHUB_TOKEN')
+        }
+    }
 }
 
 ext {

@@ -282,9 +282,8 @@ public class DispatcherTest {
         assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
 
         // we test that an error report has been sent with the correct error code
-        assertErrorReportHasBeenSent(SAMU_A_INFO_QUEUE, ErrorCode.UNRECOGNIZED_MESSAGE_FORMAT, SAMU_A_DISTRIBUTION_ID,
-                "Could not parse message, invalid format. \n If you don't want to use HubSanté model" +
-                        " for now, please use a \"customContent\" wrapper inside your message.");
+        assertErrorReportHasBeenSent(SAMU_A_INFO_QUEUE, ErrorCode.INVALID_MESSAGE, SAMU_A_DISTRIBUTION_ID,
+                "Something went wrong with the XSD Validator");
     }
 
     @Test

@@ -47,8 +47,7 @@ import static com.hubsante.hub.config.AmqpConfiguration.DLQ_ORIGINAL_ROUTING_KEY
 import static com.hubsante.hub.config.Constants.*;
 import static com.hubsante.hub.utils.EdxlUtils.edxlMessageFromHub;
 import static com.hubsante.hub.utils.MessageUtils.*;
-import static com.hubsante.model.config.Constants.ENVELOPE_SCHEMA;
-import static com.hubsante.model.config.Constants.FULL_SCHEMA;
+import static com.hubsante.model.config.Constants.*;
 
 @Component
 @Slf4j
@@ -142,8 +141,14 @@ public class MessageHandler {
             // so we can at least extract the distributionID
             EdxlEnvelope edxlEnvelope;
             try {
-                validator.validateJSON(receivedEdxl, ENVELOPE_SCHEMA);
-                edxlEnvelope = edxlHandler.deserializeJsonEDXLEnvelope(receivedEdxl);
+                if (isJSON(message)) {
+                    validator.validateJSON(receivedEdxl, ENVELOPE_SCHEMA);
+                    edxlEnvelope = edxlHandler.deserializeJsonEDXLEnvelope(receivedEdxl);
+                } else { // at this point we have already thrown an exception if message's content-type is neither JSON nor XML
+                    validator.validateXML(receivedEdxl, ENVELOPE_XSD);
+                    edxlEnvelope = edxlHandler.deserializeXmlEDXLEnvelope(receivedEdxl);
+                }
+
             } catch (JsonProcessingException ex) {
                 log.error("Could not parse envelope of message " + receivedEdxl + " coming from " + message.getMessageProperties().getReceivedRoutingKey(), e);
                 String errorCause = "Could not parse message, invalid format. \n " +
@@ -180,19 +185,15 @@ public class MessageHandler {
             EdxlMessage edxlMessage;
             // We deserialize according to the content type
             // It MUST be explicitly set by the client
-            if (MessageProperties.CONTENT_TYPE_JSON.equals(message.getMessageProperties().getContentType())) {
+            if (isJSON(message)) {
                 validator.validateJSON(receivedEdxl, FULL_SCHEMA);
                 edxlMessage = edxlHandler.deserializeJsonEDXL(receivedEdxl);
-//                validator.validateContentMessage(edxlMessage, false);
-
                 logMessage(message, edxlMessage);
 
-            } else if (MessageProperties.CONTENT_TYPE_XML.equals(message.getMessageProperties().getContentType())) {
+            } else if (isXML(message)) {
                 // TODO bbo: add XSD validation when ready
-//                validator.validateXML(receivedEdxl, "edxl/edxl-de-v2.0-wd11.xsd");
+                validator.validateXML(receivedEdxl, FULL_XSD);
                 edxlMessage = edxlHandler.deserializeXmlEDXL(receivedEdxl);
-//                validator.validateContentMessage(edxlMessage, true);
-//                validator.validateXML(receivedEdxl, EDXL_SCHEMA);
                 logMessage(message, edxlMessage);
 
             } else {

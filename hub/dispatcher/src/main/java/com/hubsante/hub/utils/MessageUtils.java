@@ -87,6 +87,14 @@ public class MessageUtils {
                 && useXML;
     }
 
+    public static boolean isJSON(Message message) {
+        return MessageProperties.CONTENT_TYPE_JSON.equals(message.getMessageProperties().getContentType());
+    }
+
+    public static boolean isXML(Message message) {
+        return MessageProperties.CONTENT_TYPE_XML.equals(message.getMessageProperties().getContentType());
+    }
+
     public static void overrideExpirationIfNeeded(EdxlMessage edxlMessage, MessageProperties properties, long defaultTTL) {
         // OffsetDateTime comes with seconds and nanos, not millis
         // We assume that one second is an acceptable interval
