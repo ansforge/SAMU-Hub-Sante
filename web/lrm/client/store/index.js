@@ -35,7 +35,7 @@ export const state = () => ({
   // ToDo: when message is loaded, add them in store to not load them again later
   messageTypes: [{
     label: 'RC-EDA',
-    schemaName: 'RC-EDA.schema.json',
+    schemaName: 'RC-EDA/RC-EDA.schema.json',
     schema: null,
     examples: [{
       file: 'RC-EDA/RC-EDA-usecase-Armaury-1.json',
@@ -55,7 +55,7 @@ export const state = () => ({
     }]
   }, {
     label: 'EMSI',
-    schemaName: 'EMSI.schema.json',
+    schemaName: 'EMSI/EMSI.schema.json',
     schema: null,
     examples: [{
       file: 'EMSI/emsi-DC-message.json',
@@ -103,7 +103,7 @@ export const state = () => ({
     }]
   }, {
     label: 'RS-EDA',
-    schemaName: 'RS-EDA.schema.json',
+    schemaName: 'RS-EDA/RS-EDA.schema.json',
     schema: null,
     examples: [{
       file: 'RS-EDA/RS-EDA-usecase-PartageDossier-1.json',
