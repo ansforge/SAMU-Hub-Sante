@@ -103,7 +103,7 @@ export default {
         fetch(REPOSITORY_URL + 'main/src/main/resources/sample/examples/' + exampleName)
           .then(response => response.json())
           .then((data) => {
-            this.selectedExample = data
+            this.selectedExample = data[Object.keys(data)[0]]
           })
       } else {
         this.selectedExample = {}

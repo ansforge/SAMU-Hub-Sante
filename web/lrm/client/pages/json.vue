@@ -63,7 +63,7 @@
         <v-card-text>
           <json-viewer
             v-if="currentMessage"
-            :value="currentMessage"
+            :value="{[currentMessageType?.schema?.title]:currentMessage}"
             :expand-depth="10"
             :copyable="{copyText: 'Copier', copiedText: 'Copié !', timeout: 1000}"
             theme="json-theme"
