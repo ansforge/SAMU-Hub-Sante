@@ -35,7 +35,7 @@ export const state = () => ({
   // ToDo: when message is loaded, add them in store to not load them again later
   messageTypes: [{
     label: 'RC-EDA',
-    schemaName: 'RC-EDA/RC-EDA.schema.json',
+    schemaName: 'json-schema/RC-EDA.schema.json',
     schema: null,
     examples: [{
       file: 'RC-EDA/RC-EDA-usecase-Armaury-1.json',
@@ -55,7 +55,7 @@ export const state = () => ({
     }]
   }, {
     label: 'EMSI',
-    schemaName: 'EMSI/EMSI.schema.json',
+    schemaName: 'json-schema/EMSI.schema.json',
     schema: null,
     examples: [{
       file: 'EMSI/emsi-DC-message.json',
@@ -103,7 +103,7 @@ export const state = () => ({
     }]
   }, {
     label: 'RS-EDA',
-    schemaName: 'RS-EDA/RS-EDA.schema.json',
+    schemaName: 'json-schema/RS-EDA.schema.json',
     schema: null,
     examples: [{
       file: 'RS-EDA/RS-EDA-usecase-PartageDossier-1.json',
@@ -128,7 +128,7 @@ export const state = () => ({
     }]
   } /*, {
     label: 'RS-GEO',
-    schemaName: 'RS-GEO.schema.json',
+    schemaName: 'json-schema/RS-GEO.schema.json',
     schema: null,
     examples: [{
       file: 'CU1_Geolocalisation.json',
@@ -154,7 +154,7 @@ export const state = () => ({
   } */ /* ,
         info: {
           label: 'RS-INFO',
-          schemaName: 'RS-INFO.schema.json',
+          schemaName: 'json-schema/RS-INFO.schema.json',
           schema: null,
           examples: []
         } */
