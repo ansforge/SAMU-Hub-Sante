@@ -20,8 +20,7 @@ const DEMO_CLIENT_IDS = {
   EXOS: 'fr.health.test.exos',
   INETUM: 'fr.health.test.inetum',
   RRAMU: 'fr.health.test.rramu',
-  SCRIPTAL: 'fr.health.test.scriptal',
-  WAVESTONE: 'fr.health.test.wavestone',
+  SCRIPTAL: 'fr.health.test.scriptal'
 };
 
 const opts = {
