@@ -132,7 +132,7 @@ export const state = () => ({
     schema: null,
     examples: [{
       file: 'GEO-POS/CU2_Geolocation.json',
-      icon: 'mdi-car-multiple',
+      icon: 'mdi-earth',
       name: 'Positions Updates',
       context: 'Partage de mises à jour des positions'
     }]
@@ -142,7 +142,7 @@ export const state = () => ({
     schema: null,
     examples: [{
       file: 'GEO-RES/CU1_Geolocation.json',
-      icon: 'mdi-car-multiple',
+      icon: 'mdi-earth',
       name: 'Resources Details',
       context: 'Partage des détails de ressources'
     }]
@@ -152,7 +152,7 @@ export const state = () => ({
     schema: null,
     examples: [{
       file: 'GEO-REQ/CU3_Geolocation.json',
-      icon: 'mdi-car-multiple',
+      icon: 'mdi-earth',
       name: 'Resources Request',
       context: 'Demande de partage des détails des ressources'
     }]
