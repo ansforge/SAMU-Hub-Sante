@@ -91,7 +91,7 @@ public class Dispatcher {
                     ErrorCode.UNROUTABLE_MESSAGE,
                     "unable do deliver message to " + returned.getRoutingKey() + ", cause was " + returned.getReplyText() + " (" + returned.getReplyCode() + ")",
                     new String(returned.getMessage().getBody()),
-                    returnedEdxlMessage != null ? returnedEdxlMessage.getDistributionID() : null);
+                    returnedEdxlMessage != null ? returnedEdxlMessage.getDistributionID() : DISTRIBUTION_ID_UNAVAILABLE);
 
             String senderRoutingKey = returned.getMessage().getMessageProperties().getHeader(DLQ_ORIGINAL_ROUTING_KEY);
             messageHandler.logErrorAndSendReport(errorReport, senderRoutingKey);

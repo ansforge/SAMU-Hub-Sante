@@ -51,6 +51,7 @@ import java.util.*;
 
 import static com.hubsante.hub.config.AmqpConfiguration.*;
 import static com.hubsante.hub.config.Constants.DISPATCH_ERROR;
+import static com.hubsante.hub.config.Constants.DISTRIBUTION_ID_UNAVAILABLE;
 import static com.hubsante.hub.service.utils.MessageTestUtils.*;
 import static com.hubsante.hub.service.utils.MetricsUtils.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -242,7 +243,7 @@ public class DispatcherTest {
         Message receivedMessage = createInvalidMessage("EDXL-DE/unparsable-content.json",  SAMU_A_ROUTING_KEY);
         assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
 
-        assertErrorReportHasBeenSent(SAMU_A_INFO_QUEUE, ErrorCode.UNRECOGNIZED_MESSAGE_FORMAT, SAMU_A_DISTRIBUTION_ID,
+        assertErrorReportHasBeenSent(SAMU_A_INFO_QUEUE, ErrorCode.UNRECOGNIZED_MESSAGE_FORMAT, DISTRIBUTION_ID_UNAVAILABLE,
                 "Could not parse message, invalid format. \n If you don't want to use HubSanté model" +
                         " for now, please use a \"customContent\" wrapper inside your message.");
     }
@@ -282,7 +283,7 @@ public class DispatcherTest {
         assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
 
         // we test that an error report has been sent with the correct error code
-        assertErrorReportHasBeenSent(SAMU_A_INFO_QUEUE, ErrorCode.INVALID_MESSAGE, SAMU_A_DISTRIBUTION_ID,
+        assertErrorReportHasBeenSent(SAMU_A_INFO_QUEUE, ErrorCode.INVALID_MESSAGE, DISTRIBUTION_ID_UNAVAILABLE,
                 "Something went wrong with the XSD Validator");
     }
 
@@ -316,7 +317,7 @@ public class DispatcherTest {
         Message receivedMessage = createInvalidMessage("EDXL-DE/missing-EDXL-required-field.json", SAMU_A_ROUTING_KEY);
         assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
 
-        assertErrorReportHasBeenSent(SAMU_A_INFO_QUEUE, ErrorCode.INVALID_MESSAGE, null,
+        assertErrorReportHasBeenSent(SAMU_A_INFO_QUEUE, ErrorCode.INVALID_MESSAGE, DISTRIBUTION_ID_UNAVAILABLE,
                 "distributionID: is missing but it is required",
                 "descriptor.explicitAddress.explicitAddressValue: is missing but it is required");
     }
@@ -369,6 +370,7 @@ public class DispatcherTest {
 
         ErrorReport errorReport = getErrorReportFromMessage(converter, argument.getValue());
         assertEquals(errorCode, errorReport.getErrorCode());
+        assertEquals(referencedDistributionId, errorReport.getReferencedDistributionID());
         if (errorCause != null) {
             Arrays.stream(errorCause).forEach(cause -> assertTrue(errorReport.getErrorCause().contains(cause)));
         }

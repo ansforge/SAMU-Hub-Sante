@@ -153,13 +153,13 @@ public class MessageHandler {
                 log.error("Could not parse envelope of message " + receivedEdxl + " coming from " + message.getMessageProperties().getReceivedRoutingKey(), e);
                 String errorCause = "Could not parse message, invalid format. \n " +
                         "If you don't want to use HubSanté model for now, please use a \"customContent\" wrapper inside your message.";
-                throw new UnrecognizedMessageFormatException(errorCause, null);
+                throw new UnrecognizedMessageFormatException(errorCause, DISTRIBUTION_ID_UNAVAILABLE);
             } catch (IOException ex) {
                 log.error("Could not find schema file", e);
                 throw new SchemaNotFoundException("An internal server error has occurred, please contact the administration team", null);
             } catch (ValidationException ex) {
                 log.error("Could not validate content or envelope of message " + receivedEdxl + " coming from " + message.getMessageProperties().getReceivedRoutingKey(), e);
-                throw new SchemaValidationException(e.getMessage(), null);
+                throw new SchemaValidationException(e.getMessage(), DISTRIBUTION_ID_UNAVAILABLE);
             }
             // weird rethrow but we want to log the received routing key and we only have it here
             log.error("Could not validate content of message " + receivedEdxl +
@@ -205,7 +205,7 @@ public class MessageHandler {
             log.error("Could not parse content of message " + receivedEdxl + " coming from " + message.getMessageProperties().getReceivedRoutingKey(), e);
             String errorCause = "Could not parse message, invalid format. \n " +
                     "If you don't want to use HubSanté model for now, please use a \"customContent\" wrapper inside your message.";
-            throw new UnrecognizedMessageFormatException(errorCause, null);
+            throw new UnrecognizedMessageFormatException(errorCause, DISTRIBUTION_ID_UNAVAILABLE);
         } catch (IOException e) {
             log.error("Could not find schema file", e);
             throw new SchemaNotFoundException("An internal server error has occurred, please contact the administration team", null);
