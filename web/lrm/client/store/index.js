@@ -35,10 +35,10 @@ export const state = () => ({
   // ToDo: when message is loaded, add them in store to not load them again later
   messageTypes: [{
     label: 'RC-EDA',
-    schemaName: 'RC-EDA.schema.json',
+    schemaName: 'json-schema/RC-EDA.schema.json',
     schema: null,
     examples: [{
-      file: 'RC-EDA-usecase-Armaury-1.json',
+      file: 'RC-EDA/RC-EDA-usecase-Armaury-1.json',
       icon: 'mdi-bike-fast',
       name: 'Alexandre ARMAURY',
       caller: 'Albane Armaury, témoin accident impliquant son mari,  Alexandre Armaury',
@@ -55,10 +55,10 @@ export const state = () => ({
     }]
   }, {
     label: 'EMSI',
-    schemaName: 'EMSI.schema.json',
+    schemaName: 'json-schema/EMSI.schema.json',
     schema: null,
     examples: [{
-      file: 'emsi-DC-message.json',
+      file: 'EMSI/emsi-DC-message.json',
       icon: 'mdi-bike-fast',
       name: 'Alexandre ARMAURY (DC)',
       caller: 'Albane Armaury, témoin accident impliquant son mari, Alexandre Armaury',
@@ -69,7 +69,7 @@ export const state = () => ({
       medicalSituation: 'Céphalées, migraines, traumatismes sérieux, plaies intermédiaires'
     },
     {
-      file: 'EMSI-RDC-message.json',
+      file: 'EMSI/EMSI-RDC-message.json',
       icon: 'mdi-bike-fast',
       name: 'Alexandre ARMAURY (RDC)',
       caller: 'Albane Armaury, témoin accident impliquant son mari, Alexandre Armaury',
@@ -80,7 +80,7 @@ export const state = () => ({
       medicalSituation: 'Céphalées, migraines, traumatismes sérieux, plaies intermédiaires'
     },
     {
-      file: 'EMSI-OPG-message.json',
+      file: 'EMSI/EMSI-OPG-message.json',
       icon: 'mdi-bike-fast',
       name: 'Alexandre ARMAURY (OPG)',
       caller: 'Albane Armaury, témoin accident impliquant son mari, Alexandre Armaury',
@@ -91,7 +91,7 @@ export const state = () => ({
       medicalSituation: 'Céphalées, migraines, traumatismes sérieux, plaies intermédiaires'
     },
     {
-      file: 'EMSI-Complet-DC-RDC-OPG-message.json',
+      file: 'EMSI/EMSI-Complet-DC-RDC-OPG-message.json',
       icon: 'mdi-bike-fast',
       name: 'Alexandre ARMAURY (EMSI)',
       caller: 'Albane Armaury, témoin accident impliquant son mari, Alexandre Armaury',
@@ -103,10 +103,10 @@ export const state = () => ({
     }]
   }, {
     label: 'RS-EDA',
-    schemaName: 'RS-EDA.schema.json',
+    schemaName: 'json-schema/RS-EDA.schema.json',
     schema: null,
     examples: [{
-      file: 'RS-EDA-usecase-PartageDossier-1.json',
+      file: 'RS-EDA/RS-EDA-usecase-PartageDossier-1.json',
       icon: 'mdi-circular-saw',
       name: 'Didier MOREL',
       caller: 'Sébastien Morel, témoin accident impliquant son père, Didier Morel',
@@ -116,7 +116,7 @@ export const state = () => ({
       victim: 'Homme, adulte, 65 ans',
       medicalSituation: 'Plaie traumatique profonde, perte de conscience, hémorragie importante'
     }, {
-      file: 'RS-EDA-usecase-AppelLimitrophe-2.json',
+      file: 'RS-EDA/RS-EDA-usecase-AppelLimitrophe-2.json',
       icon: 'mdi-heart-plus-outline',
       name: 'Ouardia BOUDADI',
       caller: 'Magda LENA, collègue de la victime, Ouardia BOUDADI',
@@ -128,7 +128,7 @@ export const state = () => ({
     }]
   } /*, {
     label: 'RS-GEO',
-    schemaName: 'RS-GEO.schema.json',
+    schemaName: 'json-schema/RS-GEO.schema.json',
     schema: null,
     examples: [{
       file: 'CU1_Geolocalisation.json',
@@ -154,7 +154,7 @@ export const state = () => ({
   } */ /* ,
         info: {
           label: 'RS-INFO',
-          schemaName: 'RS-INFO.schema.json',
+          schemaName: 'json-schema/RS-INFO.schema.json',
           schema: null,
           examples: []
         } */

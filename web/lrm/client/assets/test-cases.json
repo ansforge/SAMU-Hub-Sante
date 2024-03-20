@@ -59,7 +59,7 @@
                   "value": ["Gène de plus en plus importante à la circulation, risque accident","Accident de la circulation, 2 véhicules impliqués","Accident de la circulation, 1 véhicule impliqué"]
                 }
               ],
-              "file": "EMSI-RDC-message.json"
+              "file": "EMSI/EMSI-RDC-message.json"
             }
           }
         ]
@@ -125,7 +125,7 @@
                   "value": ["ABO","NST","IPR"]
                 }
               ],
-              "file": "EMSI-RDC-message.json"
+              "file": "EMSI/EMSI-RDC-message.json"
             }
           },
           {
@@ -143,7 +143,7 @@
                   "value": [1,2,20]
                 }
               ],
-              "file": "EMSI-OPG-message.json"
+              "file": "EMSI/EMSI-OPG-message.json"
             }
           }
         ]
@@ -171,7 +171,7 @@
                   "value": ["SEVERAL","MANY","UNKNOWN" ]
                 }
               ],
-              "file": "RC-EDA-usecase-Armaury-1.json"
+              "file": "RC-EDA/RC-EDA-usecase-Armaury-1.json"
             }
           },
           {
@@ -267,7 +267,7 @@
                   "value": ["AVAILB","VIRTUAL","RESERVD"]
                 }
               ],
-              "file": "EMSI-RDC-message.json"
+              "file": "EMSI/EMSI-RDC-message.json"
             }
           },
           {
@@ -298,7 +298,7 @@
                   "value": ["#OPERATION_GLOBALE#", "#ECHANGE_OPERATION#", "#OPERATION_GLOBALE#"]
                 }
               ],
-              "file": "EMSI-OPG-message.json"
+              "file": "EMSI/EMSI-OPG-message.json"
             }
           }
         ]
