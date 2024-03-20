@@ -34,6 +34,7 @@ const opts = {
   ca: [fs.readFileSync(path.join(moduleDir, 'certs/rootCA.crt'))], // array of trusted CA certs
   // Ref.: https://github.com/amqp-node/amqplib/issues/105
   credentials: amqp.credentials.external(),
+  clientProperties: {connection_name: 'lrm-interface'}
 };
 
 module.exports = {
