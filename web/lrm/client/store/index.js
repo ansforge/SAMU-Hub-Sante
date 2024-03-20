@@ -126,39 +126,37 @@ export const state = () => ({
       victim: 'Femme, adulte, 47 ans',
       medicalSituation: 'Douleurs thoraciques irradiantes, antécédents de maladie cardiaque'
     }]
-  } /*, {
-    label: 'RS-GEO',
-    schemaName: 'json-schema/RS-GEO.schema.json',
+  }, {
+    label: 'GEO-POS',
+    schemaName: 'json-schema/GEO-POS.schema.json',
     schema: null,
     examples: [{
-      file: 'CU1_Geolocalisation.json',
-      icon: 'mdi-car-multiple',
-      name: 'Ressources',
-      context: 'Partage des ressources du SAMU A vers le SAMU B'
-    }, {
-      file: 'CU2_Geolocalisation.json',
-      icon: 'mdi-car-multiple',
-      name: 'Positions',
-      context: 'Partage des positions des ressources du SAMU A vers le SAMU B'
-    }, {
-      file: 'CU3_Geolocalisation.json',
-      icon: 'mdi-car-multiple',
-      name: 'Détails',
-      context: 'Demande de détails de ressources du SAMU B vers le SAMU A'
-    }, {
-      file: 'CU4_Geolocalisation.json',
-      icon: 'mdi-car-multiple',
-      name: 'Mise à jour',
-      context: 'Partage du détails de nouvelles ressources et mise à jour de position vers le SAMU B'
+      file: 'GEO-POS/CU2_Geolocation.json',
+      icon: 'mdi-earth',
+      name: 'Positions Updates',
+      context: 'Partage de mises à jour des positions'
     }]
-  } */ /* ,
-        info: {
-          label: 'RS-INFO',
-          schemaName: 'json-schema/RS-INFO.schema.json',
-          schema: null,
-          examples: []
-        } */
-  ]
+  }, {
+    label: 'GEO-RES',
+    schemaName: 'json-schema/GEO-RES.schema.json',
+    schema: null,
+    examples: [{
+      file: 'GEO-RES/CU1_Geolocation.json',
+      icon: 'mdi-earth',
+      name: 'Resources Details',
+      context: 'Partage des détails de ressources'
+    }]
+  }, {
+    label: 'GEO-REQ',
+    schemaName: 'json-schema/GEO-REQ.schema.json',
+    schema: null,
+    examples: [{
+      file: 'GEO-REQ/CU3_Geolocation.json',
+      icon: 'mdi-earth',
+      name: 'Resources Request',
+      context: 'Demande de partage des détails des ressources'
+    }]
+  }]
 })
 
 export const getters = {

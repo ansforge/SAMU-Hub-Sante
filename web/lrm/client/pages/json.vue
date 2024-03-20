@@ -96,6 +96,9 @@ export default {
         text: 'main',
         value: REPOSITORY_URL + 'main/src/main/resources/json-schema/'
       }, {
+        text: 'develop',
+        value: REPOSITORY_URL + 'develop/src/main/resources/json-schema/'
+      }, {
         text: 'auto/model_tracker',
         value: REPOSITORY_URL + 'auto/model_tracker/src/main/resources/json-schema/'
       }, {
