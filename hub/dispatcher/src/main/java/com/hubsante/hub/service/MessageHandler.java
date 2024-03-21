@@ -20,11 +20,13 @@ import com.hubsante.hub.config.HubConfiguration;
 import com.hubsante.hub.exception.*;
 import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.Validator;
+import com.hubsante.model.builders.ErrorWrapperBuilder;
 import com.hubsante.model.edxl.DistributionKind;
 import com.hubsante.model.edxl.EdxlEnvelope;
 import com.hubsante.model.edxl.EdxlMessage;
 import com.hubsante.model.exception.ValidationException;
 import com.hubsante.model.report.ErrorReport;
+import com.hubsante.model.report.ErrorWrapper;
 import io.micrometer.core.annotation.Timed;
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.extern.slf4j.Slf4j;
@@ -45,8 +47,7 @@ import static com.hubsante.hub.config.AmqpConfiguration.DLQ_ORIGINAL_ROUTING_KEY
 import static com.hubsante.hub.config.Constants.*;
 import static com.hubsante.hub.utils.EdxlUtils.edxlMessageFromHub;
 import static com.hubsante.hub.utils.MessageUtils.*;
-import static com.hubsante.model.config.Constants.ENVELOPE_SCHEMA;
-import static com.hubsante.model.config.Constants.FULL_SCHEMA;
+import static com.hubsante.model.config.Constants.*;
 
 @Component
 @Slf4j
@@ -93,8 +94,10 @@ public class MessageHandler {
                         "ErrorCause " + errorReport.getErrorCause() + "\n" +
                         "ErrorSourceMessage " + errorReport.getSourceMessage());
 
+        ErrorWrapper wrapper = new ErrorWrapperBuilder(errorReport).build();
+
         try {
-            EdxlMessage errorEdxlMessage = edxlMessageFromHub(sender, errorReport);
+            EdxlMessage errorEdxlMessage = edxlMessageFromHub(sender, wrapper);
             Message errorAmqpMessage;
             if (convertToXML(sender, hubConfig.getClientPreferences().get(sender))) {
                 errorAmqpMessage = new Message(edxlHandler.serializeXmlEDXL(errorEdxlMessage).getBytes(),
@@ -138,19 +141,25 @@ public class MessageHandler {
             // so we can at least extract the distributionID
             EdxlEnvelope edxlEnvelope;
             try {
-                validator.validateJSON(receivedEdxl, ENVELOPE_SCHEMA);
-                edxlEnvelope = edxlHandler.deserializeJsonEDXLEnvelope(receivedEdxl);
+                if (isJSON(message)) {
+                    validator.validateJSON(receivedEdxl, ENVELOPE_SCHEMA);
+                    edxlEnvelope = edxlHandler.deserializeJsonEDXLEnvelope(receivedEdxl);
+                } else { // at this point we have already thrown an exception if message's content-type is neither JSON nor XML
+                    validator.validateXML(receivedEdxl, ENVELOPE_XSD);
+                    edxlEnvelope = edxlHandler.deserializeXmlEDXLEnvelope(receivedEdxl);
+                }
+
             } catch (JsonProcessingException ex) {
                 log.error("Could not parse envelope of message " + receivedEdxl + " coming from " + message.getMessageProperties().getReceivedRoutingKey(), e);
                 String errorCause = "Could not parse message, invalid format. \n " +
                         "If you don't want to use HubSanté model for now, please use a \"customContent\" wrapper inside your message.";
-                throw new UnrecognizedMessageFormatException(errorCause, null);
+                throw new UnrecognizedMessageFormatException(errorCause, DISTRIBUTION_ID_UNAVAILABLE);
             } catch (IOException ex) {
                 log.error("Could not find schema file", e);
                 throw new SchemaNotFoundException("An internal server error has occurred, please contact the administration team", null);
             } catch (ValidationException ex) {
                 log.error("Could not validate content or envelope of message " + receivedEdxl + " coming from " + message.getMessageProperties().getReceivedRoutingKey(), e);
-                throw new SchemaValidationException(e.getMessage(), null);
+                throw new SchemaValidationException(e.getMessage(), DISTRIBUTION_ID_UNAVAILABLE);
             }
             // weird rethrow but we want to log the received routing key and we only have it here
             log.error("Could not validate content of message " + receivedEdxl +
@@ -176,19 +185,15 @@ public class MessageHandler {
             EdxlMessage edxlMessage;
             // We deserialize according to the content type
             // It MUST be explicitly set by the client
-            if (MessageProperties.CONTENT_TYPE_JSON.equals(message.getMessageProperties().getContentType())) {
+            if (isJSON(message)) {
                 validator.validateJSON(receivedEdxl, FULL_SCHEMA);
                 edxlMessage = edxlHandler.deserializeJsonEDXL(receivedEdxl);
-//                validator.validateContentMessage(edxlMessage, false);
-
                 logMessage(message, edxlMessage);
 
-            } else if (MessageProperties.CONTENT_TYPE_XML.equals(message.getMessageProperties().getContentType())) {
+            } else if (isXML(message)) {
                 // TODO bbo: add XSD validation when ready
-//                validator.validateXML(receivedEdxl, "edxl/edxl-de-v2.0-wd11.xsd");
+                validator.validateXML(receivedEdxl, FULL_XSD);
                 edxlMessage = edxlHandler.deserializeXmlEDXL(receivedEdxl);
-//                validator.validateContentMessage(edxlMessage, true);
-//                validator.validateXML(receivedEdxl, EDXL_SCHEMA);
                 logMessage(message, edxlMessage);
 
             } else {
@@ -200,7 +205,7 @@ public class MessageHandler {
             log.error("Could not parse content of message " + receivedEdxl + " coming from " + message.getMessageProperties().getReceivedRoutingKey(), e);
             String errorCause = "Could not parse message, invalid format. \n " +
                     "If you don't want to use HubSanté model for now, please use a \"customContent\" wrapper inside your message.";
-            throw new UnrecognizedMessageFormatException(errorCause, null);
+            throw new UnrecognizedMessageFormatException(errorCause, DISTRIBUTION_ID_UNAVAILABLE);
         } catch (IOException e) {
             log.error("Could not find schema file", e);
             throw new SchemaNotFoundException("An internal server error has occurred, please contact the administration team", null);

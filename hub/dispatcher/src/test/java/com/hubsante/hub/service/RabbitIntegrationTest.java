@@ -20,6 +20,7 @@ import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.edxl.EdxlMessage;
 import com.hubsante.model.report.ErrorCode;
 import com.hubsante.model.report.ErrorReport;
+import com.hubsante.model.report.ErrorWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.*;
 import org.springframework.amqp.core.Message;
@@ -146,8 +147,8 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
         String errorString = new String(infoMsg.getBody());
 
         ErrorReport errorReport = infoMsg.getMessageProperties().getContentType().equals(MessageProperties.CONTENT_TYPE_XML) ?
-                (ErrorReport) edxlHandler.deserializeXmlEDXL(errorString).getFirstContentMessage() :
-                (ErrorReport) edxlHandler.deserializeJsonEDXL(errorString).getFirstContentMessage();
+                ((ErrorWrapper) edxlHandler.deserializeXmlEDXL(errorString).getFirstContentMessage()).getError() :
+                ((ErrorWrapper) edxlHandler.deserializeJsonEDXL(errorString).getFirstContentMessage()).getError();
         assertEquals(errorCode, errorReport.getErrorCode());
         Arrays.stream(errorCause).forEach(cause -> assertTrue(errorReport.getErrorCause().contains(cause)));
     }

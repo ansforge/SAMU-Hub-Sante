@@ -35,7 +35,7 @@ export const state = () => ({
   // ToDo: when message is loaded, add them in store to not load them again later
   messageTypes: [{
     label: 'RC-EDA',
-    schemaName: 'RC-EDA.schema.json',
+    schemaName: 'json-schema/RC-EDA.schema.json',
     schema: null,
     examples: [{
       file: 'RC-EDA/RC-EDA-usecase-Armaury-1.json',
@@ -55,7 +55,7 @@ export const state = () => ({
     }]
   }, {
     label: 'EMSI',
-    schemaName: 'EMSI.schema.json',
+    schemaName: 'json-schema/EMSI.schema.json',
     schema: null,
     examples: [{
       file: 'EMSI/emsi-DC-message.json',
@@ -103,7 +103,7 @@ export const state = () => ({
     }]
   }, {
     label: 'RS-EDA',
-    schemaName: 'RS-EDA.schema.json',
+    schemaName: 'json-schema/RS-EDA.schema.json',
     schema: null,
     examples: [{
       file: 'RS-EDA/RS-EDA-usecase-PartageDossier-1.json',
@@ -126,39 +126,37 @@ export const state = () => ({
       victim: 'Femme, adulte, 47 ans',
       medicalSituation: 'Douleurs thoraciques irradiantes, antécédents de maladie cardiaque'
     }]
-  } /*, {
-    label: 'RS-GEO',
-    schemaName: 'RS-GEO.schema.json',
+  }, {
+    label: 'GEO-POS',
+    schemaName: 'json-schema/GEO-POS.schema.json',
     schema: null,
     examples: [{
-      file: 'CU1_Geolocalisation.json',
-      icon: 'mdi-car-multiple',
-      name: 'Ressources',
-      context: 'Partage des ressources du SAMU A vers le SAMU B'
-    }, {
-      file: 'CU2_Geolocalisation.json',
-      icon: 'mdi-car-multiple',
-      name: 'Positions',
-      context: 'Partage des positions des ressources du SAMU A vers le SAMU B'
-    }, {
-      file: 'CU3_Geolocalisation.json',
-      icon: 'mdi-car-multiple',
-      name: 'Détails',
-      context: 'Demande de détails de ressources du SAMU B vers le SAMU A'
-    }, {
-      file: 'CU4_Geolocalisation.json',
-      icon: 'mdi-car-multiple',
-      name: 'Mise à jour',
-      context: 'Partage du détails de nouvelles ressources et mise à jour de position vers le SAMU B'
+      file: 'GEO-POS/CU2_Geolocation.json',
+      icon: 'mdi-earth',
+      name: 'Positions Updates',
+      context: 'Partage de mises à jour des positions'
     }]
-  } */ /* ,
-        info: {
-          label: 'RS-INFO',
-          schemaName: 'RS-INFO.schema.json',
-          schema: null,
-          examples: []
-        } */
-  ]
+  }, {
+    label: 'GEO-RES',
+    schemaName: 'json-schema/GEO-RES.schema.json',
+    schema: null,
+    examples: [{
+      file: 'GEO-RES/CU1_Geolocation.json',
+      icon: 'mdi-earth',
+      name: 'Resources Details',
+      context: 'Partage des détails de ressources'
+    }]
+  }, {
+    label: 'GEO-REQ',
+    schemaName: 'json-schema/GEO-REQ.schema.json',
+    schema: null,
+    examples: [{
+      file: 'GEO-REQ/CU3_Geolocation.json',
+      icon: 'mdi-earth',
+      name: 'Resources Request',
+      context: 'Demande de partage des détails des ressources'
+    }]
+  }]
 })
 
 export const getters = {
