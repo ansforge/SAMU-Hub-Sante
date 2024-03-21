@@ -63,7 +63,7 @@
         <v-card-text>
           <json-viewer
             v-if="currentMessage"
-            :value="{[currentMessageType?.schema?.title]:currentMessage}"
+            :value="trimEmptyValues({[currentMessageType?.schema?.title]:currentMessage})"
             :expand-depth="10"
             :copyable="{copyText: 'Copier', copiedText: 'Copié !', timeout: 1000}"
             theme="json-theme"
@@ -178,7 +178,7 @@ export default {
     saveMessage () {
       // Download as file | Ref.: https://stackoverflow.com/a/34156339
       // JSON pretty-print | Ref.: https://stackoverflow.com/a/7220510
-      const data = JSON.stringify(this.currentSchemaForm?.form, null, 2)
+      const data = JSON.stringify(this.trimEmptyValues(this.currentSchemaForm?.form), null, 2)
       const a = document.createElement('a')
       const file = new Blob([data], { type: 'application/json' })
       a.href = URL.createObjectURL(file)
