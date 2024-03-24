@@ -49,4 +49,4 @@ kind: ConfigMap
 metadata:
   name: rabbitmq-url-cm
 data:
-  rabbitmq.url: 'messaging.hub.esante.gouv.fr'
+  rabbitmq.url: 'amqps://messaging.hub.esante.gouv.fr'

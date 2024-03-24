@@ -154,12 +154,14 @@
 import { mapGetters } from 'vuex'
 import Vue from 'vue'
 import mixinMessage from '~/plugins/mixinMessage'
+import { REPOSITORY_URL } from '@/constants'
 
 export default {
   name: 'Testcase',
   mixins: [mixinMessage],
   data () {
     return {
+      selectedRequiredValuesIndex: null,
       currentCaseId: null,
       localCaseId: null,
       testCase: null,
@@ -260,6 +262,7 @@ export default {
     }
   },
   created () {
+    this.selectedRequiredValuesIndex = null
     this.currentCaseId = null
     this.localCaseId = this.generateCaseId()
     this.currentStep = 1
@@ -278,13 +281,21 @@ export default {
       }
     },
     /**
-     * Selects one value randomly from the list of possible values
+     * Selects one value randomly (located at the same index in its array) from the list of possible values
      * for each required value in the test case
      */
     selectRandomValuesForTestCase () {
+      this.selectedRequiredValuesIndex = this.getRequiredValuesIndex()
       this.testCase.steps.forEach((step) => {
         step.message.requiredValues = this.selectRandomValuesForStep(step.message)
       })
+    },
+    /**
+     * Gets a random index from 0 to the length of the list of possible values for each required value
+     * Every array of possible required values must have the same length so to decide the maximum index we just check the length of the first array
+     */
+    getRequiredValuesIndex () {
+      return Math.floor(Math.random() * this.testCase.steps[0].message.requiredValues[0].value.length)
     },
     /**
      * Loads the related JSON message for the test case steps.
@@ -294,7 +305,7 @@ export default {
     async loadJsonSteps () {
       for (const step of this.testCase.steps) {
         if (step.type === 'receive') {
-          const response = await fetch('examples/' + step.message.file)
+          const response = await fetch(REPOSITORY_URL + 'main/src/main/resources/sample/examples/' + step.message.file)
           const json = await response.json()
           this.$set(step, 'json', json)
         }
@@ -479,7 +490,7 @@ export default {
       step.requiredValues.forEach((entry, index) => {
         selectedValues[index] = {
           path: entry.path,
-          value: Array.isArray(entry.value) ? entry.value[Math.floor(Math.random() * entry.value.length)] : entry.value
+          value: Array.isArray(entry.value) ? entry.value[this.selectedRequiredValuesIndex] : entry.value
         }
       })
       return selectedValues

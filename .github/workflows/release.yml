@@ -21,7 +21,7 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v2
         with:
-          java-version: '11'
+          java-version: '21'
           distribution: 'temurin'
 
       - name: Grant execute permission for Gradlew
@@ -30,5 +30,6 @@ jobs:
       - name: Build and run tests
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          DOCKERHUB_TOKEN: ${{ secrets. DOCKER_HUB_KEY }}
-        run: ./gradlew jib
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKER_HUB_KEY }}
+          RELEASE_NAME: ${{ github.ref_name }}
+        run: ./gradlew jib --image romainfd/dispatcher-$RELEASE_NAME

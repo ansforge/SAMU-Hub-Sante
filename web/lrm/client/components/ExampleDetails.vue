@@ -24,7 +24,7 @@
       <v-btn
         icon
         color="primary"
-        :href="'examples/' + file"
+        :href="REPOSITORY_URL + 'main/src/main/resources/sample/examples/' + file"
         target="_blank"
       >
         <v-icon>mdi-open-in-new</v-icon>
@@ -56,6 +56,9 @@
 </template>
 
 <script>
+
+import { REPOSITORY_URL } from '@/constants'
+
 export default {
   props: {
     file: {
@@ -97,7 +100,8 @@ export default {
   },
   data () {
     return {
-      showDetails: false
+      showDetails: false,
+      REPOSITORY_URL
     }
   },
   watch: {

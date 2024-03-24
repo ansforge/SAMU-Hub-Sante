@@ -57,6 +57,6 @@ h3 {
 }
 
 .m-teaser__img img {
-    max-height: 190px;
+    height: 190px;
     object-fit: cover;
 }

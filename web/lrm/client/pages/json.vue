@@ -42,7 +42,7 @@
               v-for="messageTypeDetails in messageTypes"
               :key="messageTypeDetails.label"
             >
-              <SchemaForm :ref="'schemaForm_' + messageTypeDetails.label" v-bind="messageTypeDetails" no-send-button />
+              <SchemaForm :ref="'schemaForm_' + messageTypeDetails.label" @on-form-update="updateCurrentMessage" v-bind="messageTypeDetails" no-send-button />
             </v-tab-item>
           </v-tabs-items>
         </v-card-text>
@@ -63,7 +63,7 @@
         <v-card-text>
           <json-viewer
             v-if="currentMessage"
-            :value="currentMessage"
+            :value="trimEmptyValues({[currentMessageType?.schema?.title]: currentMessage})"
             :expand-depth="10"
             :copyable="{copyText: 'Copier', copiedText: 'Copié !', timeout: 1000}"
             theme="json-theme"
@@ -77,6 +77,7 @@
 <script>
 import { mapGetters } from 'vuex'
 import mixinMessage from '~/plugins/mixinMessage'
+import { REPOSITORY_URL } from '@/constants'
 
 export default {
   name: 'JsonCreator',
@@ -93,18 +94,22 @@ export default {
         header: 'GitHub branches'
       }, {
         text: 'main',
-        value: 'https://raw.githubusercontent.com/ansforge/SAMU-Hub-Modeles/main/src/main/resources/json-schema/'
+        value: REPOSITORY_URL + 'main/src/main/resources/json-schema/'
+      }, {
+        text: 'develop',
+        value: REPOSITORY_URL + 'develop/src/main/resources/json-schema/'
       }, {
         text: 'auto/model_tracker',
-        value: 'https://raw.githubusercontent.com/ansforge/SAMU-Hub-Modeles/auto/model_tracker/src/main/resources/json-schema/'
+        value: REPOSITORY_URL + 'auto/model_tracker/src/main/resources/json-schema/'
       }, {
         divider: true,
         header: 'Templates'
       }, {
-        text: 'https://raw.githubusercontent.com/ansforge/SAMU-Hub-Modeles/{branchName}/src/main/resources/json-schema/',
-        value: 'https://raw.githubusercontent.com/ansforge/SAMU-Hub-Modeles/{branchName}/src/main/resources/json-schema/'
+        text: REPOSITORY_URL + '{branchName}/src/main/resources/json-schema/',
+        value: REPOSITORY_URL + '{branchName}/src/main/resources/json-schema/'
       }],
       messageTypeTabIndex: 0,
+      currentMessage: null,
       selectedMessageType: 'message',
       selectedClientId: null,
       selectedCaseIds: [],
@@ -142,9 +147,6 @@ export default {
       }
       return null
     },
-    currentMessage () {
-      return this.currentSchemaForm?.form
-    },
     currentSchemaOnGitHub () {
       if (this.selectedSource.includes('https://raw.githubusercontent.com/')) {
         return this.selectedSource.replace(
@@ -157,6 +159,9 @@ export default {
     }
   },
   watch: {
+    currentSchemaForm () {
+      this.currentMessage = this.currentSchemaForm?.form
+    },
     selectedSource () {
       this.$store.dispatch('loadSchemas', this.selectedSource)
     }
@@ -167,14 +172,17 @@ export default {
     this.mounted = true
   },
   methods: {
+    updateCurrentMessage (form) {
+      this.currentMessage = form
+    },
     saveMessage () {
       // Download as file | Ref.: https://stackoverflow.com/a/34156339
       // JSON pretty-print | Ref.: https://stackoverflow.com/a/7220510
-      const data = JSON.stringify(this.currentSchemaForm?.form, null, 2)
+      const data = JSON.stringify(this.trimEmptyValues({ [this.currentMessageType?.schema?.title]: this.currentMessage }), null, 2)
       const a = document.createElement('a')
       const file = new Blob([data], { type: 'application/json' })
       a.href = URL.createObjectURL(file)
-      a.download = `${this.currentSchemaForm?.label}-message.json`
+      a.download = `${this.currentMessageType?.label}-message.json`
       a.click()
     }
   }

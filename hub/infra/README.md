@@ -248,6 +248,17 @@ kubectl scale --replicas=1 deployment/dispatcher
 kubectl run -it --rm --restart=Never busybox --image=gcr.io/google-containers/busybox sh
 ```
 
+## OpenSSL investigation
+OpenSSL is not installed on BusyBox -> use an ubuntu pod
+```bash
+kubectl run -it --rm --restart=Never ubuntu --image=ubuntu sh
+# In the Ubuntu Pod, install OpenSSL | Ref.: https://itslinuxfoss.com/install-openssl-ubuntu-22-04/
+apt update
+apt install openssl -y
+# Use OpenSSL to debug presented server certificates
+openssl s_client -showcerts -connect rabbitmq.default.svc:15671
+```
+
 ## Services, Ingress Controller and Ingress
 Ref.: https://medium.com/@ManagedKube/kubernetes-troubleshooting-ingress-and-services-traffic-flows-547ea867b120
 ```bash

@@ -186,9 +186,7 @@ export default {
       return this.clientMessages.filter(message => this.isOut(message.direction)).length
     },
     caseIds () {
-      return [...new Set(this.selectedTypeMessages.map(function (m) {
-        return this.getCaseId(m, true)
-      }))]
+      return [...new Set(this.selectedTypeMessages.map(m => this.getCaseId(m, true)))]
     }
   },
   mounted () {
@@ -203,11 +201,11 @@ export default {
     },
     submit () {
       // Submits current SchemaForm
-      this.$refs.schemaForms[this.messageTypeTabIndex].submit()
+      this.$refs.schemaForms.find(schema => schema.label === this.messageTypes[this.messageTypeTabIndex].label).submit()
     },
     useMessageToReply (message) {
       // Use message to fill the form
-      this.$refs.schemaForms[this.messageTypeTabIndex].load(message)
+      this.$refs.schemaForms.find(schema => schema.label === this.messageTypes[this.messageTypeTabIndex].label).load(message)
     }
   }
 }
