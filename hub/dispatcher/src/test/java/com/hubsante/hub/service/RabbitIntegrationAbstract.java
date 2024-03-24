@@ -50,7 +50,7 @@ import java.io.IOException;
 public class RabbitIntegrationAbstract {
 
     protected static final String HUBSANTE_EXCHANGE = "hubsante";
-    protected static final String RABBITMQ_IMAGE = "rabbitmq:3.12-management-alpine";
+    protected static final String RABBITMQ_IMAGE = "rabbitmq:3.12.13-management-alpine";
     protected static final String SAMU_A_ROUTING_KEY = "fr.health.samuA";
     protected static final String SAMU_A_MESSAGE_QUEUE = SAMU_A_ROUTING_KEY + ".message";
     protected static final String SAMU_A_INFO_QUEUE = SAMU_A_ROUTING_KEY + ".info";
