@@ -34,7 +34,7 @@ jobs:
           # required to run tests because the whole build.gradle seems to be evaluated, even if the jib task is not executed
           # so the GITHUB_TOKEN var must be resolved
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./gradlew license
+        run: ./gradlew licenseFormat
 
       - name: Build and run tests
         env:
