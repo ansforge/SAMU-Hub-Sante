@@ -28,7 +28,7 @@ import static com.hubsante.hub.service.utils.MessageTestUtils.createInvalidMessa
 import static com.hubsante.hub.service.utils.MessageTestUtils.createMessage;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class RabbitBatchTest extends RabbitIntegrationAbstract {
+public class RabbitMQBatchTest extends RabbitIntegrationAbstract {
 
     @Autowired
     private AmqpAdmin amqpAdmin;
