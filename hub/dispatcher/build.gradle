@@ -9,7 +9,7 @@ plugins {
 
 group = 'com.hubsante'
 archivesBaseName = 'hubsante-dispatcher'
-version = '0.11.2'
+version = '0.11.3'
 
 java {
     toolchain {
@@ -60,7 +60,7 @@ ext {
 }
 
 dependencies {
-    implementation 'com.hubsante:models-2:0.4.2'
+    implementation 'com.hubsante:models-2:0.4.3'
 
     implementation 'org.codehaus.groovy:groovy-json:3.0.9'
     implementation 'org.springframework.boot:spring-boot-starter-amqp'
