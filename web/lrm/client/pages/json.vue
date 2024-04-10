@@ -85,10 +85,10 @@ export default {
   data () {
     return {
       mounted: false,
-      selectedSource: 'schemas/',
+      selectedSource: 'schemas/json-schema/',
       sources: [{
         text: 'Local',
-        value: 'schemas/'
+        value: 'schemas/json-schema/'
       }, {
         divider: true,
         header: 'GitHub branches'
