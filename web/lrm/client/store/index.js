@@ -48,7 +48,7 @@ export const state = () => ({
       victim: 'Homme, adulte, 43 ans',
       medicalSituation: 'Céphalées, migraines, traumatismes sérieux, plaies intermédiaires'
     }, {
-      file: '../exemple-invalide.json',
+      file: '../failing/RC-EDA/RC-EDA-missing-required-fields.json',
       icon: 'mdi-alert-circle-outline',
       name: 'Champs manquants',
       context: "Pour illustrer les messages d'INFO sur les erreurs de validation"
