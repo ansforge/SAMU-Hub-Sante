@@ -196,7 +196,7 @@ export default {
       }, {})
     },
     formatIdsInMessage (innerMessage) {
-      // Check the entire message for occurencesof {senderName} and replaceit with the actual sender name
+      // Check the entire message for occurences of {senderName} and replace it with the actual sender name
       const senderName = this.userInfos.name
       let jsonString = JSON.stringify(innerMessage)
       jsonString = jsonString.replaceAll('samu690', senderName)

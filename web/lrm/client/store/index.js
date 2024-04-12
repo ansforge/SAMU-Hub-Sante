@@ -35,7 +35,7 @@ export const state = () => ({
   // ToDo: when message is loaded, add them in store to not load them again later
   messageTypes: [{
     label: 'RC-EDA',
-    schemaName: 'json-schema/RC-EDA.schema.json',
+    schemaName: 'RC-EDA.schema.json',
     schema: null,
     examples: [{
       file: 'RC-EDA/RC-EDA-usecase-Armaury-1.json',
@@ -48,14 +48,14 @@ export const state = () => ({
       victim: 'Homme, adulte, 43 ans',
       medicalSituation: 'Céphalées, migraines, traumatismes sérieux, plaies intermédiaires'
     }, {
-      file: '../exemple-invalide.json',
+      file: '../failing/RC-EDA/RC-EDA-missing-required-fields.json',
       icon: 'mdi-alert-circle-outline',
       name: 'Champs manquants',
       context: "Pour illustrer les messages d'INFO sur les erreurs de validation"
     }]
   }, {
     label: 'EMSI',
-    schemaName: 'json-schema/EMSI.schema.json',
+    schemaName: 'EMSI.schema.json',
     schema: null,
     examples: [{
       file: 'EMSI/emsi-DC-message.json',
@@ -103,7 +103,7 @@ export const state = () => ({
     }]
   }, {
     label: 'RS-EDA',
-    schemaName: 'json-schema/RS-EDA.schema.json',
+    schemaName: 'RS-EDA.schema.json',
     schema: null,
     examples: [{
       file: 'RS-EDA/RS-EDA-usecase-PartageDossier-1.json',
@@ -128,7 +128,7 @@ export const state = () => ({
     }]
   }, {
     label: 'GEO-POS',
-    schemaName: 'json-schema/GEO-POS.schema.json',
+    schemaName: 'GEO-POS.schema.json',
     schema: null,
     examples: [{
       file: 'GEO-POS/CU2_Geolocation.json',
@@ -138,7 +138,7 @@ export const state = () => ({
     }]
   }, {
     label: 'GEO-RES',
-    schemaName: 'json-schema/GEO-RES.schema.json',
+    schemaName: 'GEO-RES.schema.json',
     schema: null,
     examples: [{
       file: 'GEO-RES/CU1_Geolocation.json',
@@ -148,7 +148,7 @@ export const state = () => ({
     }]
   }, {
     label: 'GEO-REQ',
-    schemaName: 'json-schema/GEO-REQ.schema.json',
+    schemaName: 'GEO-REQ.schema.json',
     schema: null,
     examples: [{
       file: 'GEO-REQ/CU3_Geolocation.json',
@@ -232,7 +232,7 @@ export const actions = {
 
   loadSchemas ({ state, commit }, source) {
     // ToDo: load schemas from github branch directly so it is up to date?
-    source = source || 'schemas/'
+    source = source || 'schemas/json-schema/'
     Promise.all(state.messageTypes.map(async ({ schemaName }, index) => {
       console.log('Loading schema from: ' + source + schemaName)
       const response = await fetch(source + schemaName)
