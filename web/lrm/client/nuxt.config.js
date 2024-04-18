@@ -9,7 +9,7 @@ if (!process.env.BACKEND_LRM_SERVER) {
 }
 export default {
   // Target: https://go.nuxtjs.dev/config-target
-  target: 'static',
+  target: 'server',
 
   // Global page headers: https://go.nuxtjs.dev/config-head
   head: {
@@ -98,6 +98,10 @@ export default {
   router: {
     middleware: ['auth'],
     base: (process.env.NODE_ENV === 'production' ? '/lrm/' : '/')
+  },
+
+  publicRuntimeConfig: {
+    clientList: process.env.NUXT_CLIENT_LIST || 'NUXT_CLIENT_LIST not set'
   },
 
   env: {
