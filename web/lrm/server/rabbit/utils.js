@@ -26,10 +26,10 @@ const DEMO_CLIENT_IDS = {
 const opts = {
   // pfx with new encryption needed for Node 19 support
   // Ref: https://github.com/nodejs/node/issues/40672#issuecomment-1680460423
-  pfx: fs.readFileSync(path.join(moduleDir, 'certs/local_test.pfx')),
+  pfx: fs.readFileSync(path.join(moduleDir, 'certs/lrm_test.pfx')),
   // cert: fs.readFileSync(path.join(moduleDir, 'certs/local_test.crt')), // client cert
   // key: fs.readFileSync(path.join(moduleDir, 'certs/local_test.key')), // client key
-  passphrase: 'certPassword', // passphrase for key
+  passphrase: process.env.LRM_PASSPHRASE,
   ca: [fs.readFileSync(path.join(moduleDir, 'certs/rootCA.crt'))], // array of trusted CA certs
   // Ref.: https://github.com/amqp-node/amqplib/issues/105
   credentials: amqp.credentials.external(),
