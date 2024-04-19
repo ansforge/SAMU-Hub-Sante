@@ -63,7 +63,7 @@
         <v-card-text>
           <json-viewer
             v-if="currentMessage"
-            :value="{[currentMessageType?.schema?.title]:currentMessage}"
+            :value="trimEmptyValues({[currentMessageType?.schema?.title]: currentMessage})"
             :expand-depth="10"
             :copyable="{copyText: 'Copier', copiedText: 'Copié !', timeout: 1000}"
             theme="json-theme"
@@ -85,16 +85,19 @@ export default {
   data () {
     return {
       mounted: false,
-      selectedSource: 'schemas/',
+      selectedSource: 'schemas/json-schema/',
       sources: [{
         text: 'Local',
-        value: 'schemas/'
+        value: 'schemas/json-schema/'
       }, {
         divider: true,
         header: 'GitHub branches'
       }, {
         text: 'main',
         value: REPOSITORY_URL + 'main/src/main/resources/json-schema/'
+      }, {
+        text: 'develop',
+        value: REPOSITORY_URL + 'develop/src/main/resources/json-schema/'
       }, {
         text: 'auto/model_tracker',
         value: REPOSITORY_URL + 'auto/model_tracker/src/main/resources/json-schema/'
@@ -175,11 +178,11 @@ export default {
     saveMessage () {
       // Download as file | Ref.: https://stackoverflow.com/a/34156339
       // JSON pretty-print | Ref.: https://stackoverflow.com/a/7220510
-      const data = JSON.stringify(this.currentSchemaForm?.form, null, 2)
+      const data = JSON.stringify(this.trimEmptyValues({ [this.currentMessageType?.schema?.title]: this.currentMessage }), null, 2)
       const a = document.createElement('a')
       const file = new Blob([data], { type: 'application/json' })
       a.href = URL.createObjectURL(file)
-      a.download = `${this.currentSchemaForm?.label}-message.json`
+      a.download = `${this.currentMessageType?.label}-message.json`
       a.click()
     }
   }

@@ -1,0 +1,481 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "classpath:/json-schema/schema#",
+  "required": [
+    "senderID",
+    "distributionID",
+    "dateTimeSent",
+    "dateTimeExpires",
+    "distributionStatus",
+    "distributionKind",
+    "descriptor",
+    "content"
+  ],
+  "properties": {
+    "senderID": {
+      "type": "string"
+    },
+    "distributionID": {
+      "type": "string"
+    },
+    "dateTimeSent": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "dateTimeExpires": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "content": {
+      "$ref": "#/definitions/Content"
+    },
+    "descriptor": {
+      "$ref": "#/definitions/Descriptor"
+    },
+    "distributionKind": {
+      "$ref": "#/definitions/DistributionKind"
+    },
+    "distributionStatus": {
+      "$ref": "#/definitions/DistributionStatus"
+    }
+  },
+  "additionalProperties": false,
+  "definitions": {
+<<<<<<<< HEAD:web/lrm/client/static/schemas/json-schema/EDXL-DE-full.schema.json
+========
+    "EdxlEnvelope": {
+      "type": "object",
+      "properties": {
+        "senderID": {
+          "type": "string"
+        },
+        "distributionID": {
+          "type": "string"
+        },
+        "dateTimeSent": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "dateTimeExpires": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "distributionStatus": {
+          "$ref": "#/definitions/DistributionStatus"
+        },
+        "distributionKind": {
+          "$ref": "#/definitions/DistributionKind"
+        },
+        "descriptor": {
+          "$ref": "#/definitions/Descriptor"
+        }
+      },
+      "required": [
+        "senderID",
+        "distributionID",
+        "dateTimeSent",
+        "dateTimeExpires",
+        "distributionStatus",
+        "distributionKind",
+        "descriptor"
+      ]
+    },
+    "EdxlMessage": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/EdxlEnvelope"
+        }
+      ],
+      "properties": {
+        "content": {
+          "$ref": "#/definitions/Content"
+        }
+      },
+      "required": [
+        "content"
+      ]
+    },
+>>>>>>>> develop:web/lrm/client/static/schemas/json-schema/EDXL-DE-full-with-GEO.schema.json
+    "Content": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/ContentObject"
+      },
+      "minItems": 1
+    },
+    "ContentObject": {
+      "type": "object",
+      "required": [
+        "jsonContent"
+      ],
+      "properties": {
+        "jsonContent": {
+          "$ref": "#/definitions/JsonContent"
+        }
+      }
+    },
+    "JsonContent": {
+      "type": "object",
+      "required": [
+        "embeddedJsonContent"
+      ],
+      "properties": {
+        "embeddedJsonContent": {
+          "$ref": "#/definitions/EmbeddedJsonContent"
+        }
+      }
+    },
+    "EmbeddedJsonContent": {
+      "type": "object",
+      "oneOf": [
+        {
+          "allOf": [
+            {
+              "properties": {
+                "message": {
+                  "$ref": "RC-DE.schema.json"
+                }
+              }
+            },
+            {
+              "properties": {
+                "message": {
+                  "properties": {
+<<<<<<<< HEAD:web/lrm/client/static/schemas/json-schema/EDXL-DE-full.schema.json
+                    "createCase": {
+                      "$ref": "RC-EDA.schema.json"
+                    }
+                  },
+                  "required": [
+                    "createCase"
+========
+                    "createCaseHealth": {
+                      "$ref": "RS-EDA.schema.json"
+                    }
+                  },
+                  "required": [
+                    "createCaseHealth"
+>>>>>>>> develop:web/lrm/client/static/schemas/json-schema/EDXL-DE-full-with-GEO.schema.json
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "properties": {
+                "message": {
+                  "$ref": "RC-DE.schema.json"
+                }
+              }
+            },
+            {
+              "properties": {
+                "message": {
+                  "properties": {
+<<<<<<<< HEAD:web/lrm/client/static/schemas/json-schema/EDXL-DE-full.schema.json
+                    "createCaseHealth": {
+                      "$ref": "RS-EDA.schema.json"
+                    }
+                  },
+                  "required": [
+                    "createCaseHealth"
+========
+                    "createCase": {
+                      "$ref": "RC-EDA.schema.json"
+                    }
+                  },
+                  "required": [
+                    "createCase"
+>>>>>>>> develop:web/lrm/client/static/schemas/json-schema/EDXL-DE-full-with-GEO.schema.json
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "properties": {
+                "message": {
+                  "$ref": "RC-DE.schema.json"
+                }
+              }
+            },
+            {
+              "properties": {
+                "message": {
+                  "properties": {
+                    "reference": {
+                      "$ref": "RC-REF.schema.json"
+                    }
+                  },
+                  "required": [
+                    "reference"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "properties": {
+            "message": {
+              "properties": {
+                "info": {
+                  "$ref": "RS-INFO.schema.json"
+                }
+              },
+              "required": [
+                "info"
+              ]
+            }
+          }
+<<<<<<<< HEAD:web/lrm/client/static/schemas/json-schema/EDXL-DE-full.schema.json
+        },
+        {
+          "properties": {
+            "message": {
+              "properties": {
+                "error": {
+                  "$ref": "RS-ERROR.schema.json"
+                }
+              },
+              "required": [
+                "error"
+              ]
+            }
+          }
+========
+>>>>>>>> develop:web/lrm/client/static/schemas/json-schema/EDXL-DE-full-with-GEO.schema.json
+        },
+        {
+          "allOf": [
+            {
+              "properties": {
+                "message": {
+                  "$ref": "RC-DE.schema.json"
+                }
+              }
+            },
+            {
+              "properties": {
+                "message": {
+                  "properties": {
+                    "emsi": {
+                      "$ref": "EMSI.schema.json"
+                    }
+                  },
+                  "required": [
+                    "emsi"
+                  ]
+                }
+              }
+<<<<<<<< HEAD:web/lrm/client/static/schemas/json-schema/EDXL-DE-full.schema.json
+========
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "properties": {
+                "message": {
+                  "$ref": "RC-DE.schema.json"
+                }
+              }
+            },
+            {
+              "properties": {
+                "message": {
+                  "properties": {
+                    "resourceDetails": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "GEO-RES.schema.json"
+                      }
+                    }
+                  },
+                  "required": [
+                    "resourceDetails"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "properties": {
+                "message": {
+                  "$ref": "RC-DE.schema.json"
+                }
+              }
+            },
+            {
+              "properties": {
+                "message": {
+                  "properties": {
+                    "positionUpdate": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "GEO-POS.schema.json"
+                      }
+                    }
+                  },
+                  "required": [
+                    "positionUpdate"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "properties": {
+                "message": {
+                  "$ref": "RC-DE.schema.json"
+                }
+              }
+            },
+            {
+              "properties": {
+                "message": {
+                  "properties": {
+                    "resourceRequest": {
+                      "$ref": "GEO-REQ.schema.json"
+                    }
+                  },
+                  "required": [
+                    "resourceRequest"
+                  ]
+                }
+              }
+>>>>>>>> develop:web/lrm/client/static/schemas/json-schema/EDXL-DE-full-with-GEO.schema.json
+            }
+          ]
+        },
+        {
+          "properties": {
+            "message": {
+              "properties": {
+                "customContent": {
+                  "$ref": "CustomContent.schema.json"
+                }
+              },
+              "required": [
+                "customContent"
+              ]
+            }
+          }
+<<<<<<<< HEAD:web/lrm/client/static/schemas/json-schema/EDXL-DE-full.schema.json
+        },
+        {
+          "allOf": [
+            {
+              "properties": {
+                "message": {
+                  "$ref": "RC-DE.schema.json"
+                }
+              }
+            },
+            {
+              "properties": {
+                "message": {
+                  "oneOf": [
+                    {
+                      "properties": {
+                        "geoPositionUpdate": {
+                          "$ref": "GEO-POS.schema.json"
+                        }
+                      },
+                      "required": [
+                        "geoPositionUpdate"
+                      ]
+                    },
+                    {
+                      "properties": {
+                        "geoResourceRequest": {
+                          "$ref": "GEO-REQ.schema.json"
+                        }
+                      },
+                      "required": [
+                        "geoResourceRequest"
+                      ]
+                    },
+                    {
+                      "properties": {
+                        "geoResourceDetails": {
+                          "$ref": "GEO-RES.schema.json"
+                        }
+                      },
+                      "required": [
+                        "geoResourceDetails"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+========
+>>>>>>>> develop:web/lrm/client/static/schemas/json-schema/EDXL-DE-full-with-GEO.schema.json
+        }
+      ]
+    },
+    "Descriptor": {
+      "type": "object",
+      "properties": {
+        "explicitAddress": {
+          "$ref": "#/definitions/ExplicitAddress"
+        },
+        "language": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "explicitAddress",
+        "language"
+      ]
+    },
+    "DistributionKind": {
+      "type": "string",
+      "enum": [
+        "Report",
+        "Update",
+        "Cancel",
+        "Ack",
+        "Error"
+      ]
+    },
+    "DistributionStatus": {
+      "type": "string",
+      "enum": [
+        "Actual",
+        "Exercise"
+      ]
+    },
+    "ExplicitAddress": {
+      "type": "object",
+      "properties": {
+        "explicitAddressScheme": {
+          "type": "string"
+        },
+        "explicitAddressValue": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "explicitAddressScheme",
+        "explicitAddressValue"
+      ]
+    }
+  }
+}

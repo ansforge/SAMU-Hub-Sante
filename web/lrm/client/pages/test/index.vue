@@ -84,20 +84,11 @@
     </v-col>
   </v-row>
 </template>
-                  </v-timeline-item>
-                </v-timeline>
-              </v-list>
-            </v-expansion-panel-content>
-          </v-expansion-panel>
-        </v-expansion-panels>
-      </v-list>
-    </v-col>
-  </v-row>
-</template>
 
 <script>
 
 import testCaseFile from '~/assets/test-cases.json'
+import testCaseFileAuto from '~/assets/test_cases_auto.json'
 import { REPOSITORY_URL } from '@/constants'
 
 export default {
@@ -126,7 +117,10 @@ export default {
      * test execution.
      */
     loadTestCases () {
-      this.testCases = JSON.parse(JSON.stringify(testCaseFile))
+      this.testCases = [
+        ...JSON.parse(JSON.stringify(testCaseFile)),
+        ...JSON.parse(JSON.stringify(testCaseFileAuto))
+      ]
     },
     loadTestCaseJsons (testCase) {
       testCase.steps.forEach(async (step) => {

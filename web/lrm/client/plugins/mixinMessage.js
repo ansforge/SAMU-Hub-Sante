@@ -1,6 +1,7 @@
 import { v4 as uuidv4 } from 'uuid'
 import moment from 'moment/moment'
 import { EDXL_ENVELOPE, DIRECTIONS } from '@/constants'
+const VALUES_TO_DROP = [null, undefined, '']
 
 export default {
   mounted () {
@@ -171,10 +172,31 @@ export default {
       message.content[0].jsonContent.embeddedJsonContent.message.sender = { name, URI: `hubex:${this.user.clientId}` }
       message.content[0].jsonContent.embeddedJsonContent.message.sentAt = sentAt
       message.content[0].jsonContent.embeddedJsonContent.message.recipient = [{ name: this.clientInfos(this.user.targetId).name, URI: `hubex:${targetId}` }]
-      return message
+      return this.trimEmptyValues(message)
+    },
+    isEmpty (obj) {
+      if (typeof obj === 'object') {
+        return Object.keys(obj).length === 0
+      }
+      return false
+    },
+    trimEmptyValues (obj) {
+      return Object.entries(obj).reduce((acc, [key, value]) => {
+        if (!(VALUES_TO_DROP.includes(value) || this.isEmpty(value))) {
+          if (typeof value !== 'object') {
+            acc[key] = value
+          } else {
+            value = this.trimEmptyValues(value)
+            if (!this.isEmpty(value)) {
+              acc[key] = value
+            }
+          }
+        }
+        return Array.isArray(obj) ? Object.values(acc) : acc
+      }, {})
     },
     formatIdsInMessage (innerMessage) {
-      // Check the entire message for occurencesof {senderName} and replaceit with the actual sender name
+      // Check the entire message for occurences of {senderName} and replace it with the actual sender name
       const senderName = this.userInfos.name
       let jsonString = JSON.stringify(innerMessage)
       jsonString = jsonString.replaceAll('samu690', senderName)
