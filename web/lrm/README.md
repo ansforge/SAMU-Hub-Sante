@@ -9,6 +9,9 @@ cd server && npm run setup && cd ..
 # Build & push docker image
 docker buildx build --platform linux/amd64 -t romainfd/hub-lrm:latest .
 docker push romainfd/hub-lrm:latest
+cd client && npm build
+docker buildx build --platform linux/amd64 -t romainfd/hub-lrm-client:latest .
+
 
 # Redo it for the preprod environment (quick and dirty way to ensure preprod and prod are built on the same codebase, even if we have to pass
 # env variable at build time - we should handle it differently later)
@@ -18,6 +21,8 @@ cd server && npm run setup && cd ..
 # Build & push docker image
 docker buildx build --platform linux/amd64 -t romainfd/hub-lrm:preprod .
 docker push romainfd/hub-lrm:preprod
+cd client && npm build
+docker buildx build --platform linux/amd64 -t romainfd/hub-lrm-client:preprod .
 
 # Make sure you are on correct Kubernetes context
 kubectl replace --force -f ../../hub/infra/web/lrm.yaml
