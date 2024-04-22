@@ -26,6 +26,7 @@ docker buildx build --platform linux/amd64 -t romainfd/hub-lrm-client:preprod .
 
 # Make sure you are on correct Kubernetes context
 kubectl replace --force -f ../../hub/infra/web/lrm.yaml
+kubectl replace --force -f ../../hub/infra/web/lrm-client.yaml
 ```
 
 ## Local development
