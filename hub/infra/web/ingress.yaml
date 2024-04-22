@@ -39,6 +39,6 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: web-lrm
+                name: lrm-client
                 port:
                   number: 80
