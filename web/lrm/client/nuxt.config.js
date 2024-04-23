@@ -103,6 +103,7 @@ export default {
   publicRuntimeConfig: {
     clientIdList: process.env.CLIENT_ID_LIST || '[]',
     modelBranch: process.env.MODEL_BRANCH || 'main',
+    // TODO: enlver hubUrl?
     hubUrl: process.env.HUB_URL || 'amqps://messaging.bac-a-sable.hub.esante.gouv.fr',
     backendLrmServer: (process.env.BACKEND_LRM_SERVER === 'localhost'
       ? 'ws://localhost:8081/'
