@@ -117,7 +117,7 @@ export default {
       if (this.clientIds.includes(this.form.targetId)) {
         this.form.clientId = this.form.targetId
       } else {
-        // Can only connect as a clientId in the authorised clientIds
+        // Can only connect as a clientId in the authorized clientIds
         this.form.clientId = null
       }
       this.form.targetId = clientId
