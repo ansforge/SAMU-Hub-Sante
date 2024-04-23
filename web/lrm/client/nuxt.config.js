@@ -101,12 +101,10 @@ export default {
   },
 
   publicRuntimeConfig: {
-    //  Placeholder for eventual client list to display in the UI
-    clientList: process.env.NUXT_CLIENT_LIST || 'NUXT_CLIENT_LIST not set'
-  },
-
-  env: {
-    wssUrl: (process.env.BACKEND_LRM_SERVER === 'localhost'
+    clientIdList: process.env.CLIENT_ID_LIST || '[]',
+    modelBranch: process.env.MODEL_BRANCH || 'main',
+    hubUrl: process.env.HUB_URL || 'amqps://messaging.bac-a-sable.hub.esante.gouv.fr',
+    backendLrmServer: (process.env.BACKEND_LRM_SERVER === 'localhost'
       ? 'ws://localhost:8081/'
       : 'wss://' + process.env.BACKEND_LRM_SERVER + '/lrm/')
   }

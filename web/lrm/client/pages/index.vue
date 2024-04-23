@@ -68,18 +68,7 @@ export default {
         type: 'error',
         message: ''
       },
-      clientIds: [
-        'fr.health.samuA',
-        'fr.health.samuB',
-        'fr.health.samuC',
-        'fr.fire.nexsis.sdisZ',
-        'fr.health.test.appligos',
-        'fr.health.test.bisom',
-        'fr.health.test.exos',
-        'fr.health.test.inetum',
-        'fr.health.test.rramu',
-        'fr.health.test.scriptal'
-      ],
+      clientIds: this.$config.clientIdList,
       form: {
         clientId: 'fr.health.samuA',
         targetId: 'fr.health.samuC',
