@@ -101,8 +101,7 @@ export default {
   },
 
   publicRuntimeConfig: {
-    //  Placeholder for eventual client list to display in the UI
-    clientList: process.env.NUXT_CLIENT_LIST || 'NUXT_CLIENT_LIST not set'
+    clientIdList: process.env.CLIENT_ID_LIST || '[]',
   },
 
   env: {
