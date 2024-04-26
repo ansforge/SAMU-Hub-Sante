@@ -17,7 +17,7 @@
               <v-select
                 v-model="form.clientId"
                 label="ID du système utilisé"
-                :items="clientIds"
+                :items="[...clientIds.keys()]"
                 :rules="[rules.required]"
               />
               <v-icon flat @click="swap">
@@ -68,7 +68,7 @@ export default {
         type: 'error',
         message: ''
       },
-      clientIds: this.$config.clientIdList,
+      clientIds: new Map(this.$config.clientIdList),
       form: {
         clientId: 'fr.health.samuA',
         targetId: 'fr.health.samuC',
@@ -90,20 +90,7 @@ export default {
   },
   computed: {
     targetClientIds () {
-      switch (this.form.clientId) {
-        case 'fr.health.test.appligos':
-          return ['fr.health.samu780']
-        case 'fr.health.test.bisom':
-          return ['fr.health.samu090', 'fr.health.samu091']
-        case 'fr.health.test.exos':
-          return ['fr.health.samu800', 'fr.health.samu570']
-        case 'fr.health.test.inetum':
-          return ['fr.health.samu440', 'fr.health.samu350']
-        case 'fr.health.test.rramu':
-          return ['fr.health.samu76A', 'fr.health.samu76B', 'fr.health.normandie']
-        case 'fr.health.test.scriptal':
-          return ['fr.health.scriptal']
-      }
+      return this.clientIds.get(this.form.clientId)
     }
   },
   methods: {
