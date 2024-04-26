@@ -68,7 +68,7 @@ export default {
         type: 'error',
         message: ''
       },
-      clientIds: new Map(this.$config.clientIdList),
+      clientIds: new Map(this.$config.clientMap),
       form: {
         clientId: 'fr.health.samuA',
         targetId: 'fr.health.samuC',
