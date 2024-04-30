@@ -97,7 +97,7 @@ export default {
 
   router: {
     middleware: ['auth'],
-    base: (process.env.NODE_ENV === 'production' ? '/lrm/' : '/')
+    base: (process.env.NODE_ENV === 'production' ? ' /lrm/': '/')
   },
 
   publicRuntimeConfig: {
@@ -105,6 +105,6 @@ export default {
     modelBranch: process.env.MODEL_BRANCH || 'main',
     backendLrmServer: (process.env.BACKEND_LRM_SERVER === 'localhost'
       ? 'ws://localhost:8081/'
-      : 'wss://' + process.env.BACKEND_LRM_SERVER + '/lrm/')
+      : 'wss://' + process.env.BACKEND_LRM_SERVER + '/lrm/api/')
   }
 }
