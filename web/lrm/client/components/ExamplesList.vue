@@ -107,7 +107,7 @@ export default {
     },
     loadExample (exampleName) {
       if (exampleName) {
-        fetch(REPOSITORY_URL + 'main/src/main/resources/sample/examples/' + exampleName)
+        fetch(REPOSITORY_URL + this.$config.modelBranch + '/src/main/resources/sample/examples/' + exampleName)
           .then(response => response.json())
           .then((data) => {
             this.selectedExample = data[Object.keys(data)[0]]
