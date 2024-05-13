@@ -1,12 +1,5 @@
 import colors from 'vuetify/es5/util/colors'
 
-// This is a workaround to avoid hard-coding the backend server URL in the code
-// We force the user to set the BACKEND_LRM_SERVER environment variable before running "nuxt generate"
-// The build won't work if the variable is not set
-if (!process.env.BACKEND_LRM_SERVER) {
-  throw new Error('BACKEND_LRM_SERVER environment variable is not set. It must be set to an actual URL of a remote server' +
-    ' or to \'localhost\' to reach a server running on ws://localhost:8081')
-}
 export default {
   // Target: https://go.nuxtjs.dev/config-target
   target: 'server',
@@ -97,7 +90,7 @@ export default {
 
   router: {
     middleware: ['auth'],
-    base: (process.env.NODE_ENV === 'production' ? '/lrm/': '/')
+    base: (process.env.NODE_ENV === 'production' ? '/lrm/' : '/')
   },
 
   publicRuntimeConfig: {
