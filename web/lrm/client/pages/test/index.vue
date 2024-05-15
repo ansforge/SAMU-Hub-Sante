@@ -117,9 +117,31 @@ export default {
      * test execution.
      */
     loadTestCases () {
+      // Generated test cases have 3 levels of verification for each required property, ergo we create 3 test cases from each generated test case (Adding 'Level 1/2/3' to the
+      // test case label and description)
+      const parsedTestCases = []
+      testCaseFileAuto.forEach((category) => {
+        const newTestCases = []
+        category.testCases.forEach((testCase) => {
+          for (let i = 1; i <= 3; i++) {
+            const newTestCase = JSON.parse(JSON.stringify(testCase))
+            newTestCase.label = `${newTestCase.label} - Level ${i}`
+            newTestCase.description = `${newTestCase.description} - Level ${i}`
+            // We only keep the required values for the current and previous levels
+            newTestCase.steps.forEach((step) => {
+              step.message.requiredValues = step.message.requiredValues.filter(requiredValue => requiredValue.verificationLevel <= i)
+            })
+            newTestCases.push(newTestCase)
+          }
+        })
+        parsedTestCases.push({
+          categoryLabel: category.categoryLabel,
+          testCases: newTestCases
+        })
+      })
       this.testCases = [
         ...JSON.parse(JSON.stringify(testCaseFile)),
-        ...JSON.parse(JSON.stringify(testCaseFileAuto))
+        ...JSON.parse(JSON.stringify(parsedTestCases))
       ]
     },
     loadTestCaseJsons (testCase) {
