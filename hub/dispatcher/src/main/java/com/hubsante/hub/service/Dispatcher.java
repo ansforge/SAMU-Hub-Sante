@@ -16,25 +16,32 @@
 package com.hubsante.hub.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.exc.StreamReadException;
+import com.fasterxml.jackson.databind.DatabindException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hubsante.hub.config.HubConfiguration;
 import com.hubsante.hub.exception.*;
 import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.Validator;
 import com.hubsante.model.edxl.EdxlMessage;
 import com.hubsante.model.report.ErrorCode;
-import com.hubsante.model.report.ErrorReport;
+import com.hubsante.model.report.Error;
 import io.micrometer.core.annotation.Timed;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Metrics;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import lombok.extern.slf4j.Slf4j;
+import org.json.JSONObject;
 import org.springframework.amqp.AmqpRejectAndDontRequeueException;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.HashMap;
 
 import static com.hubsante.hub.config.AmqpConfiguration.*;
 import static com.hubsante.hub.utils.MessageUtils.*;
@@ -87,14 +94,17 @@ public class Dispatcher {
                 // This should never happen as if we've reached this point, the message has already been deserialized
                 log.error("Could not deserialize message " + returnedEdxlString, e);
             }
-            ErrorReport errorReport = new ErrorReport(
-                    ErrorCode.UNROUTABLE_MESSAGE,
-                    "unable do deliver message to " + returned.getRoutingKey() + ", cause was " + returned.getReplyText() + " (" + returned.getReplyCode() + ")",
-                    new String(returned.getMessage().getBody()),
-                    returnedEdxlMessage != null ? returnedEdxlMessage.getDistributionID() : DISTRIBUTION_ID_UNAVAILABLE);
-
+            Error error = new Error();
+            error.setErrorCode(ErrorCode.UNROUTABLE_MESSAGE);
+            error.setErrorCause("unable do deliver message to " + returned.getRoutingKey() + ", cause was " + returned.getReplyText() + " (" + returned.getReplyCode() + ")");
+            try {
+                error.setSourceMessage(new ObjectMapper().readValue(returned.getMessage().getBody(), HashMap.class));
+            } catch (IOException e) {
+                log.error("Error occurred while reading the message body", e);
+            }
+            error.setReferencedDistributionID(returnedEdxlMessage != null ? returnedEdxlMessage.getDistributionID() : DISTRIBUTION_ID_UNAVAILABLE);
             String senderRoutingKey = returned.getMessage().getMessageProperties().getHeader(DLQ_ORIGINAL_ROUTING_KEY);
-            messageHandler.logErrorAndSendReport(errorReport, senderRoutingKey);
+            messageHandler.logErrorAndSendReport(error, senderRoutingKey);
         });
     }
 

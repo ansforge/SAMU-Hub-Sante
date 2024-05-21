@@ -16,6 +16,7 @@
 package com.hubsante.hub.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hubsante.hub.config.HubConfiguration;
 import com.hubsante.hub.exception.*;
 import com.hubsante.model.EdxlHandler;
@@ -25,7 +26,7 @@ import com.hubsante.model.edxl.DistributionKind;
 import com.hubsante.model.edxl.EdxlEnvelope;
 import com.hubsante.model.edxl.EdxlMessage;
 import com.hubsante.model.exception.ValidationException;
-import com.hubsante.model.report.ErrorReport;
+import com.hubsante.model.report.Error;
 import com.hubsante.model.report.ErrorWrapper;
 import io.micrometer.core.annotation.Timed;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -41,6 +42,8 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
+import java.util.HashMap;
 
 import static com.hubsante.hub.config.AmqpConfiguration.DISTRIBUTION_EXCHANGE;
 import static com.hubsante.hub.config.AmqpConfiguration.DLQ_ORIGINAL_ROUTING_KEY;
@@ -67,34 +70,41 @@ public class MessageHandler {
     }
 
     protected void handleError(AbstractHubException exception, Message message) {
-        // create ErrorReport
-        ErrorReport errorReport = new ErrorReport(
-                exception.getErrorCode(), exception.getMessage(), new String(message.getBody()), exception.getReferencedDistributionID());
+        // create Error
+        Error error = new Error();
+        error.setErrorCode(exception.getErrorCode());
+        error.setErrorCause(exception.getMessage());
+        try {
+            error.setSourceMessage(new ObjectMapper().readValue(message.getBody(), HashMap.class));
+        } catch (IOException e) {
+            log.error("Error occurred while reading the message body", e);
+        }
+        error.setReferencedDistributionID(exception.getReferencedDistributionID());
 
-        // send ErrorReport to sender
+        // send Error to sender
         // if the message has been dead-lettered, we retrieve the original sender from the x-death-original-routing-key header
         String senderClientID = exception instanceof DeadLetteredMessageException ?
                 message.getMessageProperties().getHeader(DLQ_ORIGINAL_ROUTING_KEY) :
                 message.getMessageProperties().getReceivedRoutingKey();
 
-        logErrorAndSendReport(errorReport, senderClientID);
+        logErrorAndSendReport(error, senderClientID);
         // increment metric like dispatch_error{reason="INVALID_MESSAGE",sender="fr.health.samuXXX"}
         publishErrorMetric(exception.getErrorCode().getStatusString(), senderClientID);
         // throw exception to reject the message
         throw new AmqpRejectAndDontRequeueException(exception);
     }
-    protected void logErrorAndSendReport(ErrorReport errorReport, String sender) {
+    protected void logErrorAndSendReport(Error error, String sender) {
         String infoQueueName = getInfoQueueNameFromClientId(sender);
 
         // log error
         // TODO bbo : add a logback pattern to allow structured logging
         log.error(
                 "Error occurred with message published by " + sender + "\n" +
-                        "ErrorReport " + errorReport.getErrorCode() + "\n" +
-                        "ErrorCause " + errorReport.getErrorCause() + "\n" +
-                        "ErrorSourceMessage " + errorReport.getSourceMessage());
+                        "Error " + error.getErrorCode() + "\n" +
+                        "ErrorCause " + error.getErrorCause() + "\n" +
+                        "ErrorSourceMessage " + error.getSourceMessage());
 
-        ErrorWrapper wrapper = new ErrorWrapperBuilder(errorReport).build();
+        ErrorWrapper wrapper = new ErrorWrapperBuilder(error).build();
 
         try {
             EdxlMessage errorEdxlMessage = edxlMessageFromHub(sender, wrapper);
@@ -110,7 +120,7 @@ public class MessageHandler {
             rabbitTemplate.send(DISTRIBUTION_EXCHANGE, infoQueueName, errorAmqpMessage);
         } catch (JsonProcessingException e) {
             // This should never happen : we are serializing a POJO with 2 String attributes and a single enum
-            log.error("Could not serialize ErrorReport for message " + errorReport.getSourceMessage(), e);
+            log.error("Could not serialize Error for message " + error.getSourceMessage(), e);
             throw new RuntimeException(e);
         }
     }
