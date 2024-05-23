@@ -19,7 +19,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.TestMessagesHelper;
 import com.hubsante.model.edxl.EdxlMessage;
-import com.hubsante.model.report.ErrorReport;
+import com.hubsante.model.report.Error;
 import com.hubsante.model.report.ErrorWrapper;
 import org.apache.commons.compress.utils.FileNameUtils;
 import org.jetbrains.annotations.NotNull;
@@ -98,7 +98,7 @@ public class MessageTestUtils {
         }
     }
 
-    public static ErrorReport getErrorReportFromMessage(EdxlHandler edxlHandler, Message message) throws JsonProcessingException {
+    public static Error getErrorFromMessage(EdxlHandler edxlHandler, Message message) throws JsonProcessingException {
 
         String msgString = new String(message.getBody());
 

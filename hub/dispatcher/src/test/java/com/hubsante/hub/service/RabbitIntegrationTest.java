@@ -19,7 +19,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.edxl.EdxlMessage;
 import com.hubsante.model.report.ErrorCode;
-import com.hubsante.model.report.ErrorReport;
+import com.hubsante.model.report.Error;
 import com.hubsante.model.report.ErrorWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.*;
@@ -97,7 +97,7 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
         samuA_publisher.send(HUBSANTE_EXCHANGE, SAMU_A_ROUTING_KEY, published);
         Thread.sleep(DISPATCHER_PROCESS_TIME);
 
-        assertErrorReportHasBeenReceived(samuA_publisher, SAMU_A_INFO_QUEUE, ErrorCode.UNROUTABLE_MESSAGE,
+        assertErrorHasBeenReceived(samuA_publisher, SAMU_A_INFO_QUEUE, ErrorCode.UNROUTABLE_MESSAGE,
                 "unable do deliver message to fr.health.inexistent.message",
                 "312", "NO_ROUTE");
     }
@@ -111,7 +111,7 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
 
         Thread.sleep(DISPATCHER_PROCESS_TIME + DEFAULT_TTL);
         assertRecipientDidNotReceive("samuB", SAMU_B_MESSAGE_QUEUE);
-        assertErrorReportHasBeenReceived(samuA_publisher, SAMU_A_INFO_QUEUE, ErrorCode.DEAD_LETTER_QUEUED,
+        assertErrorHasBeenReceived(samuA_publisher, SAMU_A_INFO_QUEUE, ErrorCode.DEAD_LETTER_QUEUED,
                 "fr.health.samuA_2608323d-507d-4cbf-bf74-52007f8124ea", "dead-letter-queue; reason was expired");
     }
 
@@ -132,7 +132,7 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
         });
         Thread.sleep(DISPATCHER_PROCESS_TIME);
         assertRecipientDidNotReceive("samuB", SAMU_B_MESSAGE_QUEUE);
-        assertErrorReportHasBeenReceived(samuA_publisher, SAMU_A_INFO_QUEUE, ErrorCode.DEAD_LETTER_QUEUED,
+        assertErrorHasBeenReceived(samuA_publisher, SAMU_A_INFO_QUEUE, ErrorCode.DEAD_LETTER_QUEUED,
                 "rejected");
     }
 
@@ -144,17 +144,17 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
         assertNull(received);
     }
 
-    private void assertErrorReportHasBeenReceived(RabbitTemplate rabbitTemplate, String infoQueueName,
+    private void assertErrorHasBeenReceived(RabbitTemplate rabbitTemplate, String infoQueueName,
                                                          ErrorCode errorCode, String... errorCause) throws JsonProcessingException {
 
         Message infoMsg = rabbitTemplate.receive(infoQueueName);
         assertNotNull(infoMsg);
         String errorString = new String(infoMsg.getBody());
 
-        ErrorReport errorReport = infoMsg.getMessageProperties().getContentType().equals(MessageProperties.CONTENT_TYPE_XML) ?
+        Error error = infoMsg.getMessageProperties().getContentType().equals(MessageProperties.CONTENT_TYPE_XML) ?
                 ((ErrorWrapper) edxlHandler.deserializeXmlEDXL(errorString).getFirstContentMessage()).getError() :
                 ((ErrorWrapper) edxlHandler.deserializeJsonEDXL(errorString).getFirstContentMessage()).getError();
-        assertEquals(errorCode, errorReport.getErrorCode());
-        Arrays.stream(errorCause).forEach(cause -> assertTrue(errorReport.getErrorCause().contains(cause)));
+        assertEquals(errorCode, error.getErrorCode());
+        Arrays.stream(errorCause).forEach(cause -> assertTrue(error.getErrorCause().contains(cause)));
     }
 }
