@@ -88,13 +88,13 @@
 <script>
 
 import testCaseFile from '~/assets/test-cases.json'
-import testCaseFileAuto from '~/assets/test_cases_auto.json'
 import { REPOSITORY_URL } from '@/constants'
 
 export default {
   name: 'Test',
   data () {
     return {
+      testCaseFileAuto: [],
       testCases: []
     }
   },
@@ -108,9 +108,19 @@ export default {
 
   },
   mounted () {
-    this.loadTestCases()
+    this.initialize()
   },
   methods: {
+    async initialize () {
+      await this.fetchGeneratedTestCases()
+      this.loadTestCases()
+    },
+    async fetchGeneratedTestCases () {
+      const response = await fetch(REPOSITORY_URL + this.$config.modelBranch + '/csv_parser/out/test_cases.json')
+      if (response.ok) {
+        this.testCaseFileAuto = await response.json()
+      }
+    },
     /**
      * Copies the test cases from the JSON file to the component data,
      * resetting any potential changes to the test cases made during
@@ -120,7 +130,7 @@ export default {
       // Generated test cases have 3 levels of verification for each required property, ergo we create 3 test cases from each generated test case (Adding 'Level 1/2/3' to the
       // test case label and description)
       const parsedTestCases = []
-      testCaseFileAuto.forEach((category) => {
+      this.testCaseFileAuto.forEach((category) => {
         const newTestCases = []
         category.testCases.forEach((testCase) => {
           for (let i = 1; i <= 3; i++) {
