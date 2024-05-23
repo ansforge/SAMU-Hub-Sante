@@ -16,6 +16,8 @@
 package com.hubsante.hub.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.hubsante.hub.HubApplication;
 import com.hubsante.hub.config.HubConfiguration;
 import com.hubsante.model.EdxlHandler;
@@ -90,6 +92,10 @@ public class DispatcherTest {
     private final String INCONSISTENT_ROUTING_KEY = "fr.health.no-samu";
     private final String JSON = MessageProperties.CONTENT_TYPE_JSON;
     private final String XML = MessageProperties.CONTENT_TYPE_XML;
+    @Autowired
+    private XmlMapper xmlMapper;
+    @Autowired
+    private ObjectMapper jsonMapper;
 
     @DynamicPropertySource
     static void registerPgProperties(DynamicPropertyRegistry propertiesRegistry) {
@@ -100,8 +106,8 @@ public class DispatcherTest {
 
     @PostConstruct
     public void init() {
-        messageHandler = new MessageHandler(rabbitTemplate, converter, hubConfig, validator, registry);
-        dispatcher = new Dispatcher(messageHandler, rabbitTemplate, converter);
+        messageHandler = new MessageHandler(rabbitTemplate, converter, hubConfig, validator, registry, xmlMapper, jsonMapper);
+        dispatcher = new Dispatcher(messageHandler, rabbitTemplate, converter, xmlMapper, jsonMapper);
     }
 
     @BeforeEach
@@ -331,6 +337,16 @@ public class DispatcherTest {
         assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
         assertErrorHasBeenSent(SAMU_A_INFO_QUEUE, ErrorCode.INVALID_MESSAGE, SAMU_A_DISTRIBUTION_ID,
                 "creation: is missing but it is required");
+    }
+    @Test
+    @DisplayName("should reject message with invalid xml content")
+    public void invalidXmlContentFails() throws IOException {
+        Message receivedMessage = createInvalidMessage("RC-EDA/invalid-RC-EDA-valid-EDXL.xml",
+                XML, SAMU_B_ROUTING_KEY);
+
+        assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
+        assertErrorHasBeenSent(SAMU_B_INFO_QUEUE, ErrorCode.INVALID_MESSAGE, "fr.health.samuB_2608323d-507d-4cbf-bf74-52007f8124ea",
+                "Invalid content was found starting with element '{\"urn:emergency:cisu:2.0\":sender}'.");
     }
 
     @Test

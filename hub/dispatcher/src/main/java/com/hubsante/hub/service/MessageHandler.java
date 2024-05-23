@@ -17,6 +17,7 @@ package com.hubsante.hub.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.hubsante.hub.config.HubConfiguration;
 import com.hubsante.hub.exception.*;
 import com.hubsante.model.EdxlHandler;
@@ -36,6 +37,8 @@ import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.core.MessagePropertiesBuilder;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -60,13 +63,22 @@ public class MessageHandler {
     private final HubConfiguration hubConfig;
     private final Validator validator;
     private final MeterRegistry registry;
+    @Autowired
+    @Qualifier("xmlMapper")
+    private XmlMapper xmlMapper;
+    @Autowired
+    @Qualifier("jsonMapper")
+    private ObjectMapper jsonMapper;
 
-    public MessageHandler(RabbitTemplate rabbitTemplate, EdxlHandler edxlHandler, HubConfiguration hubConfig, Validator validator, MeterRegistry registry) {
+
+    public MessageHandler(RabbitTemplate rabbitTemplate, EdxlHandler edxlHandler, HubConfiguration hubConfig, Validator validator, MeterRegistry registry, XmlMapper xmlMapper, ObjectMapper jsonMapper){
         this.rabbitTemplate = rabbitTemplate;
         this.edxlHandler = edxlHandler;
         this.hubConfig = hubConfig;
         this.validator = validator;
         this.registry = registry;
+        this.xmlMapper = xmlMapper;
+        this.jsonMapper = jsonMapper;
     }
 
     protected void handleError(AbstractHubException exception, Message message) {
@@ -75,9 +87,13 @@ public class MessageHandler {
         error.setErrorCode(exception.getErrorCode());
         error.setErrorCause(exception.getMessage());
         try {
-            error.setSourceMessage(new ObjectMapper().readValue(message.getBody(), HashMap.class));
+            if (isJSON(message)) {
+                error.setSourceMessage(jsonMapper.readValue(message.getBody(), HashMap.class));
+            } else if (isXML(message)) {
+                error.setSourceMessage(xmlMapper.readValue(message.getBody(), HashMap.class));
+            }
         } catch (IOException e) {
-            log.error("Error occurred while reading the message body", e);
+            log.error("Could not read message body", e);
         }
         error.setReferencedDistributionID(exception.getReferencedDistributionID());
 
