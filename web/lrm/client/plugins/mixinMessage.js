@@ -68,7 +68,7 @@ export default {
       return direction === DIRECTIONS.OUT
     },
     /**
-     * Gets the case id from the message whether it's RC-EDA, EMSI or RS-EDA
+     * Gets the case id from the message whether it's RC-EDA, EMSI, RS-EDA or RS-EDA-SMUR
      @param {*} message the message to retrieve the caseId from
      @param {*} isRootMessage True if complete message is provided. Else content from message.body.content[0].jsonContent.embeddedJsonContent is expected
      * */
@@ -83,6 +83,8 @@ export default {
           return message.emsi.EVENT.MAIN_EVENT_ID
         case 'RS-EDA':
           return message.createCaseHealth.caseId
+        case 'RS-EDA-SMUR':
+          return message.createCaseHealthSmur.caseId
       }
     },
     /**
@@ -105,6 +107,10 @@ export default {
           message.createCaseHealth.caseId = caseId
           message.createCaseHealth.senderCaseId = localCaseId
           break
+        case 'RS-EDA-SMUR':
+          message.createCaseHealthSmur.caseId = caseId
+          message.createCaseHealthSmur.senderCaseId = localCaseId
+          break
       }
     },
     getMessageType (message) {
@@ -117,7 +123,7 @@ export default {
       }
     },
     /**
-     * Returns a string representing message type (RC-EDA, EMSI ou RS-EDA)
+     * Returns a string representing message type (RC-EDA, EMSI, RS-EDA ou RS-EDA-SMUR)
      * @param {*} message
      */
     getMessageKind (message) {
@@ -127,6 +133,8 @@ export default {
         return 'EMSI'
       } else if (message.createCaseHealth) {
         return 'RS-EDA'
+      } else if (message.createCaseHealthSmur) {
+        return 'RS-EDA-SMUR'
       }
     },
     /**
