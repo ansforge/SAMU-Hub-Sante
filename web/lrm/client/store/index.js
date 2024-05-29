@@ -127,11 +127,6 @@ export const state = () => ({
       medicalSituation: 'Douleurs thoraciques irradiantes, antécédents de maladie cardiaque'
     }]
   }, {
-    label: 'RS-EDA-SMUR',
-    schemaName: 'RS-EDA-SMUR.schema.json',
-    schema: null,
-    examples: []
-  }, {
     label: 'GEO-POS',
     schemaName: 'GEO-POS.schema.json',
     schema: null,
