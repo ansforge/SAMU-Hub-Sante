@@ -111,6 +111,7 @@
 <script>
 import { mapGetters } from 'vuex'
 import mixinMessage from '~/plugins/mixinMessage'
+import { REPOSITORY_URL } from '@/constants'
 
 export default {
   name: 'Demo',
@@ -191,7 +192,7 @@ export default {
   },
   mounted () {
     // To automatically generate the UI and input fields based on the JSON Schema
-    this.$store.dispatch('loadSchemas')
+    this.$store.dispatch('loadSchemas', REPOSITORY_URL + this.$config.modelBranch + '/src/main/resources/json-schema/')
   },
   methods: {
     typeMessages (type) {
