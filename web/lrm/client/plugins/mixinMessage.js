@@ -1,6 +1,7 @@
 import { v4 as uuidv4 } from 'uuid'
 import moment from 'moment/moment'
 import { EDXL_ENVELOPE, DIRECTIONS } from '@/constants'
+const VALUES_TO_DROP = [null, undefined, '']
 
 export default {
   mounted () {
@@ -14,7 +15,7 @@ export default {
   },
   methods: {
     wsConnect () {
-      this.socket = new WebSocket(process.env.wssUrl)
+      this.socket = new WebSocket(this.$config.backendLrmServer)
       this.socket.onopen = () => {
         console.log(`WebSocket ${this.$options.name} connection established`)
       }
@@ -67,7 +68,7 @@ export default {
       return direction === DIRECTIONS.OUT
     },
     /**
-     * Gets the case id from the message whether it's RC-EDA, EMSI or RS-EDA
+     * Gets the case id from the message whether it's RC-EDA, EMSI, RS-EDA or RS-EDA-SMUR
      @param {*} message the message to retrieve the caseId from
      @param {*} isRootMessage True if complete message is provided. Else content from message.body.content[0].jsonContent.embeddedJsonContent is expected
      * */
@@ -82,6 +83,8 @@ export default {
           return message.emsi.EVENT.MAIN_EVENT_ID
         case 'RS-EDA':
           return message.createCaseHealth.caseId
+        case 'RS-EDA-SMUR':
+          return message.createCaseHealthSmur.caseId
       }
     },
     /**
@@ -104,6 +107,10 @@ export default {
           message.createCaseHealth.caseId = caseId
           message.createCaseHealth.senderCaseId = localCaseId
           break
+        case 'RS-EDA-SMUR':
+          message.createCaseHealthSmur.caseId = caseId
+          message.createCaseHealthSmur.senderCaseId = localCaseId
+          break
       }
     },
     getMessageType (message) {
@@ -116,7 +123,7 @@ export default {
       }
     },
     /**
-     * Returns a string representing message type (RC-EDA, EMSI ou RS-EDA)
+     * Returns a string representing message type (RC-EDA, EMSI, RS-EDA ou RS-EDA-SMUR)
      * @param {*} message
      */
     getMessageKind (message) {
@@ -126,6 +133,8 @@ export default {
         return 'EMSI'
       } else if (message.createCaseHealth) {
         return 'RS-EDA'
+      } else if (message.createCaseHealthSmur) {
+        return 'RS-EDA-SMUR'
       }
     },
     /**
@@ -171,10 +180,31 @@ export default {
       message.content[0].jsonContent.embeddedJsonContent.message.sender = { name, URI: `hubex:${this.user.clientId}` }
       message.content[0].jsonContent.embeddedJsonContent.message.sentAt = sentAt
       message.content[0].jsonContent.embeddedJsonContent.message.recipient = [{ name: this.clientInfos(this.user.targetId).name, URI: `hubex:${targetId}` }]
-      return message
+      return this.trimEmptyValues(message)
+    },
+    isEmpty (obj) {
+      if (typeof obj === 'object') {
+        return Object.keys(obj).length === 0
+      }
+      return false
+    },
+    trimEmptyValues (obj) {
+      return Object.entries(obj).reduce((acc, [key, value]) => {
+        if (!(VALUES_TO_DROP.includes(value) || this.isEmpty(value))) {
+          if (typeof value !== 'object') {
+            acc[key] = value
+          } else {
+            value = this.trimEmptyValues(value)
+            if (!this.isEmpty(value)) {
+              acc[key] = value
+            }
+          }
+        }
+        return Array.isArray(obj) ? Object.values(acc) : acc
+      }, {})
     },
     formatIdsInMessage (innerMessage) {
-      // Check the entire message for occurencesof {senderName} and replaceit with the actual sender name
+      // Check the entire message for occurences of {senderName} and replace it with the actual sender name
       const senderName = this.userInfos.name
       let jsonString = JSON.stringify(innerMessage)
       jsonString = jsonString.replaceAll('samu690', senderName)

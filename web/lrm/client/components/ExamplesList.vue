@@ -90,7 +90,14 @@ export default {
         // ToDo: make chip deselection work
         // $this.selectedDetailIndex = undefined
         console.log(event.target.result)
-        $this.selectedExample = JSON.parse(event.target.result)
+        // We're going to assume that the example we're trying to load starts
+        // with a use case property (such as createCase, emsi, etc.) and that
+        // it's the first and only property at the root level of the example.
+        // TODO: instead of taking the first property and praying, we should extract
+        // the name of the use case from somewhere and use it to properly access that
+        // property in the parsed json object.
+        const parsedJson = JSON.parse(event.target.result)
+        $this.selectedExample = parsedJson[Object.keys(parsedJson)[0]]
       }
       const reader = new FileReader()
       reader.onload = onReaderLoad
@@ -100,7 +107,7 @@ export default {
     },
     loadExample (exampleName) {
       if (exampleName) {
-        fetch(REPOSITORY_URL + 'main/src/main/resources/sample/examples/' + exampleName)
+        fetch(REPOSITORY_URL + this.$config.modelBranch + '/src/main/resources/sample/examples/' + exampleName)
           .then(response => response.json())
           .then((data) => {
             this.selectedExample = data[Object.keys(data)[0]]

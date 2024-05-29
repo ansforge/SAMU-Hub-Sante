@@ -1,14 +1,11 @@
 package com.hubsante;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hubsante.model.builders.EDXL_DE_Builder;
-import com.hubsante.model.cisu.Reference;
-import com.hubsante.model.cisu.ReferenceWrapper;
 import com.hubsante.model.custom.CustomMessage;
 import com.hubsante.model.edxl.DistributionKind;
 import com.hubsante.model.edxl.EdxlMessage;
+import com.hubsante.model.reference.Reference;
+import com.hubsante.model.reference.ReferenceWrapper;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

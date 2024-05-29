@@ -84,16 +84,6 @@
     </v-col>
   </v-row>
 </template>
-                  </v-timeline-item>
-                </v-timeline>
-              </v-list>
-            </v-expansion-panel-content>
-          </v-expansion-panel>
-        </v-expansion-panels>
-      </v-list>
-    </v-col>
-  </v-row>
-</template>
 
 <script>
 
@@ -104,6 +94,7 @@ export default {
   name: 'Test',
   data () {
     return {
+      testCaseFileAuto: [],
       testCases: []
     }
   },
@@ -117,21 +108,56 @@ export default {
 
   },
   mounted () {
-    this.loadTestCases()
+    this.initialize()
   },
   methods: {
+    async initialize () {
+      await this.fetchGeneratedTestCases()
+      this.loadTestCases()
+    },
+    async fetchGeneratedTestCases () {
+      const response = await fetch(REPOSITORY_URL + this.$config.modelBranch + '/csv_parser/out/test_cases.json')
+      if (response.ok) {
+        this.testCaseFileAuto = await response.json()
+      }
+    },
     /**
      * Copies the test cases from the JSON file to the component data,
      * resetting any potential changes to the test cases made during
      * test execution.
      */
     loadTestCases () {
-      this.testCases = JSON.parse(JSON.stringify(testCaseFile))
+      // Generated test cases have 3 levels of verification for each required property, ergo we create 3 test cases from each generated test case (Adding 'Level 1/2/3' to the
+      // test case label and description)
+      const parsedTestCases = []
+      this.testCaseFileAuto.forEach((category) => {
+        const newTestCases = []
+        category.testCases.forEach((testCase) => {
+          for (let i = 1; i <= 3; i++) {
+            const newTestCase = JSON.parse(JSON.stringify(testCase))
+            newTestCase.label = `${newTestCase.label} - Level ${i}`
+            newTestCase.description = `${newTestCase.description} - Level ${i}`
+            // We only keep the required values for the current and previous levels
+            newTestCase.steps.forEach((step) => {
+              step.message.requiredValues = step.message.requiredValues.filter(requiredValue => requiredValue.verificationLevel <= i)
+            })
+            newTestCases.push(newTestCase)
+          }
+        })
+        parsedTestCases.push({
+          categoryLabel: category.categoryLabel,
+          testCases: newTestCases
+        })
+      })
+      this.testCases = [
+        ...JSON.parse(JSON.stringify(testCaseFile)),
+        ...JSON.parse(JSON.stringify(parsedTestCases))
+      ]
     },
     loadTestCaseJsons (testCase) {
       testCase.steps.forEach(async (step) => {
         if (step.type === 'receive') {
-          const response = await fetch(REPOSITORY_URL + 'main/src/main/resources/sample/examples/' + step.message.file)
+          const response = await fetch(REPOSITORY_URL + this.$config.modelBranch + '/src/main/resources/sample/examples/' + step.message.file)
           const json = await response.json()
           this.$set(step, 'json', json)
         }

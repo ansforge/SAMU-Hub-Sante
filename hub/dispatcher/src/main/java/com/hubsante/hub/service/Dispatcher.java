@@ -16,32 +16,31 @@
 package com.hubsante.hub.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.hubsante.hub.config.HubConfiguration;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.hubsante.hub.exception.*;
 import com.hubsante.model.EdxlHandler;
-import com.hubsante.model.Validator;
 import com.hubsante.model.edxl.EdxlMessage;
 import com.hubsante.model.report.ErrorCode;
-import com.hubsante.model.report.ErrorReport;
+import com.hubsante.model.report.Error;
 import io.micrometer.core.annotation.Timed;
-import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.Metrics;
-import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.AmqpRejectAndDontRequeueException;
 import org.springframework.amqp.core.Message;
+import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 
 import static com.hubsante.hub.config.AmqpConfiguration.*;
 import static com.hubsante.hub.utils.MessageUtils.*;
 import static com.hubsante.hub.config.Constants.*;
-import static com.hubsante.hub.utils.EdxlUtils.edxlMessageFromHub;
-import static com.hubsante.model.config.Constants.ENVELOPE_SCHEMA;
-import static com.hubsante.model.config.Constants.FULL_SCHEMA;
 
 /*
 * This class contains the RabbitMQ logic : the two listeners (Dispatch and DispatchDLQ) and the callback method to handle
@@ -65,12 +64,19 @@ public class Dispatcher {
     private final MessageHandler messageHandler;
     private final RabbitTemplate rabbitTemplate;
     private final EdxlHandler edxlHandler;
-    private static final String HEALTH_PREFIX = "fr.health";
+    @Autowired
+    @Qualifier("xmlMapper")
+    private XmlMapper xmlMapper;
+    @Autowired
+    @Qualifier("jsonMapper")
+    private ObjectMapper jsonMapper;
 
-    public Dispatcher(MessageHandler messageHandler, RabbitTemplate rabbitTemplate, EdxlHandler edxlHandler) {
+    public Dispatcher(MessageHandler messageHandler, RabbitTemplate rabbitTemplate, EdxlHandler edxlHandler, XmlMapper xmlMapper, ObjectMapper jsonMapper) {
         this.messageHandler = messageHandler;
         this.rabbitTemplate = rabbitTemplate;
         this.edxlHandler = edxlHandler;
+        this.xmlMapper = xmlMapper;
+        this.jsonMapper = jsonMapper;
         initReturnsCallback();
     }
 
@@ -87,14 +93,21 @@ public class Dispatcher {
                 // This should never happen as if we've reached this point, the message has already been deserialized
                 log.error("Could not deserialize message " + returnedEdxlString, e);
             }
-            ErrorReport errorReport = new ErrorReport(
-                    ErrorCode.UNROUTABLE_MESSAGE,
-                    "unable do deliver message to " + returned.getRoutingKey() + ", cause was " + returned.getReplyText() + " (" + returned.getReplyCode() + ")",
-                    new String(returned.getMessage().getBody()),
-                    returnedEdxlMessage != null ? returnedEdxlMessage.getDistributionID() : DISTRIBUTION_ID_UNAVAILABLE);
-
+            Error error = new Error();
+            error.setErrorCode(ErrorCode.UNROUTABLE_MESSAGE);
+            error.setErrorCause("unable do deliver message to " + returned.getRoutingKey() + ", cause was " + returned.getReplyText() + " (" + returned.getReplyCode() + ")");
+            try {
+                if (isJSON(returned.getMessage())) {
+                    error.setSourceMessage(jsonMapper.readValue(returned.getMessage().getBody(), HashMap.class));
+                } else if (isXML(returned.getMessage())) {
+                    error.setSourceMessage(xmlMapper.readValue(returned.getMessage().getBody(), HashMap.class));
+                }
+            } catch (IOException e) {
+                log.error("Could not read message body", e);
+            }
+            error.setReferencedDistributionID(returnedEdxlMessage != null ? returnedEdxlMessage.getDistributionID() : DISTRIBUTION_ID_UNAVAILABLE);
             String senderRoutingKey = returned.getMessage().getMessageProperties().getHeader(DLQ_ORIGINAL_ROUTING_KEY);
-            messageHandler.logErrorAndSendReport(errorReport, senderRoutingKey);
+            messageHandler.logErrorAndSendReport(error, senderRoutingKey);
         });
     }
 
@@ -123,20 +136,6 @@ public class Dispatcher {
             // a hole in our error cover
             log.error("Unexpected error occurred while dispatching message from " + message.getMessageProperties().getReceivedRoutingKey(), e);
             throw new AmqpRejectAndDontRequeueException(e);
-        }
-    }
-
-    // Verifies that the distributionID respects the format senderID_internalID (e.g. fr.health.samu1234_5678)
-    private void checkDistributionIDFormat(EdxlMessage message) {
-        String distributionId = message.getDistributionID();
-        // We  verify that senderID in the distributionID is the same as the senderID in the message
-        String senderId = message.getSenderID();
-        String distributionIdSenderId = distributionId.split("_")[0];
-        if (!distributionIdSenderId.equals(senderId)) {
-            String errorCause = "Message " + distributionId + " has been sent with an invalid distributionID format.\n" +
-                    "The senderID in the distributionID should be the same as the senderID in the message.\n" +
-                    "SenderID in the message: " + senderId + ", senderID in the distributionID: " + distributionIdSenderId +"\n";
-            throw new InvalidDistributionIDException(errorCause, distributionId);
         }
     }
 

@@ -17,6 +17,7 @@ package com.hubsante.hub.utils;
 
 import com.hubsante.hub.exception.DeliveryModeInconsistencyException;
 import com.hubsante.hub.exception.ExpiredBeforeDispatchMessageException;
+import com.hubsante.hub.exception.InvalidDistributionIDException;
 import com.hubsante.hub.exception.SenderInconsistencyException;
 import com.hubsante.model.edxl.DistributionKind;
 import com.hubsante.model.edxl.EdxlMessage;
@@ -116,6 +117,20 @@ public class MessageUtils {
             log.info("override expiration for message {}: expiration is now {}",
                     edxlMessage.getDistributionID(),
                     edxlMessage.getDateTimeExpires().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+        }
+    }
+
+    // Verifies that the distributionID respects the format senderID_internalID (e.g. fr.health.samu1234_5678)
+    public static void checkDistributionIDFormat(EdxlMessage message) {
+        String distributionId = message.getDistributionID();
+        // We  verify that senderID in the distributionID is the same as the senderID in the message
+        String senderId = message.getSenderID();
+        String distributionIdSenderId = distributionId.split("_")[0];
+        if (!distributionIdSenderId.equals(senderId)) {
+            String errorCause = "Message " + distributionId + " has been sent with an invalid distributionID format.\n" +
+                    "The senderID in the distributionID should be the same as the senderID in the message.\n" +
+                    "SenderID in the message: " + senderId + ", senderID in the distributionID: " + distributionIdSenderId +"\n";
+            throw new InvalidDistributionIDException(errorCause, distributionId);
         }
     }
 }
