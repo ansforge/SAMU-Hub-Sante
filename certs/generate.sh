@@ -1,7 +1,7 @@
 #!/bin/bash
 if [ -z "$DOMAIN" ];
 then
-  echo "Script should be run with DOMAIN var: $ DOMAIN=... ./generate.sh"
+  echo "Script should be run with DOMAIN var: $ DOMAIN=... ./certs.sh"
 else
   # Ref.: https://www.baeldung.com/openssl-self-signed-cert
   echo "1. Generate a private key (not encrypted, add -des3 to encrypt it)"
