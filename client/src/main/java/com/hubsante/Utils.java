@@ -3,12 +3,11 @@ package com.hubsante;
 import com.hubsante.model.builders.DistributionElementBuilder;
 import com.hubsante.model.builders.EDXL_DE_Builder;
 import com.hubsante.model.builders.ReferenceWrapperBuilder;
-import com.hubsante.model.cisu.*;
-import com.hubsante.model.cisu.DistributionElement.*;
-import com.hubsante.model.edxl.Descriptor;
 import com.hubsante.model.edxl.DistributionKind;
 import com.hubsante.model.edxl.EdxlMessage;
-import com.hubsante.model.edxl.ExplicitAddress;
+import com.hubsante.model.rcde.DistributionElement;
+import com.hubsante.model.rcde.Recipient;
+import com.hubsante.model.reference.ReferenceWrapper;
 
 
 import java.util.ArrayList;
@@ -54,7 +53,7 @@ public class Utils {
 
         DistributionElement distributionElement =
                 new DistributionElementBuilder(distributionID,referencedMessageSender, recipients)
-                        .kind(KindEnum.ACK).status(StatusEnum.SYSTEM).build();
+                        .kind(DistributionElement.KindEnum.ACK).status(DistributionElement.StatusEnum.SYSTEM).build();
         ReferenceWrapper referenceWrapper =
                 new ReferenceWrapperBuilder(distributionElement, referencedMessageDistributionID).build();
 
