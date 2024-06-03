@@ -116,7 +116,7 @@ export const state = () => ({
       victim: 'Homme, adulte, 65 ans',
       medicalSituation: 'Plaie traumatique profonde, perte de conscience, hémorragie importante'
     }, {
-      file: 'RS-EDA-usecase-PartageDossier-2.json',
+      file: 'RS-EDA/RS-EDA-usecase-PartageDossier-2.json',
       icon: 'mdi-image-broken-variant',
       name: 'Lola HALIMI',
       caller: 'Amina BERTRAND, baby-sitter de la patient, Lola HALIMI',
@@ -126,7 +126,7 @@ export const state = () => ({
       victim: 'Fille, enfant, 10 ans',
       medicalSituation: 'Entorse de la cheville, avec possible fracture. Cheville gonflée et douloureuse. Marche impossible.'
     }, {
-      file: 'RS-EDA-usecase-PartageDossier-3.json',
+      file: 'RS/RS-EDA-usecase-PartageDossier-3.json',
       icon: 'mdi-head-heart-outline',
       name: 'Monsieur X',
       caller: 'Lucas Bernardi, gérant de gite touristique',
