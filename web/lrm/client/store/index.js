@@ -47,11 +47,6 @@ export const state = () => ({
       victims: '2 victimes, 1 nécessitant assistance SAMU',
       victim: 'Homme, adulte, 43 ans',
       medicalSituation: 'Céphalées, migraines, traumatismes sérieux, plaies intermédiaires'
-    }, {
-      file: '../failing/RC-EDA/RC-EDA-missing-required-fields.json',
-      icon: 'mdi-alert-circle-outline',
-      name: 'Champs manquants',
-      context: "Pour illustrer les messages d'INFO sur les erreurs de validation"
     }]
   }, {
     label: 'EMSI',
