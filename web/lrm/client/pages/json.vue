@@ -185,10 +185,15 @@ export default {
   methods: {
     parseJson (json) {
       // We do not validate the schema itself due to ajv being very strict on several points (e.g. uniqueness in 'required' properties) which are not mandatory
-      // We add the schema replacing the id with the title to avoid duplicate schema errors if the schema is not already present
-      if (!this.ajv.getSchema(this.currentMessageType.schema.title)) {
-        this.ajv.addSchema(this.currentMessageType.schema, this.currentMessageType.schema.title, undefined, false)
+      // We empty the cache since all out schemas have the same $id and we can't add duplicate id schemas to the cache
+      for (const key in this.ajv.schemas) {
+        this.ajv.removeSchema(key)
+        this.ajv.removeKeyword(key)
       }
+      for (const key in this.ajv.refs) {
+        delete this.ajv.refs[key]
+      }
+      this.ajv.addSchema(this.currentMessageType.schema, this.currentMessageType.schema.title, undefined, false)
       // Then we validate using the schema
       this.ajv.validate(this.currentMessageType.schema.title, json)
       return this.ajv.errors
