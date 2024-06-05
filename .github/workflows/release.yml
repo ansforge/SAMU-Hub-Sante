@@ -22,12 +22,13 @@ jobs:
         uses: docker/setup-buildx-action@v1
 
       - name: Grant execute permission for Gradlew
-        run: chmod +x gradlew
+        run: chmod +x hub/dispatcher/gradlew
 
       - name: Extract release information
         id: extract_info
         run: |
           RELEASE_NAME=${{ github.event.release.name }}
+          echo $RELEASE_NAME
           
           if [[ "$RELEASE_NAME" == dispatcher-* ]]; then
             PROJECT="dispatcher"
@@ -36,13 +37,12 @@ jobs:
             PROJECT="lrm"
             VERSION=${RELEASE_NAME#lrm-}
           else
-            echo $RELEASE_NAME
             echo "Invalid release name prefix. Must be 'dispatcher' or 'lrm'."
             exit 1
           fi
           
           PATTERN="^([0-9]+\.[0-9]+\.[0-9]+)(-[A-Za-z]+(-[0-9]+))?$"
-          if [[ ! "$VERSION" =~ PATTERN ]]; then
+          if [[ ! "$VERSION" =~ $PATTERN ]]; then
             echo "Invalid version number"
             exit 1
           elif
