@@ -36,6 +36,7 @@ jobs:
             PROJECT="lrm"
             VERSION=${RELEASE_NAME#lrm-}
           else
+            echo $RELEASE_NAME
             echo "Invalid release name prefix. Must be 'dispatcher' or 'lrm'."
             exit 1
           fi
