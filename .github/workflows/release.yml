@@ -69,8 +69,6 @@ jobs:
         if: steps.extract_info.outputs.project == 'lrm'
         uses: docker/build-push-action@v5
         with:
-          username: ${{ secrets.BB_DOCKER_USERNAME }}
-          password: ${{ secrets.BB_DOCKER_PASSWORD }}
           repository: romainfd/hub-lrm-back
           push: true
           tags: ${{ steps.extract_info.outputs.version }}
@@ -80,8 +78,6 @@ jobs:
         if: steps.extract_info.outputs.project == 'lrm'
         uses: docker/build-push-action@v5
         with:
-          username: ${{ secrets.BB_DOCKER_USERNAME }}
-          password: ${{ secrets.BB_DOCKER_PASSWORD }}
           repository: romainfd/hub-lrm-front
           push: true
           tags: ${{ steps.extract_info.outputs.version }}
