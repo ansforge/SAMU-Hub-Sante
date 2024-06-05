@@ -50,25 +50,37 @@ jobs:
           echo "::set-output name=project::$PROJECT"
           echo "::set-output name=version::$VERSION"
 
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.BB_DOCKER_USERNAME }}
+          password: ${{ secrets.BB_DOCKER_PASSWORD }}
+
       - name: Run tests, build and push dispatcher Docker image
         if: steps.extract_info.outputs.project == 'dispatcher'
         working-directory: hub/dispatcher
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          DOCKERHUB_TOKEN: ${{ secrets.DOCKER_HUB_KEY }}
           TAG: ${{ steps.extract_info.outputs.version }}
         run: |
           ./gradlew test jib -Pversion=$TAG --image romainfd/dispatcher:$TAG
 
-      - name: Build and push lrm Docker image
+      - name: Build and push lrm backend Docker image
         if: steps.extract_info.outputs.project == 'lrm'
-        working-directory: web/lrm
-        env:
-          DOCKERHUB_TOKEN: ${{ secrets.DOCKER_HUB_KEY }}
-          TAG: ${{ steps.extract_info.outputs.version }}
-        run: |
-          docker buildx build --platform linux/amd64 -t romainfd/hub-lrm-back:$TAG .
-          docker push romainfd/hub-lrm-back:$TAG
-          
-          docker buildx build --platform linux/amd64 -t romainfd/hub-lrm-front:$TAG ./client
-          docker push romainfd/hub-lrm-front:$TAG
+        uses: docker/build-push-action@v5
+        with:
+          username: ${{ secrets.BB_DOCKER_USERNAME }}
+          password: ${{ secrets.BB_DOCKER_PASSWORD }}
+          repository: romainfd/hub-lrm-back
+          tags: ${{ steps.extract_info.outputs.version }}
+          context: ./web/lrm
+
+      - name: Build and push lrm frontend Docker image
+        if: steps.extract_info.outputs.project == 'lrm'
+        uses: docker/build-push-action@v5
+        with:
+          username: ${{ secrets.BB_DOCKER_USERNAME }}
+          password: ${{ secrets.BB_DOCKER_PASSWORD }}
+          repository: romainfd/hub-lrm-front
+          tags: ${{ steps.extract_info.outputs.version }}
+          context: ./web/lrm/client
