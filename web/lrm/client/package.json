@@ -18,6 +18,7 @@
     "@koumoul/vjsf": "^2.21.4",
     "@nuxtjs/axios": "^5.13.6",
     "@nuxtjs/toast": "^3.3.1",
+    "ajv": "^8.16.0",
     "core-js": "^3.25.3",
     "jsonpath": "^1.1.1",
     "markdown-it": "^13.0.1",
