@@ -27,7 +27,6 @@ import io.micrometer.core.annotation.Timed;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.AmqpRejectAndDontRequeueException;
 import org.springframework.amqp.core.Message;
-import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -116,7 +115,7 @@ public class Dispatcher {
     public void dispatch(Message message) {
         try {
             // Deserialize the message according to its content type
-            EdxlMessage edxlMessage = messageHandler.deserializeMessage(message);
+            EdxlMessage edxlMessage = messageHandler.extractMessage(message);
             // Reject the message if the sender is not consistent with the routing key
             checkSenderConsistency(message, edxlMessage);
             // Reject the message if the delivery mode is not PERSISTENT
@@ -150,7 +149,7 @@ public class Dispatcher {
             if (deadFromQueue.endsWith(".info")) {
                 return;
             }
-            EdxlMessage edxlMessage = messageHandler.deserializeMessage(message);
+            EdxlMessage edxlMessage = messageHandler.extractMessage(message);
             // log message & error
             String errorCause = "Message " + edxlMessage.getDistributionID() + " has been read from dead-letter-queue; reason was " +
                     message.getMessageProperties().getHeader(DLQ_REASON);

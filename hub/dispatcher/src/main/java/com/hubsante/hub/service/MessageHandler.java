@@ -1,12 +1,12 @@
 /**
  * Copyright © 2023-2024 Agence du Numerique en Sante (ANS)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,7 +23,6 @@ import com.hubsante.hub.exception.*;
 import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.Validator;
 import com.hubsante.model.builders.ErrorWrapperBuilder;
-import com.hubsante.model.edxl.DistributionKind;
 import com.hubsante.model.edxl.EdxlEnvelope;
 import com.hubsante.model.edxl.EdxlMessage;
 import com.hubsante.model.exception.ValidationException;
@@ -43,9 +42,6 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.time.OffsetDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Collections;
 import java.util.HashMap;
 
 import static com.hubsante.hub.config.AmqpConfiguration.DISTRIBUTION_EXCHANGE;
@@ -71,7 +67,7 @@ public class MessageHandler {
     private ObjectMapper jsonMapper;
 
 
-    public MessageHandler(RabbitTemplate rabbitTemplate, EdxlHandler edxlHandler, HubConfiguration hubConfig, Validator validator, MeterRegistry registry, XmlMapper xmlMapper, ObjectMapper jsonMapper){
+    public MessageHandler(RabbitTemplate rabbitTemplate, EdxlHandler edxlHandler, HubConfiguration hubConfig, Validator validator, MeterRegistry registry, XmlMapper xmlMapper, ObjectMapper jsonMapper) {
         this.rabbitTemplate = rabbitTemplate;
         this.edxlHandler = edxlHandler;
         this.hubConfig = hubConfig;
@@ -109,6 +105,7 @@ public class MessageHandler {
         // throw exception to reject the message
         throw new AmqpRejectAndDontRequeueException(exception);
     }
+
     protected void logErrorAndSendReport(Error error, String sender) {
         String infoQueueName = getInfoQueueNameFromClientId(sender);
 
@@ -156,87 +153,62 @@ public class MessageHandler {
      ** Deserialize the message according to its content type
      */
     @Timed(value = "deserialize.received.message", description = "Deserialize incoming message - include validation")
-    protected EdxlMessage deserializeMessage(Message message) {
+    protected EdxlMessage extractMessage(Message message) {
         String receivedEdxl = new String(message.getBody(), StandardCharsets.UTF_8);
-        EdxlMessage edxlMessage;
-
-        try {
-            edxlMessage = handleMessage(message, receivedEdxl);
-        } catch (ValidationException e) {
-            // We couldn't validate the message against the full schema, so we try to validate it against the envelope schema
-            // so we can at least extract the distributionID
-            EdxlEnvelope edxlEnvelope;
-            try {
-                if (isJSON(message)) {
-                    validator.validateJSON(receivedEdxl, ENVELOPE_SCHEMA);
-                    edxlEnvelope = edxlHandler.deserializeJsonEDXLEnvelope(receivedEdxl);
-                } else { // at this point we have already thrown an exception if message's content-type is neither JSON nor XML
-                    validator.validateXML(receivedEdxl, ENVELOPE_XSD);
-                    edxlEnvelope = edxlHandler.deserializeXmlEDXLEnvelope(receivedEdxl);
-                }
-
-            } catch (JsonProcessingException ex) {
-                log.error("Could not parse envelope of message " + receivedEdxl + " coming from " + message.getMessageProperties().getReceivedRoutingKey(), e);
-                String errorCause = "Could not parse message, invalid format. \n " +
-                        "If you don't want to use HubSanté model for now, please use a \"customContent\" wrapper inside your message.";
-                throw new UnrecognizedMessageFormatException(errorCause, DISTRIBUTION_ID_UNAVAILABLE);
-            } catch (IOException ex) {
-                log.error("Could not find schema file", e);
-                throw new SchemaNotFoundException("An internal server error has occurred, please contact the administration team", null);
-            } catch (ValidationException ex) {
-                log.error("Could not validate content or envelope of message " + receivedEdxl + " coming from " + message.getMessageProperties().getReceivedRoutingKey(), e);
-                throw new SchemaValidationException(e.getMessage(), DISTRIBUTION_ID_UNAVAILABLE);
-            }
-            // weird rethrow but we want to log the received routing key and we only have it here
-            log.error("Could not validate content of message " + receivedEdxl +
-                    " coming from " + message.getMessageProperties().getReceivedRoutingKey() +
-                    " with distributionId " + edxlEnvelope.getDistributionID(), e);
-            throw new SchemaValidationException(e.getMessage(), edxlEnvelope.getDistributionID());
-        }
-        return edxlMessage;
+        validateFullMessage(message, receivedEdxl);
+        return deserializeMessage(message, receivedEdxl);
     }
 
-    /**
-     * Attempts to validate and deserialize the message
-     *
-     * @param message      the entire message
-     * @param receivedEdxl the message's body
-     * @return deserialized edxl message
-     * @throws JsonProcessingException when deserialization fails
-     * @throws ValidationException     when validation fails
-     * @throws IOException             when schema file couldn't be found
-     */
-    private EdxlMessage handleMessage(Message message, String receivedEdxl) throws ValidationException {
+    private void validateFullMessage(Message message, String receivedEdxl) {
+        // We deserialize according to the content type
+        // It MUST be explicitly set by the client
         try {
-            EdxlMessage edxlMessage;
-            // We deserialize according to the content type
-            // It MUST be explicitly set by the client
             if (isJSON(message)) {
                 validator.validateJSON(receivedEdxl, FULL_SCHEMA);
+            } else if (isXML(message)) {
+                validator.validateXML(receivedEdxl, FULL_XSD);
+            } else {
+                String errorCause = "Unhandled Content-Type ! Message Content-Type should be set at 'application/json' or 'application/xml'";
+                throw new NotAllowedContentTypeException(errorCause, extractDistributionId(receivedEdxl));
+            }
+        } catch (IOException exception) {
+            log.error("Could not find schema file", exception);
+            throw new SchemaNotFoundException("An internal server error has occurred, please contact the administration team", extractDistributionId(receivedEdxl));
+        } catch (ValidationException validationException) {
+            // we replace the ValidationException from the models lib by another one extending AbstractHubException
+            log.error("Could not validate content of message " + receivedEdxl +
+                    " coming from " + message.getMessageProperties().getReceivedRoutingKey() +
+                    " with distributionId " + extractDistributionId(receivedEdxl), validationException);
+            throw new SchemaValidationException(validationException.getMessage(), extractDistributionId(receivedEdxl));
+        }
+    }
+
+    private EdxlMessage deserializeMessage(Message message, String receivedEdxl) {
+        EdxlMessage edxlMessage;
+
+        // We deserialize according to the content type
+        // It MUST be explicitly set by the client
+        try {
+            if (isJSON(message)) {
                 edxlMessage = edxlHandler.deserializeJsonEDXL(receivedEdxl);
-                logMessage(message, edxlMessage);
+                logMessage(message, receivedEdxl);
 
             } else if (isXML(message)) {
-                // TODO bbo: add XSD validation when ready
-                validator.validateXML(receivedEdxl, FULL_XSD);
                 edxlMessage = edxlHandler.deserializeXmlEDXL(receivedEdxl);
-                logMessage(message, edxlMessage);
+                logMessage(message, receivedEdxl);
 
             } else {
                 String errorCause = "Unhandled Content-Type ! Message Content-Type should be set at 'application/json' or 'application/xml'";
                 throw new NotAllowedContentTypeException(errorCause, null);
             }
-            return edxlMessage;
-        } catch (JsonProcessingException e) {
-            log.error("Could not parse content of message " + receivedEdxl + " coming from " + message.getMessageProperties().getReceivedRoutingKey(), e);
-            String errorCause = "Could not parse message, invalid format. \n " +
-                    "If you don't want to use HubSanté model for now, please use a \"customContent\" wrapper inside your message.";
-            throw new UnrecognizedMessageFormatException(errorCause, DISTRIBUTION_ID_UNAVAILABLE);
-        } catch (IOException e) {
-            log.error("Could not find schema file", e);
-            throw new SchemaNotFoundException("An internal server error has occurred, please contact the administration team", null);
+        } catch (JsonProcessingException exception) {
+            log.error("Could not parse content of message " + receivedEdxl + " coming from " + message.getMessageProperties().getReceivedRoutingKey(), exception);
+            String errorCause = "An internal server error has occurred, please contact the administration team";
+            throw new UnrecognizedMessageFormatException(errorCause, extractDistributionId(receivedEdxl));
         }
+        return edxlMessage;
     }
+
     @Timed(value = "serialize.forwarded.message", description = "Serialize forwarded message and return new AMQP message")
     private Message getFwdMessageBody(EdxlMessage edxlMessage, Message receivedAmqpMessage, MessageProperties fwdAmqpProperties) {
         String recipientID = getRecipientID(edxlMessage);
@@ -263,9 +235,10 @@ public class MessageHandler {
             throw new RuntimeException("Could not serialize message " + edxlMessage.getDistributionID(), e);
         }
     }
-    private void logMessage(Message message, EdxlMessage edxlMessage) throws JsonProcessingException {
-        log.info(" [x] Received from '" + message.getMessageProperties().getReceivedRoutingKey() + "': message with distributionID " + edxlMessage.getDistributionID());
-        log.debug(edxlHandler.serializeXmlEDXL(edxlMessage));
+
+    private void logMessage(Message message, String receivedEdxl) {
+        log.info(" [x] Received from '" + message.getMessageProperties().getReceivedRoutingKey() + "': message with distributionID " + extractDistributionId(receivedEdxl));
+        log.debug(receivedEdxl);
     }
 
     private void publishErrorMetric(String error, String sender) {

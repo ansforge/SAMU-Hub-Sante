@@ -249,9 +249,8 @@ public class DispatcherTest {
         Message receivedMessage = createInvalidMessage("EDXL-DE/unparsable-content.json",  SAMU_A_ROUTING_KEY);
         assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
 
-        assertErrorHasBeenSent(SAMU_A_INFO_QUEUE, ErrorCode.UNRECOGNIZED_MESSAGE_FORMAT, DISTRIBUTION_ID_UNAVAILABLE,
-                "Could not parse message, invalid format. \n If you don't want to use HubSanté model" +
-                        " for now, please use a \"customContent\" wrapper inside your message.");
+        assertErrorHasBeenSent(SAMU_A_INFO_QUEUE, ErrorCode.UNRECOGNIZED_MESSAGE_FORMAT, SAMU_A_DISTRIBUTION_ID,
+                "An internal server error has occurred, please contact the administration team");
     }
 
     @Test
@@ -262,7 +261,7 @@ public class DispatcherTest {
         assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
 
         // we test that an error report has been sent with the correct error code
-        assertErrorHasBeenSent(SAMU_A_INFO_QUEUE, ErrorCode.NOT_ALLOWED_CONTENT_TYPE, null,
+        assertErrorHasBeenSent(SAMU_A_INFO_QUEUE, ErrorCode.NOT_ALLOWED_CONTENT_TYPE, SAMU_A_DISTRIBUTION_ID,
                 "Unhandled Content-Type ! Message Content-Type should be set at 'application/json' or 'application/xml'");
     }
 
@@ -274,7 +273,7 @@ public class DispatcherTest {
         assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
 
         // we test that an error report has been sent with the correct error code
-        assertErrorHasBeenSent(SAMU_A_INFO_QUEUE, ErrorCode.NOT_ALLOWED_CONTENT_TYPE, null,
+        assertErrorHasBeenSent(SAMU_A_INFO_QUEUE, ErrorCode.NOT_ALLOWED_CONTENT_TYPE, SAMU_A_DISTRIBUTION_ID,
                 "Unhandled Content-Type ! Message Content-Type should be set at 'application/json' or 'application/xml'");
     }
 
@@ -289,7 +288,7 @@ public class DispatcherTest {
         assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
 
         // we test that an error report has been sent with the correct error code
-        assertErrorHasBeenSent(SAMU_A_INFO_QUEUE, ErrorCode.INVALID_MESSAGE, DISTRIBUTION_ID_UNAVAILABLE,
+        assertErrorHasBeenSent(SAMU_A_INFO_QUEUE, ErrorCode.INVALID_MESSAGE, SAMU_A_DISTRIBUTION_ID,
                 "Something went wrong with the XSD Validator");
     }
 

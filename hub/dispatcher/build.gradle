@@ -34,6 +34,12 @@ configurations {
     }
 }
 
+allprojects {
+    tasks.withType(JavaCompile) {
+        options.encoding = 'UTF-8'
+    }
+}
+
 repositories {
     /*
     * We use mavenCentral() for every dependency but the models library, which is published on GitHub Packages.
