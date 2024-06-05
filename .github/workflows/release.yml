@@ -43,6 +43,7 @@ jobs:
           
           PATTERN="^([0-9]+\.[0-9]+\.[0-9]+)(-[A-Za-z]+(-[0-9]+))?$"
           if [[ ! "$VERSION" =~ $PATTERN ]]; then
+            echo $VERSION
             echo "Invalid version number"
             exit 1
           fi
