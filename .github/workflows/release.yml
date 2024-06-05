@@ -69,16 +69,16 @@ jobs:
         if: steps.extract_info.outputs.project == 'lrm'
         uses: docker/build-push-action@v5
         with:
-          repository: romainfd/hub-lrm-back
           push: true
-          tags: ${{ steps.extract_info.outputs.version }}
+          platforms: linux/amd64
+          tags: romainfd/hub-lrm-back:${{ steps.extract_info.outputs.version }}
           context: ./web/lrm
 
       - name: Build and push lrm frontend Docker image
         if: steps.extract_info.outputs.project == 'lrm'
         uses: docker/build-push-action@v5
         with:
-          repository: romainfd/hub-lrm-front
           push: true
-          tags: ${{ steps.extract_info.outputs.version }}
+          platforms: linux/amd64
+          tags: romainfd/hub-lrm-front:${{ steps.extract_info.outputs.version }}
           context: ./web/lrm/client
