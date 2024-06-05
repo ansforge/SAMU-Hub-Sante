@@ -183,8 +183,7 @@ export default {
     this.mounted = true
   },
   methods: {
-    parseJson (json) {
-      // We do not validate the schema itself due to ajv being very strict on several points (e.g. uniqueness in 'required' properties) which are not mandatory
+    useSchema (schema) {
       // We empty the cache since all out schemas have the same $id and we can't add duplicate id schemas to the cache
       for (const key in this.ajv.schemas) {
         this.ajv.removeSchema(key)
@@ -193,7 +192,11 @@ export default {
       for (const key in this.ajv.refs) {
         delete this.ajv.refs[key]
       }
-      this.ajv.addSchema(this.currentMessageType.schema, this.currentMessageType.schema.title, undefined, false)
+      // We do not validate the schema itself due to ajv being very strict on several points (e.g. uniqueness in 'required' properties) which are not mandatory
+      this.ajv.addSchema(schema, schema.title, undefined, false)
+    },
+    validateJson (json) {
+      this.useSchema(this.currentMessageType.schema)
       // Then we validate using the schema
       this.ajv.validate(this.currentMessageType.schema.title, json)
       return this.ajv.errors
@@ -202,7 +205,7 @@ export default {
       this.currentMessage = form
     },
     validateMessage () {
-      const validationResult = this.parseJson(this.trimEmptyValues(this.currentMessage))
+      const validationResult = this.validateJson(this.trimEmptyValues(this.currentMessage))
       if (validationResult) {
         // Toast all errors, showing instance path at the start of the line
         this.$toast.error(validationResult.map(error => `${error.instancePath}/: ${error.message}`).join('<br>'))
