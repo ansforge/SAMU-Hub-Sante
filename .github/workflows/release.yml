@@ -45,7 +45,7 @@ jobs:
           if [[ ! "$VERSION" =~ $PATTERN ]]; then
             echo "Invalid version number"
             exit 1
-          elif
+          fi
           
           echo "::set-output name=project::$PROJECT"
           echo "::set-output name=version::$VERSION"
