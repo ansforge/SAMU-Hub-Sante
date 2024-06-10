@@ -48,11 +48,27 @@ export const state = () => ({
       victim: 'Homme, adulte, 43 ans',
       medicalSituation: 'Céphalées, migraines, traumatismes sérieux, plaies intermédiaires'
     }, {
-      file: '../failing/RC-EDA/RC-EDA-missing-required-fields.json',
-      icon: 'mdi-alert-circle-outline',
-      name: 'Champs manquants',
-      context: "Pour illustrer les messages d'INFO sur les erreurs de validation"
-    }]
+      file: 'RC-EDA/RC-EDA-Fuite-de-Gaz.json',
+      icon: 'mdi-molecule-co2',
+      context: 'Fuite de gaz',
+      name: 'Alice et Grégoire Normand',
+      caller: 'Marie Dubois, mère des enfants, appelle le 15',
+      environment: 'Domicile, maison particulière',
+      victims: '2 patients, nécessitant assistance SAMU et l\'intervention du SIS pour la fuite de gaz qui a reçu une demande de concours',
+      victim: 'Femme, enfant, 13 ans, et Homme, enfant, 11 ans',
+      medicalSituation: 'Malaise, effets secondaires liés au monoxyde de carbone'
+    }, {
+      file: 'RC-EDA/RC-EDA-Obstetrique.json',
+      icon: 'mdi-human-pregnant',
+      context: 'Chute d\'une échelle d\'une femme enceinte',
+      name: 'Delphine Vigneau',
+      caller: 'Agnès Duberti, appelle le 18 qui nous transfère l\'appel et le dossier',
+      environment: 'Lieu de travail',
+      victims: '1 patiente, nécessitant assistance SAMU',
+      victim: 'Femme, enceinte de 2 mois, 32 ans',
+      medicalSituation: 'Problème obstétrique non hémorragique'
+    }
+    ]
   }, {
     label: 'EMSI',
     schemaName: 'EMSI.schema.json',
@@ -145,7 +161,28 @@ export const state = () => ({
       victims: '1 victimes, nécessitant assistance SAMU',
       victim: 'Femme, adulte, 47 ans',
       medicalSituation: 'Douleurs thoraciques irradiantes, antécédents de maladie cardiaque'
-    }]
+    }, {
+      file: 'RS-EDA-SMUR-EDA-Fuite-de-Gaz.json',
+      icon: 'mdi-molecule-co2',
+      context: 'Fuite de gaz',
+      name: 'Alice et Grégoire Normand',
+      caller: 'Marie Dubois, mère des enfants, appelle le 15',
+      environment: 'Domicile, maison particulière',
+      victims: '2 patients, nécessitant assistance SAMU et l\'intervention du SIS pour la fuite de gaz qui a reçu une demande de concours',
+      victim: 'Femme, enfant, 13 ans, et Homme, enfant, 11 ans',
+      medicalSituation: 'Malaise, effets secondaires liés au monoxyde de carbone'
+    }, {
+      file: 'RS-EDA/RS-EDA-SMUR-Femme-Enceinte.json',
+      icon: 'mdi-human-pregnant',
+      context: 'Chute d\'une échelle d\'une femme enceinte',
+      name: 'Delphine Vigneau',
+      caller: 'Agnès Duberti, appelle le 18 qui nous transfère l\'appel et le dossier',
+      environment: 'Lieu de travail',
+      victims: '1 patiente, nécessitant assistance SAMU',
+      victim: 'Femme, enceinte de 2 mois, 32 ans',
+      medicalSituation: 'Problème obstétrique non hémorragique'
+    }
+    ]
   }, {
     label: 'GEO-POS',
     schemaName: 'GEO-POS.schema.json',
@@ -176,6 +213,26 @@ export const state = () => ({
       name: 'Resources Request',
       context: 'Demande de partage des détails des ressources'
     }]
+  }, {
+    label: 'RS-RIG',
+    schemaName: 'RS-RIG.schema.json',
+    schema: null,
+    examples: []
+  }, {
+    label: 'RS-DDR',
+    schemaName: 'RS-DDR.schema.json',
+    schema: null,
+    examples: []
+  }, {
+    label: 'RS-RDR',
+    schemaName: 'RS-RDR.schema.json',
+    schema: null,
+    examples: []
+  }, {
+    label: 'RPIS',
+    schemaName: 'RPIS.schema.json',
+    schema: null,
+    examples: []
   }]
 })
 
