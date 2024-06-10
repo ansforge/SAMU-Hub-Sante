@@ -174,7 +174,7 @@ export const state = () => ({
           medicalSituation: 'Douleurs thoraciques irradiantes, antécédents de maladie cardiaque'
         },
         {
-          file: 'RS-EDA-SMUR-Fuite-de-Gaz.json',
+          file: 'RS-EDA/RS-EDA-SMUR-Fuite-de-Gaz.json',
           icon: 'mdi-molecule-co2',
           context: 'Fuite de gaz',
           name: 'Alice et Grégoire Normand',
