@@ -235,30 +235,6 @@ export const state = () => ({
           context: 'Demande de partage des détails des ressources'
         }
       ]
-    },
-    {
-      label: 'RS-RIG',
-      schemaName: 'RS-RIG.schema.json',
-      schema: null,
-      examples: []
-    },
-    {
-      label: 'RS-DDR',
-      schemaName: 'RS-DDR.schema.json',
-      schema: null,
-      examples: []
-    },
-    {
-      label: 'RS-RDR',
-      schemaName: 'RS-RDR.schema.json',
-      schema: null,
-      examples: []
-    },
-    {
-      label: 'RPIS',
-      schemaName: 'RPIS.schema.json',
-      schema: null,
-      examples: []
     }
   ]
 })
