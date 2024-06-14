@@ -193,7 +193,6 @@ export default {
   mounted () {
     // To automatically generate the UI and input fields based on the JSON Schema
     this.$store.dispatch('loadSchemas', REPOSITORY_URL + this.$config.modelBranch + '/src/main/resources/json-schema/')
-    this.$store.dispatch('loadMessageTypes', REPOSITORY_URL + this.$config.modelBranch + '/src/main/resources/lrm/messageTypes.json')
   },
   methods: {
     typeMessages (type) {
