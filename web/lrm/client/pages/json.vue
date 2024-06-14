@@ -42,7 +42,7 @@
               v-for="messageTypeDetails in messageTypes"
               :key="messageTypeDetails.label"
             >
-              <SchemaForm :ref="'schemaForm_' + messageTypeDetails.label" @on-form-update="updateCurrentMessage" v-bind="messageTypeDetails" no-send-button />
+              <SchemaForm :ref="'schemaForm_' + messageTypeDetails.label" v-bind="messageTypeDetails" no-send-button @on-form-update="updateCurrentMessage" />
             </v-tab-item>
           </v-tabs-items>
         </v-card-text>
@@ -58,6 +58,12 @@
               mdi-file-download-outline
             </v-icon>
             Enregistrer
+          </v-btn>
+          <v-btn secondary @click="validateMessage">
+            <v-icon left>
+              mdi-text-box-check-outline
+            </v-icon>
+            Valider
           </v-btn>
         </v-card-title>
         <v-card-text>
@@ -76,6 +82,7 @@
 
 <script>
 import { mapGetters } from 'vuex'
+import Ajv from 'ajv'
 import mixinMessage from '~/plugins/mixinMessage'
 import { REPOSITORY_URL } from '@/constants'
 
@@ -84,6 +91,10 @@ export default {
   mixins: [mixinMessage],
   data () {
     return {
+      ajv: new Ajv({
+        allErrors: true,
+        strict: false
+      }),
       mounted: false,
       selectedSource: 'schemas/json-schema/',
       sources: [{
@@ -172,8 +183,35 @@ export default {
     this.mounted = true
   },
   methods: {
+    useSchema (schema) {
+      // We empty the cache since all out schemas have the same $id and we can't add duplicate id schemas to the cache
+      for (const key in this.ajv.schemas) {
+        this.ajv.removeSchema(key)
+        this.ajv.removeKeyword(key)
+      }
+      for (const key in this.ajv.refs) {
+        delete this.ajv.refs[key]
+      }
+      // We do not validate the schema itself due to ajv being very strict on several points (e.g. uniqueness in 'required' properties) which are not mandatory
+      this.ajv.addSchema(schema, schema.title, undefined, false)
+    },
+    validateJson (json) {
+      this.useSchema(this.currentMessageType.schema)
+      // Then we validate using the schema
+      this.ajv.validate(this.currentMessageType.schema.title, json)
+      return this.ajv.errors
+    },
     updateCurrentMessage (form) {
       this.currentMessage = form
+    },
+    validateMessage () {
+      const validationResult = this.validateJson(this.trimEmptyValues(this.currentMessage))
+      if (validationResult) {
+        // Toast all errors, showing instance path at the start of the line
+        this.$toast.error(validationResult.map(error => `${error.instancePath}/: ${error.message}`).join('<br>'))
+      } else {
+        this.$toast.success('Message valide')
+      }
     },
     saveMessage () {
       // Download as file | Ref.: https://stackoverflow.com/a/34156339
