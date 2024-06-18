@@ -34,8 +34,8 @@ class ExpressServer {
     // Subscribe to Hub messages and send them to the client through web socket
     connect((connection, channel) => {
       this.connection = connection;
-      const demoIdsMap = new Map(DEMO_CLIENT_IDS);
-      for (const clientKeyValue of demoIdsMap) {
+      const demoIds = JSON.parse(DEMO_CLIENT_IDS);
+      for (const clientKeyValue of demoIds) {
         const clientId = clientKeyValue[0]
         for (const type of ['message', 'ack', 'info']) {
           const queue = `${clientId}.${type}`;
