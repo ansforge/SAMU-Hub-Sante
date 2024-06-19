@@ -36,7 +36,6 @@ class ExpressServer {
       this.connection = connection;
       logger.info("Demo client ids: " + DEMO_CLIENT_IDS)
       const demoIds = JSON.parse(DEMO_CLIENT_IDS);
-      logger.info("Parsed demo client ids JSON: " + demoIds)
       for (const clientKeyValue of demoIds) {
         const clientId = clientKeyValue[0]
         for (const type of ['message', 'ack', 'info']) {
