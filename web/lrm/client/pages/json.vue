@@ -96,28 +96,25 @@ export default {
         strict: false
       }),
       mounted: false,
-      selectedSource: 'schemas/json-schema/',
+      selectedSource: REPOSITORY_URL + this.$config.modelBranch + '/src/main/resources/',
       sources: [{
-        text: 'Local',
-        value: 'schemas/json-schema/'
-      }, {
         divider: true,
         header: 'GitHub branches'
       }, {
         text: 'main',
-        value: REPOSITORY_URL + 'main/src/main/resources/json-schema/'
+        value: REPOSITORY_URL + 'main/src/main/resources/'
       }, {
         text: 'develop',
-        value: REPOSITORY_URL + 'develop/src/main/resources/json-schema/'
+        value: REPOSITORY_URL + 'develop/src/main/resources/'
       }, {
         text: 'auto/model_tracker',
-        value: REPOSITORY_URL + 'auto/model_tracker/src/main/resources/json-schema/'
+        value: REPOSITORY_URL + 'auto/model_tracker/src/main/resources/'
       }, {
         divider: true,
         header: 'Templates'
       }, {
-        text: REPOSITORY_URL + '{branchName}/src/main/resources/json-schema/',
-        value: REPOSITORY_URL + '{branchName}/src/main/resources/json-schema/'
+        text: REPOSITORY_URL + '{branchName}/src/main/resources/',
+        value: REPOSITORY_URL + '{branchName}/src/main/resources/'
       }],
       messageTypeTabIndex: 0,
       currentMessage: null,
@@ -154,7 +151,7 @@ export default {
       // Ref.: https://stackoverflow.com/a/43531779
       if (this.mounted) {
         // $refs is array (in v-for) and non reactive | Ref.: https://v2.vuejs.org/v2/api/#ref
-        return this.$refs['schemaForm_' + this.currentMessageType.label]?.[0]
+        return this.$refs['schemaForm_' + this.currentMessageType?.label]?.[0]
       }
       return null
     },
@@ -174,15 +171,21 @@ export default {
       this.currentMessage = this.currentSchemaForm?.form
     },
     selectedSource () {
-      this.$store.dispatch('loadSchemas', this.selectedSource)
+      this.updateForm()
     }
   },
   mounted () {
-    // To automatically generate the UI and input fields based on the JSON Schema
-    this.$store.dispatch('loadSchemas', this.selectedSource)
+    this.updateForm()
     this.mounted = true
   },
   methods: {
+    updateForm () {
+      // To automatically generate the UI and input fields based on the JSON Schema
+      // We need to wait the acquisition of 'messagesList' before attempting to acquire the schemas
+      this.$store.dispatch('loadMessageTypes', this.selectedSource+"/sample/examples/messagesList.json").then(
+        () => this.$store.dispatch('loadSchemas', this.selectedSource+"/json-schema/")
+      )
+    },
     useSchema (schema) {
       // We empty the cache since all out schemas have the same $id and we can't add duplicate id schemas to the cache
       for (const key in this.ajv.schemas) {

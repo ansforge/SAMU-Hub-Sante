@@ -7,7 +7,8 @@ import {
   SET_AUTO_ACK,
   SET_MESSAGE_JUST_SENT,
   RESET_MESSAGES,
-  SET_MESSAGE_TYPE_SCHEMA
+  SET_MESSAGE_TYPE_SCHEMA,
+  SET_MESSAGE_TYPES
 } from '~/store/constants'
 
 // export const strict = false
@@ -33,234 +34,8 @@ export const state = () => ({
   messageJustSent: false,
   // ToDo: when message are uploaded, add them in store
   // ToDo: when message is loaded, add them in store to not load them again later
-  messageTypes: [
-    {
-      label: 'RC-EDA',
-      schemaName: 'RC-EDA.schema.json',
-      schema: null,
-      examples: [
-        {
-          file: 'RC-EDA/RC-EDA-usecase-Armaury-1.json',
-          icon: 'mdi-bike-fast',
-          name: 'Alexandre ARMAURY',
-          caller: 'Albane Armaury, témoin accident impliquant son mari,  Alexandre Armaury',
-          context: 'Collision de 2 vélos',
-          environment: 'Voie cyclable à Lyon, gêne de la circulation',
-          victims: '2 victimes, 1 nécessitant assistance SAMU',
-          victim: 'Homme, adulte, 43 ans',
-          medicalSituation: 'Céphalées, migraines, traumatismes sérieux, plaies intermédiaires'
-        },
-        {
-          file: 'RC-EDA/RC-EDA-Fuite-de-Gaz.json',
-          icon: 'mdi-molecule-co2',
-          context: 'Fuite de gaz',
-          name: 'Alice et Grégoire Normand',
-          caller: 'Marie Dubois, mère des enfants, appelle le 15',
-          environment: 'Domicile, maison particulière',
-          victims: '2 patients, nécessitant assistance SAMU et l\'intervention du SIS pour la fuite de gaz qui a reçu une demande de concours',
-          victim: 'Femme, enfant, 13 ans, et Homme, enfant, 11 ans',
-          medicalSituation: 'Malaise, effets secondaires liés au monoxyde de carbone'
-        },
-        {
-          file: 'RC-EDA/RC-EDA-Obstetrique.json',
-          icon: 'mdi-human-pregnant',
-          context: 'Chute d\'une échelle d\'une femme enceinte',
-          name: 'Delphine Vigneau',
-          caller: 'Agnès Duberti, appelle le 18 qui nous transfère l\'appel et le dossier',
-          environment: 'Lieu de travail',
-          victims: '1 patiente, nécessitant assistance SAMU',
-          victim: 'Femme, enceinte de 2 mois, 32 ans',
-          medicalSituation: 'Problème obstétrique non hémorragique'
-        }
-      ]
-    },
-    {
-      label: 'EMSI',
-      schemaName: 'EMSI.schema.json',
-      schema: null,
-      examples: [
-        {
-          file: 'EMSI/emsi-DC-message.json',
-          icon: 'mdi-bike-fast',
-          name: 'Alexandre ARMAURY (DC)',
-          caller: 'Albane Armaury, témoin accident impliquant son mari, Alexandre Armaury',
-          context: 'Collision de 2 vélos',
-          environment: 'Voie cyclable à Lyon, gêne de la circulation',
-          victims: '2 victimes, 1 nécessitant assistance SAMU',
-          victim: 'Homme, adulte, 43 ans',
-          medicalSituation: 'Céphalées, migraines, traumatismes sérieux, plaies intermédiaires'
-        },
-        {
-          file: 'EMSI/EMSI-RDC-message.json',
-          icon: 'mdi-bike-fast',
-          name: 'Alexandre ARMAURY (RDC)',
-          caller: 'Albane Armaury, témoin accident impliquant son mari, Alexandre Armaury',
-          context: 'Collision de 2 vélos',
-          environment: 'Voie cyclable à Lyon, gêne de la circulation',
-          victims: '2 victimes, 1 nécessitant assistance SAMU',
-          victim: 'Homme, adulte, 43 ans',
-          medicalSituation: 'Céphalées, migraines, traumatismes sérieux, plaies intermédiaires'
-        },
-        {
-          file: 'EMSI/EMSI-OPG-message.json',
-          icon: 'mdi-bike-fast',
-          name: 'Alexandre ARMAURY (OPG)',
-          caller: 'Albane Armaury, témoin accident impliquant son mari, Alexandre Armaury',
-          context: 'Collision de 2 vélos',
-          environment: 'Voie cyclable à Lyon, gêne de la circulation',
-          victims: '2 victimes, 1 nécessitant assistance SAMU',
-          victim: 'Homme, adulte, 43 ans',
-          medicalSituation: 'Céphalées, migraines, traumatismes sérieux, plaies intermédiaires'
-        },
-        {
-          file: 'EMSI/EMSI-Complet-DC-RDC-OPG-message.json',
-          icon: 'mdi-bike-fast',
-          name: 'Alexandre ARMAURY (EMSI)',
-          caller: 'Albane Armaury, témoin accident impliquant son mari, Alexandre Armaury',
-          context: 'Collision de 2 vélos',
-          environment: 'Voie cyclable à Lyon, gêne de la circulation',
-          victims: '2 victimes, 1 nécessitant assistance SAMU',
-          victim: 'Homme, adulte, 43 ans',
-          medicalSituation: 'Céphalées, migraines, traumatismes sérieux, plaies intermédiaires'
-        }]
-    },
-    {
-      label: 'RS-EDA',
-      schemaName: 'RS-EDA.schema.json',
-      schema: null,
-      examples: [
-        {
-          file: 'RS-EDA/RS-EDA-usecase-PartageDossier-1.json',
-          icon: 'mdi-circular-saw',
-          name: 'Didier MOREL',
-          caller: 'Sébastien Morel, témoin accident impliquant son père, Didier Morel',
-          context: 'Accident domestique : blessure grave causée par une scie circulaire électrique',
-          environment: 'Domicile, outil scie débranché et sécurisé',
-          victims: '1 victime, nécessitant assistance SAMU',
-          victim: 'Homme, adulte, 65 ans',
-          medicalSituation: 'Plaie traumatique profonde, perte de conscience, hémorragie importante'
-        },
-        {
-          file: 'RS-EDA/RS-EDA-usecase-PartageDossier-2.json',
-          icon: 'mdi-image-broken-variant',
-          name: 'Lola HALIMI',
-          caller: 'Amina BERTRAND, baby-sitter de la patient, Lola HALIMI',
-          context: 'Fracture de la cheville',
-          environment: 'Cage d\'escalier d\'un immeuble résidentiel',
-          victims: '1 patient',
-          victim: 'Fille, enfant, 10 ans',
-          medicalSituation: 'Entorse de la cheville, avec possible fracture. Cheville gonflée et douloureuse. Marche impossible.'
-        },
-        {
-          file: 'RS/RS-EDA-usecase-PartageDossier-3.json',
-          icon: 'mdi-head-heart-outline',
-          name: 'Monsieur X',
-          caller: 'Lucas Bernardi, gérant de gite touristique',
-          context: 'Suspicion d\'AVC ',
-          environment: 'Lieu accueillant du public : Le gîte du Moulin',
-          victims: '1 patient',
-          victim: 'Adulte, environ 80 ans',
-          medicalSituation: 'Confusion, étourdissements, s’exprime difficilement. Client du gite voyageant seul.'
-        },
-        {
-          file: 'RS-EDA/RS-EDA-usecase-AppelLimitrophe-2.json',
-          icon: 'mdi-heart-plus-outline',
-          name: 'Ouardia BOUDADI',
-          caller: 'Magda LENA, collègue de la victime, Ouardia BOUDADI',
-          context: 'Suspicion de crise cardiaque',
-          environment: 'Lieu de travail, local administratif de la SARL TOTO',
-          victims: '1 victimes, nécessitant assistance SAMU',
-          victim: 'Femme, adulte, 47 ans',
-          medicalSituation: 'Douleurs thoraciques irradiantes, antécédents de maladie cardiaque'
-        },
-        {
-          file: 'RS-EDA/RS-EDA-SMUR-Fuite-de-Gaz.json',
-          icon: 'mdi-molecule-co2',
-          context: 'Fuite de gaz',
-          name: 'Alice et Grégoire Normand',
-          caller: 'Marie Dubois, mère des enfants, appelle le 15',
-          environment: 'Domicile, maison particulière',
-          victims: '2 patients, nécessitant assistance SAMU et l\'intervention du SIS pour la fuite de gaz qui a reçu une demande de concours',
-          victim: 'Femme, enfant, 13 ans, et Homme, enfant, 11 ans',
-          medicalSituation: 'Malaise, effets secondaires liés au monoxyde de carbone'
-        },
-        {
-          file: 'RS-EDA/RS-EDA-SMUR-Femme-Enceinte.json',
-          icon: 'mdi-human-pregnant',
-          context: 'Chute d\'une échelle d\'une femme enceinte',
-          name: 'Delphine Vigneau',
-          caller: 'Agnès Duberti, appelle le 18 qui nous transfère l\'appel et le dossier',
-          environment: 'Lieu de travail',
-          victims: '1 patiente, nécessitant assistance SAMU',
-          victim: 'Femme, enceinte de 2 mois, 32 ans',
-          medicalSituation: 'Problème obstétrique non hémorragique'
-        }
-      ]
-    },
-    {
-      label: 'GEO-POS',
-      schemaName: 'GEO-POS.schema.json',
-      schema: null,
-      examples: [
-        {
-          file: 'GEO-POS/CU2_Geolocation.json',
-          icon: 'mdi-earth',
-          name: 'Positions Updates',
-          context: 'Partage de mises à jour des positions'
-        }
-      ]
-    },
-    {
-      label: 'GEO-RES',
-      schemaName: 'GEO-RES.schema.json',
-      schema: null,
-      examples: [
-        {
-          file: 'GEO-RES/CU1_Geolocation.json',
-          icon: 'mdi-earth',
-          name: 'Resources Details',
-          context: 'Partage des détails de ressources'
-        }
-      ]
-    },
-    {
-      label: 'GEO-REQ',
-      schemaName: 'GEO-REQ.schema.json',
-      schema: null,
-      examples: [
-        {
-          file: 'GEO-REQ/CU3_Geolocation.json',
-          icon: 'mdi-earth',
-          name: 'Resources Request',
-          context: 'Demande de partage des détails des ressources'
-        }
-      ]
-    },
-    {
-      label: 'RS-RIG',
-      schemaName: 'RS-RIG.schema.json',
-      schema: null,
-      examples: []
-    },
-    {
-      label: 'RS-DDR',
-      schemaName: 'RS-DDR.schema.json',
-      schema: null,
-      examples: []
-    },
-    {
-      label: 'RS-RDR',
-      schemaName: 'RS-RDR.schema.json',
-      schema: null,
-      examples: []
-    },
-    {
-      label: 'RPIS',
-      schemaName: 'RPIS.schema.json',
-      schema: null,
-      examples: []
-    }
-  ]
+  // Message types are loaded from the github repository
+  messageTypes: []
 })
 
 export const getters = {
@@ -335,18 +110,30 @@ export const actions = {
   },
 
   loadSchemas({state, commit}, source) {
-    // ToDo: load schemas from github branch directly so it is up to date?
-    source = source || 'schemas/json-schema/'
     Promise.all(state.messageTypes.map(async ({schemaName}, index) => {
+      // If 404, ignore and continue
       console.log('Loading schema from: ' + source + schemaName)
-      const response = await fetch(source + schemaName)
-      const schema = await response.json()
-      return ({index, schema})
+      try {
+        const response = await fetch(source + schemaName)
+        const schema = await response.json()
+        return ({index, schema})
+      } catch (error) {
+        console.error('Error loading schema: ' + schemaName)
+        return ({index, schema: {}})
+      }
     })).then((schemas) => {
       schemas.forEach(({index, schema}) => {
         commit(SET_MESSAGE_TYPE_SCHEMA, {index, schema})
       })
     })
+  },
+
+  loadMessageTypes ({ state, commit }, source) {
+    return fetch(source)
+      .then(response => response.json())
+      .then((messageTypes) => {
+        commit('SET_MESSAGE_TYPES', messageTypes)
+      })
   }
 }
 
@@ -394,5 +181,9 @@ export const mutations = {
       ...this.state.messageTypes[index],
       schema
     })
+  },
+
+  [SET_MESSAGE_TYPES](state, messageTypes) {
+    state.messageTypes = messageTypes
   }
 }
