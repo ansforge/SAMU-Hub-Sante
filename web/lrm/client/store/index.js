@@ -110,12 +110,17 @@ export const actions = {
   },
 
   loadSchemas({state, commit}, source) {
-    source = source || 'schemas/json-schema/'
     Promise.all(state.messageTypes.map(async ({schemaName}, index) => {
+      // If 404, ignore and continue
       console.log('Loading schema from: ' + source + schemaName)
-      const response = await fetch(source + schemaName)
-      const schema = await response.json()
-      return ({index, schema})
+      try {
+        const response = await fetch(source + schemaName)
+        const schema = await response.json()
+        return ({index, schema})
+      } catch (error) {
+        console.error('Error loading schema: ' + schemaName)
+        return ({index, schema: {}})
+      }
     })).then((schemas) => {
       schemas.forEach(({index, schema}) => {
         commit(SET_MESSAGE_TYPE_SCHEMA, {index, schema})
@@ -124,8 +129,7 @@ export const actions = {
   },
 
   loadMessageTypes ({ state, commit }, source) {
-    source = source || 'schemas/messageTypes.json'
-    fetch(source)
+    return fetch(source)
       .then(response => response.json())
       .then((messageTypes) => {
         commit('SET_MESSAGE_TYPES', messageTypes)
