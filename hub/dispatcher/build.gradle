@@ -8,8 +8,6 @@ plugins {
 }
 
 group = 'com.hubsante'
-archivesBaseName = 'hubsante-dispatcher'
-version = '0.12.1-SNAPSHOT'
 
 java {
     toolchain {
