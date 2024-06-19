@@ -11,11 +11,11 @@
         </encoder>
     </appender>
 
-    <!-- We log at WARN level only except for our own loggers -->
-    <root level="WARN">
+    <!-- We log at ERROR level only except for our own loggers -->
+    <root level="ERROR">
         <appender-ref ref="STDOUT" />
     </root>
-    <logger name="com.hubsante.hub" level="INFO" additivity="false">
+    <logger name="com.hubsante.hub" level="DEBUG" additivity="false">
         <appender-ref ref="STDOUT" />
     </logger>
 </configuration>
