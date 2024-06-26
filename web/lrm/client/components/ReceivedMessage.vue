@@ -63,7 +63,7 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
+//import { mapGetters } from 'vuex'
 import { DIRECTIONS } from '@/constants'
 import mixinMessage from '~/plugins/mixinMessage'
 

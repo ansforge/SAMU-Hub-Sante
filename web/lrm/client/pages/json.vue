@@ -81,7 +81,7 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
+//import { mapGetters } from 'vuex'
 import Ajv from 'ajv'
 import mixinMessage from '~/plugins/mixinMessage'
 import { REPOSITORY_URL } from '@/constants'

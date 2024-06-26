@@ -9,8 +9,8 @@
           <v-container class="pt-0" full-width>
             <v-stepper v-model="currentStep" class="stepper">
               <v-stepper-header>
-                <template v-for="(step, index) in testCase.steps">
-                  <v-col :key="'step' + index">
+                <template v-for="(step, index) in testCase.steps" :key="'step' + index">
+                  <v-col>
                     <v-stepper-step
                       :key="index"
                       style="cursor: pointer;"
@@ -151,8 +151,8 @@
 
 <script>
 
-import { mapGetters } from 'vuex'
-import Vue from 'vue'
+//import { mapGetters } from 'vuex'
+// import Vue from 'vue'
 import mixinMessage from '~/plugins/mixinMessage'
 import { REPOSITORY_URL } from '@/constants'
 

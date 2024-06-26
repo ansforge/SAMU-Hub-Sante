@@ -4,8 +4,13 @@ export default defineNuxtConfig({
   bridge: {
     typescript: true,
     nitro: true,
-    capi: true
+    capi: true,
+    vite: true
   },
+  vite: {
+
+  },
+  
   // Target: https://go.nuxtjs.dev/config-target
   target: 'server',
 
@@ -33,7 +38,6 @@ export default defineNuxtConfig({
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
   plugins: [
     // Ref.: https://github.com/clwillingham/nuxt-vjsf-test/blob/master/nuxt.config.js
-    { src: '~/plugins/vjsf', mode: 'client' },
     { src: '~/plugins/mixinUser', mode: 'client' },
     { src: '~/plugins/jsonViewer', mode: 'client' }
   ],
@@ -47,7 +51,7 @@ export default defineNuxtConfig({
   build: {
     // Necessary for "à la carte" import of vuetify components as the js import in vjsf.js was failing
     // Ref.: https://koumoul-dev.github.io/vuetify-jsonschema-form/latest/getting-started
-    transpile: ['vuetify/lib', /@koumoul/, 'markdown-it/lib', 'vuedraggable/src']
+    transpile: ['vuetify/lib', 'markdown-it/lib', 'vuedraggable/src']
   },
 
   generate: {
@@ -55,9 +59,12 @@ export default defineNuxtConfig({
     exclude: []
   },
 
+  app: {
+    baseURL: (process.env.NODE_ENV === 'production' ? '/lrm/' : '/')
+  },
+
   router: {
     middleware: ['auth'],
-    base: (process.env.NODE_ENV === 'production' ? '/lrm/' : '/')
   },
 
   runtimeConfig: {
