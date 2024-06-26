@@ -24,7 +24,7 @@
       <v-btn
         icon
         color="primary"
-        :href="REPOSITORY_URL + $config.modelBranch + '/src/main/resources/sample/examples/' + file"
+        :href="REPOSITORY_URL + config.public.modelBranch + '/src/main/resources/sample/examples/' + file"
         target="_blank"
       >
         <v-icon>mdi-open-in-new</v-icon>
@@ -56,8 +56,9 @@
 </template>
 
 <script>
-
 import { REPOSITORY_URL } from '@/constants'
+
+const config = useRuntimeConfig()
 
 export default {
   props: {
@@ -101,7 +102,8 @@ export default {
   data () {
     return {
       showDetails: false,
-      REPOSITORY_URL
+      REPOSITORY_URL,
+      config
     }
   },
   watch: {

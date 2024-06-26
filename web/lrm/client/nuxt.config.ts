@@ -1,11 +1,15 @@
-import colors from 'vuetify/es5/util/colors'
+import { defineNuxtConfig } from '@nuxt/bridge'
 
-export default {
+export default defineNuxtConfig({
+  bridge: {
+    typescript: true,
+    nitro: true,
+    capi: true
+  },
   // Target: https://go.nuxtjs.dev/config-target
   target: 'server',
 
-  // Global page headers: https://go.nuxtjs.dev/config-head
-  head: {
+  meta: {
     titleTemplate: '%s - Hub Santé',
     title: 'LRM',
     htmlAttrs: {
@@ -34,48 +38,10 @@ export default {
     { src: '~/plugins/jsonViewer', mode: 'client' }
   ],
 
-  // Auto import components: https://go.nuxtjs.dev/config-components
-  components: true,
-
-  // Modules for dev and build (recommended): https://go.nuxtjs.dev/config-modules
-  buildModules: [
-    // https://go.nuxtjs.dev/typescript
-    '@nuxt/typescript-build',
-    // https://go.nuxtjs.dev/vuetify
-    '@nuxtjs/vuetify'
-  ],
-
   // Modules: https://go.nuxtjs.dev/config-modules
   modules: [
-    // https://go.nuxtjs.dev/axios
-    '@nuxtjs/axios',
-    '@nuxtjs/toast'
+    '@pinia/nuxt'
   ],
-
-  // Axios module configuration: https://go.nuxtjs.dev/config-axios
-  axios: {
-    // Workaround to avoid enforcing hard-coded localhost:3000: https://github.com/nuxt-community/axios-module/issues/308
-    baseURL: (process.env.NODE_ENV === 'production' ? '/' : 'http://localhost:8081/')
-  },
-
-  // Vuetify module configuration: https://go.nuxtjs.dev/config-vuetify
-  vuetify: {
-    customVariables: ['~/assets/variables.scss'],
-    theme: {
-      dark: false,
-      themes: {
-        dark: {
-          primary: colors.blue.darken2,
-          accent: colors.grey.darken3,
-          secondary: colors.amber.darken3,
-          info: colors.teal.lighten1,
-          warning: colors.amber.base,
-          error: colors.deepOrange.accent4,
-          success: colors.green.accent3
-        }
-      }
-    }
-  },
 
   // Build Configuration: https://go.nuxtjs.dev/config-build
   build: {
@@ -94,11 +60,13 @@ export default {
     base: (process.env.NODE_ENV === 'production' ? '/lrm/' : '/')
   },
 
-  publicRuntimeConfig: {
-    clientMap: process.env.CLIENT_MAP || '{}',
-    modelBranch: process.env.MODEL_BRANCH || 'main',
-    backendLrmServer: (process.env.BACKEND_LRM_SERVER === 'localhost'
-      ? 'ws://localhost:8081/'
-      : 'wss://' + process.env.BACKEND_LRM_SERVER + '/lrm/api/')
+  runtimeConfig: {
+    public: {
+      clientMap: process.env.CLIENT_MAP || '{}',
+      modelBranch: process.env.MODEL_BRANCH || 'main',
+      backendLrmServer: (process.env.BACKEND_LRM_SERVER === 'localhost'
+        ? 'ws://localhost:8081/'
+        : 'wss://' + process.env.BACKEND_LRM_SERVER + '/lrm/api/')
+    }
   }
-}
+})

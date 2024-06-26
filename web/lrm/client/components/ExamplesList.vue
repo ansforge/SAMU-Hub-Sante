@@ -44,6 +44,8 @@
 
 import { REPOSITORY_URL } from '@/constants'
 
+const config = useRuntimeConfig()
+
 export default {
   props: {
     examples: {
@@ -107,7 +109,7 @@ export default {
     },
     loadExample (exampleName) {
       if (exampleName) {
-        fetch(REPOSITORY_URL + this.$config.modelBranch + '/src/main/resources/sample/examples/' + exampleName)
+        fetch(REPOSITORY_URL + config.public.modelBranch + '/src/main/resources/sample/examples/' + exampleName)
           .then(response => response.json())
           .then((data) => {
             this.selectedExample = data[Object.keys(data)[0]]

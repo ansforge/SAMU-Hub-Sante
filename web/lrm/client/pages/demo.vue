@@ -113,6 +113,8 @@ import { mapGetters } from 'vuex'
 import mixinMessage from '~/plugins/mixinMessage'
 import { REPOSITORY_URL } from '@/constants'
 
+const config = useRuntimeConfig()
+
 export default {
   name: 'Demo',
   mixins: [mixinMessage],
@@ -193,8 +195,8 @@ export default {
   mounted () {
     // To automatically generate the UI and input fields based on the JSON Schema
     // We need to wait the acquisition of 'messagesList' before attempting to acquire the schemas
-    this.$store.dispatch('loadMessageTypes', REPOSITORY_URL + this.$config.modelBranch + '/src/main/resources/sample/examples/messagesList.json').then(
-      () => this.$store.dispatch('loadSchemas', REPOSITORY_URL + this.$config.modelBranch + '/src/main/resources/json-schema/')
+    this.$store.dispatch('loadMessageTypes', REPOSITORY_URL + config.public.modelBranch + '/src/main/resources/sample/examples/messagesList.json').then(
+      () => this.$store.dispatch('loadSchemas', REPOSITORY_URL + config.public.modelBranch + '/src/main/resources/json-schema/')
     )
   },
   methods: {

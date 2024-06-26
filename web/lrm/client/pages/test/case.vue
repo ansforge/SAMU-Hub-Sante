@@ -156,6 +156,8 @@ import Vue from 'vue'
 import mixinMessage from '~/plugins/mixinMessage'
 import { REPOSITORY_URL } from '@/constants'
 
+const config = useRuntimeConfig()
+
 export default {
   name: 'Testcase',
   mixins: [mixinMessage],
@@ -305,7 +307,7 @@ export default {
     async loadJsonSteps () {
       for (const step of this.testCase.steps) {
         if (step.type === 'receive') {
-          const response = await fetch(REPOSITORY_URL + this.$config.modelBranch + '/src/main/resources/sample/examples/' + step.message.file)
+          const response = await fetch(REPOSITORY_URL + config.public.modelBranch + '/src/main/resources/sample/examples/' + step.message.file)
           const json = await response.json()
           this.$set(step, 'json', json)
         }

@@ -90,6 +90,8 @@
 import testCaseFile from '~/assets/test-cases.json'
 import { REPOSITORY_URL } from '@/constants'
 
+const config = useRuntimeConfig()
+
 export default {
   name: 'Test',
   data () {
@@ -116,7 +118,7 @@ export default {
       this.loadTestCases()
     },
     async fetchGeneratedTestCases () {
-      const response = await fetch(REPOSITORY_URL + this.$config.modelBranch + '/csv_parser/out/test_cases.json')
+      const response = await fetch(REPOSITORY_URL + config.public.modelBranch + '/csv_parser/out/test_cases.json')
       if (response.ok) {
         this.testCaseFileAuto = await response.json()
       }
@@ -157,7 +159,7 @@ export default {
     loadTestCaseJsons (testCase) {
       testCase.steps.forEach(async (step) => {
         if (step.type === 'receive') {
-          const response = await fetch(REPOSITORY_URL + this.$config.modelBranch + '/src/main/resources/sample/examples/' + step.message.file)
+          const response = await fetch(REPOSITORY_URL + config.public.modelBranch + '/src/main/resources/sample/examples/' + step.message.file)
           const json = await response.json()
           this.$set(step, 'json', json)
         }
@@ -165,7 +167,7 @@ export default {
     },
     goToTestCase (testCase) {
       this.$store.dispatch('resetMessages')
-      this.$router.push({
+      this.navigateTo({
         name: 'test-case',
         params: {
           testCase

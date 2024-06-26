@@ -59,6 +59,8 @@
 </template>
 
 <script>
+const config = useRuntimeConfig()
+
 export default {
   name: 'Login',
   data () {
@@ -68,7 +70,7 @@ export default {
         type: 'error',
         message: ''
       },
-      clientIds: Object.keys(this.$config.clientMap).length === 0 ? new Map() : new Map(this.$config.clientMap),
+      clientIds: Object.keys(config.public.clientMap).length === 0 ? new Map() : new Map(config.public.clientMap),
       form: {
         clientId: 'fr.health.samuA',
         targetId: 'fr.health.samuC',
@@ -97,7 +99,7 @@ export default {
     async login () {
       if (!this.$refs.form.validate()) { return }
       const loggedInUser = await this.$store.dispatch('logInUser', this.form)
-      await this.$router.push(loggedInUser.tester ? '/test' : '/demo')
+      await navigateTo(loggedInUser.tester ? '/test' : '/demo')
     },
     swap () {
       const clientId = this.form.clientId

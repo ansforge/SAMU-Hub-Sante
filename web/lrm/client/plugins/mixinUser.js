@@ -20,3 +20,5 @@ Vue.mixin({
     }
   }
 })
+
+export default () => { }

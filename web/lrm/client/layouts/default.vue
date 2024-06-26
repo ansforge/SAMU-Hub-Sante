@@ -4,7 +4,7 @@
       fixed
       app
     >
-      <v-toolbar-title style="cursor: pointer" @click="$router.push('/')">
+      <v-toolbar-title style="cursor: pointer" @click="navigateTo('/')">
         Hub Santé - LRM
       </v-toolbar-title>
       <v-btn class="ml-4" href="https://hub.esante.gouv.fr/" target="_blank">
@@ -46,7 +46,7 @@
     </v-app-bar>
     <v-main>
       <v-container fluid>
-        <Nuxt />
+        <slot />
       </v-container>
     </v-main>
     <v-footer
@@ -81,7 +81,7 @@ export default {
           clientId: this.user.targetId
         })
       } else {
-        this.$router.push('/')
+        return navigateTo('/')
       }
     }
   }

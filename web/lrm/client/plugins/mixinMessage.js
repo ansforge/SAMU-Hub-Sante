@@ -2,6 +2,7 @@ import { v4 as uuidv4 } from 'uuid'
 import moment from 'moment/moment'
 import { EDXL_ENVELOPE, DIRECTIONS } from '@/constants'
 const VALUES_TO_DROP = [null, undefined, '']
+const config = useRuntimeConfig()
 
 export default {
   mounted () {
@@ -15,7 +16,7 @@ export default {
   },
   methods: {
     wsConnect () {
-      this.socket = new WebSocket(this.$config.backendLrmServer)
+      this.socket = new WebSocket(config.public.backendLrmServer)
       this.socket.onopen = () => {
         console.log(`WebSocket ${this.$options.name} connection established`)
       }

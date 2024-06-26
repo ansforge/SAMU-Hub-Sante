@@ -85,6 +85,7 @@ import { mapGetters } from 'vuex'
 import Ajv from 'ajv'
 import mixinMessage from '~/plugins/mixinMessage'
 import { REPOSITORY_URL } from '@/constants'
+const config = useRuntimeConfig()
 
 export default {
   name: 'JsonCreator',
@@ -96,7 +97,7 @@ export default {
         strict: false
       }),
       mounted: false,
-      selectedSource: REPOSITORY_URL + this.$config.modelBranch + '/src/main/resources/',
+      selectedSource: REPOSITORY_URL + config.public.modelBranch + '/src/main/resources/',
       sources: [{
         divider: true,
         header: 'GitHub branches'

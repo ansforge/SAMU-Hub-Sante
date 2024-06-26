@@ -15,3 +15,5 @@ _global.markdownit = require('markdown-it')
 Vue.component('VJsf', VJsf)
 // eslint-disable-next-line vue/multi-word-component-names
 Vue.component('Draggable', Draggable)
+
+export default () => { }
