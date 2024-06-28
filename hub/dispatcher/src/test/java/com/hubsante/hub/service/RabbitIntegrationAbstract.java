@@ -74,7 +74,7 @@ public class RabbitIntegrationAbstract {
             .withPluginsEnabled("rabbitmq_management", "rabbitmq_auth_mechanism_ssl")
             .withCopyFileToContainer(mountFile("config/definitions.json"),
                     "/tmp/rabbitmq/config/definitions.json")
-            .withCopyFileToContainer(mountFile("config/certs/server/"),
+            .withCopyFileToContainer(mountFile("config/certs/rabbitmq/"),
                     "/etc/rabbitmq-tls/")
             .withCopyFileToContainer(mountFile("config/batch-test.sh"),
                     "/tmp/rabbitmq/config/batch-test.sh")
