@@ -265,7 +265,7 @@ public class MessageHandler {
     }
     private void logMessage(Message message, EdxlMessage edxlMessage) throws JsonProcessingException {
         log.info(" [x] Received from '" + message.getMessageProperties().getReceivedRoutingKey() + "': message with distributionID " + edxlMessage.getDistributionID());
-        log.debug(edxlHandler.serializeXmlEDXL(edxlMessage));
+        log.debug(edxlHandler.serializeJsonEDXL(edxlMessage));
     }
 
     private void publishErrorMetric(String error, String sender) {

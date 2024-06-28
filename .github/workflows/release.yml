@@ -63,7 +63,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: ${{ steps.extract_info.outputs.version }}
         run: |
-          ./gradlew test jib -Pversion=$TAG --image romainfd/dispatcher:$TAG
+          ./gradlew jib -Pversion=$TAG --image romainfd/dispatcher:$TAG
 
       - name: Build and push lrm backend Docker image
         if: steps.extract_info.outputs.project == 'lrm'

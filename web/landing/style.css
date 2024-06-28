@@ -60,3 +60,8 @@ h3 {
     height: 190px;
     object-fit: cover;
 }
+
+/* https: //getpublii.com/blog/one-line-css-solution-to-prevent-anchor-links-from-scrolling-behind-a-sticky-header.html */
+html {
+    scroll-padding-top: 113px;
+}

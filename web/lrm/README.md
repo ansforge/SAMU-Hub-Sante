@@ -1,6 +1,8 @@
 # Hub Santé - LRM
 _LRM basique afin de pouvoir tester l'envoi / réception de messages_
 
+TODO : check if this is not obsolete
+
 ## Deploy
 ```bash
 # Build UI

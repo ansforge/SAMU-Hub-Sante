@@ -34,14 +34,17 @@ class ExpressServer {
     // Subscribe to Hub messages and send them to the client through web socket
     connect((connection, channel) => {
       this.connection = connection;
-      for (const [clientName, clientId] of Object.entries(DEMO_CLIENT_IDS)) {
+      logger.info("Demo client ids: " + DEMO_CLIENT_IDS)
+      const demoIds = JSON.parse(DEMO_CLIENT_IDS);
+      for (const clientKeyValue of demoIds) {
+        const clientId = clientKeyValue[0]
         for (const type of ['message', 'ack', 'info']) {
           const queue = `${clientId}.${type}`;
-          logger.info(` [*] Waiting for ${clientName} messages in ${queue}. To exit press CTRL+C`);
+          logger.info(` [*] Waiting for ${clientId} messages in ${queue}. To exit press CTRL+C`);
           channel.consume(queue, (msg) => {
             const body = JSON.parse(msg.content);
-            logger.info(` [x] Received for ${clientName}: ${body.distributionID}`);
-            logger.debug(` [x] Received for ${clientName}: ${body.distributionID} of content ${msg.content}`);
+            logger.info(` [x] Received for ${clientId}: ${body.distributionID}`);
+            logger.debug(` [x] Received for ${clientId}: ${body.distributionID} of content ${msg.content}`);
             const d = new Date();
             const data = {
               direction: '←',
