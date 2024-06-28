@@ -1,9 +1,9 @@
 <template>
   <v-container fill-height>
-    <v-layout align-center justify-center>
-      <v-flex class="login-form text-center" style="max-width: 450px;">
+    <v-layout class="d-flex justify-center">
+      <v-col class="login-form text-center " style="max-width: 450px;">
         <div class="text-h4 my-10">
-          <v-icon class="mr-2" x-large>
+          <v-icon class="mr-2" size="x-large">
             mdi-heart-pulse
           </v-icon>
           Hub Santé LRM
@@ -35,10 +35,10 @@
               />
               <v-alert
                 v-if="alert.show"
-                border="left"
-                dense
+                border="start"
+                density="compact"
                 elevation="3"
-                outlined
+                variant="outlined"
                 :type="alert.type"
               >
                 {{ alert.message }}
@@ -53,13 +53,12 @@
             </v-form>
           </v-card-text>
         </v-card>
-      </v-flex>
+      </v-col>
     </v-layout>
   </v-container>
 </template>
 
 <script>
-const config = useRuntimeConfig()
 
 export default {
   name: 'Login',
@@ -70,7 +69,7 @@ export default {
         type: 'error',
         message: ''
       },
-      clientIds: Object.keys(config.public.clientMap).length === 0 ? new Map() : new Map(config.public.clientMap),
+      clientIds: Object.keys(this.$config.public.clientMap).length === 0 ? new Map() : new Map(this.$config.public.clientMap),
       form: {
         clientId: 'fr.health.samuA',
         targetId: 'fr.health.samuC',

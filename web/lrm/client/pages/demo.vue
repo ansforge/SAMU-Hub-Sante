@@ -2,7 +2,7 @@
   <v-row justify="center">
     <v-col cols="12" sm="7">
       <v-card style="height: 86vh; overflow-y: auto;">
-        <v-card-title class="headline pb-">
+        <v-card-title class="text-h5 pb-">
           Formulaire
           <v-spacer />
           <SendButton class="mt-2" @click="submit" />
@@ -10,7 +10,7 @@
         <v-card-text>
           <v-tabs
             v-model="messageTypeTabIndex"
-            align-with-title
+            align-tabs="title"
           >
             <v-tabs-slider color="primary" />
             <v-tab
@@ -33,7 +33,7 @@
     </v-col>
     <v-col cols="12" sm="5">
       <v-card style="height: 86vh; overflow-y: auto;">
-        <v-card-title class="headline">
+        <v-card-title class="text-h5">
           <span class="mb-4">
             {{ showSentMessagesConfig ? 'Messages' : 'Messages reçus' }}
           </span>
@@ -60,12 +60,12 @@
         <v-btn-toggle
           v-model="selectedMessageType"
           class="ml-4"
-          dense
+          density="compact"
           borderless
           mandatory
         >
           <v-btn v-for="{name, type, icon} in queueTypes" :key="type" :value="type" class="px-4">
-            <v-icon left>
+            <v-icon start>
               {{ icon }}
             </v-icon>
             {{ name }}
@@ -87,7 +87,7 @@
             :key="caseId"
             :value="caseId"
             filter
-            outlined
+            variant="outlined"
           >
             {{ caseId }}
           </v-chip>
@@ -99,7 +99,7 @@
               v-bind="message"
               :key="message.time"
               class="message mb-4"
-              @useMessageToReply="useMessageToReply"
+              @use-message-to-reply="useMessageToReply"
             />
           </transition-group>
         </v-card-text>
@@ -109,8 +109,7 @@
 </template>
 
 <script>
-//import { mapGetters } from 'vuex'
-import mixinMessage from '~/plugins/mixinMessage'
+// import { mapGetters } from 'pinia'
 import { REPOSITORY_URL } from '@/constants'
 
 const config = useRuntimeConfig()
@@ -146,7 +145,7 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['messages', 'isAdvanced', 'messageTypes']),
+    // ...mapGetters(['messages', 'isAdvanced', 'messageTypes']),
     showSentMessagesConfig: {
       get () {
         return this.showSentMessages

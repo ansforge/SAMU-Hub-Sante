@@ -1,6 +1,6 @@
 <template>
   <div>
-    <examples-list :examples="examples" @selectedExample="load" />
+    <examples-list :examples="examples" @selected-example="load" />
     <RequestForm
       v-if="schema"
       :key="exampleLoadDatetime"
@@ -13,7 +13,7 @@
 </template>
 
 <script>
-import mixinMessage from '@/plugins/mixinMessage'
+// import mixinMessage from '@/plugins/mixinMessage'
 
 export default {
   mixins: [mixinMessage],

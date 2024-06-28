@@ -1,25 +1,25 @@
 <template>
   <v-card
     class="mx-auto"
-    outlined
+    border
     tile
     elevation="4"
   >
-    <v-list-item two-line>
-      <v-list-item-avatar
+    <v-list-item lines="two">
+      <v-avatar
         size="64"
         color="grey"
       >
-        <v-icon large>
+        <v-icon size="large">
           {{ icon }}
         </v-icon>
-      </v-list-item-avatar>
-      <v-list-item-content>
-        <v-list-item-title class="text-h5 mb-1">
-          {{ name }}
-        </v-list-item-title>
-        <v-list-item-subtitle>{{ context }}</v-list-item-subtitle>
-      </v-list-item-content>
+      </v-avatar>
+
+      <v-list-item-title class="text-h5 mb-1">
+        {{ name }}
+      </v-list-item-title>
+      <v-list-item-subtitle>{{ context }}</v-list-item-subtitle>
+
       <v-spacer />
       <v-btn
         icon
@@ -31,23 +31,23 @@
       </v-btn>
     </v-list-item>
     <v-card-text class="pt-0">
-      <div class="py-1" v-if="caller">
+      <div v-if="caller" class="py-1">
         <v-icon>mdi-phone</v-icon>
         {{ caller }}
       </div>
-      <div class="py-1" v-if="environment">
+      <div v-if="environment" class="py-1">
         <v-icon>mdi-map-marker</v-icon>
         {{ environment }}
       </div>
-      <div class="py-1" v-if="victims">
+      <div v-if="victims" class="py-1">
         <v-icon>mdi-account-multiple</v-icon>
         {{ victims }}
       </div>
-      <div class="py-1" v-if="victim">
+      <div v-if="victim" class="py-1">
         <v-icon>mdi-account-injury</v-icon>
         {{ victim }}
       </div>
-      <div class="py-1" v-if="medicalSituation">
+      <div v-if="medicalSituation" class="py-1">
         <v-icon>mdi-heart-pulse</v-icon>
         {{ medicalSituation }}
       </div>

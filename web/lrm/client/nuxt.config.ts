@@ -1,4 +1,5 @@
 import { defineNuxtConfig } from '@nuxt/bridge'
+import vuetify, { transformAssetUrls } from 'vite-plugin-vuetify'
 
 export default defineNuxtConfig({
   bridge: {
@@ -8,9 +9,13 @@ export default defineNuxtConfig({
     vite: true
   },
   vite: {
-
+    vue: {
+      template: {
+        transformAssetUrls
+      }
+    }
   },
-  
+
   // Target: https://go.nuxtjs.dev/config-target
   target: 'server',
 
@@ -38,20 +43,24 @@ export default defineNuxtConfig({
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
   plugins: [
     // Ref.: https://github.com/clwillingham/nuxt-vjsf-test/blob/master/nuxt.config.js
-    { src: '~/plugins/mixinUser', mode: 'client' },
-    { src: '~/plugins/jsonViewer', mode: 'client' }
   ],
 
   // Modules: https://go.nuxtjs.dev/config-modules
   modules: [
-    '@pinia/nuxt'
+    '@pinia/nuxt',
+    (_options, nuxt) => {
+      nuxt.hooks.hook('vite:extendConfig', (config) => {
+        // @ts-expect-error
+        config.plugins.push(vuetify({ autoImport: true }))
+      })
+    }
   ],
 
   // Build Configuration: https://go.nuxtjs.dev/config-build
   build: {
     // Necessary for "à la carte" import of vuetify components as the js import in vjsf.js was failing
     // Ref.: https://koumoul-dev.github.io/vuetify-jsonschema-form/latest/getting-started
-    transpile: ['vuetify/lib', 'markdown-it/lib', 'vuedraggable/src']
+    transpile: ['vuetify', 'markdown-it/lib']
   },
 
   generate: {
@@ -64,12 +73,12 @@ export default defineNuxtConfig({
   },
 
   router: {
-    middleware: ['auth'],
+    middleware: ['auth']
   },
 
   runtimeConfig: {
     public: {
-      clientMap: process.env.CLIENT_MAP || '{}',
+      clientMap: process.env.CLIENT_MAP || {},
       modelBranch: process.env.MODEL_BRANCH || 'main',
       backendLrmServer: (process.env.BACKEND_LRM_SERVER === 'localhost'
         ? 'ws://localhost:8081/'

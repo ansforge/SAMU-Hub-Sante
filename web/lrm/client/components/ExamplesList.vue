@@ -4,8 +4,8 @@
       <v-col cols="auto" class="pr-0 mt-2">
         <v-btn
           fab
-          outlined
-          x-small
+          variant="outlined"
+          size="x-small"
           color="primary"
           :loading="isSelectingUpload"
           @click="handleFileImport"
@@ -23,11 +23,11 @@
       <v-col>
         <v-chip-group
           v-model="selectedDetailIndex"
-          active-class="primary--text"
+          selected-class="primary--text"
           column
         >
           <v-chip v-for="{icon, name} in examples" :key="name">
-            <v-icon left>
+            <v-icon start>
               {{ icon }}
             </v-icon>
             {{ name }}

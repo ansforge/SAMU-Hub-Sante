@@ -4,7 +4,7 @@
     :disabled="(!isAdvanced) && messageJustSent"
     v-on="$listeners"
   >
-    <v-icon left>
+    <v-icon start>
       {{ messageJustSent ? 'mdi-check' : 'mdi-send' }}
     </v-icon>
     {{ messageJustSent ? 'Envoyé !' : 'Envoyer' }}
@@ -12,11 +12,11 @@
 </template>
 
 <script>
-//import { mapGetters } from 'vuex'
+// import { mapGetters } from 'vuex'
 
 export default {
   computed: {
-    ...mapGetters(['messageJustSent', 'isAdvanced'])
+    // ...mapGetters(['messageJustSent', 'isAdvanced'])
   }
 }
 </script>

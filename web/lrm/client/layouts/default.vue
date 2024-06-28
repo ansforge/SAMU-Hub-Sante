@@ -1,26 +1,23 @@
 <template>
   <v-app>
-    <v-app-bar
-      fixed
-      app
-    >
+    <v-app-bar>
       <v-toolbar-title style="cursor: pointer" @click="navigateTo('/')">
         Hub Santé - LRM
       </v-toolbar-title>
       <v-btn class="ml-4" href="https://hub.esante.gouv.fr/" target="_blank">
-        <v-icon left>
+        <v-icon start>
           mdi-presentation
         </v-icon>
         Page web
       </v-btn>
       <v-btn class="ml-4" href="https://hub.esante.gouv.fr/specs/" target="_blank">
-        <v-icon left>
+        <v-icon start>
           mdi-file-document-multiple-outline
         </v-icon>
         Specs
       </v-btn>
       <v-btn class="ml-4" to="/json">
-        <v-icon left>
+        <v-icon start>
           mdi-email-edit-outline
         </v-icon>
         Json Creator
@@ -58,7 +55,7 @@
 </template>
 
 <script>
-//import { mapGetters } from 'vuex'
+// import { mapGetters } from 'vuex'
 
 export default {
   name: 'DefaultLayout',
@@ -66,7 +63,7 @@ export default {
     return {}
   },
   computed: {
-    ...mapGetters(['isAuthenticated', 'isAdvanced'])
+    // ...mapGetters(['isAuthenticated', 'isAdvanced'])
   },
   methods: {
     toggleAdvanced () {

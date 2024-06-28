@@ -2,16 +2,16 @@
   <v-row justify="center">
     <v-col cols="12" sm="7">
       <v-card style="height: 86vh; overflow-y: auto;">
-        <v-card-title class="headline">
+        <v-card-title class="text-h5">
           Formulaire
           <v-combobox
             v-model="selectedSource"
             :items="sources"
             label="Source des schémas"
             class="ml-4 pl-4"
-            dense
+            density="compact"
             hide-details
-            outlined
+            variant="outlined"
             :return-object="false"
           />
           <v-btn
@@ -27,7 +27,7 @@
         <v-card-text>
           <v-tabs
             v-model="messageTypeTabIndex"
-            align-with-title
+            align-tabs="title"
           >
             <v-tabs-slider color="primary" />
             <v-tab
@@ -50,17 +50,17 @@
     </v-col>
     <v-col cols="12" sm="5">
       <v-card style="height: 86vh; overflow-y: auto;">
-        <v-card-title class="headline">
+        <v-card-title class="text-h5">
           Json live view
           <v-spacer />
           <v-btn primary @click="saveMessage">
-            <v-icon left>
+            <v-icon start>
               mdi-file-download-outline
             </v-icon>
             Enregistrer
           </v-btn>
           <v-btn secondary @click="validateMessage">
-            <v-icon left>
+            <v-icon start>
               mdi-text-box-check-outline
             </v-icon>
             Valider
@@ -81,12 +81,9 @@
 </template>
 
 <script>
-//import { mapGetters } from 'vuex'
 import Ajv from 'ajv'
-import mixinMessage from '~/plugins/mixinMessage'
 import { REPOSITORY_URL } from '@/constants'
-const config = useRuntimeConfig()
-
+// import { mapGetters } from 'pinia';
 export default {
   name: 'JsonCreator',
   mixins: [mixinMessage],
@@ -144,7 +141,7 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['messages', 'isAdvanced', 'messageTypes']),
+    // ...mapGetters(['messages', 'isAdvanced', 'messageTypes']),
     currentMessageType () {
       return this.messageTypes[this.messageTypeTabIndex]
     },
@@ -183,8 +180,8 @@ export default {
     updateForm () {
       // To automatically generate the UI and input fields based on the JSON Schema
       // We need to wait the acquisition of 'messagesList' before attempting to acquire the schemas
-      this.$store.dispatch('loadMessageTypes', this.selectedSource+"/sample/examples/messagesList.json").then(
-        () => this.$store.dispatch('loadSchemas', this.selectedSource+"/json-schema/")
+      this.$store.dispatch('loadMessageTypes', this.selectedSource + '/sample/examples/messagesList.json').then(
+        () => this.$store.dispatch('loadSchemas', this.selectedSource + '/json-schema/')
       )
     },
     useSchema (schema) {

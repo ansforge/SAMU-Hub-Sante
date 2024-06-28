@@ -11,11 +11,11 @@
     <div class="elevation-4 pt-8" :class="{'grey lighten-4': isOut(direction)}">
       <v-row class="mx-4" :class="{ 'pb-2':dense }">
         <span>
-          <v-icon small left>mdi-email-fast</v-icon>{{ direction }} {{ isOut(direction) ? routingKey : body.senderID }}
+          <v-icon size="small" start>mdi-email-fast</v-icon>{{ direction }} {{ isOut(direction) ? routingKey : body.senderID }}
           <br>
-          <v-icon small left>mdi-timer</v-icon>{{ time }} → {{ isOut(direction) ? acked?.time : receivedTime }}
+          <v-icon size="small" start>mdi-timer</v-icon>{{ time }} → {{ isOut(direction) ? acked?.time : receivedTime }}
           <div v-if="dense && !isOut(direction)">
-            <v-icon small left :color="validatedValuesCount === requiredValuesCount ? 'green' : validatedValuesCount === 0 ? 'red' : 'orange'">
+            <v-icon size="small" start :color="validatedValuesCount === requiredValuesCount ? 'green' : validatedValuesCount === 0 ? 'red' : 'orange'">
               {{ validatedValuesCount === requiredValuesCount ? 'mdi-check' : 'mdi-close' }}
             </v-icon>
             <span>Valeurs valides: {{ validatedValuesCount }} / {{ requiredValuesCount }} </span>
@@ -63,9 +63,9 @@
 </template>
 
 <script>
-//import { mapGetters } from 'vuex'
+// import { mapGetters } from 'pinia'
 import { DIRECTIONS } from '@/constants'
-import mixinMessage from '~/plugins/mixinMessage'
+// import mixinMessage from '~/plugins/mixinMessage'
 
 export default {
   mixins: [mixinMessage],
@@ -114,7 +114,7 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['messages']),
+    // ...mapGetters(['messages']),
     acked () {
       // Within Ack messages, check if there is one matching the message
       return this.messages.filter(
