@@ -13,7 +13,7 @@
 </template>
 
 <script>
-// import mixinMessage from '@/plugins/mixinMessage'
+import mixinMessage from '~/mixins/mixinMessage'
 
 export default {
   mixins: [mixinMessage],

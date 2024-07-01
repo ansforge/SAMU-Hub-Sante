@@ -1,7 +1,7 @@
 <template>
   <v-app>
     <v-app-bar>
-      <v-toolbar-title style="cursor: pointer" @click="navigateTo('/')">
+      <v-toolbar-title style="cursor: pointer; flex: initial" @click="navigateTo('/')">
         Hub Santé - LRM
       </v-toolbar-title>
       <v-btn class="ml-4" href="https://hub.esante.gouv.fr/" target="_blank">
@@ -56,6 +56,7 @@
 
 <script>
 // import { mapGetters } from 'vuex'
+import { useMainStore } from '~/store'
 
 export default {
   name: 'DefaultLayout',
@@ -67,12 +68,14 @@ export default {
   },
   methods: {
     toggleAdvanced () {
-      this.$store.dispatch('toggleAdvanced')
+      const store = useMainStore()
+      store.toggleAdvanced()
     },
     clickHandler () {
       if (this.isAdvanced) {
+        const store = useMainStore()
         // No control as this will anyway fail, user is expected to be advanced
-        this.$store.dispatch('logInUser', {
+        store.logInUser({
           ...this.user,
           targetId: this.user.clientId,
           clientId: this.user.targetId

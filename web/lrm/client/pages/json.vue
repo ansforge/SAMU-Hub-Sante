@@ -83,35 +83,33 @@
 <script>
 import Ajv from 'ajv'
 import { REPOSITORY_URL } from '@/constants'
+import mixinMessage from '~/mixins/mixinMessage'
+import { useMainStore } from '~/store'
+
 // import { mapGetters } from 'pinia';
 export default {
   name: 'JsonCreator',
   mixins: [mixinMessage],
   data () {
     return {
+      store: useMainStore(),
       ajv: new Ajv({
         allErrors: true,
         strict: false
       }),
       mounted: false,
-      selectedSource: REPOSITORY_URL + config.public.modelBranch + '/src/main/resources/',
+      selectedSource: REPOSITORY_URL + this.$config.public.modelBranch + '/src/main/resources/',
       sources: [{
-        divider: true,
-        header: 'GitHub branches'
-      }, {
-        text: 'main',
+        title: 'main',
         value: REPOSITORY_URL + 'main/src/main/resources/'
       }, {
-        text: 'develop',
+        title: 'develop', 
         value: REPOSITORY_URL + 'develop/src/main/resources/'
       }, {
-        text: 'auto/model_tracker',
+        title: 'auto/model_tracker',
         value: REPOSITORY_URL + 'auto/model_tracker/src/main/resources/'
       }, {
-        divider: true,
-        header: 'Templates'
-      }, {
-        text: REPOSITORY_URL + '{branchName}/src/main/resources/',
+        title: REPOSITORY_URL + '{branchName}/src/main/resources/',
         value: REPOSITORY_URL + '{branchName}/src/main/resources/'
       }],
       messageTypeTabIndex: 0,
@@ -143,7 +141,7 @@ export default {
   computed: {
     // ...mapGetters(['messages', 'isAdvanced', 'messageTypes']),
     currentMessageType () {
-      return this.messageTypes[this.messageTypeTabIndex]
+      return this.store.messageTypes[this.messageTypeTabIndex]
     },
     currentSchemaForm () {
       // Ref.: https://stackoverflow.com/a/43531779
@@ -180,8 +178,8 @@ export default {
     updateForm () {
       // To automatically generate the UI and input fields based on the JSON Schema
       // We need to wait the acquisition of 'messagesList' before attempting to acquire the schemas
-      this.$store.dispatch('loadMessageTypes', this.selectedSource + '/sample/examples/messagesList.json').then(
-        () => this.$store.dispatch('loadSchemas', this.selectedSource + '/json-schema/')
+      this.store.loadMessageTypes(this.selectedSource + '/sample/examples/messagesList.json').then(
+        () => this.store.loadSchemas(this.selectedSource + '/json-schema/')
       )
     },
     useSchema (schema) {
