@@ -42,7 +42,7 @@ export default defineNuxtConfig({
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
   plugins: [
-    // Ref.: https://github.com/clwillingham/nuxt-vjsf-test/blob/master/nuxt.config.js
+    { src: '~/plugins/jsonViewer', mode: 'client' }
   ],
 
   // Modules: https://go.nuxtjs.dev/config-modules
@@ -60,7 +60,7 @@ export default defineNuxtConfig({
   build: {
     // Necessary for "à la carte" import of vuetify components as the js import in vjsf.js was failing
     // Ref.: https://koumoul-dev.github.io/vuetify-jsonschema-form/latest/getting-started
-    transpile: ['vuetify', 'markdown-it/lib']
+    transpile: ['vuetify', 'markdown-it/lib', 'vuedraggable/src', /@koumoul/, 'vuetify/lib']
   },
 
   generate: {

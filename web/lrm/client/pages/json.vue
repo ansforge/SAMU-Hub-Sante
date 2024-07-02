@@ -29,22 +29,22 @@
             v-model="messageTypeTabIndex"
             align-tabs="title"
           >
-            <v-tabs-slider color="primary" />
+            <v-tabs color="primary" />
             <v-tab
-              v-for="{label} in messageTypes"
+              v-for="{label} in store.messageTypes"
               :key="label"
             >
               {{ label }}
             </v-tab>
           </v-tabs>
-          <v-tabs-items v-model="messageTypeTabIndex">
-            <v-tab-item
-              v-for="messageTypeDetails in messageTypes"
+          <v-tabs v-model="messageTypeTabIndex">
+            <v-tab
+              v-for="messageTypeDetails in store.messageTypes"
               :key="messageTypeDetails.label"
             >
               <SchemaForm :ref="'schemaForm_' + messageTypeDetails.label" v-bind="messageTypeDetails" no-send-button @on-form-update="updateCurrentMessage" />
-            </v-tab-item>
-          </v-tabs-items>
+            </v-tab>
+          </v-tabs>
         </v-card-text>
       </v-card>
     </v-col>

@@ -7,7 +7,7 @@
     "cp:schemas": "rm static/schemas/json-schema/* && cp -R ../../../../SAMU-Hub-Modeles/src/main/resources/json-schema/ static/schemas/",
     "cp:examples": "rm static/examples/* && cp -R ../../../../SAMU-Hub-Modeles/src/main/resources/sample/examples/ static/",
     "dev": "cross-env nuxi dev",
-    "build": "cross-env NODE_OPTIONS=--openssl-legacy-provider nuxi build",
+    "build": "cross-env NODE_OPTIONS=--openssl-legacy-provider nuxi build --force",
     "start": "nuxt start",
     "generate": "cross-env NODE_OPTIONS=--openssl-legacy-provider nuxt generate",
     "lint:js": "eslint --ext \".js,.ts,.vue\" --ignore-path .gitignore .",
@@ -15,9 +15,13 @@
     "lintfix": "npm run lint:js -- --fix"
   },
   "dependencies": {
+    "@json-layout/core": "^0.27.0",
+    "@koumoul/vjsf": "^3.0.0-beta.32",
     "@mdi/font": "^7.4.47",
     "@pinia/nuxt": "^0.5.1",
     "ajv": "^8.16.0",
+    "ajv-errors": "^3.0.0",
+    "ajv-formats": "^3.0.1",
     "core-js": "^3.37.1",
     "eslint-plugin-vuetify": "^2.4.0",
     "jsonpath": "^1.1.1",
@@ -29,7 +33,8 @@
     "vue": "^3.4.30",
     "vue-json-viewer": "^3.0.4",
     "vue-server-renderer": "^2.7.16",
-    "vue-template-compiler": "^2.7.16"
+    "vue-template-compiler": "^2.7.16",
+    "vuedraggable": "^2.24.3"
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.24.7",
