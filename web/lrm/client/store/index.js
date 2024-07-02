@@ -3,7 +3,7 @@ import { defineStore } from 'pinia'
 // export const strict = false
 export const useMainStore = defineStore('main', {
   state: () => ({
-    auth: {
+    _auth: {
       user: {
         clientId: null,
         targetId: null,
@@ -13,14 +13,14 @@ export const useMainStore = defineStore('main', {
         autoAck: false
       }
     },
-    messages: [/* {
+    _messages: [/* {
         direction: DIRECTIONS.IN,
         routingKey: '',
         time: this.timeDisplayFormat(),
         receivedTime: this.timeDisplayFormat(),
         body: { body: 'Page loaded successfully!' }
       } */],
-    messageJustSent: false,
+    _messageJustSent: false,
     // ToDo: when message are uploaded, add them in store
     // ToDo: when message is loaded, add them in store to not load them again later
     // Message types are loaded from the github repository
@@ -29,31 +29,31 @@ export const useMainStore = defineStore('main', {
 
   getters: {
     isAuthenticated (state) {
-      return !!state.auth.user.clientId
+      return !!state._auth.user.clientId
     },
 
     user (state) {
-      return state.auth.user
+      return state._auth.user
     },
 
     isAdvanced (state) {
-      return state.auth.user.advanced
+      return state._auth.user.advanced
     },
 
     showSentMessages (state) {
-      return state.auth.user.showSentMessages
+      return state._auth.user.showSentMessages
     },
 
     autoAck (state) {
-      return state.auth.user.autoAck
+      return state._auth.user.autoAck
     },
 
     messages (state) {
-      return state.messages
+      return state._messages
     },
 
     messageJustSent (state) {
-      return state.messageJustSent
+      return state._messageJustSent
     },
 
     messageTypes (state) {
@@ -64,47 +64,47 @@ export const useMainStore = defineStore('main', {
   actions: {
     logInUser (userData) {
       // use state.auth.user to get default values
-      state.auth.user = userData
+      this._auth.user = userData
       return userData
     },
 
     toggleAdvanced () {
-      state.auth.user = {
-        ...state.auth.user,
+      this._auth.user = {
+        ...this._auth.user,
         advanced: !state.auth.user.advanced
       }
       return getters.isAdvanced
     },
 
     setShowSentMessages (showSentMessages) {
-      state.auth.user = {
-        ...state.auth.user,
+      this._auth.user = {
+        ...this._auth.user,
         showSentMessages
       }
       return showSentMessages
     },
 
     setAutoAck (autoAck) {
-      state.auth.user = {
-        ...state.auth.user,
+      this._auth.user = {
+        ...this._auth.user,
         autoAck
       }
       return autoAck
     },
 
     addMessage (message) {
-      state.messages.unshift(message)
+      this._messages.unshift(message)
       // If sending message worked well
       if (message.direction === '→') { // isOUt() check
-        state.messageJustSent = true
+        this._messageJustSent = true
         setTimeout(() => {
-          state.messageJustSent = false
+          this._messageJustSent = false
         }, 1000)
       }
     },
 
     resetMessages () {
-      state.messages = []
+      this._messages = []
     },
 
     loadSchemas (source) {
