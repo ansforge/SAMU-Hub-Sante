@@ -65,7 +65,7 @@
 <script>
 // import { mapGetters } from 'pinia'
 import { DIRECTIONS } from '@/constants'
-// import mixinMessage from '~/plugins/mixinMessage'
+import mixinMessage from '~/mixins/mixinMessage'
 
 export default {
   mixins: [mixinMessage],

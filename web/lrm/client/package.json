@@ -16,12 +16,10 @@
   },
   "dependencies": {
     "@json-layout/core": "^0.27.0",
+    "@json-layout/vocabulary": "^0.19.0",
     "@koumoul/vjsf": "^3.0.0-beta.32",
     "@mdi/font": "^7.4.47",
     "@pinia/nuxt": "^0.5.1",
-    "ajv": "^8.16.0",
-    "ajv-errors": "^3.0.0",
-    "ajv-formats": "^3.0.1",
     "core-js": "^3.37.1",
     "eslint-plugin-vuetify": "^2.4.0",
     "jsonpath": "^1.1.1",

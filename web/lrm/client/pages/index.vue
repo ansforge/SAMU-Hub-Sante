@@ -59,11 +59,13 @@
 </template>
 
 <script>
+import { useMainStore } from '~/store'
 
 export default {
   name: 'Login',
   data () {
     return {
+      store: useMainStore(),
       alert: {
         show: false,
         type: 'error',
@@ -97,7 +99,7 @@ export default {
   methods: {
     async login () {
       if (!this.$refs.form.validate()) { return }
-      const loggedInUser = await this.$store.dispatch('logInUser', this.form)
+      const loggedInUser = await this.store.logInUser(this.form)
       await navigateTo(loggedInUser.tester ? '/test' : '/demo')
     },
     swap () {

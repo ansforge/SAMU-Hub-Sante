@@ -179,7 +179,7 @@ export default {
       // To automatically generate the UI and input fields based on the JSON Schema
       // We need to wait the acquisition of 'messagesList' before attempting to acquire the schemas
       this.store.loadMessageTypes(this.selectedSource + '/sample/examples/messagesList.json').then(
-        () => this.store.loadSchemas(this.selectedSource + '/json-schema/')
+        () => this.store.loadSchemas(this.selectedSource + 'json-schema/')
       )
     },
     useSchema (schema) {

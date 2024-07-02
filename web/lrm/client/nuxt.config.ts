@@ -1,18 +1,22 @@
 import { defineNuxtConfig } from '@nuxt/bridge'
 import vuetify, { transformAssetUrls } from 'vite-plugin-vuetify'
+import { commonjsDeps, commonjsDepsPaths } from '@koumoul/vjsf/utils/build.js'
 
 export default defineNuxtConfig({
   bridge: {
     typescript: true,
     nitro: true,
     capi: true,
-    vite: true
+    vite: false
   },
   vite: {
     vue: {
       template: {
         transformAssetUrls
       }
+    },
+    optimizeDeps: {
+      include: commonjsDeps
     }
   },
 

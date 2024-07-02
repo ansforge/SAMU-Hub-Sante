@@ -14,7 +14,7 @@
           >
             <v-tabs-slider color="primary" />
             <v-tab
-              v-for="[name, {label}] in Object.entries(messageTypes)"
+              v-for="[name, {label}] in Object.entries(store.messageTypes)"
               :key="name"
             >
               {{ label }}
@@ -22,7 +22,7 @@
           </v-tabs>
           <v-tabs-items v-model="messageTypeTabIndex">
             <v-tab-item
-              v-for="[name, messageTypeDetails] in Object.entries(messageTypes)"
+              v-for="[name, messageTypeDetails] in Object.entries(store.messageTypes)"
               :key="name"
             >
               <SchemaForm v-bind="messageTypeDetails" ref="schemaForms" :name="name" />
@@ -109,8 +109,9 @@
 </template>
 
 <script>
-// import { mapGetters } from 'pinia'
+import mixinMessage from '~/mixins/mixinMessage'
 import { REPOSITORY_URL } from '@/constants'
+import { useMainStore } from '~/store'
 
 const config = useRuntimeConfig()
 
@@ -119,6 +120,7 @@ export default {
   mixins: [mixinMessage],
   data () {
     return {
+      store: useMainStore(),
       messageTypeTabIndex: 0,
       selectedMessageType: 'message',
       selectedClientId: null,
@@ -151,7 +153,7 @@ export default {
         return this.showSentMessages
       },
       set (value) {
-        this.$store.dispatch('setShowSentMessages', value)
+        this.store.setShowSentMessages(value)
       }
     },
     autoAckConfig: {
@@ -159,7 +161,7 @@ export default {
         return this.autoAck
       },
       set (value) {
-        this.$store.dispatch('setAutoAck', value)
+        this.store.setAutoAck(value)
       }
     },
     clientMessages () {
@@ -194,8 +196,8 @@ export default {
   mounted () {
     // To automatically generate the UI and input fields based on the JSON Schema
     // We need to wait the acquisition of 'messagesList' before attempting to acquire the schemas
-    this.$store.dispatch('loadMessageTypes', REPOSITORY_URL + config.public.modelBranch + '/src/main/resources/sample/examples/messagesList.json').then(
-      () => this.$store.dispatch('loadSchemas', REPOSITORY_URL + config.public.modelBranch + '/src/main/resources/json-schema/')
+    this.store.loadMessageTypes(REPOSITORY_URL + config.public.modelBranch + '/src/main/resources/sample/examples/messagesList.json').then(
+      () => this.store.loadSchemas(REPOSITORY_URL + config.public.modelBranch + '/src/main/resources/json-schema/')
     )
   },
   methods: {

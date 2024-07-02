@@ -1,6 +1,6 @@
 <template>
   <v-form v-model="valid">
-    <v-jsf v-model="form" :schema="schemaCopy" :options="options" />
+    <vjsf v-model="form" :schema="schemaCopy" :options="options" />
     <v-card-actions>
       <v-spacer />
       <SendButton v-if="!noSendButton" class="mt-2" @click="$emit('submit')" />
@@ -10,7 +10,6 @@
 
 <script setup>
 import moment from 'moment'
-import Vjsf from '@koumoul/vjsf'
 import { ref, computed, watch } from 'vue'
 
 const props = defineProps({
