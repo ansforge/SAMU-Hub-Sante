@@ -38,14 +38,14 @@
             {{ showSentMessagesConfig ? 'Messages' : 'Messages reçus' }}
           </span>
           <v-badge
-            v-if="showableMessages.length"
+            v-if="showableMessages?.length"
             class="mb-4"
-            :content="showableMessages.length"
+            :content="showableMessages?.length"
           />
           <v-spacer />
           <v-switch
-            v-if="isAdvanced"
-            v-model="autoAckConfig"
+            v-if="store.isAdvanced"
+            v-model="store.autoAckConfig"
             inset
             :label="'Auto ack'"
             class="my-0 py-0 mr-4"
@@ -58,7 +58,7 @@
           />
         </v-card-title>
         <v-btn-toggle
-          v-model="selectedMessageType"
+          v-model="store.selectedMessageType"
           class="ml-4"
           density="compact"
           borderless
@@ -77,8 +77,8 @@
           </v-btn>
         </v-btn-toggle>
         <v-chip-group
-          v-if="selectedMessageType === 'message' && caseIds.length > 1"
-          v-model="selectedCaseIds"
+          v-if="store.selectedMessageType === 'message' && store.caseIds.length > 1"
+          v-model="store.selectedCaseIds"
           class="ml-4"
           multiple
         >
@@ -95,7 +95,7 @@
         <v-card-text>
           <transition-group name="message">
             <ReceivedMessage
-              v-for="message in selectedTypeCaseMessages"
+              v-for="message in store.selectedTypeCaseMessages"
               v-bind="message"
               :key="message.time"
               class="message mb-4"
@@ -165,7 +165,7 @@ export default {
       }
     },
     clientMessages () {
-      return this.messages.filter(
+      return this.store.messages.filter(
         message => (
           (this.isOut(message.direction) && message.body.senderID === this.user.clientId) ||
           (!this.isOut(message.direction) && message.routingKey.startsWith(this.user.clientId))
@@ -173,24 +173,25 @@ export default {
       )
     },
     showableMessages () {
-      return this.showSentMessages ? this.clientMessages : this.clientMessages.filter(message => !this.isOut(message.direction))
+      return this.store.showSentMessages ? this.clientMessages : this.clientMessages?.filter(message => !this.isOut(message.direction))
     },
     selectedTypeMessages () {
-      return this.showableMessages.filter(message => this.getMessageType(message) === this.selectedMessageType)
+      return this.store.showableMessages.filter(message => this.getMessageType(message) === this.store.selectedMessageType)
     },
     selectedTypeCaseMessages () {
-      if (this.selectedCaseIds.length === 0) {
-        return this.selectedTypeMessages
+      if (this.store.selectedCaseIds.length === 0) {
+        return this.store.selectedTypeMessages
       }
       return this.selectedTypeMessages.filter(
-        message => this.selectedCaseIds.includes(this.getCaseId(message, true))
+        message => this.store.selectedCaseIds.includes(this.getCaseId(message, true))
       )
     },
     messagesSentCount () {
+      let test = this.clientMessages
       return this.clientMessages.filter(message => this.isOut(message.direction)).length
     },
     caseIds () {
-      return [...new Set(this.selectedTypeMessages.map(m => this.getCaseId(m, true)))]
+      return [...new Set(this.store.selectedTypeMessages.map(m => this.getCaseId(m, true)))]
     }
   },
   mounted () {

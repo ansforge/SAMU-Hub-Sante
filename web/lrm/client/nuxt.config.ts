@@ -1,6 +1,6 @@
 import { defineNuxtConfig } from '@nuxt/bridge'
 import vuetify, { transformAssetUrls } from 'vite-plugin-vuetify'
-import { commonjsDeps, commonjsDepsPaths } from '@koumoul/vjsf/utils/build.js'
+import { commonjsDeps } from '@koumoul/vjsf/utils/build.js'
 
 export default defineNuxtConfig({
   bridge: {
