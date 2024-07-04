@@ -24,7 +24,7 @@
       </v-btn>
       <v-spacer />
       <div class="mx-5" style="height: 20px; width: 20px;" @click="toggleAdvanced" />
-      <span v-if="isAuthenticated" class="mr-2" style="cursor: pointer" @click="clickHandler">
+      <span v-if="store.isAuthenticated" class="mr-2" style="cursor: pointer" @click="clickHandler">
         <v-icon>
           {{ userInfos.icon }}
         </v-icon>
@@ -36,9 +36,9 @@
           mdi-swap-horizontal
         </v-icon>
         <v-icon>
-          {{ clientInfos(user.targetId).icon }}
+          {{ clientInfos(store.user.targetId).icon }}
         </v-icon>
-        {{ clientInfos(user.targetId).name }}
+        {{ clientInfos(store.user.targetId).name }}
       </span>
     </v-app-bar>
     <v-main>
@@ -55,30 +55,31 @@
 </template>
 
 <script>
-// import { mapGetters } from 'vuex'
 import { useMainStore } from '~/store'
+import mixinUser from '~/mixins/mixinUser'
 
 export default {
   name: 'DefaultLayout',
+  mixins: [mixinUser],
   data () {
-    return {}
+    return {
+      store: useMainStore()
+    }
   },
   computed: {
     // ...mapGetters(['isAuthenticated', 'isAdvanced'])
   },
   methods: {
     toggleAdvanced () {
-      const store = useMainStore()
-      store.toggleAdvanced()
+      this.store.toggleAdvanced()
     },
     clickHandler () {
       if (this.isAdvanced) {
-        const store = useMainStore()
         // No control as this will anyway fail, user is expected to be advanced
-        store.logInUser({
+        this.store.logInUser({
           ...this.user,
-          targetId: this.user.clientId,
-          clientId: this.user.targetId
+          targetId: this.store.user.clientId,
+          clientId: this.store.user.targetId
         })
       } else {
         return navigateTo('/')

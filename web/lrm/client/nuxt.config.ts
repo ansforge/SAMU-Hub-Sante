@@ -1,13 +1,13 @@
 import { defineNuxtConfig } from '@nuxt/bridge'
 import vuetify, { transformAssetUrls } from 'vite-plugin-vuetify'
-import { commonjsDeps } from '@koumoul/vjsf/utils/build.js'
+import { commonjsDeps, commonjsDepsPaths } from '@koumoul/vjsf/utils/build.js'
 
 export default defineNuxtConfig({
   bridge: {
     typescript: true,
     nitro: true,
     capi: true,
-    vite: false
+    vite: true
   },
   vite: {
     vue: {
@@ -17,6 +17,11 @@ export default defineNuxtConfig({
     },
     optimizeDeps: {
       include: commonjsDeps
+    },
+    build: {
+      commonjsOptions: {
+        include: commonjsDepsPaths.map(p => p.join('/'))
+      }
     }
   },
 
@@ -64,7 +69,7 @@ export default defineNuxtConfig({
   build: {
     // Necessary for "à la carte" import of vuetify components as the js import in vjsf.js was failing
     // Ref.: https://koumoul-dev.github.io/vuetify-jsonschema-form/latest/getting-started
-    transpile: ['vuetify', 'markdown-it/lib', 'vuedraggable/src', /@koumoul/, 'vuetify/lib']
+    transpile: ['vuetify/lib', '@koumoul/vjsf']
   },
 
   generate: {

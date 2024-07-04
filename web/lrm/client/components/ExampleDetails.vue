@@ -24,7 +24,7 @@
       <v-btn
         icon
         color="primary"
-        :href="REPOSITORY_URL + this.$config.public.modelBranch + '/src/main/resources/sample/examples/' + file"
+        :href="REPOSITORY_URL + $config.public.modelBranch + '/src/main/resources/sample/examples/' + file"
         target="_blank"
       >
         <v-icon>mdi-open-in-new</v-icon>

@@ -11,6 +11,7 @@
 <script setup>
 import moment from 'moment'
 import { ref, computed, watch } from 'vue'
+import Vjsf from '@koumoul/vjsf'
 
 const props = defineProps({
   value: {

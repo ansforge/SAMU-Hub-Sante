@@ -6,7 +6,7 @@
     "setup": "npm run cp:schemas && npm run cp:examples",
     "cp:schemas": "rm static/schemas/json-schema/* && cp -R ../../../../SAMU-Hub-Modeles/src/main/resources/json-schema/ static/schemas/",
     "cp:examples": "rm static/examples/* && cp -R ../../../../SAMU-Hub-Modeles/src/main/resources/sample/examples/ static/",
-    "dev": "cross-env nuxi dev",
+    "dev": "nuxt dev",
     "build": "cross-env NODE_OPTIONS=--openssl-legacy-provider nuxi build --force",
     "start": "nuxt start",
     "generate": "cross-env NODE_OPTIONS=--openssl-legacy-provider nuxt generate",
@@ -15,11 +15,11 @@
     "lintfix": "npm run lint:js -- --fix"
   },
   "dependencies": {
-    "@json-layout/core": "^0.27.0",
-    "@json-layout/vocabulary": "^0.19.0",
+    "@babel/types": "^7.24.7",
     "@koumoul/vjsf": "^3.0.0-beta.32",
     "@mdi/font": "^7.4.47",
     "@pinia/nuxt": "^0.5.1",
+    "@types/node": "^20.14.9",
     "core-js": "^3.37.1",
     "eslint-plugin-vuetify": "^2.4.0",
     "jsonpath": "^1.1.1",
@@ -46,6 +46,7 @@
     "eslint-plugin-nuxt": "^4.0.0",
     "eslint-plugin-vue": "^9.5.1",
     "nuxi": "^3.12.0",
+    "typescript": "^5.5.3",
     "vite-plugin-vuetify": "^2.0.3",
     "vuetify": "^3.6.10"
   }
