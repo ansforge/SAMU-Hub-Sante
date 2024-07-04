@@ -6,7 +6,7 @@
     "setup": "npm run cp:schemas && npm run cp:examples",
     "cp:schemas": "rm static/schemas/json-schema/* && cp -R ../../../../SAMU-Hub-Modeles/src/main/resources/json-schema/ static/schemas/",
     "cp:examples": "rm static/examples/* && cp -R ../../../../SAMU-Hub-Modeles/src/main/resources/sample/examples/ static/",
-    "dev": "cross-env BACKEND_LRM_SERVER=pre-prod.hub.esante.gouv.fr nuxt dev",
+    "dev": "nuxt dev",
     "vite": "vite",
     "build": "cross-env NODE_OPTIONS=--openssl-legacy-provider nuxi build --force",
     "start": "nuxt start",
