@@ -1,9 +1,15 @@
 import { v4 as uuidv4 } from 'uuid'
 import moment from 'moment/moment'
 import { EDXL_ENVELOPE, DIRECTIONS } from '@/constants'
+import mixinUser from '~/mixins/mixinUser'
+import { useMainStore } from '~/store'
 const VALUES_TO_DROP = [null, undefined, '']
 
 export default {
+  mixins: [mixinUser],
+  data: () => ({
+    store: useMainStore()
+  }),
   mounted () {
     if (this.$route.name !== 'json') {
       this.wsConnect()
@@ -41,15 +47,22 @@ export default {
       if (this.$options.name === 'Demo' || this.$options.name === 'Testcase') {
         this.socket.addEventListener('message', (event) => {
           const message = JSON.parse(event.data)
-          this.$store.dispatch('addMessage', {
+          this.store.addMessage({
             ...message,
             direction: DIRECTIONS.IN,
             messageType: this.getReadableMessageType(message.body.distributionKind),
             receivedTime: this.timeDisplayFormat()
           })
+          // TODO: REMOVE THIS
+          // this.$store.dispatch('addMessage', {
+          //   ...message,
+          //   direction: DIRECTIONS.IN,
+          //   messageType: this.getReadableMessageType(message.body.distributionKind),
+          //   receivedTime: this.timeDisplayFormat()
+          // })
           if (this.autoAck) {
           // Send back acks automatically to received messages
-            if (this.getMessageType(message) !== 'ack' && message.routingKey.startsWith(this.user.clientId)) {
+            if (this.getMessageType(message) !== 'ack' && message.routingKey.startsWith(this.store.user.clientId)) {
               const msg = this.buildAck(message.body.distributionID)
               this.sendMessage(msg)
             }
@@ -160,18 +173,18 @@ export default {
         ...formattedInnerMessage
       }
       const name = this.userInfos.name
-      const targetId = this.user.targetId
+      const targetId = this.store.user.targetId
       const sentAt = moment().format()
-      message.distributionID = `${this.user.clientId}_${uuidv4()}`
+      message.distributionID = `${this.store.user.clientId}_${uuidv4()}`
       message.distributionKind = distributionKind
-      message.senderID = this.user.clientId
+      message.senderID = this.store.user.clientId
       message.dateTimeSent = sentAt
       message.descriptor.explicitAddress.explicitAddressValue = targetId
       message.content[0].jsonContent.embeddedJsonContent.message.messageId = message.distributionID
       message.content[0].jsonContent.embeddedJsonContent.message.kind = message.distributionKind
-      message.content[0].jsonContent.embeddedJsonContent.message.sender = { name, URI: `hubex:${this.user.clientId}` }
+      message.content[0].jsonContent.embeddedJsonContent.message.sender = { name, URI: `hubex:${this.store.user.clientId}` }
       message.content[0].jsonContent.embeddedJsonContent.message.sentAt = sentAt
-      message.content[0].jsonContent.embeddedJsonContent.message.recipient = [{ name: this.clientInfos(this.user.targetId).name, URI: `hubex:${targetId}` }]
+      message.content[0].jsonContent.embeddedJsonContent.message.recipient = [{ name: this.clientInfos(this.store.user.targetId).name, URI: `hubex:${targetId}` }]
       return this.trimEmptyValues(message)
     },
     isEmpty (obj) {
@@ -210,14 +223,22 @@ export default {
       if (this.socket.readyState === 1) {
         try {
           console.log('Sending message', msg)
-          this.socket.send(JSON.stringify({ key: this.user.clientId, msg }))
-          this.$store.dispatch('addMessage', {
+          this.socket.send(JSON.stringify({ key: this.store.user.clientId, msg }))
+          this.store.addMessage({
             direction: DIRECTIONS.OUT,
-            routingKey: this.user.targetId,
+            routingKey: this.store.user.targetId,
             time: this.timeDisplayFormat(),
             messageType: this.getReadableMessageType(msg.distributionKind),
             body: msg
           })
+          // TODO: REMOVE THIS
+          // this.$store.dispatch('addMessage', {
+          //   direction: DIRECTIONS.OUT,
+          //   routingKey: this.store.user.targetId,
+          //   time: this.timeDisplayFormat(),
+          //   messageType: this.getReadableMessageType(msg.distributionKind),
+          //   body: msg
+          // })
         } catch (e) {
           alert(`Erreur lors de l'envoi du message: ${e}`)
         }

@@ -139,7 +139,6 @@ export default {
     }
   },
   computed: {
-    // ...mapGetters(['messages', 'isAdvanced', 'messageTypes']),
     currentMessageType () {
       return this.store.messageTypes[this.messageTypeTabIndex]
     },

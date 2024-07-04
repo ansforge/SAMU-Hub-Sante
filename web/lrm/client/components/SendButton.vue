@@ -1,22 +1,23 @@
 <template>
   <v-btn
-    :color="messageJustSent ? 'secondary' : 'primary'"
-    :disabled="(!isAdvanced) && messageJustSent"
-    v-on="$listeners"
+    :color="store.messageJustSent ? 'secondary' : 'primary'"
+    :disabled="(!store.isAdvanced) && store.messageJustSent"
   >
     <v-icon start>
-      {{ messageJustSent ? 'mdi-check' : 'mdi-send' }}
+      {{ store.messageJustSent ? 'mdi-check' : 'mdi-send' }}
     </v-icon>
-    {{ messageJustSent ? 'Envoyé !' : 'Envoyer' }}
+    {{ store.messageJustSent ? 'Envoyé !' : 'Envoyer' }}
   </v-btn>
 </template>
 
 <script>
-// import { mapGetters } from 'vuex'
+import { useMainStore } from '~/store'
 
 export default {
+  data: () => ({
+    store: useMainStore()
+  }),
   computed: {
-    // ...mapGetters(['messageJustSent', 'isAdvanced'])
   }
 }
 </script>

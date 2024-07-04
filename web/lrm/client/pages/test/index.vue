@@ -89,11 +89,15 @@
 
 import testCaseFile from '~/assets/test-cases.json'
 import { REPOSITORY_URL } from '@/constants'
+import mixinUser from '~/mixins/mixinUser'
+import { useMainStore } from '~/store'
 
 export default {
+  mixins: [mixinUser],
   name: 'Test',
   data () {
     return {
+      store: useMainStore(),
       testCaseFileAuto: [],
       testCases: []
     }
@@ -164,7 +168,9 @@ export default {
       })
     },
     goToTestCase (testCase) {
-      this.$store.dispatch('resetMessages')
+      this.store.resetMessages()
+      // TODO: REMOVE THIS
+      // this.$store.dispatch('resetMessages')
       this.navigateTo({
         name: 'test-case',
         params: {

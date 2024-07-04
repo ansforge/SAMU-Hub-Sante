@@ -6,7 +6,8 @@
     "setup": "npm run cp:schemas && npm run cp:examples",
     "cp:schemas": "rm static/schemas/json-schema/* && cp -R ../../../../SAMU-Hub-Modeles/src/main/resources/json-schema/ static/schemas/",
     "cp:examples": "rm static/examples/* && cp -R ../../../../SAMU-Hub-Modeles/src/main/resources/sample/examples/ static/",
-    "dev": "nuxt dev",
+    "dev": "cross-env BACKEND_LRM_SERVER=pre-prod.hub.esante.gouv.fr nuxt dev",
+    "vite": "vite",
     "build": "cross-env NODE_OPTIONS=--openssl-legacy-provider nuxi build --force",
     "start": "nuxt start",
     "generate": "cross-env NODE_OPTIONS=--openssl-legacy-provider nuxt generate",
@@ -27,6 +28,7 @@
     "moment": "^2.30.1",
     "nuxt": "^3.12.2",
     "pinia": "^2.1.7",
+    "rollup-plugin-polyfill-node": "^0.13.0",
     "uuid": "^9.0.0",
     "vue": "^3.4.30",
     "vue-json-viewer": "^3.0.4",
@@ -36,18 +38,12 @@
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.24.7",
-    "@nuxt/bridge": "^3.3.1",
-    "@nuxt/types": "^2.17.4",
     "@nuxtjs/eslint-config-typescript": "^12.1.0",
-    "@nuxtjs/eslint-module": "^3.1.0",
-    "@nuxtjs/vuetify": "^1.12.3",
     "cross-env": "^7.0.3",
-    "eslint": "^8.24.0",
     "eslint-plugin-nuxt": "^4.0.0",
     "eslint-plugin-vue": "^9.5.1",
     "nuxi": "^3.12.0",
     "typescript": "^5.5.3",
-    "vite-plugin-vuetify": "^2.0.3",
     "vuetify": "^3.6.10"
   }
 }

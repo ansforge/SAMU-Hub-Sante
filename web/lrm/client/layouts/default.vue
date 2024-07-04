@@ -29,7 +29,7 @@
           {{ userInfos.icon }}
         </v-icon>
         <b>{{ userInfos.name }}</b>
-        <v-icon v-if="!isAdvanced" color="primary">
+        <v-icon v-if="!store.isAdvanced" color="primary">
           mdi-arrow-right-thin
         </v-icon>
         <v-icon v-else color="primary">
@@ -67,14 +67,13 @@ export default {
     }
   },
   computed: {
-    // ...mapGetters(['isAuthenticated', 'isAdvanced'])
   },
   methods: {
     toggleAdvanced () {
       this.store.toggleAdvanced()
     },
     clickHandler () {
-      if (this.isAdvanced) {
+      if (this.store.isAdvanced) {
         // No control as this will anyway fail, user is expected to be advanced
         this.store.logInUser({
           ...this.user,

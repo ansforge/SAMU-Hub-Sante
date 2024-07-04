@@ -190,21 +190,20 @@ export default {
     }
   },
   computed: {
-    // ...mapGetters(['messages', 'isAdvanced']),
     clientMessages () {
-      return this.messages.filter(
+      return this.store.messages.filter(
         message =>
           (this.isOut(message.direction) &&
-            message.body.senderID === this.user.clientId) ||
+            message.body.senderID === this.store.user.clientId) ||
           (!this.isOut(message.direction) &&
-            message.routingKey.startsWith(this.user.clientId))
+            message.routingKey.startsWith(this.store.user.clientId))
       )
     },
     selectedMessage () {
       return this.selectedTypeCaseMessages[this.selectedMessageIndex]
     },
     showableMessages () {
-      return this.showSentMessages
+      return this.store.showSentMessages
         ? this.clientMessages
         : this.clientMessages.filter(message => !this.isOut(message.direction))
     },
@@ -327,7 +326,7 @@ export default {
           message.validatedStep = this.currentStep - 1
           message.validated = true
           if (ack) {
-            if (this.getMessageType(message) !== 'ack' && message.routingKey.startsWith(this.user.clientId)) {
+            if (this.getMessageType(message) !== 'ack' && message.routingKey.startsWith(this.store.user.clientId)) {
               const msg = this.buildAck(message.body.distributionID)
               this.sendMessage(msg)
             }
@@ -382,7 +381,7 @@ export default {
       const seconds = currentDate.getSeconds().toString().slice(-1)
 
       const time = year + dayOfYear + hour + minutes + seconds
-      return this.user.clientId + '-' + 'DRMFR15690' + time
+      return this.store.user.clientId + '-' + 'DRMFR15690' + time
     },
     /**
      * Returns the required values for a given step

@@ -2,11 +2,11 @@
   <div>
     <div class="mb-n4 ml-1">
       <v-badge
-        v-if="showSentMessages"
+        v-if="store.showSentMessages"
         :icon="isOut(direction) ? 'mdi-upload' : 'mdi-download'"
         :color="isOut(direction) ? 'secondary' : 'primary'"
       />
-      <status-badge :direction="direction" :acked="acked" :distribution-id="body.distributionID" :class="{'ml-5': showSentMessages}" />
+      <status-badge :direction="direction" :acked="acked" :distribution-id="body.distributionID" :class="{'ml-5': store.showSentMessages}" />
     </div>
     <div class="elevation-4 pt-8" :class="{'grey lighten-4': isOut(direction)}">
       <v-row class="mx-4" :class="{ 'pb-2':dense }">
@@ -66,6 +66,7 @@
 // import { mapGetters } from 'pinia'
 import { DIRECTIONS } from '@/constants'
 import mixinMessage from '~/mixins/mixinMessage'
+import { useMainStore } from '~/store'
 
 export default {
   mixins: [mixinMessage],
@@ -109,6 +110,7 @@ export default {
   },
   data () {
     return {
+      store: useMainStore(),
       DIRECTIONS,
       showFullMessage: false
     }
@@ -117,7 +119,7 @@ export default {
     // ...mapGetters(['messages']),
     acked () {
       // Within Ack messages, check if there is one matching the message
-      return this.messages.filter(
+      return this.store.messages.filter(
         message => this.getMessageType(message) === 'ack'
       ).find(
         message => message.body.content[0].jsonContent.embeddedJsonContent.message.reference.distributionID === this.body.distributionID

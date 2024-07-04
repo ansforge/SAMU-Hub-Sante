@@ -11,8 +11,8 @@
           <v-tabs
             v-model="messageTypeTabIndex"
             align-tabs="title"
+            slider-color="primary"
           >
-            <v-tabs-slider color="primary" />
             <v-tab
               v-for="[name, {label}] in Object.entries(store.messageTypes)"
               :key="name"
@@ -20,14 +20,14 @@
               {{ label }}
             </v-tab>
           </v-tabs>
-          <v-tabs-items v-model="messageTypeTabIndex">
-            <v-tab-item
+          <v-tabs v-model="messageTypeTabIndex">
+            <v-tab
               v-for="[name, messageTypeDetails] in Object.entries(store.messageTypes)"
               :key="name"
             >
               <SchemaForm v-bind="messageTypeDetails" ref="schemaForms" :name="name" />
-            </v-tab-item>
-          </v-tabs-items>
+            </v-tab>
+          </v-tabs>
         </v-card-text>
       </v-card>
     </v-col>
@@ -77,8 +77,8 @@
           </v-btn>
         </v-btn-toggle>
         <v-chip-group
-          v-if="store.selectedMessageType === 'message' && store.caseIds.length > 1"
-          v-model="store.selectedCaseIds"
+          v-if="selectedMessageType === 'message' && caseIds.length > 1"
+          v-model="selectedCaseIds"
           class="ml-4"
           multiple
         >
@@ -95,7 +95,7 @@
         <v-card-text>
           <transition-group name="message">
             <ReceivedMessage
-              v-for="message in store.selectedTypeCaseMessages"
+              v-for="message in selectedTypeCaseMessages"
               v-bind="message"
               :key="message.time"
               class="message mb-4"
@@ -147,10 +147,9 @@ export default {
     }
   },
   computed: {
-    // ...mapGetters(['messages', 'isAdvanced', 'messageTypes']),
     showSentMessagesConfig: {
       get () {
-        return this.showSentMessages
+        return this.store.showSentMessages
       },
       set (value) {
         this.store.setShowSentMessages(value)
@@ -167,8 +166,8 @@ export default {
     clientMessages () {
       return this.store.messages.filter(
         message => (
-          (this.isOut(message.direction) && message.body.senderID === this.user.clientId) ||
-          (!this.isOut(message.direction) && message.routingKey.startsWith(this.user.clientId))
+          (this.isOut(message.direction) && message.body.senderID === this.store.user.clientId) ||
+          (!this.isOut(message.direction) && message.routingKey.startsWith(this.store.user.clientId))
         )
       )
     },
@@ -176,21 +175,21 @@ export default {
       return this.store.showSentMessages ? this.clientMessages : this.clientMessages?.filter(message => !this.isOut(message.direction))
     },
     selectedTypeMessages () {
-      return this.store.showableMessages.filter(message => this.getMessageType(message) === this.store.selectedMessageType)
+      return this.showableMessages.filter(message => this.getMessageType(message) === this.store.selectedMessageType)
     },
     selectedTypeCaseMessages () {
-      if (this.store.selectedCaseIds.length === 0) {
-        return this.store.selectedTypeMessages
+      if (this.selectedCaseIds.length === 0) {
+        return this.selectedTypeMessages
       }
       return this.selectedTypeMessages.filter(
-        message => this.store.selectedCaseIds.includes(this.getCaseId(message, true))
+        message => this.selectedCaseIds.includes(this.getCaseId(message, true))
       )
     },
     messagesSentCount () {
       return this.clientMessages.filter(message => this.isOut(message.direction)).length
     },
     caseIds () {
-      return [...new Set(this.store.selectedTypeMessages.map(m => this.getCaseId(m, true)))]
+      return [...new Set(this.selectedTypeMessages.map(m => this.getCaseId(m, true)))]
     }
   },
   mounted () {
@@ -208,6 +207,7 @@ export default {
     },
     submit () {
       // Submits current SchemaForm
+      console.log('submitting:', this.store.messageTypes[this.messageTypeTabIndex].label)
       this.$refs.schemaForms.find(schema => schema.label === this.store.messageTypes[this.messageTypeTabIndex].label).submit()
     },
     useMessageToReply (message) {
