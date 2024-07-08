@@ -24,6 +24,9 @@ else
     echo "> Update Pods to use new secret: kubectl delete pods -l app.kubernetes.io/component=rabbitmq"
     echo "> Add certificate to Client truststore (from repository root): keytool -import -alias RabbitMQHubSante -file hub/rabbitmq/certs/hub.crt -keystore certs/trustStore"
     echo "> Copy trustStore to be used in Dispatcher (from repository root): cp certs/trustStore dispatcher/src/main/jib/certs/"
+  elif [ "$DOMAIN" = "rabbitmq" ];
+  then
+    openssl x509 -req -CA "$ROOT_CA".crt -CAkey "$ROOT_CA".key -in "$DOMAIN".csr -out "$DOMAIN".crt -days 365 -CAcreateserial -extfile rabbitmq.ext
   else
     openssl x509 -req -CA "$ROOT_CA".crt -CAkey "$ROOT_CA".key -in "$DOMAIN".csr -out "$DOMAIN".crt -days 365 -CAcreateserial -extfile client.ext
   fi

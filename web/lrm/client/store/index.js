@@ -7,7 +7,8 @@ import {
   SET_AUTO_ACK,
   SET_MESSAGE_JUST_SENT,
   RESET_MESSAGES,
-  SET_MESSAGE_TYPE_SCHEMA
+  SET_MESSAGE_TYPE_SCHEMA,
+  SET_MESSAGE_TYPES
 } from '~/store/constants'
 
 // export const strict = false
@@ -31,194 +32,67 @@ export const state = () => ({
         body: { body: 'Page loaded successfully!' }
       } */],
   messageJustSent: false,
-  messageTypes: [{
-    label: 'RC-EDA',
-    schemaName: 'RC-EDA.schema.json',
-    schema: null,
-    examples: [{
-      file: 'RC-EDA/RC-EDA-usecase-Armaury-1.json',
-      icon: 'mdi-bike-fast',
-      name: 'Alexandre ARMAURY',
-      caller: 'Albane Armaury, témoin accident impliquant son mari,  Alexandre Armaury',
-      context: 'Collision de 2 vélos',
-      environment: 'Voie cyclable à Lyon, gêne de la circulation',
-      victims: '2 victimes, 1 nécessitant assistance SAMU',
-      victim: 'Homme, adulte, 43 ans',
-      medicalSituation: 'Céphalées, migraines, traumatismes sérieux, plaies intermédiaires'
-    }, {
-      file: '../failing/RC-EDA/RC-EDA-missing-required-fields.json',
-      icon: 'mdi-alert-circle-outline',
-      name: 'Champs manquants',
-      context: "Pour illustrer les messages d'INFO sur les erreurs de validation"
-    }]
-  }, {
-    label: 'EMSI',
-    schemaName: 'EMSI.schema.json',
-    schema: null,
-    examples: [{
-      file: 'EMSI/emsi-DC-message.json',
-      icon: 'mdi-bike-fast',
-      name: 'Alexandre ARMAURY (DC)',
-      caller: 'Albane Armaury, témoin accident impliquant son mari, Alexandre Armaury',
-      context: 'Collision de 2 vélos',
-      environment: 'Voie cyclable à Lyon, gêne de la circulation',
-      victims: '2 victimes, 1 nécessitant assistance SAMU',
-      victim: 'Homme, adulte, 43 ans',
-      medicalSituation: 'Céphalées, migraines, traumatismes sérieux, plaies intermédiaires'
-    },
-    {
-      file: 'EMSI/EMSI-RDC-message.json',
-      icon: 'mdi-bike-fast',
-      name: 'Alexandre ARMAURY (RDC)',
-      caller: 'Albane Armaury, témoin accident impliquant son mari, Alexandre Armaury',
-      context: 'Collision de 2 vélos',
-      environment: 'Voie cyclable à Lyon, gêne de la circulation',
-      victims: '2 victimes, 1 nécessitant assistance SAMU',
-      victim: 'Homme, adulte, 43 ans',
-      medicalSituation: 'Céphalées, migraines, traumatismes sérieux, plaies intermédiaires'
-    },
-    {
-      file: 'EMSI/EMSI-OPG-message.json',
-      icon: 'mdi-bike-fast',
-      name: 'Alexandre ARMAURY (OPG)',
-      caller: 'Albane Armaury, témoin accident impliquant son mari, Alexandre Armaury',
-      context: 'Collision de 2 vélos',
-      environment: 'Voie cyclable à Lyon, gêne de la circulation',
-      victims: '2 victimes, 1 nécessitant assistance SAMU',
-      victim: 'Homme, adulte, 43 ans',
-      medicalSituation: 'Céphalées, migraines, traumatismes sérieux, plaies intermédiaires'
-    },
-    {
-      file: 'EMSI/EMSI-Complet-DC-RDC-OPG-message.json',
-      icon: 'mdi-bike-fast',
-      name: 'Alexandre ARMAURY (EMSI)',
-      caller: 'Albane Armaury, témoin accident impliquant son mari, Alexandre Armaury',
-      context: 'Collision de 2 vélos',
-      environment: 'Voie cyclable à Lyon, gêne de la circulation',
-      victims: '2 victimes, 1 nécessitant assistance SAMU',
-      victim: 'Homme, adulte, 43 ans',
-      medicalSituation: 'Céphalées, migraines, traumatismes sérieux, plaies intermédiaires'
-    }]
-  }, {
-    label: 'RS-EDA',
-    schemaName: 'RS-EDA.schema.json',
-    schema: null,
-    examples: [{
-      file: 'RS-EDA/RS-EDA-usecase-PartageDossier-1.json',
-      icon: 'mdi-circular-saw',
-      name: 'Didier MOREL',
-      caller: 'Sébastien Morel, témoin accident impliquant son père, Didier Morel',
-      context: 'Accident domestique : blessure grave causée par une scie circulaire électrique',
-      environment: 'Domicile, outil scie débranché et sécurisé',
-      victims: '1 victime, nécessitant assistance SAMU',
-      victim: 'Homme, adulte, 65 ans',
-      medicalSituation: 'Plaie traumatique profonde, perte de conscience, hémorragie importante'
-    }, {
-      file: 'RS-EDA/RS-EDA-usecase-AppelLimitrophe-2.json',
-      icon: 'mdi-heart-plus-outline',
-      name: 'Ouardia BOUDADI',
-      caller: 'Magda LENA, collègue de la victime, Ouardia BOUDADI',
-      context: 'Suspicion de crise cardiaque',
-      environment: 'Lieu de travail, local administratif de la SARL TOTO',
-      victims: '1 victimes, nécessitant assistance SAMU',
-      victim: 'Femme, adulte, 47 ans',
-      medicalSituation: 'Douleurs thoraciques irradiantes, antécédents de maladie cardiaque'
-    }]
-  }, {
-    label: 'RS-EDA-SMUR',
-    schemaName: 'RS-EDA-SMUR.schema.json',
-    schema: null,
-    examples: []
-  }, {
-    label: 'GEO-POS',
-    schemaName: 'GEO-POS.schema.json',
-    schema: null,
-    examples: [{
-      file: 'GEO-POS/CU2_Geolocation.json',
-      icon: 'mdi-earth',
-      name: 'Positions Updates',
-      context: 'Partage de mises à jour des positions'
-    }]
-  }, {
-    label: 'GEO-RES',
-    schemaName: 'GEO-RES.schema.json',
-    schema: null,
-    examples: [{
-      file: 'GEO-RES/CU1_Geolocation.json',
-      icon: 'mdi-earth',
-      name: 'Resources Details',
-      context: 'Partage des détails de ressources'
-    }]
-  }, {
-    label: 'GEO-REQ',
-    schemaName: 'GEO-REQ.schema.json',
-    schema: null,
-    examples: [{
-      file: 'GEO-REQ/CU3_Geolocation.json',
-      icon: 'mdi-earth',
-      name: 'Resources Request',
-      context: 'Demande de partage des détails des ressources'
-    }]
-  }]
+  // Message types are loaded from the github repository
+  messageTypes: []
 })
 
 export const getters = {
-  isAuthenticated (state) {
+  isAuthenticated(state) {
     return !!state.auth.user.clientId
   },
 
-  user (state) {
+  user(state) {
     return state.auth.user
   },
 
-  isAdvanced (state) {
+  isAdvanced(state) {
     return state.auth.user.advanced
   },
 
-  showSentMessages (state) {
+  showSentMessages(state) {
     return state.auth.user.showSentMessages
   },
 
-  autoAck (state) {
+  autoAck(state) {
     return state.auth.user.autoAck
   },
 
-  messages (state) {
+  messages(state) {
     return state.messages
   },
 
-  messageJustSent (state) {
+  messageJustSent(state) {
     return state.messageJustSent
   },
 
-  messageTypes (state) {
+  messageTypes(state) {
     return state.messageTypes
   }
 }
 
 export const actions = {
-  logInUser ({ state, commit }, userData) {
+  logInUser({state, commit}, userData) {
     // use state.auth.user to get default values
-    commit(SET_CURRENT_USER, { ...state.auth.user, ...userData })
+    commit(SET_CURRENT_USER, {...state.auth.user, ...userData})
     return userData
   },
 
-  toggleAdvanced ({ commit, getters }) {
+  toggleAdvanced({commit, getters}) {
     commit(TOGGLE_ADVANCED)
     return getters.isAdvanced
   },
 
-  setShowSentMessages ({ commit }, showSentMessages) {
+  setShowSentMessages({commit}, showSentMessages) {
     commit(SET_SHOW_SENT_MESSAGES, showSentMessages)
     return showSentMessages
   },
 
-  setAutoAck ({ commit }, autoAck) {
+  setAutoAck({commit}, autoAck) {
     commit(SET_AUTO_ACK, autoAck)
     return autoAck
   },
 
-  addMessage ({ commit }, message) {
+  addMessage({commit}, message) {
     commit(ADD_MESSAGE, message)
     // If sending message worked well
     if (message.direction === '→') { // isOUt() check
@@ -229,31 +103,44 @@ export const actions = {
     }
   },
 
-  resetMessages ({ commit }) {
+  resetMessages({commit}) {
     commit(RESET_MESSAGES)
   },
 
-  loadSchemas ({ state, commit }, source) {
-    source = source || 'schemas/json-schema/'
-    Promise.all(state.messageTypes.map(async ({ schemaName }, index) => {
+  loadSchemas({state, commit}, source) {
+    Promise.all(state.messageTypes.map(async ({schemaName}, index) => {
+      // If 404, ignore and continue
       console.log('Loading schema from: ' + source + schemaName)
-      const response = await fetch(source + schemaName)
-      const schema = await response.json()
-      return ({ index, schema })
+      try {
+        const response = await fetch(source + schemaName)
+        const schema = await response.json()
+        return ({index, schema})
+      } catch (error) {
+        console.error('Error loading schema: ' + schemaName)
+        return ({index, schema: {}})
+      }
     })).then((schemas) => {
-      schemas.forEach(({ index, schema }) => {
-        commit(SET_MESSAGE_TYPE_SCHEMA, { index, schema })
+      schemas.forEach(({index, schema}) => {
+        commit(SET_MESSAGE_TYPE_SCHEMA, {index, schema})
       })
     })
+  },
+
+  loadMessageTypes ({ state, commit }, source) {
+    return fetch(source)
+      .then(response => response.json())
+      .then((messageTypes) => {
+        commit('SET_MESSAGE_TYPES', messageTypes)
+      })
   }
 }
 
 export const mutations = {
-  [SET_CURRENT_USER] (state, user) {
+  [SET_CURRENT_USER](state, user) {
     state.auth.user = user
   },
 
-  [TOGGLE_ADVANCED] (state) {
+  [TOGGLE_ADVANCED](state) {
     // Not picked up by Vue reactivity (getter not updated): state.auth.user.advanced = !state.auth.user.advanced
     state.auth.user = {
       ...state.auth.user,
@@ -261,36 +148,40 @@ export const mutations = {
     }
   },
 
-  [SET_SHOW_SENT_MESSAGES] (state, showSentMessages) {
+  [SET_SHOW_SENT_MESSAGES](state, showSentMessages) {
     state.auth.user = {
       ...state.auth.user,
       showSentMessages
     }
   },
 
-  [SET_AUTO_ACK] (state, autoAck) {
+  [SET_AUTO_ACK](state, autoAck) {
     state.auth.user = {
       ...state.auth.user,
       autoAck
     }
   },
 
-  [ADD_MESSAGE] (state, message) {
+  [ADD_MESSAGE](state, message) {
     state.messages.unshift(message)
   },
 
-  [SET_MESSAGE_JUST_SENT] (state, messageJustSent) {
+  [SET_MESSAGE_JUST_SENT](state, messageJustSent) {
     state.messageJustSent = messageJustSent
   },
 
-  [RESET_MESSAGES] (state) {
+  [RESET_MESSAGES](state) {
     state.messages = []
   },
 
-  [SET_MESSAGE_TYPE_SCHEMA] (state, { index, schema }) {
+  [SET_MESSAGE_TYPE_SCHEMA](state, {index, schema}) {
     Vue.set(state.messageTypes, index, {
       ...this.state.messageTypes[index],
       schema
     })
+  },
+
+  [SET_MESSAGE_TYPES](state, messageTypes) {
+    state.messageTypes = messageTypes
   }
 }
