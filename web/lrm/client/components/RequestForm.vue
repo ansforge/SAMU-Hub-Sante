@@ -1,53 +1,62 @@
 <template>
   <v-form v-model="valid">
     <v-card-actions>
+      <Vjsf v-model="form" :schema="schemaCopy" :options="options" />
       <v-spacer />
       <SendButton v-if="!noSendButton" class="mt-2" @click="$emit('submit')" />
     </v-card-actions>
   </v-form>
 </template>
 
-<script setup>
+<script>
+import Vjsf from '@koumoul/vjsf'
 import moment from 'moment'
-import { ref, computed, watch } from 'vue'
 
-const props = defineProps({
-  value: {
-    type: Object,
-    default: () => ({})
+export default {
+  props: {
+    value: {
+      type: Object,
+      default: () => ({})
+    },
+    schema: {
+      type: Object,
+      required: true
+    },
+    noSendButton: {
+      type: Boolean,
+      default: false
+    }
   },
-  schema: {
-    type: Object,
-    required: true
+  data () {
+    return {
+      valid: false,
+      // Passed through v-model
+      form: this.value,
+      options: {
+        locale: 'fr',
+        defaultLocale: 'fr',
+        rootDisplay: 'tabs',
+        editMode: 'inline', // edits in place and not in dialog
+        expansionPanelsProps: { mandatory: false }, // collapses all panels
+        formats: {
+          'date-time': function (dateTime, _locale) { return moment(new Date(dateTime)).format() }
+        }
+      }
+    }
   },
-  noSendButton: {
-    type: Boolean,
-    default: false
-  }
-})
-
-const valid = ref(false)
-const form = ref(props.value)
-const options = {
-  locale: 'fr',
-  defaultLocale: 'fr',
-  rootDisplay: 'tabs',
-  editMode: 'inline', // edits in place and not in dialog
-  expansionPanelsProps: { mandatory: false }, // collapses all panels
-  formats: {
-    'date-time': function (dateTime, _locale) { return moment(new Date(dateTime)).format() }
+  computed: {
+    // Super tricky: schema deep-copy required as VJSF updates it somehow
+    // But it is in Vuex store thus it can't be changed outside of mutations...
+    schemaCopy () {
+      return JSON.parse(JSON.stringify(this.schema))
+    }
+  },
+  watch: {
+    form () {
+      this.$emit('input', this.form)
+    }
   }
 }
-
-const schemaCopy = computed(() => {
-  return JSON.parse(JSON.stringify(props.schema))
-})
-
-const emit = defineEmits(['input'])
-
-watch(form, () => {
-  emit('input', form.value)
-})
 </script>
 
 <style>

@@ -4,6 +4,8 @@
       <v-card style="height: 86vh; overflow-y: auto;">
         <v-card-title class="text-h5">
           Formulaire
+          <Vjsf v-model="model" :schema="schema" options="options" />
+
           <v-combobox
             v-model="selectedSource"
             :items="sources"
@@ -103,7 +105,7 @@ export default {
         title: 'main',
         value: REPOSITORY_URL + 'main/src/main/resources/'
       }, {
-        title: 'develop', 
+        title: 'develop',
         value: REPOSITORY_URL + 'develop/src/main/resources/'
       }, {
         title: 'auto/model_tracker',

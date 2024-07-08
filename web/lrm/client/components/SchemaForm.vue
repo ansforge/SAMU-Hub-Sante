@@ -39,6 +39,7 @@ export default {
       default: false
     }
   },
+  emits: { 'on-form-update': null },
   data () {
     return {
       exampleLoadDatetime: undefined,
