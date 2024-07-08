@@ -31,8 +31,6 @@ export const state = () => ({
         body: { body: 'Page loaded successfully!' }
       } */],
   messageJustSent: false,
-  // ToDo: when message are uploaded, add them in store
-  // ToDo: when message is loaded, add them in store to not load them again later
   messageTypes: [{
     label: 'RC-EDA',
     schemaName: 'RC-EDA.schema.json',
@@ -236,7 +234,6 @@ export const actions = {
   },
 
   loadSchemas ({ state, commit }, source) {
-    // ToDo: load schemas from github branch directly so it is up to date?
     source = source || 'schemas/json-schema/'
     Promise.all(state.messageTypes.map(async ({ schemaName }, index) => {
       console.log('Loading schema from: ' + source + schemaName)
