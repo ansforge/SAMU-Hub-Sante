@@ -20,14 +20,14 @@
               {{ label }}
             </v-tab>
           </v-tabs>
-          <v-tabs v-model="messageTypeTabIndex">
-            <v-tab
+          <v-window v-model="messageTypeTabIndex" fixed-tabs>
+            <v-window-item
               v-for="[name, messageTypeDetails] in Object.entries(store.messageTypes)"
               :key="name"
             >
               <SchemaForm v-bind="messageTypeDetails" ref="schemaForms" :name="name" />
-            </v-tab>
-          </v-tabs>
+            </v-window-item>
+          </v-window>
         </v-card-text>
       </v-card>
     </v-col>

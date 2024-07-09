@@ -1,15 +1,18 @@
 <template>
   <v-form v-model="valid">
-    <v-card-actions>
-      <Vjsf v-model="form" :schema="schemaCopy" :options="options" />
+    <v-card-actions height="100%">
       <v-spacer />
-      <SendButton v-if="!noSendButton" class="mt-2" @click="$emit('submit')" />
+      <SendButton v-if="!noSendButton" @click="$emit('submit')" />
     </v-card-actions>
   </v-form>
+  <vjsf v-model="form" :schema="remove$PropsFromSchema(schemaCopy)" :options="options" />
 </template>
 
-<script>
+<script setup>
 import Vjsf from '@koumoul/vjsf'
+</script>
+
+<script>
 import moment from 'moment'
 
 export default {
@@ -27,6 +30,7 @@ export default {
       default: false
     }
   },
+  emits: ['input', 'submit', 'modelValue'],
   data () {
     return {
       valid: false,
@@ -54,6 +58,15 @@ export default {
   watch: {
     form () {
       this.$emit('input', this.form)
+    }
+  },
+  methods: {
+    remove$PropsFromSchema (schema) {
+    // Removes the $schema and $id props from schema object in order to not break vjsf
+      const newSchema = { ...schema }
+      delete newSchema.$schema
+      delete newSchema.$id
+      return newSchema
     }
   }
 }

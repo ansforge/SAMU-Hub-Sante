@@ -4,8 +4,6 @@
       <v-card style="height: 86vh; overflow-y: auto;">
         <v-card-title class="text-h5">
           Formulaire
-          <Vjsf v-model="model" :schema="schema" options="options" />
-
           <v-combobox
             v-model="selectedSource"
             :items="sources"
@@ -39,14 +37,14 @@
               {{ label }}
             </v-tab>
           </v-tabs>
-          <v-tabs v-model="messageTypeTabIndex">
-            <v-tab
+          <v-window v-model="messageTypeTabIndex">
+            <v-window-item
               v-for="messageTypeDetails in store.messageTypes"
               :key="messageTypeDetails.label"
             >
               <SchemaForm :ref="'schemaForm_' + messageTypeDetails.label" v-bind="messageTypeDetails" no-send-button @on-form-update="updateCurrentMessage" />
-            </v-tab>
-          </v-tabs>
+            </v-window-item>
+          </v-window>
         </v-card-text>
       </v-card>
     </v-col>
