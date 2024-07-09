@@ -42,7 +42,7 @@
               v-for="messageTypeDetails in messageTypes"
               :key="messageTypeDetails.label"
             >
-              <SchemaForm :ref="'schemaForm_' + messageTypeDetails.label" @on-form-update="updateCurrentMessage" v-bind="messageTypeDetails" no-send-button />
+              <SchemaForm :ref="'schemaForm_' + messageTypeDetails.label" v-bind="messageTypeDetails" no-send-button @on-form-update="updateCurrentMessage" />
             </v-tab-item>
           </v-tabs-items>
         </v-card-text>
@@ -58,6 +58,12 @@
               mdi-file-download-outline
             </v-icon>
             Enregistrer
+          </v-btn>
+          <v-btn secondary @click="validateMessage">
+            <v-icon left>
+              mdi-text-box-check-outline
+            </v-icon>
+            Valider
           </v-btn>
         </v-card-title>
         <v-card-text>
@@ -76,6 +82,7 @@
 
 <script>
 import { mapGetters } from 'vuex'
+import Ajv from 'ajv'
 import mixinMessage from '~/plugins/mixinMessage'
 import { REPOSITORY_URL } from '@/constants'
 
@@ -84,29 +91,30 @@ export default {
   mixins: [mixinMessage],
   data () {
     return {
+      ajv: new Ajv({
+        allErrors: true,
+        strict: false
+      }),
       mounted: false,
-      selectedSource: 'schemas/json-schema/',
+      selectedSource: REPOSITORY_URL + this.$config.modelBranch + '/src/main/resources/',
       sources: [{
-        text: 'Local',
-        value: 'schemas/json-schema/'
-      }, {
         divider: true,
         header: 'GitHub branches'
       }, {
         text: 'main',
-        value: REPOSITORY_URL + 'main/src/main/resources/json-schema/'
+        value: REPOSITORY_URL + 'main/src/main/resources/'
       }, {
         text: 'develop',
-        value: REPOSITORY_URL + 'develop/src/main/resources/json-schema/'
+        value: REPOSITORY_URL + 'develop/src/main/resources/'
       }, {
         text: 'auto/model_tracker',
-        value: REPOSITORY_URL + 'auto/model_tracker/src/main/resources/json-schema/'
+        value: REPOSITORY_URL + 'auto/model_tracker/src/main/resources/'
       }, {
         divider: true,
         header: 'Templates'
       }, {
-        text: REPOSITORY_URL + '{branchName}/src/main/resources/json-schema/',
-        value: REPOSITORY_URL + '{branchName}/src/main/resources/json-schema/'
+        text: REPOSITORY_URL + '{branchName}/src/main/resources/',
+        value: REPOSITORY_URL + '{branchName}/src/main/resources/'
       }],
       messageTypeTabIndex: 0,
       currentMessage: null,
@@ -143,7 +151,7 @@ export default {
       // Ref.: https://stackoverflow.com/a/43531779
       if (this.mounted) {
         // $refs is array (in v-for) and non reactive | Ref.: https://v2.vuejs.org/v2/api/#ref
-        return this.$refs['schemaForm_' + this.currentMessageType.label]?.[0]
+        return this.$refs['schemaForm_' + this.currentMessageType?.label]?.[0]
       }
       return null
     },
@@ -163,17 +171,50 @@ export default {
       this.currentMessage = this.currentSchemaForm?.form
     },
     selectedSource () {
-      this.$store.dispatch('loadSchemas', this.selectedSource)
+      this.updateForm()
     }
   },
   mounted () {
-    // To automatically generate the UI and input fields based on the JSON Schema
-    this.$store.dispatch('loadSchemas', this.selectedSource)
+    this.updateForm()
     this.mounted = true
   },
   methods: {
+    updateForm () {
+      // To automatically generate the UI and input fields based on the JSON Schema
+      // We need to wait the acquisition of 'messagesList' before attempting to acquire the schemas
+      this.$store.dispatch('loadMessageTypes', this.selectedSource+"/sample/examples/messagesList.json").then(
+        () => this.$store.dispatch('loadSchemas', this.selectedSource+"/json-schema/")
+      )
+    },
+    useSchema (schema) {
+      // We empty the cache since all out schemas have the same $id and we can't add duplicate id schemas to the cache
+      for (const key in this.ajv.schemas) {
+        this.ajv.removeSchema(key)
+        this.ajv.removeKeyword(key)
+      }
+      for (const key in this.ajv.refs) {
+        delete this.ajv.refs[key]
+      }
+      // We do not validate the schema itself due to ajv being very strict on several points (e.g. uniqueness in 'required' properties) which are not mandatory
+      this.ajv.addSchema(schema, schema.title, undefined, false)
+    },
+    validateJson (json) {
+      this.useSchema(this.currentMessageType.schema)
+      // Then we validate using the schema
+      this.ajv.validate(this.currentMessageType.schema.title, json)
+      return this.ajv.errors
+    },
     updateCurrentMessage (form) {
       this.currentMessage = form
+    },
+    validateMessage () {
+      const validationResult = this.validateJson(this.trimEmptyValues(this.currentMessage))
+      if (validationResult) {
+        // Toast all errors, showing instance path at the start of the line
+        this.$toast.error(validationResult.map(error => `${error.instancePath}/: ${error.message}`).join('<br>'))
+      } else {
+        this.$toast.success('Message valide')
+      }
     },
     saveMessage () {
       // Download as file | Ref.: https://stackoverflow.com/a/34156339
