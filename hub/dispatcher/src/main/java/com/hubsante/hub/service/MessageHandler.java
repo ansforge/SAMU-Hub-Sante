@@ -23,7 +23,6 @@ import com.hubsante.hub.exception.*;
 import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.Validator;
 import com.hubsante.model.builders.ErrorWrapperBuilder;
-import com.hubsante.model.edxl.EdxlEnvelope;
 import com.hubsante.model.edxl.EdxlMessage;
 import com.hubsante.model.exception.ValidationException;
 import com.hubsante.model.report.Error;
@@ -175,11 +174,33 @@ public class MessageHandler {
             log.error("Could not find schema file", exception);
             throw new SchemaNotFoundException("An internal server error has occurred, please contact the administration team", extractDistributionId(receivedEdxl));
         } catch (ValidationException validationException) {
-            // we replace the ValidationException from the models lib by another one extending AbstractHubException
+            validateEnvelopeIfInvalidContent(message, receivedEdxl, validationException);
+        }
+    }
+
+    private void validateEnvelopeIfInvalidContent(Message message, String receivedEdxl, ValidationException contentValidationException) {
+        try {
+            String distributionID = null;
+            if (isJSON(message)) {
+                validator.validateJSON(receivedEdxl, ENVELOPE_SCHEMA);
+                distributionID = edxlHandler.deserializeJsonEDXLEnvelope(receivedEdxl).getDistributionID();
+            } else if (isXML(message)) {
+                validator.validateXML(receivedEdxl, ENVELOPE_XSD);
+                 distributionID = edxlHandler.deserializeXmlEDXLEnvelope(receivedEdxl).getDistributionID();
+            }
             log.error("Could not validate content of message " + receivedEdxl +
                     " coming from " + message.getMessageProperties().getReceivedRoutingKey() +
-                    " with distributionId " + extractDistributionId(receivedEdxl), validationException);
-            throw new SchemaValidationException(validationException.getMessage(), extractDistributionId(receivedEdxl));
+                    " with distributionId " + distributionID );
+            throw new SchemaValidationException(contentValidationException.getMessage(), distributionID);
+        } catch (ValidationException envelopeValidationException) {
+            // we replace the ValidationException from the models lib by another one extending AbstractHubException
+            log.error("Could not validate envelope of message " + receivedEdxl +
+                    " coming from " + message.getMessageProperties().getReceivedRoutingKey() +
+                    " with distributionId " + extractDistributionId(receivedEdxl), envelopeValidationException);
+            throw new SchemaValidationException(envelopeValidationException.getMessage(), extractDistributionId(receivedEdxl));
+        } catch (IOException exception) {
+            log.error("Could not find schema file", exception);
+            throw new SchemaNotFoundException("An internal server error has occurred, please contact the administration team", extractDistributionId(receivedEdxl));
         }
     }
 
@@ -191,11 +212,11 @@ public class MessageHandler {
         try {
             if (isJSON(message)) {
                 edxlMessage = edxlHandler.deserializeJsonEDXL(receivedEdxl);
-                logMessage(message, receivedEdxl);
+                logMessage(message, edxlMessage, receivedEdxl);
 
             } else if (isXML(message)) {
                 edxlMessage = edxlHandler.deserializeXmlEDXL(receivedEdxl);
-                logMessage(message, receivedEdxl);
+                logMessage(message, edxlMessage, receivedEdxl);
 
             } else {
                 String errorCause = "Unhandled Content-Type ! Message Content-Type should be set at 'application/json' or 'application/xml'";
@@ -236,8 +257,8 @@ public class MessageHandler {
         }
     }
 
-    private void logMessage(Message message, String receivedEdxl) {
-        log.info(" [x] Received from '" + message.getMessageProperties().getReceivedRoutingKey() + "': message with distributionID " + extractDistributionId(receivedEdxl));
+    private void logMessage(Message message, EdxlMessage edxlMessage, String receivedEdxl) {
+        log.info(" [x] Received from '" + message.getMessageProperties().getReceivedRoutingKey() + "': message with distributionID " + edxlMessage.getDistributionID());
         log.debug(receivedEdxl);
     }
 
