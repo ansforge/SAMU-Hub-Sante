@@ -217,7 +217,6 @@ public class MessageHandler {
                 logMessage(message, edxlMessage);
 
             } else if (isXML(message)) {
-                // TODO bbo: add XSD validation when ready
                 validator.validateXML(receivedEdxl, FULL_XSD);
                 edxlMessage = edxlHandler.deserializeXmlEDXL(receivedEdxl);
                 logMessage(message, edxlMessage);

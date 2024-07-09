@@ -32,8 +32,6 @@ export const state = () => ({
         body: { body: 'Page loaded successfully!' }
       } */],
   messageJustSent: false,
-  // ToDo: when message are uploaded, add them in store
-  // ToDo: when message is loaded, add them in store to not load them again later
   // Message types are loaded from the github repository
   messageTypes: []
 })
