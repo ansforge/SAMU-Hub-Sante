@@ -69,7 +69,6 @@ onMounted(() => {
 })
 
 const updateForm = () => {
-  console.log('inside update form')
   form.value = store.currentMessage
 }
 

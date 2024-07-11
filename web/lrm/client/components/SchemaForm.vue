@@ -21,7 +21,6 @@ import mixinMessage from '~/mixins/mixinMessage'
 const requestFormRef = ref(null)
 
 function refreshForm () {
-  console.log('Inside refreshForm function')
   requestFormRef.value?.updateForm()
 }
 export default {
