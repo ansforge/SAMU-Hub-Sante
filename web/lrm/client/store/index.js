@@ -3,6 +3,7 @@ import { defineStore } from 'pinia'
 // export const strict = false
 export const useMainStore = defineStore('main', {
   state: () => ({
+    currentMessage: null,
     _auth: {
       user: {
         clientId: null,

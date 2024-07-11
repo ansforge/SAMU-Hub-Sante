@@ -4,16 +4,17 @@
       <v-spacer />
       <SendButton v-if="!noSendButton" @click="$emit('submit')" />
     </v-card-actions>
+    <vjsf v-model="store.currentMessage" :schema="remove$PropsFromSchema(schemaCopy)" :options="options" />
   </v-form>
-  <vjsf v-model="form" :schema="remove$PropsFromSchema(schemaCopy)" :options="options" />
 </template>
 
 <script setup>
 import Vjsf from '@koumoul/vjsf'
+import moment from 'moment'
+import { useMainStore } from '~/store'
 </script>
 
 <script>
-import moment from 'moment'
 
 export default {
   props: {
@@ -33,15 +34,17 @@ export default {
   emits: ['input', 'submit', 'modelValue'],
   data () {
     return {
+      store: useMainStore(),
       valid: false,
       // Passed through v-model
-      form: this.value,
       options: {
         locale: 'fr',
         defaultLocale: 'fr',
         rootDisplay: 'tabs',
         editMode: 'inline', // edits in place and not in dialog
         expansionPanelsProps: { mandatory: false }, // collapses all panels
+        density: 'compact',
+        updateOn: 'blur',
         formats: {
           'date-time': function (dateTime, _locale) { return moment(new Date(dateTime)).format() }
         }
@@ -49,20 +52,13 @@ export default {
     }
   },
   computed: {
-    // Super tricky: schema deep-copy required as VJSF updates it somehow
-    // But it is in Vuex store thus it can't be changed outside of mutations...
     schemaCopy () {
       return JSON.parse(JSON.stringify(this.schema))
     }
   },
-  watch: {
-    form () {
-      this.$emit('input', this.form)
-    }
-  },
   methods: {
     remove$PropsFromSchema (schema) {
-    // Removes the $schema and $id props from schema object in order to not break vjsf
+      // Removes the $schema and $id props from schema object in order to not break vjsf
       const newSchema = { ...schema }
       delete newSchema.$schema
       delete newSchema.$id

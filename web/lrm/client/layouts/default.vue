@@ -41,7 +41,7 @@
         {{ clientInfos(store.user.targetId).name }}
       </span>
     </v-app-bar>
-    <v-main>
+    <v-main style="padding-bottom: 0;">
       <v-container fluid>
         <slot />
       </v-container>

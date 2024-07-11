@@ -43,6 +43,7 @@
 <script>
 
 import { REPOSITORY_URL } from '@/constants'
+import { useMainStore } from '~/store'
 
 export default {
   props: {
@@ -53,6 +54,7 @@ export default {
   },
   data () {
     return {
+      store: useMainStore(),
       selectedDetailIndex: undefined,
       isSelectingUpload: false,
       selectedExample: {}
@@ -97,7 +99,7 @@ export default {
         // the name of the use case from somewhere and use it to properly access that
         // property in the parsed json object.
         const parsedJson = JSON.parse(event.target.result)
-        $this.selectedExample = parsedJson[Object.keys(parsedJson)[0]]
+        this.store.currentMessage = parsedJson[Object.keys(parsedJson)[0]]
       }
       const reader = new FileReader()
       reader.onload = onReaderLoad
@@ -110,10 +112,10 @@ export default {
         fetch(REPOSITORY_URL + this.$config.public.modelBranch + '/src/main/resources/sample/examples/' + exampleName)
           .then(response => response.json())
           .then((data) => {
-            this.selectedExample = data[Object.keys(data)[0]]
+            this.store.currentMessage = data[Object.keys(data)[0]]
           })
       } else {
-        this.selectedExample = {}
+        this.store.currentMessage = {}
       }
     }
   }

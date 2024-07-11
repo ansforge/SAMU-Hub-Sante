@@ -42,7 +42,7 @@
               v-for="messageTypeDetails in store.messageTypes"
               :key="messageTypeDetails.label"
             >
-              <SchemaForm :ref="'schemaForm_' + messageTypeDetails.label" v-bind="messageTypeDetails" no-send-button @on-form-update="updateCurrentMessage" />
+              <SchemaForm :ref="'schemaForm_' + messageTypeDetails.label" v-bind="messageTypeDetails" no-send-button />
             </v-window-item>
           </v-window>
         </v-card-text>
@@ -68,8 +68,8 @@
         </v-card-title>
         <v-card-text>
           <json-viewer
-            v-if="currentMessage"
-            :value="trimEmptyValues({[currentMessageType?.schema?.title]: currentMessage})"
+            v-if="store.currentMessage"
+            :value="trimEmptyValues({[currentMessageType?.schema?.title]: store.currentMessage})"
             :expand-depth="10"
             :copyable="{copyText: 'Copier', copiedText: 'Copié !', timeout: 1000}"
             theme="json-theme"
@@ -200,10 +200,10 @@ export default {
       return this.ajv.errors
     },
     updateCurrentMessage (form) {
-      this.currentMessage = form
+      this.store.currentMessage = form
     },
     validateMessage () {
-      const validationResult = this.validateJson(this.trimEmptyValues(this.currentMessage))
+      const validationResult = this.validateJson(this.trimEmptyValues(this.store.currentMessage))
       if (validationResult) {
         // Toast all errors, showing instance path at the start of the line
         this.$toast.error(validationResult.map(error => `${error.instancePath}/: ${error.message}`).join('<br>'))
@@ -214,7 +214,7 @@ export default {
     saveMessage () {
       // Download as file | Ref.: https://stackoverflow.com/a/34156339
       // JSON pretty-print | Ref.: https://stackoverflow.com/a/7220510
-      const data = JSON.stringify(this.trimEmptyValues({ [this.currentMessageType?.schema?.title]: this.currentMessage }), null, 2)
+      const data = JSON.stringify(this.trimEmptyValues({ [this.currentMessageType?.schema?.title]: this.store.currentMessage }), null, 2)
       const a = document.createElement('a')
       const file = new Blob([data], { type: 'application/json' })
       a.href = URL.createObjectURL(file)
