@@ -5,7 +5,7 @@
         <v-card-title class="text-h5 pb-">
           Formulaire
           <v-spacer />
-          <SendButton class="mt-2" @click="submit" />
+          <!-- <SendButton class="mt-2" @click="submit" /> -->
         </v-card-title>
         <v-card-text>
           <v-tabs
@@ -208,6 +208,7 @@ export default {
     submit () {
       // Submits current SchemaForm
       console.log('submitting:', this.store.messageTypes[this.messageTypeTabIndex].label)
+      console.log(this.$refs.schemaForms)
       this.$refs.schemaForms.find(schema => schema.label === this.store.messageTypes[this.messageTypeTabIndex].label).submit()
     },
     useMessageToReply (message) {

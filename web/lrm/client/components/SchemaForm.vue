@@ -7,7 +7,7 @@
       :key="exampleLoadDatetime"
       :schema="schema"
       :no-send-button="noSendButton"
-      @submit="submit()"
+      @submit="submit"
     />
   </div>
 </template>
@@ -59,11 +59,11 @@ export default {
     //   // Trigger RequestForm reload with key change | Ref.: https://stackoverflow.com/a/48755228
     //   this.exampleLoadDatetime = new Date().toISOString()
     // },
-    submit () {
+    submit (form) {
       try {
         // const data = await (await fetch('samuA_to_samuB.json')).json()
         const data = this.buildMessage({
-          [this.schema.title]: this.form
+          [this.schema.title]: form
         })
         this.sendMessage(data)
       } catch (error) {

@@ -2,7 +2,7 @@
   <v-form v-model="valid">
     <v-card-actions height="100%">
       <v-spacer />
-      <SendButton v-if="!noSendButton" @click="$emit('submit')" />
+      <SendButton v-if="!noSendButton" @click="$emit('submit', {form})" />
     </v-card-actions>
     <vjsf v-model="form" :schema="formatSchema(schemaCopy)" :options="options" />
   </v-form>
