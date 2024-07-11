@@ -1,10 +1,10 @@
 <template>
   <div>
-    <examples-list :examples="examples" @selected-example="load" />
+    <examples-list :examples="examples" @example-loaded="refreshForm" />
     <RequestForm
       v-if="schema"
+      ref="requestFormRef"
       :key="exampleLoadDatetime"
-      v-model="form"
       :schema="schema"
       :no-send-button="noSendButton"
       @submit="submit()"
@@ -12,9 +12,18 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref } from 'vue'
 import mixinMessage from '~/mixins/mixinMessage'
+</script>
 
+<script>
+const requestFormRef = ref(null)
+
+function refreshForm () {
+  console.log('Inside refreshForm function')
+  requestFormRef.value?.updateForm()
+}
 export default {
   mixins: [mixinMessage],
   props: {
@@ -39,28 +48,18 @@ export default {
       default: false
     }
   },
-  emits: ['on-form-update', 'modelValue'],
   data () {
     return {
       exampleLoadDatetime: undefined,
       form: {}
     }
   },
-  watch: {
-    form: {
-      handler (newValue) {
-        this.$emit('on-form-update', newValue) // Emit the 'on-form-update' event when the form is changed
-      },
-      deep: true
-    }
-  },
   methods: {
-    load (example) {
-      this.form = example
-      // Trigger RequestForm reload with key change | Ref.: https://stackoverflow.com/a/48755228
-      this.exampleLoadDatetime = new Date().toISOString()
-      this.$emit('on-form-update', this.form) // Emit the 'on-form-update' event with the updated form
-    },
+    // load (example) {
+    //   this.form = example
+    //   // Trigger RequestForm reload with key change | Ref.: https://stackoverflow.com/a/48755228
+    //   this.exampleLoadDatetime = new Date().toISOString()
+    // },
     submit () {
       try {
         // const data = await (await fetch('samuA_to_samuB.json')).json()

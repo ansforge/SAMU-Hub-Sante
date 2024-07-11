@@ -41,7 +41,6 @@
 </template>
 
 <script>
-
 import { REPOSITORY_URL } from '@/constants'
 import { useMainStore } from '~/store'
 
@@ -50,6 +49,15 @@ export default {
     examples: {
       type: Array,
       required: true
+    }
+  },
+  emits: ['exampleLoaded'],
+  setup (_, { emit }) {
+    const emitExampleLoaded = () => {
+      emit('exampleLoaded')
+    }
+    return {
+      emitExampleLoaded
     }
   },
   data () {
@@ -64,9 +72,6 @@ export default {
     selectedDetailIndex () {
       // !== undefined as it can be 0 so !! is not working
       this.loadExample(this.selectedDetailIndex !== undefined ? this.examples[this.selectedDetailIndex].file : null)
-    },
-    selectedExample () {
-      this.$emit('selectedExample', this.selectedExample)
     }
   },
   mounted () {
@@ -113,6 +118,7 @@ export default {
           .then(response => response.json())
           .then((data) => {
             this.store.currentMessage = data[Object.keys(data)[0]]
+            this.emitExampleLoaded()
           })
       } else {
         this.store.currentMessage = {}

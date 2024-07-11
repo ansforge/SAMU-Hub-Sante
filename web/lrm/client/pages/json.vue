@@ -162,9 +162,6 @@ export default {
     }
   },
   watch: {
-    currentSchemaForm () {
-      this.currentMessage = this.currentSchemaForm?.form
-    },
     selectedSource () {
       this.updateForm()
     }

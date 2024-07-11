@@ -97,16 +97,10 @@ export default {
       required: true
     }
   },
-  emits: ['input'],
   data () {
     return {
       showDetails: false,
       REPOSITORY_URL
-    }
-  },
-  watch: {
-    form () {
-      this.$emit('input', this.form)
     }
   }
 }
