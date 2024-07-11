@@ -70,6 +70,7 @@ const remove$PropsFromSchema = (schema) => {
   return newSchema
 }
 
+// TODO: Remove this ugly thing once csv_parser does not generate duplicate values in 'required' fields
 const deduplicateRequireds = (schema) => {
   // Iterate over every property including deep-level properties of the schema and deduplicate values in every 'required' array encountered
   const newSchema = { ...schema }
