@@ -4,7 +4,7 @@
       <v-spacer />
       <SendButton v-if="!noSendButton" @click="$emit('submit')" />
     </v-card-actions>
-    <vjsf v-model="form" :schema="remove$PropsFromSchema(schemaCopy)" :options="options" />
+    <vjsf v-model="form" :schema="formatSchema(schemaCopy)" :options="options" />
   </v-form>
 </template>
 
@@ -42,6 +42,11 @@ const options = ref({
   expansionPanelsProps: { mandatory: false },
   density: 'compact',
   updateOn: 'blur',
+  ajvOptions: {
+    allErrors: true,
+    strict: false,
+    strictSchema: false
+  },
   formats: {
     'date-time': (dateTime, _locale) => moment(new Date(dateTime)).format()
   }
@@ -49,10 +54,35 @@ const options = ref({
 
 const schemaCopy = computed(() => JSON.parse(JSON.stringify(props.schema)))
 
+const formatSchema = (schema) => {
+  let newSchema = { ...schema }
+  // Remove $ props from schema
+  newSchema = remove$PropsFromSchema(schema)
+  // Deduplicate values in 'required'
+  newSchema = deduplicateRequireds(newSchema)
+  return newSchema
+}
+
 const remove$PropsFromSchema = (schema) => {
   const newSchema = { ...schema }
   delete newSchema.$schema
   delete newSchema.$id
+  return newSchema
+}
+
+const deduplicateRequireds = (schema) => {
+  // Iterate over every property including deep-level properties of the schema and deduplicate values in every 'required' array encountered
+  const newSchema = { ...schema }
+  const deduplicateRequiredsRecursive = (schema) => {
+    for (const key in schema) {
+      if (key === 'required') {
+        schema[key] = [...new Set(schema[key])]
+      } else if (typeof schema[key] === 'object') {
+        deduplicateRequiredsRecursive(schema[key])
+      }
+    }
+  }
+  deduplicateRequiredsRecursive(newSchema)
   return newSchema
 }
 
