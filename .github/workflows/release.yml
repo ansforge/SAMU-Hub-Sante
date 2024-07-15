@@ -57,11 +57,11 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-#      - uses: docker/metadata-action@v5.5.1
-#        id: meta
-#        with:
-#          images: ghcr.io/${{ env.IMAGE_NAME }}
-#          tags: type=sha,format=short,prefix=
+      - uses: docker/metadata-action@v5.5.1
+        id: meta
+        with:
+          images: ghcr.io/ansforge/samu-hub-config
+          tags: type=sha,format=short,prefix=
 
       - name: Run tests, build and push dispatcher Docker image
         if: steps.extract_info.outputs.project == 'dispatcher'
@@ -70,7 +70,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: ${{ steps.extract_info.outputs.version }}
         run: |
-          ./gradlew jib -Pversion=$TAG --image ghcr.io/${{ github.repository }}/dispatcher:$TAG
+          ./gradlew jib -Pversion=$TAG --image ghcr.io/ansforge/samu-hub-config/dispatcher:$TAG
 
       - name: Build and push lrm backend Docker image
         if: steps.extract_info.outputs.project == 'lrm'
@@ -78,7 +78,7 @@ jobs:
         with:
           push: true
           platforms: linux/amd64
-          tags: ghcr.io/${{ github.repository }}/hub-lrm-back:${{ steps.extract_info.outputs.version }}
+          tags: ghcr.io/ansforge/samu-hub-config/hub-lrm-back:${{ steps.extract_info.outputs.version }}
           context: ./web/lrm
 
       - name: Build and push lrm frontend Docker image
@@ -87,5 +87,5 @@ jobs:
         with:
           push: true
           platforms: linux/amd64
-          tags: ghcr.io/${{ github.repository }}/hub-lrm-front:${{ steps.extract_info.outputs.version }}
+          tags: ghcr.io/ansforge/samu-hub-config/hub-lrm-front:${{ steps.extract_info.outputs.version }}
           context: ./web/lrm/client
