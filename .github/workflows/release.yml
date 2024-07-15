@@ -78,7 +78,7 @@ jobs:
         with:
           push: true
           platforms: linux/amd64
-          tags: ghcr.io/ansforge/samu-hub-config/hub-lrm-back:${{ steps.extract_info.outputs.version }}
+          tags: ghcr.io/bou3108/samu-hub-config/hub-lrm-back:${{ steps.extract_info.outputs.version }}
           context: ./web/lrm
 
       - name: Build and push lrm frontend Docker image
@@ -87,5 +87,5 @@ jobs:
         with:
           push: true
           platforms: linux/amd64
-          tags: ghcr.io/ansforge/samu-hub-config/hub-lrm-front:${{ steps.extract_info.outputs.version }}
+          tags: ghcr.io/bou3108/samu-hub-config/hub-lrm-front:${{ steps.extract_info.outputs.version }}
           context: ./web/lrm/client
