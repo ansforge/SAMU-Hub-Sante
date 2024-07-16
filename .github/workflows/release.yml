@@ -56,24 +56,24 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-#
-#      - name: Run tests, build and push dispatcher Docker image
-#        if: steps.extract_info.outputs.project == 'dispatcher'
-#        working-directory: hub/dispatcher
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#          TAG: ${{ steps.extract_info.outputs.version }}
-#        run: |
-#          ./gradlew jib -Pversion=$TAG --image romainfd/dispatcher:$TAG
-#
-#      - name: Build and push lrm backend Docker image
-#        if: steps.extract_info.outputs.project == 'lrm'
-#        uses: docker/build-push-action@v5
-#        with:
-#          push: true
-#          platforms: linux/amd64
-#          tags: ghcr.io/ansforge/hub-lrm-back:${{ steps.extract_info.outputs.version }}
-#          context: ./web/lrm
+
+      - name: Run tests, build and push dispatcher Docker image
+        if: steps.extract_info.outputs.project == 'dispatcher'
+        working-directory: hub/dispatcher
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.extract_info.outputs.version }}
+        run: |
+          ./gradlew jib -Pversion=$TAG --image ghcr.io/${{ github.repository_owner }}/dispatcher:$TAG
+
+      - name: Build and push lrm backend Docker image
+        if: steps.extract_info.outputs.project == 'lrm'
+        uses: docker/build-push-action@v5
+        with:
+          push: true
+          platforms: linux/amd64
+          tags: ghcr.io/${{ github.repository_owner }}/hub-lrm-back:${{ steps.extract_info.outputs.version }}
+          context: ./web/lrm
 
       - name: Build and push lrm frontend Docker image
         if: steps.extract_info.outputs.project == 'lrm'
