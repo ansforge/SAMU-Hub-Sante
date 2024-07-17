@@ -151,13 +151,14 @@ public class MessageHandler {
     /*
      ** Deserialize the message according to its content type
      */
-    @Timed(value = "deserialize.received.message", description = "Deserialize incoming message - include validation")
+    @Timed(value = "extract.received.message", description = "Extract incoming message - include validation and deseralization")
     protected EdxlMessage extractMessage(Message message) {
         String receivedEdxl = new String(message.getBody(), StandardCharsets.UTF_8);
         validateFullMessage(message, receivedEdxl);
         return deserializeMessage(message, receivedEdxl);
     }
 
+    @Timed(value = "validate.received.message", description = "Validate incoming message")
     private void validateFullMessage(Message message, String receivedEdxl) {
         // We deserialize according to the content type
         // It MUST be explicitly set by the client
@@ -174,11 +175,12 @@ public class MessageHandler {
             log.error("Could not find schema file", exception);
             throw new SchemaNotFoundException("An internal server error has occurred, please contact the administration team", extractDistributionId(receivedEdxl));
         } catch (ValidationException validationException) {
-            validateEnvelopeIfInvalidContent(message, receivedEdxl, validationException);
+            validateEnvelopeOnly(message, receivedEdxl, validationException);
         }
     }
 
-    private void validateEnvelopeIfInvalidContent(Message message, String receivedEdxl, ValidationException contentValidationException) {
+    @Timed(value = "validate.received.envelope", description = "Validate incoming envelope")
+    private void validateEnvelopeOnly(Message message, String receivedEdxl, ValidationException contentValidationException) {
         try {
             String distributionID = null;
             if (isJSON(message)) {
@@ -196,14 +198,15 @@ public class MessageHandler {
             // we replace the ValidationException from the models lib by another one extending AbstractHubException
             log.error("Could not validate envelope of message " + receivedEdxl +
                     " coming from " + message.getMessageProperties().getReceivedRoutingKey() +
-                    " with distributionId " + extractDistributionId(receivedEdxl), envelopeValidationException);
-            throw new SchemaValidationException(envelopeValidationException.getMessage(), extractDistributionId(receivedEdxl));
+                    " with distributionId possibly being (regex extraction) " + extractDistributionId(receivedEdxl), envelopeValidationException);
+            throw new SchemaValidationException("CAUTION: distributionID has been extracted by regex because the envelope could not be deserialized.\n" + envelopeValidationException.getMessage(), extractDistributionId(receivedEdxl));
         } catch (IOException exception) {
             log.error("Could not find schema file", exception);
             throw new SchemaNotFoundException("An internal server error has occurred, please contact the administration team", extractDistributionId(receivedEdxl));
         }
     }
 
+    @Timed(value = "deserialize.received.message", description = "Deserialize incoming message")
     private EdxlMessage deserializeMessage(Message message, String receivedEdxl) {
         EdxlMessage edxlMessage;
 
@@ -223,7 +226,7 @@ public class MessageHandler {
                 throw new NotAllowedContentTypeException(errorCause, null);
             }
         } catch (JsonProcessingException exception) {
-            log.error("Could not parse content of message " + receivedEdxl + " coming from " + message.getMessageProperties().getReceivedRoutingKey(), exception);
+            log.error("Could not deserialize content of message " + receivedEdxl + " coming from " + message.getMessageProperties().getReceivedRoutingKey(), exception);
             String errorCause = "An internal server error has occurred, please contact the administration team";
             throw new UnrecognizedMessageFormatException(errorCause, extractDistributionId(receivedEdxl));
         }

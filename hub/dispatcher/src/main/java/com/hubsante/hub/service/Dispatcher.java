@@ -87,7 +87,9 @@ public class Dispatcher {
             String returnedEdxlString = new String(returned.getMessage().getBody(), StandardCharsets.UTF_8);
 
             try {
-                returnedEdxlMessage = edxlHandler.deserializeJsonEDXL(returnedEdxlString);
+                returnedEdxlMessage = isXML(returned.getMessage()) ?
+                        edxlHandler.deserializeXmlEDXL(returnedEdxlString) :
+                        edxlHandler.deserializeJsonEDXL(returnedEdxlString);
             } catch ( JsonProcessingException e) {
                 // This should never happen as if we've reached this point, the message has already been deserialized
                 log.error("Could not deserialize message " + returnedEdxlString, e);
