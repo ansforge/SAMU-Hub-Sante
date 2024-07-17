@@ -52,18 +52,21 @@
     <v-footer
       app
     >
-      <span>&copy; {{ new Date().getFullYear() }}</span>
+      <span><a :href=" repositoryUrl + 'tree/' + $config.modelBranch ">SAMU Hub Modeles - v.{{ $config.modelBranch }}</a> &copy; {{ new Date().getFullYear() }}</span>
     </v-footer>
   </v-app>
 </template>
 
 <script>
 import { mapGetters } from 'vuex'
+import { REPOSITORY_URL } from '~/constants';
 
 export default {
   name: 'DefaultLayout',
   data () {
-    return {}
+    return {
+      repositoryUrl : REPOSITORY_URL.replace('raw.githubusercontent', 'github')
+    }
   },
   computed: {
     ...mapGetters(['isAuthenticated', 'isAdvanced'])
