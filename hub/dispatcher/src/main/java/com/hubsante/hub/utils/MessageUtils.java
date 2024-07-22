@@ -25,9 +25,18 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageDeliveryMode;
 import org.springframework.amqp.core.MessageProperties;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static com.hubsante.hub.config.Constants.DISTRIBUTION_ID_UNAVAILABLE;
 
 @Slf4j
 public class MessageUtils {
@@ -131,6 +140,25 @@ public class MessageUtils {
                     "The senderID in the distributionID should be the same as the senderID in the message.\n" +
                     "SenderID in the message: " + senderId + ", senderID in the distributionID: " + distributionIdSenderId +"\n";
             throw new InvalidDistributionIDException(errorCause, distributionId);
+        }
+    }
+
+    public static String extractDistributionId(String edxlString) {
+        // Regex pattern to match the distributionID value
+        String jsonRegex = "\"distributionID\"\\s*:\\s*\"([\\w._-]+)\"";
+        Pattern jsonPattern = Pattern.compile(jsonRegex);
+        Matcher jsonMatcher = jsonPattern.matcher(edxlString);
+
+        String xmlRegex = "<distributionID>([\\w._-]+)</distributionID>";
+        Pattern xmlPattern = Pattern.compile(xmlRegex);
+        Matcher xmlMatcher = xmlPattern.matcher(edxlString);
+
+        if (jsonMatcher.find()) {
+            return jsonMatcher.group(1);
+        } else if(xmlMatcher.find()) {
+            return xmlMatcher.group(1);
+        } else {
+            return DISTRIBUTION_ID_UNAVAILABLE;
         }
     }
 }
