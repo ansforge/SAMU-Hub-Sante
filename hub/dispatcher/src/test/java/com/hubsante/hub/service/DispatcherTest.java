@@ -20,12 +20,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.hubsante.hub.HubApplication;
 import com.hubsante.hub.config.HubConfiguration;
-import com.hubsante.model.EdxlHandler;
-import com.hubsante.model.Validator;
-import com.hubsante.model.custom.CustomMessage;
-import com.hubsante.model.edxl.EdxlMessage;
-import com.hubsante.model.report.ErrorCode;
-import com.hubsante.model.report.Error;
+import com.hubsante.hub.spi.CustomMessageInterface;
+import com.hubsante.hub.spi.EdxlHandlerInterface;
+import com.hubsante.hub.spi.EdxlMessageInterface;
+import com.hubsante.hub.spi.ValidatorInterface;
+import com.hubsante.hub.spi.report.ErrorCode;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.search.Search;
 import lombok.extern.slf4j.Slf4j;
@@ -70,11 +69,11 @@ public class DispatcherTest {
     private RabbitTemplate rabbitTemplate = Mockito.mock(RabbitTemplate.class);
 
     @Autowired
-    private EdxlHandler converter;
+    private EdxlHandlerInterface converter;
     @Autowired
     private HubConfiguration hubConfig;
     @Autowired
-    private Validator validator;
+    private ValidatorInterface validator;
     private MessageHandler messageHandler;
     @Autowired
     private MeterRegistry registry;
@@ -134,11 +133,11 @@ public class DispatcherTest {
         Message sentMessage = argCaptor.getValue();
         assertEquals(XML, sentMessage.getMessageProperties().getContentType());
         // assert that the message has the same content as the original one
-        EdxlMessage publishedJSON = converter.deserializeJsonEDXL(new String(receivedMessage.getBody(), StandardCharsets.UTF_8));
-        EdxlMessage sentXML = converter.deserializeXmlEDXL(new String(sentMessage.getBody(), StandardCharsets.UTF_8));
+        EdxlMessageInterface publishedJSON = converter.deserializeJsonEDXL(new String(receivedMessage.getBody(), StandardCharsets.UTF_8));
+        EdxlMessageInterface sentXML = converter.deserializeXmlEDXL(new String(sentMessage.getBody(), StandardCharsets.UTF_8));
         assertEquals(publishedJSON, sentXML);
 
-        CustomMessage custom = (CustomMessage) sentXML.getFirstContentMessage();
+        CustomMessageInterface custom = (CustomMessageInterface) sentXML.getFirstContentMessage();
         assertEquals("value", custom.getCustomContent().get("key").asText());
     }
 
@@ -158,11 +157,11 @@ public class DispatcherTest {
         Message sentMessage = argCaptor.getValue();
         assertEquals(JSON, sentMessage.getMessageProperties().getContentType());
         // assert that the message has the same content as the original one
-        EdxlMessage publishedXML = converter.deserializeXmlEDXL(new String(receivedMessage.getBody(), StandardCharsets.UTF_8));
-        EdxlMessage sentJSON = converter.deserializeJsonEDXL(new String(sentMessage.getBody(), StandardCharsets.UTF_8));
+        EdxlMessageInterface publishedXML = converter.deserializeXmlEDXL(new String(receivedMessage.getBody(), StandardCharsets.UTF_8));
+        EdxlMessageInterface sentJSON = converter.deserializeJsonEDXL(new String(sentMessage.getBody(), StandardCharsets.UTF_8));
         assertEquals(publishedXML, sentJSON);
 
-        CustomMessage custom = (CustomMessage) sentJSON.getFirstContentMessage();
+        CustomMessageInterface custom = (CustomMessageInterface) sentJSON.getFirstContentMessage();
         assertEquals("value", custom.getCustomContent().get("key").asText());
     }
 
@@ -197,7 +196,7 @@ public class DispatcherTest {
     public void shouldResetTTL() throws IOException {
         // get message and override dateTimeExpires field with sooner value
         Message base = createMessage("EDXL-DE",JSON, SAMU_A_ROUTING_KEY);
-        EdxlMessage edxlMessage = converter.deserializeJsonEDXL(new String(base.getBody(), StandardCharsets.UTF_8));
+        EdxlMessageInterface edxlMessage = converter.deserializeJsonEDXL(new String(base.getBody(), StandardCharsets.UTF_8));
         setCustomExpirationDate(edxlMessage, 2);
         Message customTTLMessage = new Message(converter.serializeJsonEDXL(edxlMessage).getBytes(), base.getMessageProperties());
 

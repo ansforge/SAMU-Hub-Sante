@@ -15,12 +15,12 @@
  */
 package com.hubsante.hub.utils;
 
+import com.hubsante.hub.spi.EdxlMessageInterface;
 import com.hubsante.hub.exception.DeliveryModeInconsistencyException;
 import com.hubsante.hub.exception.ExpiredBeforeDispatchMessageException;
 import com.hubsante.hub.exception.InvalidDistributionIDException;
 import com.hubsante.hub.exception.SenderInconsistencyException;
-import com.hubsante.model.edxl.DistributionKind;
-import com.hubsante.model.edxl.EdxlMessage;
+import com.hubsante.hub.spi.edxl.DistributionKind;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageDeliveryMode;
@@ -35,7 +35,7 @@ public class MessageUtils {
     public static String getSenderFromRoutingKey(Message message) {
         return message.getMessageProperties().getReceivedRoutingKey();
     }
-    public static void checkSenderConsistency(Message message, EdxlMessage edxlMessage) {
+    public static void checkSenderConsistency(Message message, EdxlMessageInterface edxlMessage) {
         String receivedRoutingKey = getSenderFromRoutingKey(message);
         if (!receivedRoutingKey.equals(edxlMessage.getSenderID())) {
             String errorCause = "Sender inconsistency for message " +
@@ -59,11 +59,11 @@ public class MessageUtils {
         return clientId + ".info";
     }
 
-    public static String getRecipientID(EdxlMessage edxlMessage) {
+    public static String getRecipientID(EdxlMessageInterface edxlMessage) {
         return edxlMessage.getDescriptor().getExplicitAddress().getExplicitAddressValue();
     }
 
-    public static String getRecipientQueueName(EdxlMessage edxlMessage) {
+    public static String getRecipientQueueName(EdxlMessageInterface edxlMessage) {
         return getRecipientID(edxlMessage) + "." + getQueueType(edxlMessage.getDistributionKind());
     }
 
@@ -96,7 +96,7 @@ public class MessageUtils {
         return MessageProperties.CONTENT_TYPE_XML.equals(message.getMessageProperties().getContentType());
     }
 
-    public static void overrideExpirationIfNeeded(EdxlMessage edxlMessage, MessageProperties properties, long defaultTTL) {
+    public static void overrideExpirationIfNeeded(EdxlMessageInterface edxlMessage, MessageProperties properties, long defaultTTL) {
         // OffsetDateTime comes with seconds and nanos, not millis
         // We assume that one second is an acceptable interval
         long queueExpirationDateTime = OffsetDateTime.now().plusSeconds(defaultTTL).toEpochSecond();
@@ -121,7 +121,7 @@ public class MessageUtils {
     }
 
     // Verifies that the distributionID respects the format senderID_internalID (e.g. fr.health.samu1234_5678)
-    public static void checkDistributionIDFormat(EdxlMessage message) {
+    public static void checkDistributionIDFormat(EdxlMessageInterface message) {
         String distributionId = message.getDistributionID();
         // We  verify that senderID in the distributionID is the same as the senderID in the message
         String senderId = message.getSenderID();

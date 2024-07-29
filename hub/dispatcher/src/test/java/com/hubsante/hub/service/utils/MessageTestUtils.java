@@ -16,6 +16,11 @@
 package com.hubsante.hub.service.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.hubsante.hub.spi.EdxlHandlerInterface;
+import com.hubsante.hub.spi.EdxlMessageInterface;
+import com.hubsante.hub.spi.TestMessagesHelperInterface;
+import com.hubsante.hub.spi.report.Error;
+import com.hubsante.hub.spi.report.ErrorWrapper;
 import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.TestMessagesHelper;
 import com.hubsante.model.edxl.EdxlMessage;
@@ -36,7 +41,7 @@ import static com.hubsante.hub.config.AmqpConfiguration.*;
 public class MessageTestUtils {
     public static Message createMessage(String filename, String contentType, String receivedRoutingKey) throws IOException {
         boolean isXML = MessageProperties.CONTENT_TYPE_XML.equals(contentType);
-        String edxlString = TestMessagesHelper.getSampleMessage(filename, isXML);
+        String edxlString = TestMessagesHelperInterface.getSampleMessage(filename, isXML);
 
         MessageProperties properties = getMessageProperties(receivedRoutingKey);
 
@@ -55,7 +60,7 @@ public class MessageTestUtils {
     }
 
     public static Message createInvalidMessage(String filename, String contentType, String receivedRoutingKey) throws IOException {
-        String edxlString = TestMessagesHelper.getInvalidMessage(filename);
+        String edxlString = TestMessagesHelperInterface.getInvalidMessage(filename);
 
         MessageProperties properties = getMessageProperties(receivedRoutingKey);
 
@@ -98,7 +103,7 @@ public class MessageTestUtils {
         }
     }
 
-    public static Error getErrorFromMessage(EdxlHandler edxlHandler, Message message) throws JsonProcessingException {
+    public static Error getErrorFromMessage(EdxlHandlerInterface edxlHandler, Message message) throws JsonProcessingException {
 
         String msgString = new String(message.getBody());
 
@@ -109,7 +114,7 @@ public class MessageTestUtils {
         return wrapper.getError();
     }
 
-    public static void setCustomExpirationDate(EdxlMessage edxlMessage, long offset_in_seconds) {
+    public static void setCustomExpirationDate(EdxlMessageInterface edxlMessage, long offset_in_seconds) {
         OffsetDateTime now = OffsetDateTime.now();
         edxlMessage.setDateTimeSent(now);
         edxlMessage.setDateTimeExpires(now.plusSeconds(offset_in_seconds));

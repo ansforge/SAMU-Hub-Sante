@@ -13,12 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hubsante.hub.exception;
+package com.hubsante.hub.spi.exception;
 
-import com.hubsante.hub.spi.report.ErrorCode;
-
-public class SenderInconsistencyException extends AbstractHubException {
-    public SenderInconsistencyException(String message, String referencedDistributionID) {
-        super(message, ErrorCode.SENDER_INCONSISTENCY, referencedDistributionID);
+public class ValidationException extends Exception {
+    public ValidationException(String message) {
+        super(message);
     }
 }

@@ -19,15 +19,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.hubsante.hub.exception.*;
-import com.hubsante.model.EdxlHandler;
-import com.hubsante.model.edxl.EdxlMessage;
-import com.hubsante.model.report.ErrorCode;
-import com.hubsante.model.report.Error;
+import com.hubsante.hub.spi.*;
+import com.hubsante.hub.spi.report.ErrorCode;
+import com.hubsante.hub.spi.report.Error;
 import io.micrometer.core.annotation.Timed;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.AmqpRejectAndDontRequeueException;
 import org.springframework.amqp.core.Message;
-import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,7 +61,8 @@ public class Dispatcher {
 
     private final MessageHandler messageHandler;
     private final RabbitTemplate rabbitTemplate;
-    private final EdxlHandler edxlHandler;
+    private final EdxlHandlerInterface edxlHandler;
+    private final ErrorHandlerInterface errorHandler;
     @Autowired
     @Qualifier("xmlMapper")
     private XmlMapper xmlMapper;
@@ -71,10 +70,11 @@ public class Dispatcher {
     @Qualifier("jsonMapper")
     private ObjectMapper jsonMapper;
 
-    public Dispatcher(MessageHandler messageHandler, RabbitTemplate rabbitTemplate, EdxlHandler edxlHandler, XmlMapper xmlMapper, ObjectMapper jsonMapper) {
+    public Dispatcher(MessageHandler messageHandler, RabbitTemplate rabbitTemplate, EdxlHandlerInterface edxlHandler, ErrorHandlerInterface errorHandler, XmlMapper xmlMapper, ObjectMapper jsonMapper) {
         this.messageHandler = messageHandler;
         this.rabbitTemplate = rabbitTemplate;
         this.edxlHandler = edxlHandler;
+        this.errorHandler = errorHandler;
         this.xmlMapper = xmlMapper;
         this.jsonMapper = jsonMapper;
         initReturnsCallback();
@@ -84,7 +84,7 @@ public class Dispatcher {
 
         // set returns callback to track undistributed messages
         rabbitTemplate.setReturnsCallback(returned -> {
-            EdxlMessage returnedEdxlMessage = null;
+            EdxlMessageInterface returnedEdxlMessage = null;
             String returnedEdxlString = new String(returned.getMessage().getBody(), StandardCharsets.UTF_8);
 
             try {
@@ -93,9 +93,8 @@ public class Dispatcher {
                 // This should never happen as if we've reached this point, the message has already been deserialized
                 log.error("Could not deserialize message " + returnedEdxlString, e);
             }
-            Error error = new Error();
-            error.setErrorCode(ErrorCode.UNROUTABLE_MESSAGE);
-            error.setErrorCause("unable do deliver message to " + returned.getRoutingKey() + ", cause was " + returned.getReplyText() + " (" + returned.getReplyCode() + ")");
+            ErrorInterface error = errorHandler.createError(ErrorCode.UNROUTABLE_MESSAGE,
+                    "unable do deliver message to " + returned.getRoutingKey() + ", cause was " + returned.getReplyText() + " (" + returned.getReplyCode() + ")");
             try {
                 if (isJSON(returned.getMessage())) {
                     error.setSourceMessage(jsonMapper.readValue(returned.getMessage().getBody(), HashMap.class));
@@ -116,7 +115,7 @@ public class Dispatcher {
     public void dispatch(Message message) {
         try {
             // Deserialize the message according to its content type
-            EdxlMessage edxlMessage = messageHandler.deserializeMessage(message);
+            EdxlMessageInterface edxlMessage = messageHandler.deserializeMessage(message);
             // Reject the message if the sender is not consistent with the routing key
             checkSenderConsistency(message, edxlMessage);
             // Reject the message if the delivery mode is not PERSISTENT
@@ -150,7 +149,7 @@ public class Dispatcher {
             if (deadFromQueue.endsWith(".info")) {
                 return;
             }
-            EdxlMessage edxlMessage = messageHandler.deserializeMessage(message);
+            EdxlMessageInterface edxlMessage = messageHandler.deserializeMessage(message);
             // log message & error
             String errorCause = "Message " + edxlMessage.getDistributionID() + " has been read from dead-letter-queue; reason was " +
                     message.getMessageProperties().getHeader(DLQ_REASON);

@@ -15,7 +15,7 @@
  */
 package com.hubsante.hub.exception;
 
-import com.hubsante.model.report.ErrorCode;
+import com.hubsante.hub.spi.report.ErrorCode;
 
 public class SchemaNotFoundException extends AbstractHubException{
 

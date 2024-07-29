@@ -15,7 +15,7 @@
  */
 package com.hubsante.hub.exception;
 
-import com.hubsante.model.report.ErrorCode;
+import com.hubsante.hub.spi.report.ErrorCode;
 import org.springframework.amqp.AmqpRejectAndDontRequeueException;
 
 public abstract class AbstractHubException extends AmqpRejectAndDontRequeueException {

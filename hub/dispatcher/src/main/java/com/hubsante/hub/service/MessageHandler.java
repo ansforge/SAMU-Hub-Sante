@@ -20,15 +20,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.hubsante.hub.config.HubConfiguration;
 import com.hubsante.hub.exception.*;
-import com.hubsante.model.EdxlHandler;
-import com.hubsante.model.Validator;
-import com.hubsante.model.builders.ErrorWrapperBuilder;
-import com.hubsante.model.edxl.DistributionKind;
-import com.hubsante.model.edxl.EdxlEnvelope;
-import com.hubsante.model.edxl.EdxlMessage;
-import com.hubsante.model.exception.ValidationException;
-import com.hubsante.model.report.Error;
-import com.hubsante.model.report.ErrorWrapper;
+import com.hubsante.hub.spi.*;
+import com.hubsante.hub.spi.builders.ErrorWrapperBuilder;
+import com.hubsante.hub.spi.exception.ValidationException;
+import com.hubsante.hub.spi.report.Error;
+import com.hubsante.hub.spi.report.ErrorWrapper;
 import io.micrometer.core.annotation.Timed;
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.extern.slf4j.Slf4j;
@@ -43,25 +39,22 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.time.OffsetDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Collections;
 import java.util.HashMap;
 
 import static com.hubsante.hub.config.AmqpConfiguration.DISTRIBUTION_EXCHANGE;
 import static com.hubsante.hub.config.AmqpConfiguration.DLQ_ORIGINAL_ROUTING_KEY;
 import static com.hubsante.hub.config.Constants.*;
+import static com.hubsante.hub.spi.config.Constants.*;
 import static com.hubsante.hub.utils.EdxlUtils.edxlMessageFromHub;
 import static com.hubsante.hub.utils.MessageUtils.*;
-import static com.hubsante.model.config.Constants.*;
 
 @Component
 @Slf4j
 public class MessageHandler {
     private final RabbitTemplate rabbitTemplate;
-    private final EdxlHandler edxlHandler;
+    private final EdxlHandlerInterface edxlHandler;
     private final HubConfiguration hubConfig;
-    private final Validator validator;
+    private final ValidatorInterface validator;
     private final MeterRegistry registry;
     @Autowired
     @Qualifier("xmlMapper")
@@ -71,7 +64,7 @@ public class MessageHandler {
     private ObjectMapper jsonMapper;
 
 
-    public MessageHandler(RabbitTemplate rabbitTemplate, EdxlHandler edxlHandler, HubConfiguration hubConfig, Validator validator, MeterRegistry registry, XmlMapper xmlMapper, ObjectMapper jsonMapper){
+    public MessageHandler(RabbitTemplate rabbitTemplate, EdxlHandlerInterface edxlHandler, HubConfiguration hubConfig, ValidatorInterface validator, MeterRegistry registry, XmlMapper xmlMapper, ObjectMapper jsonMapper){
         this.rabbitTemplate = rabbitTemplate;
         this.edxlHandler = edxlHandler;
         this.hubConfig = hubConfig;
@@ -123,7 +116,7 @@ public class MessageHandler {
         ErrorWrapper wrapper = new ErrorWrapperBuilder(error).build();
 
         try {
-            EdxlMessage errorEdxlMessage = edxlMessageFromHub(sender, wrapper);
+            EdxlMessageInterface errorEdxlMessage = edxlMessageFromHub(sender, wrapper);
             Message errorAmqpMessage;
             if (convertToXML(sender, hubConfig.getClientPreferences().get(sender))) {
                 errorAmqpMessage = new Message(edxlHandler.serializeXmlEDXL(errorEdxlMessage).getBytes(),
@@ -141,7 +134,7 @@ public class MessageHandler {
         }
     }
 
-    protected Message forwardedMessage(EdxlMessage edxlMessage, Message receivedAmqpMessage) {
+    protected Message forwardedMessage(EdxlMessageInterface edxlMessage, Message receivedAmqpMessage) {
         MessageProperties receivedAmqpProperties = receivedAmqpMessage.getMessageProperties();
         MessageProperties forwardedMessageProperties =
                 MessagePropertiesBuilder.fromClonedProperties(receivedAmqpProperties).build();
@@ -156,16 +149,16 @@ public class MessageHandler {
      ** Deserialize the message according to its content type
      */
     @Timed(value = "deserialize.received.message", description = "Deserialize incoming message - include validation")
-    protected EdxlMessage deserializeMessage(Message message) {
+    protected EdxlMessageInterface deserializeMessage(Message message) {
         String receivedEdxl = new String(message.getBody(), StandardCharsets.UTF_8);
-        EdxlMessage edxlMessage;
+        EdxlMessageInterface edxlMessage;
 
         try {
             edxlMessage = handleMessage(message, receivedEdxl);
         } catch (ValidationException e) {
             // We couldn't validate the message against the full schema, so we try to validate it against the envelope schema
             // so we can at least extract the distributionID
-            EdxlEnvelope edxlEnvelope;
+            EdxlEnvelopeInterface edxlEnvelope;
             try {
                 if (isJSON(message)) {
                     validator.validateJSON(receivedEdxl, ENVELOPE_SCHEMA);
@@ -206,9 +199,9 @@ public class MessageHandler {
      * @throws ValidationException     when validation fails
      * @throws IOException             when schema file couldn't be found
      */
-    private EdxlMessage handleMessage(Message message, String receivedEdxl) throws ValidationException {
+    private EdxlMessageInterface handleMessage(Message message, String receivedEdxl) throws ValidationException {
         try {
-            EdxlMessage edxlMessage;
+            EdxlMessageInterface edxlMessage;
             // We deserialize according to the content type
             // It MUST be explicitly set by the client
             if (isJSON(message)) {
@@ -238,7 +231,7 @@ public class MessageHandler {
         }
     }
     @Timed(value = "serialize.forwarded.message", description = "Serialize forwarded message and return new AMQP message")
-    private Message getFwdMessageBody(EdxlMessage edxlMessage, Message receivedAmqpMessage, MessageProperties fwdAmqpProperties) {
+    private Message getFwdMessageBody(EdxlMessageInterface edxlMessage, Message receivedAmqpMessage, MessageProperties fwdAmqpProperties) {
         String recipientID = getRecipientID(edxlMessage);
         String senderID = getSenderFromRoutingKey(receivedAmqpMessage);
         String edxlString;
@@ -263,7 +256,7 @@ public class MessageHandler {
             throw new RuntimeException("Could not serialize message " + edxlMessage.getDistributionID(), e);
         }
     }
-    private void logMessage(Message message, EdxlMessage edxlMessage) throws JsonProcessingException {
+    private void logMessage(Message message, EdxlMessageInterface edxlMessage) throws JsonProcessingException {
         log.info(" [x] Received from '" + message.getMessageProperties().getReceivedRoutingKey() + "': message with distributionID " + edxlMessage.getDistributionID());
         log.debug(edxlHandler.serializeJsonEDXL(edxlMessage));
     }
