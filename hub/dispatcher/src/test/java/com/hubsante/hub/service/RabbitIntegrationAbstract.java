@@ -17,6 +17,7 @@ package com.hubsante.hub.service;
 
 import com.hubsante.hub.HubApplication;
 import com.hubsante.hub.service.utils.SSLTestUtils;
+import com.hubsante.hub.spi.EdxlHandlerInterface;
 import com.hubsante.model.EdxlHandler;
 import com.rabbitmq.client.DefaultSaslConfig;
 import lombok.extern.slf4j.Slf4j;
@@ -65,7 +66,7 @@ public class RabbitIntegrationAbstract {
     static ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
     @Autowired
-    protected EdxlHandler converter;
+    protected EdxlHandlerInterface converter;
     protected volatile boolean failed = false;
 
     @Container

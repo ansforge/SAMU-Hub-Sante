@@ -93,7 +93,7 @@ public class Dispatcher {
                 // This should never happen as if we've reached this point, the message has already been deserialized
                 log.error("Could not deserialize message " + returnedEdxlString, e);
             }
-            ErrorInterface error = errorHandler.createError(ErrorCode.UNROUTABLE_MESSAGE,
+            Error error = errorHandler.createError(ErrorCode.UNROUTABLE_MESSAGE,
                     "unable do deliver message to " + returned.getRoutingKey() + ", cause was " + returned.getReplyText() + " (" + returned.getReplyCode() + ")");
             try {
                 if (isJSON(returned.getMessage())) {

@@ -17,4 +17,8 @@ public interface EdxlMessageInterface {
     OffsetDateTime getDateTimeExpires();
 
     Object getFirstContentMessage();
+
+    void setDateTimeSent(OffsetDateTime now);
+
+    void setDateTimeExpires(OffsetDateTime offsetDateTime);
 }

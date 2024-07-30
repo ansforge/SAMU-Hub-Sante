@@ -18,7 +18,7 @@ package com.hubsante.hub.service.utils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.hubsante.hub.spi.EdxlHandlerInterface;
 import com.hubsante.hub.spi.EdxlMessageInterface;
-import com.hubsante.hub.spi.TestMessagesHelperInterface;
+import com.hubsante.hub.spi.TestMessagesHelper;
 import com.hubsante.hub.spi.report.Error;
 import com.hubsante.hub.spi.report.ErrorWrapper;
 import com.hubsante.model.EdxlHandler;
@@ -41,7 +41,7 @@ import static com.hubsante.hub.config.AmqpConfiguration.*;
 public class MessageTestUtils {
     public static Message createMessage(String filename, String contentType, String receivedRoutingKey) throws IOException {
         boolean isXML = MessageProperties.CONTENT_TYPE_XML.equals(contentType);
-        String edxlString = TestMessagesHelperInterface.getSampleMessage(filename, isXML);
+        String edxlString = TestMessagesHelper.getSampleMessage(filename, isXML);
 
         MessageProperties properties = getMessageProperties(receivedRoutingKey);
 
@@ -60,7 +60,7 @@ public class MessageTestUtils {
     }
 
     public static Message createInvalidMessage(String filename, String contentType, String receivedRoutingKey) throws IOException {
-        String edxlString = TestMessagesHelperInterface.getInvalidMessage(filename);
+        String edxlString = TestMessagesHelper.getInvalidMessage(filename);
 
         MessageProperties properties = getMessageProperties(receivedRoutingKey);
 

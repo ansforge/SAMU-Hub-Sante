@@ -16,27 +16,20 @@
 package com.hubsante.hub.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.hubsante.model.EdxlHandler;
-import com.hubsante.model.edxl.EdxlMessage;
-import com.hubsante.model.report.ErrorCode;
-import com.hubsante.model.report.Error;
-import com.hubsante.model.report.ErrorWrapper;
+import com.hubsante.hub.spi.EdxlHandlerInterface;
+import com.hubsante.hub.spi.EdxlMessageInterface;
+import com.hubsante.hub.spi.report.Error;
+import com.hubsante.hub.spi.report.ErrorCode;
+import com.hubsante.hub.spi.report.ErrorWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.*;
-import org.springframework.amqp.core.AmqpAdmin;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.testcontainers.containers.Container;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.time.OffsetDateTime;
 import java.util.Arrays;
-import java.util.Objects;
 
 import static com.hubsante.hub.service.utils.MessageTestUtils.createInvalidMessage;
 import static com.hubsante.hub.service.utils.MessageTestUtils.createMessage;
@@ -49,7 +42,7 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
     private static long DEFAULT_TTL = 5000;
 
     @Autowired
-    private EdxlHandler edxlHandler;
+    private EdxlHandlerInterface edxlHandler;
 
     @Test
     @DisplayName("message dispatched to exchange is received by a consumer listening to the right queue")
@@ -63,8 +56,8 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
         RabbitTemplate samuB_consumer = getCustomRabbitTemplate(classLoader.getResource("config/certs/samuB/samuB.p12").getPath(), "samuB");
         Message received = samuB_consumer.receive(SAMU_B_MESSAGE_QUEUE);
 
-        EdxlMessage publishedEdxl = converter.deserializeJsonEDXL(new String(published.getBody(), StandardCharsets.UTF_8));
-        EdxlMessage receivedEdxl = converter.deserializeXmlEDXL(new String(received.getBody(), StandardCharsets.UTF_8));
+        EdxlMessageInterface publishedEdxl = converter.deserializeJsonEDXL(new String(published.getBody(), StandardCharsets.UTF_8));
+        EdxlMessageInterface receivedEdxl = converter.deserializeXmlEDXL(new String(received.getBody(), StandardCharsets.UTF_8));
         Assertions.assertEquals(publishedEdxl, receivedEdxl);
     }
 
@@ -145,7 +138,7 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
     }
 
     private void assertErrorHasBeenReceived(RabbitTemplate rabbitTemplate, String infoQueueName,
-                                                         ErrorCode errorCode, String... errorCause) throws JsonProcessingException {
+                                            ErrorCode errorCode, String... errorCause) throws JsonProcessingException {
 
         Message infoMsg = rabbitTemplate.receive(infoQueueName);
         assertNotNull(infoMsg);

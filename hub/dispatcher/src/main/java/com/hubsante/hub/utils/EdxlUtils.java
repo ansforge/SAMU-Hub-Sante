@@ -16,18 +16,25 @@
 package com.hubsante.hub.utils;
 
 import com.hubsante.hub.spi.ContentMessageInterface;
+import com.hubsante.hub.spi.EDXL_DE_BuilderInterface;
 import com.hubsante.hub.spi.EdxlHelperInterface;
 import com.hubsante.hub.spi.EdxlMessageInterface;
 import com.hubsante.hub.spi.edxl.DistributionKind;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
+@Service
 public class EdxlUtils {
     public static final String HUB_ID = "fr.health.hub";
     private static final long DEFAULT_HUB_MESSAGE_EXPIRATION = 1L;
 
+    @Autowired
+    private static EdxlHelperInterface edxlDeHelper;
+
     public static EdxlMessageInterface edxlMessageFromHub(String recipientId, ContentMessageInterface contentMessage) {
-        return EdxlHelperInterface().buildEdxlMessage(UUID(),
+        return edxlDeHelper.buildEdxlMessage(UUID(),
                 HUB_ID,
                 recipientId,
                 DEFAULT_HUB_MESSAGE_EXPIRATION,
