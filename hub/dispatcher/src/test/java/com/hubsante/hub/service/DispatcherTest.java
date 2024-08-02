@@ -24,6 +24,7 @@ import com.hubsante.hub.spi.CustomMessageInterface;
 import com.hubsante.hub.spi.EdxlHandlerInterface;
 import com.hubsante.hub.spi.EdxlMessageInterface;
 import com.hubsante.hub.spi.ValidatorInterface;
+import com.hubsante.hub.spi.report.Error;
 import com.hubsante.hub.spi.report.ErrorCode;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.search.Search;

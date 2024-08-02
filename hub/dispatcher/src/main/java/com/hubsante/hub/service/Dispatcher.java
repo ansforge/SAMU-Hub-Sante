@@ -20,8 +20,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.hubsante.hub.exception.*;
 import com.hubsante.hub.spi.*;
-import com.hubsante.hub.spi.report.ErrorCode;
 import com.hubsante.hub.spi.report.Error;
+import com.hubsante.hub.spi.report.ErrorCode;
+import com.hubsante.model.report.Error;
+import com.hubsante.model.report.ErrorCode;
 import io.micrometer.core.annotation.Timed;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.AmqpRejectAndDontRequeueException;
@@ -31,6 +33,7 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import org.xml.sax.ErrorHandler;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -62,7 +65,6 @@ public class Dispatcher {
     private final MessageHandler messageHandler;
     private final RabbitTemplate rabbitTemplate;
     private final EdxlHandlerInterface edxlHandler;
-    private final ErrorHandlerInterface errorHandler;
     @Autowired
     @Qualifier("xmlMapper")
     private XmlMapper xmlMapper;
@@ -70,11 +72,10 @@ public class Dispatcher {
     @Qualifier("jsonMapper")
     private ObjectMapper jsonMapper;
 
-    public Dispatcher(MessageHandler messageHandler, RabbitTemplate rabbitTemplate, EdxlHandlerInterface edxlHandler, ErrorHandlerInterface errorHandler, XmlMapper xmlMapper, ObjectMapper jsonMapper) {
+    public Dispatcher(MessageHandler messageHandler, RabbitTemplate rabbitTemplate, EdxlHandlerInterface edxlHandler, XmlMapper xmlMapper, ObjectMapper jsonMapper) {
         this.messageHandler = messageHandler;
         this.rabbitTemplate = rabbitTemplate;
         this.edxlHandler = edxlHandler;
-        this.errorHandler = errorHandler;
         this.xmlMapper = xmlMapper;
         this.jsonMapper = jsonMapper;
         initReturnsCallback();
@@ -93,9 +94,10 @@ public class Dispatcher {
                 // This should never happen as if we've reached this point, the message has already been deserialized
                 log.error("Could not deserialize message " + returnedEdxlString, e);
             }
-            Error error = errorHandler.createError(ErrorCode.UNROUTABLE_MESSAGE,
-                    "unable do deliver message to " + returned.getRoutingKey() + ", cause was " + returned.getReplyText() + " (" + returned.getReplyCode() + ")");
-            try {
+            Error error = new Error();
+            error.setErrorCode(ErrorCode.UNROUTABLE_MESSAGE);
+            error.setErrorCause("unable do deliver message to " + returned.getRoutingKey() + ", cause was " + returned.getReplyText() + " (" + returned.getReplyCode() + ")");
+             try {
                 if (isJSON(returned.getMessage())) {
                     error.setSourceMessage(jsonMapper.readValue(returned.getMessage().getBody(), HashMap.class));
                 } else if (isXML(returned.getMessage())) {

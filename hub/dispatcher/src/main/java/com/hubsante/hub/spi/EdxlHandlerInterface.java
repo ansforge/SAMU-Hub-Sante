@@ -11,9 +11,5 @@ public interface EdxlHandlerInterface {
 
     String serializeJsonEDXL(EdxlMessageInterface errorEdxlMessage) throws JsonProcessingException;
 
-    EdxlEnvelopeInterface deserializeJsonEDXLEnvelope(String receivedEdxl) throws JsonProcessingException;
-
-    EdxlEnvelopeInterface deserializeXmlEDXLEnvelope(String receivedEdxl) throws JsonProcessingException;
-
     EdxlMessageInterface deserializeXmlEDXL(String receivedEdxl) throws JsonProcessingException;
 }
