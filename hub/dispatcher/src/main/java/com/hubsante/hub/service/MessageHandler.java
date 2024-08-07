@@ -25,6 +25,9 @@ import com.hubsante.hub.spi.builders.ErrorWrapperBuilder;
 import com.hubsante.hub.spi.exception.ValidationException;
 import com.hubsante.hub.spi.report.Error;
 import com.hubsante.hub.spi.report.ErrorWrapper;
+import com.hubsante.hub.spi.service.EdxlServiceInterface;
+import com.hubsante.hub.spi.service.ValidatorInterface;
+import com.hubsante.hub.spi.service.handlers.EdxlHandlerInterface;
 import io.micrometer.core.annotation.Timed;
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.extern.slf4j.Slf4j;
@@ -56,6 +59,7 @@ public class MessageHandler {
     private final HubConfiguration hubConfig;
     private final ValidatorInterface validator;
     private final MeterRegistry registry;
+    private final EdxlServiceInterface edxlService;
     @Autowired
     @Qualifier("xmlMapper")
     private XmlMapper xmlMapper;
@@ -64,7 +68,7 @@ public class MessageHandler {
     private ObjectMapper jsonMapper;
 
 
-    public MessageHandler(RabbitTemplate rabbitTemplate, EdxlHandlerInterface edxlHandler, HubConfiguration hubConfig, ValidatorInterface validator, MeterRegistry registry, XmlMapper xmlMapper, ObjectMapper jsonMapper){
+    public MessageHandler(RabbitTemplate rabbitTemplate, EdxlHandlerInterface edxlHandler, HubConfiguration hubConfig, ValidatorInterface validator, MeterRegistry registry, XmlMapper xmlMapper, ObjectMapper jsonMapper, EdxlServiceInterface edxlService){
         this.rabbitTemplate = rabbitTemplate;
         this.edxlHandler = edxlHandler;
         this.hubConfig = hubConfig;
@@ -72,6 +76,7 @@ public class MessageHandler {
         this.registry = registry;
         this.xmlMapper = xmlMapper;
         this.jsonMapper = jsonMapper;
+        this.edxlService = edxlService;
     }
 
     protected void handleError(AbstractHubException exception, Message message) {
@@ -183,8 +188,8 @@ public class MessageHandler {
             // weird rethrow but we want to log the received routing key and we only have it here
             log.error("Could not validate content of message " + receivedEdxl +
                     " coming from " + message.getMessageProperties().getReceivedRoutingKey() +
-                    " with distributionId " + edxlEnvelope.getDistributionID(), e);
-            throw new SchemaValidationException(e.getMessage(), edxlEnvelope.getDistributionID());
+                    " with distributionId " + edxlService.getDistributionIDFromEdxlMessage(receivedEdxl));
+            throw new SchemaValidationException(e.getMessage(), edxlService.getDistributionIDFromEdxlMessage(receivedEdxl));
         }
         return edxlMessage;
     }

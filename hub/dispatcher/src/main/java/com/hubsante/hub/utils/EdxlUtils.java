@@ -15,11 +15,10 @@
  */
 package com.hubsante.hub.utils;
 
-import com.hubsante.hub.spi.ContentMessageInterface;
-import com.hubsante.hub.spi.EDXL_DE_BuilderInterface;
-import com.hubsante.hub.spi.EdxlHelperInterface;
-import com.hubsante.hub.spi.EdxlMessageInterface;
-import com.hubsante.hub.spi.edxl.DistributionKind;
+import com.hubsante.modelsinterface.edxl.DistributionKind;
+import com.hubsante.modelsinterface.interfaces.ContentMessageInterface;
+import com.hubsante.modelsinterface.interfaces.EdxlHelperInterface;
+import com.hubsante.modelsinterface.interfaces.EdxlMessageInterface;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

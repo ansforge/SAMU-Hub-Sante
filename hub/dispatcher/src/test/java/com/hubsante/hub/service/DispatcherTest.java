@@ -21,9 +21,10 @@ import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.hubsante.hub.HubApplication;
 import com.hubsante.hub.config.HubConfiguration;
 import com.hubsante.hub.spi.CustomMessageInterface;
-import com.hubsante.hub.spi.EdxlHandlerInterface;
+import com.hubsante.hub.spi.service.EdxlServiceInterface;
+import com.hubsante.hub.spi.service.handlers.EdxlHandlerInterface;
 import com.hubsante.hub.spi.EdxlMessageInterface;
-import com.hubsante.hub.spi.ValidatorInterface;
+import com.hubsante.hub.spi.service.ValidatorInterface;
 import com.hubsante.hub.spi.report.Error;
 import com.hubsante.hub.spi.report.ErrorCode;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -75,6 +76,8 @@ public class DispatcherTest {
     private HubConfiguration hubConfig;
     @Autowired
     private ValidatorInterface validator;
+    @Autowired
+    private EdxlServiceInterface edxlService;
     private MessageHandler messageHandler;
     @Autowired
     private MeterRegistry registry;
@@ -106,7 +109,7 @@ public class DispatcherTest {
 
     @PostConstruct
     public void init() {
-        messageHandler = new MessageHandler(rabbitTemplate, converter, hubConfig, validator, registry, xmlMapper, jsonMapper);
+        messageHandler = new MessageHandler(rabbitTemplate, converter, hubConfig, validator, registry, xmlMapper, jsonMapper, edxlService);
         dispatcher = new Dispatcher(messageHandler, rabbitTemplate, converter, xmlMapper, jsonMapper);
     }
 

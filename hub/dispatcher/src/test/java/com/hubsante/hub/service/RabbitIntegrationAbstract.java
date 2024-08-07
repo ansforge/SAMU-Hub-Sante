@@ -17,15 +17,13 @@ package com.hubsante.hub.service;
 
 import com.hubsante.hub.HubApplication;
 import com.hubsante.hub.service.utils.SSLTestUtils;
-import com.hubsante.hub.spi.EdxlHandlerInterface;
+import com.hubsante.hub.spi.service.handlers.EdxlHandlerInterface;
 import com.hubsante.model.EdxlHandler;
 import com.rabbitmq.client.DefaultSaslConfig;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.ClassOrderer;
-import org.junit.jupiter.api.TestClassOrder;
 import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;

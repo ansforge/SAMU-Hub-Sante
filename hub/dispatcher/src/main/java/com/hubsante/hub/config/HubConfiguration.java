@@ -15,8 +15,6 @@
  */
 package com.hubsante.hub.config;
 
-import com.hubsante.model.EdxlHandler;
-import com.hubsante.model.Validator;
 import io.micrometer.core.aop.TimedAspect;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.junit.jupiter.params.shadow.com.univocity.parsers.common.ParsingContext;
@@ -90,16 +88,6 @@ public class HubConfiguration {
 
     public long getDefaultTTL() {
         return defaultTTL;
-    }
-
-    @Bean
-    public EdxlHandler edxlHandler() {
-        return new EdxlHandler();
-    }
-
-    @Bean
-    public Validator validator() {
-        return new Validator();
     }
 
     @Bean

@@ -22,8 +22,7 @@ import com.hubsante.hub.exception.*;
 import com.hubsante.hub.spi.*;
 import com.hubsante.hub.spi.report.Error;
 import com.hubsante.hub.spi.report.ErrorCode;
-import com.hubsante.model.report.Error;
-import com.hubsante.model.report.ErrorCode;
+import com.hubsante.hub.spi.service.handlers.EdxlHandlerInterface;
 import io.micrometer.core.annotation.Timed;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.AmqpRejectAndDontRequeueException;
@@ -33,7 +32,6 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import org.xml.sax.ErrorHandler;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;

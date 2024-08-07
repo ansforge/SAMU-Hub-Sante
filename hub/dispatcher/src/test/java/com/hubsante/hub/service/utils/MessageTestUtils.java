@@ -16,9 +16,9 @@
 package com.hubsante.hub.service.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.hubsante.hub.spi.EdxlHandlerInterface;
+import com.hubsante.hub.spi.service.handlers.EdxlHandlerInterface;
 import com.hubsante.hub.spi.EdxlMessageInterface;
-import com.hubsante.hub.spi.TestMessagesHelper;
+import com.hubsante.hub.spi.service.helpers.TestMessagesHelper;
 import com.hubsante.hub.spi.report.Error;
 import com.hubsante.hub.spi.report.ErrorWrapper;
 import com.hubsante.model.EdxlHandler;

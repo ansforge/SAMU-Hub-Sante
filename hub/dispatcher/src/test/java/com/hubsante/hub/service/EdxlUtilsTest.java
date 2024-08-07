@@ -16,9 +16,8 @@
 package com.hubsante.hub.service;
 
 import com.hubsante.hub.utils.EdxlUtils;
-import com.hubsante.model.edxl.DistributionKind;
-import com.hubsante.model.edxl.DistributionStatus;
-import com.hubsante.model.edxl.EdxlMessage;
+import com.hubsante.modelsinterface.edxl.DistributionKind;
+import com.hubsante.modelsinterface.interfaces.EdxlMessageInterface;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -30,7 +29,7 @@ public class EdxlUtilsTest {
     public void testEdxlMessageFromHub() {
         String recipientId = "fr.health.samu123";
 
-        EdxlMessage edxlMessage = EdxlUtils.edxlMessageFromHub(recipientId, null);
+        EdxlMessageInterface edxlMessage = EdxlUtils.edxlMessageFromHub(recipientId, null);
 
         assertTrue(edxlMessage.getDistributionID().startsWith("fr.health.hub_"));
         assertEquals(edxlMessage.getSenderID(), "fr.health.hub");
