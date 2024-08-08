@@ -18,6 +18,7 @@ package com.hubsante.hub.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.hubsante.modelsinterface.interfaces.EdxlHandlerInterface;
 import com.hubsante.modelsinterface.interfaces.EdxlMessageInterface;
+import com.hubsante.modelsinterface.report.Error;
 import com.hubsante.modelsinterface.report.ErrorCode;
 import com.hubsante.modelsinterface.report.ErrorWrapper;
 import lombok.extern.slf4j.Slf4j;
@@ -144,8 +145,8 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
         String errorString = new String(infoMsg.getBody());
 
         Error error = infoMsg.getMessageProperties().getContentType().equals(MessageProperties.CONTENT_TYPE_XML) ?
-                ((ErrorWrapper) edxlHandler.deserializeXmlEDXL(errorString).getFirstContentMessage()).getError() :
-                ((ErrorWrapper) edxlHandler.deserializeJsonEDXL(errorString).getFirstContentMessage()).getError();
+                edxlHandler.getFirstContentMessageErrorWrapperFromXml(errorString).getError() :
+                edxlHandler.getFirstContentMessageErrorWrapperFromJson(errorString).getError();
         assertEquals(errorCode, error.getErrorCode());
         Arrays.stream(errorCause).forEach(cause -> assertTrue(error.getErrorCause().contains(cause)));
     }
