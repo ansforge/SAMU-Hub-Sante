@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.hubsante.hub.HubApplication;
 import com.hubsante.hub.config.HubConfiguration;
+import com.hubsante.hub.utils.MessageUtils;
 import com.hubsante.modelsinterface.interfaces.*;
 import com.hubsante.modelsinterface.report.ErrorCode;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -94,6 +95,8 @@ public class DispatcherTest {
     private XmlMapper xmlMapper;
     @Autowired
     private ObjectMapper jsonMapper;
+    @Autowired
+    private MessageUtils messageUtils;
 
     @DynamicPropertySource
     static void registerPgProperties(DynamicPropertyRegistry propertiesRegistry) {
@@ -104,8 +107,8 @@ public class DispatcherTest {
 
     @PostConstruct
     public void init() {
-        messageHandler = new MessageHandler(rabbitTemplate, converter, hubConfig, validator, registry, xmlMapper, jsonMapper, edxlService);
-        dispatcher = new Dispatcher(messageHandler, rabbitTemplate, converter, xmlMapper, jsonMapper);
+        messageHandler = new MessageHandler(rabbitTemplate, converter, hubConfig, validator, registry, xmlMapper, jsonMapper, edxlService, messageUtils);
+        dispatcher = new Dispatcher(messageHandler, rabbitTemplate, converter, xmlMapper, jsonMapper, messageUtils);
     }
 
     @BeforeEach
