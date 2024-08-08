@@ -20,7 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.hubsante.hub.exception.*;
 import com.hubsante.hub.utils.MessageUtils;
-import com.hubsante.modelsinterface.handlers.EdxlHandlerInterface;
+import com.hubsante.modelsinterface.interfaces.EdxlHandlerInterface;
 import com.hubsante.modelsinterface.interfaces.EdxlMessageInterface;
 import com.hubsante.modelsinterface.report.Error;
 import com.hubsante.modelsinterface.report.ErrorCode;
