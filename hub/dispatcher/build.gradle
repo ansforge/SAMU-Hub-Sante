@@ -58,7 +58,7 @@ ext {
 }
 
 dependencies {
-    implementation 'com.hubsante:models-interface:1.0'
+    implementation 'com.hubsante:models-interface:0.1'
 
     implementation 'org.codehaus.groovy:groovy-json:3.0.9'
     implementation 'org.springframework.boot:spring-boot-starter-amqp'

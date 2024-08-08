@@ -15,7 +15,7 @@
  */
 package com.hubsante.hub.exception;
 
-import com.hubsante.hub.spi.report.ErrorCode;
+import com.hubsante.modelsinterface.report.ErrorCode;
 
 public class UnrecognizedMessageFormatException extends AbstractHubException {
     public UnrecognizedMessageFormatException(String message, String referencedDistributionID) {

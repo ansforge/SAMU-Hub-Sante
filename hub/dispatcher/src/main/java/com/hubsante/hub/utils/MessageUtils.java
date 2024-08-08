@@ -15,22 +15,29 @@
  */
 package com.hubsante.hub.utils;
 
-import com.hubsante.hub.spi.EdxlMessageInterface;
 import com.hubsante.hub.exception.DeliveryModeInconsistencyException;
 import com.hubsante.hub.exception.ExpiredBeforeDispatchMessageException;
 import com.hubsante.hub.exception.InvalidDistributionIDException;
 import com.hubsante.hub.exception.SenderInconsistencyException;
-import com.hubsante.hub.spi.edxl.DistributionKind;
+import com.hubsante.modelsinterface.edxl.DistributionKind;
+import com.hubsante.modelsinterface.interfaces.EdxlMessageInterface;
+import com.hubsante.modelsinterface.interfaces.EdxlServiceInterface;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageDeliveryMode;
 import org.springframework.amqp.core.MessageProperties;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 
 @Slf4j
+@Service
 public class MessageUtils {
+    @Autowired
+    private EdxlServiceInterface edxlService;
+    
     private static final String HEALTH_PREFIX = "fr.health";
     public static String getSenderFromRoutingKey(Message message) {
         return message.getMessageProperties().getReceivedRoutingKey();
@@ -59,11 +66,11 @@ public class MessageUtils {
         return clientId + ".info";
     }
 
-    public static String getRecipientID(EdxlMessageInterface edxlMessage) {
-        return edxlMessage.getDescriptor().getExplicitAddress().getExplicitAddressValue();
+    public String getRecipientID(EdxlMessageInterface edxlMessage) {
+        return edxlService.getExplicitAddressValue(edxlMessage);
     }
 
-    public static String getRecipientQueueName(EdxlMessageInterface edxlMessage) {
+    public String getRecipientQueueName(EdxlMessageInterface edxlMessage) {
         return getRecipientID(edxlMessage) + "." + getQueueType(edxlMessage.getDistributionKind());
     }
 

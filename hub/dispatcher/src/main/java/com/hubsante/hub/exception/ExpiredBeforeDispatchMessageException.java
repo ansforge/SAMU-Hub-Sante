@@ -15,7 +15,7 @@
  */
 package com.hubsante.hub.exception;
 
-import com.hubsante.hub.spi.report.ErrorCode;
+import com.hubsante.modelsinterface.report.ErrorCode;
 
 public class ExpiredBeforeDispatchMessageException extends AbstractHubException {
     public ExpiredBeforeDispatchMessageException(String message, String referencedDistributionID) {
