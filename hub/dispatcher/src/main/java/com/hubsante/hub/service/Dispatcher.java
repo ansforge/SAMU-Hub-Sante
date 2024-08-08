@@ -19,6 +19,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.hubsante.hub.exception.*;
+import com.hubsante.hub.utils.MessageUtils;
 import com.hubsante.modelsinterface.handlers.EdxlHandlerInterface;
 import com.hubsante.modelsinterface.interfaces.EdxlMessageInterface;
 import com.hubsante.modelsinterface.report.Error;
@@ -63,6 +64,7 @@ public class Dispatcher {
     private final MessageHandler messageHandler;
     private final RabbitTemplate rabbitTemplate;
     private final EdxlHandlerInterface edxlHandler;
+    private final MessageUtils messageUtils;
     @Autowired
     @Qualifier("xmlMapper")
     private XmlMapper xmlMapper;
@@ -70,12 +72,13 @@ public class Dispatcher {
     @Qualifier("jsonMapper")
     private ObjectMapper jsonMapper;
 
-    public Dispatcher(MessageHandler messageHandler, RabbitTemplate rabbitTemplate, EdxlHandlerInterface edxlHandler, XmlMapper xmlMapper, ObjectMapper jsonMapper) {
+    public Dispatcher(MessageHandler messageHandler, RabbitTemplate rabbitTemplate, EdxlHandlerInterface edxlHandler, XmlMapper xmlMapper, ObjectMapper jsonMapper, MessageUtils messageUtils) {
         this.messageHandler = messageHandler;
         this.rabbitTemplate = rabbitTemplate;
         this.edxlHandler = edxlHandler;
         this.xmlMapper = xmlMapper;
         this.jsonMapper = jsonMapper;
+        this.messageUtils = messageUtils;
         initReturnsCallback();
     }
 
@@ -125,7 +128,7 @@ public class Dispatcher {
             // Forward the message according to the recipient preferences. Conversion JSON <-> XML can happen here
             Message forwardedMsg = messageHandler.forwardedMessage(edxlMessage, message);
             // Extract recipient queue name from the message (explicit address and distribution kind)
-            String queueName = getRecipientQueueName(edxlMessage);
+            String queueName = messageUtils.getRecipientQueueName(edxlMessage);
             // publish the message to the recipient queue
             rabbitTemplate.send(DISTRIBUTION_EXCHANGE, queueName, forwardedMsg);
         } catch (AbstractHubException e) {
