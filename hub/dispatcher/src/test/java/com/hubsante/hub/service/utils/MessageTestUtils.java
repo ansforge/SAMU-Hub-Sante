@@ -16,16 +16,11 @@
 package com.hubsante.hub.service.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.hubsante.hub.spi.service.handlers.EdxlHandlerInterface;
-import com.hubsante.hub.spi.EdxlMessageInterface;
-import com.hubsante.hub.spi.service.helpers.TestMessagesHelper;
-import com.hubsante.hub.spi.report.Error;
-import com.hubsante.hub.spi.report.ErrorWrapper;
-import com.hubsante.model.EdxlHandler;
-import com.hubsante.model.TestMessagesHelper;
-import com.hubsante.model.edxl.EdxlMessage;
-import com.hubsante.model.report.Error;
-import com.hubsante.model.report.ErrorWrapper;
+import com.hubsante.modelsinterface.interfaces.EdxlHandlerInterface;
+import com.hubsante.modelsinterface.interfaces.EdxlMessageInterface;
+import com.hubsante.modelsinterface.report.Error;
+import com.hubsante.modelsinterface.report.ErrorWrapper;
+import com.hubsante.modelsinterface.service.TestMessagesHelper;
 import org.apache.commons.compress.utils.FileNameUtils;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.amqp.core.Message;
@@ -108,8 +103,8 @@ public class MessageTestUtils {
         String msgString = new String(message.getBody());
 
         ErrorWrapper wrapper = message.getMessageProperties().getContentType().equals(MessageProperties.CONTENT_TYPE_XML) ?
-                (ErrorWrapper) edxlHandler.deserializeXmlEDXL(msgString).getFirstContentMessage() :
-                (ErrorWrapper) edxlHandler.deserializeJsonEDXL(msgString).getFirstContentMessage();
+                edxlHandler.getFirstContentMessageErrorWrapperFromXml(msgString) :
+                edxlHandler.getFirstContentMessageErrorWrapperFromJson(msgString);
 
         return wrapper.getError();
     }

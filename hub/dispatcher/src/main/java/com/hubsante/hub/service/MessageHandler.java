@@ -20,12 +20,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.hubsante.hub.config.HubConfiguration;
 import com.hubsante.hub.exception.*;
+import com.hubsante.hub.utils.MessageUtils;
 import com.hubsante.modelsinterface.builders.ErrorWrapperBuilder;
-import com.hubsante.modelsinterface.handlers.EdxlHandlerInterface;
-import com.hubsante.modelsinterface.interfaces.EdxlEnvelopeInterface;
-import com.hubsante.modelsinterface.interfaces.EdxlMessageInterface;
-import com.hubsante.modelsinterface.interfaces.EdxlServiceInterface;
-import com.hubsante.modelsinterface.interfaces.ValidatorInterface;
+import com.hubsante.modelsinterface.exception.ValidationException;
+import com.hubsante.modelsinterface.interfaces.*;
 import com.hubsante.modelsinterface.report.Error;
 import com.hubsante.modelsinterface.report.ErrorWrapper;
 import io.micrometer.core.annotation.Timed;
@@ -49,6 +47,7 @@ import static com.hubsante.hub.config.AmqpConfiguration.DLQ_ORIGINAL_ROUTING_KEY
 import static com.hubsante.hub.config.Constants.*;
 import static com.hubsante.hub.utils.EdxlUtils.edxlMessageFromHub;
 import static com.hubsante.hub.utils.MessageUtils.*;
+import static com.hubsante.modelsinterface.config.Constants.*;
 
 @Component
 @Slf4j
@@ -59,6 +58,7 @@ public class MessageHandler {
     private final ValidatorInterface validator;
     private final MeterRegistry registry;
     private final EdxlServiceInterface edxlService;
+    private final MessageUtils messageUtils;
     @Autowired
     @Qualifier("xmlMapper")
     private XmlMapper xmlMapper;
@@ -67,7 +67,7 @@ public class MessageHandler {
     private ObjectMapper jsonMapper;
 
 
-    public MessageHandler(RabbitTemplate rabbitTemplate, EdxlHandlerInterface edxlHandler, HubConfiguration hubConfig, ValidatorInterface validator, MeterRegistry registry, XmlMapper xmlMapper, ObjectMapper jsonMapper, EdxlServiceInterface edxlService){
+    public MessageHandler(RabbitTemplate rabbitTemplate, EdxlHandlerInterface edxlHandler, HubConfiguration hubConfig, ValidatorInterface validator, MeterRegistry registry, XmlMapper xmlMapper, ObjectMapper jsonMapper, EdxlServiceInterface edxlService, MessageUtils messageUtils) {
         this.rabbitTemplate = rabbitTemplate;
         this.edxlHandler = edxlHandler;
         this.hubConfig = hubConfig;
@@ -76,6 +76,7 @@ public class MessageHandler {
         this.xmlMapper = xmlMapper;
         this.jsonMapper = jsonMapper;
         this.edxlService = edxlService;
+        this.messageUtils = messageUtils;
     }
 
     protected void handleError(AbstractHubException exception, Message message) {
@@ -236,7 +237,7 @@ public class MessageHandler {
     }
     @Timed(value = "serialize.forwarded.message", description = "Serialize forwarded message and return new AMQP message")
     private Message getFwdMessageBody(EdxlMessageInterface edxlMessage, Message receivedAmqpMessage, MessageProperties fwdAmqpProperties) {
-        String recipientID = getRecipientID(edxlMessage);
+        String recipientID = messageUtils.getRecipientID(edxlMessage);
         String senderID = getSenderFromRoutingKey(receivedAmqpMessage);
         String edxlString;
 

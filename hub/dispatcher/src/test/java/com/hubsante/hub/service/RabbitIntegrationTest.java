@@ -16,11 +16,10 @@
 package com.hubsante.hub.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.hubsante.hub.spi.service.handlers.EdxlHandlerInterface;
-import com.hubsante.hub.spi.EdxlMessageInterface;
-import com.hubsante.hub.spi.report.Error;
-import com.hubsante.hub.spi.report.ErrorCode;
-import com.hubsante.hub.spi.report.ErrorWrapper;
+import com.hubsante.modelsinterface.handlers.EdxlHandlerInterface;
+import com.hubsante.modelsinterface.interfaces.EdxlMessageInterface;
+import com.hubsante.modelsinterface.report.ErrorCode;
+import com.hubsante.modelsinterface.report.ErrorWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.*;
 import org.springframework.amqp.core.Message;

@@ -17,8 +17,7 @@ package com.hubsante.hub.service;
 
 import com.hubsante.hub.HubApplication;
 import com.hubsante.hub.service.utils.SSLTestUtils;
-import com.hubsante.hub.spi.service.handlers.EdxlHandlerInterface;
-import com.hubsante.model.EdxlHandler;
+import com.hubsante.modelsinterface.handlers.EdxlHandlerInterface;
 import com.rabbitmq.client.DefaultSaslConfig;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
