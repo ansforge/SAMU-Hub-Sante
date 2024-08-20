@@ -17,11 +17,8 @@
       "jsonContent": {
         "embeddedJsonContent": {
           "message": {
-            "technical": {
-              "requiredStringField": "requiredStringValue",
-              "requiredArray": [
-                "requiredArrayValue1"
-              ]
+            "customContent": {
+              "key": "value"
             }
           }
         }
