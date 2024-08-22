@@ -17,14 +17,22 @@ package com.hubsante.hub.service;
 
 import com.hubsante.hub.utils.EdxlUtils;
 import com.hubsante.modelsinterface.edxl.DistributionKind;
+import com.hubsante.modelsinterface.edxl.DistributionStatus;
 import com.hubsante.modelsinterface.interfaces.EdxlMessageInterface;
+import com.hubsante.modelsinterface.interfaces.EdxlServiceInterface;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@SpringBootTest
 public class EdxlUtilsTest {
-
+    
+    @Autowired
+    private EdxlServiceInterface edxlService;
+    
     @Test
     public void testEdxlMessageFromHub() {
         String recipientId = "fr.health.samu123";
@@ -36,8 +44,8 @@ public class EdxlUtilsTest {
         assertEquals(edxlMessage.getDateTimeSent().plusDays(1), edxlMessage.getDateTimeExpires());
         assertEquals(DistributionStatus.ACTUAL, edxlMessage.getDistributionStatus());
         assertEquals(DistributionKind.ERROR, edxlMessage.getDistributionKind());
-        assertEquals("fr-FR", edxlMessage.getDescriptor().getLanguage());
-        assertEquals("hubex", edxlMessage.getDescriptor().getExplicitAddress().getExplicitAddressScheme());
-        assertEquals(recipientId, edxlMessage.getDescriptor().getExplicitAddress().getExplicitAddressValue());
+        assertEquals("fr-FR", edxlService.getDescriptorLanguage(edxlMessage));
+        assertEquals("hubex", edxlService.getDescriptorExplicitAddressScheme(edxlMessage));
+        assertEquals(recipientId, edxlService.getDescriptorExplicitAddressValue(edxlMessage));
     }
 }

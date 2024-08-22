@@ -67,7 +67,7 @@ public class MessageUtils {
     }
 
     public String getRecipientID(EdxlMessageInterface edxlMessage) {
-        return edxlService.getExplicitAddressValue(edxlMessage);
+        return edxlService.getDescriptorExplicitAddressValue(edxlMessage);
     }
 
     public String getRecipientQueueName(EdxlMessageInterface edxlMessage) {

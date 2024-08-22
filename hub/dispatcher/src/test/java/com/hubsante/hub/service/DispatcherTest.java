@@ -22,6 +22,7 @@ import com.hubsante.hub.HubApplication;
 import com.hubsante.hub.config.HubConfiguration;
 import com.hubsante.hub.utils.MessageUtils;
 import com.hubsante.modelsinterface.interfaces.*;
+import com.hubsante.modelsinterface.report.Error;
 import com.hubsante.modelsinterface.report.ErrorCode;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.search.Search;
