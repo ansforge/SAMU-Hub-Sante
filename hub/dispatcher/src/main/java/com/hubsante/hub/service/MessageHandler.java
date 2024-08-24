@@ -21,11 +21,10 @@ import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.hubsante.hub.config.HubConfiguration;
 import com.hubsante.hub.exception.*;
 import com.hubsante.hub.utils.MessageUtils;
-import com.hubsante.modelsinterface.builders.ErrorWrapperBuilder;
+import com.hubsante.modelsinterface.exception.AbstractHubException;
 import com.hubsante.modelsinterface.exception.ValidationException;
 import com.hubsante.modelsinterface.interfaces.*;
 import com.hubsante.modelsinterface.report.Error;
-import com.hubsante.modelsinterface.report.ErrorWrapper;
 import io.micrometer.core.annotation.Timed;
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.extern.slf4j.Slf4j;
@@ -59,6 +58,7 @@ public class MessageHandler {
     private final MeterRegistry registry;
     private final EdxlServiceInterface edxlService;
     private final MessageUtils messageUtils;
+    private final ErrorServiceInterface errorService;
     @Autowired
     @Qualifier("xmlMapper")
     private XmlMapper xmlMapper;
@@ -67,7 +67,7 @@ public class MessageHandler {
     private ObjectMapper jsonMapper;
 
 
-    public MessageHandler(RabbitTemplate rabbitTemplate, EdxlHandlerInterface edxlHandler, HubConfiguration hubConfig, ValidatorInterface validator, MeterRegistry registry, XmlMapper xmlMapper, ObjectMapper jsonMapper, EdxlServiceInterface edxlService, MessageUtils messageUtils) {
+    public MessageHandler(RabbitTemplate rabbitTemplate, EdxlHandlerInterface edxlHandler, HubConfiguration hubConfig, ValidatorInterface validator, MeterRegistry registry, XmlMapper xmlMapper, ObjectMapper jsonMapper, EdxlServiceInterface edxlService, MessageUtils messageUtils, ErrorServiceInterface errorService) {
         this.rabbitTemplate = rabbitTemplate;
         this.edxlHandler = edxlHandler;
         this.hubConfig = hubConfig;
@@ -77,23 +77,26 @@ public class MessageHandler {
         this.jsonMapper = jsonMapper;
         this.edxlService = edxlService;
         this.messageUtils = messageUtils;
+        this.errorService = errorService;
     }
 
     protected void handleError(AbstractHubException exception, Message message) {
         // create Error
-        Error error = new Error();
-        error.setErrorCode(exception.getErrorCode());
-        error.setErrorCause(exception.getMessage());
-        try {
-            if (isJSON(message)) {
-                error.setSourceMessage(jsonMapper.readValue(message.getBody(), HashMap.class));
-            } else if (isXML(message)) {
-                error.setSourceMessage(xmlMapper.readValue(message.getBody(), HashMap.class));
-            }
-        } catch (IOException e) {
-            log.error("Could not read message body", e);
-        }
-        error.setReferencedDistributionID(exception.getReferencedDistributionID());
+        Error error = this.errorService.handleError(exception, message);
+        
+//        Error error = new Error();
+//        error.setErrorCode(exception.getErrorCode());
+//        error.setErrorCause(exception.getMessage());
+//        try {
+//            if (isJSON(message)) {
+//                error.setSourceMessage(jsonMapper.readValue(message.getBody(), HashMap.class));
+//            } else if (isXML(message)) {
+//                error.setSourceMessage(xmlMapper.readValue(message.getBody(), HashMap.class));
+//            }
+//        } catch (IOException e) {
+//            log.error("Could not read message body", e);
+//        }
+//        error.setReferencedDistributionID(exception.getReferencedDistributionID());
 
         // send Error to sender
         // if the message has been dead-lettered, we retrieve the original sender from the x-death-original-routing-key header
@@ -118,7 +121,7 @@ public class MessageHandler {
                         "ErrorCause " + error.getErrorCause() + "\n" +
                         "ErrorSourceMessage " + error.getSourceMessage());
 
-        ErrorWrapper wrapper = new ErrorWrapperBuilder(error).build();
+        ErrorWrapperInterface wrapper = errorService.buildErrorWrapper(error);
 
         try {
             EdxlMessageInterface errorEdxlMessage = edxlMessageFromHub(sender, wrapper);

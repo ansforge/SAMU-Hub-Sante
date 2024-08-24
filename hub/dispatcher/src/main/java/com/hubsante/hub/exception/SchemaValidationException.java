@@ -15,6 +15,7 @@
  */
 package com.hubsante.hub.exception;
 
+import com.hubsante.modelsinterface.exception.AbstractHubException;
 import com.hubsante.modelsinterface.report.ErrorCode;
 
 public class SchemaValidationException extends AbstractHubException {

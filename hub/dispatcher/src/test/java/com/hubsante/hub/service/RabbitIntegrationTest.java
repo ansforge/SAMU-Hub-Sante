@@ -20,7 +20,6 @@ import com.hubsante.modelsinterface.interfaces.EdxlHandlerInterface;
 import com.hubsante.modelsinterface.interfaces.EdxlMessageInterface;
 import com.hubsante.modelsinterface.report.Error;
 import com.hubsante.modelsinterface.report.ErrorCode;
-import com.hubsante.modelsinterface.report.ErrorWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.*;
 import org.springframework.amqp.core.Message;

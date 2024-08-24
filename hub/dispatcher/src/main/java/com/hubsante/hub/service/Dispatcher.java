@@ -20,10 +20,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.hubsante.hub.exception.*;
 import com.hubsante.hub.utils.MessageUtils;
+import com.hubsante.modelsinterface.exception.AbstractHubException;
 import com.hubsante.modelsinterface.interfaces.EdxlHandlerInterface;
 import com.hubsante.modelsinterface.interfaces.EdxlMessageInterface;
+import com.hubsante.modelsinterface.interfaces.ErrorServiceInterface;
 import com.hubsante.modelsinterface.report.Error;
-import com.hubsante.modelsinterface.report.ErrorCode;
 import io.micrometer.core.annotation.Timed;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.AmqpRejectAndDontRequeueException;
@@ -33,6 +34,7 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.View;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -65,20 +67,24 @@ public class Dispatcher {
     private final RabbitTemplate rabbitTemplate;
     private final EdxlHandlerInterface edxlHandler;
     private final MessageUtils messageUtils;
+    private final ErrorServiceInterface errorService;
     @Autowired
     @Qualifier("xmlMapper")
     private XmlMapper xmlMapper;
     @Autowired
     @Qualifier("jsonMapper")
     private ObjectMapper jsonMapper;
+    @Autowired
+    private View error;
 
-    public Dispatcher(MessageHandler messageHandler, RabbitTemplate rabbitTemplate, EdxlHandlerInterface edxlHandler, XmlMapper xmlMapper, ObjectMapper jsonMapper, MessageUtils messageUtils) {
+    public Dispatcher(MessageHandler messageHandler, RabbitTemplate rabbitTemplate, EdxlHandlerInterface edxlHandler, XmlMapper xmlMapper, ObjectMapper jsonMapper, MessageUtils messageUtils, ErrorServiceInterface errorService) {
         this.messageHandler = messageHandler;
         this.rabbitTemplate = rabbitTemplate;
         this.edxlHandler = edxlHandler;
         this.xmlMapper = xmlMapper;
         this.jsonMapper = jsonMapper;
         this.messageUtils = messageUtils;
+        this.errorService = errorService;
         initReturnsCallback();
     }
 
@@ -95,19 +101,20 @@ public class Dispatcher {
                 // This should never happen as if we've reached this point, the message has already been deserialized
                 log.error("Could not deserialize message " + returnedEdxlString, e);
             }
-            Error error = new Error();
-            error.setErrorCode(ErrorCode.UNROUTABLE_MESSAGE);
-            error.setErrorCause("unable do deliver message to " + returned.getRoutingKey() + ", cause was " + returned.getReplyText() + " (" + returned.getReplyCode() + ")");
-             try {
-                if (isJSON(returned.getMessage())) {
-                    error.setSourceMessage(jsonMapper.readValue(returned.getMessage().getBody(), HashMap.class));
-                } else if (isXML(returned.getMessage())) {
-                    error.setSourceMessage(xmlMapper.readValue(returned.getMessage().getBody(), HashMap.class));
-                }
-            } catch (IOException e) {
-                log.error("Could not read message body", e);
-            }
-            error.setReferencedDistributionID(returnedEdxlMessage != null ? returnedEdxlMessage.getDistributionID() : DISTRIBUTION_ID_UNAVAILABLE);
+            Error error = errorService.generateUnroutableMessageError(returned, returnedEdxlMessage);
+//            Error error = new Error();
+//            error.setErrorCode(ErrorCode.UNROUTABLE_MESSAGE);
+//            error.setErrorCause("unable do deliver message to " + returned.getRoutingKey() + ", cause was " + returned.getReplyText() + " (" + returned.getReplyCode() + ")");
+//             try {
+//                if (isJSON(returned.getMessage())) {
+//                    error.setSourceMessage(jsonMapper.readValue(returned.getMessage().getBody(), HashMap.class));
+//                } else if (isXML(returned.getMessage())) {
+//                    error.setSourceMessage(xmlMapper.readValue(returned.getMessage().getBody(), HashMap.class));
+//                }
+//            } catch (IOException e) {
+//                log.error("Could not read message body", e);
+//            }
+//            error.setReferencedDistributionID(returnedEdxlMessage != null ? returnedEdxlMessage.getDistributionID() : DISTRIBUTION_ID_UNAVAILABLE);
             String senderRoutingKey = returned.getMessage().getMessageProperties().getHeader(DLQ_ORIGINAL_ROUTING_KEY);
             messageHandler.logErrorAndSendReport(error, senderRoutingKey);
         });

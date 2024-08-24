@@ -78,6 +78,8 @@ public class DispatcherTest {
     private MessageHandler messageHandler;
     @Autowired
     private MeterRegistry registry;
+    @Autowired
+    private ErrorServiceInterface errorService;
     static ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
     private Dispatcher dispatcher;
     private final String SAMU_B_ROUTING_KEY = "fr.health.samuB";
@@ -108,8 +110,8 @@ public class DispatcherTest {
 
     @PostConstruct
     public void init() {
-        messageHandler = new MessageHandler(rabbitTemplate, converter, hubConfig, validator, registry, xmlMapper, jsonMapper, edxlService, messageUtils);
-        dispatcher = new Dispatcher(messageHandler, rabbitTemplate, converter, xmlMapper, jsonMapper, messageUtils);
+        messageHandler = new MessageHandler(rabbitTemplate, converter, hubConfig, validator, registry, xmlMapper, jsonMapper, edxlService, messageUtils, errorService);
+        dispatcher = new Dispatcher(messageHandler, rabbitTemplate, converter, xmlMapper, jsonMapper, messageUtils, errorService);
     }
 
     @BeforeEach

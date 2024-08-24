@@ -18,8 +18,8 @@ package com.hubsante.hub.service.utils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.hubsante.modelsinterface.interfaces.EdxlHandlerInterface;
 import com.hubsante.modelsinterface.interfaces.EdxlMessageInterface;
+import com.hubsante.modelsinterface.interfaces.ErrorWrapperInterface;
 import com.hubsante.modelsinterface.report.Error;
-import com.hubsante.modelsinterface.report.ErrorWrapper;
 import com.hubsante.modelsinterface.service.TestMessagesHelper;
 import org.apache.commons.compress.utils.FileNameUtils;
 import org.jetbrains.annotations.NotNull;
@@ -102,7 +102,7 @@ public class MessageTestUtils {
 
         String msgString = new String(message.getBody());
 
-        ErrorWrapper wrapper = message.getMessageProperties().getContentType().equals(MessageProperties.CONTENT_TYPE_XML) ?
+        ErrorWrapperInterface wrapper = message.getMessageProperties().getContentType().equals(MessageProperties.CONTENT_TYPE_XML) ?
                 edxlHandler.getFirstContentMessageErrorWrapperFromXml(msgString) :
                 edxlHandler.getFirstContentMessageErrorWrapperFromJson(msgString);
 
