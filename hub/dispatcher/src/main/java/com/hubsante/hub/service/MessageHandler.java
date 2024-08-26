@@ -266,7 +266,7 @@ public class MessageHandler {
     }
 
     private void publishErrorMetric(String error, String sender) {
-        registry.counter(DISPATCH_ERROR, REASON_TAG, error, CLIENT_ID_TAG, sender).increment();
+        registry.counter(DISPATCH_ERROR, REASON_TAG, error, CLIENT_ID_TAG, sender, VHOST_TAG, hubConfig.getVhost()).increment();
     }
 
 }
