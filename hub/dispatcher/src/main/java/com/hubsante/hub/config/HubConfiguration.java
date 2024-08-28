@@ -44,6 +44,8 @@ public class HubConfiguration {
     @Value("${hubsante.default.message.ttl}")
     private String ttlProperty;
     private long defaultTTL;
+    @Value("${dispatcher.vhost}")
+    private String vhost;
 
     private HashMap<String, Boolean> clientPreferences = new HashMap<>();
 
@@ -91,6 +93,8 @@ public class HubConfiguration {
     public long getDefaultTTL() {
         return defaultTTL;
     }
+
+    public String getVhost() {return vhost; }
 
     @Bean
     public EdxlHandler edxlHandler() {

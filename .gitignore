@@ -33,6 +33,11 @@ certs/environments/
 certs/users/
 certs/sslforfree/
 
+# personal application.properties
+hub/dispatcher/src/main/resources/*.properties
+!hub/dispatcher/src/main/resources/application.properties
+!hub/dispatcher/src/main/resources/application-local.properties
+
 # Needed as GitHub action for AsyncAPI generation installs npm packages
 node_modules/
 package-lock.json
