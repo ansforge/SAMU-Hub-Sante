@@ -237,7 +237,7 @@ public class DispatcherTest {
     @Test
     @DisplayName("should not send info if info itself is DLQed")
     public void handleDLQInfo() throws Exception {
-        Message originalInfo = createMessage("RS-ERROR", JSON, SAMU_A_INFO_QUEUE);
+        Message originalInfo = createMessage("custom-error", JSON, SAMU_A_INFO_QUEUE);
         Message dlqMessage = applyRabbitmqDLQHeaders(originalInfo, "expired");
 
         assertDoesNotThrow(() -> dispatcher.dispatchDLQ(dlqMessage));
@@ -334,22 +334,22 @@ public class DispatcherTest {
     @Test
     @DisplayName("should reject message with invalid json content")
     public void invalidJsonContentFails() throws IOException {
-        Message receivedMessage = createInvalidMessage("RC-EDA/invalid-RC-EDA-valid-EDXL.json",
+        Message receivedMessage = createInvalidMessage("EDXL-DE/invalid-content-valid-envelope.json",
                 JSON, SAMU_A_ROUTING_KEY);
 
         assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
         assertErrorHasBeenSent(SAMU_A_INFO_QUEUE, ErrorCode.INVALID_MESSAGE, SAMU_A_DISTRIBUTION_ID,
-                "creation: is missing but it is required");
+                "reference.invalid_key: is not defined in the schema and the schema does not allow additional properties");
     }
     @Test
     @DisplayName("should reject message with invalid xml content")
     public void invalidXmlContentFails() throws IOException {
-        Message receivedMessage = createInvalidMessage("RC-EDA/invalid-RC-EDA-valid-EDXL.xml",
+        Message receivedMessage = createInvalidMessage("EDXL-DE/invalid-content-valid-envelope.xml",
                 XML, SAMU_B_ROUTING_KEY);
 
         assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
         assertErrorHasBeenSent(SAMU_B_INFO_QUEUE, ErrorCode.INVALID_MESSAGE, "fr.health.samuB_2608323d-507d-4cbf-bf74-52007f8124ea",
-                "Invalid content was found starting with element '{\"urn:emergency:cisu:2.0\":sender}'.");
+                "Invalid content was found starting with element '{\"urn:emergency:cisu:2.0:reference\":reference}'.");
     }
 
     @Test
