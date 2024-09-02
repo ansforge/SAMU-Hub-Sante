@@ -1,14 +1,15 @@
 #!/usr/bin/env node
 const { connect } = require('./utils');
 
-const args = process.argv.slice(2);
-const queue = (args.length > 0) ? args[0] : 'fr.health.samuB.in.message';
-connect((connection, channel) => {
-  console.log(' [*] Waiting for messages in %s. To exit press CTRL+C', queue);
-
-  channel.consume(queue, (msg) => {
-    console.log(' [x] Received %s', msg.content.toString());
-  }, {
-    noAck: true, // Ref.: https://amqp-node.github.io/amqplib/channel_api.html#channelconsume
+const queues = (args.length > 0) ? args[0] : [{key:'15-15',value:'15-15_v1.5'},
+  {key:'15-18',value:'15-18_v1.8'},{key:'15-smur',value:'15-smur_v1.4'},{key:'15-gps',value:'15-gps_v1.0'}];
+for (const q of queues) {
+  connect((connection, channel) => {
+    console.log(` [*] Waiting for messages in ${q.value}. To exit press CTRL+C`);
+    channel.consume(q.value, (msg) => {
+      console.log(` [x] Received ${msg.content.toString()}`);
+    }, {
+      noAck: true, // Ref.: https://amqp-node.github.io/amqplib/channel_api.html#channelconsume
+    });
   });
-});
+}
