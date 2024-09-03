@@ -11,25 +11,7 @@ const HUB_SANTE_URL = process.env.HUB_URL;
 console.log(`Connecting to RabbitMQ server: ${HUB_SANTE_URL}`);
 const HUB_SANTE_EXCHANGE = 'hubsante';
 const DEMO_CLIENT_IDS = process.env.CLIENT_MAP
-const queueMap =
-    [
-      {
-        key: ['createCaseHealth', 'createCaseHealthUpdate', 'resourcesInfo', 'resourcesRequest', 'resourcesResponse', 'resourcesStatus'],
-        value: '15-15_v1.5'
-      },
-      {
-        key: ['createCase', 'emsi'],
-        value: '15-18_v1.8'
-      },
-      {
-        key: ['rpis'],
-        value: '15-smur_v1.4'
-      },
-      {
-        key: ['geoPositionsUpdate', 'geoResourcesDetails', 'geoResourcesRequest'],
-        value: '15-gps_v1.0'
-      }
-    ];
+
 
 const opts = {
   // pfx with new encryption needed for Node 19 support
@@ -45,8 +27,8 @@ const opts = {
 };
 
 module.exports = {
-  connect(callback) {
-    amqp.connect(HUB_SANTE_URL, opts, (error0, connection) => {
+  connect(queue, callback) {
+    amqp.connect(queue, opts, (error0, connection) => {
       if (error0) {
         logger.error(`Error during AMQP connection: ${error0}`);
         throw error0;
@@ -61,23 +43,9 @@ module.exports = {
       });
     });
   },
-  matchQueue(msg){
-    for (const q of queueMap) {
-      if (q.key.filter(e => Object.keys(msg.content[0].jsonContent.embeddedJsonContent.message).includes(e)).length > 0) {
-        return q.value;
-      }
-    }
-    return null;
-  },
-  async connectAsync(msg) {
+  async connectAsync(queue) {
     return new Promise((resolve, reject) => {
-      const queue = matchQueue(msg);
-      if (queue === null) {
-        logger.error(`No queue found for message: ${msg}`);
-        reject(new Error('No queue found for message'));
-        return;
-      }
-      amqp.connect(HUB_SANTE_URL+'/'+queue, opts, (error0, connection) => {
+      amqp.connect(queue, opts, (error0, connection) => {
         if (error0) {
           reject(error0);
           return;
