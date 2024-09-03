@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 const { connect } = require('./utils');
-
-const queuePrefix = 'amqps://messaging.hub.esante.gouv.fr:5671/'
+const args = process.argv.slice(2);
+const queuePrefix = (args.length > 0) ? args[0] : 'amqps://messaging.hub.esante.gouv.fr:5671/';
 const queues = (args.length > 0) ? args[0] : [{key:'15-15',value:'15-15_v1.5'},
   {key:'15-18',value:'15-18_v1.8'},{key:'15-smur',value:'15-smur_v1.4'},{key:'15-gps',value:'15-gps_v1.0'}];
 for (const q of queues) {
