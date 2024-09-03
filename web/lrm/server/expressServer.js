@@ -30,6 +30,8 @@ const queueSuffixMap =
       }
     ];
 class ExpressServer {
+  connections = []
+  
   constructor(port) {
     this.port = port;
     this.app = express();
@@ -53,6 +55,7 @@ class ExpressServer {
     for ( let queueSuffix of queueSuffixMap ) {
       let queue = HUB_SANTE_URL+'/'+queueSuffix.value
       connect(queue, (connection, channel) => {
+        this.connection = connection;
         this.connections.push(connection);
         logger.info("Demo client ids: " + DEMO_CLIENT_IDS)
         const demoIds = JSON.parse(DEMO_CLIENT_IDS);
