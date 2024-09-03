@@ -63,7 +63,7 @@ module.exports = {
   },
   matchQueue(msg){
     for (const q of queueMap) {
-      if (Array.prototype.any(q.key,Object.keys(msg.content[0].jsonContent.embeddedJsonContent.message))) {
+      if (q.key.filter(e => Object.keys(msg.content[0].jsonContent.embeddedJsonContent.message).includes(e)).length > 0) {
         return q.value;
       }
     }
