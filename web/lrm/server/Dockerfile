@@ -9,13 +9,13 @@ FROM --platform=linux/amd64 node:19
 WORKDIR /app
 
 # Copy the npm project files needed for install to the container
-COPY server/package*.json ./
+COPY package*.json ./
 
 # Install dependencies via NPM
 RUN npm ci --omit=dev
 
 # Copy the project files to the container
-COPY server/ .
+COPY . .
 
 # Setup ENV variable
 ENV NODE_ENV=production
