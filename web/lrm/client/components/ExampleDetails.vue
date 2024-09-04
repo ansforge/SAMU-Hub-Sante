@@ -1,34 +1,29 @@
 <template>
-  <v-card
-    class="mx-auto"
-    border
-    tile
-    elevation="4"
-  >
+  <v-card class="mx-auto" border tile elevation="4">
     <v-list-item lines="two">
-      <v-avatar
-        size="64"
-        color="grey"
-      >
-        <v-icon size="large">
-          {{ icon }}
-        </v-icon>
-      </v-avatar>
-
+      <template #prepend>
+        <v-avatar size="64" color="grey">
+          <v-icon size="large">
+            {{ icon }}
+          </v-icon>
+        </v-avatar>
+      </template>
       <v-list-item-title class="text-h5 mb-1">
         {{ name }}
       </v-list-item-title>
       <v-list-item-subtitle>{{ context }}</v-list-item-subtitle>
 
       <v-spacer />
-      <v-btn
-        icon
-        color="primary"
-        :href="REPOSITORY_URL + $config.public.modelBranch + '/src/main/resources/sample/examples/' + file"
-        target="_blank"
-      >
-        <v-icon>mdi-open-in-new</v-icon>
-      </v-btn>
+      <template #append>
+        <v-btn
+          icon
+          color="primary"
+          :href="REPOSITORY_URL + $config.public.modelBranch + '/src/main/resources/sample/examples/' + file"
+          target="_blank"
+        >
+          <v-icon>mdi-open-in-new</v-icon>
+        </v-btn>
+      </template>
     </v-list-item>
     <v-card-text class="pt-0">
       <div v-if="caller" class="py-1">

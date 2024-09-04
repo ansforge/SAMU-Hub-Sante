@@ -36,7 +36,7 @@
       </v-col>
     </v-row>
 
-    <!-- <exampleDetails v-if="selectedDetailIndex !== undefined" class="mb-4" v-bind="examples[selectedDetailIndex]" /> -->
+    <exampleDetails v-if="selectedDetailIndex !== undefined" class="mb-4" v-bind="examples[selectedDetailIndex]" />
   </div>
 </template>
 
