@@ -10,7 +10,9 @@ if (!process.env.HUB_URL) {
 const HUB_SANTE_URL = process.env.HUB_URL;
 console.log(`Connecting to RabbitMQ server: ${HUB_SANTE_URL}`);
 const HUB_SANTE_EXCHANGE = 'hubsante';
-const DEMO_CLIENT_IDS = process.env.CLIENT_MAP;
+const DEMO_CLIENT_IDS = JSON.parse(process.env.CLIENT_MAP);
+// ToDo: remove default VHOSTS value once configmap in config are done
+const VHOSTS = JSON.parse(process.env.VHOSTS || '["15-15_v1.5", "15-18_v1.8", "15-smur_v1.4", "15-gps_v1.0"]');
 
 const opts = {
   // pfx with new encryption needed for Node 19 support
@@ -67,6 +69,26 @@ module.exports = {
       if (exit) process.exit(0);
     }, 500);
   },
+  // ToDo: vHost should be passed directly in the message => remove this function
+  computeVhostFromMessage(msg) {
+    const vhostMap = {
+      '15-15_v1.5': ['createCaseHealth', 'createCaseHealthUpdate', 'resourcesInfo', 'resourcesRequest', 'resourcesResponse', 'resourcesStatus'],
+      '15-18_v1.8': ['createCase', 'emsi'],
+      '15-smur_v1.4': ['rpis'],
+      '15-gps_v1.0': ['geoPositionsUpdate', 'geoResourcesDetails', 'geoResourcesRequest'],
+    };
+    const messageKeys = Object.keys(msg.content[0].jsonContent.embeddedJsonContent.message);
+    for (const [vhost, vhostMessages] in Object.entries(vhostMap)) {
+      // Check if any of the vhost message keys are present in the current message content keys
+      for (const messageKey of messageKeys) {
+        if (vhostMessages.includes(messageKey)) {
+          return vhost;
+        }
+      }
+    }
+    logger.error(`Could not compute vhost from message: no expected message key from ${vhostMap} found in message keys ${messageKeys}`);
+    throw new Error('Could not compute vhost from message');
+  },
   messageProperties: {
     // Ref.: https://github.com/amqp-node/amqplib/blob/4791f2dfbe8f3bfbd02bb0907e3c35129ae71c13/lib/api_args.js#L231
     contentType: 'application/json',
@@ -76,4 +98,5 @@ module.exports = {
   HUB_SANTE_URL,
   HUB_SANTE_EXCHANGE,
   DEMO_CLIENT_IDS,
+  VHOSTS,
 };
