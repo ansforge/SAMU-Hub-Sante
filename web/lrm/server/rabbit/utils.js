@@ -26,8 +26,8 @@ const opts = {
 };
 
 module.exports = {
-  connect(callback) {
-    amqp.connect(HUB_SANTE_URL, opts, (error0, connection) => {
+  connect(vhost, callback) {
+    amqp.connect(`${HUB_SANTE_URL}/${vhost}`, opts, (error0, connection) => {
       if (error0) {
         logger.error(`Error during AMQP connection: ${error0}`);
         throw error0;
@@ -42,9 +42,9 @@ module.exports = {
       });
     });
   },
-  async connectAsync() {
+  async connectAsync(vhost) {
     return new Promise((resolve, reject) => {
-      amqp.connect(HUB_SANTE_URL, opts, (error0, connection) => {
+      amqp.connect(`${HUB_SANTE_URL}/${vhost}`, opts, (error0, connection) => {
         if (error0) {
           reject(error0);
           return;
