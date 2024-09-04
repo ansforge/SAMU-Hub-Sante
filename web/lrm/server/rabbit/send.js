@@ -9,7 +9,7 @@ const args = process.argv.slice(2);
 const sendType = (args.length > 0) ? args[0] : 'async'; // cb or async
 const vhost = (args.length > 1) ? args[1] : '15-15_v1.5'; // vhost
 const key = (args.length > 2) ? args[2] : 'fr.health.samuA';
-const msg = fs.readFileSync(args.slice(3).join(' ') || 'createCaseEdxl.json');
+const msg = fs.readFileSync(args.slice(3).join(' ') || 'empty_test.json');
 
 if (sendType === 'cb') {
   connect(vhost, (connection, channel) => {
