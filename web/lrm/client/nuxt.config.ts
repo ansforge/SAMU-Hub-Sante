@@ -83,5 +83,7 @@ export default defineNuxtConfig({
         ? 'ws://localhost:8081/'
         : 'wss://' + process.env.BACKEND_LRM_SERVER + '/lrm/api/')
     }
-  }
+  },
+
+  compatibilityDate: '2024-09-04'
 })
