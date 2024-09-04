@@ -3,7 +3,7 @@
     <v-list-item lines="two">
       <template #prepend>
         <v-avatar size="64" color="grey">
-          <v-icon size="large">
+          <v-icon color="rgba(0,0,0,.54)" size="38">
             {{ icon }}
           </v-icon>
         </v-avatar>
@@ -17,11 +17,13 @@
       <template #append>
         <v-btn
           icon
-          color="primary"
+          variant="text"
           :href="REPOSITORY_URL + $config.public.modelBranch + '/src/main/resources/sample/examples/' + file"
           target="_blank"
         >
-          <v-icon>mdi-open-in-new</v-icon>
+          <v-icon color="primary">
+            mdi-open-in-new
+          </v-icon>
         </v-btn>
       </template>
     </v-list-item>

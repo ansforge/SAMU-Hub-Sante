@@ -2,6 +2,7 @@
   <v-btn
     :color="store.messageJustSent ? 'secondary' : 'primary'"
     :disabled="(!store.isAdvanced) && store.messageJustSent"
+    variant="flat"
   >
     <v-icon start>
       {{ store.messageJustSent ? 'mdi-check' : 'mdi-send' }}

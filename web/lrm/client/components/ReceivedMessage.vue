@@ -3,49 +3,57 @@
     <div class="mb-n4 ml-1">
       <v-badge
         v-if="store.showSentMessages"
+        floating
         :icon="isOut(direction) ? 'mdi-upload' : 'mdi-download'"
         :color="isOut(direction) ? 'secondary' : 'primary'"
+        class="pl-1"
       />
-      <status-badge :direction="direction" :acked="acked" :distribution-id="body.distributionID" :class="{'ml-5': store.showSentMessages}" />
+      <status-badge
+        floating
+        :direction="direction"
+        :acked="acked"
+        :distribution-id="body.distributionID"
+        :class="{ 'ml-5': store.showSentMessages }"
+        class="pl-1"
+      />
     </div>
-    <div class="elevation-4 pt-8" :class="{'grey lighten-4': isOut(direction)}">
-      <v-row class="mx-4" :class="{ 'pb-2':dense }">
+    <div class="elevation-4 pt-8" :class="{ 'grey lighten-4': isOut(direction) }">
+      <v-row class="mx-4" :class="{ 'pb-2': dense }">
         <span>
-          <v-icon size="small" start>mdi-email-fast</v-icon>{{ direction }} {{ isOut(direction) ? routingKey : body.senderID }}
+          <v-icon size="small" start>mdi-email-fast</v-icon>{{ direction }} {{ isOut(direction) ? routingKey :
+            body.senderID }}
           <br>
           <v-icon size="small" start>mdi-timer</v-icon>{{ time }} → {{ isOut(direction) ? acked?.time : receivedTime }}
           <div v-if="dense && !isOut(direction)">
-            <v-icon size="small" start :color="validatedValuesCount === requiredValuesCount ? 'green' : validatedValuesCount === 0 ? 'red' : 'orange'">
+            <v-icon
+              size="small"
+              start
+              :color="validatedValuesCount === requiredValuesCount ? 'green' : validatedValuesCount === 0 ? 'red' : 'orange'"
+            >
               {{ validatedValuesCount === requiredValuesCount ? 'mdi-check' : 'mdi-close' }}
             </v-icon>
             <span>Valeurs valides: {{ validatedValuesCount }} / {{ requiredValuesCount }} </span>
           </div>
         </span>
         <v-spacer />
-        <span v-if="!dense" class="row" style="flex:unset !important">
-          <div v-if="getMessageType({body}) !== 'ack' && !isOut(direction)">
-            <v-btn
-              icon
-              :color="acked ? 'accent' : 'primary'"
-              @click="sendAck"
-            >
-              <v-icon>mdi-check-all</v-icon>
+        <span v-if="!dense" class="d-flex row">
+          <div v-if="getMessageType({ body }) !== 'ack' && !isOut(direction)">
+            <v-btn icon variant="text" size="x-small" :color="acked ? 'accent' : 'primary'" @click="sendAck">
+              <v-icon size="24">mdi-check-all</v-icon>
             </v-btn>
           </div>
           <v-btn
-            v-if="getMessageType({body}) !== 'ack'"
+            v-if="getMessageType({ body }) !== 'ack'"
             icon
+            size="x-small"
+            variant="text"
             color="primary"
             @click="useMessageToReply"
           >
-            <v-icon>mdi-reply</v-icon>
+            <v-icon size="24">mdi-reply</v-icon>
           </v-btn>
-          <v-btn
-            icon
-            color="primary"
-            @click="showFullMessage = !showFullMessage"
-          >
-            <v-icon>{{ showFullMessage ? 'mdi-magnify-plus-outline' : 'mdi-magnify-minus-outline' }}</v-icon>
+          <v-btn icon variant="text" size="x-small" color="primary" @click="showFullMessage = !showFullMessage">
+            <v-icon size="24">{{ showFullMessage ? 'mdi-magnify-plus-outline' : 'mdi-magnify-minus-outline' }}</v-icon>
           </v-btn>
         </span>
       </v-row>
@@ -54,7 +62,7 @@
         v-if="!dense"
         :value="showFullMessage ? body : body.content[0].jsonContent.embeddedJsonContent.message"
         :expand-depth="jsonDepth"
-        :copyable="{copyText: 'Copier', copiedText: 'Copié !', timeout: 1000}"
+        :copyable="{ copyText: 'Copier', copiedText: 'Copié !', timeout: 1000 }"
         expanded
         theme="json-theme"
       />
@@ -163,30 +171,64 @@ export default {
     cursor: pointer;
     user-select: none;
   }
-  .jv-button { color: #49b3ff }
-  .jv-key { color: #111111 }
+
+  .jv-button {
+    color: #49b3ff
+  }
+
+  .jv-key {
+    color: #111111
+  }
+
   .jv-item {
-    &.jv-array { color: #111111 }
-    &.jv-boolean { color: #fc1e70 }
-    &.jv-function { color: #067bca }
-    &.jv-number { color: #fc1e70 }
-    &.jv-number-float { color: #fc1e70 }
-    &.jv-number-integer { color: #fc1e70 }
-    &.jv-object { color: #111111 }
-    &.jv-undefined { color: #e08331 }
+    &.jv-array {
+      color: #111111
+    }
+
+    &.jv-boolean {
+      color: #fc1e70
+    }
+
+    &.jv-function {
+      color: #067bca
+    }
+
+    &.jv-number {
+      color: #fc1e70
+    }
+
+    &.jv-number-float {
+      color: #fc1e70
+    }
+
+    &.jv-number-integer {
+      color: #fc1e70
+    }
+
+    &.jv-object {
+      color: #111111
+    }
+
+    &.jv-undefined {
+      color: #e08331
+    }
+
     &.jv-string {
       color: #42b983;
       word-break: break-word;
       white-space: normal;
     }
   }
+
   .jv-code {
     padding-bottom: 12px !important;
+
     .jv-toggle {
       &:before {
         padding: 0px 2px;
         border-radius: 2px;
       }
+
       &:hover {
         &:before {
           background: #eee;
@@ -195,10 +237,12 @@ export default {
     }
   }
 }
-.validated > *:last-child {
-  background-color: rgba(76,175,80,0.2)
+
+.validated>*:last-child {
+  background-color: rgba(76, 175, 80, 0.2)
 }
-.selected > *.elevation-4:last-child  {
+
+.selected>*.elevation-4:last-child {
   box-shadow: 0px 2px 4px -1px rgba(6, 123, 202, 0.6), 0px 4px 5px 0px rgba(6, 123, 202, 0.5), 0px 1px 10px 0px rgba(6, 123, 202, 0.12) !important
 }
 </style>

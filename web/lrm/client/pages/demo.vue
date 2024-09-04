@@ -2,7 +2,7 @@
   <v-row justify="center">
     <v-col cols="12" sm="7">
       <v-card style="height: 86vh; overflow-y: auto;">
-        <v-card-title class="text-h5 pb-">
+        <v-card-title class="text-h5 d-flex align-center pb-">
           Formulaire
           <v-spacer />
           <!-- <SendButton class="mt-2" @click="submit" /> -->
