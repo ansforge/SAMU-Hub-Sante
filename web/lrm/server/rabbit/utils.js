@@ -10,7 +10,7 @@ if (!process.env.HUB_URL) {
 const HUB_SANTE_URL = process.env.HUB_URL;
 console.log(`Connecting to RabbitMQ server: ${HUB_SANTE_URL}`);
 const HUB_SANTE_EXCHANGE = 'hubsante';
-const DEMO_CLIENT_IDS = process.env.CLIENT_MAP
+const DEMO_CLIENT_IDS = process.env.CLIENT_MAP;
 
 const opts = {
   // pfx with new encryption needed for Node 19 support
@@ -22,7 +22,7 @@ const opts = {
   ca: [fs.readFileSync(path.join(moduleDir, 'certs/rootCA.crt'))], // array of trusted CA certs
   // Ref.: https://github.com/amqp-node/amqplib/issues/105
   credentials: amqp.credentials.external(),
-  clientProperties: {connection_name: 'lrm-interface'}
+  clientProperties: { connection_name: 'lrm-interface' },
 };
 
 module.exports = {
