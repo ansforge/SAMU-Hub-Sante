@@ -73,7 +73,7 @@ jobs:
           push: true
           platforms: linux/amd64
           tags: ghcr.io/${{ github.repository_owner }}/hub-lrm-back:${{ steps.extract_info.outputs.version }}
-          context: ./web/lrm
+          context: ./web/lrm/server
 
       - name: Build and push lrm frontend Docker image
         if: steps.extract_info.outputs.project == 'lrm'
