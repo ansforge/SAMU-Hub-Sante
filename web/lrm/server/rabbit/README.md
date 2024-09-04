@@ -17,6 +17,11 @@ HUB_URL=amqps://messaging.integration.hub.esante.gouv.fr LRM_PASSPHRASE=... node
 HUB_URL=amqps://messaging.integration.hub.esante.gouv.fr LRM_PASSPHRASE=... node send.js cb 15-15_v1.5 fr.health.samuA empty_test.json   
 ```
 
+## Back-end run
+```bash
+HUB_URL=amqps://messaging.integration.hub.esante.gouv.fr LRM_PASSPHRASE=... CLIENT_MAP='[["fr.health.samuA",["fr.health.samuC"]]]' VHOSTS='["15-15_v1.5","15-smur_v1.4"]' node index.js
+```
+
 ## LRM back implem
 The back-end of the LRM is not using `receive.js` or `send.js`!
 However, it imports the same helpers from `util.js` that are used in the above scripts.
