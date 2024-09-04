@@ -78,7 +78,7 @@ module.exports = {
       '15-gps_v1.0': ['geoPositionsUpdate', 'geoResourcesDetails', 'geoResourcesRequest'],
     };
     const messageKeys = Object.keys(msg.content[0].jsonContent.embeddedJsonContent.message);
-    for (const [vhost, vhostMessages] in Object.entries(vhostMap)) {
+    for (const [vhost, vhostMessages] of Object.entries(vhostMap)) {
       // Check if any of the vhost message keys are present in the current message content keys
       for (const messageKey of messageKeys) {
         if (vhostMessages.includes(messageKey)) {
