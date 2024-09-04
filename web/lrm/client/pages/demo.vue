@@ -39,6 +39,8 @@
           </span>
           <v-badge
             v-if="showableMessages?.length"
+            floating
+            color="primary"
             class="mb-4"
             :content="showableMessages?.length"
           />
@@ -47,12 +49,14 @@
             v-if="store.isAdvanced"
             v-model="store.autoAckConfig"
             inset
+            color="primary"
             :label="'Auto ack'"
             class="my-0 py-0 mr-4"
           />
           <v-switch
             v-model="showSentMessagesConfig"
             inset
+            color="primary"
             :label="'Show sent (' + messagesSentCount + ')'"
             class="my-0 py-0"
           />
@@ -61,7 +65,6 @@
           v-model="store.selectedMessageType"
           class="ml-4"
           density="compact"
-          borderless
           mandatory
         >
           <v-btn v-for="{name, type, icon} in queueTypes" :key="type" :value="type" class="px-4">
@@ -70,6 +73,8 @@
             </v-icon>
             {{ name }}
             <v-badge
+            floating
+            color="primary"
               v-if="typeMessages(type).length > 0"
               class="mr-4 ml-1"
               :content="typeMessages(type).length"

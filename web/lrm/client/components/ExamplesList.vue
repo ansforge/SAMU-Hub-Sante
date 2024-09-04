@@ -3,15 +3,14 @@
     <v-row>
       <v-col cols="auto" class="pr-0 mt-2">
         <v-btn
-          fab
           variant="outlined"
+          rounded="xl"
           size="x-small"
           color="primary"
+          icon="mdi-upload"
           :loading="isSelectingUpload"
           @click="handleFileImport"
-        >
-          <v-icon>mdi-upload</v-icon>
-        </v-btn>
+        />
         <!-- Create a File Input that will be hidden but triggered with JavaScript -->
         <input
           ref="uploader"
