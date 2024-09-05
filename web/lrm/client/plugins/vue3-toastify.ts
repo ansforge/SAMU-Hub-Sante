@@ -6,7 +6,9 @@ export default defineNuxtPlugin((nuxtApp) => {
   nuxtApp.vueApp.use(Vue3Toastify, {
     position: toast.POSITION.TOP_CENTER,
     autoClose: 5000,
-    transition: 'zoom'
+    transition: 'zoom',
+    dangerouslyHTMLString: true,
+    newestOnTop: true
   })
 
   return {

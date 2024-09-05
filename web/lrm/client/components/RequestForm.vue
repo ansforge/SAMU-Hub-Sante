@@ -58,7 +58,6 @@ const formatSchema = (schema) => {
   let newSchema = { ...schema }
   // Remove $ props from schema
   newSchema = remove$PropsFromSchema(schema)
-  // Deduplicate values in 'required'
   return newSchema
 }
 
