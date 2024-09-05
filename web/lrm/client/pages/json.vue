@@ -83,10 +83,10 @@
 
 <script>
 import Ajv from 'ajv'
+import { useNuxtApp } from 'nuxt/app'
 import { REPOSITORY_URL } from '@/constants'
 import mixinMessage from '~/mixins/mixinMessage'
 import { useMainStore } from '~/store'
-import { useNuxtApp } from 'nuxt/app';
 
 // import { mapGetters } from 'pinia';
 export default {
@@ -94,6 +94,7 @@ export default {
   mixins: [mixinMessage],
   data () {
     return {
+      toasts: [],
       store: useMainStore(),
       ajv: new Ajv({
         allErrors: true,
@@ -202,14 +203,19 @@ export default {
       this.store.currentMessage = form
     },
     validateMessage () {
+      for (const toastId of this.toasts) {
+        useNuxtApp().$toast.remove(toastId)
+      }
       const validationResult = this.validateJson(this.trimEmptyValues(this.store.currentMessage))
       if (validationResult) {
         // Toast all errors, showing instance path at the start of the line
-        useNuxtApp().$toast.error(
+        this.toasts.push(useNuxtApp().$toast.error(
           validationResult.map(error => `${error.instancePath}/: ${error.message}`).join('<br>')
-        )
+        ))
       } else {
-        useNuxtApp().$toast.success('Le message est valide')
+        this.toasts.push(useNuxtApp().$toast.success(
+          'Le message est valide'
+        ))
       }
     },
     saveMessage () {
