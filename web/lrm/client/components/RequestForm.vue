@@ -41,7 +41,7 @@ const options = ref({
   editMode: 'inline',
   expansionPanelsProps: { mandatory: false },
   density: 'compact',
-  updateOn: 'blur',
+  debounceInputMs: 50000,
   ajvOptions: {
     allErrors: true,
     strict: false,
@@ -59,7 +59,6 @@ const formatSchema = (schema) => {
   // Remove $ props from schema
   newSchema = remove$PropsFromSchema(schema)
   // Deduplicate values in 'required'
-  newSchema = deduplicateRequireds(newSchema)
   return newSchema
 }
 
@@ -67,23 +66,6 @@ const remove$PropsFromSchema = (schema) => {
   const newSchema = { ...schema }
   delete newSchema.$schema
   delete newSchema.$id
-  return newSchema
-}
-
-// TODO: Remove this ugly thing once csv_parser does not generate duplicate values in 'required' fields
-const deduplicateRequireds = (schema) => {
-  // Iterate over every property including deep-level properties of the schema and deduplicate values in every 'required' array encountered
-  const newSchema = { ...schema }
-  const deduplicateRequiredsRecursive = (schema) => {
-    for (const key in schema) {
-      if (key === 'required') {
-        schema[key] = [...new Set(schema[key])]
-      } else if (typeof schema[key] === 'object') {
-        deduplicateRequiredsRecursive(schema[key])
-      }
-    }
-  }
-  deduplicateRequiredsRecursive(newSchema)
   return newSchema
 }
 
