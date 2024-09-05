@@ -37,6 +37,7 @@
     "vue-json-viewer": "^3.0.4",
     "vue-server-renderer": "^2.7.16",
     "vue-template-compiler": "^2.7.16",
+    "vue3-toastify": "^0.2.3",
     "vuedraggable": "^2.24.3"
   },
   "devDependencies": {

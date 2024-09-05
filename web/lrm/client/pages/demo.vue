@@ -73,9 +73,9 @@
             </v-icon>
             {{ name }}
             <v-badge
-            floating
-            color="primary"
               v-if="typeMessages(type).length > 0"
+              floating
+              color="primary"
               class="mr-4 ml-1"
               :content="typeMessages(type).length"
             />

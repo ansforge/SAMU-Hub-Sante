@@ -25,7 +25,7 @@
           selected-class="primary--text"
           column
         >
-          <v-chip v-for="{icon, name} in examples" :key="name">
+          <v-chip v-for="{icon, name} in examples" :key="name" :color="(selectedDetailIndex === name) ? 'primary' : 'secondary'">
             <v-icon start>
               {{ icon }}
             </v-icon>
