@@ -36,8 +36,11 @@ jobs:
           elif [[ "$RELEASE_NAME" == lrm-* ]]; then
             PROJECT="lrm"
             VERSION=${RELEASE_NAME#lrm-}
+          elif [[ "$RELEASE_NAME" == landing-* ]]; then
+            PROJECT="landing"
+            VERSION=${RELEASE_NAME#landing-}
           else
-            echo "Invalid release name prefix. Must be 'dispatcher' or 'lrm'."
+            echo "Invalid release name prefix. Must be 'dispatcher', 'lrm' or 'landing'."
             exit 1
           fi
           
@@ -83,3 +86,12 @@ jobs:
           platforms: linux/amd64
           tags: ghcr.io/${{ github.repository_owner }}/hub-lrm-front:${{ steps.extract_info.outputs.version }}
           context: ./web/lrm/client
+
+      - name: Build and push landing Docker image
+        if: steps.extract_info.outputs.project == 'landing'
+        uses: docker/build-push-action@v5
+        with:
+          push: true
+          platforms: linux/amd64
+          tags: ghcr.io/${{ github.repository_owner }}/hub-web-landing:${{ steps.extract_info.outputs.version }}
+          context: ./web/landing
