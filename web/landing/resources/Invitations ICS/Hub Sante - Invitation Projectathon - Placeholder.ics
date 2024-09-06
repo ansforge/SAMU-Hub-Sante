@@ -1,0 +1,72 @@
+BEGIN:VCALENDAR
+METHOD:PUBLISH
+PRODID:Microsoft Exchange Server 2010
+VERSION:2.0
+BEGIN:VTIMEZONE
+TZID:tzone://Microsoft/Utc
+BEGIN:STANDARD
+DTSTART:16010101T000000
+TZOFFSETFROM:+0000
+TZOFFSETTO:+0000
+END:STANDARD
+BEGIN:DAYLIGHT
+DTSTART:16010101T000000
+TZOFFSETFROM:+0000
+TZOFFSETTO:+0000
+END:DAYLIGHT
+END:VTIMEZONE
+BEGIN:VEVENT
+ORGANIZER;CN=hubsante.contact:mailto:hubsante.contact@esante.gouv.fr
+ATTENDEE;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE;CN=hubsante.c
+ ontact:mailto:hubsante.contact@esante.gouv.fr
+ATTENDEE;ROLE=OPT-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE;CN=Romain FOU
+ ILLAND:mailto:Romain.FOUILLAND@esante.gouv.fr
+DESCRIPTION:Bonjour\,\n\nDans la continuité des Projectathons passés\, no
+ us vous proposons de renouveler l'expérience\, toujours en distanciel\, t
+ outes les 8 semaines. L'objectif de ces Projectathons sera de finaliser le
+ s développements et de réaliser différentes recettes et tests sur vos p
+ érimètres (15-15\, 15-SMUR/RPIS\, 15-NexSIS\, 15-GPS\, etc.).\n\nUne ré
+ union de lancement se tiendra toujours les lundis de 9h30 - 10h et sera l'
+ occasion de vous présenter les dernières évolutions du Hub Santé.\nCom
+ me précédemment\, sur l'ensemble des deux jours\, nous serons disponible
+ s sur Slack<https://fra01.safelinks.protection.outlook.com/?url=https%3A%2
+ F%2Fcontact-api-lrm.slack.com%2Fjoin%2Fshared_invite%2Fzt-1lbpmutlh-vsq4il
+ HZ5ciNezo8Y35FlA&data=05%7C02%7CRomain.FOUILLAND%40esante.gouv.fr%7C839f6a
+ 05a0a64c0df95208dcb78dc67d%7C508449d3d632429b97cef8ad22b3a7e7%7C0%7C0%7C63
+ 8587066745981551%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luM
+ zIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C0%7C%7C%7C&sdata=GBHeoZUhOoekC8dZcKTtF
+ nN0F2e94zHyBu%2FYBq6nMj4%3D&reserved=0> et Teams pour présenter les docum
+ ents\, répondre à vos questions\, vous accompagner dans la recette des d
+ ifférents jalons et paliers et réaliser des points de suivi réguliers a
+ vec vous.\n\nCette invitation est en mode "libre" et non "occupé" car vot
+ re participation sur les deux jours est complètement modulable à votre c
+ onvenance. Néanmoins\, afin de nous organiser\, nous vous saurions gré d
+ 'accepter l'invitation si vous compter participer.\n\nBien cordialement\,\
+ n\nL'équipe Hub Santé\n
+RRULE:FREQ=WEEKLY;UNTIL=20250316T230000Z;INTERVAL=8;BYDAY=MO;WKST=SU
+UID:040000008200E00074C5B7101A82E00800000000C313B8A376E9DA01000000000000000
+ 0100000007FFB1BB6F6B25E47B95ECAA1F9F72CC4
+SUMMARY:Hub Sante - Invitation Projectathon - Placeholder
+DTSTART;VALUE=DATE:20240923
+DTEND;VALUE=DATE:20240925
+CLASS:PUBLIC
+PRIORITY:5
+DTSTAMP:20240808T105336Z
+TRANSP:OPAQUE
+STATUS:CONFIRMED
+CATEGORIES:Ateliers
+LOCATION:
+X-MICROSOFT-CDO-BUSYSTATUS:BUSY
+X-MICROSOFT-CDO-INTENDEDSTATUS:FREE
+X-MICROSOFT-CDO-ALLDAYEVENT:TRUE
+X-MICROSOFT-CDO-IMPORTANCE:1
+X-MICROSOFT-CDO-INSTTYPE:1
+X-MICROSOFT-DONOTFORWARDMEETING:FALSE
+X-MICROSOFT-DISALLOW-COUNTER:FALSE
+BEGIN:VALARM
+DESCRIPTION:REMINDER
+TRIGGER;RELATED=START:-PT7H
+ACTION:DISPLAY
+END:VALARM
+END:VEVENT
+END:VCALENDAR
