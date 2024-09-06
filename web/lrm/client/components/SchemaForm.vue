@@ -15,55 +15,52 @@
 <script setup>
 import { ref } from 'vue'
 import mixinMessage from '~/mixins/mixinMessage'
-</script>
 
-<script>
+const props = defineProps({
+  label: {
+    type: String,
+    required: true
+  },
+  schemaName: {
+    type: String,
+    required: true
+  },
+  schema: {
+    type: Object,
+    default: null
+  },
+  examples: {
+    type: Array,
+    required: true
+  },
+  noSendButton: {
+    type: Boolean,
+    default: false
+  }
+})
+
 const requestFormRef = ref(null)
+const exampleLoadDatetime = ref(undefined)
+const form = reactive({})
 
 function refreshForm () {
   requestFormRef.value?.updateForm()
 }
+
+</script>
+
+<script>
+
 export default {
   mixins: [mixinMessage],
-  props: {
-    label: {
-      type: String,
-      required: true
-    },
-    schemaName: {
-      type: String,
-      required: true
-    },
-    schema: {
-      type: Object,
-      default: null
-    },
-    examples: {
-      type: Array,
-      required: true
-    },
-    noSendButton: {
-      type: Boolean,
-      default: false
-    }
-  },
-  data () {
-    return {
-      exampleLoadDatetime: undefined,
-      form: {}
-    }
-  },
+
   methods: {
-    // load (example) {
-    //   this.form = example
-    //   // Trigger RequestForm reload with key change | Ref.: https://stackoverflow.com/a/48755228
-    //   this.exampleLoadDatetime = new Date().toISOString()
-    // },
+
     submit (form) {
       try {
         // const data = await (await fetch('samuA_to_samuB.json')).json()
         const data = this.buildMessage({
-          [this.schema.title]: form
+          [this.schema.title]: form.form
         })
         this.sendMessage(data)
       } catch (error) {

@@ -43,7 +43,7 @@
               v-for="messageTypeDetails in store.messageTypes"
               :key="messageTypeDetails.label"
             >
-              <SchemaForm :ref="'schemaForm_' + messageTypeDetails.label" v-bind="messageTypeDetails" no-send-button />
+              <schema-form :ref="'schemaForm_' + messageTypeDetails.label" v-bind="messageTypeDetails" no-send-button @form-refreshed="(form) => updateCurrentMessage(form)" />
             </v-window-item>
           </v-window>
         </v-card-text>

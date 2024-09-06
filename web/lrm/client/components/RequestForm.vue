@@ -85,7 +85,8 @@ const updateForm = () => {
 }
 
 defineExpose({
-  updateForm
+  updateForm,
+  updateStore
 })
 </script>
 

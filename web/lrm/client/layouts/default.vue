@@ -49,7 +49,7 @@
     <v-footer
       app
     >
-      <span>&copy; {{ new Date().getFullYear() }}</span>
+      <span><a :href=" repositoryUrl + 'tree/' + $config.modelBranch ">SAMU Hub Modeles - v{{ $config.modelBranch }}</a> &copy; {{ new Date().getFullYear() }}</span>
     </v-footer>
   </v-app>
 </template>
@@ -57,13 +57,15 @@
 <script>
 import { useMainStore } from '~/store'
 import mixinUser from '~/mixins/mixinUser'
+import { REPOSITORY_URL } from '~/constants'
 
 export default {
   name: 'DefaultLayout',
   mixins: [mixinUser],
   data () {
     return {
-      store: useMainStore()
+      store: useMainStore(),
+      repositoryUrl: REPOSITORY_URL.replace('raw.githubusercontent', 'github')
     }
   },
   computed: {
