@@ -26,17 +26,40 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageDeliveryMode;
 import org.springframework.amqp.core.MessageProperties;
+import org.testcontainers.shaded.com.google.common.io.ByteStreams;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 
 import static com.hubsante.hub.config.AmqpConfiguration.*;
 
 public class MessageTestUtils {
+    
+    public static String getSampleMessage(String message, boolean isXML) throws IOException {
+        String extension = isXML ? ".xml" : ".json";
+        String filepath = message + "/" + message + extension;
+        String json;
+        try (InputStream is = MessageTestUtils.class.getClassLoader().getResourceAsStream("sample/valid/" + filepath)) {
+            assert is != null;
+            json = new String(ByteStreams.toByteArray(is), StandardCharsets.UTF_8);
+        }
+        return json;
+    }
+
+    public static String getInvalidMessage(String messagePath) throws IOException {
+        String json;
+        try (InputStream is = MessageTestUtils.class.getClassLoader().getResourceAsStream("sample/failing/" + messagePath)) {
+            assert is != null;
+            json = new String(ByteStreams.toByteArray(is), StandardCharsets.UTF_8);
+        }
+        return json;
+    }
+    
     public static Message createMessage(String filename, String contentType, String receivedRoutingKey) throws IOException {
         boolean isXML = MessageProperties.CONTENT_TYPE_XML.equals(contentType);
-        String edxlString = TestMessagesHelper.getSampleMessage(filename, isXML);
+        String edxlString = getSampleMessage(filename, isXML);
 
         MessageProperties properties = getMessageProperties(receivedRoutingKey);
 
@@ -55,7 +78,7 @@ public class MessageTestUtils {
     }
 
     public static Message createInvalidMessage(String filename, String contentType, String receivedRoutingKey) throws IOException {
-        String edxlString = TestMessagesHelper.getInvalidMessage(filename);
+        String edxlString = getInvalidMessage(filename);
 
         MessageProperties properties = getMessageProperties(receivedRoutingKey);
 

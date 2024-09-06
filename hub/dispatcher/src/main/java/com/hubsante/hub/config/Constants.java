@@ -22,5 +22,6 @@ public class Constants {
     public static final String DLQ_TIMED_METRIC = "dlq.overall.dispatch.time";
     public static final String REASON_TAG = "reason";
     public static final String CLIENT_ID_TAG = "sender";
-    public static final String DISTRIBUTION_ID_UNAVAILABLE = "distributionID_could_not_have_been_extracted";
+    public static final String VHOST_TAG = "vhost";
+    public static final String DISTRIBUTION_ID_UNAVAILABLE = "distributionID_could_not_be_extracted";
 }

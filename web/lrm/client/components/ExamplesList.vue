@@ -93,7 +93,6 @@ export default {
     onFileChanged (event) {
       const $this = this
       function onReaderLoad (event) {
-        // ToDo: make chip deselection work
         // $this.selectedDetailIndex = undefined
         console.log(event.target.result)
         // We're going to assume that the example we're trying to load starts
