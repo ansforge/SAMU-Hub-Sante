@@ -26,7 +26,7 @@ ADD nuxt.config.ts .
 
 COPY --from=builder /app/.nuxt ./.nuxt
 COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/static ./static
+COPY --from=builder /app/public ./public
 
 ENV NUXT_HOST=0.0.0.0
 ENV NUXT_PORT=3000
