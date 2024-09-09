@@ -79,7 +79,7 @@ export default defineNuxtConfig({
     public: {
       clientMap: {},
       modelBranch: 'main',
-      backendLrmServer: 'ws://localhost:8081/'
+      backendLrmServer: 'localhost:8081'
     }
   },
 
