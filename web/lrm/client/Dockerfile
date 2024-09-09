@@ -25,6 +25,7 @@ ADD package.json .
 ADD nuxt.config.ts .
 
 COPY --from=builder /app/.nuxt ./.nuxt
+COPY --from=builder /app/.output ./.output
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/public ./public
 
