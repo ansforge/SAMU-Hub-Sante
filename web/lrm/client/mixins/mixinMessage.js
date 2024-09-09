@@ -21,7 +21,7 @@ export default {
   },
   methods: {
     wsConnect () {
-      this.socket = new WebSocket(this.$config.public.backendLrmServer)
+      this.socket = new WebSocket('wss://' + this.$config.public.backendLrmServer + '/lrm/api/')
       this.socket.onopen = () => {
         console.log(`WebSocket ${this.$options.name} connection established`)
       }

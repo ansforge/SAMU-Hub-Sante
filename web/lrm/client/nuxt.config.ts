@@ -77,11 +77,9 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      clientMap: process.env.CLIENT_MAP || {},
-      modelBranch: process.env.MODEL_BRANCH || 'main',
-      backendLrmServer: (process.env.BACKEND_LRM_SERVER === 'localhost'
-        ? 'ws://localhost:8081/'
-        : 'wss://' + process.env.BACKEND_LRM_SERVER + '/lrm/api/')
+      clientMap: {},
+      modelBranch: 'main',
+      backendLrmServer: 'ws://localhost:8081/'
     }
   },
 
