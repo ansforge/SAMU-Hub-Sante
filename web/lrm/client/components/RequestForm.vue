@@ -42,6 +42,8 @@ const options = ref({
   expansionPanelsProps: { mandatory: false },
   density: 'compact',
   debounceInputMs: 50000,
+  updateOn: 'blur',
+  validateOn: 'blur',
   ajvOptions: {
     allErrors: true,
     strict: false,

@@ -67,9 +67,16 @@ export default {
       selectedExample: {}
     }
   },
+  computed: {
+    selectedSource () {
+      return this.store.selectedSource
+    }
+  },
   watch: {
+    selectedSource () {
+      this.loadExample(this.selectedDetailIndex !== undefined ? this.examples[this.selectedDetailIndex].file : null)
+    },
     selectedDetailIndex () {
-      // !== undefined as it can be 0 so !! is not working
       this.loadExample(this.selectedDetailIndex !== undefined ? this.examples[this.selectedDetailIndex].file : null)
     }
   },
@@ -112,7 +119,7 @@ export default {
     },
     loadExample (exampleName) {
       if (exampleName) {
-        fetch(REPOSITORY_URL + this.$config.public.modelBranch + '/src/main/resources/sample/examples/' + exampleName)
+        fetch(REPOSITORY_URL + this.$store.selectedSource + '/src/main/resources/sample/examples/' + exampleName)
           .then(response => response.json())
           .then((data) => {
             this.store.currentMessage = data[Object.keys(data)[0]]

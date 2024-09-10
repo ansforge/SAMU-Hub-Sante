@@ -47,6 +47,10 @@ function refreshForm () {
   requestFormRef.value?.updateForm()
 }
 
+defineExpose({
+  props
+})
+
 </script>
 
 <script>

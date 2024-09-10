@@ -4,26 +4,7 @@
       <v-card style="height: 86vh; overflow-y: auto;">
         <v-card-title class="text-h5 d-flex align-center">
           Formulaire
-          <v-combobox
-            v-model="selectedSource"
-            :items="sources"
-            label="Source des schémas"
-            class="ml-4 pl-4"
-            density="compact"
-            hide-details
-            variant="outlined"
-            :return-object="false"
-          />
-          <v-btn
-            v-if="currentSchemaOnGitHub"
-            icon
-            color="primary"
-            variant="text"
-            :href="currentSchemaOnGitHub"
-            target="_blank"
-          >
-            <v-icon>mdi-open-in-new</v-icon>
-          </v-btn>
+          <source-selector />
         </v-card-title>
         <v-card-text>
           <v-tabs
@@ -101,20 +82,6 @@ export default {
         strict: false
       }),
       mounted: false,
-      selectedSource: REPOSITORY_URL + this.$config.public.modelBranch + '/src/main/resources/',
-      sources: [{
-        title: 'main',
-        value: REPOSITORY_URL + 'main/src/main/resources/'
-      }, {
-        title: 'develop',
-        value: REPOSITORY_URL + 'develop/src/main/resources/'
-      }, {
-        title: 'auto/model_tracker',
-        value: REPOSITORY_URL + 'auto/model_tracker/src/main/resources/'
-      }, {
-        title: REPOSITORY_URL + '{branchName}/src/main/resources/',
-        value: REPOSITORY_URL + '{branchName}/src/main/resources/'
-      }],
       messageTypeTabIndex: 0,
       currentMessage: null,
       selectedMessageType: 'message',
@@ -142,31 +109,19 @@ export default {
     }
   },
   computed: {
+    selectedSource () {
+      return this.store.selectedSource
+    },
     currentMessageType () {
       return this.store.messageTypes[this.messageTypeTabIndex]
-    },
-    currentSchemaForm () {
-      // Ref.: https://stackoverflow.com/a/43531779
-      if (this.mounted) {
-        // $refs is array (in v-for) and non reactive | Ref.: https://v2.vuejs.org/v2/api/#ref
-        return this.$refs['schemaForm_' + this.currentMessageType?.label]?.[0]
-      }
-      return null
-    },
-    currentSchemaOnGitHub () {
-      if (this.selectedSource.includes('https://raw.githubusercontent.com/')) {
-        return this.selectedSource.replace(
-          'https://raw.githubusercontent.com/', 'https://github.com/'
-        ).replace(
-          'SAMU-Hub-Modeles/', 'SAMU-Hub-Modeles/tree/'
-        ) + this.currentSchemaForm?.schemaName
-      }
-      return false
     }
   },
   watch: {
     selectedSource () {
       this.updateForm()
+    },
+    currentMessageType () {
+      this.store.selectedSchema = this.store.messageTypes[this.messageTypeTabIndex].label
     }
   },
   mounted () {
@@ -177,8 +132,8 @@ export default {
     updateForm () {
       // To automatically generate the UI and input fields based on the JSON Schema
       // We need to wait the acquisition of 'messagesList' before attempting to acquire the schemas
-      this.store.loadMessageTypes(this.selectedSource + '/sample/examples/messagesList.json').then(
-        () => this.store.loadSchemas(this.selectedSource + 'json-schema/')
+      this.store.loadMessageTypes(REPOSITORY_URL + this.selectedSource + '/src/main/resources/sample/examples/messagesList.json').then(
+        () => this.store.loadSchemas(REPOSITORY_URL + this.selectedSource + '/src/main/resources/json-schema/')
       )
     },
     useSchema (schema) {

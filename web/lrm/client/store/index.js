@@ -1,9 +1,12 @@
 import { defineStore } from 'pinia'
+import { REPOSITORY_URL } from '@/constants'
 
 // export const strict = false
 export const useMainStore = defineStore('main', {
   state: () => ({
     currentMessage: null,
+    selectedSource: 'main',
+    selectedSchema: 'RS-EDA',
     _auth: {
       user: {
         clientId: null,
@@ -72,7 +75,7 @@ export const useMainStore = defineStore('main', {
     toggleAdvanced () {
       this._auth.user = {
         ...this._auth.user,
-        advanced: !state.auth.user.advanced
+        advanced: !this._auth.user.advanced
       }
       return getters.isAdvanced
     },

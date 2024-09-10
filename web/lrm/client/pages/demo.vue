@@ -2,10 +2,9 @@
   <v-row justify="center">
     <v-col cols="12" sm="7">
       <v-card style="height: 86vh; overflow-y: auto;">
-        <v-card-title class="text-h5 d-flex align-center pb-">
+        <v-card-title class="text-h5 d-flex align-center">
           Formulaire
-          <v-spacer />
-          <!-- <SendButton class="mt-2" @click="submit" /> -->
+          <source-selector />
         </v-card-title>
         <v-card-text>
           <v-tabs
@@ -25,7 +24,7 @@
               v-for="[name, messageTypeDetails] in Object.entries(store.messageTypes)"
               :key="name"
             >
-              <SchemaForm v-bind="messageTypeDetails" ref="schemaForms" :name="name" />
+              <schema-form v-bind="messageTypeDetails" ref="schemaForms" :name="name" />
             </v-window-item>
           </v-window>
         </v-card-text>
@@ -152,6 +151,9 @@ export default {
     }
   },
   computed: {
+    selectedSource () {
+      return this.store.selectedSource
+    },
     showSentMessagesConfig: {
       get () {
         return this.store.showSentMessages
@@ -197,6 +199,11 @@ export default {
       return [...new Set(this.selectedTypeMessages.map(m => this.getCaseId(m, true)))]
     }
   },
+  watch: {
+    selectedSource () {
+      this.updateForm()
+    }
+  },
   mounted () {
     // To automatically generate the UI and input fields based on the JSON Schema
     // We need to wait the acquisition of 'messagesList' before attempting to acquire the schemas
@@ -205,6 +212,13 @@ export default {
     )
   },
   methods: {
+    updateForm () {
+      // To automatically generate the UI and input fields based on the JSON Schema
+      // We need to wait the acquisition of 'messagesList' before attempting to acquire the schemas
+      this.store.loadMessageTypes(REPOSITORY_URL + this.selectedSource + '/src/main/resources/sample/examples/messagesList.json').then(
+        () => this.store.loadSchemas(REPOSITORY_URL + this.selectedSource + '/src/main/resources/json-schema/')
+      )
+    },
     typeMessages (type) {
       return this.showableMessages.filter(
         message => this.getMessageType(message) === type
