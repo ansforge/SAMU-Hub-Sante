@@ -4,7 +4,7 @@
       <v-card style="height: 86vh; overflow-y: auto;">
         <v-card-title class="text-h5 d-flex align-center">
           Formulaire
-          <source-selector />
+          <source-selector @source-changed="source=$event" />
         </v-card-title>
         <v-card-text>
           <v-tabs
@@ -24,7 +24,7 @@
               v-for="messageTypeDetails in store.messageTypes"
               :key="messageTypeDetails.label"
             >
-              <schema-form :ref="'schemaForm_' + messageTypeDetails.label" v-bind="messageTypeDetails" no-send-button @form-refreshed="(form) => updateCurrentMessage(form)" />
+              <schema-form :ref="'schemaForm_' + messageTypeDetails.label" :source="source" v-bind="messageTypeDetails" no-send-button />
             </v-window-item>
           </v-window>
         </v-card-text>
@@ -81,6 +81,7 @@ export default {
         allErrors: true,
         strict: false
       }),
+      source: null,
       mounted: false,
       messageTypeTabIndex: 0,
       currentMessage: null,
@@ -109,15 +110,12 @@ export default {
     }
   },
   computed: {
-    selectedSource () {
-      return this.store.selectedSource
-    },
     currentMessageType () {
       return this.store.messageTypes[this.messageTypeTabIndex]
     }
   },
   watch: {
-    selectedSource () {
+    source () {
       this.updateForm()
     },
     currentMessageType () {
@@ -125,15 +123,14 @@ export default {
     }
   },
   mounted () {
-    this.updateForm()
     this.mounted = true
   },
   methods: {
     updateForm () {
       // To automatically generate the UI and input fields based on the JSON Schema
       // We need to wait the acquisition of 'messagesList' before attempting to acquire the schemas
-      this.store.loadMessageTypes(REPOSITORY_URL + this.selectedSource + '/src/main/resources/sample/examples/messagesList.json').then(
-        () => this.store.loadSchemas(REPOSITORY_URL + this.selectedSource + '/src/main/resources/json-schema/')
+      this.store.loadMessageTypes(REPOSITORY_URL + this.source + '/src/main/resources/sample/examples/messagesList.json').then(
+        () => this.store.loadSchemas(REPOSITORY_URL + this.source + '/src/main/resources/json-schema/')
       )
     },
     useSchema (schema) {

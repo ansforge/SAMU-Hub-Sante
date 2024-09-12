@@ -4,7 +4,7 @@
       <v-card style="height: 86vh; overflow-y: auto;">
         <v-card-title class="text-h5 d-flex align-center">
           Formulaire
-          <source-selector />
+          <source-selector @source-changed="source=$event" />
         </v-card-title>
         <v-card-text>
           <v-tabs
@@ -24,7 +24,7 @@
               v-for="[name, messageTypeDetails] in Object.entries(store.messageTypes)"
               :key="name"
             >
-              <schema-form v-bind="messageTypeDetails" ref="schemaForms" :name="name" />
+              <schema-form v-bind="messageTypeDetails" ref="schemaForms" :source="source" :name="name" />
             </v-window-item>
           </v-window>
         </v-card-text>

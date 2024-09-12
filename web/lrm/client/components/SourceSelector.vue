@@ -8,6 +8,7 @@
     hide-details
     variant="outlined"
     :return-object="false"
+    @update:model-value="sourceSelected"
   />
   <v-btn
     v-if="currentSchemaOnGitHub()"
@@ -23,23 +24,32 @@
 
 <script setup>
 
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useMainStore } from '~/store'
 import { REPOSITORY_URL } from '@/constants'
+
+onMounted(() => {
+  selectedSource.value = config.public.modelBranch
+  emit('sourceChanged', selectedSource.value)
+})
 
 const store = useMainStore()
 const config = useRuntimeConfig()
 
 const sources = [
+  config.public.modelBranch,
   'main',
   'develop',
   'auto/model_tracker',
   '{branchName}'
 ]
 
-onMounted(() => {
-  if (!store.selectedSource) { store.selectedSource = config.public.modelBranch }
-})
+const selectedSource = ref('')
+const emit = defineEmits(['sourceChanged'])
+
+function sourceSelected () {
+  emit('sourceChanged', selectedSource.value)
+}
 
 computed(() => {
   return {
@@ -55,7 +65,5 @@ function currentSchemaOnGitHub () {
     'SAMU-Hub-Modeles/', 'SAMU-Hub-Modeles/tree/'
   ) + store.selectedSource + '/src/main/resources/json-schema/' + store.selectedSchema + '.schema.json'
 }
-
-const { selectedSource } = toRefs(store)
 
 </script>

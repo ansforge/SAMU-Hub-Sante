@@ -1,6 +1,6 @@
 <template>
   <div>
-    <examples-list :examples="examples" @example-loaded="refreshForm" />
+    <examples-list :source="source" :examples="examples" @example-loaded="refreshForm"/>
     <RequestForm
       v-if="schema"
       ref="requestFormRef"
@@ -15,8 +15,14 @@
 <script setup>
 import { ref } from 'vue'
 import mixinMessage from '~/mixins/mixinMessage'
+import { useMainStore } from '~/store'
+const store = useMainStore()
 
 const props = defineProps({
+  source: {
+    type: String,
+    required: true
+  },
   label: {
     type: String,
     required: true
@@ -50,16 +56,12 @@ function refreshForm () {
 defineExpose({
   props
 })
-
 </script>
 
 <script>
-
 export default {
   mixins: [mixinMessage],
-
   methods: {
-
     submit (form) {
       try {
         // const data = await (await fetch('samuA_to_samuB.json')).json()

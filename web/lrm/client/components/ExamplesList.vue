@@ -25,8 +25,8 @@
           selected-class="primary--text"
           column
         >
-          <v-chip v-for="{icon, name} in examples" :key="name" :color="(selectedDetailIndex === name) ? 'primary' : 'secondary'">
-            <v-icon start>
+          <v-chip v-for="{icon, name, file} in examples" :key="name" :color="(selectedDetailIndex === name) ? 'primary' : 'secondary'" @group:selected="handleExampleSelection($event, file)">
+            <v-icon>
               {{ icon }}
             </v-icon>
             {{ name }}
@@ -45,6 +45,10 @@ import { useMainStore } from '~/store'
 
 export default {
   props: {
+    source: {
+      type: String,
+      required: true
+    },
     examples: {
       type: Array,
       required: true
@@ -65,19 +69,6 @@ export default {
       selectedDetailIndex: undefined,
       isSelectingUpload: false,
       selectedExample: {}
-    }
-  },
-  computed: {
-    selectedSource () {
-      return this.store.selectedSource
-    }
-  },
-  watch: {
-    selectedSource () {
-      this.loadExample(this.selectedDetailIndex !== undefined ? this.examples[this.selectedDetailIndex].file : null)
-    },
-    selectedDetailIndex () {
-      this.loadExample(this.selectedDetailIndex !== undefined ? this.examples[this.selectedDetailIndex].file : null)
     }
   },
   mounted () {
@@ -117,9 +108,9 @@ export default {
         reader.readAsText(event.target.files[0])
       }
     },
-    loadExample (exampleName) {
-      if (exampleName) {
-        fetch(REPOSITORY_URL + this.$store.selectedSource + '/src/main/resources/sample/examples/' + exampleName)
+    loadExample (exampleFilepath) {
+      if (exampleFilepath) {
+        fetch(REPOSITORY_URL + this.source + '/src/main/resources/sample/examples/' + exampleFilepath)
           .then(response => response.json())
           .then((data) => {
             this.store.currentMessage = data[Object.keys(data)[0]]
@@ -127,7 +118,15 @@ export default {
           })
       } else {
         this.store.currentMessage = {}
+        this.emitExampleLoaded()
       }
+    },
+    handleExampleSelection (selected, exampleFilepath) {
+      console.log('FIRE EXAMPLE SELECT')
+      if (!selected.value) {
+        this.loadExample(null)
+      }
+      this.loadExample(exampleFilepath)
     }
   }
 }
