@@ -21,15 +21,15 @@
       </v-col>
       <v-col>
         <v-chip-group
-          v-model="selectedDetailIndex"
+          v-model="selectedExample"
           selected-class="primary--text"
           column
         >
-          <v-chip v-for="{icon, name, file} in examples" :key="name" :color="(selectedDetailIndex === name) ? 'primary' : 'secondary'" @group:selected="handleExampleSelection($event, file)">
+          <v-chip v-for="example in examples" :key="example.name" :value="example" :color="(selectedDetailIndex === name) ? 'primary' : 'secondary'" @click="handleExampleSelection(example)">
             <v-icon>
-              {{ icon }}
+              {{ example.icon }}
             </v-icon>
-            {{ name }}
+            {{ example.name }}
           </v-chip>
         </v-chip-group>
       </v-col>
@@ -121,12 +121,13 @@ export default {
         this.emitExampleLoaded()
       }
     },
-    handleExampleSelection (selected, exampleFilepath) {
-      console.log('FIRE EXAMPLE SELECT')
-      if (!selected.value) {
+    handleExampleSelection (example) {
+      const selexample = this.selectedExample
+      if (selexample.file === example.file) {
         this.loadExample(null)
+      } else {
+        this.loadExample(example.file)
       }
-      this.loadExample(exampleFilepath)
     }
   }
 }
