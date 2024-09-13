@@ -1,6 +1,11 @@
 <template>
   <div>
-    <examples-list :source="source" :examples="examples" @example-loaded="refreshForm"/>
+    <v-window-item
+      v-for="messageTypeDetails in store.messageTypes"
+      :key="messageTypeDetails.label"
+    >
+      <examples-list ref="examplesListRef" :source="source" :examples="messageTypeDetails.examples" @example-loaded="refreshForm" />
+    </v-window-item>
     <RequestForm
       v-if="schema"
       ref="requestFormRef"
@@ -19,6 +24,14 @@ import { useMainStore } from '~/store'
 const store = useMainStore()
 
 const props = defineProps({
+  currentMessageType: {
+    type: Object,
+    required: true
+  },
+  messageTypeTabIndex: {
+    type: Number,
+    required: true
+  },
   source: {
     type: String,
     required: true
@@ -31,10 +44,6 @@ const props = defineProps({
     type: String,
     required: true
   },
-  schema: {
-    type: Object,
-    default: null
-  },
   examples: {
     type: Array,
     required: true
@@ -46,15 +55,26 @@ const props = defineProps({
 })
 
 const requestFormRef = ref(null)
+const examplesListRef = ref(null)
 const exampleLoadDatetime = ref(undefined)
-const form = reactive({})
+let schema = reactive({})
 
 function refreshForm () {
   requestFormRef.value?.updateForm()
 }
 
+watch(() => props.messageTypeTabIndex, () => {
+  constructSchema()
+})
+
+function constructSchema () {
+  schema = store.messageTypes[props.messageTypeTabIndex].schema
+}
+
 defineExpose({
-  props
+  props,
+  constructSchema,
+  requestFormRef
 })
 </script>
 

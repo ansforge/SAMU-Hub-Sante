@@ -122,8 +122,8 @@ export default {
       }
     },
     handleExampleSelection (example) {
-      const selexample = this.selectedExample
-      if (selexample.file === example.file) {
+      // If currently selected example is clicked, deselect it
+      if (this.selectedExample?.file === example?.file) {
         this.loadExample(null)
       } else {
         this.loadExample(example.file)

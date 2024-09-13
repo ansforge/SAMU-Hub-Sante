@@ -20,12 +20,7 @@
             </v-tab>
           </v-tabs>
           <v-window v-model="messageTypeTabIndex">
-            <v-window-item
-              v-for="messageTypeDetails in store.messageTypes"
-              :key="messageTypeDetails.label"
-            >
-              <schema-form :ref="'schemaForm_' + messageTypeDetails.label" :source="source" v-bind="messageTypeDetails" no-send-button />
-            </v-window-item>
+            <schema-form ref="schemaForm" :source="source" :current-message-type="currentMessageType" :message-type-tab-index="messageTypeTabIndex" no-send-button />
           </v-window>
         </v-card-text>
       </v-card>
@@ -83,7 +78,7 @@ export default {
       }),
       source: null,
       mounted: false,
-      messageTypeTabIndex: 0,
+      messageTypeTabIndex: null,
       currentMessage: null,
       selectedMessageType: 'message',
       selectedClientId: null,
@@ -130,7 +125,10 @@ export default {
       // To automatically generate the UI and input fields based on the JSON Schema
       // We need to wait the acquisition of 'messagesList' before attempting to acquire the schemas
       this.store.loadMessageTypes(REPOSITORY_URL + this.source + '/src/main/resources/sample/examples/messagesList.json').then(
-        () => this.store.loadSchemas(REPOSITORY_URL + this.source + '/src/main/resources/json-schema/')
+        () => this.store.loadSchemas(REPOSITORY_URL + this.source + '/src/main/resources/json-schema/').then(
+          () => {
+            this.messageTypeTabIndex = 0
+          })
       )
     },
     useSchema (schema) {
