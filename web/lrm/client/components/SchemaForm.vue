@@ -12,7 +12,7 @@
       :key="exampleLoadDatetime"
       :schema="schema"
       :no-send-button="noSendButton"
-      @submit="submit"
+      @submit="submit(store.currentMessage)"
     />
   </div>
 </template>
@@ -60,11 +60,12 @@ const exampleLoadDatetime = ref(undefined)
 let schema = reactive({})
 
 function refreshForm () {
-  requestFormRef.value?.updateForm()
+  // requestFormRef.value?.updateForm()
 }
 
 watch(() => props.messageTypeTabIndex, () => {
   constructSchema()
+  store.currentUseCase = store.messageTypes[props.messageTypeTabIndex].schema.title
 })
 
 function constructSchema () {
@@ -80,13 +81,14 @@ defineExpose({
 
 <script>
 export default {
+
   mixins: [mixinMessage],
   methods: {
     submit (form) {
       try {
         // const data = await (await fetch('samuA_to_samuB.json')).json()
         const data = this.buildMessage({
-          [this.schema.title]: form.form
+          [this.store.currentUseCase]: form
         })
         this.sendMessage(data)
       } catch (error) {

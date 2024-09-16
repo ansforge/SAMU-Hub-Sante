@@ -13,19 +13,20 @@
             slider-color="primary"
           >
             <v-tab
-              v-for="[name, {label}] in Object.entries(store.messageTypes)"
-              :key="name"
+              v-for="{label} in store.messageTypes"
+              :key="label"
             >
               {{ label }}
             </v-tab>
           </v-tabs>
           <v-window v-model="messageTypeTabIndex" fixed-tabs>
-            <v-window-item
-              v-for="[name, messageTypeDetails] in Object.entries(store.messageTypes)"
-              :key="name"
-            >
-              <schema-form v-bind="messageTypeDetails" ref="schemaForms" :source="source" :name="name" />
-            </v-window-item>
+            <schema-form
+              v-bind="messageTypeDetails"
+              ref="schemaForms"
+              :source="source"
+              :current-message-type="currentMessageType"
+              :message-type-tab-index="messageTypeTabIndex"
+            />
           </v-window>
         </v-card-text>
       </v-card>
@@ -124,8 +125,9 @@ export default {
   mixins: [mixinMessage],
   data () {
     return {
+      source: null,
       store: useMainStore(),
-      messageTypeTabIndex: 0,
+      messageTypeTabIndex: null,
       selectedMessageType: 'message',
       selectedClientId: null,
       selectedCaseIds: [],
@@ -151,8 +153,8 @@ export default {
     }
   },
   computed: {
-    selectedSource () {
-      return this.store.selectedSource
+    currentMessageType () {
+      return this.store.messageTypes[this.messageTypeTabIndex]
     },
     showSentMessagesConfig: {
       get () {
@@ -200,23 +202,29 @@ export default {
     }
   },
   watch: {
-    selectedSource () {
+    source () {
       this.updateForm()
+    },
+    currentMessageType () {
+      this.store.selectedSchema = this.store.messageTypes[this.messageTypeTabIndex].label
     }
   },
   mounted () {
     // To automatically generate the UI and input fields based on the JSON Schema
     // We need to wait the acquisition of 'messagesList' before attempting to acquire the schemas
     this.store.loadMessageTypes(REPOSITORY_URL + config.public.modelBranch + '/src/main/resources/sample/examples/messagesList.json').then(
-      () => this.store.loadSchemas(REPOSITORY_URL + config.public.modelBranch + '/src/main/resources/json-schema/')
+      () => this.store.loadSchemas(REPOSITORY_URL + config.public.modelBranch + '/src/main/resources/json-schema/').then(
+        () => {
+          this.messageTypeTabIndex = 0
+        })
     )
   },
   methods: {
     updateForm () {
       // To automatically generate the UI and input fields based on the JSON Schema
       // We need to wait the acquisition of 'messagesList' before attempting to acquire the schemas
-      this.store.loadMessageTypes(REPOSITORY_URL + this.selectedSource + '/src/main/resources/sample/examples/messagesList.json').then(
-        () => this.store.loadSchemas(REPOSITORY_URL + this.selectedSource + '/src/main/resources/json-schema/')
+      this.store.loadMessageTypes(REPOSITORY_URL + this.source + '/src/main/resources/sample/examples/messagesList.json').then(
+        () => this.store.loadSchemas(REPOSITORY_URL + this.source + '/src/main/resources/json-schema/')
       )
     },
     typeMessages (type) {

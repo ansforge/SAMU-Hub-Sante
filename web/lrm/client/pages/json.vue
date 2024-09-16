@@ -20,7 +20,13 @@
             </v-tab>
           </v-tabs>
           <v-window v-model="messageTypeTabIndex">
-            <schema-form ref="schemaForm" :source="source" :current-message-type="currentMessageType" :message-type-tab-index="messageTypeTabIndex" no-send-button />
+            <schema-form
+              ref="schemaForm"
+              :source="source"
+              :current-message-type="currentMessageType"
+              :message-type-tab-index="messageTypeTabIndex"
+              no-send-button
+            />
           </v-window>
         </v-card-text>
       </v-card>
@@ -77,7 +83,6 @@ export default {
         strict: false
       }),
       source: null,
-      mounted: false,
       messageTypeTabIndex: null,
       currentMessage: null,
       selectedMessageType: 'message',
@@ -116,9 +121,6 @@ export default {
     currentMessageType () {
       this.store.selectedSchema = this.store.messageTypes[this.messageTypeTabIndex].label
     }
-  },
-  mounted () {
-    this.mounted = true
   },
   methods: {
     updateForm () {

@@ -71,12 +71,27 @@ export default {
       selectedExample: {}
     }
   },
-  mounted () {
-    if (this.examples.length > 0) {
-      this.selectedDetailIndex = 0
+  computed: {
+    selectedSchema () {
+      return this.store.selectedSchema
     }
   },
+  watch: {
+    selectedSchema () {
+      this.selectedExample = {}
+      this.selectFirstExample()
+    }
+  },
+  mounted () {
+    this.selectFirstExample()
+  },
   methods: {
+    selectFirstExample () {
+      if (this.examples.length > 0) {
+        this.handleExampleSelection(this.examples[0])
+        this.selectedExample = this.examples[0]
+      }
+    },
     handleFileImport () {
       this.isSelectingUpload = true
 
@@ -109,7 +124,7 @@ export default {
       }
     },
     loadExample (exampleFilepath) {
-      if (exampleFilepath) {
+      if (exampleFilepath && exampleFilepath.includes(this.store.selectedSchema)) {
         fetch(REPOSITORY_URL + this.source + '/src/main/resources/sample/examples/' + exampleFilepath)
           .then(response => response.json())
           .then((data) => {

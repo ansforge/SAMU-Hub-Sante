@@ -5,6 +5,7 @@ import { REPOSITORY_URL } from '@/constants'
 export const useMainStore = defineStore('main', {
   state: () => ({
     currentMessage: null,
+    currentUseCase: null,
     selectedSource: 'main',
     selectedSchema: 'RS-EDA',
     _auth: {

@@ -4,7 +4,7 @@
       <v-spacer />
       <SendButton v-if="!noSendButton" @click="$emit('submit', {form})" />
     </v-card-actions>
-    <vjsf v-model="form" :schema="formatSchema(schemaCopy)" :options="options" />
+    <vjsf v-model="currentMessage" :schema="formatSchema(schemaCopy)" :options="options" />
   </v-form>
 </template>
 
@@ -54,6 +54,8 @@ const options = ref({
   }
 })
 
+const { currentMessage } = toRefs(store)
+
 const schemaCopy = computed(() => JSON.parse(JSON.stringify(props.schema)))
 
 const formatSchema = (schema) => {
@@ -70,26 +72,26 @@ const remove$PropsFromSchema = (schema) => {
   return newSchema
 }
 
-const updateStore = () => {
-  store.currentMessage = form.value
-}
+// const updateStore = () => {
+//   store.currentMessage = form.value
+// }
 
-watch(form, () => {
-  updateStore()
-})
+// watch(form, () => {
+//   updateStore()
+// })
 
-onMounted(() => {
-  form.value = store.currentMessage
-})
+// onMounted(() => {
+//   form.value = store.currentMessage
+// })
 
-const updateForm = () => {
-  form.value = store.currentMessage
-}
+// const updateForm = () => {
+//   form.value = store.currentMessage
+// }
 
-defineExpose({
-  updateForm,
-  updateStore
-})
+// defineExpose({
+//   updateForm,
+//   updateStore
+// })
 </script>
 
 <style>
