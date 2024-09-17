@@ -78,7 +78,7 @@ export default {
       if (this.store.isAdvanced) {
         // No control as this will anyway fail, user is expected to be advanced
         this.store.logInUser({
-          ...this.user,
+          ...this.store.user,
           targetId: this.store.user.clientId,
           clientId: this.store.user.targetId
         })

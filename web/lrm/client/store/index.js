@@ -78,7 +78,7 @@ export const useMainStore = defineStore('main', {
         ...this._auth.user,
         advanced: !this._auth.user.advanced
       }
-      return getters.isAdvanced
+      return this.isAdvanced
     },
 
     setShowSentMessages (showSentMessages) {
