@@ -34,8 +34,7 @@
         </v-chip-group>
       </v-col>
     </v-row>
-
-    <exampleDetails v-if="selectedDetailIndex !== undefined" class="mb-4" v-bind="examples[selectedDetailIndex]" />
+    <exampleDetails v-if="selectedExample !== undefined" class="mb-4" v-bind="selectedExample" />
   </div>
 </template>
 
