@@ -117,14 +117,20 @@ import mixinMessage from '~/mixins/mixinMessage'
 import { REPOSITORY_URL } from '@/constants'
 import { useMainStore } from '~/store'
 
-const config = useRuntimeConfig()
-
 export default {
   name: 'Demo',
   mixins: [mixinMessage],
+  beforeRouteEnter (to, from) {
+    // Redirect to parent if we're not authenticated
+    const store = useMainStore()
+    if (!store.isAuthenticated) {
+      return { name: 'index' }
+    }
+  },
   data () {
     return {
-      source: config.public.modelBranch,
+      config: null,
+      source: null,
       store: useMainStore(),
       messageTypeTabIndex: null,
       selectedMessageType: 'message',
@@ -209,10 +215,12 @@ export default {
     }
   },
   mounted () {
+    this.config = useRuntimeConfig()
+    this.source = this.config.public.modelBranch
     // To automatically generate the UI and input fields based on the JSON Schema
     // We need to wait the acquisition of 'messagesList' before attempting to acquire the schemas
-    this.store.loadMessageTypes(REPOSITORY_URL + config.public.modelBranch + '/src/main/resources/sample/examples/messagesList.json').then(
-      () => this.store.loadSchemas(REPOSITORY_URL + config.public.modelBranch + '/src/main/resources/json-schema/').then(
+    this.store.loadMessageTypes(REPOSITORY_URL + this.config.public.modelBranch + '/src/main/resources/sample/examples/messagesList.json').then(
+      () => this.store.loadSchemas(REPOSITORY_URL + this.config.public.modelBranch + '/src/main/resources/json-schema/').then(
         () => {
           this.messageTypeTabIndex = 0
         })
