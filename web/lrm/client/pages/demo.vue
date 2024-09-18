@@ -4,7 +4,6 @@
       <v-card style="height: 86vh; overflow-y: auto;">
         <v-card-title class="text-h5 d-flex align-center">
           Formulaire
-          <source-selector @source-changed="source=$event" />
         </v-card-title>
         <v-card-text>
           <v-tabs
@@ -125,7 +124,7 @@ export default {
   mixins: [mixinMessage],
   data () {
     return {
-      source: null,
+      source: config.public.modelBranch,
       store: useMainStore(),
       messageTypeTabIndex: null,
       selectedMessageType: 'message',

@@ -71,27 +71,6 @@ const remove$PropsFromSchema = (schema) => {
   delete newSchema.$id
   return newSchema
 }
-
-// const updateStore = () => {
-//   store.currentMessage = form.value
-// }
-
-// watch(form, () => {
-//   updateStore()
-// })
-
-// onMounted(() => {
-//   form.value = store.currentMessage
-// })
-
-// const updateForm = () => {
-//   form.value = store.currentMessage
-// }
-
-// defineExpose({
-//   updateForm,
-//   updateStore
-// })
 </script>
 
 <style>

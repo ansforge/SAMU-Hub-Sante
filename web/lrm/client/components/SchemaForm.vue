@@ -1,10 +1,7 @@
 <template>
   <div>
-    <v-window-item
-      v-for="messageTypeDetails in store.messageTypes"
-      :key="messageTypeDetails.label"
-    >
-      <examples-list ref="examplesListRef" :source="source" :examples="messageTypeDetails.examples" @example-loaded="refreshForm" />
+    <v-window-item v-for="messageTypeDetails in store.messageTypes" :key="messageTypeDetails.label">
+      <examples-list ref="examplesListRef" :source="source" :examples="messageTypeDetails.examples" />
     </v-window-item>
     <RequestForm
       v-if="schema"
@@ -59,10 +56,6 @@ const examplesListRef = ref(null)
 const exampleLoadDatetime = ref(undefined)
 let schema = reactive({})
 
-function refreshForm () {
-  // requestFormRef.value?.updateForm()
-}
-
 watch(() => props.messageTypeTabIndex, () => {
   constructSchema()
   store.currentUseCase = store.messageTypes[props.messageTypeTabIndex].schema.title
@@ -103,6 +96,7 @@ export default {
 .v-application div.vjsf-array-header {
   margin-bottom: 28px !important;
 }
+
 .v-application div.vjsf-array {
   margin-bottom: 12px !important;
 }

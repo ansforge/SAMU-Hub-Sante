@@ -25,7 +25,7 @@
           selected-class="primary--text"
           column
         >
-          <v-chip v-for="example in examples" :key="example.name" :value="example" :color="(selectedDetailIndex === name) ? 'primary' : 'secondary'" @click="handleExampleSelection(example)">
+          <v-chip v-for="example in examples" :key="example.name" :color="(selectedExample?.name === example.name) ? 'primary' : 'secondary'" :value="example" @click="handleExampleSelection(example)">
             <v-icon>
               {{ example.icon }}
             </v-icon>
@@ -65,7 +65,6 @@ export default {
   data () {
     return {
       store: useMainStore(),
-      selectedDetailIndex: undefined,
       isSelectingUpload: false,
       selectedExample: {}
     }
@@ -105,7 +104,6 @@ export default {
     onFileChanged (event) {
       const $this = this
       function onReaderLoad (event) {
-        // $this.selectedDetailIndex = undefined
         console.log(event.target.result)
         // We're going to assume that the example we're trying to load starts
         // with a use case property (such as createCase, emsi, etc.) and that
@@ -123,7 +121,7 @@ export default {
       }
     },
     loadExample (exampleFilepath) {
-      if (exampleFilepath && exampleFilepath.includes(this.store.selectedSchema)) {
+      if (exampleFilepath && exampleFilepath.includes(this.store.selectedSchema + '/')) {
         fetch(REPOSITORY_URL + this.source + '/src/main/resources/sample/examples/' + exampleFilepath)
           .then(response => response.json())
           .then((data) => {
