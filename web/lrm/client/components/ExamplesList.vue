@@ -21,21 +21,20 @@
       </v-col>
       <v-col>
         <v-chip-group
-          v-model="selectedDetailIndex"
+          v-model="selectedExample"
           selected-class="primary--text"
           column
         >
-          <v-chip v-for="{icon, name} in examples" :key="name" :color="(selectedDetailIndex === name) ? 'primary' : 'secondary'">
-            <v-icon start>
-              {{ icon }}
+          <v-chip v-for="example in examples" :key="example.name" :color="(selectedExample?.name === example.name) ? 'primary' : 'secondary'" :value="example" @click="handleExampleSelection(example)">
+            <v-icon>
+              {{ example.icon }}
             </v-icon>
-            {{ name }}
+            {{ example.name }}
           </v-chip>
         </v-chip-group>
       </v-col>
     </v-row>
-
-    <exampleDetails v-if="selectedDetailIndex !== undefined" class="mb-4" v-bind="examples[selectedDetailIndex]" />
+    <exampleDetails v-if="selectedExample !== undefined" class="mb-4" v-bind="selectedExample" />
   </div>
 </template>
 
@@ -45,6 +44,10 @@ import { useMainStore } from '~/store'
 
 export default {
   props: {
+    source: {
+      type: String,
+      required: true
+    },
     examples: {
       type: Array,
       required: true
@@ -62,23 +65,31 @@ export default {
   data () {
     return {
       store: useMainStore(),
-      selectedDetailIndex: undefined,
       isSelectingUpload: false,
       selectedExample: {}
     }
   },
+  computed: {
+    selectedSchema () {
+      return this.store.selectedSchema
+    }
+  },
   watch: {
-    selectedDetailIndex () {
-      // !== undefined as it can be 0 so !! is not working
-      this.loadExample(this.selectedDetailIndex !== undefined ? this.examples[this.selectedDetailIndex].file : null)
+    selectedSchema () {
+      this.selectedExample = {}
+      this.selectFirstExample()
     }
   },
   mounted () {
-    if (this.examples.length > 0) {
-      this.selectedDetailIndex = 0
-    }
+    this.selectFirstExample()
   },
   methods: {
+    selectFirstExample () {
+      if (this.examples.length > 0) {
+        this.handleExampleSelection(this.examples[0])
+        this.selectedExample = this.examples[0]
+      }
+    },
     handleFileImport () {
       this.isSelectingUpload = true
 
@@ -93,7 +104,6 @@ export default {
     onFileChanged (event) {
       const $this = this
       function onReaderLoad (event) {
-        // $this.selectedDetailIndex = undefined
         console.log(event.target.result)
         // We're going to assume that the example we're trying to load starts
         // with a use case property (such as createCase, emsi, etc.) and that
@@ -110,9 +120,9 @@ export default {
         reader.readAsText(event.target.files[0])
       }
     },
-    loadExample (exampleName) {
-      if (exampleName) {
-        fetch(REPOSITORY_URL + this.$config.public.modelBranch + '/src/main/resources/sample/examples/' + exampleName)
+    loadExample (exampleFilepath) {
+      if (exampleFilepath && exampleFilepath.includes(this.store.selectedSchema + '/')) {
+        fetch(REPOSITORY_URL + this.source + '/src/main/resources/sample/examples/' + exampleFilepath)
           .then(response => response.json())
           .then((data) => {
             this.store.currentMessage = data[Object.keys(data)[0]]
@@ -120,6 +130,15 @@ export default {
           })
       } else {
         this.store.currentMessage = {}
+        this.emitExampleLoaded()
+      }
+    },
+    handleExampleSelection (example) {
+      // If currently selected example is clicked, deselect it
+      if (this.selectedExample?.file === example?.file) {
+        this.loadExample(null)
+      } else {
+        this.loadExample(example.file)
       }
     }
   }

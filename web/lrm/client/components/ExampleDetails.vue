@@ -18,7 +18,7 @@
         <v-btn
           icon
           variant="text"
-          :href="REPOSITORY_URL + $config.public.modelBranch + '/src/main/resources/sample/examples/' + file"
+          :href="REPOSITORY_URL + $store.selectedSource + '/src/main/resources/sample/examples/' + file"
           target="_blank"
         >
           <v-icon color="primary">

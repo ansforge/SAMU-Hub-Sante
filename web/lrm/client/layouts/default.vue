@@ -49,7 +49,7 @@
     <v-footer
       app
     >
-      <span><a :href=" repositoryUrl + 'tree/' + $config.modelBranch ">SAMU Hub Modeles - v{{ $config.modelBranch }}</a> &copy; {{ new Date().getFullYear() }}</span>
+      <span><a :href=" repositoryUrl + 'tree/' + $config.public.modelBranch ">SAMU Hub Modeles - v{{ $config.public.modelBranch }}</a> &copy; {{ new Date().getFullYear() }}</span>
     </v-footer>
   </v-app>
 </template>
@@ -78,7 +78,7 @@ export default {
       if (this.store.isAdvanced) {
         // No control as this will anyway fail, user is expected to be advanced
         this.store.logInUser({
-          ...this.user,
+          ...this.store.user,
           targetId: this.store.user.clientId,
           clientId: this.store.user.targetId
         })

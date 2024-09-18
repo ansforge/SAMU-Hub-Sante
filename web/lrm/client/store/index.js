@@ -1,9 +1,13 @@
 import { defineStore } from 'pinia'
+import { REPOSITORY_URL } from '@/constants'
 
 // export const strict = false
 export const useMainStore = defineStore('main', {
   state: () => ({
     currentMessage: null,
+    currentUseCase: null,
+    selectedSource: 'main',
+    selectedSchema: 'RS-EDA',
     _auth: {
       user: {
         clientId: null,
@@ -72,9 +76,9 @@ export const useMainStore = defineStore('main', {
     toggleAdvanced () {
       this._auth.user = {
         ...this._auth.user,
-        advanced: !state.auth.user.advanced
+        advanced: !this._auth.user.advanced
       }
-      return getters.isAdvanced
+      return this.isAdvanced
     },
 
     setShowSentMessages (showSentMessages) {
@@ -111,7 +115,7 @@ export const useMainStore = defineStore('main', {
     loadSchemas (source) {
       // ToDo: load schemas from github branch directly so it is up to date?
       source = source || 'schemas/json-schema/'
-      Promise.all(this.messageTypes.map(async ({ schemaName }, index) => {
+      return Promise.all(this.messageTypes.map(async ({ schemaName }, index) => {
         console.log('Loading schema from: ' + source + schemaName)
         const response = await $fetch(source + schemaName)
         const schema = await JSON.parse(response)
