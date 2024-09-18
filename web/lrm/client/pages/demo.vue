@@ -122,8 +122,7 @@ export default {
   mixins: [mixinMessage],
   beforeRouteEnter (to, from) {
     // Redirect to parent if we're not authenticated
-    const store = useMainStore()
-    if (!store.isAuthenticated) {
+    if (!useMainStore().isAuthenticated) {
       return { name: 'index' }
     }
   },
