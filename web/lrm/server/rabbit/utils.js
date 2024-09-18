@@ -11,8 +11,7 @@ const HUB_SANTE_URL = process.env.HUB_URL;
 console.log(`Connecting to RabbitMQ server: ${HUB_SANTE_URL}`);
 const HUB_SANTE_EXCHANGE = 'hubsante';
 const DEMO_CLIENT_IDS = JSON.parse(process.env.CLIENT_MAP);
-// ToDo: remove default VHOSTS value once configmap in config are done
-const VHOSTS = JSON.parse(process.env.VHOSTS || '["15-15_v1.5", "15-nexsis_v1.8", "15-smur_v1.4", "15-gps_v1.0"]');
+const VHOSTS = JSON.parse(process.env.VHOSTS);
 
 const opts = {
   // pfx with new encryption needed for Node 19 support
@@ -72,7 +71,11 @@ module.exports = {
   // ToDo: vHost should be passed directly in the message => remove this function
   computeVhostFromMessage(msg) {
     const vhostMap = {
-      '15-15_v1.5': ['createCaseHealth', 'createCaseHealthUpdate', 'resourcesInfo', 'resourcesRequest', 'resourcesResponse', 'resourcesStatus'],
+      '15-15_v1.5': [
+        'createCaseHealth', 'createCaseHealthUpdate',
+        'resourcesInfo', 'resourcesRequest', 'resourcesResponse', 'resourcesStatus',
+        'reference',
+      ],
       '15-nexsis_v1.8': ['createCase', 'emsi'],
       '15-smur_v1.4': ['rpis'],
       '15-gps_v1.0': ['geoPositionsUpdate', 'geoResourcesDetails', 'geoResourcesRequest'],

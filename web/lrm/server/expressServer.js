@@ -54,7 +54,7 @@ class ExpressServer {
                 direction: '←',
                 routingKey: queue,
                 // Ref.: https://stackoverflow.com/a/9849524
-                time: `${d.toLocaleTimeString('fr', {timeZone: 'Europe/Paris'}).replace(':', 'h')}.${String(new Date().getMilliseconds()).padStart(3, '0')}`,
+                time: `${d.toLocaleTimeString('fr', { timeZone: 'Europe/Paris' }).replace(':', 'h')}.${String(new Date().getMilliseconds()).padStart(3, '0')}`,
                 body,
               };
               // Send the message to all connected WebSocket clients
@@ -95,10 +95,11 @@ class ExpressServer {
       ws.on('message', async (body) => {
         // Publish the message to RabbitMQ
         const { key, msg } = JSON.parse(body);
+        let { vhost } = JSON.parse(body); // ToDo: migrate in const {..} above once if is removed below
         logger.info(`Received message from WebSocket client: ${msg.distributionID}`);
         logger.debug(`Received message from WebSocket client: ${msg.distributionID} of content ${body}`);
-        // ToDo: vHost should be passed directly in the message => remove this computation
-        const vhost = computeVhostFromMessage(msg);
+        // ToDo: vHost should be passed directly in the message => remove this if and migrate vhost in const {...}
+        if (!vhost) { vhost = computeVhostFromMessage(msg); }
         logger.info(` [x] Sending msg ${msg.distributionID} to key ${key} (vhost: ${vhost})`);
         try {
           const { connection, channel } = await connectAsync(vhost);
