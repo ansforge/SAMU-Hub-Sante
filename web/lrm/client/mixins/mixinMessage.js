@@ -53,13 +53,6 @@ export default {
             messageType: this.getReadableMessageType(message.body.distributionKind),
             receivedTime: this.timeDisplayFormat()
           })
-          // TODO: REMOVE THIS
-          // this.$store.dispatch('addMessage', {
-          //   ...message,
-          //   direction: DIRECTIONS.IN,
-          //   messageType: this.getReadableMessageType(message.body.distributionKind),
-          //   receivedTime: this.timeDisplayFormat()
-          // })
           if (this.autoAck) {
           // Send back acks automatically to received messages
             if (this.getMessageType(message) !== 'ack' && message.routingKey.startsWith(this.store.user.clientId)) {
@@ -231,14 +224,6 @@ export default {
             messageType: this.getReadableMessageType(msg.distributionKind),
             body: msg
           })
-          // TODO: REMOVE THIS
-          // this.$store.dispatch('addMessage', {
-          //   direction: DIRECTIONS.OUT,
-          //   routingKey: this.store.user.targetId,
-          //   time: this.timeDisplayFormat(),
-          //   messageType: this.getReadableMessageType(msg.distributionKind),
-          //   body: msg
-          // })
         } catch (e) {
           alert(`Erreur lors de l'envoi du message: ${e}`)
         }

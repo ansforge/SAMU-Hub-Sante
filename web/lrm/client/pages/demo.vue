@@ -233,8 +233,6 @@ export default {
     },
     submit () {
       // Submits current SchemaForm
-      console.log('submitting:', this.store.messageTypes[this.messageTypeTabIndex].label)
-      console.log(this.$refs.schemaForms)
       this.$refs.schemaForms.find(schema => schema.label === this.store.messageTypes[this.messageTypeTabIndex].label).submit()
     },
     useMessageToReply (message) {

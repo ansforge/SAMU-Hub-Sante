@@ -169,8 +169,6 @@ export default {
     },
     goToTestCase (testCase) {
       this.store.resetMessages()
-      // TODO: REMOVE THIS
-      // this.$store.dispatch('resetMessages')
       this.navigateTo({
         name: 'test-case',
         params: {
