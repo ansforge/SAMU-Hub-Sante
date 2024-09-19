@@ -9,14 +9,12 @@
       :key="exampleLoadDatetime"
       :schema="schema"
       :no-send-button="noSendButton"
-      @submit="submit(store.currentMessage)"
     />
   </div>
 </template>
 
 <script setup>
 import { ref } from 'vue'
-import mixinMessage from '~/mixins/mixinMessage'
 import { useMainStore } from '~/store'
 const store = useMainStore()
 
@@ -70,26 +68,6 @@ defineExpose({
   constructSchema,
   requestFormRef
 })
-</script>
-
-<script>
-export default {
-
-  mixins: [mixinMessage],
-  methods: {
-    submit (form) {
-      try {
-        // const data = await (await fetch('samuA_to_samuB.json')).json()
-        const data = this.buildMessage({
-          [this.store.currentUseCase]: form
-        })
-        this.sendMessage(data)
-      } catch (error) {
-        console.error("Erreur lors de l'envoi du message", error)
-      }
-    }
-  }
-}
 </script>
 
 <style>

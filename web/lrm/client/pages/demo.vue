@@ -2,8 +2,9 @@
   <v-row justify="center">
     <v-col cols="12" sm="7">
       <v-card style="height: 86vh; overflow-y: auto;">
-        <v-card-title class="text-h5 d-flex align-center">
+        <v-card-title class="text-h5 d-flex justify-space-between align-center">
           Formulaire
+          <SendButton @click="submit(store.currentMessage)" />
         </v-card-title>
         <v-card-text>
           <v-tabs
@@ -31,15 +32,16 @@
     </v-col>
     <v-col cols="12" sm="5">
       <v-card style="height: 86vh; overflow-y: auto;">
-        <v-card-title class="text-h5">
+        <v-card-title class="text-h5 d-flex">
           <span class="mb-4">
             {{ showSentMessagesConfig ? 'Messages' : 'Messages reçus' }}
           </span>
           <v-badge
             v-if="showableMessages?.length"
             floating
+            offset-y="50%"
             color="primary"
-            class="mb-4"
+            class="mr-2 ml-2"
             :content="showableMessages?.length"
           />
           <v-spacer />
@@ -74,7 +76,7 @@
               v-if="typeMessages(type).length > 0"
               floating
               color="primary"
-              class="mr-4 ml-1"
+              class="mr-2 ml-2"
               :content="typeMessages(type).length"
             />
           </v-btn>
@@ -113,6 +115,7 @@
 
 <script setup>
 import { toRef } from 'vue'
+import { toast } from 'vue3-toastify'
 import mixinMessage from '~/mixins/mixinMessage'
 import { REPOSITORY_URL } from '@/constants'
 import { useMainStore } from '~/store'
@@ -234,13 +237,25 @@ export default {
         message => this.getMessageType(message) === type
       )
     },
-    submit () {
-      // Submits current SchemaForm
-      this.$refs.schemaForm.find(schema => schema.label === this.store.messageTypes[this.messageTypeTabIndex].label).submit()
+
+    submit (form) {
+      try {
+        const data = this.buildMessage({
+          [this.store.currentUseCase]: form
+        })
+        this.sendMessage(data)
+      } catch (error) {
+        console.error("Erreur lors de l'envoi du message", error)
+      }
     },
     useMessageToReply (message) {
       // Use message to fill the form
-      this.$refs.schemaForm.find(schema => schema.label === this.store.messageTypes[this.messageTypeTabIndex].label).load(message)
+      if (message[this.store.selectedSchema.schema.title]) {
+        this.store.currentMessage = message[this.store.selectedSchema.schema.title]
+      } else {
+        // TODO: automatically switch to the corresponding schema?
+        toast.error('Le message ne correspond pas au schéma sélectionné')
+      }
     }
   }
 }

@@ -21,7 +21,6 @@
           </v-tabs>
           <v-window v-model="messageTypeTabIndex">
             <schema-form
-              ref="schemaForm"
               :source="source"
               :current-message-type="currentMessageType"
               :message-type-tab-index="messageTypeTabIndex"
