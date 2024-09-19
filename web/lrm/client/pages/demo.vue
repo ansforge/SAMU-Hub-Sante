@@ -62,7 +62,7 @@
           />
         </v-card-title>
         <v-btn-toggle
-          v-model="store.selectedMessageType"
+          v-model="selectedMessageType"
           class="ml-4"
           density="compact"
           mandatory
