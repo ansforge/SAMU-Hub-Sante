@@ -80,4 +80,7 @@ const remove$PropsFromSchema = (schema) => {
 .v-application div.vjsf-array {
   margin-bottom: 12px !important;
 }
+.vjsf-tree>div>div.mb-4.mt-4 {
+  display: none;
+}
 </style>
