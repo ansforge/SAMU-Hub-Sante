@@ -63,7 +63,7 @@ function currentSchemaOnGitHub () {
     'https://raw.githubusercontent.com/', 'https://github.com/'
   ).replace(
     'SAMU-Hub-Modeles/', 'SAMU-Hub-Modeles/tree/'
-  ) + store.selectedSource + '/src/main/resources/json-schema/' + store.selectedSchema + '.schema.json'
+  ) + store.selectedSource + '/src/main/resources/json-schema/' + store.selectedSchema.schemaName
 }
 
 </script>

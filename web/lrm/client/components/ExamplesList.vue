@@ -121,7 +121,8 @@ export default {
       }
     },
     loadExample (exampleFilepath) {
-      if (exampleFilepath && exampleFilepath.includes(this.store.selectedSchema + '/')) {
+      // If example filepath corresponds to one of the examples in the selected schema's 'file' attribute, we go on
+      if (exampleFilepath && this.store.selectedSchema.examples.some(example => example.file === exampleFilepath)) {
         fetch(REPOSITORY_URL + this.source + '/src/main/resources/sample/examples/' + exampleFilepath)
           .then(response => response.json())
           .then((data) => {

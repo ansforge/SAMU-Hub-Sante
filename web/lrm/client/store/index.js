@@ -42,11 +42,11 @@ export const useMainStore = defineStore('main', {
     },
 
     demoHeadTitle (state) {
-      return 'Démo [' + state._auth.user.clientId.split('.').splice(2).join('.') + '] - Hub Santé'
+      return 'Démo [' + state._auth.user.clientId?.split('.').splice(2).join('.') + '] - Hub Santé'
     },
 
     testHeadTitle (state) {
-      return 'Test [' + state._auth.user.clientId.split('.').splice(2).join('.') + '] - Hub Santé'
+      return 'Test [' + state._auth.user.clientId?.split('.').splice(2).join('.') + '] - Hub Santé'
     },
 
     isAdvanced (state) {

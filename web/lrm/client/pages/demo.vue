@@ -211,7 +211,7 @@ export default {
       this.updateForm()
     },
     currentMessageType () {
-      this.store.selectedSchema = this.store.messageTypes[this.messageTypeTabIndex].label
+      this.store.selectedSchema = this.store.messageTypes[this.messageTypeTabIndex]
     }
   },
   mounted () {
