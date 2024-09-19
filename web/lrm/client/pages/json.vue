@@ -63,12 +63,20 @@
   </v-row>
 </template>
 
-<script>
+<script setup>
 import Ajv from 'ajv'
 import { useNuxtApp } from 'nuxt/app'
 import { REPOSITORY_URL } from '@/constants'
 import mixinMessage from '~/mixins/mixinMessage'
 import { useMainStore } from '~/store'
+
+useHead({
+  title: 'Json Creator - Hub Santé'
+})
+
+</script>
+
+<script>
 
 // import { mapGetters } from 'pinia';
 export default {
@@ -102,11 +110,6 @@ export default {
         icon: 'mdi-information'
       }],
       form: {}
-    }
-  },
-  head () {
-    return {
-      title: 'Json Creator'
     }
   },
   computed: {

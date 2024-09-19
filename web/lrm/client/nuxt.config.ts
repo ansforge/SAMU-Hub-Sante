@@ -18,24 +18,6 @@ export default defineNuxtConfig({
   // Target: https://go.nuxtjs.dev/config-target
   target: 'server',
 
-  meta: {
-    titleTemplate: '%s - Hub Santé',
-    title: 'LRM',
-    htmlAttrs: {
-      lang: 'fr'
-    },
-    meta: [
-      { charset: 'utf-8' },
-      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { hid: 'description', name: 'description', content: '' },
-      { name: 'format-detection', content: 'telephone=no' }
-    ],
-    link: [
-      // Ref.: https://github.com/nuxt/nuxt/issues/10498#issuecomment-1160661667
-      { rel: 'icon', type: 'image/x-icon', href: 'favicon.ico' }
-    ]
-  },
-
   // Global CSS: https://go.nuxtjs.dev/config-css
   css: [],
 
@@ -68,7 +50,10 @@ export default defineNuxtConfig({
   },
 
   app: {
-    baseURL: (process.env.NODE_ENV === 'production' ? '/lrm/' : '/')
+    baseURL: (process.env.NODE_ENV === 'production' ? '/lrm/' : '/'),
+    head: {
+      link: [{ rel: 'icon', type: 'image/x-icon', href: (process.env.NODE_ENV === 'production' ? '/lrm/' : '/') + 'favicon.ico' }]
+    }
   },
 
   router: {

@@ -29,10 +29,10 @@
                 :items="targetClientIds"
                 :rules="[rules.required, rules.testTargetId]"
               />
-              <!-- <v-checkbox
+              <v-checkbox
                 v-model="form.tester"
                 label="Interface de test"
-              /> -->
+              />
               <v-alert
                 v-if="alert.show"
                 border="start"
@@ -58,11 +58,20 @@
   </v-container>
 </template>
 
-<script>
+<script setup>
 import { useMainStore } from '~/store'
 
+useHead({
+  title: 'Connexion - Hub Santé'
+})
+</script>
+
+<script>
+
 export default {
+
   name: 'Login',
+
   data () {
     return {
       store: useMainStore(),
@@ -87,9 +96,6 @@ export default {
         }
       }
     }
-  },
-  head () {
-    return { title: 'Connexion' }
   },
   computed: {
     targetClientIds () {

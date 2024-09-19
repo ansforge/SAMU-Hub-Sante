@@ -20,30 +20,28 @@
               @click="loadTestCaseJsons(testCase)"
             >
               <v-expansion-panel-title class="ma-0 pa-0 pr-10">
-                <v-list-item-content class="flex-row">
-                  <div style="flex: 0;">
-                    <v-list-item-title>
-                      <v-card-title class="pt-0 pb-0">
-                        {{ testCase.label }}
-                      </v-card-title>
-                    </v-list-item-title>
-                    <v-list-item-subtitle>
-                      <v-card-text class="pt-1 pb-0">
-                        {{ testCase.description }}
-                      </v-card-text>
-                    </v-list-item-subtitle>
-                  </div>
-                  <div style="flex: 0;">
-                    <v-btn
-                      class="ml-3 mr-3"
-                      style="flex-grow: 0; max-width: fit-content;"
-                      color="primary"
-                      @click="goToTestCase(testCase)"
-                    >
-                      Sélectionner
-                    </v-btn>
-                  </div>
-                </v-list-item-content>
+                <div style="flex: 0;">
+                  <v-list-item-title>
+                    <v-card-title class="pt-0 pb-0">
+                      {{ testCase.label }}
+                    </v-card-title>
+                  </v-list-item-title>
+                  <v-list-item-subtitle>
+                    <v-card-text class="pt-1 pb-0">
+                      {{ testCase.description }}
+                    </v-card-text>
+                  </v-list-item-subtitle>
+                </div>
+                <div style="flex: 0;">
+                  <v-btn
+                    class="ml-3 mr-3"
+                    style="flex-grow: 0; max-width: fit-content;"
+                    color="primary"
+                    @click="goToTestCase(testCase)"
+                  >
+                    Sélectionner
+                  </v-btn>
+                </div>
               </v-expansion-panel-title>
               <v-expansion-panel-text>
                 <v-card-title>
@@ -85,31 +83,31 @@
   </v-row>
 </template>
 
-<script>
-
+<script setup>
+import { useRuntimeConfig } from 'nuxt/app'
 import testCaseFile from '~/assets/test-cases.json'
 import { REPOSITORY_URL } from '@/constants'
 import mixinUser from '~/mixins/mixinUser'
 import { useMainStore } from '~/store'
 
+useHead({
+  title: toRef(useMainStore(), 'testHeadTitle')
+})
+
+</script>
+
+<script>
+
 export default {
-  mixins: [mixinUser],
   name: 'Test',
+  mixins: [mixinUser],
   data () {
     return {
+      config: useRuntimeConfig(),
       store: useMainStore(),
       testCaseFileAuto: [],
       testCases: []
     }
-  },
-
-  head () {
-    return {
-      title: `Test [${this.userInfos.name}]`
-    }
-  },
-  computed: {
-
   },
   mounted () {
     this.initialize()
@@ -120,7 +118,7 @@ export default {
       this.loadTestCases()
     },
     async fetchGeneratedTestCases () {
-      const response = await fetch(REPOSITORY_URL + $config.public.modelBranch + '/csv_parser/out/test_cases.json')
+      const response = await fetch(REPOSITORY_URL + this.config.public.modelBranch + '/csv_parser/out/test_cases.json')
       if (response.ok) {
         this.testCaseFileAuto = await response.json()
       }
@@ -161,7 +159,7 @@ export default {
     loadTestCaseJsons (testCase) {
       testCase.steps.forEach(async (step) => {
         if (step.type === 'receive') {
-          const response = await fetch(REPOSITORY_URL + $config.public.modelBranch + '/src/main/resources/sample/examples/' + step.message.file)
+          const response = await fetch(REPOSITORY_URL + this.config.public.modelBranch + '/src/main/resources/sample/examples/' + step.message.file)
           const json = await response.json()
           this.$set(step, 'json', json)
         }

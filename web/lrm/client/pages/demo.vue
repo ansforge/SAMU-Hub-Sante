@@ -9,8 +9,8 @@
           <v-tabs
             v-model="messageTypeTabIndex"
             align-tabs="title"
-            slider-color="primary"
           >
+            <v-tabs color="primary" />
             <v-tab
               v-for="{label} in store.messageTypes"
               :key="label"
@@ -20,8 +20,7 @@
           </v-tabs>
           <v-window v-model="messageTypeTabIndex" fixed-tabs>
             <schema-form
-              v-bind="messageTypeDetails"
-              ref="schemaForms"
+              ref="schemaForm"
               :source="source"
               :current-message-type="currentMessageType"
               :message-type-tab-index="messageTypeTabIndex"
@@ -112,11 +111,18 @@
   </v-row>
 </template>
 
-<script>
+<script setup>
+import { toRef } from 'vue'
 import mixinMessage from '~/mixins/mixinMessage'
 import { REPOSITORY_URL } from '@/constants'
 import { useMainStore } from '~/store'
 
+useHead({
+  titleTemplate: toRef(useMainStore(), 'demoHeadTitle')
+})
+</script>
+
+<script>
 export default {
   name: 'Demo',
   mixins: [mixinMessage],
@@ -149,11 +155,6 @@ export default {
         icon: 'mdi-information'
       }],
       form: {}
-    }
-  },
-  head () {
-    return {
-      title: `Démo [${this.userInfos.name}]`
     }
   },
   computed: {
@@ -216,21 +217,16 @@ export default {
   mounted () {
     this.config = useRuntimeConfig()
     this.source = this.config.public.modelBranch
-    // To automatically generate the UI and input fields based on the JSON Schema
-    // We need to wait the acquisition of 'messagesList' before attempting to acquire the schemas
-    this.store.loadMessageTypes(REPOSITORY_URL + this.config.public.modelBranch + '/src/main/resources/sample/examples/messagesList.json').then(
-      () => this.store.loadSchemas(REPOSITORY_URL + this.config.public.modelBranch + '/src/main/resources/json-schema/').then(
-        () => {
-          this.messageTypeTabIndex = 0
-        })
-    )
   },
   methods: {
     updateForm () {
       // To automatically generate the UI and input fields based on the JSON Schema
       // We need to wait the acquisition of 'messagesList' before attempting to acquire the schemas
       this.store.loadMessageTypes(REPOSITORY_URL + this.source + '/src/main/resources/sample/examples/messagesList.json').then(
-        () => this.store.loadSchemas(REPOSITORY_URL + this.source + '/src/main/resources/json-schema/')
+        () => this.store.loadSchemas(REPOSITORY_URL + this.source + '/src/main/resources/json-schema/').then(
+          () => {
+            this.messageTypeTabIndex = 0
+          })
       )
     },
     typeMessages (type) {
@@ -240,11 +236,11 @@ export default {
     },
     submit () {
       // Submits current SchemaForm
-      this.$refs.schemaForms.find(schema => schema.label === this.store.messageTypes[this.messageTypeTabIndex].label).submit()
+      this.$refs.schemaForm.find(schema => schema.label === this.store.messageTypes[this.messageTypeTabIndex].label).submit()
     },
     useMessageToReply (message) {
       // Use message to fill the form
-      this.$refs.schemaForms.find(schema => schema.label === this.store.messageTypes[this.messageTypeTabIndex].label).load(message)
+      this.$refs.schemaForm.find(schema => schema.label === this.store.messageTypes[this.messageTypeTabIndex].label).load(message)
     }
   }
 }
