@@ -130,6 +130,34 @@ export const useMainStore = defineStore('main', {
         return ({ index, schema })
       })).then((schemas) => {
         schemas.forEach(({ index, schema }) => {
+          // TODO: Rethink the whole layout thing
+          const objectProps = []
+          const simpleProps = []
+          for (const property in schema.properties) {
+            if (Object.keys(schema.properties[property]).includes('$ref')) {
+              objectProps.push(property)
+              // schema.properties[property].layout = 'tabs'
+            } else {
+              simpleProps.push(property)
+            }
+          }
+          schema.layout = []
+          schema.layout.push({
+            children: [...simpleProps]
+          })
+          schema.layout.push({
+            comp: 'tabs',
+            children: [...objectProps]
+          })
+
+          // The following attempt doesn't work because if we just set 'layout' to the value of 'x-display' we're defining the type for CHILDREN of the element we're setting it on.
+          // We need to set it on the element itself, but for that we have to construct the whole layout array with correctly defined keys and children
+
+          // for (const definition in schema.definitions) {
+          //   if (Object.keys(schema.definitions[definition]).includes('x-display')) {
+          //     schema.definitions[definition].layout = schema.definitions[definition]['x-display']
+          //   }
+          // }
           this.messageTypes[index] = {
             ...this.messageTypes[index],
             schema
