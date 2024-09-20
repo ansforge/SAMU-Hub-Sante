@@ -79,4 +79,7 @@ const remove$PropsFromSchema = (schema) => {
 .vjsf-tree>div>div.mb-4.mt-4 {
   display: none;
 }
+.v-alert.bg-error.v-alert--density-compact {
+  display: none;
+}
 </style>
