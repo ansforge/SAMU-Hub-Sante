@@ -29,10 +29,10 @@
                 :items="targetClientIds"
                 :rules="[rules.required, rules.testTargetId]"
               />
-              <v-checkbox
+              <!-- <v-checkbox
                 v-model="form.tester"
                 label="Interface de test"
-              />
+              /> -->
               <v-alert
                 v-if="alert.show"
                 border="start"
