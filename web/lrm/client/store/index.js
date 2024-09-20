@@ -1,187 +1,180 @@
-import Vue from 'vue'
-import {
-  SET_CURRENT_USER,
-  TOGGLE_ADVANCED,
-  SET_SHOW_SENT_MESSAGES,
-  ADD_MESSAGE,
-  SET_AUTO_ACK,
-  SET_MESSAGE_JUST_SENT,
-  RESET_MESSAGES,
-  SET_MESSAGE_TYPE_SCHEMA,
-  SET_MESSAGE_TYPES
-} from '~/store/constants'
+import { defineStore } from 'pinia'
+import { REPOSITORY_URL } from '@/constants'
 
 // export const strict = false
-
-export const state = () => ({
-  auth: {
-    user: {
-      clientId: null,
-      targetId: null,
-      tester: false,
-      advanced: process.env.NODE_ENV !== 'production',
-      showSentMessages: process.env.NODE_ENV !== 'production',
-      autoAck: false
-    }
-  },
-  messages: [/* {
+export const useMainStore = defineStore('main', {
+  state: () => ({
+    currentMessage: null,
+    currentUseCase: null,
+    selectedSource: 'main',
+    selectedSchema: 'RS-EDA',
+    _auth: {
+      user: {
+        clientId: null,
+        targetId: null,
+        tester: false,
+        advanced: process.env.NODE_ENV !== 'production',
+        showSentMessages: process.env.NODE_ENV !== 'production',
+        autoAck: false
+      }
+    },
+    _messages: [/* {
         direction: DIRECTIONS.IN,
         routingKey: '',
         time: this.timeDisplayFormat(),
         receivedTime: this.timeDisplayFormat(),
         body: { body: 'Page loaded successfully!' }
       } */],
-  messageJustSent: false,
-  // Message types are loaded from the github repository
-  messageTypes: []
-})
+    _messageJustSent: false,
+    // ToDo: when message are uploaded, add them in store
+    // ToDo: when message is loaded, add them in store to not load them again later
+    // Message types are loaded from the github repository
+    _messageTypes: []
+  }),
 
-export const getters = {
-  isAuthenticated(state) {
-    return !!state.auth.user.clientId
-  },
+  getters: {
+    isAuthenticated (state) {
+      return !!state._auth.user.clientId
+    },
 
-  user(state) {
-    return state.auth.user
-  },
+    user (state) {
+      return state._auth.user
+    },
 
-  isAdvanced(state) {
-    return state.auth.user.advanced
-  },
+    demoHeadTitle (state) {
+      return 'Démo [' + state._auth.user.clientId?.split('.').splice(2).join('.') + '] - Hub Santé'
+    },
 
-  showSentMessages(state) {
-    return state.auth.user.showSentMessages
-  },
+    testHeadTitle (state) {
+      return 'Test [' + state._auth.user.clientId?.split('.').splice(2).join('.') + '] - Hub Santé'
+    },
 
-  autoAck(state) {
-    return state.auth.user.autoAck
-  },
+    isAdvanced (state) {
+      return state._auth.user.advanced
+    },
 
-  messages(state) {
-    return state.messages
-  },
+    showSentMessages (state) {
+      return state._auth.user.showSentMessages
+    },
 
-  messageJustSent(state) {
-    return state.messageJustSent
-  },
+    autoAck (state) {
+      return state._auth.user.autoAck
+    },
 
-  messageTypes(state) {
-    return state.messageTypes
-  }
-}
+    messages (state) {
+      return state._messages
+    },
 
-export const actions = {
-  logInUser({state, commit}, userData) {
-    // use state.auth.user to get default values
-    commit(SET_CURRENT_USER, {...state.auth.user, ...userData})
-    return userData
-  },
+    messageJustSent (state) {
+      return state._messageJustSent
+    },
 
-  toggleAdvanced({commit, getters}) {
-    commit(TOGGLE_ADVANCED)
-    return getters.isAdvanced
-  },
-
-  setShowSentMessages({commit}, showSentMessages) {
-    commit(SET_SHOW_SENT_MESSAGES, showSentMessages)
-    return showSentMessages
-  },
-
-  setAutoAck({commit}, autoAck) {
-    commit(SET_AUTO_ACK, autoAck)
-    return autoAck
-  },
-
-  addMessage({commit}, message) {
-    commit(ADD_MESSAGE, message)
-    // If sending message worked well
-    if (message.direction === '→') { // isOUt() check
-      commit(SET_MESSAGE_JUST_SENT, true)
-      setTimeout(() => {
-        commit(SET_MESSAGE_JUST_SENT, false)
-      }, 1000)
+    messageTypes (state) {
+      return state._messageTypes
     }
   },
 
-  resetMessages({commit}) {
-    commit(RESET_MESSAGES)
-  },
+  actions: {
+    logInUser (userData) {
+      // use state.auth.user to get default values
+      this._auth.user = userData
+      return userData
+    },
 
-  loadSchemas({state, commit}, source) {
-    Promise.all(state.messageTypes.map(async ({schemaName}, index) => {
-      // If 404, ignore and continue
-      console.log('Loading schema from: ' + source + schemaName)
-      try {
-        const response = await fetch(source + schemaName)
-        const schema = await response.json()
-        return ({index, schema})
-      } catch (error) {
-        console.error('Error loading schema: ' + schemaName)
-        return ({index, schema: {}})
+    toggleAdvanced () {
+      this._auth.user = {
+        ...this._auth.user,
+        advanced: !this._auth.user.advanced
       }
-    })).then((schemas) => {
-      schemas.forEach(({index, schema}) => {
-        commit(SET_MESSAGE_TYPE_SCHEMA, {index, schema})
+      return this.isAdvanced
+    },
+
+    setShowSentMessages (showSentMessages) {
+      this._auth.user = {
+        ...this._auth.user,
+        showSentMessages
+      }
+      return showSentMessages
+    },
+
+    setAutoAck (autoAck) {
+      this._auth.user = {
+        ...this._auth.user,
+        autoAck
+      }
+      return autoAck
+    },
+
+    addMessage (message) {
+      this._messages.unshift(message)
+      // If sending message worked well
+      if (message.direction === '→') { // isOUt() check
+        this._messageJustSent = true
+        setTimeout(() => {
+          this._messageJustSent = false
+        }, 1000)
+      }
+    },
+
+    resetMessages () {
+      this._messages = []
+    },
+
+    loadSchemas (source) {
+      // ToDo: load schemas from github branch directly so it is up to date?
+      source = source || 'schemas/json-schema/'
+      return Promise.all(this.messageTypes.map(async ({ schemaName }, index) => {
+        console.log('Loading schema from: ' + source + schemaName)
+        const response = await $fetch(source + schemaName)
+        const schema = await JSON.parse(response)
+        return ({ index, schema })
+      })).then((schemas) => {
+        schemas.forEach(({ index, schema }) => {
+          // TODO: Rethink the whole layout thing
+          const objectProps = []
+          const simpleProps = []
+          for (const property in schema.properties) {
+            if (Object.keys(schema.properties[property]).includes('$ref')) {
+              objectProps.push(property)
+              // schema.properties[property].layout = 'tabs'
+            } else {
+              simpleProps.push(property)
+            }
+          }
+          schema.layout = []
+          if (simpleProps.length) {
+            schema.layout.push({
+              children: [...simpleProps]
+            })
+          }
+          if (objectProps.length) {
+            schema.layout.push({
+              comp: 'tabs',
+              children: [...objectProps]
+            })
+          }
+
+          // The following attempt doesn't work because if we just set 'layout' to the value of 'x-display' we're defining the type for CHILDREN of the element we're setting it on.
+          // We need to set it on the element itself, but for that we have to construct the whole layout array with correctly defined keys and children
+
+          // for (const definition in schema.definitions) {
+          //   if (Object.keys(schema.definitions[definition]).includes('x-display')) {
+          //     schema.definitions[definition].layout = schema.definitions[definition]['x-display']
+          //   }
+          // }
+          this.messageTypes[index] = {
+            ...this.messageTypes[index],
+            schema
+          }
+        })
       })
-    })
-  },
-
-  loadMessageTypes ({ state, commit }, source) {
-    return fetch(source)
-      .then(response => response.json())
-      .then((messageTypes) => {
-        commit('SET_MESSAGE_TYPES', messageTypes)
-      })
+    },
+    loadMessageTypes (source) {
+      return fetch(source)
+        .then(response => response.json())
+        .then((messageTypes) => {
+          this._messageTypes = messageTypes
+        })
+    }
   }
-}
-
-export const mutations = {
-  [SET_CURRENT_USER](state, user) {
-    state.auth.user = user
-  },
-
-  [TOGGLE_ADVANCED](state) {
-    // Not picked up by Vue reactivity (getter not updated): state.auth.user.advanced = !state.auth.user.advanced
-    state.auth.user = {
-      ...state.auth.user,
-      advanced: !state.auth.user.advanced
-    }
-  },
-
-  [SET_SHOW_SENT_MESSAGES](state, showSentMessages) {
-    state.auth.user = {
-      ...state.auth.user,
-      showSentMessages
-    }
-  },
-
-  [SET_AUTO_ACK](state, autoAck) {
-    state.auth.user = {
-      ...state.auth.user,
-      autoAck
-    }
-  },
-
-  [ADD_MESSAGE](state, message) {
-    state.messages.unshift(message)
-  },
-
-  [SET_MESSAGE_JUST_SENT](state, messageJustSent) {
-    state.messageJustSent = messageJustSent
-  },
-
-  [RESET_MESSAGES](state) {
-    state.messages = []
-  },
-
-  [SET_MESSAGE_TYPE_SCHEMA](state, {index, schema}) {
-    Vue.set(state.messageTypes, index, {
-      ...this.state.messageTypes[index],
-      schema
-    })
-  },
-
-  [SET_MESSAGE_TYPES](state, messageTypes) {
-    state.messageTypes = messageTypes
-  }
-}
+})

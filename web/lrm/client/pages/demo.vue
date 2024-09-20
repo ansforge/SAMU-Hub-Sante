@@ -2,57 +2,61 @@
   <v-row justify="center">
     <v-col cols="12" sm="7">
       <v-card style="height: 86vh; overflow-y: auto;">
-        <v-card-title class="headline pb-">
+        <v-card-title class="text-h5 d-flex justify-space-between align-center">
           Formulaire
-          <v-spacer />
-          <SendButton class="mt-2" @click="submit" />
+          <SendButton @click="submit(store.currentMessage)" />
         </v-card-title>
         <v-card-text>
           <v-tabs
             v-model="messageTypeTabIndex"
-            align-with-title
+            align-tabs="title"
           >
-            <v-tabs-slider color="primary" />
+            <v-tabs color="primary" />
             <v-tab
-              v-for="[name, {label}] in Object.entries(messageTypes)"
-              :key="name"
+              v-for="{label} in store.messageTypes"
+              :key="label"
             >
               {{ label }}
             </v-tab>
           </v-tabs>
-          <v-tabs-items v-model="messageTypeTabIndex">
-            <v-tab-item
-              v-for="[name, messageTypeDetails] in Object.entries(messageTypes)"
-              :key="name"
-            >
-              <SchemaForm v-bind="messageTypeDetails" ref="schemaForms" :name="name" />
-            </v-tab-item>
-          </v-tabs-items>
+          <v-window v-model="messageTypeTabIndex" fixed-tabs>
+            <schema-form
+              ref="schemaForm"
+              :source="source"
+              :current-message-type="currentMessageType"
+              :message-type-tab-index="messageTypeTabIndex"
+            />
+          </v-window>
         </v-card-text>
       </v-card>
     </v-col>
     <v-col cols="12" sm="5">
       <v-card style="height: 86vh; overflow-y: auto;">
-        <v-card-title class="headline">
+        <v-card-title class="text-h5 d-flex">
           <span class="mb-4">
             {{ showSentMessagesConfig ? 'Messages' : 'Messages reçus' }}
           </span>
           <v-badge
-            v-if="showableMessages.length"
-            class="mb-4"
-            :content="showableMessages.length"
+            v-if="showableMessages?.length"
+            floating
+            offset-y="50%"
+            color="primary"
+            class="mr-2 ml-2"
+            :content="showableMessages?.length"
           />
           <v-spacer />
           <v-switch
-            v-if="isAdvanced"
-            v-model="autoAckConfig"
+            v-if="store.isAdvanced"
+            v-model="store.autoAckConfig"
             inset
+            color="primary"
             :label="'Auto ack'"
             class="my-0 py-0 mr-4"
           />
           <v-switch
             v-model="showSentMessagesConfig"
             inset
+            color="primary"
             :label="'Show sent (' + messagesSentCount + ')'"
             class="my-0 py-0"
           />
@@ -60,18 +64,19 @@
         <v-btn-toggle
           v-model="selectedMessageType"
           class="ml-4"
-          dense
-          borderless
+          density="compact"
           mandatory
         >
           <v-btn v-for="{name, type, icon} in queueTypes" :key="type" :value="type" class="px-4">
-            <v-icon left>
+            <v-icon start>
               {{ icon }}
             </v-icon>
             {{ name }}
             <v-badge
               v-if="typeMessages(type).length > 0"
-              class="mr-4 ml-1"
+              floating
+              color="primary"
+              class="mr-2 ml-2"
               :content="typeMessages(type).length"
             />
           </v-btn>
@@ -87,7 +92,7 @@
             :key="caseId"
             :value="caseId"
             filter
-            outlined
+            variant="outlined"
           >
             {{ caseId }}
           </v-chip>
@@ -99,7 +104,7 @@
               v-bind="message"
               :key="message.time"
               class="message mb-4"
-              @useMessageToReply="useMessageToReply"
+              @use-message-to-reply="useMessageToReply"
             />
           </transition-group>
         </v-card-text>
@@ -108,17 +113,34 @@
   </v-row>
 </template>
 
-<script>
-import { mapGetters } from 'vuex'
-import mixinMessage from '~/plugins/mixinMessage'
+<script setup>
+import { toRef } from 'vue'
+import { toast } from 'vue3-toastify'
+import mixinMessage from '~/mixins/mixinMessage'
 import { REPOSITORY_URL } from '@/constants'
+import { useMainStore } from '~/store'
 
+useHead({
+  titleTemplate: toRef(useMainStore(), 'demoHeadTitle')
+})
+</script>
+
+<script>
 export default {
   name: 'Demo',
   mixins: [mixinMessage],
+  beforeRouteEnter (to, from) {
+    // Redirect to parent if we're not authenticated
+    if (!useMainStore().isAuthenticated) {
+      return { name: 'index' }
+    }
+  },
   data () {
     return {
-      messageTypeTabIndex: 0,
+      config: null,
+      source: null,
+      store: useMainStore(),
+      messageTypeTabIndex: null,
       selectedMessageType: 'message',
       selectedClientId: null,
       selectedCaseIds: [],
@@ -138,19 +160,16 @@ export default {
       form: {}
     }
   },
-  head () {
-    return {
-      title: `Démo [${this.userInfos.name}]`
-    }
-  },
   computed: {
-    ...mapGetters(['messages', 'isAdvanced', 'messageTypes']),
+    currentMessageType () {
+      return this.store.messageTypes[this.messageTypeTabIndex]
+    },
     showSentMessagesConfig: {
       get () {
-        return this.showSentMessages
+        return this.store.showSentMessages
       },
       set (value) {
-        this.$store.dispatch('setShowSentMessages', value)
+        this.store.setShowSentMessages(value)
       }
     },
     autoAckConfig: {
@@ -158,19 +177,19 @@ export default {
         return this.autoAck
       },
       set (value) {
-        this.$store.dispatch('setAutoAck', value)
+        this.store.setAutoAck(value)
       }
     },
     clientMessages () {
-      return this.messages.filter(
+      return this.store.messages.filter(
         message => (
-          (this.isOut(message.direction) && message.body.senderID === this.user.clientId) ||
-          (!this.isOut(message.direction) && message.routingKey.startsWith(this.user.clientId))
+          (this.isOut(message.direction) && message.body.senderID === this.store.user.clientId) ||
+          (!this.isOut(message.direction) && message.routingKey.startsWith(this.store.user.clientId))
         )
       )
     },
     showableMessages () {
-      return this.showSentMessages ? this.clientMessages : this.clientMessages.filter(message => !this.isOut(message.direction))
+      return this.store.showSentMessages ? this.clientMessages : this.clientMessages?.filter(message => !this.isOut(message.direction))
     },
     selectedTypeMessages () {
       return this.showableMessages.filter(message => this.getMessageType(message) === this.selectedMessageType)
@@ -190,26 +209,53 @@ export default {
       return [...new Set(this.selectedTypeMessages.map(m => this.getCaseId(m, true)))]
     }
   },
+  watch: {
+    source () {
+      this.updateForm()
+    },
+    currentMessageType () {
+      this.store.selectedSchema = this.store.messageTypes[this.messageTypeTabIndex]
+    }
+  },
   mounted () {
-    // To automatically generate the UI and input fields based on the JSON Schema
-    // We need to wait the acquisition of 'messagesList' before attempting to acquire the schemas
-    this.$store.dispatch('loadMessageTypes', REPOSITORY_URL + this.$config.modelBranch + '/src/main/resources/sample/examples/messagesList.json').then(
-      () => this.$store.dispatch('loadSchemas', REPOSITORY_URL + this.$config.modelBranch + '/src/main/resources/json-schema/')
-    )
+    this.config = useRuntimeConfig()
+    this.source = this.config.public.modelBranch
   },
   methods: {
+    updateForm () {
+      // To automatically generate the UI and input fields based on the JSON Schema
+      // We need to wait the acquisition of 'messagesList' before attempting to acquire the schemas
+      this.store.loadMessageTypes(REPOSITORY_URL + this.source + '/src/main/resources/sample/examples/messagesList.json').then(
+        () => this.store.loadSchemas(REPOSITORY_URL + this.source + '/src/main/resources/json-schema/').then(
+          () => {
+            this.messageTypeTabIndex = 0
+          })
+      )
+    },
     typeMessages (type) {
       return this.showableMessages.filter(
         message => this.getMessageType(message) === type
       )
     },
-    submit () {
-      // Submits current SchemaForm
-      this.$refs.schemaForms.find(schema => schema.label === this.messageTypes[this.messageTypeTabIndex].label).submit()
+
+    submit (form) {
+      try {
+        const data = this.buildMessage({
+          [this.store.currentUseCase]: form
+        })
+        this.sendMessage(data)
+      } catch (error) {
+        console.error("Erreur lors de l'envoi du message", error)
+      }
     },
     useMessageToReply (message) {
       // Use message to fill the form
-      this.$refs.schemaForms.find(schema => schema.label === this.messageTypes[this.messageTypeTabIndex].label).load(message)
+      if (message[this.store.selectedSchema.schema.title]) {
+        this.store.currentMessage = message[this.store.selectedSchema.schema.title]
+      } else {
+        // TODO: automatically switch to the corresponding schema?
+        toast.error('Le message ne correspond pas au schéma sélectionné')
+      }
     }
   }
 }

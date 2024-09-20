@@ -133,6 +133,7 @@ public class RabbitIntegrationAbstract {
                     "client.preferences.file=" + Thread.currentThread().getContextClassLoader()
                             .getResource("config/client.preferences.csv"),
                     "hubsante.default.message.ttl=5",
+                    "dispatcher.vhost=default-vhost",
 
                     // must be set to handle PublisherConfirms in other RabbitTemplates,
                     // even if we don't use it in Dispatcher

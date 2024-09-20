@@ -1,84 +1,80 @@
 <template>
   <div>
-    <examples-list :examples="examples" @selectedExample="load" />
+    <v-window-item v-for="messageTypeDetails in store.messageTypes" :key="messageTypeDetails.label">
+      <examples-list ref="examplesListRef" :source="source" :examples="messageTypeDetails.examples" />
+    </v-window-item>
     <RequestForm
       v-if="schema"
+      ref="requestFormRef"
       :key="exampleLoadDatetime"
-      v-model="form"
       :schema="schema"
       :no-send-button="noSendButton"
-      @submit="submit()"
     />
   </div>
 </template>
 
-<script>
-import mixinMessage from '@/plugins/mixinMessage'
+<script setup>
+import { ref } from 'vue'
+import { useMainStore } from '~/store'
+const store = useMainStore()
 
-export default {
-  mixins: [mixinMessage],
-  props: {
-    label: {
-      type: String,
-      required: true
-    },
-    schemaName: {
-      type: String,
-      required: true
-    },
-    schema: {
-      type: Object,
-      default: null
-    },
-    examples: {
-      type: Array,
-      required: true
-    },
-    noSendButton: {
-      type: Boolean,
-      default: false
-    }
+const props = defineProps({
+  currentMessageType: {
+    type: Object,
+    required: true
   },
-  data () {
-    return {
-      exampleLoadDatetime: undefined,
-      form: {}
-    }
+  messageTypeTabIndex: {
+    type: Number,
+    required: true
   },
-  watch: {
-    form: {
-      handler (newValue) {
-        this.$emit('on-form-update', newValue) // Emit the 'on-form-update' event when the form is changed
-      },
-      deep: true
-    }
+  source: {
+    type: String,
+    required: true
   },
-  methods: {
-    load (example) {
-      this.form = example
-      // Trigger RequestForm reload with key change | Ref.: https://stackoverflow.com/a/48755228
-      this.exampleLoadDatetime = new Date().toISOString()
-      this.$emit('on-form-update', this.form) // Emit the 'on-form-update' event with the updated form
-    },
-    submit () {
-      try {
-        // const data = await (await fetch('samuA_to_samuB.json')).json()
-        const data = this.buildMessage({
-          [this.schema.title]: this.form
-        })
-        this.sendMessage(data)
-      } catch (error) {
-        console.error("Erreur lors de l'envoi du message", error)
-      }
-    }
+  label: {
+    type: String,
+    required: true
+  },
+  schemaName: {
+    type: String,
+    required: true
+  },
+  examples: {
+    type: Array,
+    required: true
+  },
+  noSendButton: {
+    type: Boolean,
+    default: false
   }
+})
+
+const requestFormRef = ref(null)
+const examplesListRef = ref(null)
+const exampleLoadDatetime = ref(undefined)
+let schema = reactive({})
+
+watch(() => props.messageTypeTabIndex, () => {
+  constructSchema()
+  store.currentUseCase = store.messageTypes[props.messageTypeTabIndex].schema.title
+})
+
+function constructSchema () {
+  schema = store.messageTypes[props.messageTypeTabIndex].schema
 }
+
+defineExpose({
+  props,
+  constructSchema,
+  requestFormRef
+})
 </script>
 
 <style>
 .v-application div.vjsf-array-header {
   margin-bottom: 28px !important;
 }
+
 .v-application div.vjsf-array {
   margin-bottom: 12px !important;
 }
