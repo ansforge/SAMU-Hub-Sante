@@ -25,7 +25,7 @@
       <v-spacer />
       <div class="mx-5" style="height: 20px; width: 20px;" @click="toggleAdvanced" />
       <span v-if="store.isAuthenticated" class="mr-2" style="cursor: pointer" @click="clickHandler">
-        <v-icon>
+        <v-icon color="rgb(100,100,100)">
           {{ userInfos.icon }}
         </v-icon>
         <b>{{ userInfos.name }}</b>
@@ -35,7 +35,7 @@
         <v-icon v-else color="primary">
           mdi-swap-horizontal
         </v-icon>
-        <v-icon>
+        <v-icon color="rgb(100,100,100)">
           {{ clientInfos(store.user.targetId).icon }}
         </v-icon>
         {{ clientInfos(store.user.targetId).name }}

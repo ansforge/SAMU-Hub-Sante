@@ -3,7 +3,7 @@
     <v-layout class="d-flex justify-center">
       <v-col class="login-form text-center " style="max-width: 450px;">
         <div class="text-h4 my-10">
-          <v-icon class="mr-2" size="x-large">
+          <v-icon class="mr-2" size="small" color="rgb(100,100,100)">
             mdi-heart-pulse
           </v-icon>
           Hub Santé LRM

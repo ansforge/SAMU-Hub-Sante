@@ -102,3 +102,9 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+  i {
+    color: rgb(100,100,100)
+  }
+</style>

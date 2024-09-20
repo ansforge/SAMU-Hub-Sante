@@ -142,13 +142,17 @@ export const useMainStore = defineStore('main', {
             }
           }
           schema.layout = []
-          schema.layout.push({
-            children: [...simpleProps]
-          })
-          schema.layout.push({
-            comp: 'tabs',
-            children: [...objectProps]
-          })
+          if (simpleProps.length) {
+            schema.layout.push({
+              children: [...simpleProps]
+            })
+          }
+          if (objectProps.length) {
+            schema.layout.push({
+              comp: 'tabs',
+              children: [...objectProps]
+            })
+          }
 
           // The following attempt doesn't work because if we just set 'layout' to the value of 'x-display' we're defining the type for CHILDREN of the element we're setting it on.
           // We need to set it on the element itself, but for that we have to construct the whole layout array with correctly defined keys and children
