@@ -192,7 +192,7 @@ export default {
       return this.store.showSentMessages ? this.clientMessages : this.clientMessages?.filter(message => !this.isOut(message.direction))
     },
     selectedTypeMessages () {
-      return this.showableMessages.filter(message => this.getMessageType(message) === this.store.selectedMessageType)
+      return this.showableMessages.filter(message => this.getMessageType(message) === this.selectedMessageType)
     },
     selectedTypeCaseMessages () {
       if (this.selectedCaseIds.length === 0) {
