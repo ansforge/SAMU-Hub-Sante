@@ -26,7 +26,7 @@
           column
         >
           <v-chip v-for="example in examples" :key="example.name" :color="(selectedExample?.name === example.name) ? 'primary' : 'secondary'" :value="example" @click="handleExampleSelection(example)">
-            <v-icon>
+            <v-icon :color="(selectedExample?.name === example.name) ? 'primary' : 'rgb(100,100,100)'" class="mr-2" size="x-large">
               {{ example.icon }}
             </v-icon>
             {{ example.name }}
