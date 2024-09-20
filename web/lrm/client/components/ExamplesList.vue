@@ -3,15 +3,14 @@
     <v-row>
       <v-col cols="auto" class="pr-0 mt-2">
         <v-btn
-          fab
-          outlined
-          x-small
+          variant="outlined"
+          rounded="xl"
+          size="x-small"
           color="primary"
+          icon="mdi-upload"
           :loading="isSelectingUpload"
           @click="handleFileImport"
-        >
-          <v-icon>mdi-upload</v-icon>
-        </v-btn>
+        />
         <!-- Create a File Input that will be hidden but triggered with JavaScript -->
         <input
           ref="uploader"
@@ -22,57 +21,75 @@
       </v-col>
       <v-col>
         <v-chip-group
-          v-model="selectedDetailIndex"
-          active-class="primary--text"
+          v-model="selectedExample"
+          selected-class="primary--text"
           column
         >
-          <v-chip v-for="{icon, name} in examples" :key="name">
-            <v-icon left>
-              {{ icon }}
+          <v-chip v-for="example in examples" :key="example.name" :color="(selectedExample?.name === example.name) ? 'primary' : 'secondary'" :value="example" @click="handleExampleSelection(example)">
+            <v-icon :color="(selectedExample?.name === example.name) ? 'primary' : 'rgb(100,100,100)'" class="mr-2" size="x-large">
+              {{ example.icon }}
             </v-icon>
-            {{ name }}
+            {{ example.name }}
           </v-chip>
         </v-chip-group>
       </v-col>
     </v-row>
-
-    <exampleDetails v-if="selectedDetailIndex !== undefined" class="mb-4" v-bind="examples[selectedDetailIndex]" />
+    <exampleDetails v-if="selectedExample !== undefined" class="mb-4" v-bind="selectedExample" />
   </div>
 </template>
 
 <script>
-
 import { REPOSITORY_URL } from '@/constants'
+import { useMainStore } from '~/store'
 
 export default {
   props: {
+    source: {
+      type: String,
+      required: true
+    },
     examples: {
       type: Array,
       required: true
     }
   },
+  emits: ['exampleLoaded'],
+  setup (_, { emit }) {
+    const emitExampleLoaded = () => {
+      emit('exampleLoaded')
+    }
+    return {
+      emitExampleLoaded
+    }
+  },
   data () {
     return {
-      selectedDetailIndex: undefined,
+      store: useMainStore(),
       isSelectingUpload: false,
       selectedExample: {}
     }
   },
+  computed: {
+    selectedSchema () {
+      return this.store.selectedSchema
+    }
+  },
   watch: {
-    selectedDetailIndex () {
-      // !== undefined as it can be 0 so !! is not working
-      this.loadExample(this.selectedDetailIndex !== undefined ? this.examples[this.selectedDetailIndex].file : null)
-    },
-    selectedExample () {
-      this.$emit('selectedExample', this.selectedExample)
+    selectedSchema () {
+      this.selectedExample = {}
+      this.selectFirstExample()
     }
   },
   mounted () {
-    if (this.examples.length > 0) {
-      this.selectedDetailIndex = 0
-    }
+    this.selectFirstExample()
   },
   methods: {
+    selectFirstExample () {
+      if (this.examples.length > 0) {
+        this.handleExampleSelection(this.examples[0])
+        this.selectedExample = this.examples[0]
+      }
+    },
     handleFileImport () {
       this.isSelectingUpload = true
 
@@ -87,7 +104,6 @@ export default {
     onFileChanged (event) {
       const $this = this
       function onReaderLoad (event) {
-        // $this.selectedDetailIndex = undefined
         console.log(event.target.result)
         // We're going to assume that the example we're trying to load starts
         // with a use case property (such as createCase, emsi, etc.) and that
@@ -96,7 +112,7 @@ export default {
         // the name of the use case from somewhere and use it to properly access that
         // property in the parsed json object.
         const parsedJson = JSON.parse(event.target.result)
-        $this.selectedExample = parsedJson[Object.keys(parsedJson)[0]]
+        $this.store.currentMessage = parsedJson[Object.keys(parsedJson)[0]]
       }
       const reader = new FileReader()
       reader.onload = onReaderLoad
@@ -104,15 +120,26 @@ export default {
         reader.readAsText(event.target.files[0])
       }
     },
-    loadExample (exampleName) {
-      if (exampleName) {
-        fetch(REPOSITORY_URL + this.$config.modelBranch + '/src/main/resources/sample/examples/' + exampleName)
+    loadExample (exampleFilepath) {
+      // If example filepath corresponds to one of the examples in the selected schema's 'file' attribute, we go on
+      if (exampleFilepath && this.store.selectedSchema.examples.some(example => example.file === exampleFilepath)) {
+        fetch(REPOSITORY_URL + this.source + '/src/main/resources/sample/examples/' + exampleFilepath)
           .then(response => response.json())
           .then((data) => {
-            this.selectedExample = data[Object.keys(data)[0]]
+            this.store.currentMessage = data[Object.keys(data)[0]]
+            this.emitExampleLoaded()
           })
       } else {
-        this.selectedExample = {}
+        this.store.currentMessage = {}
+        this.emitExampleLoaded()
+      }
+    },
+    handleExampleSelection (example) {
+      // If currently selected example is clicked, deselect it
+      if (this.selectedExample?.file === example?.file) {
+        this.loadExample(null)
+      } else {
+        this.loadExample(example.file)
       }
     }
   }

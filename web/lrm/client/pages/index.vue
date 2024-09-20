@@ -1,9 +1,9 @@
 <template>
   <v-container fill-height>
-    <v-layout align-center justify-center>
-      <v-flex class="login-form text-center" style="max-width: 450px;">
+    <v-layout class="d-flex justify-center">
+      <v-col class="login-form text-center " style="max-width: 450px;">
         <div class="text-h4 my-10">
-          <v-icon class="mr-2" x-large>
+          <v-icon class="mr-2" size="small" color="rgb(100,100,100)">
             mdi-heart-pulse
           </v-icon>
           Hub Santé LRM
@@ -29,16 +29,16 @@
                 :items="targetClientIds"
                 :rules="[rules.required, rules.testTargetId]"
               />
-              <v-checkbox
+              <!-- <v-checkbox
                 v-model="form.tester"
                 label="Interface de test"
-              />
+              /> -->
               <v-alert
                 v-if="alert.show"
-                border="left"
-                dense
+                border="start"
+                density="compact"
                 elevation="3"
-                outlined
+                variant="outlined"
                 :type="alert.type"
               >
                 {{ alert.message }}
@@ -53,22 +53,34 @@
             </v-form>
           </v-card-text>
         </v-card>
-      </v-flex>
+      </v-col>
     </v-layout>
   </v-container>
 </template>
 
+<script setup>
+import { useMainStore } from '~/store'
+
+useHead({
+  title: 'Connexion - Hub Santé'
+})
+</script>
+
 <script>
+
 export default {
+
   name: 'Login',
+
   data () {
     return {
+      store: useMainStore(),
       alert: {
         show: false,
         type: 'error',
         message: ''
       },
-      clientIds: Object.keys(this.$config.clientMap).length === 0 ? new Map() : new Map(this.$config.clientMap),
+      clientIds: Object.keys(this.$config.public.clientMap).length === 0 ? new Map() : new Map(this.$config.public.clientMap),
       form: {
         clientId: 'fr.health.samuA',
         targetId: 'fr.health.samuC',
@@ -85,9 +97,6 @@ export default {
       }
     }
   },
-  head () {
-    return { title: 'Connexion' }
-  },
   computed: {
     targetClientIds () {
       return this.clientIds.get(this.form.clientId)
@@ -96,8 +105,8 @@ export default {
   methods: {
     async login () {
       if (!this.$refs.form.validate()) { return }
-      const loggedInUser = await this.$store.dispatch('logInUser', this.form)
-      await this.$router.push(loggedInUser.tester ? '/test' : '/demo')
+      const loggedInUser = await this.store.logInUser(this.form)
+      await navigateTo(loggedInUser.tester ? '/test' : '/demo')
     },
     swap () {
       const clientId = this.form.clientId

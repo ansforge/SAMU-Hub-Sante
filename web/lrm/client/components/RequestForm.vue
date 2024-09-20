@@ -1,60 +1,71 @@
 <template>
   <v-form v-model="valid">
-    <v-jsf v-model="form" :schema="schemaCopy" :options="options" />
-    <v-card-actions>
-      <v-spacer />
-      <SendButton v-if="!noSendButton" class="mt-2" @click="$emit('submit')" />
-    </v-card-actions>
+    <vjsf v-model="currentMessage" :schema="formatSchema(schemaCopy)" :options="options" />
   </v-form>
 </template>
 
-<script>
+<script setup>
+import { ref, computed, watch, onMounted } from 'vue'
+import Vjsf from '@koumoul/vjsf'
 import moment from 'moment'
+import { useMainStore } from '~/store'
 
-export default {
-  props: {
-    value: {
-      type: Object,
-      default: () => ({})
-    },
-    schema: {
-      type: Object,
-      required: true
-    },
-    noSendButton: {
-      type: Boolean,
-      default: false
-    }
+const props = defineProps({
+  value: {
+    type: Object,
+    default: () => ({})
   },
-  data () {
-    return {
-      valid: false,
-      // Passed through v-model
-      form: this.value,
-      options: {
-        locale: 'fr',
-        defaultLocale: 'fr',
-        rootDisplay: 'tabs',
-        editMode: 'inline', // edits in place and not in dialog
-        expansionPanelsProps: { mandatory: false }, // collapses all panels
-        formats: {
-          'date-time': function (dateTime, _locale) { return moment(new Date(dateTime)).format() }
-        }
-      }
-    }
+  schema: {
+    type: Object,
+    required: true
   },
-  computed: {
-    // Super tricky: schema deep-copy required as VJSF updates it somehow
-    // But it is in Vuex store thus it can't be changed outside of mutations...
-    schemaCopy () {
-      return JSON.parse(JSON.stringify(this.schema))
-    }
-  },
-  watch: {
-    form () {
-      this.$emit('input', this.form)
-    }
+  noSendButton: {
+    type: Boolean,
+    default: false
   }
+})
+
+const emit = defineEmits(['submit'])
+
+const store = useMainStore()
+const form = ref({})
+const valid = ref(false)
+const options = ref({
+  locale: 'fr',
+  defaultLocale: 'fr',
+  rootDisplay: 'tabs',
+  editMode: 'inline',
+  expansionPanelsProps: { mandatory: false },
+  density: 'compact',
+  debounceInputMs: 50000,
+  updateOn: 'blur',
+  validateOn: 'blur',
+  ajvOptions: {
+    allErrors: true,
+    strict: false,
+    strictSchema: false
+  },
+  formats: {
+    'date-time': (dateTime, _locale) => moment(new Date(dateTime)).format()
+  }
+})
+
+const { currentMessage } = toRefs(store)
+
+const schemaCopy = computed(() => JSON.parse(JSON.stringify(props.schema)))
+
+const formatSchema = (schema) => {
+  let newSchema = { ...schema }
+  // Remove $ props from schema
+  newSchema = remove$PropsFromSchema(schema)
+  return newSchema
+}
+
+const remove$PropsFromSchema = (schema) => {
+  const newSchema = { ...schema }
+  delete newSchema.$schema
+  delete newSchema.$id
+  return newSchema
 }
 </script>
 
@@ -64,5 +75,11 @@ export default {
 }
 .v-application div.vjsf-array {
   margin-bottom: 12px !important;
+}
+.vjsf-tree>div>div.mb-4.mt-4 {
+  display: none;
+}
+.vjsf .v-alert.bg-error:first-child {
+  display: none;
 }
 </style>
