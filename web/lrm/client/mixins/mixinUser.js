@@ -1,12 +1,15 @@
-import Vue from 'vue'
-import { mapGetters } from 'vuex'
+import { useMainStore } from '~/store'
 
-Vue.mixin({
+export default {
+  data () {
+    return {
+      store: useMainStore()
+    }
+  },
   computed: {
-    ...mapGetters(['user', 'isAuthenticated', 'isAdvanced', 'showSentMessages', 'autoAck']),
     userInfos () {
-      if (this.isAuthenticated) {
-        return this.clientInfos(this.user.clientId)
+      if (this.store.isAuthenticated) {
+        return this.clientInfos(this.store.user.clientId)
       }
       return {}
     }
@@ -19,4 +22,4 @@ Vue.mixin({
       }
     }
   }
-})
+}

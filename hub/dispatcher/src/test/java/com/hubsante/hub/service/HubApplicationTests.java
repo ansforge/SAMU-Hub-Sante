@@ -46,7 +46,8 @@ class HubApplicationTests {
 					"spring.rabbitmq.ssl.trust-store=" + Thread.currentThread().getContextClassLoader()
 							.getResource("config/certs/trustStore"),
 					"client.preferences.file=" + Thread.currentThread().getContextClassLoader()
-							.getResource("config/client.preferences.csv")
+							.getResource("config/client.preferences.csv"),
+					"dispatcher.vhost=default-vhost"
 			);
 			values.applyTo(applicationContext);
 		}

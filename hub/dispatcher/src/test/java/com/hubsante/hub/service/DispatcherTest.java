@@ -29,6 +29,7 @@ import com.hubsante.model.report.Error;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.search.Search;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.compress.archivers.sevenz.CLI;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -52,8 +53,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 import static com.hubsante.hub.config.AmqpConfiguration.*;
-import static com.hubsante.hub.config.Constants.DISPATCH_ERROR;
-import static com.hubsante.hub.config.Constants.DISTRIBUTION_ID_UNAVAILABLE;
+import static com.hubsante.hub.config.Constants.*;
 import static com.hubsante.hub.service.utils.MessageTestUtils.*;
 import static com.hubsante.hub.service.utils.MetricsUtils.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -80,6 +80,7 @@ public class DispatcherTest {
     private MeterRegistry registry;
     static ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
     private Dispatcher dispatcher;
+
     private final String SAMU_B_ROUTING_KEY = "fr.health.samuB";
     private final String SAMU_B_MESSAGE_QUEUE = SAMU_B_ROUTING_KEY + ".message";
     private final String SAMU_B_INFO_QUEUE = SAMU_B_ROUTING_KEY + ".info";
@@ -89,6 +90,8 @@ public class DispatcherTest {
     private final String SAMU_A_INFO_QUEUE = SAMU_A_ROUTING_KEY + ".info";
     private final String SAMU_A_ERROR_QUEUE = SAMU_A_ROUTING_KEY + ".error";
     private final String SAMU_A_DISTRIBUTION_ID = "fr.health.samuA_2608323d-507d-4cbf-bf74-52007f8124ea";
+
+    private final String TEST_VHOST = "default-vhost";
     private final String INCONSISTENT_ROUTING_KEY = "fr.health.no-samu";
     private final String JSON = MessageProperties.CONTENT_TYPE_JSON;
     private final String XML = MessageProperties.CONTENT_TYPE_XML;
@@ -102,6 +105,7 @@ public class DispatcherTest {
         propertiesRegistry.add("client.preferences.file",
                 () -> Objects.requireNonNull(classLoader.getResource("config/client.preferences.csv")));
         propertiesRegistry.add("hubsante.default.message.ttl", () -> 5);
+        propertiesRegistry.add("dispatcher.vhost", () -> "default-vhost");
     }
 
     @PostConstruct
@@ -233,7 +237,7 @@ public class DispatcherTest {
     @Test
     @DisplayName("should not send info if info itself is DLQed")
     public void handleDLQInfo() throws Exception {
-        Message originalInfo = createMessage("RS-ERROR", JSON, SAMU_A_INFO_QUEUE);
+        Message originalInfo = createMessage("custom-error", JSON, SAMU_A_INFO_QUEUE);
         Message dlqMessage = applyRabbitmqDLQHeaders(originalInfo, "expired");
 
         assertDoesNotThrow(() -> dispatcher.dispatchDLQ(dlqMessage));
@@ -330,32 +334,32 @@ public class DispatcherTest {
     @Test
     @DisplayName("should reject message with invalid json content")
     public void invalidJsonContentFails() throws IOException {
-        Message receivedMessage = createInvalidMessage("RC-EDA/invalid-RC-EDA-valid-EDXL.json",
+        Message receivedMessage = createInvalidMessage("EDXL-DE/invalid-content-valid-envelope.json",
                 JSON, SAMU_A_ROUTING_KEY);
 
         assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
         assertErrorHasBeenSent(SAMU_A_INFO_QUEUE, ErrorCode.INVALID_MESSAGE, SAMU_A_DISTRIBUTION_ID,
-                "creation: is missing but it is required");
+                "reference.invalid_key: is not defined in the schema and the schema does not allow additional properties");
     }
     @Test
     @DisplayName("should reject message with invalid xml content")
     public void invalidXmlContentFails() throws IOException {
-        Message receivedMessage = createInvalidMessage("RC-EDA/invalid-RC-EDA-valid-EDXL.xml",
+        Message receivedMessage = createInvalidMessage("EDXL-DE/invalid-content-valid-envelope.xml",
                 XML, SAMU_B_ROUTING_KEY);
 
         assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
         assertErrorHasBeenSent(SAMU_B_INFO_QUEUE, ErrorCode.INVALID_MESSAGE, "fr.health.samuB_2608323d-507d-4cbf-bf74-52007f8124ea",
-                "Invalid content was found starting with element '{\"urn:emergency:cisu:2.0\":sender}'.");
+                "Invalid content was found starting with element '{\"urn:emergency:cisu:2.0:reference\":reference}'.");
     }
 
     @Test
     @DisplayName("should increment counter")
     public void incrementMetricsCounter() throws IOException {
-        Search errorOverall = targetCounter(registry, "sender", SAMU_A_ROUTING_KEY);
-        Search errorContentType = targetCounter(registry, "reason", ErrorCode.NOT_ALLOWED_CONTENT_TYPE.getStatusString(),
-                "sender", SAMU_A_ROUTING_KEY);
-        Search errorDeliveryMode = targetCounter(registry, "reason", ErrorCode.DELIVERY_MODE_INCONSISTENCY.getStatusString(),
-                "sender", SAMU_A_ROUTING_KEY);
+        Search errorOverall = targetCounter(registry, CLIENT_ID_TAG, SAMU_A_ROUTING_KEY, VHOST_TAG, TEST_VHOST);
+        Search errorContentType = targetCounter(registry, REASON_TAG, ErrorCode.NOT_ALLOWED_CONTENT_TYPE.getStatusString(),
+                CLIENT_ID_TAG, SAMU_A_ROUTING_KEY, VHOST_TAG, TEST_VHOST);
+        Search errorDeliveryMode = targetCounter(registry, REASON_TAG, ErrorCode.DELIVERY_MODE_INCONSISTENCY.getStatusString(),
+                CLIENT_ID_TAG, SAMU_A_ROUTING_KEY, VHOST_TAG, TEST_VHOST);
 
         assertNull(errorOverall.counter());
         assertNull(errorContentType.counter());

@@ -2,15 +2,15 @@
   <v-row justify="center">
     <v-col cols="12" sm="7">
       <v-card class="main-card" style="height: 86vh;">
-        <v-card-title class="headline pb-0">
+        <v-card-title class="text-h5 pb-0">
           Cas de test <span class="font-weight-bold">&nbsp;{{ testCase.label }} </span>
         </v-card-title>
         <v-card-actions class="pt-0" style="flex-direction: column;">
           <v-container class="pt-0" full-width>
             <v-stepper v-model="currentStep" class="stepper">
               <v-stepper-header>
-                <template v-for="(step, index) in testCase.steps">
-                  <v-col :key="'step' + index">
+                <template v-for="(step, index) in testCase.steps" :key="'step' + index">
+                  <v-col>
                     <v-stepper-step
                       :key="index"
                       style="cursor: pointer;"
@@ -79,29 +79,29 @@
                 En attente de la réception de l'ID de distribution...
               </p>
               <v-list v-for="(requiredValue, name, index) in getAwaitedValues(testCase.steps[currentStep-1])" :key="'requiredValue' + index">
-                <v-list-item-content>
-                  <span style="display: flex; flex-direction: row; align-items: center;">
-                    <pre class="values">{{ name }} : {{ requiredValue.value }}</pre>
-                  </span>
-                </v-list-item-content>
+
+                <span style="display: flex; flex-direction: row; align-items: center;">
+                  <pre class="values">{{ name }} : {{ requiredValue.value }}</pre>
+                </span>
+
               </v-list>
               <v-list v-if="testCase.steps[currentStep-1]?.type === 'receive'">
                 <!-- Generate an input for each requiredValue with the path used as label. User will enter a value for each requiredValue and then press a button to verify that all the values entered correspond to the values in the requiredValues-->
                 <v-list-item v-for="(requiredValue, index) in testCase.steps[currentStep-1].message.requiredValues" :key="'requiredValue' + index">
-                  <v-list-item-content>
-                    <v-icon v-if="requiredValue.valid " style="flex:0" color="success">
-                      mdi-check
-                    </v-icon>
-                    <v-icon v-else style="flex:0" color="error">
-                      mdi-close
-                    </v-icon>
-                    <v-text-field
-                      v-model="requiredValue.enteredValue"
-                      :label="requiredValue.path"
-                      :rules="[v => !!v || 'Valeur requise']"
-                      required
-                    />
-                  </v-list-item-content>
+
+                  <v-icon v-if="requiredValue.valid " style="flex:0" color="success">
+                    mdi-check
+                  </v-icon>
+                  <v-icon v-else style="flex:0" color="error">
+                    mdi-close
+                  </v-icon>
+                  <v-text-field
+                    v-model="requiredValue.enteredValue"
+                    :label="requiredValue.path"
+                    :rules="[v => !!v || 'Valeur requise']"
+                    required
+                  />
+
                 </v-list-item>
                 <!-- Button that would execute the verification of value conformity -->
                 <v-btn v-if="!testCase.steps[currentStep-1].message.validatedReceivedValues" color="primary" @click="validateEnteredValues(currentStep-1)">
@@ -151,9 +151,7 @@
 
 <script>
 
-import { mapGetters } from 'vuex'
-import Vue from 'vue'
-import mixinMessage from '~/plugins/mixinMessage'
+// import { mapGetters } from 'pinia'
 import { REPOSITORY_URL } from '@/constants'
 
 export default {
@@ -192,21 +190,20 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['messages', 'isAdvanced']),
     clientMessages () {
-      return this.messages.filter(
+      return this.store.messages.filter(
         message =>
           (this.isOut(message.direction) &&
-            message.body.senderID === this.user.clientId) ||
+            message.body.senderID === this.store.user.clientId) ||
           (!this.isOut(message.direction) &&
-            message.routingKey.startsWith(this.user.clientId))
+            message.routingKey.startsWith(this.store.user.clientId))
       )
     },
     selectedMessage () {
       return this.selectedTypeCaseMessages[this.selectedMessageIndex]
     },
     showableMessages () {
-      return this.showSentMessages
+      return this.store.showSentMessages
         ? this.clientMessages
         : this.clientMessages.filter(message => !this.isOut(message.direction))
     },
@@ -305,7 +302,7 @@ export default {
     async loadJsonSteps () {
       for (const step of this.testCase.steps) {
         if (step.type === 'receive') {
-          const response = await fetch(REPOSITORY_URL + this.$config.modelBranch + '/src/main/resources/sample/examples/' + step.message.file)
+          const response = await fetch(REPOSITORY_URL + $config.public.modelBranch + '/src/main/resources/sample/examples/' + step.message.file)
           const json = await response.json()
           this.$set(step, 'json', json)
         }
@@ -329,7 +326,7 @@ export default {
           message.validatedStep = this.currentStep - 1
           message.validated = true
           if (ack) {
-            if (this.getMessageType(message) !== 'ack' && message.routingKey.startsWith(this.user.clientId)) {
+            if (this.getMessageType(message) !== 'ack' && message.routingKey.startsWith(this.store.user.clientId)) {
               const msg = this.buildAck(message.body.distributionID)
               this.sendMessage(msg)
             }
@@ -384,7 +381,7 @@ export default {
       const seconds = currentDate.getSeconds().toString().slice(-1)
 
       const time = year + dayOfYear + hour + minutes + seconds
-      return this.user.clientId + '-' + 'DRMFR15690' + time
+      return this.store.user.clientId + '-' + 'DRMFR15690' + time
     },
     /**
      * Returns the required values for a given step

@@ -1,53 +1,50 @@
 <template>
-  <v-card
-    class="mx-auto"
-    outlined
-    tile
-    elevation="4"
-  >
-    <v-list-item two-line>
-      <v-list-item-avatar
-        size="64"
-        color="grey"
-      >
-        <v-icon large>
-          {{ icon }}
-        </v-icon>
-      </v-list-item-avatar>
-      <v-list-item-content>
-        <v-list-item-title class="text-h5 mb-1">
-          {{ name }}
-        </v-list-item-title>
-        <v-list-item-subtitle>{{ context }}</v-list-item-subtitle>
-      </v-list-item-content>
+  <v-card class="mx-auto" border tile elevation="4">
+    <v-list-item lines="two">
+      <template #prepend>
+        <v-avatar size="64" color="grey">
+          <v-icon color="rgba(0,0,0,.54)" size="38">
+            {{ icon }}
+          </v-icon>
+        </v-avatar>
+      </template>
+      <v-list-item-title class="text-h5 mb-1">
+        {{ name }}
+      </v-list-item-title>
+      <v-list-item-subtitle>{{ context }}</v-list-item-subtitle>
+
       <v-spacer />
-      <v-btn
-        icon
-        color="primary"
-        :href="REPOSITORY_URL + $config.modelBranch + '/src/main/resources/sample/examples/' + file"
-        target="_blank"
-      >
-        <v-icon>mdi-open-in-new</v-icon>
-      </v-btn>
+      <template #append>
+        <v-btn
+          icon
+          variant="text"
+          :href="REPOSITORY_URL + $store.selectedSource + '/src/main/resources/sample/examples/' + file"
+          target="_blank"
+        >
+          <v-icon color="primary">
+            mdi-open-in-new
+          </v-icon>
+        </v-btn>
+      </template>
     </v-list-item>
     <v-card-text class="pt-0">
-      <div class="py-1" v-if="caller">
+      <div v-if="caller" class="py-1">
         <v-icon>mdi-phone</v-icon>
         {{ caller }}
       </div>
-      <div class="py-1" v-if="environment">
+      <div v-if="environment" class="py-1">
         <v-icon>mdi-map-marker</v-icon>
         {{ environment }}
       </div>
-      <div class="py-1" v-if="victims">
+      <div v-if="victims" class="py-1">
         <v-icon>mdi-account-multiple</v-icon>
         {{ victims }}
       </div>
-      <div class="py-1" v-if="victim">
+      <div v-if="victim" class="py-1">
         <v-icon>mdi-account-injury</v-icon>
         {{ victim }}
       </div>
-      <div class="py-1" v-if="medicalSituation">
+      <div v-if="medicalSituation" class="py-1">
         <v-icon>mdi-heart-pulse</v-icon>
         {{ medicalSituation }}
       </div>
@@ -56,7 +53,6 @@
 </template>
 
 <script>
-
 import { REPOSITORY_URL } from '@/constants'
 
 export default {
@@ -103,11 +99,12 @@ export default {
       showDetails: false,
       REPOSITORY_URL
     }
-  },
-  watch: {
-    form () {
-      this.$emit('input', this.form)
-    }
   }
 }
 </script>
+
+<style scoped>
+  i {
+    color: rgb(100,100,100)
+  }
+</style>

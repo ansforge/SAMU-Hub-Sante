@@ -1,90 +1,89 @@
 <template>
   <v-app>
-    <v-app-bar
-      fixed
-      app
-    >
-      <v-toolbar-title style="cursor: pointer" @click="$router.push('/')">
+    <v-app-bar>
+      <v-toolbar-title style="cursor: pointer; flex: initial" @click="navigateTo('/')">
         Hub Santé - LRM
       </v-toolbar-title>
       <v-btn class="ml-4" href="https://hub.esante.gouv.fr/" target="_blank">
-        <v-icon left>
+        <v-icon start>
           mdi-presentation
         </v-icon>
         Page web
       </v-btn>
       <v-btn class="ml-4" href="https://hub.esante.gouv.fr/specs/" target="_blank">
-        <v-icon left>
+        <v-icon start>
           mdi-file-document-multiple-outline
         </v-icon>
         Specs
       </v-btn>
       <v-btn class="ml-4" to="/json">
-        <v-icon left>
+        <v-icon start>
           mdi-email-edit-outline
         </v-icon>
         Json Creator
       </v-btn>
       <v-spacer />
       <div class="mx-5" style="height: 20px; width: 20px;" @click="toggleAdvanced" />
-      <span v-if="isAuthenticated" class="mr-2" style="cursor: pointer" @click="clickHandler">
-        <v-icon>
+      <span v-if="store.isAuthenticated" class="mr-2" style="cursor: pointer" @click="clickHandler">
+        <v-icon color="rgb(100,100,100)">
           {{ userInfos.icon }}
         </v-icon>
         <b>{{ userInfos.name }}</b>
-        <v-icon v-if="!isAdvanced" color="primary">
+        <v-icon v-if="!store.isAdvanced" color="primary">
           mdi-arrow-right-thin
         </v-icon>
         <v-icon v-else color="primary">
           mdi-swap-horizontal
         </v-icon>
-        <v-icon>
-          {{ clientInfos(user.targetId).icon }}
+        <v-icon color="rgb(100,100,100)">
+          {{ clientInfos(store.user.targetId).icon }}
         </v-icon>
-        {{ clientInfos(user.targetId).name }}
+        {{ clientInfos(store.user.targetId).name }}
       </span>
     </v-app-bar>
-    <v-main>
+    <v-main style="padding-bottom: 0;">
       <v-container fluid>
-        <Nuxt />
+        <slot />
       </v-container>
     </v-main>
     <v-footer
       app
     >
-      <span><a :href=" repositoryUrl + 'tree/' + $config.modelBranch ">SAMU Hub Modeles - v{{ $config.modelBranch }}</a> &copy; {{ new Date().getFullYear() }}</span>
+      <span><a :href=" repositoryUrl + 'tree/' + $config.public.modelBranch ">SAMU Hub Modeles - v{{ $config.public.modelBranch }}</a> &copy; {{ new Date().getFullYear() }}</span>
     </v-footer>
   </v-app>
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
-import { REPOSITORY_URL } from '~/constants';
+import { useMainStore } from '~/store'
+import mixinUser from '~/mixins/mixinUser'
+import { REPOSITORY_URL } from '~/constants'
 
 export default {
   name: 'DefaultLayout',
+  mixins: [mixinUser],
   data () {
     return {
-      repositoryUrl : REPOSITORY_URL.replace('raw.githubusercontent', 'github')
+      store: useMainStore(),
+      repositoryUrl: REPOSITORY_URL.replace('raw.githubusercontent', 'github')
     }
   },
   computed: {
-    ...mapGetters(['isAuthenticated', 'isAdvanced'])
   },
   methods: {
     toggleAdvanced () {
-      this.$store.dispatch('toggleAdvanced')
+      this.store.toggleAdvanced()
     },
     clickHandler () {
-      if (this.isAdvanced) {
+      if (this.store.isAdvanced) {
         // No control as this will anyway fail, user is expected to be advanced
-        this.$store.dispatch('logInUser', {
-          ...this.user,
-          targetId: this.user.clientId,
-          clientId: this.user.targetId
+        this.store.logInUser({
+          ...this.store.user,
+          targetId: this.store.user.clientId,
+          clientId: this.store.user.targetId
         })
       } else {
-        this.$router.push('/')
+        return navigateTo('/')
       }
     }
   }
