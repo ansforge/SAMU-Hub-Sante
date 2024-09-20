@@ -112,7 +112,7 @@ export default {
         // the name of the use case from somewhere and use it to properly access that
         // property in the parsed json object.
         const parsedJson = JSON.parse(event.target.result)
-        this.store.currentMessage = parsedJson[Object.keys(parsedJson)[0]]
+        $this.store.currentMessage = parsedJson[Object.keys(parsedJson)[0]]
       }
       const reader = new FileReader()
       reader.onload = onReaderLoad
