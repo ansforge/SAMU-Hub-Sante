@@ -8,6 +8,7 @@ export const useMainStore = defineStore('main', {
     currentUseCase: null,
     selectedSource: 'main',
     selectedSchema: 'RS-EDA',
+    selectedVhost: '15-15_v1.5',
     _auth: {
       user: {
         clientId: null,
