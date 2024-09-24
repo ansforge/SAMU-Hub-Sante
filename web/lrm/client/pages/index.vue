@@ -110,7 +110,7 @@ export default {
     },
     swap () {
       const clientId = this.form.clientId
-      if (this.clientIds.includes(this.form.targetId)) {
+      if (this.clientIds.has(this.form.targetId)) {
         this.form.clientId = this.form.targetId
       } else {
         // Can only connect as a clientId in the authorized clientIds
