@@ -11,7 +11,7 @@ export default {
     store: useMainStore()
   }),
   mounted () {
-    if (this.$route.name !== 'json') {
+    if (this.store.socket === null && this.$route.name !== 'json') {
       this.wsConnect()
     }
   },
@@ -21,12 +21,12 @@ export default {
   },
   methods: {
     wsConnect () {
-      this.socket = new WebSocket('wss://' + this.$config.public.backendLrmServer + '/lrm/api/')
-      this.socket.onopen = () => {
+      this.store.socket = new WebSocket('wss://' + this.$config.public.backendLrmServer + '/lrm/api/')
+      this.store.socket.onopen = () => {
         console.log(`WebSocket ${this.$options.name} connection established`)
       }
 
-      this.socket.onclose = (e) => {
+      this.store.socket.onclose = (e) => {
         // Prevents infinite loop when closing the connection in an expected way
         if (this.disconnect) {
           return
@@ -38,14 +38,14 @@ export default {
         }, 1000)
       }
 
-      this.socket.onerror = (err) => {
+      this.store.socket.onerror = (err) => {
         console.error(`WebSocket ${this.$options.name} connection errored`, err)
-        this.socket.close()
+        this.store.socket.close()
       }
 
       // demo.vue is in charge of listening to server messages
       if (this.$options.name === 'Demo' || this.$options.name === 'Testcase') {
-        this.socket.addEventListener('message', (event) => {
+        this.store.socket.addEventListener('message', (event) => {
           const message = JSON.parse(event.data)
           this.store.addMessage({
             ...message,
@@ -64,9 +64,9 @@ export default {
       }
     },
     wsDisconnect () {
-      if (this.socket) {
+      if (this.store.socket) {
         console.log(`Disconnecting: WebSocket ${this.$options.name} connection closed`)
-        this.socket.close()
+        this.store.socket.close()
       }
       this.disconnect = true
     },
@@ -213,10 +213,10 @@ export default {
       return d.toLocaleTimeString('fr').replace(':', 'h') + '.' + String(new Date().getMilliseconds()).padStart(3, '0')
     },
     sendMessage (msg, vhost = null) {
-      if (this.socket.readyState === 1) {
+      if (this.store.socket.readyState === 1) {
         try {
           console.log('Sending message', msg)
-          this.socket.send(JSON.stringify({ key: this.store.user.clientId, vhost: (vhost || this.store.selectedVhost), msg }))
+          this.store.socket.send(JSON.stringify({ key: this.store.user.clientId, vhost: (vhost || this.store.selectedVhost), msg }))
           this.store.addMessage({
             direction: DIRECTIONS.OUT,
             vhost: this.store.selectedVhost,
