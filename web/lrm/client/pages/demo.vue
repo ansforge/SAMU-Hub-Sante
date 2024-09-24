@@ -4,7 +4,7 @@
       <v-card style="height: 86vh; overflow-y: auto;">
         <v-card-title class="text-h5 d-flex justify-space-between align-center">
           Formulaire
-          <vhost-selector />
+          <vhost-selector class="mr-5" />
           <SendButton @click="submit(store.currentMessage)" />
         </v-card-title>
         <v-card-text>
