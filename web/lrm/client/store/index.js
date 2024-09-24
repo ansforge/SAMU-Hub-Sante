@@ -4,6 +4,7 @@ import { REPOSITORY_URL } from '@/constants'
 // export const strict = false
 export const useMainStore = defineStore('main', {
   state: () => ({
+    socket: null,
     currentMessage: null,
     currentUseCase: null,
     selectedSource: 'main',
