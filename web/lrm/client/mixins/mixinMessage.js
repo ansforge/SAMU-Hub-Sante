@@ -214,12 +214,15 @@ export default {
     },
     sendMessage (msg, vhost = null) {
       if (this.socket.readyState === 1) {
+        if (!vhost) {
+          vhost = this.store.selectedVhost
+        }
         try {
           console.log('Sending message', msg)
-          this.socket.send(JSON.stringify({ key: this.store.user.clientId, vhost: (vhost || this.store.selectedVhost), msg }))
+          this.socket.send(JSON.stringify({ key: this.store.user.clientId, vhost, msg }))
           this.store.addMessage({
             direction: DIRECTIONS.OUT,
-            vhost: this.store.selectedVhost,
+            vhost,
             routingKey: this.store.user.targetId,
             time: this.timeDisplayFormat(),
             messageType: this.getReadableMessageType(msg.distributionKind),

@@ -16,10 +16,9 @@
         class="pl-1"
       />
       <v-badge
-        v-if="vhost"
         floating
         class="pl-1"
-        :color="'primary'"
+        color="primary"
         :content="vhost"
       />
     </div>
