@@ -77,15 +77,16 @@ useHead({
 
 <script>
 
-// import { mapGetters } from 'pinia';
 export default {
   name: 'JsonCreator',
   mixins: [mixinMessage],
   data () {
     return {
+      app: useNuxtApp(),
       toasts: [],
       store: useMainStore(),
       ajv: new Ajv({
+        code: { es5: true },
         allErrors: true,
         strict: false
       }),
@@ -150,24 +151,33 @@ export default {
     validateJson (json) {
       this.useSchema(this.currentMessageType.schema)
       // Then we validate using the schema
-      this.ajv.validate(this.currentMessageType.schema.title, json)
-      return this.ajv.errors
+      try {
+        this.ajv.validate(this.currentMessageType.schema.title, json)
+        return this.ajv.errors
+      } catch (error) {
+        return [
+          {
+            instancePath: '',
+            message: 'Un problème est survenu lors de la validation du message'
+          }
+        ]
+      }
     },
     updateCurrentMessage (form) {
       this.store.currentMessage = form
     },
     validateMessage () {
       for (const toastId of this.toasts) {
-        useNuxtApp().$toast.remove(toastId)
+        this.app.$toast.remove(toastId)
       }
       const validationResult = this.validateJson(this.trimEmptyValues(this.store.currentMessage))
       if (validationResult) {
         // Toast all errors, showing instance path at the start of the line
-        this.toasts.push(useNuxtApp().$toast.error(
+        this.toasts.push(this.app.$toast.error(
           validationResult.map(error => `${error.instancePath}/: ${error.message}`).join('<br>')
         ))
       } else {
-        this.toasts.push(useNuxtApp().$toast.success(
+        this.toasts.push(this.app.$toast.success(
           'Le message est valide'
         ))
       }
