@@ -3,6 +3,7 @@ import { defineStore } from 'pinia'
 
 export const useMainStore = defineStore('main', {
   state: () => ({
+    socket: null,
     currentMessage: null,
     currentUseCase: null,
     selectedSource: 'main',
