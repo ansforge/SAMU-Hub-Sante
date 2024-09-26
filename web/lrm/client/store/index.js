@@ -122,7 +122,6 @@ export const useMainStore = defineStore('main', {
     },
 
     loadSchemas (source) {
-      // ToDo: load schemas from github branch directly so it is up to date?
       source = source || 'schemas/json-schema/'
       return Promise.all(this.messageTypes.map(async ({ schemaName }, index) => {
         console.log('Loading schema from: ' + source + schemaName)

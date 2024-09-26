@@ -307,6 +307,16 @@ function submitMessage (step) {
   sendMessage(builtMessage)
 }
 
+/**
+ * Replaces values in a message using jsonpath:value pairs
+ */
+function replaceValues (message, requiredValues) {
+  requiredValues.forEach((entry) => {
+    jsonpath.value(message, entry.path, entry.value)
+  })
+  return message
+}
+
 function generateCaseId () {
   const currentDate = new Date()
   const year = currentDate.getFullYear().toString().slice(-2)
@@ -412,8 +422,7 @@ function checkMessage (message) {
       getAwaitedReferenceDistributionIdJson(currentTestStep)
     )
 
-    set(currentTestStep.message, 'validatedAcknowledgement', message.validatedAcknowledgement)
-
+    currentTestStep.message = message.validatedAcknowledgement
     if (message.validatedAcknowledgement) {
       validateMessage(selectedTypeCaseMessages.value.indexOf(message), false, true)
     }
