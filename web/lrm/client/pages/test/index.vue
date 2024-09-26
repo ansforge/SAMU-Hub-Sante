@@ -84,97 +84,93 @@
 </template>
 
 <script setup>
-import { useRuntimeConfig } from 'nuxt/app'
 import testCaseFile from '~/assets/test-cases.json'
 import { REPOSITORY_URL } from '@/constants'
 import mixinUser from '~/mixins/mixinUser'
 import { useMainStore } from '~/store'
 
+const store = useMainStore()
+const config = useRuntimeConfig()
+const router = useRouter()
+
+const testCaseFileAuto = ref([])
+const testCases = ref([])
+
 useHead({
   title: toRef(useMainStore(), 'testHeadTitle')
 })
 
-</script>
+onMounted(() => {
+  initialize()
+})
 
-<script>
-
-export default {
-  name: 'Test',
-  mixins: [mixinUser],
-  data () {
-    return {
-      config: useRuntimeConfig(),
-      store: useMainStore(),
-      testCaseFileAuto: [],
-      testCases: []
-    }
-  },
-  mounted () {
-    this.initialize()
-  },
-  methods: {
-    async initialize () {
-      await this.fetchGeneratedTestCases()
-      this.loadTestCases()
-    },
-    async fetchGeneratedTestCases () {
-      const response = await fetch(REPOSITORY_URL + this.config.public.modelBranch + '/csv_parser/out/test_cases.json')
-      if (response.ok) {
-        this.testCaseFileAuto = await response.json()
-      }
-    },
-    /**
+async function initialize () {
+  await fetchGeneratedTestCases()
+  loadTestCases()
+}
+async function fetchGeneratedTestCases () {
+  const response = await fetch(REPOSITORY_URL + config.public.modelBranch + '/csv_parser/out/test_cases.json')
+  if (response.ok) {
+    testCaseFileAuto.value = await response.json()
+  }
+}
+/**
      * Copies the test cases from the JSON file to the component data,
      * resetting any potential changes to the test cases made during
      * test execution.
      */
-    loadTestCases () {
-      // Generated test cases have 3 levels of verification for each required property, ergo we create 3 test cases from each generated test case (Adding 'Level 1/2/3' to the
-      // test case label and description)
-      const parsedTestCases = []
-      this.testCaseFileAuto.forEach((category) => {
-        const newTestCases = []
-        category.testCases.forEach((testCase) => {
-          for (let i = 1; i <= 3; i++) {
-            const newTestCase = JSON.parse(JSON.stringify(testCase))
-            newTestCase.label = `${newTestCase.label} - Level ${i}`
-            newTestCase.description = `${newTestCase.description} - Level ${i}`
-            // We only keep the required values for the current and previous levels
-            newTestCase.steps.forEach((step) => {
-              step.message.requiredValues = step.message.requiredValues.filter(requiredValue => requiredValue.verificationLevel <= i)
-            })
-            newTestCases.push(newTestCase)
-          }
+function loadTestCases () {
+  // Generated test cases have 3 levels of verification for each required property, ergo we create 3 test cases from each generated test case (Adding 'Level 1/2/3' to the
+  // test case label and description)
+  const parsedTestCases = []
+  testCaseFileAuto.value.forEach((category) => {
+    const newTestCases = []
+    category.testCases.forEach((testCase) => {
+      for (let i = 1; i <= 3; i++) {
+        const newTestCase = JSON.parse(JSON.stringify(testCase))
+        newTestCase.label = `${newTestCase.label} - Level ${i}`
+        newTestCase.description = `${newTestCase.description} - Level ${i}`
+        // We only keep the required values for the current and previous levels
+        newTestCase.steps.forEach((step) => {
+          step.message.requiredValues = step.message.requiredValues.filter(requiredValue => requiredValue.verificationLevel <= i)
         })
-        parsedTestCases.push({
-          categoryLabel: category.categoryLabel,
-          testCases: newTestCases
-        })
-      })
-      this.testCases = [
-        ...JSON.parse(JSON.stringify(testCaseFile)),
-        ...JSON.parse(JSON.stringify(parsedTestCases))
-      ]
-    },
-    loadTestCaseJsons (testCase) {
-      testCase.steps.forEach(async (step) => {
-        if (step.type === 'receive') {
-          const response = await fetch(REPOSITORY_URL + this.config.public.modelBranch + '/src/main/resources/sample/examples/' + step.message.file)
-          const json = await response.json()
-          this.$set(step, 'json', json)
-        }
-      })
-    },
-    goToTestCase (testCase) {
-      this.store.resetMessages()
-      this.navigateTo({
-        name: 'test-case',
-        params: {
-          testCase
-        }
-      })
+        newTestCases.push(newTestCase)
+      }
+    })
+    parsedTestCases.push({
+      categoryLabel: category.categoryLabel,
+      testCases: newTestCases
+    })
+  })
+  testCases.value = [
+    ...JSON.parse(JSON.stringify(testCaseFile)),
+    ...JSON.parse(JSON.stringify(parsedTestCases))
+  ]
+}
+function loadTestCaseJsons (testCase) {
+  testCase.steps.forEach(async (step) => {
+    if (step.type === 'receive') {
+      const response = await fetch(REPOSITORY_URL + config.public.modelBranch + '/src/main/resources/sample/examples/' + step.message.file)
+      const json = await response.json()
+      step.json = json
     }
-  }
+  })
+}
+function goToTestCase (testCase) {
+  store.resetMessages()
+  // Vue3 breaking change: [Vue Router warn]: Discarded invalid param(s) "testCase" when navigating.
+  // See https://github.com/vuejs/router/blob/main/packages/router/CHANGELOG.md#414-2022-08-22 for more details.
+  // So we just store the selected test case in the store and navigate to the test case page.
+  store.testCase = testCase
+  router.push({
+    name: 'test-case'
+  })
+}
+</script>
+
+<script>
+export default {
+  mixins: [mixinUser]
 }
 </script>
 <style>
