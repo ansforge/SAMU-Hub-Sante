@@ -94,12 +94,9 @@ class ExpressServer {
 
       ws.on('message', async (body) => {
         // Publish the message to RabbitMQ
-        const { key, msg } = JSON.parse(body);
-        let { vhost } = JSON.parse(body); // ToDo: migrate in const {..} above once if is removed below
+        const { key, msg, vhost } = JSON.parse(body);
         logger.info(`Received message from WebSocket client: ${msg.distributionID}`);
         logger.debug(`Received message from WebSocket client: ${msg.distributionID} of content ${body}`);
-        // ToDo: vHost should be passed directly in the message => remove this if and migrate vhost in const {...}
-        if (!vhost) { vhost = computeVhostFromMessage(msg); }
         logger.info(` [x] Sending msg ${msg.distributionID} to key ${key} (vhost: ${vhost})`);
         try {
           const { connection, channel } = await connectAsync(vhost);
