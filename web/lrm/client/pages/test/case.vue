@@ -150,8 +150,7 @@
 </template>
 
 <script setup>
-import { useRoute } from 'nuxt/app'
-import { onBeforeMount, onMounted, toRefs } from 'vue'
+import { onMounted, toRefs } from 'vue'
 import jsonpath from 'jsonpath'
 import mixinMessage from '~/mixins/mixinMessage'
 import { useMainStore } from '~/store'
@@ -167,27 +166,27 @@ const { testCase } = toRefs(store)
 const currentlySelectedStep = ref(1)
 const currentStep = ref(1)
 const selectedMessageIndex = ref(0)
-const selectedMessageType = ref('message')
-const selectedClientId = ref(null)
+// const selectedMessageType = ref('message')
+// const selectedClientId = ref(null)
 const selectedCaseIds = ref([])
 const handledLength = ref(0)
-const queueTypes = ref([
-  {
-    name: 'Message',
-    type: 'message',
-    icon: 'mdi-message'
-  },
-  {
-    name: 'Ack',
-    type: 'ack',
-    icon: 'mdi-check'
-  },
-  {
-    name: 'Info',
-    type: 'info',
-    icon: 'mdi-information'
-  }
-])
+// const queueTypes = ref([
+//   {
+//     name: 'Message',
+//     type: 'message',
+//     icon: 'mdi-message'
+//   },
+//   {
+//     name: 'Ack',
+//     type: 'ack',
+//     icon: 'mdi-check'
+//   },
+//   {
+//     name: 'Info',
+//     type: 'info',
+//     icon: 'mdi-information'
+//   }
+// ])
 
 onMounted(() => {
   selectedRequiredValuesIndex.value = null
@@ -229,11 +228,11 @@ const selectedTypeCaseMessages = computed(() => {
   )
 })
 
-const caseIds = computed(() => {
-  return [...new Set(selectedTypeMessages.value.map(function (m) {
-    return getCaseId(m, true)
-  }))]
-})
+// const caseIds = computed(() => {
+//   return [...new Set(selectedTypeMessages.value.map(function (m) {
+//     return getCaseId(m, true)
+//   }))]
+// })
 
 async function initialize () {
   await loadJsonSteps()
@@ -431,34 +430,34 @@ function checkMessage (message) {
   }
 }
 
-function checkAcknowledgementContainsReferenceDistributionId (message, requiredValues) {
-  const flattenedMessage = flattenObject(message)
-  const flattenedRequiredValues = flattenObject(requiredValues)
+// function checkAcknowledgementContainsReferenceDistributionId (message, requiredValues) {
+//   const flattenedMessage = flattenObject(message)
+//   const flattenedRequiredValues = flattenObject(requiredValues)
 
-  message.validatedValues = []
+//   message.validatedValues = []
 
-  for (const requiredProp in flattenedRequiredValues) {
-    let propFound = false
-    for (const messageProp in flattenedMessage) {
-      if (messageProp.endsWith(requiredProp)) {
-        if (flattenedMessage[messageProp] !== flattenedRequiredValues[requiredProp]) {
-          message.validatedValues.push({ valid: false, value: requiredValues })
-          return false
-        } else {
-          propFound = true
-          break
-        }
-      }
-    }
-    if (!propFound) {
-      message.validatedValues.push({ valid: false, value: requiredValues })
-      return false
-    }
-  }
+//   for (const requiredProp in flattenedRequiredValues) {
+//     let propFound = false
+//     for (const messageProp in flattenedMessage) {
+//       if (messageProp.endsWith(requiredProp)) {
+//         if (flattenedMessage[messageProp] !== flattenedRequiredValues[requiredProp]) {
+//           message.validatedValues.push({ valid: false, value: requiredValues })
+//           return false
+//         } else {
+//           propFound = true
+//           break
+//         }
+//       }
+//     }
+//     if (!propFound) {
+//       message.validatedValues.push({ valid: false, value: requiredValues })
+//       return false
+//     }
+//   }
 
-  message.validatedValues.push({ valid: true, value: requiredValues })
-  return true
-}
+//   message.validatedValues.push({ valid: true, value: requiredValues })
+//   return true
+// }
 
 function checkMessageContainsAllRequiredValues (message, requiredValues) {
   let valid = true
