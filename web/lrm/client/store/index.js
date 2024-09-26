@@ -1,13 +1,14 @@
+import { useRuntimeConfig } from 'nuxt/app'
 import { defineStore } from 'pinia'
-import { REPOSITORY_URL } from '@/constants'
 
-// export const strict = false
 export const useMainStore = defineStore('main', {
   state: () => ({
+    socket: null,
     currentMessage: null,
     currentUseCase: null,
     selectedSource: 'main',
     selectedSchema: 'RS-EDA',
+    selectedVhost: Object.keys(useRuntimeConfig().public.vhostMap)[0],
     _auth: {
       user: {
         clientId: null,
