@@ -13,8 +13,13 @@
         :direction="direction"
         :acked="acked"
         :distribution-id="body.distributionID"
-        :class="{ 'ml-5': store.showSentMessages }"
         class="pl-1"
+      />
+      <v-badge
+        floating
+        class="pl-1"
+        color="primary"
+        :content="vhost"
       />
     </div>
     <div class="elevation-4 pt-8" :class="{ 'grey lighten-4': isOut(direction) }">
@@ -83,6 +88,10 @@ export default {
       type: Boolean,
       default: false
     },
+    vhost: {
+      type: String,
+      required: true
+    },
     direction: {
       type: String,
       required: true
@@ -138,7 +147,7 @@ export default {
     sendAck () {
       try {
         const msg = this.buildAck(this.body.distributionID)
-        this.sendMessage(msg)
+        this.sendMessage(msg, this.vhost)
       } catch (error) {
         console.error("Erreur lors de l'envoi de l'acquittement", error)
       }
@@ -244,5 +253,10 @@ export default {
 
 .selected>*.elevation-4:last-child {
   box-shadow: 0px 2px 4px -1px rgba(6, 123, 202, 0.6), 0px 4px 5px 0px rgba(6, 123, 202, 0.5), 0px 1px 10px 0px rgba(6, 123, 202, 0.12) !important
+}
+
+.v-badge__badge {
+  position: relative;
+  left: auto !important;
 }
 </style>
