@@ -236,12 +236,6 @@ const selectedTypeCaseMessages = computed(() => {
   )
 })
 
-// const caseIds = computed(() => {
-//   return [...new Set(selectedTypeMessages.value.map(function (m) {
-//     return getCaseId(m, true)
-//   }))]
-// })
-
 async function initialize () {
   await loadJsonSteps()
 
@@ -406,35 +400,6 @@ function checkMessage (message) {
     return currentTestStep.validatedAcknowledgement && currentTestStep.validatedReceivedValues
   }
 }
-
-// function checkAcknowledgementContainsReferenceDistributionId (message, requiredValues) {
-//   const flattenedMessage = flattenObject(message)
-//   const flattenedRequiredValues = flattenObject(requiredValues)
-
-//   message.validatedValues = []
-
-//   for (const requiredProp in flattenedRequiredValues) {
-//     let propFound = false
-//     for (const messageProp in flattenedMessage) {
-//       if (messageProp.endsWith(requiredProp)) {
-//         if (flattenedMessage[messageProp] !== flattenedRequiredValues[requiredProp]) {
-//           message.validatedValues.push({ valid: false, value: requiredValues })
-//           return false
-//         } else {
-//           propFound = true
-//           break
-//         }
-//       }
-//     }
-//     if (!propFound) {
-//       message.validatedValues.push({ valid: false, value: requiredValues })
-//       return false
-//     }
-//   }
-
-//   message.validatedValues.push({ valid: true, value: requiredValues })
-//   return true
-// }
 
 function checkMessageContainsAllRequiredValues (message, requiredValues) {
   let valid = true
