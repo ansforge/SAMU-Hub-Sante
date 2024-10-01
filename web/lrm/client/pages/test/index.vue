@@ -1,8 +1,9 @@
 <template>
   <v-row justify="center">
     <v-col cols="12" sm="12">
-      <v-card-title class="text-h5">
+      <v-card-title class="d-flex text-h5">
         Sélection de cas de test
+        <vhost-selector class="mr-5" />
       </v-card-title>
       <v-list>
         <v-list-item
@@ -17,10 +18,9 @@
             <v-expansion-panel
               v-for="(testCase, caseIndex) in category.testCases"
               :key="testCase.label + '-' + caseIndex"
-              @click="loadTestCaseJsons(testCase)"
             >
               <v-expansion-panel-title class="ma-0 pa-0 pr-10">
-                <div style="flex: 0;">
+                <div style="flex: 1;">
                   <v-list-item-title>
                     <v-card-title class="pt-0 pb-0">
                       {{ testCase.label }}
@@ -48,29 +48,47 @@
                   Pas de test
                 </v-card-title>
                 <v-list>
-                  <v-timeline>
+                  <v-timeline side="end">
                     <v-timeline-item
                       v-for="(step, index) in testCase.steps"
                       :key="step.label"
-                      :left="step.type === 'send'"
-                      :right="step.type !== 'send'"
+                      :dot-color="step.type === 'send' ? 'secondary' : 'primary'"
                       :icon="step.type === 'send' ? 'mdi-upload' : 'mdi-download'"
                     >
-                      <v-card>
-                        <v-card-title>
-                          {{ index + 1 }}. {{ step.label }}
-                        </v-card-title>
-                        <v-card-subtitle>
-                          {{ step.description }}
-                        </v-card-subtitle>
-                        <v-card-text>
-                          <ul v-for="requiredValue in step.message.requiredValues" :key="requiredValue.index">
-                            <li>
-                              {{ requiredValue.path }} : {{ requiredValue.value }}
-                            </li>
-                          </ul>
-                        </v-card-text>
-                      </v-card>
+                      <template v-if="step.type === 'send'">
+                        <v-card class="test-step-card">
+                          <v-card-title>
+                            {{ index + 1 }}. {{ step.label }}
+                          </v-card-title>
+                          <v-card-subtitle>
+                            {{ step.description }}
+                          </v-card-subtitle>
+                          <v-card-text>
+                            <ul v-for="requiredValue in step.requiredValues" :key="requiredValue.index">
+                              <li>
+                                {{ requiredValue.path.join('.') }} : {{ requiredValue.value }}
+                              </li>
+                            </ul>
+                          </v-card-text>
+                        </v-card>
+                      </template>
+                      <template v-if="step.type === 'receive'" #opposite>
+                        <v-card class="test-step-card">
+                          <v-card-title>
+                            {{ index + 1 }}. {{ step.label }}
+                          </v-card-title>
+                          <v-card-subtitle>
+                            {{ step.description }}
+                          </v-card-subtitle>
+                          <v-card-text>
+                            <ul v-for="requiredValue in step.requiredValues" :key="requiredValue.index">
+                              <li>
+                                {{ requiredValue.path.join('.') }} : {{ requiredValue.value }}
+                              </li>
+                            </ul>
+                          </v-card-text>
+                        </v-card>
+                      </template>
                     </v-timeline-item>
                   </v-timeline>
                 </v-list>
@@ -84,6 +102,7 @@
 </template>
 
 <script setup>
+import jsonpath from 'jsonpath'
 import testCaseFile from '~/assets/test-cases.json'
 import { REPOSITORY_URL } from '@/constants'
 import mixinUser from '~/mixins/mixinUser'
@@ -119,42 +138,49 @@ async function fetchGeneratedTestCases () {
      * resetting any potential changes to the test cases made during
      * test execution.
      */
-function loadTestCases () {
-  // Generated test cases have 3 levels of verification for each required property, ergo we create 3 test cases from each generated test case (Adding 'Level 1/2/3' to the
-  // test case label and description)
+async function loadTestCases () {
   const parsedTestCases = []
-  testCaseFileAuto.value.forEach((category) => {
-    const newTestCases = []
-    category.testCases.forEach((testCase) => {
-      for (let i = 1; i <= 3; i++) {
-        const newTestCase = JSON.parse(JSON.stringify(testCase))
-        newTestCase.label = `${newTestCase.label} - Level ${i}`
-        newTestCase.description = `${newTestCase.description} - Level ${i}`
-        // We only keep the required values for the current and previous levels
-        newTestCase.steps.forEach((step) => {
-          step.message.requiredValues = step.message.requiredValues.filter(requiredValue => requiredValue.verificationLevel <= i)
+  for (const category of testCaseFileAuto.value) {
+    const newTestCases = ref([])
+    for (const testCase of category.testCases) {
+      const newTestCase = JSON.parse(JSON.stringify(testCase))
+      newTestCase.label = `${newTestCase.label}`
+      newTestCase.description = `${newTestCase.description}`
+      // We load the example files for test case steps
+      for (const step of newTestCase.steps) {
+        const response = await fetch(REPOSITORY_URL + config.public.modelBranch + '/src/main/resources/sample/examples/' + step.model + '/' + step.file)
+        const receivedMessage = await response.json()
+        // We transform the received message json to an array of jsonpaths
+        let jsonpaths = []
+        jsonpath.nodes(receivedMessage, '$..*').forEach((path) => {
+          jsonpaths.push(path)
         })
-        newTestCases.push(newTestCase)
+        // We're only interested in paths with simple values (no objects, but arrays are allowed)
+        jsonpaths = jsonpaths.filter((value) => {
+          return typeof value.value !== 'object'
+        })
+        // We filter out the properties in 'ignoredValues' from the jsonpaths array
+        jsonpaths = jsonpaths.filter((value) => {
+          return !step.ignoredValues.includes(value)
+        })
+        // We filter out datetime properties from the jsonpaths array using a regex \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}
+        jsonpaths = jsonpaths.filter((value) => {
+          return !/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}/.test(value.value)
+        })
+        step.json = receivedMessage
+        step.requiredValues = jsonpaths
       }
-    })
+      newTestCases.value.push(newTestCase)
+    }
     parsedTestCases.push({
       categoryLabel: category.categoryLabel,
-      testCases: newTestCases
+      testCases: newTestCases.value
     })
-  })
+  }
   testCases.value = [
     ...JSON.parse(JSON.stringify(testCaseFile)),
     ...JSON.parse(JSON.stringify(parsedTestCases))
   ]
-}
-function loadTestCaseJsons (testCase) {
-  testCase.steps.forEach(async (step) => {
-    if (step.type === 'receive') {
-      const response = await fetch(REPOSITORY_URL + config.public.modelBranch + '/src/main/resources/sample/examples/' + step.message.file)
-      const json = await response.json()
-      step.json = json
-    }
-  })
 }
 function goToTestCase (testCase) {
   store.resetMessages()
@@ -174,4 +200,20 @@ export default {
 }
 </script>
 <style>
+div.v-card.test-step-card {
+  padding: 1rem;
+  margin: 1rem;
+}
+div.v-timeline--vertical{
+  justify-content: start;
+}
+div.v-card-subtitle {
+  white-space: normal;
+}
+div.v-list-item-subtitle {
+  margin-bottom: 0.5rem;
+}
+div.v-list-item-title {
+  margin-top: 0.5rem;
+}
 </style>
