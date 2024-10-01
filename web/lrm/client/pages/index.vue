@@ -20,7 +20,7 @@
                 :items="[...clientIds.keys()]"
                 :rules="[rules.required]"
               />
-              <v-icon flat @click="swap">
+              <v-icon class="mb-4" @click="swap">
                 mdi-swap-vertical
               </v-icon>
               <v-combobox
@@ -28,10 +28,6 @@
                 label="ID du système cible"
                 :items="targetClientIds"
                 :rules="[rules.required, rules.testTargetId]"
-              />
-              <v-checkbox
-                v-model="form.tester"
-                label="Interface de test"
               />
               <v-alert
                 v-if="alert.show"
@@ -44,11 +40,21 @@
                 {{ alert.message }}
               </v-alert>
               <v-btn
+                color="primary"
+                class="mb-5"
                 block
                 type="submit"
-                @click.prevent="login"
+                @click.prevent="login('/demo')"
               >
-                Se connecter
+                Interface de démo
+              </v-btn>
+              <v-btn
+                color="primary"
+                block
+                type="submit"
+                @click.prevent="login('/test')"
+              >
+                Interface de test
               </v-btn>
             </v-form>
           </v-card-text>
@@ -103,10 +109,10 @@ export default {
     }
   },
   methods: {
-    async login () {
+    async login (target) {
       if (!this.$refs.form.validate()) { return }
-      const loggedInUser = await this.store.logInUser(this.form)
-      await navigateTo(loggedInUser.tester ? '/test' : '/demo')
+      await this.store.logInUser(this.form)
+      await navigateTo(target)
     },
     swap () {
       const clientId = this.form.clientId
