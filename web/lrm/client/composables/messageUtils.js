@@ -1,4 +1,10 @@
-import { DIRECTIONS } from '@/constants'
+import moment from 'moment/moment'
+import { v4 as uuidv4 } from 'uuid'
+import { EDXL_ENVELOPE, DIRECTIONS } from '@/constants'
+import { useMainStore } from '~/store'
+const VALUES_TO_DROP = [null, undefined, '']
+
+const store = useMainStore()
 
 export function isOut (direction) {
   return direction === DIRECTIONS.OUT
@@ -58,5 +64,126 @@ export function getMessageType (message) {
     return 'info'
   } else {
     return 'message'
+  }
+}
+
+/**
+ * Sets the case ID in the message to the current case ID
+ * @param {*} message
+ * @param {*} caseId
+ * @param {*} localCaseId
+ */
+export function setCaseId (message, caseId, localCaseId) {
+  switch (getMessageKind(message)) {
+    case 'RC-EDA':
+      message.createCase.caseId = caseId
+      message.createCase.senderCaseId = localCaseId
+      break
+    case 'EMSI':
+      message.emsi.EVENT.MAIN_EVENT_ID = caseId
+      message.emsi.EVENT.ID = localCaseId
+      break
+    case 'RS-EDA':
+      message.createCaseHealth.caseId = caseId
+      message.createCaseHealth.senderCaseId = localCaseId
+      break
+  }
+}
+
+export function buildMessage (innerMessage, distributionKind = 'Report') {
+  const message = JSON.parse(JSON.stringify(EDXL_ENVELOPE)) // Deep copy
+  const formattedInnerMessage = formatIdsInMessage(innerMessage)
+  message.content[0].jsonContent.embeddedJsonContent.message = {
+    ...message.content[0].jsonContent.embeddedJsonContent.message,
+    ...formattedInnerMessage
+  }
+  const name = store.user.clientId.split('.').splice(2).join('.')
+  const targetId = store.user.targetId
+  const sentAt = moment().format()
+  message.distributionID = `${store.user.clientId}_${uuidv4()}`
+  message.distributionKind = distributionKind
+  message.senderID = store.user.clientId
+  message.dateTimeSent = sentAt
+  message.descriptor.explicitAddress.explicitAddressValue = targetId
+  message.content[0].jsonContent.embeddedJsonContent.message.messageId = message.distributionID
+  message.content[0].jsonContent.embeddedJsonContent.message.kind = message.distributionKind
+  message.content[0].jsonContent.embeddedJsonContent.message.sender = { name, URI: `hubex:${store.user.clientId}` }
+  message.content[0].jsonContent.embeddedJsonContent.message.sentAt = sentAt
+  message.content[0].jsonContent.embeddedJsonContent.message.recipient = [{ name: store.user.targetId.split('.').splice(2).join('.'), URI: `hubex:${targetId}` }]
+  return trimEmptyValues(message)
+}
+
+function formatIdsInMessage (innerMessage) {
+  // Check the entire message for occurences of {senderName} and replace it with the actual sender name
+  const senderName = store.user.targetId.split('.').splice(2).join('.')
+  let jsonString = JSON.stringify(innerMessage)
+  jsonString = jsonString.replaceAll('samu690', senderName)
+  return JSON.parse(jsonString)
+}
+
+function trimEmptyValues (obj) {
+  return Object.entries(obj).reduce((acc, [key, value]) => {
+    if (!(VALUES_TO_DROP.includes(value) || isEmpty(value))) {
+      if (typeof value !== 'object') {
+        acc[key] = value
+      } else {
+        value = trimEmptyValues(value)
+        if (!isEmpty(value)) {
+          acc[key] = value
+        }
+      }
+    }
+    return Array.isArray(obj) ? Object.values(acc) : acc
+  }, {})
+}
+
+function isEmpty (obj) {
+  if (typeof obj === 'object') {
+    return Object.keys(obj).length === 0
+  }
+  return false
+}
+
+export function sendMessage (msg, vhost = null) {
+  if (store.socket.readyState === 1) {
+    if (!vhost) {
+      vhost = store.selectedVhost
+    }
+    try {
+      console.log('Sending message', msg)
+      store.socket.send(JSON.stringify({ key: store.user.clientId, vhost, msg }))
+      store.addMessage({
+        direction: DIRECTIONS.OUT,
+        vhost,
+        routingKey: store.user.targetId,
+        time: timeDisplayFormat(),
+        messageType: getReadableMessageType(msg.distributionKind),
+        body: msg
+      })
+    } catch (e) {
+      alert(`Erreur lors de l'envoi du message: ${e}`)
+    }
+  } else {
+    // TODO: Add proper retry logic here with either exponential backoff or a retry limit
+    console.log('Socket is not open. Retrying in half a second.')
+    setTimeout(() => {
+      sendMessage(msg)
+    }, 500)
+  }
+}
+
+function timeDisplayFormat () {
+  const d = new Date()
+  return d.toLocaleTimeString('fr').replace(':', 'h') + '.' + String(new Date().getMilliseconds()).padStart(3, '0')
+}
+
+function getReadableMessageType (messageType) {
+  switch (messageType) {
+    case 'Ack':
+      return 'Ack'
+    case 'Error':
+      return 'Info'
+    default:
+      return 'Message'
   }
 }
