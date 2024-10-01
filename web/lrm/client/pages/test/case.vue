@@ -2,8 +2,9 @@
   <v-row justify="center">
     <v-col cols="12" sm="7">
       <v-card class="main-card" style="height: 86vh;">
-        <v-card-title class="text-h5 pb-0">
+        <v-card-title class="d-flex text-h5 pb-0">
           Cas de test <span class="font-weight-bold">&nbsp;{{ testCase?.label }} </span>
+          <vhost-selector class="mr-5" />
         </v-card-title>
         <v-card-actions class="pt-0" style="flex-direction: column;">
           <v-container class="pt-0" full-width>
@@ -11,16 +12,18 @@
               <v-stepper-header>
                 <template v-for="(step, index) in testCase?.steps" :key="'step' + index">
                   <v-col>
-                    <v-stepper-step
+                    <v-stepper-item
                       :key="index"
+                      :value="index+1"
+                      editable
                       style="cursor: pointer;"
                       :color="getStepColor(index)"
-                      :complete="index < currentStep-1"
                       :step="index+1"
-                      @click="currentlySelectedStep=index+1"
+                      edit-icon="mdi-circle"
+                      @click="goToStep(index+1)"
                     >
                       {{ step.label }}
-                    </v-stepper-step>
+                    </v-stepper-item>
                   </v-col>
                   <v-divider v-if="index < testCase?.steps.length - 1" :key="'divider' + index" />
                 </template>
@@ -43,7 +46,7 @@
                       :key="message.time"
                       :dense="true"
                       :validated-values-count="message?.validatedValues?.filter(value => value.valid).length"
-                      :required-values-count="testCase?.steps[message.relatedStep]?.type === 'send' ? testCase?.steps[message.relatedStep]?.message?.requiredValues?.length : 1"
+                      :required-values-count="testCase?.steps[message.relatedStep]?.type === 'send' ? testCase?.steps[message.relatedStep]?.requiredValues?.length : 1"
                       v-bind="message"
                       class="message mb-4"
                       :class="{ stale: message.stale, validated: message.validated, selected: selectedMessageIndex === index }"
@@ -78,36 +81,45 @@
               <p v-if="getAwaitedValues(testCase?.steps[currentStep-1]) === null">
                 En attente de la réception de l'ID de distribution...
               </p>
-              <v-list v-for="(requiredValue, name, index) in getAwaitedValues(testCase?.steps[currentStep-1])" :key="'requiredValue' + index">
-
-                <span style="display: flex; flex-direction: row; align-items: center;">
-                  <pre class="values">{{ name }} : {{ requiredValue.value }}</pre>
-                </span>
-
-              </v-list>
-              <v-list v-if="testCase?.steps[currentStep-1]?.type === 'receive'">
-                <!-- Generate an input for each requiredValue with the path used as label. User will enter a value for each requiredValue and then press a button to verify that all the values entered correspond to the values in the requiredValues-->
-                <v-list-item v-for="(requiredValue, index) in testCase?.steps[currentStep-1].message.requiredValues" :key="'requiredValue' + index">
-
-                  <v-icon v-if="requiredValue.valid " style="flex:0" color="success">
-                    mdi-check
-                  </v-icon>
-                  <v-icon v-else style="flex:0" color="error">
-                    mdi-close
-                  </v-icon>
-                  <v-text-field
-                    v-model="requiredValue.enteredValue"
-                    :label="requiredValue.path"
-                    :rules="[v => !!v || 'Valeur requise']"
-                    required
-                  />
-
+              <v-list>
+                <v-list-item v-for="(requiredValue, name, index) in getAwaitedValues(testCase?.steps[currentStep-1])" :key="'requiredValue' + index">
+                  <span style="display: flex; flex-direction: row; align-items: center;">
+                    <pre class="values"><b>{{ name }}:</b><br> {{ requiredValue.value }}</pre>
+                  </span>
                 </v-list-item>
-                <!-- Button that would execute the verification of value conformity -->
-                <v-btn v-if="!testCase?.steps[currentStep-1].message.validatedReceivedValues" color="primary" @click="validateEnteredValues(currentStep-1)">
-                  Valider
-                </v-btn>
               </v-list>
+              <v-btn v-if="testCase?.steps[currentStep-1]?.type === 'receive'" color="primary" @click="submitMessage(testCase?.steps[currentStep-1])">
+                Re-envoyer le message
+              </v-btn>
+            </v-card-text>
+
+            <v-card-title>
+              Valeurs reçues dans le message
+            </v-card-title>
+            <v-card-text v-if="testCase?.steps[currentStep-1]?.type === 'receive'">
+              <v-list>
+                <!-- Generate a list of paths:values from required values and add three buttons for each entry, letting user indicate whether the value they received is correct, 'somewhat' correct or incorrect-->
+                <v-list-item v-for="(requiredValue, index) in testCase?.steps[currentStep-1].requiredValues" :key="'requiredValue' + index" class="received-values-list">
+                  <span class="d-flex flex-row align-center">
+                    <span class="confirmation-buttons d-flex flex-row">
+                      <!-- Grey out buttons that do not correspond to the validation state if the value has already been validated -->
+                      <v-btn density="compact" icon="mdi-check" :color="(requiredValue.valid === 'valid' || requiredValue.valid === undefined) ? 'success' : 'grey' " @click="requiredValue.valid = 'valid'" />
+                      <v-btn density="compact" icon="mdi-tilde" :color="(requiredValue.valid === 'approximate' || requiredValue.valid === undefined) ? 'warning' : 'grey' " @click="requiredValue.valid = 'approximate'" />
+                      <v-btn density="compact" icon="mdi-close" :color="(requiredValue.valid === 'invalid' || requiredValue.valid === undefined) ? 'error' : 'grey' " @click="requiredValue.valid = 'invalid'" />
+                    </span>
+                    <span>
+                      <pre class="values" :style="{color: requiredValue.valid === 'valid' ? 'green' : requiredValue.valid === 'approximate' ? 'orange' : requiredValue.valid === 'invalid' ? 'red' : 'black'}"><b>{{ requiredValue.path.join('.') }}:</b> <br>{{ requiredValue.value }}</pre>
+                    </span>
+
+                  </span>
+                </v-list-item>
+              </v-list>
+            </v-card-text>
+            <v-card-text>
+              <!-- Button that validates the step and goes to the next -->
+              <v-btn v-if="!testCase?.steps[currentStep-1].validatedReceivedValues" color="primary" @click="validateStep(currentStep-1)">
+                Passer à l'étape suivante
+              </v-btn>
             </v-card-text>
           </span>
           <!-- Currently selected message's valid and invalid required values -->
@@ -116,23 +128,20 @@
               {{ 'Valeurs reçues dans le message séléctionné' }}
             </v-card-title>
             <v-card-text>
-              <v-list v-for="(validatedValue, index) in selectedMessage?.validatedValues" :key="'validatedValue' + index">
-                <v-list-item-content class="d-flex flex-wrap">
-                  <v-icon v-if="validatedValue.valid" style="flex:0" color="success">
-                    mdi-check
-                  </v-icon> <v-icon v-else style="flex:0" color="error">
-                    mdi-close
-                  </v-icon>
-                  <pre class="values">{{ validatedValue?.value?.path }} : {{ validatedValue?.value?.value }} <span v-if="!validatedValue?.valid" class="wrong-received"> (Reçu: {{ validatedValue?.receivedValue || 'null' }}) </span></pre>
-                </v-list-item-content>
+              <v-list>
+                <v-list-item v-for="(validatedValue, index) in selectedMessage?.validatedValues" :key="'validatedValue' + index" class="d-flex flex-row flex-wrap">
+                  <span class="d-flex flex-row flex-wrap">
+                    <v-icon v-if="validatedValue.valid" style="flex:0" color="success">
+                      mdi-check
+                    </v-icon> <v-icon v-else style="flex:0" color="error">
+                      mdi-close
+                    </v-icon>
+                    <pre class="values"><b>{{ validatedValue?.value?.path?.join('.') }}:</b> <br>{{ validatedValue?.value?.value }}<br><span v-if="!validatedValue?.valid" class="wrong-received">(Reçu: {{ validatedValue?.receivedValue || 'null' }}) </span></pre>
+                  </span>
+                </v-list-item>
               </v-list>
             </v-card-text>
           </span>
-          <v-card-actions v-if="testCase?.steps[currentStep-1]?.type === 'receive'">
-            <v-btn color="primary" @click="submitMessage(testCase?.steps[currentStep-1])">
-              Re-envoyer le message
-            </v-btn>
-          </v-card-actions>
         </template>
         <template v-else>
           <v-card-title>
@@ -155,7 +164,7 @@ import jsonpath from 'jsonpath'
 import mixinMessage from '~/mixins/mixinMessage'
 import { useMainStore } from '~/store'
 import { REPOSITORY_URL } from '@/constants'
-import { isOut, getCaseId, getMessageType } from '~/composables/messageUtils.js'
+import { isOut, getCaseId, getMessageType, setCaseId, buildMessage, sendMessage } from '~/composables/messageUtils.js'
 
 const store = useMainStore()
 const config = useRuntimeConfig()
@@ -193,7 +202,6 @@ onMounted(() => {
   currentCaseId.value = null
   localCaseId.value = generateCaseId()
   currentStep.value = 1
-  selectRandomValuesForTestCase()
   initialize()
 })
 
@@ -242,21 +250,10 @@ async function initialize () {
   }
 }
 
-function selectRandomValuesForTestCase () {
-  selectedRequiredValuesIndex.value = getRequiredValuesIndex()
-  testCase.value.steps.forEach((step) => {
-    step.message.requiredValues = selectRandomValuesForStep(step.message)
-  })
-}
-
-function getRequiredValuesIndex () {
-  return Math.floor(Math.random() * testCase.value.steps[0].message.requiredValues[0].value.length)
-}
-
 async function loadJsonSteps () {
   for (const step of testCase.value.steps) {
     if (step.type === 'receive') {
-      const response = await fetch(REPOSITORY_URL + config.public.modelBranch + '/src/main/resources/sample/examples/' + step.message.file)
+      const response = await fetch(REPOSITORY_URL + config.public.modelBranch + '/src/main/resources/sample/examples/' + step.model + '/' + step.file)
       const json = await response.json()
       step.json = json
     }
@@ -294,15 +291,20 @@ function nextStep () {
   }
 }
 
+function goToStep (step) {
+  currentStep.value = step
+  currentlySelectedStep.value = step
+}
+
 function submitMessage (step) {
   let message = step.json
-  message = replaceValues(message, step.message.requiredValues)
+  message = replaceValues(message, step.requiredValues)
   if (!currentCaseId.value) {
     currentCaseId.value = localCaseId.value
   }
   setCaseId(message, currentCaseId.value, localCaseId.value)
   const builtMessage = buildMessage(message)
-  testCase.value.steps[currentStep.value - 1].message.awaitedReferenceDistributionID = builtMessage.distributionID
+  testCase.value.steps[currentStep.value - 1].awaitedReferenceDistributionID = builtMessage.distributionID
   sendMessage(builtMessage)
 }
 
@@ -311,7 +313,7 @@ function submitMessage (step) {
  */
 function replaceValues (message, requiredValues) {
   requiredValues.forEach((entry) => {
-    jsonpath.value(message, entry.path, entry.value)
+    jsonpath.value(message, entry.path.join('.'), entry.value)
   })
   return message
 }
@@ -331,8 +333,8 @@ function generateCaseId () {
 function getAwaitedValues (step) {
   if (step.type === 'send') {
     const requiredValuesObject = {}
-    step.message.requiredValues.forEach((entry) => {
-      requiredValuesObject[entry.path] = {
+    step.requiredValues.forEach((entry) => {
+      requiredValuesObject[entry.path.join('.')] = {
         value: entry.value,
         valid: entry.valid
       }
@@ -343,30 +345,16 @@ function getAwaitedValues (step) {
   }
 }
 
-function validateEnteredValues (stepIndex) {
-  const requiredValues = testCase.value.steps[stepIndex].message.requiredValues
-  let valid = true
-  requiredValues.forEach((entry) => {
-    if (entry.enteredValue !== String(entry.value)) {
-      valid = false
-      entry.valid = false
-    } else {
-      entry.valid = true
-    }
-  })
-  if (valid) {
-    testCase.value.steps[stepIndex].message.validatedReceivedValues = true
-    if (testCase.value.steps[stepIndex].message.validatedAcknowledgement) {
-      nextStep()
-    }
-  }
+function validateStep (stepIndex) {
+  testCase.value.steps[stepIndex].validatedReceivedValues = true
+  nextStep()
 }
 
 function getAwaitedReferenceDistributionIdJson (step) {
   return [
     {
-      path: '$.reference.distributionID',
-      value: step?.message?.awaitedReferenceDistributionID
+      path: ['$', 'reference', 'distributionID'],
+      value: step?.awaitedReferenceDistributionID
     }
   ]
 }
@@ -374,7 +362,7 @@ function getAwaitedReferenceDistributionIdJson (step) {
 function getAwaitedReferenceDistributionObject (step) {
   return {
     '$.reference.distributionID': {
-      value: step?.message?.awaitedReferenceDistributionID
+      value: step?.awaitedReferenceDistributionID
     }
   }
 }
@@ -399,34 +387,23 @@ function flattenObject (ob) {
   return toReturn
 }
 
-function selectRandomValuesForStep (step) {
-  const selectedValues = []
-  step.requiredValues.forEach((entry, index) => {
-    selectedValues[index] = {
-      path: entry.path,
-      value: Array.isArray(entry.value) ? entry.value[selectedRequiredValuesIndex.value] : entry.value
-    }
-  })
-  return selectedValues
-}
-
 function checkMessage (message) {
   const currentTestStep = testCase.value.steps[currentStep.value - 1]
 
   if (currentTestStep.type === 'send') {
-    return checkMessageContainsAllRequiredValues(message, currentTestStep.message.requiredValues)
-  } else if (!currentTestStep.message.validatedAcknowledgement) {
+    return checkMessageContainsAllRequiredValues(message, currentTestStep.requiredValues)
+  } else if (!currentTestStep.validatedAcknowledgement) {
     message.validatedAcknowledgement = checkMessageContainsAllRequiredValues(
       message,
       getAwaitedReferenceDistributionIdJson(currentTestStep)
     )
 
-    currentTestStep.message = message.validatedAcknowledgement
+    currentTestStep.validatedAcknowledgement = message.validatedAcknowledgement
     if (message.validatedAcknowledgement) {
       validateMessage(selectedTypeCaseMessages.value.indexOf(message), false, true)
     }
 
-    return currentTestStep.message.validatedAcknowledgement && currentTestStep.message.validatedReceivedValues
+    return currentTestStep.validatedAcknowledgement && currentTestStep.validatedReceivedValues
   }
 }
 
@@ -464,7 +441,7 @@ function checkMessageContainsAllRequiredValues (message, requiredValues) {
   const validatedValues = []
 
   requiredValues.forEach(function (element) {
-    const result = jsonpath.query(message.body.content[0].jsonContent.embeddedJsonContent.message, element.path)
+    const result = jsonpath.query(message.body.content[0].jsonContent.embeddedJsonContent.message, element.path.join('.'))
     if (result.length === 0 || !result.includes(element.value)) {
       valid = false
       element.valid = false
@@ -520,8 +497,8 @@ watch(selectedTypeCaseMessages, (newMessages) => {
       if (!lastMessage.isOut) {
         if (checkMessage(lastMessage)) {
           const shouldStayOnStep = testCase.value.steps[currentStep.value - 1].type === 'receive' &&
-                !(testCase.value.steps[currentStep.value - 1].message.validatedAcknowledgement &&
-                  testCase.value.steps[currentStep.value - 1].message.validatedReceivedValues)
+                !(testCase.value.steps[currentStep.value - 1].validatedAcknowledgement &&
+                  testCase.value.steps[currentStep.value - 1].validatedReceivedValues)
           validateMessage(newMessages.indexOf(lastMessage), true, shouldStayOnStep)
         }
       }
@@ -545,6 +522,9 @@ export default {
 </script>
 
 <style scoped>
+div.v-stepper-header>div.v-col {
+  flex-basis: auto;
+}
 h1 {
   color: blue;
 }
@@ -602,10 +582,15 @@ div.stepper.v-stepper {
 pre.values {
   flex: 1;
   text-wrap: wrap;
-  line-break: anywhere;
+  line-break: auto;
+  padding-left: 0.5rem;
 }
 
 .v-stepper__header {
   height: auto;
+}
+
+span.confirmation-buttons>button {
+  margin: 6px;
 }
 </style>
