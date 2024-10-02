@@ -14,7 +14,7 @@
           <v-card-title class="text-h5">
             {{ category.categoryLabel }}
           </v-card-title>
-          <v-expansion-panels>
+          <v-expansion-panels class="pa-1">
             <v-expansion-panel
               v-for="(testCase, caseIndex) in category.testCases"
               :key="testCase.label + '-' + caseIndex"
@@ -37,7 +37,7 @@
                     class="ml-3 mr-3"
                     style="flex-grow: 0; max-width: fit-content;"
                     color="primary"
-                    @click="goToTestCase(testCase)"
+                    @click="goToTestCase(testCase,$event)"
                   >
                     Sélectionner
                   </v-btn>
@@ -182,7 +182,8 @@ async function loadTestCases () {
     ...JSON.parse(JSON.stringify(parsedTestCases))
   ]
 }
-function goToTestCase (testCase) {
+function goToTestCase (testCase, event) {
+  event.stopPropagation()
   store.resetMessages()
   // Vue3 breaking change: [Vue Router warn]: Discarded invalid param(s) "testCase" when navigating.
   // See https://github.com/vuejs/router/blob/main/packages/router/CHANGELOG.md#414-2022-08-22 for more details.
@@ -215,5 +216,8 @@ div.v-list-item-subtitle {
 }
 div.v-list-item-title {
   margin-top: 0.5rem;
+}
+.v-list {
+  border-radius: 4px;
 }
 </style>

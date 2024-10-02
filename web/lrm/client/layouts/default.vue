@@ -89,3 +89,10 @@ export default {
   }
 }
 </script>
+
+<style>
+.v-main {
+  background-color: rgba(0, 0, 0, 0.01);
+  padding-bottom: 1.8rem !important;
+}
+</style>
