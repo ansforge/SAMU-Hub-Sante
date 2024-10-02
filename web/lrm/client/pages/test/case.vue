@@ -293,7 +293,7 @@ function goToStep (step) {
 function submitMessage (step) {
   let message = step.json
   message = replaceValues(message, step.requiredValues)
-  if (step.idReplacementValues) {
+  if (step.idOverrideProperties) {
     message = overrideIds(message, step.idOverrideProperties)
   }
   if (!currentCaseId.value) {
