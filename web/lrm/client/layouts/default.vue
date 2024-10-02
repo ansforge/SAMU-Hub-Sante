@@ -46,9 +46,7 @@
         <slot />
       </v-container>
     </v-main>
-    <v-footer
-      app
-    >
+    <v-footer app>
       <span><a :href=" repositoryUrl + 'tree/' + $config.public.modelBranch ">SAMU Hub Modeles - v{{ $config.public.modelBranch }}</a> &copy; {{ new Date().getFullYear() }}</span>
     </v-footer>
   </v-app>
@@ -91,8 +89,12 @@ export default {
 </script>
 
 <style>
+header.v-toolbar {
+  position: sticky !important;
+}
 .v-main {
   background-color: rgba(0, 0, 0, 0.01);
   padding-bottom: 1.8rem !important;
+  padding-top: 0 !important;
 }
 </style>

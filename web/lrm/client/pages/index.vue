@@ -13,7 +13,7 @@
             <div class="subheading">
               Choisissez le lien que vous voulez tester
             </div>
-            <v-form ref="form">
+            <v-form ref="form" action="#" @submit.prevent="">
               <v-select
                 v-model="form.clientId"
                 label="ID du système utilisé"
@@ -40,19 +40,21 @@
                 {{ alert.message }}
               </v-alert>
               <v-btn
+                id="demo-login-button"
                 color="primary"
                 class="mb-5"
                 block
                 type="submit"
-                @click.prevent="login('/demo')"
+                @click="login('/demo')"
               >
                 LRM de test
               </v-btn>
               <v-btn
+                id="test-login-button"
                 color="primary"
                 block
                 type="submit"
-                @click.prevent="login('/test')"
+                @click="login('/test')"
               >
                 Recette guidée
               </v-btn>
@@ -110,7 +112,7 @@ export default {
   },
   methods: {
     async login (target) {
-      if (!this.$refs.form.validate()) { return }
+      if (!(await this.$refs.form.validate()).valid) { return }
       await this.store.logInUser(this.form)
       await navigateTo(target)
     },
