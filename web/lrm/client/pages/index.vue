@@ -46,7 +46,7 @@
                 type="submit"
                 @click.prevent="login('/demo')"
               >
-                Interface de démo
+                LRM de test
               </v-btn>
               <v-btn
                 color="primary"
@@ -54,7 +54,7 @@
                 type="submit"
                 @click.prevent="login('/test')"
               >
-                Interface de test
+                Recette guidée
               </v-btn>
             </v-form>
           </v-card-text>
