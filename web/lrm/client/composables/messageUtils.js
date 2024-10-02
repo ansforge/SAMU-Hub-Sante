@@ -1,7 +1,9 @@
 import moment from 'moment/moment'
 import { v4 as uuidv4 } from 'uuid'
+import { clientInfos } from './userUtils'
 import { EDXL_ENVELOPE, DIRECTIONS } from '@/constants'
 import { useMainStore } from '~/store'
+
 const VALUES_TO_DROP = [null, undefined, '']
 
 const store = useMainStore()
@@ -97,7 +99,7 @@ export function buildMessage (innerMessage, distributionKind = 'Report') {
     ...message.content[0].jsonContent.embeddedJsonContent.message,
     ...formattedInnerMessage
   }
-  const name = store.user.clientId.split('.').splice(2).join('.')
+  const name = clientInfos().name
   const targetId = store.user.targetId
   const sentAt = moment().format()
   message.distributionID = `${store.user.clientId}_${uuidv4()}`
@@ -109,13 +111,13 @@ export function buildMessage (innerMessage, distributionKind = 'Report') {
   message.content[0].jsonContent.embeddedJsonContent.message.kind = message.distributionKind
   message.content[0].jsonContent.embeddedJsonContent.message.sender = { name, URI: `hubex:${store.user.clientId}` }
   message.content[0].jsonContent.embeddedJsonContent.message.sentAt = sentAt
-  message.content[0].jsonContent.embeddedJsonContent.message.recipient = [{ name: store.user.targetId.split('.').splice(2).join('.'), URI: `hubex:${targetId}` }]
+  message.content[0].jsonContent.embeddedJsonContent.message.recipient = [{ name: clientInfos().name, URI: `hubex:${targetId}` }]
   return trimEmptyValues(message)
 }
 
 function formatIdsInMessage (innerMessage) {
   // Check the entire message for occurences of {senderName} and replace it with the actual sender name
-  const senderName = store.user.targetId.split('.').splice(2).join('.')
+  const senderName = clientInfos().name
   let jsonString = JSON.stringify(innerMessage)
   jsonString = jsonString.replaceAll('samu690', senderName)
   return JSON.parse(jsonString)
