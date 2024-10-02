@@ -293,6 +293,9 @@ function goToStep (step) {
 function submitMessage (step) {
   let message = step.json
   message = replaceValues(message, step.requiredValues)
+  if (step.idReplacementValues) {
+    message = overrideIds(message, step.idOverrideProperties)
+  }
   if (!currentCaseId.value) {
     currentCaseId.value = localCaseId.value
   }
@@ -309,6 +312,16 @@ function replaceValues (message, requiredValues) {
   requiredValues.forEach((entry) => {
     jsonpath.value(message, entry.path.join('.'), entry.value)
   })
+  return message
+}
+
+/**
+ * Replaces specified values with currently connected client's clientId
+ */
+function overrideIds (message, idReplacementPaths) {
+  for (const path of idReplacementPaths) {
+    jsonpath.value(message, path, store.user.clientId)
+  }
   return message
 }
 
