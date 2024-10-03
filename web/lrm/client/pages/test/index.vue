@@ -103,7 +103,6 @@
 
 <script setup>
 import jsonpath from 'jsonpath'
-import testCaseFile from '~/assets/test-cases.json'
 import { REPOSITORY_URL } from '@/constants'
 import mixinUser from '~/mixins/mixinUser'
 import { useMainStore } from '~/store'
@@ -178,7 +177,6 @@ async function loadTestCases () {
     })
   }
   testCases.value = [
-    ...JSON.parse(JSON.stringify(testCaseFile)),
     ...JSON.parse(JSON.stringify(parsedTestCases))
   ]
 }

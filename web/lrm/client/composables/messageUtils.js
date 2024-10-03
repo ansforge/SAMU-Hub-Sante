@@ -56,6 +56,8 @@ function getMessageKind (message) {
     return 'RS-RR'
   } else if (message.resourcesStatus) {
     return 'RS-SR'
+  } else if (message.rpis) {
+    return 'RPIS'
   }
 }
 
@@ -88,6 +90,25 @@ export function setCaseId (message, caseId, localCaseId) {
     case 'RS-EDA':
       message.createCaseHealth.caseId = caseId
       message.createCaseHealth.senderCaseId = localCaseId
+      break
+    case 'RS-EDA-MAJ':
+      message.createCaseHealthUpdate.caseId = caseId
+      message.createCaseHealthUpdate.senderCaseId = localCaseId
+      break
+    case 'RS-RI':
+      message.resourcesInfo.caseId = caseId
+      break
+    case 'RS-SR':
+      message.resourcesStatus.caseId = caseId
+      break
+    case 'RS-DR':
+      message.resourcesRequest.caseId = caseId
+      break
+    case 'RS-RR':
+      message.resourcesResponse.caseId = caseId
+      break
+    case 'RPIS':
+      message.rpis.context.caseId = caseId
       break
   }
 }
