@@ -1,13 +1,15 @@
 <template>
-  <v-combobox
-    v-model="selectedVhost"
-    :items="vhosts"
-    label="vHost"
-    class="ml-4 pl-4"
-    density="compact"
-    hide-details
-    variant="outlined"
-  />
+  <span id="vhost-selector">
+    <v-combobox
+      v-model="selectedVhost"
+      :items="vhosts"
+      label="vHost"
+      class="ml-4 pl-4"
+      density="compact"
+      hide-details
+      variant="outlined"
+    />
+  </span>
 </template>
 
 <script setup>
