@@ -78,8 +78,6 @@ useHead({
 </script>
 
 <script>
-
-// import { mapGetters } from 'pinia';
 export default {
   name: 'JsonCreator',
   mixins: [mixinMessage],

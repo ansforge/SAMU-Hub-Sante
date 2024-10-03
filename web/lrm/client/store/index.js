@@ -124,7 +124,6 @@ export const useMainStore = defineStore('main', {
     loadSchemas (source) {
       source = source || 'schemas/json-schema/'
       return Promise.all(this.messageTypes.map(async ({ schemaName }, index) => {
-        console.log('Loading schema from: ' + source + schemaName)
         const response = await $fetch(source + schemaName)
         const schema = await JSON.parse(response)
         return ({ index, schema })

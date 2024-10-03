@@ -1,6 +1,6 @@
 import 'cypress-cdp'
 describe('Demo page spec', () => {
-  it('Accesses the demo page, successfully download all the schemas from the branch indicated in the config and verify presence of all required visual elements', () => {
+  it('Accesses the demo page, successfully download all the schemas and example messages from the branch indicated in the config, verify presence of all required visual elements', () => {
     cy.visit('http://localhost:3000/')
     // Wait for the event listeners to get hooked up
     cy.hasEventListeners('#demo-login-button', { type: 'click' })

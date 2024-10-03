@@ -6,8 +6,6 @@ import { useMainStore } from '~/store'
 
 const VALUES_TO_DROP = [null, undefined, '']
 
-const store = useMainStore()
-
 export function isOut (direction) {
   return direction === DIRECTIONS.OUT
 }
@@ -93,6 +91,7 @@ export function setCaseId (message, caseId, localCaseId) {
 }
 
 export function buildMessage (innerMessage, distributionKind = 'Report') {
+  const store = useMainStore()
   const message = JSON.parse(JSON.stringify(EDXL_ENVELOPE)) // Deep copy
   const formattedInnerMessage = formatIdsInMessage(innerMessage)
   message.content[0].jsonContent.embeddedJsonContent.message = {
@@ -147,6 +146,7 @@ function isEmpty (obj) {
 }
 
 export function sendMessage (msg, vhost = null) {
+  const store = useMainStore()
   if (store.socket.readyState === 1) {
     if (!vhost) {
       vhost = store.selectedVhost
