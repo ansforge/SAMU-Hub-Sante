@@ -470,6 +470,16 @@ watch(selectedTypeCaseMessages, (newMessages) => {
 }, { deep: true })
 </script>
 
+<script>
+export default {
+  beforeRouteEnter (to, from) {
+    if (!useMainStore().isAuthenticated) {
+      return { name: 'index' }
+    }
+  }
+}
+</script>
+
 <style scoped>
 div.v-stepper-header>div.v-col {
   flex-basis: auto;

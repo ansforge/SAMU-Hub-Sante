@@ -104,7 +104,6 @@
 <script setup>
 import jsonpath from 'jsonpath'
 import { REPOSITORY_URL } from '@/constants'
-import mixinUser from '~/mixins/mixinUser'
 import { useMainStore } from '~/store'
 
 const store = useMainStore()
@@ -195,7 +194,11 @@ function goToTestCase (testCase, event) {
 
 <script>
 export default {
-  mixins: [mixinUser]
+  beforeRouteEnter (to, from) {
+    if (!useMainStore().isAuthenticated) {
+      return { name: 'index' }
+    }
+  }
 }
 </script>
 <style>
