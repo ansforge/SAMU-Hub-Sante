@@ -161,7 +161,6 @@
 <script setup>
 import { onMounted, toRefs } from 'vue'
 import jsonpath from 'jsonpath'
-import mixinMessage from '~/mixins/mixinMessage'
 import { useMainStore } from '~/store'
 import { REPOSITORY_URL } from '@/constants'
 import { isOut, getCaseId, getMessageType, setCaseId, buildMessage, sendMessage } from '~/composables/messageUtils.js'
@@ -175,27 +174,12 @@ const { testCase } = toRefs(store)
 const currentlySelectedStep = ref(1)
 const currentStep = ref(1)
 const selectedMessageIndex = ref(0)
-// const selectedMessageType = ref('message')
-// const selectedClientId = ref(null)
 const selectedCaseIds = ref([])
 const handledLength = ref(0)
-// const queueTypes = ref([
-//   {
-//     name: 'Message',
-//     type: 'message',
-//     icon: 'mdi-message'
-//   },
-//   {
-//     name: 'Ack',
-//     type: 'ack',
-//     icon: 'mdi-check'
-//   },
-//   {
-//     name: 'Info',
-//     type: 'info',
-//     icon: 'mdi-information'
-//   }
-// ])
+
+useHead({
+  titleTemplate: toRef(useMainStore(), 'testHeadTitle')
+})
 
 onMounted(() => {
   selectedRequiredValuesIndex.value = null
@@ -484,19 +468,6 @@ watch(selectedTypeCaseMessages, (newMessages) => {
     handledLength.value = newMessages.length
   }
 }, { deep: true })
-</script>
-
-<script>
-
-export default {
-  name: 'Testcase',
-  mixins: [mixinMessage],
-  data () {
-    return {
-
-    }
-  }
-}
 </script>
 
 <style scoped>
