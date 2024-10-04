@@ -169,6 +169,7 @@
 <script setup>
 import { onMounted, toRefs } from 'vue'
 import jsonpath from 'jsonpath'
+import mixinMessage from '~/mixins/mixinMessage'
 import { useMainStore } from '~/store'
 import { REPOSITORY_URL } from '@/constants'
 import { isOut, getCaseId, getMessageType, setCaseId, buildMessage, sendMessage } from '~/composables/messageUtils.js'
@@ -492,6 +493,7 @@ watch(selectedTypeCaseMessages, (newMessages) => {
 
 <script>
 export default {
+  mixins: [mixinMessage],
   beforeRouteEnter (to, from) {
     if (!useMainStore().isAuthenticated) {
       return { name: 'index' }

@@ -168,7 +168,7 @@ function isEmpty (obj) {
 }
 
 export function sendMessage (msg, vhost = null) {
-  if (store.socket.readyState === 1) {
+  if (store.socket?.readyState === 1) {
     if (!vhost) {
       vhost = store.selectedVhost
     }
