@@ -55,40 +55,14 @@
                       :dot-color="step.type === 'send' ? 'secondary' : 'primary'"
                       :icon="step.type === 'send' ? 'mdi-upload' : 'mdi-download'"
                     >
-                      <template v-if="step.type === 'send'">
-                        <v-card class="test-step-card">
-                          <v-card-title>
-                            {{ index + 1 }}. {{ step.label }}
-                          </v-card-title>
-                          <v-card-subtitle>
-                            {{ step.description }}
-                          </v-card-subtitle>
-                          <v-card-text>
-                            <ul v-for="requiredValue in step.requiredValues" :key="requiredValue.index">
-                              <li>
-                                {{ requiredValue.path.join('.') }} : {{ requiredValue.value }}
-                              </li>
-                            </ul>
-                          </v-card-text>
-                        </v-card>
-                      </template>
-                      <template v-if="step.type === 'receive'" #opposite>
-                        <v-card class="test-step-card">
-                          <v-card-title>
-                            {{ index + 1 }}. {{ step.label }}
-                          </v-card-title>
-                          <v-card-subtitle>
-                            {{ step.description }}
-                          </v-card-subtitle>
-                          <v-card-text>
-                            <ul v-for="requiredValue in step.requiredValues" :key="requiredValue.index">
-                              <li>
-                                {{ requiredValue.path.join('.') }} : {{ requiredValue.value }}
-                              </li>
-                            </ul>
-                          </v-card-text>
-                        </v-card>
-                      </template>
+                      <v-card class="test-step-card">
+                        <v-card-title>
+                          {{ index + 1 }}. {{ step.label }}
+                        </v-card-title>
+                        <v-card-subtitle>
+                          {{ step.description }}
+                        </v-card-subtitle>
+                      </v-card>
                     </v-timeline-item>
                   </v-timeline>
                 </v-list>
