@@ -77,6 +77,20 @@
       <v-card class="main-card" style="height: 86vh; overflow-y:auto">
         <template v-if="currentStep-1 < testCase?.steps.length">
           <span>
+
+            <v-card-title class="d-flex justify-space-between">
+              <!-- Button that validates the step and goes to the next -->
+              <v-btn v-if="!testCase?.steps[currentStep-1].validatedReceivedValues" color="primary" @click="validateStep(currentStep-1)">
+                Passer à l'étape suivante
+              </v-btn>
+              <span id="result-counter">
+                <span class="text-grey">{{ getCounts().unreviewed }}</span> /
+                <span class="text-success">{{ getCounts().valid }}</span> /
+                <span class="text-warning">{{ getCounts().approximate }}</span> /
+                <span class="text-error">{{ getCounts().invalid }}</span> /
+                {{ getCounts().total }}
+              </span>
+            </v-card-title>
             <v-card-title>
               {{ testCase?.steps[currentStep-1]?.type === 'send' ? 'Valeurs attendues dans le message' : 'Valeurs attendues dans l\'acquittement' }}
             </v-card-title>
@@ -114,12 +128,6 @@
                   </span>
                 </v-list-item>
               </v-list>
-            </v-card-text>
-            <v-card-text>
-              <!-- Button that validates the step and goes to the next -->
-              <v-btn v-if="!testCase?.steps[currentStep-1].validatedReceivedValues" color="primary" @click="validateStep(currentStep-1)">
-                Passer à l'étape suivante
-              </v-btn>
             </v-card-text>
           </span>
           <!-- Currently selected message's valid and invalid required values -->
@@ -433,6 +441,18 @@ function getStepColor (index) {
 
 function setSelectedMessage (message) {
   selectedMessageIndex.value = selectedTypeCaseMessages.value.indexOf(message)
+}
+
+function getCounts (step = testCase.value.steps[currentStep.value - 1]) {
+  const requiredValues = step.requiredValues
+
+  return {
+    total: requiredValues.length,
+    unreviewed: requiredValues.filter(value => value.valid === undefined).length,
+    valid: requiredValues.filter(value => value.valid === 'valid').length,
+    approximate: requiredValues.filter(value => value.valid === 'approximate').length,
+    invalid: requiredValues.filter(value => value.valid === 'invalid').length
+  }
 }
 
 // Watch the selectedTypeCaseMessages array
