@@ -27,16 +27,7 @@ describe('Json creator page spec', () => {
     cy.get('.v-list.v-list--one-line').children().each(($branch) => {
       cy.log($branch[0].innerText)
     })
-    // We click on each message type tab (first click doesn't do anything)
-    cy.get('#message-type-tabs>div>div').children().each(($tab) => {
-      // We only click on buttons
-      if ($tab[0].tagName === 'BUTTON') {
-        cy.get($tab).click()
-      }
-      // We click on each message (first click deselects the message selected by default, but it's not a problem since the related request is sent immediately on tab access)
-      cy.get('.v-window-item--active>div>div>div>#examples-chips>div>div').children().each(($chip) => {
-        cy.get($chip).click()
-      })
-    })
+
+    cy.iterateOverSchemasAndMessages()
   })
 })
