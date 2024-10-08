@@ -6,10 +6,10 @@ describe('Demo page spec', () => {
     cy.hasEventListeners('#demo-login-button', { type: 'click' })
     // Go to demo page
     cy.get('#demo-login-button').click()
+    cy.waitForResponse('**messagesList.json')
     // Wait for all schema-related fetches to complete with 200 status
-    cy.waitForMessagesList()
-    cy.waitForSchemas()
-    cy.intercept('GET', '**/resources/sample/examples/**').as('getExample').then(() => cy.wait('@getExample'))
+    cy.waitForResponse('**/src/main/resources/json-schema/**')
+    cy.waitForResponse('**/resources/sample/examples/**')
 
     // Verify visual presence of required elements
     cy.get('#vhost-selector').should('be.visible')

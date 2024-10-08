@@ -7,9 +7,9 @@ describe('Json creator page spec', () => {
     // Go to demo page
     cy.get('#json-creator-button').click()
     // Wait for all schema-related fetches to complete with 200 status
-    cy.waitForMessagesList()
-    cy.waitForSchemas()
-    cy.intercept('GET', '**/resources/sample/examples/**').as('getExample').then(() => cy.wait('@getExample'))
+    cy.waitForResponse('**messagesList.json')
+    cy.waitForResponse('**/src/main/resources/json-schema/**')
+    cy.waitForResponse('**/resources/sample/examples/**')
 
     // Verify visual presence of required elements
     cy.get('#source-selector').parent().should('be.visible')
