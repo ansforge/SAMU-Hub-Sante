@@ -140,7 +140,7 @@ function formatIdsInMessage (innerMessage) {
   // Check the entire message for occurences of {senderName} and replace it with the actual sender name
   const senderName = clientInfos().name
   let jsonString = JSON.stringify(innerMessage)
-  jsonString = jsonString.replaceAll('samu690', senderName)
+  jsonString = jsonString.replaceAll('{senderName}', senderName)
   return JSON.parse(jsonString)
 }
 
