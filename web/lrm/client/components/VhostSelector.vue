@@ -1,5 +1,5 @@
 <template>
-  <span id="vhost-selector">
+  <span data-cy="vhost-selector">
     <v-combobox
       v-model="selectedVhost"
       :items="vhosts"

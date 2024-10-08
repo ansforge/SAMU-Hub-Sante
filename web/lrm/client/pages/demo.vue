@@ -9,7 +9,7 @@
         </v-card-title>
         <v-card-text>
           <v-tabs
-            id="message-type-tabs"
+            data-cy="message-type-tabs"
             v-model="messageTypeTabIndex"
             show-arrows
             align-tabs="title"

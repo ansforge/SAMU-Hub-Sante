@@ -1,6 +1,6 @@
 <template>
   <v-combobox
-    id="source-selector"
+    data-cy="source-selector"
     v-model="selectedSource"
     :items="sources"
     label="Source des schémas"

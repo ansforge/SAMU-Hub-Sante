@@ -40,7 +40,7 @@
                 {{ alert.message }}
               </v-alert>
               <v-btn
-                id="demo-login-button"
+                data-cy="demo-login-button"
                 color="primary"
                 class="mb-5"
                 block
@@ -50,7 +50,7 @@
                 LRM de test
               </v-btn>
               <v-btn
-                id="test-login-button"
+                data-cy="test-login-button"
                 color="primary"
                 block
                 type="submit"

@@ -21,7 +21,7 @@
       </v-col>
       <v-col>
         <v-chip-group
-          id="examples-chips"
+          data-cy="examples-chips"
           v-model="selectedExample"
           selected-class="primary--text"
           column

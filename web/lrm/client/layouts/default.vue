@@ -16,7 +16,7 @@
         </v-icon>
         Specs
       </v-btn>
-      <v-btn id="json-creator-button" class="ml-4" to="/json">
+      <v-btn data-cy="json-creator-button" class="ml-4" to="/json">
         <v-icon start>
           mdi-email-edit-outline
         </v-icon>

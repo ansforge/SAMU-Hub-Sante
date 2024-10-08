@@ -1,7 +1,7 @@
 <template>
   <div>
     <v-window-item v-for="messageTypeDetails in store.messageTypes" :key="messageTypeDetails.label">
-      <examples-list id="examples-list" ref="examplesListRef" :source="source" :examples="messageTypeDetails.examples" />
+      <examples-list data-cy="examples-list" ref="examplesListRef" :source="source" :examples="messageTypeDetails.examples" />
     </v-window-item>
     <RequestForm
       v-if="schema"
