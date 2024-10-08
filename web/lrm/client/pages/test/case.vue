@@ -3,7 +3,7 @@
     <v-col cols="12" sm="7">
       <v-card class="main-card" style="height: 86vh;">
         <v-card-title class="d-flex text-h5 pb-0">
-          Cas de test <span class="font-weight-bold">&nbsp;{{ testCase?.label }} </span>
+          Cas de test <span class="font-weight-bold">&nbsp;{{ testCase.label }} </span>
           <vhost-selector class="mr-5" />
           <v-btn v-if="testCase?.steps[currentStep-1]?.type === 'receive'" color="primary" @click="submitMessage(testCase?.steps[currentStep-1])">
             Re-envoyer le message
@@ -84,10 +84,10 @@
                 Passer à l'étape suivante
               </v-btn>
               <span id="result-counter">
-                <span class="text-grey">{{ getCounts().unreviewed }}</span> /
-                <span class="text-success">{{ getCounts().valid }}</span> /
-                <span class="text-warning">{{ getCounts().approximate }}</span> /
-                <span class="text-error">{{ getCounts().invalid }}</span> /
+                <span class="text-grey">{{ getCounts().unreviewed }}</span> -
+                <span class="text-success">{{ getCounts().valid }}</span> -
+                <span class="text-warning">{{ getCounts().approximate }}</span> -
+                <span class="text-error">{{ getCounts().invalid }}</span> -
                 {{ getCounts().total }}
               </span>
             </v-card-title>
@@ -152,7 +152,7 @@
           </v-card-title>
           <v-card-text class="main-card-content">
             <v-card-text>
-              <p>Le cas de test est terminé avec succès 🥳</p>
+              <p>Le cas de test est terminé 🥳</p>
             </v-card-text>
           </v-card-text>
         </template>
