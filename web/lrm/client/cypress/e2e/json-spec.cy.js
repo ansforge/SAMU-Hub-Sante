@@ -21,11 +21,8 @@ describe('Json creator page spec', () => {
     cy.get('#source-selector').parent().trigger('mousedown')
     cy.get('.v-overlay-container>div>div>div.v-list.v-list--one-line').children('.v-list-item:not(:last-child)').each(($source) => {
       // Click on each source
+      // TODO: Find a way to properly test source selection by running .iterableOverSchemasAndMessages() for each source
       cy.get($source).trigger('mousedown')
-    })
-    // Get the list of branches from the generated overlay element
-    cy.get('.v-list.v-list--one-line').children().each(($branch) => {
-      cy.log($branch[0].innerText)
     })
 
     cy.iterateOverSchemasAndMessages()
