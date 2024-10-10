@@ -64,14 +64,10 @@ export default defineNuxtConfig({
     public: {
       clientMap: {},
       vhostMap: {
-        '15-15_v1.5': [
-          'createCaseHealth', 'createCaseHealthUpdate',
-          'resourcesInfo', 'resourcesRequest', 'resourcesResponse', 'resourcesStatus',
-          'reference'
-        ],
-        '15-nexsis_v1.8': ['createCase', 'emsi'],
-        '15-smur_v1.4': ['rpis'],
-        '15-gps_v1.0': ['geoPositionsUpdate', 'geoResourcesDetails', 'geoResourcesRequest']
+        '15-15_v1.5': '1.0.0',
+        '15-nexsis_v1.8': '1.0.0',
+        '15-smur_v1.4': '1.0.0',
+        '15-gps_v1.0': '1.0.0'
       },
       modelBranch: 'main',
       backendLrmServer: 'localhost:8081'
