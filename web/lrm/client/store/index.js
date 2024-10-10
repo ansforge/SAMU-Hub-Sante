@@ -8,7 +8,7 @@ export const useMainStore = defineStore('main', {
     currentUseCase: null,
     selectedSource: 'main',
     selectedSchema: 'RS-EDA',
-    selectedVhost: Object.keys(useRuntimeConfig().public.vhostMap)[0],
+    selectedVhost: Object.keys(useRuntimeConfig().public.vhostMap).map(vhost => ({ vhost, version: useRuntimeConfig().public.vhostMap[vhost] }))[0],
     _auth: {
       user: {
         clientId: null,

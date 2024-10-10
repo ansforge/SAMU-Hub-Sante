@@ -215,7 +215,7 @@ export default {
     sendMessage (msg, vhost = null) {
       if (this.store.socket.readyState === 1) {
         if (!vhost) {
-          vhost = this.store.selectedVhost
+          vhost = this.store.selectedVhost.vhost
         }
         try {
           console.log('Sending message', msg)
