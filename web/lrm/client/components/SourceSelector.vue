@@ -28,13 +28,13 @@ import { computed, onMounted } from 'vue'
 import { useMainStore } from '~/store'
 import { REPOSITORY_URL } from '@/constants'
 
-onMounted(() => {
-  selectedSource.value = config.public.modelBranch
-  emit('sourceChanged', selectedSource.value)
-})
-
 const store = useMainStore()
 const config = useRuntimeConfig()
+
+onMounted(() => {
+  selectedSource.value = Object.keys(this.config.public.vhostMap).map(vhost => ({ vhost, version: this.config.public.vhostMap[vhost] }))[0].version
+  emit('sourceChanged', selectedSource.value)
+})
 
 const sources = [
   config.public.modelBranch,

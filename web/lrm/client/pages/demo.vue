@@ -226,7 +226,7 @@ export default {
   },
   mounted () {
     this.config = useRuntimeConfig()
-    this.source = this.config.public.modelBranch
+    this.source = Object.keys(this.config.public.vhostMap).map(vhost => ({ vhost, version: this.config.public.vhostMap[vhost] }))[0].version
   },
   methods: {
     updateForm () {
