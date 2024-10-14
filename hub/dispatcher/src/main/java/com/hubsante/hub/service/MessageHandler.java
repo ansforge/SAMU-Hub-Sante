@@ -194,7 +194,7 @@ public class MessageHandler {
             }
             log.error("Could not validate content of message coming from {} with distributionId {}",
                     message.getMessageProperties().getReceivedRoutingKey(), distributionID);
-            log.debug("Received lessage String was {}", receivedEdxl);
+            log.debug("Received message String was {}", receivedEdxl);
             throw new SchemaValidationException(contentValidationException.getMessage(), distributionID);
         } catch (ValidationException envelopeValidationException) {
             // we replace the ValidationException from the models lib by another one extending AbstractHubException
