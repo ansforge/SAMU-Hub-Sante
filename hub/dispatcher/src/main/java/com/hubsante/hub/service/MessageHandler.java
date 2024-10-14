@@ -267,7 +267,7 @@ public class MessageHandler {
     }
 
     private void logMessage(Message message, EdxlMessage edxlMessage, String receivedEdxl) {
-        log.info(" [x] Received from '{}': message with distributionID {} and hashed value '{}'",
+        log.info(" [x] Received from '{}': message with distributionID {} and hashed value {}",
                 message.getMessageProperties().getReceivedRoutingKey(),
                 edxlMessage.getDistributionID(),
                 hashBody(message));
