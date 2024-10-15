@@ -13,7 +13,7 @@ jobs:
   cypress-run:
     runs-on: ubuntu-22.04
     env:
-      NUXT_PUBLIC_MODEL_BRANCH: feature/lrm/test-interface-rework
+      NUXT_PUBLIC_MODEL_BRANCH: develop
       NUXT_PUBLIC_BACKEND_LRM_SERVER: integration.hub.esante.gouv.fr
     steps:
       - name: Checkout

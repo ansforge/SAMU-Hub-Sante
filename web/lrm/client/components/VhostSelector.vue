@@ -1,10 +1,9 @@
 <template>
-  <span data-cy="vhost-selector">
+  <span class="ml-4 pl-4" data-cy="vhost-selector">
     <v-combobox
       v-model="selectedVhost"
       :items="vhosts"
       label="vHost"
-      class="ml-4 pl-4"
       density="compact"
       hide-details
       variant="outlined"
@@ -21,3 +20,9 @@ const { selectedVhost } = toRefs(store)
 const vhosts = Object.keys(config.public.vhostMap)
 
 </script>
+
+<style scoped>
+  span {
+    flex: 1 1 auto;
+  }
+</style>
