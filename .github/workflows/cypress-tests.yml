@@ -39,4 +39,4 @@ jobs:
           working-directory: ./web/lrm/client
           build: npm run build
           start: npm run dev
-          browser: chrome
+          browser: electron
