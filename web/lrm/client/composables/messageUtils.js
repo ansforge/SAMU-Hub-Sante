@@ -54,6 +54,8 @@ function getMessageKind (message) {
     return 'RS-RR'
   } else if (message.resourcesStatus) {
     return 'RS-SR'
+  } else if (message.rpis) {
+    return 'RPIS'
   }
 }
 
@@ -87,6 +89,25 @@ export function setCaseId (message, caseId, localCaseId) {
       message.createCaseHealth.caseId = caseId
       message.createCaseHealth.senderCaseId = localCaseId
       break
+    case 'RS-EDA-MAJ':
+      message.createCaseHealthUpdate.caseId = caseId
+      message.createCaseHealthUpdate.senderCaseId = localCaseId
+      break
+    case 'RS-RI':
+      message.resourcesInfo.caseId = caseId
+      break
+    case 'RS-SR':
+      message.resourcesStatus.caseId = caseId
+      break
+    case 'RS-DR':
+      message.resourcesRequest.caseId = caseId
+      break
+    case 'RS-RR':
+      message.resourcesResponse.caseId = caseId
+      break
+    case 'RPIS':
+      message.rpis.context.caseId = caseId
+      break
   }
 }
 
@@ -118,7 +139,7 @@ function formatIdsInMessage (innerMessage) {
   // Check the entire message for occurences of {senderName} and replace it with the actual sender name
   const senderName = clientInfos().name
   let jsonString = JSON.stringify(innerMessage)
-  jsonString = jsonString.replaceAll('samu690', senderName)
+  jsonString = jsonString.replaceAll('{senderName}', senderName)
   return JSON.parse(jsonString)
 }
 
@@ -147,7 +168,7 @@ function isEmpty (obj) {
 
 export function sendMessage (msg, vhost = null) {
   const store = useMainStore()
-  if (store.socket.readyState === 1) {
+  if (store.socket?.readyState === 1) {
     if (!vhost) {
       vhost = store.selectedVhost
     }
