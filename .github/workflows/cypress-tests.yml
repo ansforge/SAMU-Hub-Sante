@@ -12,6 +12,9 @@ on:
 jobs:
   cypress-run:
     runs-on: ubuntu-22.04
+    defaults:
+      run:
+        working-directory: ./web/lrm/client
     env:
       NUXT_PUBLIC_MODEL_BRANCH: feature/lrm/test-interface-rework
       NUXT_PUBLIC_BACKEND_LRM_SERVER: integration.hub.esante.gouv.fr
@@ -20,7 +23,6 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Cypress run
-        working-directory: ./web/lrm/client
         uses: cypress-io/github-action@v6
         with:
           build: npm run build
