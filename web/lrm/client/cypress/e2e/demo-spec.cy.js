@@ -2,6 +2,8 @@ import 'cypress-cdp'
 describe('Demo page spec', () => {
   it('Accesses the demo page, successfully download all the schemas and example messages from the branch indicated in the config, verify presence of all required visual elements', () => {
     cy.visit('http://localhost:3000/')
+    // Arbitrary wait to avoid chrome's reloading behavior breaking the tests
+    cy.wait(15000)
     // Wait for the event listeners to get hooked up
     cy.hasEventListeners('[data-cy="demo-login-button"]', { type: 'click' })
     // Go to demo page
