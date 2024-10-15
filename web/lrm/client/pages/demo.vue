@@ -196,7 +196,7 @@ export default {
       return this.showableMessages.filter(message => this.getMessageType(message) === this.selectedMessageType)
     },
     selectedVhost () {
-      return this.store.selectedVhost
+      return this.store._selectedVhost
     },
     selectedTypeCaseMessages () {
       if (this.selectedCaseIds.length === 0) {
@@ -221,12 +221,11 @@ export default {
       this.store.selectedSchema = this.store.messageTypes[this.messageTypeTabIndex]
     },
     selectedVhost () {
-      this.source = this.selectedVhost.version
+      this.source = this.store._selectedVhost.modelVersion
     }
   },
   mounted () {
-    this.config = useRuntimeConfig()
-    this.source = Object.keys(this.config.public.vhostMap).map(vhost => ({ vhost, version: this.config.public.vhostMap[vhost] }))[0].version
+    this.source = this.store._selectedVhost.modelVersion
   },
   methods: {
     updateForm () {
@@ -237,7 +236,9 @@ export default {
           () => {
             this.messageTypeTabIndex = 0
           })
-      )
+      ).catch(() => {
+        toast.error("Erreur lors de l'acquisition des schémas de version " + this.source)
+      })
     },
     typeMessages (type) {
       return this.showableMessages.filter(

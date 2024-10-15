@@ -32,12 +32,12 @@ const store = useMainStore()
 const config = useRuntimeConfig()
 
 onMounted(() => {
-  selectedSource.value = Object.keys(this.config.public.vhostMap).map(vhost => ({ vhost, version: this.config.public.vhostMap[vhost] }))[0].version
+  selectedSource.value = store._selectedVhost.modelVersion
   emit('sourceChanged', selectedSource.value)
 })
 
 const sources = [
-  config.public.modelBranch,
+  store._selectedVhost.modelVersion,
   'main',
   'develop',
   'auto/model_tracker',
@@ -63,7 +63,7 @@ function currentSchemaOnGitHub () {
     'https://raw.githubusercontent.com/', 'https://github.com/'
   ).replace(
     'SAMU-Hub-Modeles/', 'SAMU-Hub-Modeles/tree/'
-  ) + store.selectedSource + '/src/main/resources/json-schema/' + store.selectedSchema.schemaName
+  ) + store._selectedVhost.modelVersion + '/src/main/resources/json-schema/' + store.selectedSchema.schemaName
 }
 
 </script>

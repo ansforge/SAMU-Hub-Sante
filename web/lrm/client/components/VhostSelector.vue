@@ -10,7 +10,7 @@
     variant="outlined"
   >
     <template #item="{ props, item }">
-      <v-list-item v-bind="props" :subtitle="item.raw.version" />
+      <v-list-item v-bind="props" :subtitle="item.raw.modelVersion" />
     </template>"
   </v-combobox>
 </template>
@@ -18,9 +18,12 @@
 <script setup>
 import { useMainStore } from '~/store'
 const store = useMainStore()
-const config = useRuntimeConfig()
 
 const { selectedVhost } = toRefs(store)
-const vhosts = Object.keys(config.public.vhostMap).map(vhost => ({ vhost, version: config.public.vhostMap[vhost] }))
+const vhosts = store.vhostMap
+
+onMounted(() => {
+  selectedVhost.value = store._selectedVhost
+})
 
 </script>

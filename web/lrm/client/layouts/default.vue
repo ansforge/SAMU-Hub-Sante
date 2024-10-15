@@ -49,7 +49,7 @@
     <v-footer
       app
     >
-      <span><a :href=" repositoryUrl + 'tree/' + $config.public.modelBranch ">SAMU Hub Modeles - v{{ $config.public.modelBranch }}</a> &copy; {{ new Date().getFullYear() }}</span>
+      <span><a :href=" repositoryUrl + 'tree/' + $store._selectedVhost.modelVersion ">SAMU Hub Modeles - v{{ $store._selectedVhost.modelVersion }}</a> &copy; {{ new Date().getFullYear() }}</span>
     </v-footer>
   </v-app>
 </template>
