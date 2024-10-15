@@ -5,7 +5,8 @@ describe('Json creator page spec', () => {
     // Wait for the event listeners to get hooked up
     cy.hasEventListeners('[data-cy="json-creator-button"]', { type: 'click' })
     // Go to demo page
-    cy.get('[data-cy="json-creator-button"]').click()
+    cy.get('[data-cy="json-creator-button"]').as('jsonBtn')
+    cy.get('@jsonBtn').click()
     // Wait for all schema-related fetches to complete with 200 status
     cy.waitForResponse('**messagesList.json')
     cy.waitForResponse('**/src/main/resources/json-schema/**')

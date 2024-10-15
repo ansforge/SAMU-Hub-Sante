@@ -5,7 +5,8 @@ describe('Demo page spec', () => {
     // Wait for the event listeners to get hooked up
     cy.hasEventListeners('[data-cy="demo-login-button"]', { type: 'click' })
     // Go to demo page
-    cy.get('[data-cy="demo-login-button"]').click()
+    cy.get('[data-cy="demo-login-button"]').as('loginBtn')
+    cy.get('@loginBtn').click()
     cy.waitForResponse('**messagesList.json')
     // Wait for all schema-related fetches to complete with 200 status
     cy.waitForResponse('**/src/main/resources/json-schema/**')
