@@ -34,7 +34,7 @@ jobs:
       - name: Cypress run
         uses: cypress-io/github-action@v6
         with:
-          wait-on: 'http://localhost:3000'
+          wait-on: 'http://localhost:3000/lrm'
           wait-on-timeout: 60
           working-directory: ./web/lrm/client
           build: npm run build
