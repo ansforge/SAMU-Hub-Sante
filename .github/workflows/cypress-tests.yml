@@ -21,7 +21,10 @@ jobs:
           "15-gps_v1.0": "1.0"
         }
       NUXT_PUBLIC_CLIENT_MAP: |
-        [['fr.health.samuA',['fr.health.samuC']],['fr.health.samuC',['fr.health.samuA']]]
+        [
+          ["fr.health.samuA",["fr.health.samuC"]],
+          ["fr.health.samuC",["fr.health.samuA"]]
+        ]
       NUXT_PUBLIC_MODEL_BRANCH: develop
       NUXT_PUBLIC_BACKEND_LRM_SERVER: integration.hub.esante.gouv.fr
     steps:
