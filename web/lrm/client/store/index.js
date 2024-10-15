@@ -4,10 +4,10 @@ import { defineStore } from 'pinia'
 export const useMainStore = defineStore('main', {
   state: () => ({
     vhostMap: Object.keys(useRuntimeConfig().public.vhostMap).map(vhost => ({ vhost, modelVersion: useRuntimeConfig().public.vhostMap[vhost] })),
+    selectedVhost: Object.keys(useRuntimeConfig().public.vhostMap).map(vhost => ({ vhost, modelVersion: useRuntimeConfig().public.vhostMap[vhost] }))[0],
     socket: null,
     currentMessage: null,
     currentUseCase: null,
-    selectedVhost: null,
     selectedSchema: 'RS-EDA',
     _auth: {
       user: {
@@ -34,13 +34,6 @@ export const useMainStore = defineStore('main', {
   }),
 
   getters: {
-    _selectedVhost (state) {
-      if (state.selectedVhost !== null) {
-        return state.selectedVhost
-      } else {
-        return state.vhostMap[0]
-      }
-    },
     isAuthenticated (state) {
       return !!state._auth.user.clientId
     },

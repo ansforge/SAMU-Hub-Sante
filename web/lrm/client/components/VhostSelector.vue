@@ -23,7 +23,7 @@ const { selectedVhost } = toRefs(store)
 const vhosts = store.vhostMap
 
 onMounted(() => {
-  selectedVhost.value = store._selectedVhost
+  selectedVhost.value = store.selectedVhost
 })
 
 </script>

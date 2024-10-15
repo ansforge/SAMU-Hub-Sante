@@ -196,7 +196,7 @@ export default {
       return this.showableMessages.filter(message => this.getMessageType(message) === this.selectedMessageType)
     },
     selectedVhost () {
-      return this.store._selectedVhost
+      return this.store.selectedVhost
     },
     selectedTypeCaseMessages () {
       if (this.selectedCaseIds.length === 0) {
@@ -221,11 +221,11 @@ export default {
       this.store.selectedSchema = this.store.messageTypes[this.messageTypeTabIndex]
     },
     selectedVhost () {
-      this.source = this.store._selectedVhost.modelVersion
+      this.source = this.store.selectedVhost.modelVersion
     }
   },
   mounted () {
-    this.source = this.store._selectedVhost.modelVersion
+    this.source = this.store.selectedVhost.modelVersion
   },
   methods: {
     updateForm () {
