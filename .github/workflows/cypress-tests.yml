@@ -1,0 +1,27 @@
+name: Run Cypress tests
+
+on:
+  push:
+    branches:
+      - main
+
+  pull_request:
+    branches:
+      - '**'
+
+jobs:
+  cypress-run:
+    runs-on: ubuntu-22.04
+    env:
+      NUXT_PUBLIC_MODEL_BRANCH: feature/lrm/test-interface-rework
+      NUXT_PUBLIC_BACKEND_LRM_SERVER: integration.hub.esante.gouv.fr
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Cypress run
+        uses: cypress-io/github-action@v6
+        with:
+          build: npm run build
+          start: npm run dev
+          browser: chrome
