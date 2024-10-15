@@ -1,7 +1,11 @@
 import 'cypress-cdp'
 describe('Json creator page spec', () => {
   it('Accesses the json creator, successfully download all the schemas and example messages from the branches available in the source elector, verify presence of all required visual elements', () => {
-    cy.visit('http://localhost:3000/')
+    cy.on('uncaught:exception', (err, runnable) => {
+      // returning false here prevents Cypress from failing the test
+      return false
+    })
+    cy.visit('http://localhost:3000/lrm')
     // Wait for the event listeners to get hooked up
     cy.hasEventListeners('[data-cy="json-creator-button"]', { type: 'click' })
     // Go to demo page

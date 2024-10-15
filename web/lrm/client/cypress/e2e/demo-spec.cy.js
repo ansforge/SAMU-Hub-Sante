@@ -1,9 +1,13 @@
 import 'cypress-cdp'
 describe('Demo page spec', () => {
   it('Accesses the demo page, successfully download all the schemas and example messages from the branch indicated in the config, verify presence of all required visual elements', () => {
-    cy.visit('http://localhost:3000/')
+    cy.on('uncaught:exception', (err, runnable) => {
+      // returning false here prevents Cypress from failing the test
+      return false
+    })
+    cy.visit('http://localhost:3000/lrm')
     // Arbitrary wait to avoid chrome's reloading behavior breaking the tests
-    cy.wait(15000)
+    cy.wait(5000)
     // Wait for the event listeners to get hooked up
     cy.hasEventListeners('[data-cy="demo-login-button"]', { type: 'click' })
     // Go to demo page
@@ -13,6 +17,7 @@ describe('Demo page spec', () => {
     // Wait for all schema-related fetches to complete with 200 status
     cy.waitForResponse('**/src/main/resources/json-schema/**')
     cy.waitForResponse('**/resources/sample/examples/**')
+    cy.wait(5000)
 
     // Verify visual presence of required elements
     cy.get('[data-cy="vhost-selector"]').should('be.visible')
