@@ -20,6 +20,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Cypress run
+        working-directory: ./web/lrm/client
         uses: cypress-io/github-action@v6
         with:
           build: npm run build
