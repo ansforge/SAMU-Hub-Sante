@@ -28,16 +28,16 @@ import { computed, onMounted } from 'vue'
 import { useMainStore } from '~/store'
 import { REPOSITORY_URL } from '@/constants'
 
-onMounted(() => {
-  selectedSource.value = config.public.modelBranch
-  emit('sourceChanged', selectedSource.value)
-})
-
 const store = useMainStore()
 const config = useRuntimeConfig()
 
+onMounted(() => {
+  selectedSource.value = store.selectedVhost.modelVersion
+  emit('sourceChanged', selectedSource.value)
+})
+
 const sources = [
-  config.public.modelBranch,
+  store.selectedVhost.modelVersion,
   'main',
   'develop',
   'auto/model_tracker',
@@ -63,7 +63,7 @@ function currentSchemaOnGitHub () {
     'https://raw.githubusercontent.com/', 'https://github.com/'
   ).replace(
     'SAMU-Hub-Modeles/', 'SAMU-Hub-Modeles/tree/'
-  ) + store.selectedSource + '/src/main/resources/json-schema/' + store.selectedSchema.schemaName
+  ) + store.selectedVhost.modelVersion + '/src/main/resources/json-schema/' + store.selectedSchema.schemaName
 }
 
 </script>

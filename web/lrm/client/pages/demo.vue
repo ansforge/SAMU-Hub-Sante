@@ -195,6 +195,9 @@ export default {
     selectedTypeMessages () {
       return this.showableMessages.filter(message => this.getMessageType(message) === this.selectedMessageType)
     },
+    selectedVhost () {
+      return this.store.selectedVhost
+    },
     selectedTypeCaseMessages () {
       if (this.selectedCaseIds.length === 0) {
         return this.selectedTypeMessages
@@ -216,11 +219,13 @@ export default {
     },
     currentMessageType () {
       this.store.selectedSchema = this.store.messageTypes[this.messageTypeTabIndex]
+    },
+    selectedVhost () {
+      this.source = this.store.selectedVhost.modelVersion
     }
   },
   mounted () {
-    this.config = useRuntimeConfig()
-    this.source = this.config.public.modelBranch
+    this.source = this.store.selectedVhost.modelVersion
   },
   methods: {
     updateForm () {
@@ -231,7 +236,9 @@ export default {
           () => {
             this.messageTypeTabIndex = 0
           })
-      )
+      ).catch(() => {
+        toast.error("Erreur lors de l'acquisition des schémas de version " + this.source)
+      })
     },
     typeMessages (type) {
       return this.showableMessages.filter(
