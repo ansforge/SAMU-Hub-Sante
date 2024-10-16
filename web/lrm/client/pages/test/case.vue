@@ -80,7 +80,7 @@
 
             <v-card-title class="d-flex justify-space-between">
               <!-- Button that validates the step and goes to the next -->
-              <v-btn v-if="!testCase?.steps[currentStep-1].validatedReceivedValues" color="primary" @click="validateStep(currentStep-1)">
+              <v-btn color="primary" @click="validateStep(currentStep-1)">
                 Passer à l'étape suivante
               </v-btn>
               <span id="result-counter">
@@ -152,7 +152,24 @@
           </v-card-title>
           <v-card-text class="main-card-content">
             <v-card-text>
-              <p>Le cas de test est terminé 🥳</p>
+              <p>Récapitulatif des resultats de test:</p>
+              <v-list class="results">
+                <v-list-item class="d-flex flex-row">
+                  <v-list-item-title>Nombre de valeurs attendues: {{ getTotalCounts().total }}</v-list-item-title>
+                </v-list-item>
+                <v-list-item>
+                  <v-list-item-title>Nombre de valeurs reçues: {{ getTotalCounts().valid + getTotalCounts().approximate + getTotalCounts().invalid }}</v-list-item-title>
+                </v-list-item>
+                <v-list-item>
+                  <v-list-item-title>Nombre de valeurs correctes: {{ getTotalCounts().valid }}</v-list-item-title>
+                </v-list-item>
+                <v-list-item>
+                  <v-list-item-title>Nombre de valeurs approximatives: {{ getTotalCounts().approximate }}</v-list-item-title>
+                </v-list-item>
+                <v-list-item>
+                  <v-list-item-title>Nombre de valeurs incorrectes: {{ getTotalCounts().invalid }}</v-list-item-title>
+                </v-list-item>
+              </v-list>
             </v-card-text>
           </v-card-text>
         </template>
@@ -461,6 +478,30 @@ function getCounts (step = testCase.value.steps[currentStep.value - 1]) {
     valid: requiredValues.filter(value => value.valid === 'valid').length,
     approximate: requiredValues.filter(value => value.valid === 'approximate').length,
     invalid: requiredValues.filter(value => value.valid === 'invalid').length
+  }
+}
+
+function getTotalCounts () {
+  let total = 0
+  let valid = 0
+  let approximate = 0
+  let invalid = 0
+
+  for (const step of testCase.value.steps) {
+    if (step.type === 'receive') {
+      const counts = getCounts(step)
+      total += counts.total
+      valid += counts.valid
+      approximate += counts.approximate
+      invalid += counts.invalid
+    }
+  }
+
+  return {
+    total,
+    valid,
+    approximate,
+    invalid
   }
 }
 
