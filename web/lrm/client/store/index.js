@@ -3,12 +3,12 @@ import { defineStore } from 'pinia'
 
 export const useMainStore = defineStore('main', {
   state: () => ({
+    vhostMap: Object.keys(useRuntimeConfig().public.vhostMap).map(vhost => ({ vhost, modelVersion: useRuntimeConfig().public.vhostMap[vhost] })),
+    selectedVhost: Object.keys(useRuntimeConfig().public.vhostMap).map(vhost => ({ vhost, modelVersion: useRuntimeConfig().public.vhostMap[vhost] }))[0],
     socket: null,
     currentMessage: null,
     currentUseCase: null,
-    selectedSource: 'main',
     selectedSchema: 'RS-EDA',
-    selectedVhost: Object.keys(useRuntimeConfig().public.vhostMap)[0],
     _auth: {
       user: {
         clientId: null,
