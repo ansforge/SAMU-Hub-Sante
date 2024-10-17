@@ -63,12 +63,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       clientMap: {},
-      vhostMap: {
-        '15-15_v1.5': '1.0.0',
-        '15-nexsis_v1.8': '1.0.0',
-        '15-smur_v1.4': '1.0.0',
-        '15-gps_v1.0': '1.0.0'
-      },
+      vhostMap: {},
       backendLrmServer: 'localhost:8081'
     }
   },
