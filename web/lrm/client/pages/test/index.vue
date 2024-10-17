@@ -100,7 +100,7 @@ async function initialize () {
   loadTestCases()
 }
 async function fetchGeneratedTestCases () {
-  const response = await fetch(REPOSITORY_URL + config.public.modelBranch + '/csv_parser/out/test_cases.json')
+  const response = await fetch(REPOSITORY_URL + store.selectedVhost.modelVersion + '/csv_parser/out/test_cases.json')
   if (response.ok) {
     testCaseFileAuto.value = await response.json()
   }
@@ -120,7 +120,7 @@ async function loadTestCases () {
       newTestCase.description = `${newTestCase.description}`
       // We load the example files for test case steps
       for (const step of newTestCase.steps) {
-        const response = await fetch(REPOSITORY_URL + config.public.modelBranch + '/src/main/resources/sample/examples/' + step.model + '/' + step.file)
+        const response = await fetch(REPOSITORY_URL + store.selectedVhost.modelVersion + '/src/main/resources/sample/examples/' + step.model + '/' + step.file)
         const receivedMessage = await response.json()
         // We transform the received message json to an array of jsonpaths
         let jsonpaths = []

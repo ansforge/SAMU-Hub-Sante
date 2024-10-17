@@ -3,21 +3,30 @@
     <v-combobox
       v-model="selectedVhost"
       :items="vhosts"
+      item-title="vhost"
       label="vHost"
+      class="ml-4 pl-4"
       density="compact"
       hide-details
       variant="outlined"
-    />
+    >
+      <template #item="{ props, item }">
+        <v-list-item v-bind="props" :subtitle="item.raw.modelVersion" />
+      </template>"
+    </v-combobox>
   </span>
 </template>
 
 <script setup>
 import { useMainStore } from '~/store'
 const store = useMainStore()
-const config = useRuntimeConfig()
 
 const { selectedVhost } = toRefs(store)
-const vhosts = Object.keys(config.public.vhostMap)
+const vhosts = store.vhostMap
+
+onMounted(() => {
+  selectedVhost.value = store.selectedVhost
+})
 
 </script>
 
