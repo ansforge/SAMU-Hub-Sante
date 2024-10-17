@@ -135,16 +135,6 @@ export default {
         return 'RS-EDA'
       }
     },
-    /**
-     * Replaces values in a message using jsonpath:value pairs
-     */
-    replaceValues (message, requiredValues) {
-      const jp = require('jsonpath')
-      requiredValues.forEach((entry) => {
-        jp.value(message, entry.path, entry.value)
-      })
-      return message
-    },
     getReadableMessageType (messageType) {
       switch (messageType) {
         case 'Ack':

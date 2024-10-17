@@ -89,3 +89,13 @@ export default {
   }
 }
 </script>
+
+<style>
+html {
+  overflow-y: auto;
+}
+.v-main {
+  background-color: rgba(0, 0, 0, 0.01);
+  padding-bottom: 1.8rem !important;
+}
+</style>

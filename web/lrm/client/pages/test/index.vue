@@ -1,8 +1,9 @@
 <template>
   <v-row justify="center">
     <v-col cols="12" sm="12">
-      <v-card-title class="text-h5">
+      <v-card-title class="d-flex text-h5">
         Sélection de cas de test
+        <vhost-selector class="mr-5" />
       </v-card-title>
       <v-list>
         <v-list-item
@@ -13,14 +14,13 @@
           <v-card-title class="text-h5">
             {{ category.categoryLabel }}
           </v-card-title>
-          <v-expansion-panels>
+          <v-expansion-panels class="pa-1">
             <v-expansion-panel
               v-for="(testCase, caseIndex) in category.testCases"
               :key="testCase.label + '-' + caseIndex"
-              @click="loadTestCaseJsons(testCase)"
             >
               <v-expansion-panel-title class="ma-0 pa-0 pr-10">
-                <div style="flex: 0;">
+                <div style="flex: 1;">
                   <v-list-item-title>
                     <v-card-title class="pt-0 pb-0">
                       {{ testCase.label }}
@@ -37,7 +37,7 @@
                     class="ml-3 mr-3"
                     style="flex-grow: 0; max-width: fit-content;"
                     color="primary"
-                    @click="goToTestCase(testCase)"
+                    @click="goToTestCase(testCase,$event)"
                   >
                     Sélectionner
                   </v-btn>
@@ -48,28 +48,20 @@
                   Pas de test
                 </v-card-title>
                 <v-list>
-                  <v-timeline>
+                  <v-timeline side="end">
                     <v-timeline-item
                       v-for="(step, index) in testCase.steps"
                       :key="step.label"
-                      :left="step.type === 'send'"
-                      :right="step.type !== 'send'"
+                      :dot-color="step.type === 'send' ? 'secondary' : 'primary'"
                       :icon="step.type === 'send' ? 'mdi-upload' : 'mdi-download'"
                     >
-                      <v-card>
+                      <v-card class="test-step-card">
                         <v-card-title>
                           {{ index + 1 }}. {{ step.label }}
                         </v-card-title>
                         <v-card-subtitle>
                           {{ step.description }}
                         </v-card-subtitle>
-                        <v-card-text>
-                          <ul v-for="requiredValue in step.message.requiredValues" :key="requiredValue.index">
-                            <li>
-                              {{ requiredValue.path }} : {{ requiredValue.value }}
-                            </li>
-                          </ul>
-                        </v-card-text>
                       </v-card>
                     </v-timeline-item>
                   </v-timeline>
@@ -84,98 +76,123 @@
 </template>
 
 <script setup>
-import { useRuntimeConfig } from 'nuxt/app'
-import testCaseFile from '~/assets/test-cases.json'
+import jsonpath from 'jsonpath'
 import { REPOSITORY_URL } from '@/constants'
-import mixinUser from '~/mixins/mixinUser'
 import { useMainStore } from '~/store'
+
+const store = useMainStore()
+const config = useRuntimeConfig()
+const router = useRouter()
+
+const testCaseFileAuto = ref([])
+const testCases = ref([])
 
 useHead({
   title: toRef(useMainStore(), 'testHeadTitle')
 })
 
-</script>
+onMounted(() => {
+  initialize()
+})
 
-<script>
-
-export default {
-  name: 'Test',
-  mixins: [mixinUser],
-  data () {
-    return {
-      config: useRuntimeConfig(),
-      store: useMainStore(),
-      testCaseFileAuto: [],
-      testCases: []
-    }
-  },
-  mounted () {
-    this.initialize()
-  },
-  methods: {
-    async initialize () {
-      await this.fetchGeneratedTestCases()
-      this.loadTestCases()
-    },
-    async fetchGeneratedTestCases () {
-      const response = await fetch(REPOSITORY_URL + this.config.public.modelBranch + '/csv_parser/out/test_cases.json')
-      if (response.ok) {
-        this.testCaseFileAuto = await response.json()
-      }
-    },
-    /**
+async function initialize () {
+  await fetchGeneratedTestCases()
+  loadTestCases()
+}
+async function fetchGeneratedTestCases () {
+  const response = await fetch(REPOSITORY_URL + store.selectedVhost.modelVersion + '/csv_parser/out/test_cases.json')
+  if (response.ok) {
+    testCaseFileAuto.value = await response.json()
+  }
+}
+/**
      * Copies the test cases from the JSON file to the component data,
      * resetting any potential changes to the test cases made during
      * test execution.
      */
-    loadTestCases () {
-      // Generated test cases have 3 levels of verification for each required property, ergo we create 3 test cases from each generated test case (Adding 'Level 1/2/3' to the
-      // test case label and description)
-      const parsedTestCases = []
-      this.testCaseFileAuto.forEach((category) => {
-        const newTestCases = []
-        category.testCases.forEach((testCase) => {
-          for (let i = 1; i <= 3; i++) {
-            const newTestCase = JSON.parse(JSON.stringify(testCase))
-            newTestCase.label = `${newTestCase.label} - Level ${i}`
-            newTestCase.description = `${newTestCase.description} - Level ${i}`
-            // We only keep the required values for the current and previous levels
-            newTestCase.steps.forEach((step) => {
-              step.message.requiredValues = step.message.requiredValues.filter(requiredValue => requiredValue.verificationLevel <= i)
-            })
-            newTestCases.push(newTestCase)
-          }
+async function loadTestCases () {
+  const parsedTestCases = []
+  for (const category of testCaseFileAuto.value) {
+    const newTestCases = ref([])
+    for (const testCase of category.testCases) {
+      const newTestCase = JSON.parse(JSON.stringify(testCase))
+      newTestCase.label = `${newTestCase.label}`
+      newTestCase.description = `${newTestCase.description}`
+      // We load the example files for test case steps
+      for (const step of newTestCase.steps) {
+        const response = await fetch(REPOSITORY_URL + store.selectedVhost.modelVersion + '/src/main/resources/sample/examples/' + step.model + '/' + step.file)
+        const receivedMessage = await response.json()
+        // We transform the received message json to an array of jsonpaths
+        let jsonpaths = []
+        jsonpath.nodes(receivedMessage, '$..*').forEach((path) => {
+          jsonpaths.push(path)
         })
-        parsedTestCases.push({
-          categoryLabel: category.categoryLabel,
-          testCases: newTestCases
+        // We're only interested in paths with simple values (no objects, but arrays are allowed)
+        jsonpaths = jsonpaths.filter((value) => {
+          return typeof value.value !== 'object'
         })
-      })
-      this.testCases = [
-        ...JSON.parse(JSON.stringify(testCaseFile)),
-        ...JSON.parse(JSON.stringify(parsedTestCases))
-      ]
-    },
-    loadTestCaseJsons (testCase) {
-      testCase.steps.forEach(async (step) => {
-        if (step.type === 'receive') {
-          const response = await fetch(REPOSITORY_URL + this.config.public.modelBranch + '/src/main/resources/sample/examples/' + step.message.file)
-          const json = await response.json()
-          this.$set(step, 'json', json)
-        }
-      })
-    },
-    goToTestCase (testCase) {
-      this.store.resetMessages()
-      this.navigateTo({
-        name: 'test-case',
-        params: {
-          testCase
-        }
-      })
+        // We filter out the properties in 'ignoredProperties' from the jsonpaths array
+        jsonpaths = jsonpaths.filter((value) => {
+          return !step.ignoredProperties.includes(value)
+        })
+        // We filter out datetime properties from the jsonpaths array using a regex \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}
+        jsonpaths = jsonpaths.filter((value) => {
+          return !/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}/.test(value.value)
+        })
+        step.json = receivedMessage
+        step.requiredValues = jsonpaths
+      }
+      newTestCases.value.push(newTestCase)
+    }
+    parsedTestCases.push({
+      categoryLabel: category.categoryLabel,
+      testCases: newTestCases.value
+    })
+  }
+  testCases.value = [
+    ...JSON.parse(JSON.stringify(parsedTestCases))
+  ]
+}
+function goToTestCase (testCase, event) {
+  event.stopPropagation()
+  store.resetMessages()
+  // Vue3 breaking change: [Vue Router warn]: Discarded invalid param(s) "testCase" when navigating.
+  // See https://github.com/vuejs/router/blob/main/packages/router/CHANGELOG.md#414-2022-08-22 for more details.
+  // So we just store the selected test case in the store and navigate to the test case page.
+  store.testCase = testCase
+  router.push({
+    name: 'test-case'
+  })
+}
+</script>
+
+<script>
+export default {
+  beforeRouteEnter (to, from) {
+    if (!useMainStore().isAuthenticated) {
+      return { name: 'index' }
     }
   }
 }
 </script>
 <style>
+div.v-card.test-step-card {
+  padding: 1rem;
+  margin: 1rem;
+}
+div.v-timeline--vertical{
+  justify-content: start;
+}
+div.v-card-subtitle {
+  white-space: normal;
+}
+div.v-list-item-subtitle {
+  margin-bottom: 0.5rem;
+}
+div.v-list-item-title {
+  margin-top: 0.5rem;
+}
+.v-list {
+  border-radius: 4px;
+}
 </style>
