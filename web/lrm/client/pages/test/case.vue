@@ -339,7 +339,7 @@ function generateCaseId () {
   const seconds = currentDate.getSeconds().toString().slice(-1)
 
   const time = year + dayOfYear + hour + minutes + seconds
-  return store.user.clientId + '-' + 'DRMFR15690' + time
+  return store.user.clientId + '.' + 'DRMFR15690' + time
 }
 
 function getAwaitedValues (step) {
