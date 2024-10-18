@@ -170,7 +170,7 @@ export function sendMessage (msg, vhost = null) {
   const store = useMainStore()
   if (store.socket?.readyState === 1) {
     if (!vhost) {
-      vhost = store.selectedVhost
+      vhost = store.selectedVhost.vhost
     }
     try {
       console.log('Sending message', msg)
