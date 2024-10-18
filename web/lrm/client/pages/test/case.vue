@@ -252,7 +252,7 @@ async function initialize () {
 async function loadJsonSteps () {
   for (const step of testCase.value.steps) {
     if (step.type === 'receive') {
-      const response = await fetch(REPOSITORY_URL + config.public.modelBranch + '/src/main/resources/sample/examples/' + step.model + '/' + step.file)
+      const response = await fetch(REPOSITORY_URL + store.selectedVhost.modelVersion + '/src/main/resources/sample/examples/' + step.model + '/' + step.file)
       const json = await response.json()
       step.json = json
     }
