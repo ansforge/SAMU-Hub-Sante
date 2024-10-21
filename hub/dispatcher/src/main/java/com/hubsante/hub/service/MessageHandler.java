@@ -41,6 +41,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 
 import static com.hubsante.hub.config.AmqpConfiguration.DISTRIBUTION_EXCHANGE;
@@ -113,8 +114,8 @@ public class MessageHandler {
         log.error(
                 "Error occurred with message published by " + sender + "\n" +
                         "Error " + error.getErrorCode() + "\n" +
-                        "ErrorCause " + error.getErrorCause() + "\n" +
-                        "ErrorSourceMessage " + error.getSourceMessage());
+                        "ErrorCause " + error.getErrorCause());
+        log.debug("ErrorSourceMessage was {}", error.getSourceMessage());
 
         ErrorWrapper wrapper = new ErrorWrapperBuilder(error).build();
 
@@ -132,7 +133,8 @@ public class MessageHandler {
             rabbitTemplate.send(DISTRIBUTION_EXCHANGE, infoQueueName, errorAmqpMessage);
         } catch (JsonProcessingException e) {
             // This should never happen : we are serializing a POJO with 2 String attributes and a single enum
-            log.error("Could not serialize Error for message " + error.getSourceMessage(), e);
+            log.error("Could not serialize Error for message " + error.getReferencedDistributionID(), e);
+            log.debug("ErrorSourceMessage was {}", error.getSourceMessage());
             throw new RuntimeException(e);
         }
     }
@@ -190,15 +192,15 @@ public class MessageHandler {
                 validator.validateXML(receivedEdxl, ENVELOPE_XSD);
                  distributionID = edxlHandler.deserializeXmlEDXLEnvelope(receivedEdxl).getDistributionID();
             }
-            log.error("Could not validate content of message " + receivedEdxl +
-                    " coming from " + message.getMessageProperties().getReceivedRoutingKey() +
-                    " with distributionId " + distributionID );
+            log.error("Could not validate content of message coming from {} with distributionId {}",
+                    message.getMessageProperties().getReceivedRoutingKey(), distributionID);
+            log.debug("Received message String was {}", receivedEdxl);
             throw new SchemaValidationException(contentValidationException.getMessage(), distributionID);
         } catch (ValidationException envelopeValidationException) {
             // we replace the ValidationException from the models lib by another one extending AbstractHubException
-            log.error("Could not validate envelope of message " + receivedEdxl +
-                    " coming from " + message.getMessageProperties().getReceivedRoutingKey() +
-                    " with distributionId possibly being (regex extraction) " + extractDistributionId(receivedEdxl), envelopeValidationException);
+            log.error("Could not validate envelope of message coming from {} with distributionId possibly being (regex extraction) {}",
+                    message.getMessageProperties().getReceivedRoutingKey(), extractDistributionId(receivedEdxl),
+                    envelopeValidationException);
             throw new SchemaValidationException("CAUTION: distributionID has been extracted by regex because the envelope could not be deserialized.\n" + envelopeValidationException.getMessage(), extractDistributionId(receivedEdxl));
         } catch (IOException exception) {
             log.error("Could not find schema file", exception);
@@ -226,7 +228,10 @@ public class MessageHandler {
                 throw new NotAllowedContentTypeException(errorCause, null);
             }
         } catch (JsonProcessingException exception) {
-            log.error("Could not deserialize content of message " + receivedEdxl + " coming from " + message.getMessageProperties().getReceivedRoutingKey(), exception);
+            log.error("Could not deserialize content of message coming from {} ",
+                    message.getMessageProperties().getReceivedRoutingKey(),
+                    exception);
+            log.debug("Received message String was {}", receivedEdxl);
             String errorCause = "An internal server error has occurred, please contact the administration team";
             throw new UnrecognizedMessageFormatException(errorCause, extractDistributionId(receivedEdxl));
         }
@@ -247,7 +252,8 @@ public class MessageHandler {
                 edxlString = edxlHandler.serializeJsonEDXL(edxlMessage);
                 fwdAmqpProperties.setContentType(MessageProperties.CONTENT_TYPE_JSON);
             }
-            log.info("  ↳ [x] Forwarding to '" + recipientID + "': message with distributionID " + edxlMessage.getDistributionID());
+            log.info("  ↳ [x] Forwarding to '{}': message with distributionID {} and hashed value {}",
+            recipientID, edxlMessage.getDistributionID(), hashBody(receivedAmqpMessage));
             log.debug(edxlString);
 
             fwdAmqpProperties.setHeader(DLQ_ORIGINAL_ROUTING_KEY, senderID);
@@ -261,7 +267,10 @@ public class MessageHandler {
     }
 
     private void logMessage(Message message, EdxlMessage edxlMessage, String receivedEdxl) {
-        log.info(" [x] Received from '" + message.getMessageProperties().getReceivedRoutingKey() + "': message with distributionID " + edxlMessage.getDistributionID());
+        log.info(" [x] Received from '{}': message with distributionID {} and hashed value {}",
+                message.getMessageProperties().getReceivedRoutingKey(),
+                edxlMessage.getDistributionID(),
+                hashBody(message));
         log.debug(receivedEdxl);
     }
 

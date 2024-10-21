@@ -41,7 +41,7 @@ public class HubConfiguration {
 
     @Value("${client.preferences.file}")
     private File configFile;
-    @Value("${hubsante.default.message.ttl}")
+    @Value("${dispatcher.default.ttl}")
     private String ttlProperty;
     private long defaultTTL;
     @Value("${dispatcher.vhost}")
