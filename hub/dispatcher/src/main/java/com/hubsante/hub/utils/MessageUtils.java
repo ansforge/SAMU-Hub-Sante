@@ -31,8 +31,12 @@ import org.w3c.dom.NodeList;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Base64;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -160,5 +164,17 @@ public class MessageUtils {
         } else {
             return DISTRIBUTION_ID_UNAVAILABLE;
         }
+    }
+
+    public static String hashBody(Message message){
+        try {
+            String body = new String(message.getBody(), StandardCharsets.UTF_8);
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");byte[] hashedBytes = digest.digest(body.getBytes(StandardCharsets.UTF_8));
+            return Base64.getEncoder().encodeToString(hashedBytes);
+        } catch (NoSuchAlgorithmException e) {
+            log.error("Could not get SHA-256 algorithm");
+            throw new RuntimeException(e);
+        }
+
     }
 }
