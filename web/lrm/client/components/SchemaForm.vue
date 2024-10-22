@@ -52,20 +52,14 @@ const props = defineProps({
 const requestFormRef = ref(null)
 const examplesListRef = ref(null)
 const exampleLoadDatetime = ref(undefined)
-let schema = reactive({})
+const schema = computed(() => store.messageTypes[props.messageTypeTabIndex]?.schema)
 
 watch(() => props.messageTypeTabIndex, () => {
-  constructSchema()
   store.currentUseCase = store.messageTypes[props.messageTypeTabIndex].schema.title
 })
 
-function constructSchema () {
-  schema = store.messageTypes[props.messageTypeTabIndex].schema
-}
-
 defineExpose({
   props,
-  constructSchema,
   requestFormRef
 })
 </script>

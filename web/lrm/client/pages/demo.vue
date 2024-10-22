@@ -234,9 +234,11 @@ export default {
       this.store.loadMessageTypes(REPOSITORY_URL + this.source + '/src/main/resources/sample/examples/messagesList.json').then(
         () => this.store.loadSchemas(REPOSITORY_URL + this.source + '/src/main/resources/json-schema/').then(
           () => {
+            console.log('messagesList.json and schemas loaded for ' + this.source)
             this.messageTypeTabIndex = 0
           })
-      ).catch(() => {
+      ).catch((reason) => {
+        console.error(reason)
         toast.error("Erreur lors de l'acquisition des schémas de version " + this.source)
       })
     },
