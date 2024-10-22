@@ -129,10 +129,13 @@ export const useMainStore = defineStore('main', {
         const schema = await JSON.parse(response)
         return ({ index, schema })
       })).then((schemas) => {
+        const updatedMessageTypes = []
         schemas.forEach(({ index, schema }) => {
           // TODO: Rethink the whole layout thing
           const objectProps = []
           const simpleProps = []
+
+          // Populate objectProps and simpleProps arrays based on schema properties
           for (const property in schema.properties) {
             if (Object.keys(schema.properties[property]).includes('$ref')) {
               objectProps.push(property)
@@ -141,6 +144,8 @@ export const useMainStore = defineStore('main', {
               simpleProps.push(property)
             }
           }
+
+          // Set the layout for the schema
           schema.layout = []
           if (simpleProps.length) {
             schema.layout.push({
@@ -162,11 +167,15 @@ export const useMainStore = defineStore('main', {
           //     schema.definitions[definition].layout = schema.definitions[definition]['x-display']
           //   }
           // }
-          this.messageTypes[index] = {
+          // Add schema to already message type infos
+          updatedMessageTypes[index] = {
             ...this.messageTypes[index],
             schema
           }
         })
+
+        // Reassign the entire array to trigger reactivity
+        this._messageTypes = updatedMessageTypes
       })
     },
     loadMessageTypes (source) {
