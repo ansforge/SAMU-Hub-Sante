@@ -25,6 +25,7 @@
     <link rel="stylesheet" href="/style/bloc-o-liste-fichiers.css" type="text/css">
     <link rel="stylesheet" href="/style/print.css" type="text/css" media="print">
     <link rel="stylesheet" href="/style.css" type="text/css">
+    
 </head>
 
 <body>
@@ -89,16 +90,16 @@
                                         <a class="nav-link" href="/index.html">Bienvenue<span class="sr-only">(page
                                                 courante)</span></a>
                                     </li>
-                                    <li class="nav-item common-nav-item is-active ">
+                                    <li class="nav-item common-nav-item is-active">
                                         <button class="nav-link" type="button" data-toggle="collapse"
-                                            data-target="#nav1-nav-collapse-submenu--2"
-                                            aria-controls="nav1-nav-collapse-submenu--2" aria-expanded="false">Le Hub
+                                            data-target="#nav1-nav-collapse-submenu--1"
+                                            aria-controls="nav1-nav-collapse-submenu--1" aria-expanded="false">Le Hub
                                             Santé</button>
-                                        <div class="collapse nav-collapse" id="nav1-nav-collapse-submenu--2"
+                                        <div class="collapse nav-collapse" id="nav1-nav-collapse-submenu--1"
                                             data-parent="#menuPrincipal">
                                             <div class="nav-collapse-inner">
                                                 <ul class="navbar-nav nav-lvl--2">
-                                                    <li class="nav-item common-nav-item is-active ">
+                                                    <li class="nav-item common-nav-item is-active">
                                                         <a class="nav-link" href="/pages/travaux.html">Travaux en
                                                             cours</a>
                                                             <li class="nav-item common-nav-item">
@@ -112,9 +113,27 @@
                                             </div>
                                         </div>
                                     </li>
-                                    <li class="nav-item common-nav-item">
-                                        <a class="nav-link" href="/pages/accompagnement.html">Accompagnement</a>
-                                    </li>
+    
+                                        <li class="nav-item common-nav-item">
+                                            <button class="nav-link" type="button" data-toggle="collapse"
+                                                data-target="#nav1-nav-collapse-submenu--2"
+                                                aria-controls="nav1-nav-collapse-submenu--2" aria-expanded="false">Accompagnement</button>
+                                            <div class="collapse nav-collapse" id="nav1-nav-collapse-submenu--2"
+                                                data-parent="#menuPrincipal">
+                                                <div class="nav-collapse-inner">
+                                                    <ul class="navbar-nav nav-lvl--2">
+                                                        <li class="nav-item common-nav-item ">
+                                                            <a class="nav-link" href="/pages/parcours.html">Se raccorder au Hub</a>
+                                                        <li class="nav-item common-nav-item">
+                                                            <a class="nav-link" href="/pages/accompagnement.html">Ressources éditeurs</a>
+    
+    
+                                        </li>
+                                    </ul>
+                            </div>
+                        </div>
+                        
+                                        </li>
                                     <li class="nav-item common-nav-item">
                                         <a class="nav-link" href="/pages/faq.html">FAQ</a>
                                     </li>
@@ -230,7 +249,7 @@
                 </div>
             </div>
 
-            <!-- Bandeau gris Evènements-->
+            <!-- Bandeau gris -->
             <div class="bg-gray-400 pt-2 pb-2">
 
                 <div class="container paragraph-title-text text-center text-default">
@@ -294,9 +313,36 @@
                         </div>
                     </div>
                 </div>
-            </div>
-
-
+            
+                
+            <table >
+                <caption>Avancement des travaux 15-15</caption>
+                <thead>
+                    <tr>
+                        <th class="col-auto" >Cas d'usage </th>
+                        <th class="col-4" >En production </th>
+                        <th class="col-4" >Validé</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th scope="row">Echanges AMU-SNP</th>
+                        <td>Scriptal (SAS 18)
+                        <br>Appligos (SAS 41)
+                        </td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Partage de dossier</th>
+                        <td></td>
+                        <td>Scriptal
+                        <br>Appligos 
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        
+        </div>
 
             <!-- Titre 15-SMUR/RPIS -->
             <div class="bg-white">
