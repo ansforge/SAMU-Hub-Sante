@@ -113,39 +113,36 @@
                                 </ul>
                         </div>
                     </div>
-                    
-                                    </li>
-                                    
+
+                    </li>
+
+                    <li class="nav-item common-nav-item is-active">
+                        <button class="nav-link" type="button" data-toggle="collapse"
+                            data-target="#nav1-nav-collapse-submenu--2" aria-controls="nav1-nav-collapse-submenu--2"
+                            aria-expanded="false">Accompagnement</button>
+                        <div class="collapse nav-collapse" id="nav1-nav-collapse-submenu--2"
+                            data-parent="#menuPrincipal">
+                            <div class="nav-collapse-inner">
+                                <ul class="navbar-nav nav-lvl--2">
                                     <li class="nav-item common-nav-item is-active">
-                                        <button class="nav-link" type="button" data-toggle="collapse"
-                                            data-target="#nav1-nav-collapse-submenu--2"
-                                            aria-controls="nav1-nav-collapse-submenu--2" aria-expanded="false">Accompagnement</button>
-                                        <div class="collapse nav-collapse" id="nav1-nav-collapse-submenu--2"
-                                            data-parent="#menuPrincipal">
-                                            <div class="nav-collapse-inner">
-                                                <ul class="navbar-nav nav-lvl--2">
-                                                    <li class="nav-item common-nav-item is-active">
-                                                        <a class="nav-link" href="/pages/parcours.html">Se raccorder au Hub</a>
-                                                    <li class="nav-item common-nav-item">
-                                                        <a class="nav-link" href="/pages/accompagnement.html">Ressources éditeurs</a>
-
-
+                                        <a class="nav-link" href="/pages/parcours.html">Se raccorder au Hub</a>
+                                    <li class="nav-item common-nav-item">
+                                        <a class="nav-link" href="/pages/accompagnement.html">Ressources éditeurs</a>
                                     </li>
                                 </ul>
+                            </div>
                         </div>
-                    </div>
-                    
-                                    </li>
+                    </li>
 
-                                    <li class="nav-item common-nav-item">
+                    <li class="nav-item common-nav-item">
                         <a class="nav-link" href="/pages/faq.html">FAQ</a>
-                                    </li>
-                                    <li class="nav-item common-nav-item">
+                    </li>
+                    <li class="nav-item common-nav-item">
                         <a class="nav-link" href="/pages/contacts.html">Contacts</a>
-                                    </li>
-                                </ul>
-                            </nav>           
-                                <ul class="nav-right">
+                    </li>
+                    </ul>
+                    </nav>
+                    <ul class="nav-right">
                         <li class="nav-right-item collapse-wrapper common-nav-item">
                             <button type="button" class="btn btn--icon-only btn-icon--header" aria-label="Accessibilité"
                                 data-toggle="collapse" data-target="#collapseAccess" aria-controls="collapseAccess"
@@ -189,7 +186,7 @@
                                 </section>
                             </div>
                         </li>
-                                </ul>
+                    </ul>
                 </div>
             </div>
         </div>
@@ -285,16 +282,17 @@
             </div>
             <div class="o-paragraph--parcours__container">
                 <div class="o-paragraph--parcours__content">
-                    <h2>Accès à la messagerie Slack éditeurs SI-SAMU</h2>
+                    <h2>Accès aux Slack éditeurs</h2>
 
                     <div class="wysiwyg">
-                        <p>Un chanel Slack dédié est disponible pour communiquer avec l'équipe du Hub Santé et
-                            l’ensemble des éditeurs Santé de manière rapide et sécurisée. Le lien ci-dessous vous permet
-                            de rejoindre le Slack dédié, pensez à nous envoyer un email afin qu'on paramètre vos accès
-                            spécifiques.
+                        <p>Un chanel Slack dédié à chaque éditeur est disponible pour communiquer avec l'équipe du Hub
+                            Santé
+                            de manière fluide et sécurisée. Le lien ci-dessous vous permet de rejoindre le Slack, pensez
+                            à
+                            nous envoyer un email afin qu'on paramètre vos accès à votre channel dédié.
                         </p>
 
-                        <div class="container" style="display: flex; justify-content: space-around; flex-wrap: wrap;">
+                        <div class="container" style="display: flex; justify-content: space-evenly; flex-wrap: wrap;">
                             <div class="paragraph--lien">
                                 <a href="https://contact-api-lrm.slack.com/join/shared_invite/zt-1lbpmutlh-vsq4ilHZ5ciNezo8Y35FlA"
                                     target="_blank" class="btn btn--style1 btn--white">Rejoindre Slack</a>
@@ -333,42 +331,49 @@
             </div>
             <div class="o-paragraph--parcours__container">
                 <div class="o-paragraph--parcours__content">
-                    <h2>Accès aux repositories GitHub partagés</h2>
+                    <h2>Accès aux repositories GitHub</h2>
 
                     <div class="wysiwyg">
-                        <p>Le GitHub de l’ANS est un service en ligne qui contient le code source de plusieurs projets
-                            de l’ANS.
-                            Pour le projet Hub Santé, deux repositories ont été créés.
-                        <ul>
-                            <h3>1 - Code applicatif Hub Santé (privé).</h3>
-                            <p> Ce <a href="https://github.com/ansforge/SAMU-Hub-Sante/" target="_blank">
-                                    <i>repository</i> GitHub privé </a> permet de partager les travaux
-                                et les développements réalisés.
-                                Il contient notamment des <a
-                                    href="https://github.com/ansforge/SAMU-Hub-Sante/tree/main/client/src/main/java/com/tutorials#readme"
-                                    target="_blank"> <i>tutoriels Java</i></a> pour l'utilisation de
-                                <a href="https://www.rabbitmq.com/tutorials" target="_blank"> <i> RabbitMQ</i></a>;
-                                ainsi que des modèles de code d’un consommateur et d’un producteur (client AMQP pour
-                                lire et écrire dans les files ouvertes par le Hub Santé).
-                            </p>
+                        <p>Deux repositories liés au Hub Santé vous sont mis à disposition sur le GitHub de l'ANS.
 
-                            <li>Un compte Github est requis, si vous n'en possédez pas, il faut en créer un :</li>
+                        <h3>1 - Modèle de données (public)</h3>
+                        <p> Les <strong>modèles de données</strong> associés au Hub Santé sont disponibles sur un <a
+                                href="https://github.com/ansforge/SAMU-Hub-Modeles?tab=readme-ov-file#hub-sant%C3%A9---librairie-mod%C3%A8les"
+                                target="_blank"> <i>repository</i> GitHub public</a>.
+                            <br> Les <strong>schémas, exemples, diagrammes UML et documents détaillés</strong> y sont
+                            disponibles ainsi que des SDK Java et Ruby associés et directement utilisables dans votre
+                            code.
+                        </p>
+                        <h3>2 - Code applicatif Hub Santé (privé)</h3>
+                        <p> Ce <a href="https://github.com/ansforge/SAMU-Hub-Sante/" target="_blank">
+                                <i>repository</i> GitHub privé </a> permet de partager les travaux
+                            et les développements réalisés par l'équipe Hub Santé.
+                            Il contient notamment des <a
+                                href="https://github.com/ansforge/SAMU-Hub-Sante/tree/main/client/src/main/java/com/tutorials#readme"
+                                target="_blank"> <i>tutoriels Java</i></a> pour l'utilisation de
+                            <a href="https://www.rabbitmq.com/tutorials" target="_blank"> <i> RabbitMQ</i></a>;
+                            ainsi que des modèles de code de client AMQP (pour lire et écrire dans les files ouvertes
+                            par le Hub Santé)
+                            en Java, Spring Boot et Python.
+                        </p>
 
-                            <div class="paragraph--lien">
-                                <a href="https://github.com/join" target="_blank"
-                                    class="btn btn--style1 btn--white">Créer un compte Github</a>
-                            </div>
+                        <li>Un compte Github est requis, si vous n'en possédez pas, il faut en créer un :
+                            <a href="https://github.com/join" target="_blank">créer un compte Github</a>.
+                        </li>
 
-                            <li> Puis remplissez le formulaire dédié de demande d'accès (cf. lien ci-dessous) de la
-                                manière suivante : </li>
+
+                        <li> Puis remplissez le formulaire dédié de demande d'accès de la manière suivante :
 
                             <div class="container"
                                 style="display: flex; justify-content: space-around; flex-wrap: wrap;">
-                                <p> questions 1 à 5 - renseignez vos informations,
-                                    <br> question 6 - indiquez <i>l’équipe GitHub SAMU-Hub-Sante</i> ,
-                                    <br> question 7 - indiquez <i>romain.fouilland@esante.gouv.fr</i> ,
-                                    <br> question 8 - indiquez <i>droits Triage </i>.
-                                </p>
+                                <ul class="mt-1">
+                                    <li>Questions 1 à 5 - renseignez vos informations</li>
+                                    <li>Question 6 - indiquez <i>l'équipe GitHub SAMU-Hub-Sante</i></li>
+                                    <li>Question 7 - indiquez <i>Romain Fouilland</i></li>
+                                    <li>Question 8 - indiquez <i>droits Triage</i> (droits par défaut liés à l'équipe)
+                                    </li>
+                                </ul>
+
 
                                 <div class="paragraph--lien">
                                     <p></p>
@@ -381,15 +386,8 @@
                                 </div>
 
                             </div>
-                        </ul>
-                        <h3>2 - SDK du modèle de données (public)</h3>
-                        <p> Les <strong>modèles de données</strong> associés au Hub Santé sont disponibles sur un <a
-                                href="https://github.com/ansforge/SAMU-Hub-Modeles?tab=readme-ov-file#hub-sant%C3%A9---librairie-mod%C3%A8les"
-                                target="_blank"> <i>repository</i> GitHub public </a>
-                            <br> Les <strong>schémas, exemples, diagrammes UML et documents détaillés</strong> y ont
-                            disponibles ainsi
-                            qu'un package Java associé et directement utilisable dans votre code.
-                        </p>
+                        </li>
+
                     </div>
 
 
@@ -407,51 +405,61 @@
             </div>
             <div class="o-paragraph--parcours__container">
                 <div class="o-paragraph--parcours__content">
-                    <h2>Obtention des certificats IGC Santé (TEST et PROD)</h2>
+                    <h2 class="mb-0">Accès au Hub Santé</h2>
+                    <h5 style="color: grey; font-style: italic; font-weight: 500;">Certificats IGC Santé (TEST et PROD)
+                        et demande de droits</h3>
 
 
-                    <div class="o-paragraph--text-media__info bg-gray-100 rounded-sm border mt-4 py-4 px-2 text-center">
-                        <div class="col-md-10 col-lg-9 text-center mx-auto">
-                            <p class="title--icon justify-content-center"><svg class="svg-icon svg-circle-info"
-                                    aria-hidden="true" focusable="false">
-                                    <use xlink:href="/svg-icons/icon-sprite.svg#circle-info"></use>
-                                </svg> Attention</p>
-                            <div class="wysiwyg">
-                                <p>La démarche d'obtention des certificats IGC Santé est
-                                    <strong>essentielle</strong> , et peut prendre du temps.
-                                    <br><strong>Pensez à bien l'anticiper</strong> .
+                        <div
+                            class="o-paragraph--text-media__info bg-gray-100 rounded-sm border mt-4 py-2 px-1 text-center">
+                            <div class="col-md-10 col-lg-9 text-center mx-auto">
+                                <p class="title--icon justify-content-center align-items-center">
+                                    <svg class="svg-icon mt-0" aria-hidden="true" focusable="false">
+                                        <use xlink:href="/svg-icons/icon-sprite.svg#warning"></use>
+                                    </svg>
+                                    <span>Attention</span>
+                                </p>
+                                <div class="wysiwyg">
+                                    <p>La démarche d'obtention des certificats IGC Santé est
+                                        <strong>essentielle</strong> et peut prendre du temps.
+                                        <br><strong>Pensez à bien l'anticiper</strong> !
+                                </div>
                             </div>
                         </div>
-                    </div>
 
 
-                    <div class="wysiwyg mt-2">
-                        <p> Les certificats <strong>IGC Santé</strong> permettent d'identifier les logiciels dans le
-                            cadre des échanges
-                            sur le Hub Santé.
-                        <ul>
-                            <li> Pour les éditeurs souhaitant raccorder leur environnement développement/usine sur
-                                l'environnement <strong>bac-a-sable</strong> du Hub Santé, des certificats <strong>IGC
-                                    Santé TEST</strong> sont nécessaires.
+                        <div class="wysiwyg mt-2">
+                            <p> Les certificats <strong>IGC Santé</strong> permettent d'identifier les logiciels dans le
+                                cadre des échanges sur le Hub Santé.
+                            <ul>
+                                <li> Pour les éditeurs souhaitant raccorder leur environnement développement/usine sur
+                                    l'environnement <strong>bac-a-sable</strong> du Hub Santé, des certificats
+                                    <strong>IGC
+                                        Santé TEST</strong> sont nécessaires.
 
-                            <li> Pour les SAMU et entités de Santé souhaitant raccorder leur logiciel en production sur
-                                les
-                                environnements de <strong>pre-production</strong> et <strong>production</strong> du Hub
-                                Santé, des certificats <strong>IGC Santé PROD</strong>
-                                sont nécessaires.
-                        </ul>
-                        <p> Dans le cadre du Hub Santé, vous trouverez les détails d'obtention des certificats sur le
-                            <strong>Portail industriel de l'ANS</strong> :
-                        </p>
-                    </div>
+                                <li> Pour les SAMU et entités de Santé souhaitant raccorder leur logiciel en production
+                                    sur
+                                    les environnements de <strong>pre-production</strong> et <strong>production</strong>
+                                    du Hub
+                                    Santé, des certificats <strong>IGC Santé PROD</strong> sont nécessaires.
+                            </ul>
+                            <p> Dans le cadre du Hub Santé, vous trouverez les détails d'obtention des certificats sur
+                                le
+                                <strong>Portail industriel de l'ANS</strong> :
+                            </p>
+                        </div>
 
-                    <div class="paragraph--lien">
+                        <div class="paragraph--lien">
 
-                        <a href="https://industriels.esante.gouv.fr/produits-et-services/certificats-logiciels#paragraph-id--13323"
-                            target="_blank" class="btn btn--style1 btn--white">Commandez un certificat logiciel IGC
-                            Santé</a>
-                    </div>
-                    <div class="paragraph--lien"></div>
+                            <a href="https://industriels.esante.gouv.fr/produits-et-services/certificats-logiciels#paragraph-id--13323"
+                                target="_blank" class="btn btn--style1 btn--white">Commandez un certificat logiciel IGC
+                                Santé</a>
+                        </div>
+                        <div class="paragraph--lien"></div>
+
+                        <p>Une fois les certificats obtenus, veuillez <strong>envoyer le certificat public à l'équipe
+                                Hub Santé</strong>
+                            (par Slack ou email) afin que vos accès, files et droits soient configurés.</p>
                 </div>
             </div>
         </div>
@@ -468,65 +476,65 @@
                     <h2>Raccordement au Hub Santé </h2>
 
                     <div class="wysiwyg">
-                        <p>Le raccordement technique est le prérequis à l’implémentation d’échanges fonctionnels tels
-                            que décrits dans les Dossiers de Spécifications Fonctionnelles (DSF) et portant notamment
-                            sur les échanges inter-Santé (15-15, 15-SMUR, etc.)</p>
-                        <p> Tous les <strong>détails techniques </strong> sont disponibles dans le Dossier des
-                            Spécifications
-                            Techniques (DST).
+                        <p>Le raccordement technique est le prérequis à l'implémentation d'échanges fonctionnels (15-15,
+                            15-SMUR, etc.) tels
+                            que décrits dans les
+                            <a href="/pages/accompagnement.html#fonctionnel" target="_blank">Dossiers de Spécifications
+                                Fonctionnelles (DSF)</a>.
+                        </p>
+                        <p> Tous les <strong>détails techniques</strong> sont disponibles dans le Dossier des
+                            Spécifications Techniques (DST).
                         </p>
                         <a href="/pages/accompagnement.html#technique" target="_blank"
-                            class="btn btn--style1 btn--white">DST</a>
+                            class="btn btn--style1 btn--white">Dossier des Spécifications Techniques (DST)</a>
 
                         <p>
                         <h3>1 - Messages asynchrones, AMQP et RabbitMQ.</h3>
-                        Les échanges entre un Client et le Hub Santé se font via des opérations d'envoi et/ou de
-                        réception de messages en mode asynchrone, selon une architecture MOM.
-                        <br>La solution technique
-                        proposée est basée sur le protocole <a href="/resources/Parcours/amqp0-9-1.pdf" target="_blank">
+                        Les échanges entre un Client et le Hub Santé se font via des opérations d'envoi et de
+                        réception de messages en mode asynchrone.
+                        La solution technique proposée est basée sur le protocole <a
+                            href="/resources/Parcours/amqp0-9-1.pdf" target="_blank">
                             <i>AMQP 0-9-1</i></a> et son implémentation open-source <a href="https://www.rabbitmq.com/"
-                            target="_blank"> <i>RabbitMQ</i></a> .
+                            target="_blank"> <i>RabbitMQ</i></a>.
                         </p>
 
 
                         <p>
                         <h3>2 - Autorisations : acteurs et messages</h3>
-                        La liste des Clients autorisés à échanger des messages sur le Hub Santé est maintenue par l’ANS.
-                        Les Clients auront le droit d’échanger uniquement avec les acteurs également enregistrés.
-                        Les échanges autorisés seront définis par des DSF précisant notamment les modèles de données
-                        attendus et qui seront contrôlés lors des échanges de messages.
+                        La liste des Clients autorisés à échanger des messages sur le Hub Santé est maintenue par l'ANS.
+                        Les Clients auront le droit d'échanger uniquement avec les acteurs également enregistrés.
+                        Les échanges autorisés sont définis par les
+                        <a href="/pages/accompagnement.html#fonctionnel" target="_blank">Dossiers de Spécifications
+                            Fonctionnelles (DSF)</a>
+                        précisant notamment les modèles de données attendus et contrôlés lors des échanges de messages
+                        par le Hub Santé.
 
                         </p>
+
                         <p>
                         <h3>3 - Communications : point à point, files fixées et nommage</h3>
-                        Le mode de communication est basé sur un mode d'échange <strong> point à point (PTP) </strong>
-                        via des <strong> files de messages</strong>.
-                        <ul>
-                            <br>
-                            <li>Un <strong>Client émetteur </strong> publie donc un message pour un unique destinataire
-                                sur un échangeur d’envoi dédié.
-                                <br>
-                            <li>Un <strong>Client destinataire </strong> reçoit ses messages sur des files d’écoute
-                                spécifiques portées par le Hub Santé. Chaque Client dispose de 3 files d’écoute selon la
-                                typologie des messages reçus :
-
-                                <div class="container text-center">
-                                    <br> <strong> message </strong> pour les échanges fonctionnels,
-                                    <br> <strong> ack </strong> pour les acquittements de réception finale,
-                                    <br> <strong> info </strong> pour les messages généraux d’informations, alertes et
-                                    erreurs.
-                                </div>
-                            </li>
-                        </ul>
-
-                        Grace à un mécanisme de routage interne au Hub Santé, chaque message publié sur l’échangeur
-                        d’envoi est transféré sur une file de messages accessible au destinataire. Le message est
-                        ensuite récupéré par le Client destinataire qui dispose alors des informations suffisantes pour
-                        traiter ce message au sein de son système d’information.
+                        Le mode de communication est basé sur un mode d'échange <strong> point à point </strong>.
+                        <li>Un <strong>Client émetteur</strong> publie un message pour un unique destinataire sur
+                            l'échangeur d'envoi.</li>
+                        <li>Un <strong>Client destinataire </strong> reçoit ses messages sur des files d'écoute dédiées.
+                            Chaque Client dispose de 3 files d'écoute selon la typologie des messages reçus :
+                            <ul>
+                                <li> <strong> message </strong> pour les échanges fonctionnels,</li>
+                                <li> <strong> ack </strong> pour les acquittements de réception finale,</li>
+                                <li> <strong> info </strong> pour les messages généraux d'information, alerte et erreur.
+                                </li>
+                            </ul>
+                        </li>
+                        <p class="my-2">
+                            Grace à un mécanisme de routage interne au Hub Santé, chaque message publié sur l'échangeur
+                            d'envoi est transféré sur une file de messages accessible au destinataire (déterminé avec
+                            l'enveloppe du message).
+                            Le message est ensuite récupéré par le Client destinataire pour traiter ce message au sein
+                            de son système d'information.
                         </p>
                         <p>
-                            <br> Le schéma ci-dessous illustre les différentes étapes du transit d’un message par le Hub
-                            Santé.
+                            Le schéma ci-dessous illustre les différentes étapes du transit d'un message par le Hub
+                            Santé ainsi que la configuration des différentes clés et attributs.
 
                         <div class="container border rounded-md align-center">
                             <img src="/img/crea/illustrations parcours/transitHub.png" loading="lazy">
@@ -554,57 +562,33 @@
                         </p>
 
 
-                        <h3>1 - Bac-à-sable : pour les travaux, tests et recettes éditeurs.</h3>
+                        <h3>1 - Bac-à-sable : pour les travaux, tests et recettes éditeurs</h3>
                         <p>Cet environnement est à disposition des éditeurs souhaitant se raccorder au Hub Santé et
-                            réaliser les développements associés à l’implémentation de périmètres fonctionnels
-                            d’échanges du
+                            réaliser les développements associés à l'implémentation de périmètres fonctionnels
+                            d'échanges du
                             Hub Santé (tels que définis dans les DSF). Il est également utilisé pour réaliser les tests
                             puis
                             recettes des travaux des éditeurs en amont des déploiements sur les environnements de
                             production.</p>
-                        <p>L’enregistrement d’un Client sur le bac-à-sable se fait par prise de contact auprès de l’ANS,
-                            production et transmission d’un certificat serveur SSL_SERVEUR sur une URL identifiant
-                            l’environnement de développement du Client et signé par l’IGC Santé TEST et intégration de
-                            ces
-                            informations dans le Hub Santé.
-                        </p>
-                        <ul>
-                            Les URL sur l’environnement bas-à-sable sont :
-                            <li> Hub Santé : <strong> amqps://messaging.bac-a-sable.hub.esante.gouv.fr:5671</strong>
-                            <li> LRM de test : <strong> https://bac-a-sable.hub.esante.gouv.fr/lrm/</strong>
+                        Les URL sur l'environnement bac-à-sable sont :
+                        <ul class="mt-1">
+                            <li> Hub Santé : <strong>amqps://messaging.bac-a-sable.hub.esante.gouv.fr:5671</strong>
+                            <li> LRM de test : <strong>https://bac-a-sable.hub.esante.gouv.fr/lrm/</strong>
                         </ul>
 
                         <h3>2 - Pré-production : pour les tests et formations métiers</h3>
                         <p>
                             Cet environnement, iso à la production, permet de réaliser les tests et formations sur une
-                            instance déployée chez le métier (au SAMU par exemple) en amont du déploiement d’un lien en
+                            instance déployée chez le métier (au SAMU par exemple) en amont du déploiement d'un lien en
                             production.</p>
-                        <p>L’enregistrement d’un Client sur la pré-production se fait suite à une recette validée des
-                            travaux sur le périmètre demandé sur l’environnement de bac-à-sable et transmission à l’ANS
-                            d’un certificat serveur SSL_SERVEUR sur une URL identifiant l’URL de l’environnement de
-                            pré-production du Client et signé par l’IGC Santé PROD (généralement fourni par la structure
-                            métier : le SAMU par exemple).
-                        </p>
-                        <ul>
-                            Les URL sur l’environnement de pré-production sont :
-                            <li> Hub Santé : <strong> amqps://messaging.pre-prod.hub.esante.gouv.fr:5671</strong>
-                            <li> LRM de test : <strong> https://pre-prod.hub.esante.gouv.fr/lrm/</strong>
-                        </ul>
 
                         <h3>3 - Production</h3>
                         <p>
-                            Cet environnement porte l’échange des messages en production.
-                            L’enregistrement d’un Client sur la production se fait suite à la validation des tests sur
-                            le périmètre demandé sur l’environnement de pré-production et transmission à l’ANS d’un
-                            certificat serveur SSL_SERVEUR sur une URL identifiant l’URL de l’environnement de
-                            production du Client et signé par l’IGC Santé PROD (généralement fourni par le métier : le
-                            SAMU par exemple).
+                            Cet environnement porte l'échange des messages en production.
+                            L'enregistrement d'un Client sur la production se fait suite une recette réussie avec
+                            l'éditeur sur l'environnement de bac-à-sable puis un déploiement réussi sur l'environnement
+                            de pré-production.
                         </p>
-                        <ul>
-                            Les URL sur l’environnement de production sont :
-                            <li> Hub Santé : <strong> amqps://messaging.hub.esante.gouv.fr:5671</strong>
-                        </ul>
-
                     </div>
                 </div>
             </div>
@@ -622,10 +606,10 @@
                     <h2>Adhésion à la charte du Hub Santé</h2>
 
                     <div class="wysiwyg">
-                        <p> Avant de pouvoir échanger des messages sur l'environnement de production du HubSanté, il est
-                            nécessaire de signer la charte d'adhésion.
-                            Vous trouverez ci-dessous le lien vers le téléchargement de cette charte; actuellement mise
-                            en concertation.</p>
+                        <p> Avant de pouvoir échanger des messages sur l'environnement de production du Hub Santé, il
+                            est nécessaire de signer la charte d'adhésion. Vous trouverez ci-dessous le lien vers le
+                            téléchargement de cette charte et pouvez demander le lien YouSign à l'équipe Hub Santé en
+                            amont de votre déploiement.</p>
                     </div>
 
                     <div class="paragraph--lien">
