@@ -106,4 +106,4 @@ jobs:
           push: true
           platforms: linux/amd64
           tags: ghcr.io/${{ github.repository_owner }}/hub-healthcheck:${{ steps.extract_info.outputs.version }}
-          context: ./web/landing
+          context: ./tools/healthcheck
