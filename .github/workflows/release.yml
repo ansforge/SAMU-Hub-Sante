@@ -99,8 +99,8 @@ jobs:
           tags: ghcr.io/${{ github.repository_owner }}/hub-web-landing:${{ steps.extract_info.outputs.version }}
           context: ./web/landing
 
-      - name: Build and push landing Docker image
-        if: steps.extract_info.outputs.project == 'landing'
+      - name: Build and push healthcheck service Docker image
+        if: steps.extract_info.outputs.project == 'healthcheck'
         uses: docker/build-push-action@v5
         with:
           push: true
