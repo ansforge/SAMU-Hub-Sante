@@ -39,11 +39,11 @@ jobs:
           elif [[ "$RELEASE_NAME" == landing-* ]]; then
             PROJECT="landing"
             VERSION=${RELEASE_NAME#landing-}
-          elif [[ "$RELEASE_NAME" == landing-* ]]; then
+          elif [[ "$RELEASE_NAME" == healthcheck-* ]]; then
             PROJECT="healthcheck"
             VERSION=${RELEASE_NAME#healthcheck-}
           else
-            echo "Invalid release name prefix. Must be 'dispatcher', 'lrm', 'landing' or 'healthchek'."
+            echo "Invalid release name prefix. Must be 'dispatcher', 'lrm', 'landing' or 'healthcheck'."
             exit 1
           fi
           
