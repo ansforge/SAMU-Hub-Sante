@@ -31,6 +31,8 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.actuate.health.Health;
+import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -58,7 +60,7 @@ import static com.hubsante.hub.config.Constants.*;
  */
 @Service
 @Slf4j
-public class Dispatcher {
+public class Dispatcher implements HealthIndicator {
 
     private final MessageHandler messageHandler;
     private final RabbitTemplate rabbitTemplate;
@@ -167,5 +169,10 @@ public class Dispatcher {
             }
             throw new AmqpRejectAndDontRequeueException(e);
         }
+    }
+
+    @Override
+    public Health health() {
+        return Health.up().build();
     }
 }
