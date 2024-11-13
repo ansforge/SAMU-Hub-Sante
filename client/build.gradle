@@ -6,7 +6,7 @@ plugins {
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(11)
+        languageVersion = JavaLanguageVersion.of(21)
     }
 }
 
@@ -32,7 +32,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.hubsante:models-2:0.5.0'
+    implementation 'com.hubsante:models:1.0'
 
     implementation 'com.rabbitmq:amqp-client:5.16.0'
     implementation 'org.slf4j:slf4j-simple:1.7.26'  // Used by RabbitMQ
