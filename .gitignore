@@ -18,6 +18,8 @@ target/
 **/.DS_Store
 
 python/templates/4. tls/cert/
+**/application-bbo.properties
+**/client.preferences.csv
 
 # Certificates
 certs/CA/
