@@ -8,7 +8,5 @@
  */
 
 rootProject.name = 'SAMU-Hub-Sante'
-include 'models'
 include 'client'
 include 'hub:dispatcher'
-include 'models:csv_parser:json_schema2xsd'
