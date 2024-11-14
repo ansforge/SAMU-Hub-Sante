@@ -111,7 +111,16 @@ export function setCaseId (message, caseId, localCaseId) {
   }
 }
 
+export function buildAck (distributionID) {
+  return buildMessage({ reference: { distributionID } }, 'Ack')
+}
+
 export function buildMessage (innerMessage, distributionKind = 'Report') {
+  // InnerMessage should only have one key, as we do not support multiple use cases in the same message.
+  const useCase = Object.keys(innerMessage)[0]
+  if (Object.keys(innerMessage).length > 1) {
+    throw new Error('Inner message should only have one key')
+  }
   const store = useMainStore()
   const message = JSON.parse(JSON.stringify(EDXL_ENVELOPE)) // Deep copy
   const formattedInnerMessage = formatIdsInMessage(innerMessage)
@@ -127,6 +136,10 @@ export function buildMessage (innerMessage, distributionKind = 'Report') {
   message.senderID = store.user.clientId
   message.dateTimeSent = sentAt
   message.descriptor.explicitAddress.explicitAddressValue = targetId
+  message.descriptor.keyword = [{
+    valueListURI: 'urn:hubsante:model',
+    value: useCase
+  }]
   message.content[0].jsonContent.embeddedJsonContent.message.messageId = message.distributionID
   message.content[0].jsonContent.embeddedJsonContent.message.kind = message.distributionKind
   message.content[0].jsonContent.embeddedJsonContent.message.sender = { name, URI: `hubex:${store.user.clientId}` }
@@ -170,7 +183,7 @@ export function sendMessage (msg, vhost = null) {
   const store = useMainStore()
   if (store.socket?.readyState === 1) {
     if (!vhost) {
-      vhost = store.selectedVhost
+      vhost = store.selectedVhost.vhost
     }
     try {
       console.log('Sending message', msg)
