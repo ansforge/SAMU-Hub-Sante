@@ -1,15 +1,28 @@
 import os
+import sys
 import requests
 from flask import Flask, jsonify
 
 app = Flask(__name__)
 
-RABBITMQ_URL = os.getenv("RABBITMQ_URL", "http://rabbitmq-server.default.svc:15671")
-RABBITMQ_MONITORING_USERNAME = os.getenv("RABBITMQ_MONITORING_USERNAME", "guest")
-RABBITMQ_MONITORING_PASSWORD = os.getenv("RABBITMQ_MONITORING_PASSWORD", "guest")
+REQUIRED_ENV_VARS = [
+    "RABBITMQ_URL",
+    "RABBITMQ_MONITORING_USERNAME",
+    "RABBITMQ_MONITORING_PASSWORD",
+    "DISPATCHER_INSTANCES"
+]
+
+# Check all required environment variables
+missing_vars = [var for var in REQUIRED_ENV_VARS if not os.getenv(var)]
+if missing_vars:
+    sys.exit(f"Error: The following environment variables are not set: {', '.join(missing_vars)}")
+
+RABBITMQ_URL = os.getenv("RABBITMQ_URL")
+RABBITMQ_MONITORING_USERNAME = os.getenv("RABBITMQ_MONITORING_USERNAME")
+RABBITMQ_MONITORING_PASSWORD = os.getenv("RABBITMQ_MONITORING_PASSWORD")
 RABBITMQ_CA_CERT_PATH = '/etc/ssl/certs/hubsante-rabbitmq-ca.crt'
 
-DISPATCHER_INSTANCES_ENV_VAR = os.getenv("DISPATCHER_INSTANCES", "")
+DISPATCHER_INSTANCES_ENV_VAR = os.getenv("DISPATCHER_INSTANCES")
 DISPATCHER_INSTANCES = DISPATCHER_INSTANCES_ENV_VAR.split(",") if DISPATCHER_INSTANCES_ENV_VAR else []
 
 def rabbitmq_healthcheck():
