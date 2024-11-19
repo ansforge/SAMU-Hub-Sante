@@ -16,7 +16,7 @@
         </v-icon>
         Specs
       </v-btn>
-      <v-btn class="ml-4" to="/json">
+      <v-btn data-cy="json-creator-button" class="ml-4" to="/json">
         <v-icon start>
           mdi-email-edit-outline
         </v-icon>
@@ -46,9 +46,7 @@
         <slot />
       </v-container>
     </v-main>
-    <v-footer
-      app
-    >
+    <v-footer app >
       <span><a :href=" repositoryUrl + 'tree/' + $store.selectedVhost.modelVersion ">SAMU Hub Modeles - v{{ $store.selectedVhost.modelVersion }}</a> &copy; {{ new Date().getFullYear() }}</span>
     </v-footer>
   </v-app>
@@ -91,11 +89,15 @@ export default {
 </script>
 
 <style>
+header.v-toolbar {
+  position: sticky !important;
+}
 html {
   overflow-y: auto;
 }
 .v-main {
   background-color: rgba(0, 0, 0, 0.01);
   padding-bottom: 1.8rem !important;
+  padding-top: 0 !important;
 }
 </style>

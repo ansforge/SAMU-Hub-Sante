@@ -5,11 +5,13 @@
         <v-card-title class="text-h5 d-flex justify-space-between align-center">
           Formulaire
           <vhost-selector class="mr-5" />
-          <SendButton @click="submit(store.currentMessage)" />
+          <send-button @click="submit(store.currentMessage)" />
         </v-card-title>
         <v-card-text>
           <v-tabs
+            data-cy="message-type-tabs"
             v-model="messageTypeTabIndex"
+            show-arrows
             align-tabs="title"
           >
             <v-tabs color="primary" />
