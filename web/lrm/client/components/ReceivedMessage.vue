@@ -82,6 +82,8 @@ import mixinMessage from '~/mixins/mixinMessage'
 import { useMainStore } from '~/store'
 import { buildAck, sendMessage, getMessageType } from '~/composables/messageUtils.js'
 
+const showFullMessage = ref(false)
+
 const props = defineProps({
   dense: {
     type: Boolean,
@@ -151,19 +153,13 @@ const acked = computed(() => {
 </script>
 
 <script>
-// import { mapGetters } from 'pinia'
-
 export default {
   mixins: [mixinMessage],
   data () {
     return {
       store: useMainStore(),
-      DIRECTIONS,
-      showFullMessage: false
+      DIRECTIONS
     }
-  },
-  methods: {
-
   }
 }
 </script>
