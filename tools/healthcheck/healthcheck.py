@@ -2,6 +2,7 @@ import os
 import sys
 import requests
 from flask import Flask, jsonify
+from collections import OrderedDict
 
 app = Flask(__name__)
 
@@ -30,7 +31,8 @@ def rabbitmq_healthcheck():
         response = requests.get(
             f"{RABBITMQ_URL}/rabbitmq/api/health/checks/alarms",
             auth=(RABBITMQ_MONITORING_USERNAME, RABBITMQ_MONITORING_PASSWORD),
-            verify=RABBITMQ_CA_CERT_PATH
+            verify=RABBITMQ_CA_CERT_PATH,
+            timeout=5
         )
         response.raise_for_status()
         return {"status": "UP"} if response.json().get("status") == "ok" else {"status": "DOWN"}
@@ -39,17 +41,20 @@ def rabbitmq_healthcheck():
 
 def dispatcher_healthcheck(app_name):
     try:
-        response = requests.get(f"http://{app_name}.app.svc.cluster.local:8080/actuator/health")
+        response = requests.get(f"http://{app_name}.app.svc.cluster.local:8080/actuator/health", timeout=5)
         response.raise_for_status()
         data = response.json()
-        return {"status": data.get("status", "UNKNOWN"), "components": data.get("components", {})}
+        return OrderedDict([
+            ("status", data.get("status", "UNKNOWN")),
+            ("components", data.get("components", {}))
+        ])
     except requests.RequestException as e:
         return {"status": "DOWN", "error": str(e)}
 
 @app.route('/health', methods=['GET'])
 def health():
     global_status = "UP"
-    components = {}
+    components = OrderedDict()
 
     # Fetch RabbitMQ health
     rabbitmq_health = rabbitmq_healthcheck()
@@ -65,7 +70,10 @@ def health():
             global_status = "DOWN"
 
     # Aggregate and return the result
-    result = {"status": global_status, "components": components}
+    result = OrderedDict([
+        ("status", global_status),
+        ("components", components)
+    ])
     return jsonify(result)
 
 if __name__ == "__main__":
