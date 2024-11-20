@@ -8,8 +8,8 @@
         </v-card-title>
         <v-card-text>
           <v-tabs
-            data-cy="message-type-tabs"
             v-model="messageTypeTabIndex"
+            data-cy="message-type-tabs"
             show-arrows
             align-tabs="title"
           >
@@ -135,7 +135,10 @@ export default {
           () => {
             this.messageTypeTabIndex = 0
           })
-      )
+      ).catch(() => {
+        this.clearToasts()
+        this.toasts.push(this.app.$toast.error("Erreur lors de l'acquisition des schémas de version " + this.source))
+      })
     },
     useSchema (schema) {
       // We empty the cache since all out schemas have the same $id and we can't add duplicate id schemas to the cache
@@ -167,10 +170,13 @@ export default {
     updateCurrentMessage (form) {
       this.store.currentMessage = form
     },
-    validateMessage () {
+    clearToasts () {
       for (const toastId of this.toasts) {
         this.app.$toast.remove(toastId)
       }
+    },
+    validateMessage () {
+      this.clearToasts()
       const validationResult = this.validateJson(this.trimEmptyValues(this.store.currentMessage))
       if (validationResult) {
         // Toast all errors, showing instance path at the start of the line
