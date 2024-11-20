@@ -1,7 +1,8 @@
 import os
 import sys
 import requests
-from flask import Flask, jsonify
+import json
+from flask import Flask, jsonify, Response
 from collections import OrderedDict
 
 app = Flask(__name__)
@@ -74,7 +75,10 @@ def health():
         ("status", global_status),
         ("components", components)
     ])
-    return jsonify(result)
+    return Response(
+        response=json.dumps(result),
+        mimetype="application/json"
+    )
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080)
