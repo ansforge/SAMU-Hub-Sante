@@ -76,9 +76,29 @@ def health():
         ("components", components)
     ])
     return Response(
-        response=json.dumps(result),
+        response=json.dumps(remove_error_keys(result)),
         mimetype="application/json"
     )
+
+def remove_error_keys(d):
+    if isinstance(d, dict):
+        # Create a list of keys to remove
+        keys_to_remove = [key for key in d if key == "error"]
+
+        # Remove keys with name "error"
+        for key in keys_to_remove:
+            del d[key]
+
+        # Recursively remove "error" from nested dictionaries
+        for key, value in d.items():
+            remove_error_keys(value)
+
+    # If d is a list, iterate through each element
+    elif isinstance(d, list):
+        for item in d:
+            remove_error_keys(item)
+
+    return d
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080)
