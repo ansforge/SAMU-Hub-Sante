@@ -39,7 +39,7 @@ def rabbitmq_healthcheck():
 
 def dispatcher_healthcheck(app_name):
     try:
-        response = requests.get(f"http://{app_name}.app.svc.cluster.local/actuator/health")
+        response = requests.get(f"http://{app_name}.app.svc.cluster.local:8080/actuator/health")
         response.raise_for_status()
         data = response.json()
         return {"status": data.get("status", "UNKNOWN"), "components": data.get("components", {})}
