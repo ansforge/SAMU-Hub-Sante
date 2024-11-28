@@ -424,63 +424,18 @@
                             </ul>
                         </div>
 
-
-                        <!-- pré requis-->
-                        <div class="wysiwyg mt-2">
-                            <p>
-                            <h3>1 - Pré-requis : socle technique carte CPS </h3>
-                            Afin de pouvoir générer les certificats, il est nécessaire
-                            de disposer d'un lecteur de carte à puce et de télécharger le driver correspondant à l'OS du
-                            poste sur lequel le lecteur est
-                            connecté.
-                            <ul>
-                                <li>Vous pouvez consulter le guide du socle technique sur la <a
-                                        href="https://industriels.esante.gouv.fr/produits-et-services/socle-technique-cps"
-                                        target="_blank"> <i>page dédiée de l'ANS</i>
-                                    </a>.
-                                <li>Les drivers sont à télécharger <a
-                                        href="https://industriels.esante.gouv.fr/produits-et-services/socle-technique-cps#paragraph-id--564"
-                                        target="_blank"> <i>ici</i>
-                                    </a>.
-                                <li> En cas de problème de lecture de carte, n'hésitez pas à consulter le site de <a
-                                        href="https://diagcps.eservices.esante.gouv.fr/"
-                                        target="_blank"> <i>d'assistance et diagnostic</i>
-                                </a>.
-                            </ul>
-                            </p>
-                        </div>
-
                         <!-- droits admin -->
                         <div class="wysiwyg mt-2">
                             <p>
-                            <h3>2 - Création du compte administrateur technique et/ou commande de cartes de test</h3>
-                            Dans le cadre du Hub Santé, vous trouverez les détails de la procédure d'obtention des
-                            droits d'administration permettant de générer les certificats sur le
-                            <strong>Portail industriel de l'ANS</strong> :
+                            <h3>1 - Commande de cartes CPX et obtention des droits d'administrateur technique</h3>
+                            Afin de pouvoir générer des certificats, vous devez obtenir des cartes CPX et
+                            des droits d'administrateur technique.
                             </p>
 
-
-                            <div class="container"
-                                style="display: flex; justify-content: space-around; flex-wrap: wrap;">
-
-                                <div class="paragraph--lien">
-
-                                    <a href="https://industriels.esante.gouv.fr/produits-et-services/certificats-logiciels#paragraph-id--13323"
-                                        target="_blank" class="btn btn--style1 btn--white">Commandez un certificat
-                                        logiciel
-                                        IGC Santé</a>
-                                </div>
-
-                            </div>
-                            <div class="wysiwyg mt-4">
-                                <p>
-                                    Vous trouverez ci-dessous des templates à compléter pour remplir les formulaires
-                                    de demande de droits et/ou de cartes de tests <strong>F413 et F414 </strong>, dans
-                                    le
-                                    cadre d'un raccordement au
-                                    Hub Santé :
-                                </p>
-                            </div>
+                            <p>
+                                Vous trouverez ci-dessous des templates à compléter pour remplir les formulaires
+                                de demande de cartes CPX et/ou de droits d'administrateur technique <strong>F413 et F414 </strong> :
+                            </p>
 
                             <div class="container"
                                 style="display: flex; justify-content: space-around; flex-wrap: wrap;">
@@ -501,26 +456,53 @@
                             </div>
                         </div>
 
+                        <!-- lecture des cartes -->
+                        <div class="wysiwyg mt-2">
+                            <p>
+                            <h3>2 - Lecture des cartes CPX</h3>
+                            Afin de pouvoir générer les certificats via les cartes CPX et les droits d'administrateur technique obtenus précédemment, 
+                            il est nécessaire de disposer d'un lecteur de carte à puce et de télécharger le driver correspondant à l'OS de votre poste.
+                            <ul>
+                                <li>Vous pouvez consulter le guide du socle technique sur la <a
+                                        href="https://industriels.esante.gouv.fr/produits-et-services/socle-technique-cps" target="_blank"></a>
+                                        <i>page dédiée de l'ANS</i>
+                                    </a>.
+                                <li>Les drivers sont à télécharger <a
+                                        href="https://industriels.esante.gouv.fr/produits-et-services/socle-technique-cps#paragraph-id--564"
+                                        target="_blank"> <i>ici</i>
+                                    </a>.
+                                <li> En cas de problème de lecture de carte, n'hésitez pas à consulter le site <a
+                                        href="https://diagcps.eservices.esante.gouv.fr/" target="_blank"> <i>d'assistance et diagnostic</i>
+                                    </a>.
+                            </ul>
+                            </p>
+                        </div>
+
                         <!-- génération -->
                         <div class="wysiwyg mt-4">
                             <p>
                             <h3>3 - Génération des certificats </h3>
-                            Une fois les droits d'administrateur techniques obtenus, il faut utiliser la plateforme IGC
-                            pour générer des certificats SSL_SERV TEST.
-                            <ul>
-                                <li>Téléchargez le <a
-                                        href="https://industriels.esante.gouv.fr/sites/default/files/media/document/ANS_IGC-Sante_Guide-IHM_281122_v1.2.1.pdf"
-                                        target="_blank"> <i>guide d’utilisation des services IHM Plateforme
-                                            IGC-Santé</i>
-                                    </a> et reportez vous à la section 8.2.
-                                <li> Utilisez la  <a
-                                        href="https://pfc.eservices.esante.gouv.fr/pfcng-ihm/authentication.xhtml"
-                                        target="_blank"> <i>plateforme IGC</i> 
-                                    </a> pour générer des certificats SSL_SERV TEST .
-                            </ul>
-                                </p>
+                            Une fois les cartes et droits d'administrateur technique obtenus et lisibles par un lecteur de cartes, 
+                            il faut utiliser la plateforme IGC pour générer des certificats SSL_SERV.
+                            </p>
 
-  
+                            <div class="container mb-2" style="display: flex; justify-content: space-around; flex-wrap: wrap;">
+
+                                <div class="paragraph--lien">
+
+                                    <a href="https://pfc.eservices.esante.gouv.fr/pfcng-ihm/authentication.xhtml" target="_blank"
+                                        class="btn btn--style1 btn--white">
+                                        Commandez un certificat logiciel IGC Santé</a>
+                                </div>
+
+                            </div>
+
+                            <p>
+                            En cas de besoin, reportez-vous à la section 8.2. du <a
+                                    href="https://industriels.esante.gouv.fr/sites/default/files/media/document/ANS_IGC-Sante_Guide-IHM_281122_v1.2.1.pdf"
+                                    target="_blank"> <i>guide d'utilisation de la Plateforme IGC Santé</i>
+                                </a>.
+                            </p>
                         </div>
 
                          <!-- enregistrement -->
@@ -770,14 +752,13 @@
                                 </a>
                             </li>
                             <li class="m-social__item">
-                                <a class="m-social__link" href="https://twitter.com/esante_gouv_fr" target="_blank"
-                                    rel="nofollow">
+                                <a class="m-social__link" href="https://x.com/" target="_blank" rel="nofollow">
                                     <div class="m-social__icon">
-                                        <svg class="svg-icon svg-twitter" aria-hidden="true" focusable="false">
-                                            <use xlink:href="/svg-icons/icon-sprite.svg#twitter"></use>
+                                        <svg class="svg-icon svg-x" aria-hidden="true" focusable="false">
+                                            <use xlink:href="/svg-icons/icon-sprite.svg#x"></use>
                                         </svg>
                                     </div>
-                                    <span class="sr-only">twitter</span>
+                                    <span class="sr-only">x</span>
                                 </a>
                             </li>
                             <li class="m-social__item">
