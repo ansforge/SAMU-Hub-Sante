@@ -95,7 +95,7 @@
           mdi-close-circle-outline
         </v-icon>
         <p class="text-error">
-          Chargement des cas de test a échoué
+          Erreur lors du chargement des cas de test
         </p>
       </v-container>
     </v-col>
