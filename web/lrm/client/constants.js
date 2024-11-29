@@ -14,7 +14,11 @@ export const EDXL_ENVELOPE = {
     explicitAddress: {
       explicitAddressScheme: 'hubex',
       explicitAddressValue: '{{ fr.health.samuB }}'
-    }
+    },
+    keyword: [{
+      valueListURI: 'urn:hubsante:model',
+      value: '{{ createCase }}'
+    }]
   },
   content: [{
     jsonContent: {
