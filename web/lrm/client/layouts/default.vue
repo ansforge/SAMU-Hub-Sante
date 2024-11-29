@@ -42,7 +42,7 @@
       </span>
     </v-app-bar>
     <v-main style="padding-bottom: 0;">
-      <v-container fluid>
+      <v-container fluid class="h-100">
         <slot />
       </v-container>
     </v-main>
