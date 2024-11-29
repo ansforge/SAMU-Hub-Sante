@@ -118,7 +118,8 @@ export default {
         try {
           parsedJson = JSON.parse(event.target.result)
         } catch (error) {
-          toast.error('Chargement échoué: structure du fichier JSON invalide')
+          toast.error('Erreur lors du chargement : structure du fichier JSON invalide')
+          console.error(error)
           return
         }
         $this.store.currentMessage = parsedJson[Object.keys(parsedJson)[0]]
