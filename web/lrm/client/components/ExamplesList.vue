@@ -16,13 +16,14 @@
           ref="uploader"
           class="d-none"
           type="file"
+          onclick="this.value = null"
           @change="onFileChanged"
         >
       </v-col>
       <v-col>
         <v-chip-group
-          data-cy="examples-chips"
           v-model="selectedExample"
+          data-cy="examples-chips"
           selected-class="primary--text"
           column
         >
@@ -40,6 +41,7 @@
 </template>
 
 <script>
+import { toast } from 'vue3-toastify'
 import { REPOSITORY_URL } from '@/constants'
 import { useMainStore } from '~/store'
 
@@ -112,7 +114,14 @@ export default {
         // TODO: instead of taking the first property and praying, we should extract
         // the name of the use case from somewhere and use it to properly access that
         // property in the parsed json object.
-        const parsedJson = JSON.parse(event.target.result)
+        let parsedJson = {}
+        try {
+          parsedJson = JSON.parse(event.target.result)
+        } catch (error) {
+          toast.error('Erreur lors du chargement : structure du fichier JSON invalide')
+          console.error(error)
+          return
+        }
         $this.store.currentMessage = parsedJson[Object.keys(parsedJson)[0]]
       }
       const reader = new FileReader()
