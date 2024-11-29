@@ -30,4 +30,4 @@ USER healthcheck
 EXPOSE 8080
 
 # Use Gunicorn to serve the Flask app
-CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:8080", "healthcheck:app"]
+CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:8080", "healthcheck:app", "--timeout 300", "--log-level=debug"]
