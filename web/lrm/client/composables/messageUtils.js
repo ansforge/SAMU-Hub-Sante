@@ -136,10 +136,7 @@ export function buildMessage (innerMessage, distributionKind = 'Report') {
   message.senderID = store.user.clientId
   message.dateTimeSent = sentAt
   message.descriptor.explicitAddress.explicitAddressValue = targetId
-  message.descriptor.keyword = [{
-    valueListURI: 'urn:hubsante:model',
-    value: useCase
-  }]
+  message.descriptor.keyword[0].value = useCase
   message.content[0].jsonContent.embeddedJsonContent.message.messageId = message.distributionID
   message.content[0].jsonContent.embeddedJsonContent.message.kind = message.distributionKind
   message.content[0].jsonContent.embeddedJsonContent.message.sender = { name, URI: `hubex:${store.user.clientId}` }

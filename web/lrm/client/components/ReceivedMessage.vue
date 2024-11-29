@@ -143,8 +143,8 @@ function useMessageToReply () {
 }
 
 const acked = computed(() => {
+  // Within Ack messages, check if there is one matching the message
   return useMainStore().messages.filter(
-    // Within Ack messages, check if there is one matching the message
     message => getMessageType(message) === 'ack'
   ).find(
     message => message.body.content[0].jsonContent.embeddedJsonContent.message.reference.distributionID === props.body.distributionID
