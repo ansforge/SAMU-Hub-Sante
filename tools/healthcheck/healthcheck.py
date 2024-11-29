@@ -2,10 +2,14 @@ import os
 import sys
 import requests
 import json
+import logging
 from flask import Flask, jsonify, Response
 from collections import OrderedDict
 
 app = Flask(__name__)
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 REQUIRED_ENV_VARS = [
     "RABBITMQ_URL",
@@ -38,7 +42,8 @@ def rabbitmq_healthcheck():
         response.raise_for_status()
         return {"status": "UP"} if response.json().get("status") == "ok" else {"status": "DOWN"}
     except requests.RequestException as e:
-        return {"status": "DOWN", "error": str(e)}
+        logger.error("error occurred on RabbitMQ server's healthcheck: ", exc_info=True)
+        return {"status": "DOWN"}
 
 def dispatcher_healthcheck(app_name):
     try:
@@ -50,7 +55,8 @@ def dispatcher_healthcheck(app_name):
             ("components", data.get("components", {}))
         ])
     except requests.RequestException as e:
-        return {"status": "DOWN", "error": str(e)}
+        logger.error("error occurred on dispatcher %s healthcheck: ", app_name, exc_info=True)
+        return {"status": "DOWN"}
 
 @app.route('/health', methods=['GET'])
 def health():
