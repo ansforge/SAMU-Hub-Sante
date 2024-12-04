@@ -3,6 +3,7 @@ import moment from 'moment/moment'
 import { EDXL_ENVELOPE, DIRECTIONS } from '@/constants'
 import mixinUser from '~/mixins/mixinUser'
 import { useMainStore } from '~/store'
+import consola from 'consola'
 const VALUES_TO_DROP = [null, undefined, '']
 
 export default {
@@ -23,7 +24,7 @@ export default {
     wsConnect () {
       this.store.socket = new WebSocket('wss://' + this.$config.public.backendLrmServer + '/lrm/api/')
       this.store.socket.onopen = () => {
-        console.log(`WebSocket ${this.$options.name} connection established`)
+        consola.log(`WebSocket ${this.$options.name} connection established`)
       }
 
       this.store.socket.onclose = (e) => {
@@ -31,7 +32,7 @@ export default {
         if (this.disconnect) {
           return
         }
-        console.log(`WebSocket ${this.$options.name} connection closed`, e)
+        consola.log(`WebSocket ${this.$options.name} connection closed`, e)
         // Retry connection
         setTimeout(() => {
           this.wsConnect()
@@ -39,7 +40,7 @@ export default {
       }
 
       this.store.socket.onerror = (err) => {
-        console.error(`WebSocket ${this.$options.name} connection errored`, err)
+        consola.error(`WebSocket ${this.$options.name} connection errored`, err)
         this.store.socket.close()
       }
 
@@ -65,7 +66,7 @@ export default {
     },
     wsDisconnect () {
       if (this.store.socket) {
-        console.log(`Disconnecting: WebSocket ${this.$options.name} connection closed`)
+        consola.log(`Disconnecting: WebSocket ${this.$options.name} connection closed`)
         this.store.socket.close()
       }
       this.disconnect = true
@@ -208,7 +209,7 @@ export default {
           vhost = this.store.selectedVhost.vhost
         }
         try {
-          console.log('Sending message', msg)
+          consola.log('Sending message', msg)
           this.store.socket.send(JSON.stringify({ key: this.store.user.clientId, vhost, msg }))
           this.store.addMessage({
             direction: DIRECTIONS.OUT,
@@ -223,7 +224,7 @@ export default {
         }
       } else {
         // TODO: Add proper retry logic here with either exponential backoff or a retry limit
-        console.log('Socket is not open. Retrying in half a second.')
+        consola.log('Socket is not open. Retrying in half a second.')
         setTimeout(() => {
           this.sendMessage(msg)
         }, 500)

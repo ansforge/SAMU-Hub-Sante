@@ -77,6 +77,7 @@
 
 <script>
 // import { mapGetters } from 'pinia'
+import consola from 'consola'
 import { DIRECTIONS } from '@/constants'
 import mixinMessage from '~/mixins/mixinMessage'
 import { useMainStore } from '~/store'
@@ -149,7 +150,7 @@ export default {
         const msg = this.buildAck(this.body.distributionID)
         this.sendMessage(msg, this.vhost)
       } catch (error) {
-        console.error("Erreur lors de l'envoi de l'acquittement", error)
+        consola.error("Erreur lors de l'envoi de l'acquittement", error)
       }
     },
     useMessageToReply () {

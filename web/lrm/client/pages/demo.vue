@@ -9,8 +9,8 @@
         </v-card-title>
         <v-card-text>
           <v-tabs
-            data-cy="message-type-tabs"
             v-model="messageTypeTabIndex"
+            data-cy="message-type-tabs"
             show-arrows
             align-tabs="title"
           >
@@ -119,6 +119,7 @@
 <script setup>
 import { toRef } from 'vue'
 import { toast } from 'vue3-toastify'
+import consola from 'consola'
 import mixinMessage from '~/mixins/mixinMessage'
 import { REPOSITORY_URL } from '@/constants'
 import { useMainStore } from '~/store'
@@ -236,12 +237,15 @@ export default {
       this.store.loadMessageTypes(REPOSITORY_URL + this.source + '/src/main/resources/sample/examples/messagesList.json').then(
         () => this.store.loadSchemas(REPOSITORY_URL + this.source + '/src/main/resources/json-schema/').then(
           () => {
-            console.log('messagesList.json and schemas loaded for ' + this.source)
+            consola.log('messagesList.json and schemas loaded for ' + this.source)
             this.messageTypeTabIndex = 0
-          })
+          }).catch((reason) => {
+          consola.error(reason)
+          toast.error("Erreur lors de l'acquisition des schémas de version " + this.source)
+        })
       ).catch((reason) => {
-        console.error(reason)
-        toast.error("Erreur lors de l'acquisition des schémas de version " + this.source)
+        consola.error(reason)
+        toast.error("Erreur lors de l'acquisition de la liste des schémas de version " + this.source)
       })
     },
     typeMessages (type) {
@@ -257,7 +261,7 @@ export default {
         })
         this.sendMessage(data)
       } catch (error) {
-        console.error("Erreur lors de l'envoi du message", error)
+        consola.error("Erreur lors de l'envoi du message", error)
       }
     },
     useMessageToReply (message) {
