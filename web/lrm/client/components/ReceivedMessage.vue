@@ -75,86 +75,90 @@
   </div>
 </template>
 
-<script>
-// import { mapGetters } from 'pinia'
-import consola from 'consola'
+<script setup>
+import { computed } from 'vue'
 import { DIRECTIONS } from '@/constants'
 import mixinMessage from '~/mixins/mixinMessage'
 import { useMainStore } from '~/store'
+import { buildAck, sendMessage, getMessageType } from '~/composables/messageUtils.js'
 
+const showFullMessage = ref(false)
+
+const props = defineProps({
+  dense: {
+    type: Boolean,
+    default: false
+  },
+  vhost: {
+    type: String,
+    required: true
+  },
+  direction: {
+    type: String,
+    required: true
+  },
+  jsonDepth: {
+    type: Number,
+    default: 1
+  },
+  requiredValuesCount: {
+    type: Number,
+    default: 0
+  },
+  validatedValuesCount: {
+    type: Number,
+    default: 0
+  },
+  routingKey: {
+    type: String,
+    required: true
+  },
+  time: {
+    type: String,
+    required: true
+  },
+  receivedTime: {
+    type: String,
+    default: null
+  },
+  body: {
+    type: Object,
+    required: true
+  }
+})
+
+defineEmits(['useMessageToReply'])
+
+function sendAck () {
+  try {
+    const msg = buildAck(props.body.distributionID)
+    sendMessage(msg, props.vhost)
+  } catch (error) {
+    console.error("Erreur lors de l'envoi de l'acquittement", error)
+  }
+}
+
+function useMessageToReply () {
+  emit('useMessageToReply', props.body.content[0].jsonContent.embeddedJsonContent.message)
+}
+
+const acked = computed(() => {
+  // Within Ack messages, check if there is one matching the message
+  return useMainStore().messages.filter(
+    message => getMessageType(message) === 'ack'
+  ).find(
+    message => message.body.content[0].jsonContent.embeddedJsonContent.message.reference.distributionID === props.body.distributionID
+  )
+})
+</script>
+
+<script>
 export default {
   mixins: [mixinMessage],
-  props: {
-    dense: {
-      type: Boolean,
-      default: false
-    },
-    vhost: {
-      type: String,
-      required: true
-    },
-    direction: {
-      type: String,
-      required: true
-    },
-    jsonDepth: {
-      type: Number,
-      default: 1
-    },
-    requiredValuesCount: {
-      type: Number,
-      default: 0
-    },
-    validatedValuesCount: {
-      type: Number,
-      default: 0
-    },
-    routingKey: {
-      type: String,
-      required: true
-    },
-    time: {
-      type: String,
-      required: true
-    },
-    receivedTime: {
-      type: String,
-      default: null
-    },
-    body: {
-      type: Object,
-      required: true
-    }
-  },
   data () {
     return {
       store: useMainStore(),
-      DIRECTIONS,
-      showFullMessage: false
-    }
-  },
-  computed: {
-    // ...mapGetters(['messages']),
-    acked () {
-      // Within Ack messages, check if there is one matching the message
-      return this.store.messages.filter(
-        message => this.getMessageType(message) === 'ack'
-      ).find(
-        message => message.body.content[0].jsonContent.embeddedJsonContent.message.reference.distributionID === this.body.distributionID
-      )
-    }
-  },
-  methods: {
-    sendAck () {
-      try {
-        const msg = this.buildAck(this.body.distributionID)
-        this.sendMessage(msg, this.vhost)
-      } catch (error) {
-        consola.error("Erreur lors de l'envoi de l'acquittement", error)
-      }
-    },
-    useMessageToReply () {
-      this.$emit('useMessageToReply', this.body.content[0].jsonContent.embeddedJsonContent.message)
+      DIRECTIONS
     }
   }
 }

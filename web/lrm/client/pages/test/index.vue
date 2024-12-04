@@ -1,14 +1,15 @@
 <template>
-  <v-row justify="center">
+  <v-row justify="center" class="h-100">
     <v-col cols="12" sm="12">
       <v-card-title class="d-flex text-h5">
         Sélection de cas de test
         <vhost-selector class="mr-5" />
       </v-card-title>
-      <v-list>
+
+      <v-list v-if="!loadingTestCases&&testCases.length">
         <v-list-item
-          v-for="(category,categoryIndex) in testCases"
-          :key="category.categoryLabel+'-'+categoryIndex"
+          v-for="(category, categoryIndex) in testCases"
+          :key="category.categoryLabel + '-' + categoryIndex"
           class="flex-column align-baseline"
         >
           <v-card-title class="text-h5">
@@ -37,7 +38,7 @@
                     class="ml-3 mr-3"
                     style="flex-grow: 0; max-width: fit-content;"
                     color="primary"
-                    @click="goToTestCase(testCase,$event)"
+                    @click="goToTestCase(testCase, $event)"
                   >
                     Sélectionner
                   </v-btn>
@@ -57,7 +58,7 @@
                     >
                       <v-card class="test-step-card">
                         <v-card-title>
-                          {{ index + 1 }}. {{ step.label }}
+                          {{ step.id }}. {{ step.label }}
                         </v-card-title>
                         <v-card-subtitle>
                           {{ step.description }}
@@ -72,6 +73,32 @@
         </v-list-item>
       </v-list>
     </v-col>
+    <v-col
+      v-if="loadingTestCases || !testCases.length"
+      align="center"
+      justify="center"
+    >
+      <v-container v-if="loadingTestCases">
+        <v-progress-circular
+          indeterminate
+          color="primary"
+        />
+        <p class="text-grey">
+          Chargement...
+        </p>
+      </v-container>
+      <v-container v-else>
+        <v-icon
+          color="error"
+          size="40"
+        >
+          mdi-close-circle-outline
+        </v-icon>
+        <p class="text-error">
+          Erreur lors du chargement des cas de test
+        </p>
+      </v-container>
+    </v-col>
   </v-row>
 </template>
 
@@ -81,7 +108,7 @@ import { REPOSITORY_URL } from '@/constants'
 import { useMainStore } from '~/store'
 
 const store = useMainStore()
-const config = useRuntimeConfig()
+const loadingTestCases = ref(false)
 const router = useRouter()
 
 const testCaseFileAuto = ref([])
@@ -96,9 +123,21 @@ onMounted(() => {
 })
 
 async function initialize () {
-  await fetchGeneratedTestCases()
-  loadTestCases()
+  await reloadTestCases()
 }
+
+async function reloadTestCases () {
+  loadingTestCases.value = true
+  testCases.value = []
+  try {
+    await fetchGeneratedTestCases()
+    await loadTestCases()
+    loadingTestCases.value = false
+  } catch (error) {
+    loadingTestCases.value = false
+  }
+}
+
 async function fetchGeneratedTestCases () {
   const response = await fetch(REPOSITORY_URL + store.selectedVhost.modelVersion + '/csv_parser/out/test_cases.json')
   if (response.ok) {
@@ -106,10 +145,10 @@ async function fetchGeneratedTestCases () {
   }
 }
 /**
-     * Copies the test cases from the JSON file to the component data,
-     * resetting any potential changes to the test cases made during
-     * test execution.
-     */
+       * Copies the test cases from the JSON file to the component data,
+       * resetting any potential changes to the test cases made during
+       * test execution.
+       */
 async function loadTestCases () {
   const parsedTestCases = []
   for (const category of testCaseFileAuto.value) {
@@ -153,6 +192,7 @@ async function loadTestCases () {
     ...JSON.parse(JSON.stringify(parsedTestCases))
   ]
 }
+
 function goToTestCase (testCase, event) {
   event.stopPropagation()
   store.resetMessages()
@@ -164,6 +204,12 @@ function goToTestCase (testCase, event) {
     name: 'test-case'
   })
 }
+
+const selectedVhost = computed(() => store.selectedVhost)
+
+watch(selectedVhost, () => {
+  reloadTestCases()
+})
 </script>
 
 <script>
@@ -180,18 +226,23 @@ div.v-card.test-step-card {
   padding: 1rem;
   margin: 1rem;
 }
-div.v-timeline--vertical{
+
+div.v-timeline--vertical {
   justify-content: start;
 }
+
 div.v-card-subtitle {
   white-space: normal;
 }
+
 div.v-list-item-subtitle {
   margin-bottom: 0.5rem;
 }
+
 div.v-list-item-title {
   margin-top: 0.5rem;
 }
+
 .v-list {
   border-radius: 4px;
 }

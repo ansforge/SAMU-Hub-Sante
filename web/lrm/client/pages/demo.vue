@@ -123,6 +123,18 @@ import consola from 'consola'
 import mixinMessage from '~/mixins/mixinMessage'
 import { REPOSITORY_URL } from '@/constants'
 import { useMainStore } from '~/store'
+import { buildMessage, sendMessage } from '~/composables/messageUtils.js'
+
+function submit (form) {
+  try {
+    const data = buildMessage({
+      [useMainStore().currentUseCase]: form
+    })
+    sendMessage(data)
+  } catch (error) {
+    console.error("Erreur lors de l'envoi du message", error)
+  }
+}
 
 useHead({
   titleTemplate: toRef(useMainStore(), 'demoHeadTitle')
@@ -254,16 +266,6 @@ export default {
       )
     },
 
-    submit (form) {
-      try {
-        const data = this.buildMessage({
-          [this.store.currentUseCase]: form
-        })
-        this.sendMessage(data)
-      } catch (error) {
-        consola.error("Erreur lors de l'envoi du message", error)
-      }
-    },
     useMessageToReply (message) {
       // Use message to fill the form
       if (message[this.store.selectedSchema.schema.title]) {

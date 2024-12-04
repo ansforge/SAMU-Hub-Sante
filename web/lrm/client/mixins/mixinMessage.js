@@ -1,9 +1,8 @@
-import { v4 as uuidv4 } from 'uuid'
-import moment from 'moment/moment'
-import { EDXL_ENVELOPE, DIRECTIONS } from '@/constants'
+import { DIRECTIONS } from '@/constants'
 import mixinUser from '~/mixins/mixinUser'
 import { useMainStore } from '~/store'
 import consola from 'consola'
+import { buildAck, sendMessage } from '~/composables/messageUtils'
 const VALUES_TO_DROP = [null, undefined, '']
 
 export default {
@@ -57,8 +56,8 @@ export default {
           if (this.autoAck) {
           // Send back acks automatically to received messages
             if (this.getMessageType(message) !== 'ack' && message.routingKey.startsWith(this.store.user.clientId)) {
-              const msg = this.buildAck(message.body.distributionID)
-              this.sendMessage(msg)
+              const msg = buildAck(message.body.distributionID)
+              sendMessage(msg)
             }
           }
         })
@@ -146,31 +145,6 @@ export default {
           return 'Message'
       }
     },
-    buildAck (distributionID) {
-      return this.buildMessage({ reference: { distributionID } }, 'Ack')
-    },
-    buildMessage (innerMessage, distributionKind = 'Report') {
-      const message = JSON.parse(JSON.stringify(EDXL_ENVELOPE)) // Deep copy
-      const formattedInnerMessage = this.formatIdsInMessage(innerMessage)
-      message.content[0].jsonContent.embeddedJsonContent.message = {
-        ...message.content[0].jsonContent.embeddedJsonContent.message,
-        ...formattedInnerMessage
-      }
-      const name = this.userInfos.name
-      const targetId = this.store.user.targetId
-      const sentAt = moment().format()
-      message.distributionID = `${this.store.user.clientId}_${uuidv4()}`
-      message.distributionKind = distributionKind
-      message.senderID = this.store.user.clientId
-      message.dateTimeSent = sentAt
-      message.descriptor.explicitAddress.explicitAddressValue = targetId
-      message.content[0].jsonContent.embeddedJsonContent.message.messageId = message.distributionID
-      message.content[0].jsonContent.embeddedJsonContent.message.kind = message.distributionKind
-      message.content[0].jsonContent.embeddedJsonContent.message.sender = { name, URI: `hubex:${this.store.user.clientId}` }
-      message.content[0].jsonContent.embeddedJsonContent.message.sentAt = sentAt
-      message.content[0].jsonContent.embeddedJsonContent.message.recipient = [{ name: this.clientInfos(this.store.user.targetId).name, URI: `hubex:${targetId}` }]
-      return this.trimEmptyValues(message)
-    },
     isEmpty (obj) {
       if (typeof obj === 'object') {
         return Object.keys(obj).length === 0
@@ -202,33 +176,6 @@ export default {
     timeDisplayFormat () {
       const d = new Date()
       return d.toLocaleTimeString('fr').replace(':', 'h') + '.' + String(new Date().getMilliseconds()).padStart(3, '0')
-    },
-    sendMessage (msg, vhost = null) {
-      if (this.store.socket.readyState === 1) {
-        if (!vhost) {
-          vhost = this.store.selectedVhost.vhost
-        }
-        try {
-          consola.log('Sending message', msg)
-          this.store.socket.send(JSON.stringify({ key: this.store.user.clientId, vhost, msg }))
-          this.store.addMessage({
-            direction: DIRECTIONS.OUT,
-            vhost,
-            routingKey: this.store.user.targetId,
-            time: this.timeDisplayFormat(),
-            messageType: this.getReadableMessageType(msg.distributionKind),
-            body: msg
-          })
-        } catch (e) {
-          alert(`Erreur lors de l'envoi du message: ${e}`)
-        }
-      } else {
-        // TODO: Add proper retry logic here with either exponential backoff or a retry limit
-        consola.log('Socket is not open. Retrying in half a second.')
-        setTimeout(() => {
-          this.sendMessage(msg)
-        }, 500)
-      }
     }
   }
 }
