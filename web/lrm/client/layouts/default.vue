@@ -100,4 +100,8 @@ html {
   padding-bottom: 1.8rem !important;
   padding-top: 0 !important;
 }
+
+.Toastify__toast-body>div:last-child>div {
+  line-break: anywhere;
+}
 </style>
