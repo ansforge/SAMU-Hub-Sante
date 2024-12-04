@@ -1,9 +1,9 @@
 import moment from 'moment/moment'
 import { v4 as uuidv4 } from 'uuid'
+import { consola } from 'consola'
 import { clientInfos } from './userUtils'
 import { EDXL_ENVELOPE, DIRECTIONS } from '@/constants'
 import { useMainStore } from '~/store'
-import consola from 'consola'
 
 const VALUES_TO_DROP = [null, undefined, '']
 

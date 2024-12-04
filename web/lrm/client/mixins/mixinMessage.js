@@ -1,7 +1,7 @@
+import { consola } from 'consola'
 import { DIRECTIONS } from '@/constants'
 import mixinUser from '~/mixins/mixinUser'
 import { useMainStore } from '~/store'
-import consola from 'consola'
 import { buildAck, sendMessage } from '~/composables/messageUtils'
 const VALUES_TO_DROP = [null, undefined, '']
 

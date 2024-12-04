@@ -119,7 +119,7 @@
 <script setup>
 import { toRef } from 'vue'
 import { toast } from 'vue3-toastify'
-import consola from 'consola'
+import { consola } from 'consola'
 import mixinMessage from '~/mixins/mixinMessage'
 import { REPOSITORY_URL } from '@/constants'
 import { useMainStore } from '~/store'
