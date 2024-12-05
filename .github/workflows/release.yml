@@ -39,8 +39,11 @@ jobs:
           elif [[ "$RELEASE_NAME" == landing-* ]]; then
             PROJECT="landing"
             VERSION=${RELEASE_NAME#landing-}
+          elif [[ "$RELEASE_NAME" == healthcheck-* ]]; then
+            PROJECT="healthcheck"
+            VERSION=${RELEASE_NAME#healthcheck-}
           else
-            echo "Invalid release name prefix. Must be 'dispatcher', 'lrm' or 'landing'."
+            echo "Invalid release name prefix. Must be 'dispatcher', 'lrm', 'landing' or 'healthcheck'."
             exit 1
           fi
           
@@ -95,3 +98,12 @@ jobs:
           platforms: linux/amd64
           tags: ghcr.io/${{ github.repository_owner }}/hub-web-landing:${{ steps.extract_info.outputs.version }}
           context: ./web/landing
+
+      - name: Build and push healthcheck service Docker image
+        if: steps.extract_info.outputs.project == 'healthcheck'
+        uses: docker/build-push-action@v5
+        with:
+          push: true
+          platforms: linux/amd64
+          tags: ghcr.io/${{ github.repository_owner }}/hub-healthcheck:${{ steps.extract_info.outputs.version }}
+          context: ./tools/healthcheck
