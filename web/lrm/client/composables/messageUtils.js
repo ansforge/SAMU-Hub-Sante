@@ -1,5 +1,6 @@
 import moment from 'moment/moment'
 import { v4 as uuidv4 } from 'uuid'
+import { consola } from 'consola'
 import { clientInfos } from './userUtils'
 import { EDXL_ENVELOPE, DIRECTIONS } from '@/constants'
 import { useMainStore } from '~/store'
@@ -183,7 +184,7 @@ export function sendMessage (msg, vhost = null) {
       vhost = store.selectedVhost.vhost
     }
     try {
-      console.log('Sending message', msg)
+      consola.log('Sending message', msg)
       store.socket.send(JSON.stringify({ key: store.user.clientId, vhost, msg }))
       store.addMessage({
         direction: DIRECTIONS.OUT,
@@ -198,7 +199,7 @@ export function sendMessage (msg, vhost = null) {
     }
   } else {
     // TODO: Add proper retry logic here with either exponential backoff or a retry limit
-    console.log('Socket is not open. Retrying in half a second.')
+    consola.log('Socket is not open. Retrying in half a second.')
     setTimeout(() => {
       sendMessage(msg)
     }, 500)

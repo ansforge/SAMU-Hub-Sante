@@ -23,6 +23,7 @@
     "@pinia/nuxt": "^0.5.1",
     "@types/node": "^20.14.9",
     "ajv-formats": "^2.1.1",
+    "consola": "^3.2.3",
     "core-js": "^3.37.1",
     "eslint-plugin-vuetify": "^2.4.0",
     "jsonpath": "^1.1.1",

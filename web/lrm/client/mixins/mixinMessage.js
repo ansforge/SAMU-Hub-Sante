@@ -1,3 +1,4 @@
+import { consola } from 'consola'
 import { DIRECTIONS } from '@/constants'
 import mixinUser from '~/mixins/mixinUser'
 import { useMainStore } from '~/store'
@@ -22,7 +23,7 @@ export default {
     wsConnect () {
       this.store.socket = new WebSocket('wss://' + this.$config.public.backendLrmServer + '/lrm/api/')
       this.store.socket.onopen = () => {
-        console.log(`WebSocket ${this.$options.name} connection established`)
+        consola.log(`WebSocket ${this.$options.name} connection established`)
       }
 
       this.store.socket.onclose = (e) => {
@@ -30,7 +31,7 @@ export default {
         if (this.disconnect) {
           return
         }
-        console.log(`WebSocket ${this.$options.name} connection closed`, e)
+        consola.log(`WebSocket ${this.$options.name} connection closed`, e)
         // Retry connection
         setTimeout(() => {
           this.wsConnect()
@@ -38,7 +39,7 @@ export default {
       }
 
       this.store.socket.onerror = (err) => {
-        console.error(`WebSocket ${this.$options.name} connection errored`, err)
+        consola.error(`WebSocket ${this.$options.name} connection errored`, err)
         this.store.socket.close()
       }
 
@@ -64,7 +65,7 @@ export default {
     },
     wsDisconnect () {
       if (this.store.socket) {
-        console.log(`Disconnecting: WebSocket ${this.$options.name} connection closed`)
+        consola.log(`Disconnecting: WebSocket ${this.$options.name} connection closed`)
         this.store.socket.close()
       }
       this.disconnect = true
