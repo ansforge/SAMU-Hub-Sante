@@ -206,12 +206,12 @@ export function sendMessage (msg, vhost = null) {
   }
 }
 
-function timeDisplayFormat () {
+export function timeDisplayFormat () {
   const d = new Date()
   return d.toLocaleTimeString('fr').replace(':', 'h') + '.' + String(new Date().getMilliseconds()).padStart(3, '0')
 }
 
-function getReadableMessageType (messageType) {
+export function getReadableMessageType (messageType) {
   switch (messageType) {
     case 'Ack':
       return 'Ack'

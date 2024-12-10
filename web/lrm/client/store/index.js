@@ -6,6 +6,7 @@ export const useMainStore = defineStore('main', {
     vhostMap: Object.keys(useRuntimeConfig().public.vhostMap).map(vhost => ({ vhost, modelVersion: useRuntimeConfig().public.vhostMap[vhost] })),
     selectedVhost: Object.keys(useRuntimeConfig().public.vhostMap).map(vhost => ({ vhost, modelVersion: useRuntimeConfig().public.vhostMap[vhost] }))[0],
     socket: null,
+    isWebsocketConnected: false,
     currentMessage: null,
     currentUseCase: null,
     selectedSchema: 'RS-EDA',
