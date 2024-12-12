@@ -434,7 +434,8 @@
 
                             <p>
                                 Vous trouverez ci-dessous des templates à compléter pour remplir les formulaires
-                                de demande de cartes CPX et/ou de droits d'administrateur technique <strong>F413 et F414 </strong> :
+                                de demande de cartes CPX et/ou de droits d'administrateur technique <strong>F413 et F414
+                                </strong> :
                             </p>
 
                             <div class="container"
@@ -460,20 +461,27 @@
                         <div class="wysiwyg mt-2">
                             <p>
                             <h3>2 - Lecture des cartes CPX</h3>
-                            Afin de pouvoir générer les certificats via les cartes CPX et les droits d'administrateur technique obtenus précédemment, 
-                            il est nécessaire de disposer d'un lecteur de carte à puce et de télécharger le driver correspondant à l'OS de votre poste.
+                            Afin de pouvoir générer les certificats via les cartes CPX et les droits d'administrateur
+                            technique obtenus précédemment,
+                            il est nécessaire de disposer d'un lecteur de carte à puce et de télécharger le driver
+                            correspondant à l'OS de votre poste.
                             <ul>
-                                <li>Vous pouvez consulter le guide du socle technique sur la 
-                                    <a href="https://industriels.esante.gouv.fr/produits-et-services/socle-technique-cps" target="_blank">
+                                <li>Vous pouvez consulter le guide du socle technique sur la
+                                    <a href="https://industriels.esante.gouv.fr/produits-et-services/socle-technique-cps"
+                                        target="_blank">
                                         <i>page dédiée de l'ANS</i>
-                                    </a>.</li>
+                                    </a>.
+                                </li>
                                 <li>Les drivers sont à télécharger <a
                                         href="https://industriels.esante.gouv.fr/produits-et-services/socle-technique-cps#paragraph-id--564"
                                         target="_blank"> <i>ici</i>
                                     </a>.</li>
-                                <li>En cas de problème de lecture de carte ou de droits manquants une fois connecté, n'hésitez pas à consulter le site <a
-                                        href="https://diagcps.eservices.esante.gouv.fr/" target="_blank"> <i>d'assistance et diagnostic</i>
-                                    </a> et à utiliser Chrome ou Firefox en navigation privée pour éviter les conflits avec d'autres cartes et/ou problèmes de cache.</li>
+                                <li>En cas de problème de lecture de carte ou de droits manquants une fois connecté,
+                                    n'hésitez pas à consulter le site <a
+                                        href="https://diagcps.eservices.esante.gouv.fr/" target="_blank">
+                                        <i>d'assistance et diagnostic</i>
+                                    </a> et à utiliser Chrome ou Firefox en navigation privée pour éviter les conflits
+                                    avec d'autres cartes et/ou problèmes de cache.</li>
                             </ul>
                             </p>
                         </div>
@@ -482,45 +490,61 @@
                         <div class="wysiwyg mt-4">
                             <p>
                             <h3>3 - Génération des certificats </h3>
-                            Une fois les cartes et droits d'administrateur technique obtenus et lisibles par un lecteur de cartes, 
+                            Une fois les cartes et droits d'administrateur technique obtenus et lisibles par un lecteur
+                            de cartes,
                             il faut utiliser la plateforme IGC pour générer des certificats SSL_SERV.
                             </p>
 
-                            <div class="container mb-2" style="display: flex; justify-content: space-around; flex-wrap: wrap;">
+                            <div class="container mb-2"
+                                style="display: flex; justify-content: space-around; flex-wrap: wrap;">
 
                                 <div class="paragraph--lien">
 
-                                    <a href="https://pfc.eservices.esante.gouv.fr/pfcng-ihm/authentication.xhtml" target="_blank"
-                                        class="btn btn--style1 btn--white">
+                                    <a href="https://pfc.eservices.esante.gouv.fr/pfcng-ihm/authentication.xhtml"
+                                        target="_blank" class="btn btn--style1 btn--white">
                                         Générer un certificat logiciel IGC Santé</a>
                                 </div>
 
                             </div>
 
                             <p>
-                            En cas de besoin, reportez-vous à la section 8.2. du <a
+                                En cas de besoin, reportez-vous à la section 8.2. du <a
                                     href="https://industriels.esante.gouv.fr/sites/default/files/media/document/ANS_IGC-Sante_Guide-IHM_281122_v1.2.1.pdf"
                                     target="_blank"> <i>guide d'utilisation de la Plateforme IGC Santé</i>
                                 </a>.
-                            <br/>
-                            <i><strong>Attention</strong> : pour la génération de certificats de TEST, seule la connexion par "Carte CPS" fonctionne 
-                                (pas par "Pro Santé Connect" qui ne fonctionne que pour les certificats de PROD).</i>
+                                <br />
+                                <i><strong>Attention</strong> : pour la génération de certificats de TEST, seule la
+                                    connexion par "Carte CPS" fonctionne
+                                    (pas par "Pro Santé Connect" qui ne fonctionne que pour les certificats de
+                                    PROD).</i>
                             </p>
                         </div>
 
-                         <!-- enregistrement -->
+                        <!-- enregistrement -->
                         <div class="wysiwyg mt-2">
-                                <p>
-                                <h3>4 - Enregistrement des certificats sur le Hub Santé </h3>
-                                Une fois les certificats obtenus, veuillez <strong>envoyer le certificat public à
-                                    l'équipe
-                                    Hub Santé</strong> (par Slack ou email) afin que vos accès, files et droits soient
-                                configurés.</p>
+
+                            <h3>4 - Enregistrement des certificats sur le Hub Santé </h3>
+                            <p>Une fois les certificats obtenus, veuillez <strong>envoyer le certificat public à
+                                    l'équipe Hub Santé</strong> (par Slack ou email) afin que vos accès, files et droits
+                                soient
+                                configurés.
+                            </p>
+
+                            <p>Afin d'<strong>extraire le certificat public</strong> du fichier p12 généré sur la plateforme IGC, vous
+                                pouvez utiliser la commande suivante :
+                                <span
+                                    style="display: inline-block; text-align: center; width: 100%; margin-top: 10px; margin-bottom: 10px;">
+                                    openssl pkcs12 -in <span style="color: #1D71B8;"><i>cert.p12</i></span> -clcerts -nokeys -out <span style="color: #1D71B8;"> <i>publicCert.crt</i></span></span>
+                                dans laquelle vous remplacerez <span style="color: #1D71B8;"><i>cert.p12</i></span> par le <u>nom du fichier p12</u>
+                                généré sur la plateforme IGC et <span style="color: #1D71B8;"><i>publicCert.crt</i></span> par le <u>nom du domaine utilisé.crt</u> (par exemple :
+                                test.chu-rouen.fr.crt).
+                            </p>
+
                         </div>
-                    </div>
                 </div>
             </div>
         </div>
+    </div>
     </div>
 
     <!-- Etape 4 -->
