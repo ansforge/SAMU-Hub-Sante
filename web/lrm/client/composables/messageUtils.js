@@ -124,7 +124,7 @@ export function buildMessage (innerMessage, distributionKind = 'Report') {
   }
   const store = useMainStore()
   const message = JSON.parse(JSON.stringify(EDXL_ENVELOPE)) // Deep copy
-  if (/^1|2/.test(store.selectedVhost.modelVersion)) {
+  if (/^((1\.)|(2\.))/.test(store.selectedVhost.modelVersion)) {
     // We delete 'keyword' from 'descriptor' if the model version is 1.* or 2.*
     delete message.descriptor.keyword
   } else {
