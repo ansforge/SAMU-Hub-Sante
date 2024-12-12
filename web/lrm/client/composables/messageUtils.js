@@ -1,6 +1,7 @@
 import moment from 'moment/moment'
 import { v4 as uuidv4 } from 'uuid'
 import { consola } from 'consola'
+import { EDXL_ENVELOPE_WITHOUT_KEYWORD } from '../constants'
 import { clientInfos } from './userUtils'
 import { EDXL_ENVELOPE, DIRECTIONS } from '@/constants'
 import { useMainStore } from '~/store'
@@ -123,7 +124,12 @@ export function buildMessage (innerMessage, distributionKind = 'Report') {
     throw new Error('Inner message should only have one key')
   }
   const store = useMainStore()
-  const message = JSON.parse(JSON.stringify(EDXL_ENVELOPE)) // Deep copy
+  let message = null
+  if (store.selectedVhost.modelVersion === '1.0.0' || store.selectedVhost.modelVersion === '2.0.0') {
+    message = JSON.parse(JSON.stringify(EDXL_ENVELOPE_WITHOUT_KEYWORD)) // Deep copy
+  } else {
+    message = JSON.parse(JSON.stringify(EDXL_ENVELOPE)) // Deep copy
+  }
   const formattedInnerMessage = formatIdsInMessage(innerMessage)
   message.content[0].jsonContent.embeddedJsonContent.message = {
     ...message.content[0].jsonContent.embeddedJsonContent.message,
@@ -137,7 +143,9 @@ export function buildMessage (innerMessage, distributionKind = 'Report') {
   message.senderID = store.user.clientId
   message.dateTimeSent = sentAt
   message.descriptor.explicitAddress.explicitAddressValue = targetId
-  message.descriptor.keyword[0].value = useCase
+  if (store.selectedVhost.modelVersion !== '1.0.0' && store.selectedVhost.modelVersion !== '2.0.0') {
+    message.descriptor.keyword[0].value = useCase
+  }
   message.content[0].jsonContent.embeddedJsonContent.message.messageId = message.distributionID
   message.content[0].jsonContent.embeddedJsonContent.message.kind = message.distributionKind
   message.content[0].jsonContent.embeddedJsonContent.message.sender = { name, URI: `hubex:${store.user.clientId}` }
