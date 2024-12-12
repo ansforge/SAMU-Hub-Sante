@@ -2,16 +2,27 @@
 
 ## Build Setup
 
+- Create a `.env file with the following content : 
+```
+NUXT_PUBLIC_VHOST_MAP={"15-15_v1.5": "1.0.0","15-nexsis_v1.8": "1.0.0","15-smur_v1.4": "1.0.0","15-gps_v1.0": "1.0.0"}
+NUXT_PUBLIC_CLIENT_MAP=[["fr.health.samuA",["fr.health.samuC"]],["fr.health.samuC",["fr.health.samuA"]]]
+NUXT_PUBLIC_BACKEND_LRM_SERVER=integration.hub.esante.gouv.fr
+```
+
+- Install dependencies
 ```bash
-# install dependencies
-$ npm install
+npm install
+```
 
-# serve with hot reload at localhost:3000
-# N.B: in order to test message sending/reception (without deploying the app in a complete local environment such as minikube) and/or test case interface, it is necessary to define the following environment variables:
-# NUXT_PUBLIC_MODEL_BRANCH: model repository branch with the up-to-date test_cases.json (e.g. "feature/lrm/test-interface-rework")
-# NUXT_PUBLIC_BACKEND_LRM_SERVER: remove backend server (e.g. integration.hub.esante.gouv.fr)
-$ npm run dev
+- Serve with hot reload at [localhost:3000](http://localhost:3000)
 
+```bash
+npm run dev
+```
+
+## Production
+
+```bash
 # build for production and launch server
 $ npm run build
 $ npm run start
