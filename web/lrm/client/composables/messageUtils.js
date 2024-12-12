@@ -124,6 +124,12 @@ export function buildMessage (innerMessage, distributionKind = 'Report') {
   }
   const store = useMainStore()
   const message = JSON.parse(JSON.stringify(EDXL_ENVELOPE)) // Deep copy
+  if (/^((1\.)|(2\.))/.test(store.selectedVhost.modelVersion)) {
+    // We delete 'keyword' from 'descriptor' if the model version is 1.* or 2.*
+    delete message.descriptor.keyword
+  } else {
+    message.descriptor.keyword[0].value = useCase
+  }
   const formattedInnerMessage = formatIdsInMessage(innerMessage)
   message.content[0].jsonContent.embeddedJsonContent.message = {
     ...message.content[0].jsonContent.embeddedJsonContent.message,
@@ -137,7 +143,6 @@ export function buildMessage (innerMessage, distributionKind = 'Report') {
   message.senderID = store.user.clientId
   message.dateTimeSent = sentAt
   message.descriptor.explicitAddress.explicitAddressValue = targetId
-  message.descriptor.keyword[0].value = useCase
   message.content[0].jsonContent.embeddedJsonContent.message.messageId = message.distributionID
   message.content[0].jsonContent.embeddedJsonContent.message.kind = message.distributionKind
   message.content[0].jsonContent.embeddedJsonContent.message.sender = { name, URI: `hubex:${store.user.clientId}` }
