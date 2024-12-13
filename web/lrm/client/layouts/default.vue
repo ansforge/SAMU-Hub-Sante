@@ -46,8 +46,13 @@
         <slot />
       </v-container>
     </v-main>
-    <v-footer app >
-      <span><a :href=" repositoryUrl + 'tree/' + $store.selectedVhost.modelVersion ">SAMU Hub Modeles - v{{ $store.selectedVhost.modelVersion }}</a> &copy; {{ new Date().getFullYear() }}</span>
+    <v-footer app>
+      <span><a :href=" repositoryUrl + 'tree/' + $store.selectedVhost.modelVersion ">SAMU Hub Modeles - v{{ $store.selectedVhost.modelVersion }}</a>&nbsp;&copy; {{ new Date().getFullYear() }}</span>
+      <!--Display websocket status if we're on /demo or /test or /test/*-->
+      <span v-if="$route.path.startsWith('/demo') || $route.path.startsWith('/test')">
+        <span class="font-italic text-grey">{{ readableWebsocketStatus }} </span>
+        <v-icon class="ml-2" icon="mdi-circle" :color="store.isWebsocketConnected ? 'success' : 'warning'" />
+      </span>
     </v-footer>
   </v-app>
 </template>
@@ -67,6 +72,9 @@ export default {
     }
   },
   computed: {
+    readableWebsocketStatus () {
+      return this.store.isWebsocketConnected ? 'Connexion établie' : 'Connexion en attente'
+    }
   },
   methods: {
     toggleAdvanced () {
@@ -103,5 +111,14 @@ html {
 
 .Toastify__toast-body>div:last-child>div {
   line-break: anywhere;
+}
+.v-footer {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+.v-footer > span {
+  align-content: center;
+  display: flex;
 }
 </style>

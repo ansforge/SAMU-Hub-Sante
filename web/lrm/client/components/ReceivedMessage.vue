@@ -78,7 +78,7 @@
 <script setup>
 import { computed } from 'vue'
 import { DIRECTIONS } from '@/constants'
-import mixinMessage from '~/mixins/mixinMessage'
+import mixinWebsocket from '~/mixins/mixinWebsocket'
 import { useMainStore } from '~/store'
 import { buildAck, sendMessage, getMessageType } from '~/composables/messageUtils.js'
 
@@ -154,7 +154,7 @@ const acked = computed(() => {
 
 <script>
 export default {
-  mixins: [mixinMessage],
+  mixins: [mixinWebsocket],
   data () {
     return {
       store: useMainStore(),

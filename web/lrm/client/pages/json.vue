@@ -68,7 +68,7 @@
 import Ajv from 'ajv'
 import { useNuxtApp } from 'nuxt/app'
 import { REPOSITORY_URL } from '@/constants'
-import mixinMessage from '~/mixins/mixinMessage'
+import mixinWebsocket from '~/mixins/mixinWebsocket'
 import { useMainStore } from '~/store'
 
 useHead({
@@ -82,7 +82,7 @@ import { consola } from 'consola'
 
 export default {
   name: 'JsonCreator',
-  mixins: [mixinMessage],
+  mixins: [mixinWebsocket],
   data () {
     return {
       app: useNuxtApp(),
