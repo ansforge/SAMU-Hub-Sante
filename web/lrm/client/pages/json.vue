@@ -4,14 +4,16 @@
       <v-card style="height: 86vh; overflow-y: auto;">
         <v-card-title class="text-h5 d-flex align-center">
           Formulaire
-          <source-selector @source-changed="source=$event" />
+          <source-selector @source-changed="source=$event"/>
         </v-card-title>
         <v-card-text>
           <v-tabs
             v-model="messageTypeTabIndex"
+            data-cy="message-type-tabs"
+            show-arrows
             align-tabs="title"
           >
-            <v-tabs color="primary" />
+            <v-tabs color="primary"/>
             <v-tab
               v-for="{label} in store.messageTypes"
               :key="label"
@@ -34,7 +36,7 @@
       <v-card style="height: 86vh; overflow-y: auto;">
         <v-card-title class="text-h5">
           Json live view
-          <v-spacer />
+          <v-spacer/>
           <v-btn primary @click="saveMessage">
             <v-icon start>
               mdi-file-download-outline
@@ -66,7 +68,7 @@
 import Ajv from 'ajv'
 import { useNuxtApp } from 'nuxt/app'
 import { REPOSITORY_URL } from '@/constants'
-import mixinMessage from '~/mixins/mixinMessage'
+import mixinWebsocket from '~/mixins/mixinWebsocket'
 import { useMainStore } from '~/store'
 
 useHead({
@@ -76,10 +78,11 @@ useHead({
 </script>
 
 <script>
+import { consola } from 'consola'
 
 export default {
   name: 'JsonCreator',
-  mixins: [mixinMessage],
+  mixins: [mixinWebsocket],
   data () {
     return {
       app: useNuxtApp(),
@@ -133,8 +136,15 @@ export default {
         () => this.store.loadSchemas(REPOSITORY_URL + this.source + '/src/main/resources/json-schema/').then(
           () => {
             this.messageTypeTabIndex = 0
-          })
-      )
+          }).catch((reason) => {
+          consola.error(reason)
+          this.toasts.push(this.app.$toast.error('Erreur lors de l\'acquisition des schémas de version ' + this.source))
+        })
+      ).catch(() => {
+        consola.error('Couldn\'t get messagesList.json')
+        this.clearToasts()
+        this.toasts.push(this.app.$toast.error('Erreur lors de l\'acquisition de la liste des schémas de version ' + this.source))
+      })
     },
     useSchema (schema) {
       // We empty the cache since all out schemas have the same $id and we can't add duplicate id schemas to the cache
@@ -166,10 +176,13 @@ export default {
     updateCurrentMessage (form) {
       this.store.currentMessage = form
     },
-    validateMessage () {
+    clearToasts () {
       for (const toastId of this.toasts) {
         this.app.$toast.remove(toastId)
       }
+    },
+    validateMessage () {
+      this.clearToasts()
       const validationResult = this.validateJson(this.trimEmptyValues(this.store.currentMessage))
       if (validationResult) {
         // Toast all errors, showing instance path at the start of the line
@@ -218,30 +231,64 @@ export default {
     cursor: pointer;
     user-select: none;
   }
-  .jv-button { color: #49b3ff }
-  .jv-key { color: #111111 }
+
+  .jv-button {
+    color: #49b3ff
+  }
+
+  .jv-key {
+    color: #111111
+  }
+
   .jv-item {
-    &.jv-array { color: #111111 }
-    &.jv-boolean { color: #fc1e70 }
-    &.jv-function { color: #067bca }
-    &.jv-number { color: #fc1e70 }
-    &.jv-number-float { color: #fc1e70 }
-    &.jv-number-integer { color: #fc1e70 }
-    &.jv-object { color: #111111 }
-    &.jv-undefined { color: #e08331 }
+    &.jv-array {
+      color: #111111
+    }
+
+    &.jv-boolean {
+      color: #fc1e70
+    }
+
+    &.jv-function {
+      color: #067bca
+    }
+
+    &.jv-number {
+      color: #fc1e70
+    }
+
+    &.jv-number-float {
+      color: #fc1e70
+    }
+
+    &.jv-number-integer {
+      color: #fc1e70
+    }
+
+    &.jv-object {
+      color: #111111
+    }
+
+    &.jv-undefined {
+      color: #e08331
+    }
+
     &.jv-string {
       color: #42b983;
       word-break: break-word;
       white-space: normal;
     }
   }
+
   .jv-code {
     padding-bottom: 12px !important;
+
     .jv-toggle {
       &:before {
         padding: 0px 2px;
         border-radius: 2px;
       }
+
       &:hover {
         &:before {
           background: #eee;

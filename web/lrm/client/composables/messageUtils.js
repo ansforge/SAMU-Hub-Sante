@@ -1,5 +1,6 @@
 import moment from 'moment/moment'
 import { v4 as uuidv4 } from 'uuid'
+import { consola } from 'consola'
 import { clientInfos } from './userUtils'
 import { EDXL_ENVELOPE, DIRECTIONS } from '@/constants'
 import { useMainStore } from '~/store'
@@ -111,9 +112,24 @@ export function setCaseId (message, caseId, localCaseId) {
   }
 }
 
+export function buildAck (distributionID) {
+  return buildMessage({ reference: { distributionID } }, 'Ack')
+}
+
 export function buildMessage (innerMessage, distributionKind = 'Report') {
+  // InnerMessage should only have one key, as we do not support multiple use cases in the same message.
+  const useCase = Object.keys(innerMessage)[0]
+  if (Object.keys(innerMessage).length > 1) {
+    throw new Error('Inner message should only have one key')
+  }
   const store = useMainStore()
   const message = JSON.parse(JSON.stringify(EDXL_ENVELOPE)) // Deep copy
+  if (/^((1\.)|(2\.))/.test(store.selectedVhost.modelVersion)) {
+    // We delete 'keyword' from 'descriptor' if the model version is 1.* or 2.*
+    delete message.descriptor.keyword
+  } else {
+    message.descriptor.keyword[0].value = useCase
+  }
   const formattedInnerMessage = formatIdsInMessage(innerMessage)
   message.content[0].jsonContent.embeddedJsonContent.message = {
     ...message.content[0].jsonContent.embeddedJsonContent.message,
@@ -173,7 +189,7 @@ export function sendMessage (msg, vhost = null) {
       vhost = store.selectedVhost.vhost
     }
     try {
-      console.log('Sending message', msg)
+      consola.log('Sending message', msg)
       store.socket.send(JSON.stringify({ key: store.user.clientId, vhost, msg }))
       store.addMessage({
         direction: DIRECTIONS.OUT,
@@ -188,19 +204,19 @@ export function sendMessage (msg, vhost = null) {
     }
   } else {
     // TODO: Add proper retry logic here with either exponential backoff or a retry limit
-    console.log('Socket is not open. Retrying in half a second.')
+    consola.log('Socket is not open. Retrying in half a second.')
     setTimeout(() => {
       sendMessage(msg)
     }, 500)
   }
 }
 
-function timeDisplayFormat () {
+export function timeDisplayFormat () {
   const d = new Date()
   return d.toLocaleTimeString('fr').replace(':', 'h') + '.' + String(new Date().getMilliseconds()).padStart(3, '0')
 }
 
-function getReadableMessageType (messageType) {
+export function getReadableMessageType (messageType) {
   switch (messageType) {
     case 'Ack':
       return 'Ack'
