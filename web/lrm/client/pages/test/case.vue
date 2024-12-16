@@ -5,7 +5,7 @@
         <v-card-title class="d-flex text-h5 pb-0">
           Cas de test <span class="font-weight-bold">&nbsp;{{ testCase.label }} </span>
           <vhost-selector class="mr-5" />
-          <v-btn v-if="testCase?.steps[currentStep-1]?.type === 'receive'" color="primary" @click="submitMessage(testCase?.steps[currentStep-1])">
+          <v-btn v-if="testCase?.steps[currentStep]?.type === 'receive'" color="primary" @click="submitMessage(testCase?.steps[currentStep])">
             Re-envoyer le message
           </v-btn>
         </v-card-title>
