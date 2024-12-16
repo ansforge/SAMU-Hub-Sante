@@ -69,6 +69,7 @@ import Ajv from 'ajv'
 import { useNuxtApp } from 'nuxt/app'
 import { REPOSITORY_URL } from '@/constants'
 import mixinWebsocket from '~/mixins/mixinWebsocket'
+import { trimEmptyValues } from '~/composables/messageUtils'
 import { useMainStore } from '~/store'
 
 useHead({
@@ -183,7 +184,7 @@ export default {
     },
     validateMessage () {
       this.clearToasts()
-      const validationResult = this.validateJson(this.trimEmptyValues(this.store.currentMessage))
+      const validationResult = this.validateJson(trimEmptyValues(this.store.currentMessage))
       if (validationResult) {
         // Toast all errors, showing instance path at the start of the line
         this.toasts.push(this.app.$toast.error(
@@ -198,7 +199,7 @@ export default {
     saveMessage () {
       // Download as file | Ref.: https://stackoverflow.com/a/34156339
       // JSON pretty-print | Ref.: https://stackoverflow.com/a/7220510
-      const data = JSON.stringify(this.trimEmptyValues({ [this.currentMessageType?.schema?.title]: this.store.currentMessage }), null, 2)
+      const data = JSON.stringify(trimEmptyValues({ [this.currentMessageType?.schema?.title]: this.store.currentMessage }), null, 2)
       const a = document.createElement('a')
       const file = new Blob([data], { type: 'application/json' })
       a.href = URL.createObjectURL(file)
