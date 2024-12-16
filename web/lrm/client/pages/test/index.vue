@@ -172,7 +172,7 @@ async function loadTestCases () {
         })
         // We filter out the properties in 'ignoredProperties' from the jsonpaths array
         jsonpaths = jsonpaths.filter((value) => {
-          return !step.ignoredProperties.includes(value)
+          return !step.ignoredProperties.includes(value.path.join('.'))
         })
         // We filter out datetime properties from the jsonpaths array using a regex \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}
         jsonpaths = jsonpaths.filter((value) => {
