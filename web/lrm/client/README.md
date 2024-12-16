@@ -2,11 +2,9 @@
 
 ## Build Setup
 
-- Create a `.env file with the following content : 
-```
-NUXT_PUBLIC_VHOST_MAP={"15-15_v1.5": "1.0.0","15-nexsis_v1.8": "1.0.0","15-smur_v1.4": "1.0.0","15-gps_v1.0": "1.0.0"}
-NUXT_PUBLIC_CLIENT_MAP=[["fr.health.samuA",["fr.health.samuC"]],["fr.health.samuC",["fr.health.samuA"]]]
-NUXT_PUBLIC_BACKEND_LRM_SERVER=integration.hub.esante.gouv.fr
+- Generate a custom a `.env` file: 
+```bash
+cp .env.template .env
 ```
 
 - Install dependencies
