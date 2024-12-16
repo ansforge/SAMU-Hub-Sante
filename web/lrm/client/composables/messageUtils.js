@@ -159,7 +159,7 @@ function formatIdsInMessage (innerMessage) {
   return JSON.parse(jsonString)
 }
 
-function trimEmptyValues (obj) {
+export function trimEmptyValues (obj) {
   return Object.entries(obj).reduce((acc, [key, value]) => {
     if (!(VALUES_TO_DROP.includes(value) || isEmpty(value))) {
       if (typeof value !== 'object') {
