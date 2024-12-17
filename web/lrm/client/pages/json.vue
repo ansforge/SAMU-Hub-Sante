@@ -4,7 +4,8 @@
       <v-card style="height: 86vh; overflow-y: auto;">
         <v-card-title class="text-h5 d-flex align-center">
           Formulaire
-          <source-selector @source-changed="source=$event"/>
+          <source-selector @source-changed="source=$event" />
+          <v-btn icon="mdi-reload" density="compact" :loading="jsonMessagesLoading" @click="updateForm" />
         </v-card-title>
         <v-card-text>
           <v-tabs
@@ -13,7 +14,7 @@
             show-arrows
             align-tabs="title"
           >
-            <v-tabs color="primary"/>
+            <v-tabs color="primary" />
             <v-tab
               v-for="{label} in store.messageTypes"
               :key="label"
@@ -113,7 +114,8 @@ export default {
         type: 'info',
         icon: 'mdi-information'
       }],
-      form: {}
+      form: {},
+      jsonMessagesLoading: false
     }
   },
   computed: {
@@ -131,6 +133,7 @@ export default {
   },
   methods: {
     updateForm () {
+      this.jsonMessagesLoading = true
       // To automatically generate the UI and input fields based on the JSON Schema
       // We need to wait the acquisition of 'messagesList' before attempting to acquire the schemas
       this.store.loadMessageTypes(REPOSITORY_URL + this.source + '/src/main/resources/sample/examples/messagesList.json').then(
@@ -145,6 +148,8 @@ export default {
         consola.error('Couldn\'t get messagesList.json')
         this.clearToasts()
         this.toasts.push(this.app.$toast.error('Erreur lors de l\'acquisition de la liste des schémas de version ' + this.source))
+      }).finally(() => {
+        this.jsonMessagesLoading = false
       })
     },
     useSchema (schema) {
