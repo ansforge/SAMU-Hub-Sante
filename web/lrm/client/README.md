@@ -2,9 +2,9 @@
 
 ## Build Setup
 
-- Generate a custom a `.env` file: 
+- Create a custom a `.env` file with the following content: 
 ```bash
-cp .env.template .env
+NUXT_PUBLIC_BACKEND_LRM_SERVER=integration.hub.esante.gouv.fr
 ```
 
 - Install dependencies
