@@ -51,9 +51,9 @@ export default defineNuxtConfig({
   },
 
   app: {
-    baseURL: (process.env.NODE_ENV === 'production' ? '/lrm/' : '/'),
+    baseURL: (isEnvProd() ? '/lrm/' : '/'),
     head: {
-      link: [{ rel: 'icon', type: 'image/x-icon', href: (process.env.NODE_ENV === 'production' ? '/lrm/' : '/') + 'favicon.ico' }]
+      link: [{ rel: 'icon', type: 'image/x-icon', href: (isEnvProd() ? '/lrm/' : '/') + 'favicon.ico' }]
     }
   },
 
