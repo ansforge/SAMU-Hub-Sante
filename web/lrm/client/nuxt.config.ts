@@ -1,6 +1,7 @@
 import vuetify, { transformAssetUrls } from 'vite-plugin-vuetify'
 import { commonjsDeps } from '@koumoul/vjsf/utils/build.js'
 import { defineNuxtConfig } from 'nuxt/config'
+import { isEnvProd } from './composables/envUtils'
 
 export default defineNuxtConfig({
   ssr: true,
@@ -62,8 +63,8 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      clientMap: {},
-      vhostMap: {},
+      clientMap: !isEnvProd() ? [['fr.health.samuA', ['fr.health.samuC']], ['fr.health.samuC', ['fr.health.samuA']]] : {},
+      vhostMap: !isEnvProd() ? { '15-15_v1.5': '1.0.0', '15-nexsis_v1.8': '1.0.0', '15-smur_v1.4': '1.0.0', '15-gps_v1.0': '1.0.0' } : {},
       backendLrmServer: 'localhost:8081'
     }
   },
