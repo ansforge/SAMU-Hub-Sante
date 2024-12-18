@@ -26,7 +26,7 @@
     <!--
        NEXSIS customer xsd
   -->
-    <xs:import namespace="urn:emergency:cisu:2.0" schemaLocation="../cisu/createCase.xsd"/>
+    <xs:import namespace="urn:emergency:cisu:3.0" schemaLocation="../cisu/createCase.xsd"/>
     <xs:import namespace="http://tacticalsituationobject.org/schemas/EMSI/1_0" schemaLocation="../emsi/legacy/emsi.xsd"/>
      <xs:import namespace="http://tacticalsituationobject.org/schemas/EMSI/2_0" schemaLocation="../emsi/2015/emsi.2015.xsd"/>
 

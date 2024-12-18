@@ -25,11 +25,12 @@ public class EdxlUtils {
     public static final String HUB_ID = "fr.health.hub";
     private static final long DEFAULT_HUB_MESSAGE_EXPIRATION = 1L;
 
-    public static EdxlMessage edxlMessageFromHub(String recipientId, ContentMessage contentMessage) {
+    public static EdxlMessage edxlMessageFromHub(String recipientId, ContentMessage contentMessage, String model) {
         return new EDXL_DE_Builder(UUID(),HUB_ID, recipientId)
                 .dateTimeSentNowWithOffsetInDays(DEFAULT_HUB_MESSAGE_EXPIRATION)
                 .distributionKind(DistributionKind.ERROR)
                 .contentMessage(contentMessage)
+                .model(model)
                 .build();
     }
 

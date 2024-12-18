@@ -7,6 +7,12 @@
   "distributionKind": "Error",
   "descriptor": {
     "language": "fr-FR",
+    "keyword": [
+      {
+        "valueListURI": "urn:hubsante:model",
+        "value": "customContent"
+      }
+    ],
     "explicitAddress": {
       "explicitAddressScheme": "hubex",
       "explicitAddressValue": "fr.health.samuB"
@@ -19,17 +25,6 @@
           "message": {
             "customContent": {
               "key": "value"
-            }
-          }
-        }
-      }
-    },
-    {
-      "jsonContent": {
-        "embeddedJsonContent": {
-          "message": {
-            "customContent": {
-              "otherKey": "other_value"
             }
           }
         }

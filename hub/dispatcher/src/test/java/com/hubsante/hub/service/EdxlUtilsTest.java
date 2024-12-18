@@ -30,7 +30,7 @@ public class EdxlUtilsTest {
     public void testEdxlMessageFromHub() {
         String recipientId = "fr.health.samu123";
 
-        EdxlMessage edxlMessage = EdxlUtils.edxlMessageFromHub(recipientId, null);
+        EdxlMessage edxlMessage = EdxlUtils.edxlMessageFromHub(recipientId, null, "error");
 
         assertTrue(edxlMessage.getDistributionID().startsWith("fr.health.hub_"));
         assertEquals(edxlMessage.getSenderID(), "fr.health.hub");
