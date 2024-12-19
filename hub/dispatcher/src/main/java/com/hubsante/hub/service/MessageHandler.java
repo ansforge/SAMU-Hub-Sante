@@ -122,7 +122,7 @@ public class MessageHandler {
         ErrorWrapper wrapper = new ErrorWrapperBuilder(error).build();
 
         try {
-            EdxlMessage errorEdxlMessage = edxlMessageFromHub(sender, wrapper);
+            EdxlMessage errorEdxlMessage = edxlMessageFromHub(sender, wrapper, "error");
             Message errorAmqpMessage;
             if (convertToXML(sender, hubConfig.getClientPreferences().get(sender))) {
                 errorAmqpMessage = new Message(edxlHandler.serializeXmlEDXL(errorEdxlMessage).getBytes(),
