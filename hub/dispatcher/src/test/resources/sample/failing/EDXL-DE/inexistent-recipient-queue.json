@@ -7,6 +7,12 @@
   "distributionKind": "Report",
   "descriptor": {
     "language": "fr-FR",
+    "keyword": [
+      {
+        "valueListURI": "urn:hubsante:model",
+        "value": "customContent"
+      }
+    ],
     "explicitAddress": {
       "explicitAddressScheme": "hubex",
       "explicitAddressValue": "fr.health.inexistent"

@@ -8,6 +8,10 @@
     <distributionKind>Report</distributionKind>
     <descriptor xlink:type="resource">
         <language>fr-FR</language>
+        <keyword>
+            <ct:ValueListURI>urn:hubsante:model</ct:ValueListURI>
+            <ct:Value>customContent</ct:Value>
+        </keyword>
         <explicitAddress>
             <explicitAddressScheme>hubex</explicitAddressScheme>
             <explicitAddressValue>fr.health.samuA</explicitAddressValue>
@@ -17,7 +21,7 @@
         <contentObject xlink:type="resource">
             <contentXML>
                 <embeddedXMLContent>
-                    <message xmlns="urn:emergency:cisu:2.0">
+                    <message xmlns="urn:emergency:cisu:3.0">
                         <customContent>
                             <key>value</key>
                         </customContent>
