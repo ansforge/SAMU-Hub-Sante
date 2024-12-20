@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon index.js",
+    "dev": "nodemon -r dotenv/config index.js",
     "prestart": "npm install",
     "start": "node index.js",
     "setup": "cd ../client && npm ci && npm run setup && npm run generate && cp -R dist/. ../server/ui"
@@ -19,6 +19,7 @@
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
+    "octokit": "^3.2.1",
     "winston": "^3.11.0",
     "ws": "^8.16.0"
   },
