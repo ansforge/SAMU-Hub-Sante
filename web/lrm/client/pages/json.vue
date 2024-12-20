@@ -49,6 +49,46 @@
             <v-icon start> mdi-text-box-check-outline </v-icon>
             Valider
           </v-btn>
+          <v-dialog max-width="500">
+            <template v-slot:activator="{ props: activatorProps }">
+              <v-btn
+                v-bind="activatorProps"
+                color="surface-variant"
+                variant="flat"
+              >
+                <v-icon start>
+                  mdi-github
+                </v-icon>
+                Commit changes
+              </v-btn>
+            </template>
+
+            <template v-slot:default="{ isActive }">
+              <v-card title="Dialog">
+                <v-card-text>
+                  <v-switch
+                    v-model="useExistingBranch"
+                    color="primary"
+                    label="Use existing branch ?"
+                  />
+                  <v-combobox
+                    v-if="useExistingBranch"
+                    label="Existing branch name"
+                    :items="branchesNames"
+                  />
+                  <v-text-field
+                    v-else
+                    label="New branch name"
+                  />
+                </v-card-text>
+                <v-card-actions>
+                  <v-btn @click="isActive.value = false">
+                    Close Dialog
+                  </v-btn>
+                </v-card-actions>
+              </v-card>
+            </template>
+          </v-dialog>
         </v-card-title>
         <v-card-text>
           <json-viewer
@@ -82,8 +122,11 @@ import { useMainStore } from '~/store';
 
 // eslint-disable-next-line no-undef
 useHead({
-  title: 'Json Creator - Hub Santé',
-});
+  title: 'Json Creator - Hub Santé'
+})
+
+const useExistingBranch = ref(true)
+
 </script>
 
 <script>
@@ -127,7 +170,8 @@ export default {
       ],
       form: {},
       jsonMessagesLoading: false,
-    };
+      branchesNames: []
+    }
   },
   computed: {
     currentMessageType() {
@@ -142,6 +186,9 @@ export default {
       this.store.selectedSchema =
         this.store.messageTypes[this.messageTypeTabIndex];
     },
+  },
+  mounted () {
+    this.fetchBranchesNames()
   },
   methods: {
     updateForm() {
@@ -213,8 +260,11 @@ export default {
         ];
       }
     },
-    updateCurrentMessage(form) {
-      this.store.currentMessage = form;
+    async fetchBranchesNames () {
+      this.branchesNames = await $fetch('http://localhost:8081/modeles/branches')
+    },
+    updateCurrentMessage (form) {
+      this.store.currentMessage = form
     },
     clearToasts() {
       for (const toastId of this.toasts) {
