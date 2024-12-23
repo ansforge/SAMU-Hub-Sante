@@ -102,7 +102,7 @@
                 <v-list-item v-for="(requiredValue, name, index) in getAwaitedValues(testCase?.steps[currentStep])" :key="'requiredValue' + index">
                   <div class="d-flex">
                     <span>
-                      <v-icon v-if="testCase?.steps[currentStep]?.requiredValues[index]?.valid === 'valid'" style="flex:0" color="success">
+                      <v-icon v-if="requiredValue?.valid" style="flex:0" color="success">
                         mdi-check
                       </v-icon>
 
@@ -113,7 +113,7 @@
                     <span>
                       <pre><b>{{ name }}:</b></pre>
                       <pre>{{ requiredValue.value }}</pre>
-                      <pre v-if="!validatedValue?.valid" class="wrong-received">(Reçu: {{ validatedValue?.receivedValue || 'null' }}) </pre>
+                      <pre v-if="!requiredValue?.valid" class="wrong-received">(Reçu: {{ requiredValue?.receivedValue || 'null' }}) </pre>
                     </span>
                   </div>
                 </v-list-item>
