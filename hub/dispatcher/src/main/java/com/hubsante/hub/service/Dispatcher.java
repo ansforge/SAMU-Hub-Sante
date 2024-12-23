@@ -130,6 +130,7 @@ public class Dispatcher {
             String queueName = getRecipientQueueName(edxlMessage);
             // publish the message to the recipient queue
             rabbitTemplate.send(DISTRIBUTION_EXCHANGE, queueName, forwardedMsg);
+            messageHandler.publishMetrics(edxlMessage, forwardedMsg);
         } catch (AbstractHubException e) {
             messageHandler.handleError(e, message);
         } catch (Exception e) {

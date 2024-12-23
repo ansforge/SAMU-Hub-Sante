@@ -16,7 +16,7 @@
         </v-icon>
         Specs
       </v-btn>
-      <v-btn class="ml-4" to="/json">
+      <v-btn data-cy="json-creator-button" class="ml-4" to="/json">
         <v-icon start>
           mdi-email-edit-outline
         </v-icon>
@@ -42,14 +42,17 @@
       </span>
     </v-app-bar>
     <v-main style="padding-bottom: 0;">
-      <v-container fluid>
+      <v-container fluid class="h-100">
         <slot />
       </v-container>
     </v-main>
-    <v-footer
-      app
-    >
-      <span><a :href=" repositoryUrl + 'tree/' + $store.selectedVhost.modelVersion ">SAMU Hub Modeles - v{{ $store.selectedVhost.modelVersion }}</a> &copy; {{ new Date().getFullYear() }}</span>
+    <v-footer app>
+      <span><a :href=" repositoryUrl + 'tree/' + $store.selectedVhost.modelVersion ">SAMU Hub Modeles - v{{ $store.selectedVhost.modelVersion }}</a>&nbsp;&copy; {{ new Date().getFullYear() }}</span>
+      <!--Display websocket status if we're on /demo or /test or /test/*-->
+      <span v-if="$route.path.startsWith('/demo') || $route.path.startsWith('/test')">
+        <span class="font-italic text-grey">{{ readableWebsocketStatus }} </span>
+        <v-icon class="ml-2" icon="mdi-circle" :color="store.isWebsocketConnected ? 'success' : 'warning'" />
+      </span>
     </v-footer>
   </v-app>
 </template>
@@ -69,6 +72,9 @@ export default {
     }
   },
   computed: {
+    readableWebsocketStatus () {
+      return this.store.isWebsocketConnected ? 'Connexion établie' : 'Connexion en attente'
+    }
   },
   methods: {
     toggleAdvanced () {
@@ -91,11 +97,28 @@ export default {
 </script>
 
 <style>
+header.v-toolbar {
+  position: sticky !important;
+}
 html {
   overflow-y: auto;
 }
 .v-main {
   background-color: rgba(0, 0, 0, 0.01);
   padding-bottom: 1.8rem !important;
+  padding-top: 0 !important;
+}
+
+.Toastify__toast-body>div:last-child>div {
+  line-break: anywhere;
+}
+.v-footer {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+.v-footer > span {
+  align-content: center;
+  display: flex;
 }
 </style>

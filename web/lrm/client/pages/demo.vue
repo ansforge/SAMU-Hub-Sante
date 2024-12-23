@@ -5,11 +5,13 @@
         <v-card-title class="text-h5 d-flex justify-space-between align-center">
           Formulaire
           <vhost-selector class="mr-5" />
-          <SendButton @click="submit(store.currentMessage)" />
+          <send-button @click="submit(store.currentMessage)" />
         </v-card-title>
         <v-card-text>
           <v-tabs
             v-model="messageTypeTabIndex"
+            data-cy="message-type-tabs"
+            show-arrows
             align-tabs="title"
           >
             <v-tabs color="primary" />
@@ -117,9 +119,22 @@
 <script setup>
 import { toRef } from 'vue'
 import { toast } from 'vue3-toastify'
-import mixinMessage from '~/mixins/mixinMessage'
+import { consola } from 'consola'
+import mixinWebsocket from '~/mixins/mixinWebsocket'
 import { REPOSITORY_URL } from '@/constants'
 import { useMainStore } from '~/store'
+import { buildMessage, sendMessage, isOut, getMessageType, getCaseId } from '~/composables/messageUtils.js'
+
+function submit (form) {
+  try {
+    const data = buildMessage({
+      [useMainStore().currentUseCase]: form
+    })
+    sendMessage(data)
+  } catch (error) {
+    console.error("Erreur lors de l'envoi du message", error)
+  }
+}
 
 useHead({
   titleTemplate: toRef(useMainStore(), 'demoHeadTitle')
@@ -129,7 +144,7 @@ useHead({
 <script>
 export default {
   name: 'Demo',
-  mixins: [mixinMessage],
+  mixins: [mixinWebsocket],
   beforeRouteEnter (to, from) {
     // Redirect to parent if we're not authenticated
     if (!useMainStore().isAuthenticated) {
@@ -184,16 +199,16 @@ export default {
     clientMessages () {
       return this.store.messages.filter(
         message => (
-          (this.isOut(message.direction) && message.body.senderID === this.store.user.clientId) ||
-          (!this.isOut(message.direction) && message.routingKey.startsWith(this.store.user.clientId))
+          (isOut(message.direction) && message.body.senderID === this.store.user.clientId) ||
+          (!isOut(message.direction) && message.routingKey.startsWith(this.store.user.clientId))
         )
       )
     },
     showableMessages () {
-      return this.store.showSentMessages ? this.clientMessages : this.clientMessages?.filter(message => !this.isOut(message.direction))
+      return this.store.showSentMessages ? this.clientMessages : this.clientMessages?.filter(message => !isOut(message.direction))
     },
     selectedTypeMessages () {
-      return this.showableMessages.filter(message => this.getMessageType(message) === this.selectedMessageType)
+      return this.showableMessages.filter(message => getMessageType(message) === this.selectedMessageType)
     },
     selectedVhost () {
       return this.store.selectedVhost
@@ -203,14 +218,14 @@ export default {
         return this.selectedTypeMessages
       }
       return this.selectedTypeMessages.filter(
-        message => this.selectedCaseIds.includes(this.getCaseId(message, true))
+        message => this.selectedCaseIds.includes(getCaseId(message, true))
       )
     },
     messagesSentCount () {
-      return this.clientMessages.filter(message => this.isOut(message.direction)).length
+      return this.clientMessages.filter(message => isOut(message.direction)).length
     },
     caseIds () {
-      return [...new Set(this.selectedTypeMessages.map(m => this.getCaseId(m, true)))]
+      return [...new Set(this.selectedTypeMessages.map(m => getCaseId(m, true)))]
     }
   },
   watch: {
@@ -234,30 +249,23 @@ export default {
       this.store.loadMessageTypes(REPOSITORY_URL + this.source + '/src/main/resources/sample/examples/messagesList.json').then(
         () => this.store.loadSchemas(REPOSITORY_URL + this.source + '/src/main/resources/json-schema/').then(
           () => {
-            console.log('messagesList.json and schemas loaded for ' + this.source)
+            consola.log('messagesList.json and schemas loaded for ' + this.source)
             this.messageTypeTabIndex = 0
-          })
+          }).catch((reason) => {
+          consola.error(reason)
+          toast.error("Erreur lors de l'acquisition des schémas de version " + this.source)
+        })
       ).catch((reason) => {
-        console.error(reason)
-        toast.error("Erreur lors de l'acquisition des schémas de version " + this.source)
+        consola.error(reason)
+        toast.error("Erreur lors de l'acquisition de la liste des schémas de version " + this.source)
       })
     },
     typeMessages (type) {
       return this.showableMessages.filter(
-        message => this.getMessageType(message) === type
+        message => getMessageType(message) === type
       )
     },
 
-    submit (form) {
-      try {
-        const data = this.buildMessage({
-          [this.store.currentUseCase]: form
-        })
-        this.sendMessage(data)
-      } catch (error) {
-        console.error("Erreur lors de l'envoi du message", error)
-      }
-    },
     useMessageToReply (message) {
       // Use message to fill the form
       if (message[this.store.selectedSchema.schema.title]) {

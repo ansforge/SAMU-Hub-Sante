@@ -7,6 +7,7 @@ export const useMainStore = defineStore('main', {
     vhostMap: Object.keys(useRuntimeConfig().public.vhostMap).map(vhost => ({ vhost, modelVersion: useRuntimeConfig().public.vhostMap[vhost] })),
     selectedVhost: Object.keys(useRuntimeConfig().public.vhostMap).map(vhost => ({ vhost, modelVersion: useRuntimeConfig().public.vhostMap[vhost] }))[0],
     socket: null,
+    isWebsocketConnected: false,
     currentMessage: null,
     currentUseCase: null,
     selectedSchema: 'RS-EDA',
@@ -125,7 +126,6 @@ export const useMainStore = defineStore('main', {
     loadSchemas (source) {
       source = source || 'schemas/json-schema/'
       return Promise.all(this.messageTypes.map(async ({ schemaName }, index) => {
-        console.log('Loading schema from: ' + source + schemaName)
         const response = await $fetch(source + schemaName)
         const schema = await JSON.parse(response)
         return ({ index, schema })
