@@ -54,3 +54,5 @@ kubeconfig.yml
 #models/csv_parser/model.xlsx
 # - Example Word tables styles
 models/csv_parser/docx-styles/
+
+client/bin/
