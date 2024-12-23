@@ -29,6 +29,8 @@ import com.hubsante.model.custom.CustomMessage;
 import com.hubsante.model.edxl.EdxlMessage;
 import com.hubsante.model.report.ErrorCode;
 import com.hubsante.model.report.Error;
+import com.hubsante.model.technical.noreq.TechnicalNoreq;
+import com.hubsante.model.technical.noreq.TechnicalNoreqWrapper;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.search.Search;
 import lombok.extern.slf4j.Slf4j;
@@ -152,8 +154,8 @@ public class DispatcherTest {
         EdxlMessage sentXML = edxlHandler.deserializeXmlEDXL(new String(sentMessage.getBody(), StandardCharsets.UTF_8));
         assertEquals(publishedJSON, sentXML);
 
-        CustomMessage custom = (CustomMessage) sentXML.getFirstContentMessage();
-        assertEquals("value", custom.getCustomContent().get("key").asText());
+        TechnicalNoreqWrapper custom = (TechnicalNoreqWrapper) sentXML.getFirstContentMessage();
+        assertEquals("value", custom.getTechnicalNoreq().getOptionalStringField());
     }
 
     @Test
@@ -176,8 +178,8 @@ public class DispatcherTest {
         EdxlMessage sentJSON = edxlHandler.deserializeJsonEDXL(new String(sentMessage.getBody(), StandardCharsets.UTF_8));
         assertEquals(publishedXML, sentJSON);
 
-        CustomMessage custom = (CustomMessage) sentJSON.getFirstContentMessage();
-        assertEquals("value", custom.getCustomContent().get("key").asText());
+        TechnicalNoreqWrapper custom = (TechnicalNoreqWrapper) sentJSON.getFirstContentMessage();
+        assertEquals("value", custom.getTechnicalNoreq().getOptionalStringField());
     }
 
     @Test
