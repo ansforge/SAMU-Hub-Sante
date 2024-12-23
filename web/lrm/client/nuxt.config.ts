@@ -1,7 +1,10 @@
 import vuetify, { transformAssetUrls } from 'vite-plugin-vuetify'
 import { commonjsDeps } from '@koumoul/vjsf/utils/build.js'
 import { defineNuxtConfig } from 'nuxt/config'
-import { isEnvProd } from './composables/envUtils'
+
+function isEnvProd () {
+  return process.env.NODE_ENV === 'production'
+}
 
 export default defineNuxtConfig({
   ssr: true,

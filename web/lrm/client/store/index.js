@@ -1,9 +1,6 @@
 import { useRuntimeConfig } from 'nuxt/app'
 import { defineStore } from 'pinia'
-
-function isEnvProd () {
-  return process.env.NODE_ENV === 'production'
-}
+import { isEnvProd } from '~/composables/envUtils'
 
 export const useMainStore = defineStore('main', {
   state: () => ({
