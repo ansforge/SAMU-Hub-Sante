@@ -1,6 +1,6 @@
 import { useRuntimeConfig } from 'nuxt/app'
 import { defineStore } from 'pinia'
-import { isEnvProd } from '../composables/envUtils'
+import { isEnvProd } from '~/composables/envUtils'
 
 export const useMainStore = defineStore('main', {
   state: () => ({
