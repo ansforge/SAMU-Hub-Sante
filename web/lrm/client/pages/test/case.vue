@@ -131,15 +131,15 @@
                     <span class="d-flex flex-row align-center">
                       <span class="confirmation-buttons d-flex flex-row">
                         <!-- Grey out buttons that do not correspond to the validation state if the value has already been validated -->
-                        <v-btn density="compact" icon="mdi-check" :color="(requiredValue.valid === 'valid' || requiredValue.valid === undefined) ? 'success' : 'grey' " @click="requiredValue.valid = 'valid'" />
-                        <v-btn density="compact" icon="mdi-tilde" :color="(requiredValue.valid === 'approximate' || requiredValue.valid === undefined) ? 'warning' : 'grey' " @click="requiredValue.valid = 'approximate'" />
-                        <v-btn density="compact" icon="mdi-close" :color="(requiredValue.valid === 'invalid' || requiredValue.valid === undefined) ? 'error' : 'grey' " @click="requiredValue.valid = 'invalid'" />
+                        <v-btn density="compact" icon="mdi-check" :color="requiredValue.valid === 'valid' ? 'success' : 'grey' " @click="setValidationStatus(requiredValue, 'valid')" />
+                        <v-btn density="compact" icon="mdi-tilde" :color="requiredValue.valid === 'approximate' ? 'warning' : 'grey' " @click="setValidationStatus(requiredValue, 'approximate')" />
+                        <v-btn density="compact" icon="mdi-close" :color="requiredValue.valid === 'invalid' ? 'error' : 'grey' " @click="setValidationStatus(requiredValue, 'invalid')" />
                       </span>
                       <span>
                         <pre class="values" :style="{color: requiredValue.valid === 'valid' ? 'green' : requiredValue.valid === 'approximate' ? 'orange' : requiredValue.valid === 'invalid' ? 'red' : 'black'}"><b>{{ requiredValue.path.join('.') }}:</b> <br>{{ requiredValue.value }}</pre>
                       </span>
-
                     </span>
+                    <v-text-field v-if="requiredValue.valid === 'invalid' || requiredValue.valid === 'approximate'" v-model="requiredValue.description" class="mt-2" label="Commentaire"/>
                   </v-list-item>
                 </v-list>
               </v-card-text>
@@ -172,6 +172,7 @@
               </v-list>
             </v-card-text>
           </v-card-text>
+          <v-btn color="primary" @click="generatePdf">Générer le PDF</v-btn>
         </template>
       </v-card>
     </v-col>
@@ -185,6 +186,7 @@ import mixinWebsocket from '~/mixins/mixinWebsocket'
 import { useMainStore } from '~/store'
 import { REPOSITORY_URL } from '@/constants'
 import { isOut, getCaseId, getMessageType, setCaseId, buildMessage, sendMessage } from '~/composables/messageUtils.js'
+import { generateCasePdf } from '../../composables/generateCasePdf';
 
 const store = useMainStore()
 const config = useRuntimeConfig()
@@ -503,6 +505,12 @@ function getTotalCounts () {
     approximate,
     invalid
   }
+}
+
+const generatePdf = () => generateCasePdf(testCase, store, getCounts)
+
+const setValidationStatus = (requiredValue, status) =>  {
+  requiredValue.valid = requiredValue.valid === status ? undefined : status;
 }
 
 // Watch the selectedTypeCaseMessages array
