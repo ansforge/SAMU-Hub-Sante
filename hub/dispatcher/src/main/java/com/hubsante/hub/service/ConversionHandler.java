@@ -18,15 +18,43 @@ package com.hubsante.hub.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.hubsante.model.edxl.EdxlMessage;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.http.MediaType;
 
 @Component
 @Slf4j
 public class ConversionHandler {
-    protected static EdxlMessage convertIncomingCisu(MessageHandler messageHandler, EdxlMessage edxlMessage) throws JsonProcessingException {
+    @Autowired
+    private WebClient conversionWebClient;
+
+    public ConversionHandler(WebClient conversionWebClient) {
+        this.conversionWebClient = conversionWebClient;
+    }
+
+    protected EdxlMessage convertIncomingCisu(MessageHandler messageHandler, EdxlMessage edxlMessage) throws JsonProcessingException {
         String jsonEdxlString = messageHandler.serializeJsonEDXL(edxlMessage);
-        // ToDo: Call /convert-cisu service with JSON input
-        return messageHandler.deserializeJsonEDXL(jsonEdxlString);
+        
+        try {
+            String convertedJson = callConversionService(jsonEdxlString);
+
+            log.debug("Successfully converted CISU message");
+            return messageHandler.deserializeJsonEDXL(convertedJson);
+            
+        } catch (Exception e) {
+            log.error("Error converting CISU message", e);
+            throw new RuntimeException("Failed to convert CISU message", e);
+        }
+    }
+
+    protected String callConversionService(String jsonEdxlString) {
+        return conversionWebClient.post()
+                .uri("/convert-cisu")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(jsonEdxlString)
+                .retrieve()
+                .bodyToMono(String.class)
+                .block(); // blocking call since the method is not async
     }
 }

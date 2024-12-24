@@ -80,6 +80,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web:3.1.2'
     implementation 'org.springframework.boot:spring-boot-starter-aop:3.1.2'
     implementation 'org.aspectj:aspectjtools:'
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
 
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     annotationProcessor 'org.projectlombok:lombok'

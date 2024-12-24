@@ -47,6 +47,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import jakarta.annotation.PostConstruct;
 import java.io.IOException;
@@ -59,6 +60,7 @@ import static com.hubsante.hub.service.utils.MessageTestUtils.*;
 import static com.hubsante.hub.service.utils.MetricsUtils.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
@@ -77,6 +79,8 @@ public class DispatcherTest {
     @Autowired
     private Validator validator;
     private MessageHandler messageHandler;
+    private ConversionHandler conversionHandler;
+    private WebClient conversionWebClient = Mockito.mock(WebClient.class);
     @Autowired
     private MeterRegistry registry;
     static ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
@@ -113,7 +117,8 @@ public class DispatcherTest {
     @PostConstruct
     public void init() {
         messageHandler = new MessageHandler(rabbitTemplate, edxlHandler, hubConfig, validator, registry, xmlMapper, jsonMapper);
-        dispatcher = new Dispatcher(messageHandler, rabbitTemplate, edxlHandler, xmlMapper, jsonMapper);
+        conversionHandler = Mockito.spy(new ConversionHandler(conversionWebClient));
+        dispatcher = new Dispatcher(messageHandler, rabbitTemplate, edxlHandler, xmlMapper, jsonMapper, conversionHandler);
     }
 
     @BeforeEach
@@ -199,23 +204,27 @@ public class DispatcherTest {
     }
 
     @Test
-    @DisplayName("should call edxlHandler for cisu messages")
-    public void shouldCalledxlHandlerForCisuMessages() throws IOException {
+    @DisplayName("should call conversion service for cisu messages")
+    public void shouldCallConversionServiceForCisuMessages() throws IOException {
         // Create a message from SDIS
         Message baseFromSdis = createMessage("EDXL-DE", XML, SDIS_C_ROUTING_KEY);
         EdxlMessage edxlMessageFromSdis = edxlHandler.deserializeXmlEDXL(new String(baseFromSdis.getBody(), StandardCharsets.UTF_8));
         MessageTestUtils.setMessageConsistentWithRoutingKey(edxlMessageFromSdis, SDIS_C_ROUTING_KEY);
         Message fromFireMessage = new Message(edxlHandler.serializeXmlEDXL(edxlMessageFromSdis).getBytes(), baseFromSdis.getMessageProperties());
 
-        // Test message from SDIS
-        try (MockedStatic<ConversionHandler> mockedStatic = Mockito.mockStatic(ConversionHandler.class)) {
-            mockedStatic.when(() -> ConversionHandler.convertIncomingCisu(any(MessageHandler.class), any(EdxlMessage.class)))
-                    .thenAnswer(invocation -> invocation.getArgument(1));
+        // Mock the conversion service call
+        doAnswer(invocation -> invocation.getArgument(0)).when(conversionHandler).callConversionService(anyString());
 
-            dispatcher.dispatch(fromFireMessage);
-            mockedStatic.verify(() -> ConversionHandler.convertIncomingCisu(any(MessageHandler.class), any(EdxlMessage.class)));
-        }
-        
+        // Test message from SDIS
+        dispatcher.dispatch(fromFireMessage);
+
+        // Verify conversion was called
+        verify(conversionHandler, times(1)).callConversionService(anyString());
+
+        // Reset mock
+        reset(conversionHandler);
+        doAnswer(invocation -> invocation.getArgument(0)).when(conversionHandler).callConversionService(anyString());
+
         // Create message to SDIS
         Message baseToSdis = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
         EdxlMessage edxlMessageToSdis = edxlHandler.deserializeJsonEDXL(new String(baseToSdis.getBody(), StandardCharsets.UTF_8));
@@ -223,31 +232,23 @@ public class DispatcherTest {
         Message toFireMessage = new Message(edxlHandler.serializeJsonEDXL(edxlMessageToSdis).getBytes(), baseToSdis.getMessageProperties());
 
         // Test message to SDIS
-        try (MockedStatic<ConversionHandler> mockedStatic = Mockito.mockStatic(ConversionHandler.class)) {
-            mockedStatic.when(() -> ConversionHandler.convertIncomingCisu(any(MessageHandler.class), any(EdxlMessage.class)))
-                    .thenAnswer(invocation -> invocation.getArgument(1));
-
-            dispatcher.dispatch(toFireMessage);
-            mockedStatic.verify(() -> ConversionHandler.convertIncomingCisu(any(MessageHandler.class), any(EdxlMessage.class)));
-        }
+        dispatcher.dispatch(toFireMessage);
+        
+        // Verify conversion was called again
+        verify(conversionHandler, times(1)).callConversionService(anyString());
     }
 
     @Test
-    @DisplayName("should not call edxlHandler for health messages")
-    public void shouldNotCalledxlHandlerForHealthMessages() throws IOException {
+    @DisplayName("should not call conversion service for health messages")
+    public void shouldNotCallConversionServiceForHealthMessages() throws IOException {
         // Create a message from and to health
         Message message = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
 
-        try (MockedStatic<ConversionHandler> mockedStatic = Mockito.mockStatic(ConversionHandler.class)) {
-            mockedStatic.when(() -> ConversionHandler.convertIncomingCisu(any(MessageHandler.class), any(EdxlMessage.class)))
-                    .thenAnswer(invocation -> invocation.getArgument(1));
+        // Dispatch the message
+        dispatcher.dispatch(message);
 
-            dispatcher.dispatch(message);
-            mockedStatic.verify(
-                () -> ConversionHandler.convertIncomingCisu(any(MessageHandler.class), any(EdxlMessage.class)),
-                Mockito.never()
-            );
-        }
+        // Verify that conversion service was never called
+        verify(conversionHandler, never()).callConversionService(anyString());
     }
 
     @Test

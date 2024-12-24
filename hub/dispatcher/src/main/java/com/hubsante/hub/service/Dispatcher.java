@@ -70,13 +70,15 @@ public class Dispatcher {
     @Autowired
     @Qualifier("jsonMapper")
     private ObjectMapper jsonMapper;
+    private final ConversionHandler conversionHandler;
 
-    public Dispatcher(MessageHandler messageHandler, RabbitTemplate rabbitTemplate, EdxlHandler edxlHandler, XmlMapper xmlMapper, ObjectMapper jsonMapper) {
+    public Dispatcher(MessageHandler messageHandler, RabbitTemplate rabbitTemplate, EdxlHandler edxlHandler, XmlMapper xmlMapper, ObjectMapper jsonMapper, ConversionHandler conversionHandler) {
         this.messageHandler = messageHandler;
         this.rabbitTemplate = rabbitTemplate;
         this.edxlHandler = edxlHandler;
         this.xmlMapper = xmlMapper;
         this.jsonMapper = jsonMapper;
+        this.conversionHandler = conversionHandler;
         initReturnsCallback();
     }
 
@@ -121,7 +123,7 @@ public class Dispatcher {
             EdxlMessage edxlMessage = messageHandler.extractMessage(message);
             // Before running the validation checks, we convert the message if required to make sure the forwarded message is valid
             if (ConversionUtils.isCisuExchange(edxlMessage)) {
-                edxlMessage = ConversionHandler.convertIncomingCisu(messageHandler, edxlMessage);
+                edxlMessage = conversionHandler.convertIncomingCisu(messageHandler, edxlMessage);
             }
             // Reject the message if the sender is not consistent with the routing key
             checkSenderConsistency(message, edxlMessage);

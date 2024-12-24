@@ -26,6 +26,7 @@ import org.junit.jupiter.params.shadow.com.univocity.parsers.csv.CsvParserSettin
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import jakarta.annotation.PostConstruct;
 import java.io.*;
@@ -109,5 +110,12 @@ public class HubConfiguration {
     @Bean
     public TimedAspect timedAspect(MeterRegistry registry) {
         return new TimedAspect(registry);
+    }
+
+    @Bean
+    public WebClient conversionWebClient(@Value("${conversion.service.url}") String baseUrl) {
+        return WebClient.builder()
+                .baseUrl(baseUrl)
+                .build();
     }
 }
