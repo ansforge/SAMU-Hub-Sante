@@ -287,4 +287,11 @@ public class MessageHandler {
         registry.counter(DISPATCHED_MESSAGE,CLIENT_ID_TAG, sender, VHOST_TAG, hubConfig.getVhost(),USE_CASE_TAG, useCase).increment();
     }
 
+    protected String serializeJsonEDXL(EdxlMessage edxlMessage) throws JsonProcessingException {
+        return edxlHandler.serializeJsonEDXL(edxlMessage);
+    }
+
+    protected EdxlMessage deserializeJsonEDXL(String edxlString) throws JsonProcessingException {
+        return edxlHandler.deserializeJsonEDXL(edxlString);
+    }
 }

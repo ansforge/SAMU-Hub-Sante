@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.hubsante.hub.HubApplication;
 import com.hubsante.hub.config.HubConfiguration;
+import com.hubsante.hub.service.utils.MessageTestUtils;
 import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.Validator;
 import com.hubsante.model.custom.CustomMessage;
@@ -29,11 +30,11 @@ import com.hubsante.model.report.Error;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.search.Search;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.compress.archivers.sevenz.CLI;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.springframework.amqp.AmqpRejectAndDontRequeueException;
 import org.springframework.amqp.core.Message;
@@ -70,7 +71,7 @@ public class DispatcherTest {
     private RabbitTemplate rabbitTemplate = Mockito.mock(RabbitTemplate.class);
 
     @Autowired
-    private EdxlHandler converter;
+    private EdxlHandler edxlHandler;
     @Autowired
     private HubConfiguration hubConfig;
     @Autowired
@@ -90,6 +91,7 @@ public class DispatcherTest {
     private final String SAMU_A_INFO_QUEUE = SAMU_A_ROUTING_KEY + ".info";
     private final String SAMU_A_ERROR_QUEUE = SAMU_A_ROUTING_KEY + ".error";
     private final String SAMU_A_DISTRIBUTION_ID = "fr.health.samuA_2608323d-507d-4cbf-bf74-52007f8124ea";
+    private final String SDIS_C_ROUTING_KEY = "fr.fire.sdisC";
 
     private final String TEST_VHOST = "default-vhost";
     private final String INCONSISTENT_ROUTING_KEY = "fr.health.no-samu";
@@ -110,8 +112,8 @@ public class DispatcherTest {
 
     @PostConstruct
     public void init() {
-        messageHandler = new MessageHandler(rabbitTemplate, converter, hubConfig, validator, registry, xmlMapper, jsonMapper);
-        dispatcher = new Dispatcher(messageHandler, rabbitTemplate, converter, xmlMapper, jsonMapper);
+        messageHandler = new MessageHandler(rabbitTemplate, edxlHandler, hubConfig, validator, registry, xmlMapper, jsonMapper);
+        dispatcher = new Dispatcher(messageHandler, rabbitTemplate, edxlHandler, xmlMapper, jsonMapper);
     }
 
     @BeforeEach
@@ -138,8 +140,8 @@ public class DispatcherTest {
         Message sentMessage = argCaptor.getValue();
         assertEquals(XML, sentMessage.getMessageProperties().getContentType());
         // assert that the message has the same content as the original one
-        EdxlMessage publishedJSON = converter.deserializeJsonEDXL(new String(receivedMessage.getBody(), StandardCharsets.UTF_8));
-        EdxlMessage sentXML = converter.deserializeXmlEDXL(new String(sentMessage.getBody(), StandardCharsets.UTF_8));
+        EdxlMessage publishedJSON = edxlHandler.deserializeJsonEDXL(new String(receivedMessage.getBody(), StandardCharsets.UTF_8));
+        EdxlMessage sentXML = edxlHandler.deserializeXmlEDXL(new String(sentMessage.getBody(), StandardCharsets.UTF_8));
         assertEquals(publishedJSON, sentXML);
 
         CustomMessage custom = (CustomMessage) sentXML.getFirstContentMessage();
@@ -162,8 +164,8 @@ public class DispatcherTest {
         Message sentMessage = argCaptor.getValue();
         assertEquals(JSON, sentMessage.getMessageProperties().getContentType());
         // assert that the message has the same content as the original one
-        EdxlMessage publishedXML = converter.deserializeXmlEDXL(new String(receivedMessage.getBody(), StandardCharsets.UTF_8));
-        EdxlMessage sentJSON = converter.deserializeJsonEDXL(new String(sentMessage.getBody(), StandardCharsets.UTF_8));
+        EdxlMessage publishedXML = edxlHandler.deserializeXmlEDXL(new String(receivedMessage.getBody(), StandardCharsets.UTF_8));
+        EdxlMessage sentJSON = edxlHandler.deserializeJsonEDXL(new String(sentMessage.getBody(), StandardCharsets.UTF_8));
         assertEquals(publishedXML, sentJSON);
 
         CustomMessage custom = (CustomMessage) sentJSON.getFirstContentMessage();
@@ -197,13 +199,65 @@ public class DispatcherTest {
     }
 
     @Test
+    @DisplayName("should call edxlHandler for cisu messages")
+    public void shouldCalledxlHandlerForCisuMessages() throws IOException {
+        // Create a message from SDIS
+        Message baseFromSdis = createMessage("EDXL-DE", XML, SDIS_C_ROUTING_KEY);
+        EdxlMessage edxlMessageFromSdis = edxlHandler.deserializeXmlEDXL(new String(baseFromSdis.getBody(), StandardCharsets.UTF_8));
+        MessageTestUtils.setMessageConsistentWithRoutingKey(edxlMessageFromSdis, SDIS_C_ROUTING_KEY);
+        Message fromFireMessage = new Message(edxlHandler.serializeXmlEDXL(edxlMessageFromSdis).getBytes(), baseFromSdis.getMessageProperties());
+
+        // Test message from SDIS
+        try (MockedStatic<ConversionHandler> mockedStatic = Mockito.mockStatic(ConversionHandler.class)) {
+            mockedStatic.when(() -> ConversionHandler.convertIncomingCisu(any(MessageHandler.class), any(EdxlMessage.class)))
+                    .thenAnswer(invocation -> invocation.getArgument(1));
+
+            dispatcher.dispatch(fromFireMessage);
+            mockedStatic.verify(() -> ConversionHandler.convertIncomingCisu(any(MessageHandler.class), any(EdxlMessage.class)));
+        }
+        
+        // Create message to SDIS
+        Message baseToSdis = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
+        EdxlMessage edxlMessageToSdis = edxlHandler.deserializeJsonEDXL(new String(baseToSdis.getBody(), StandardCharsets.UTF_8));
+        edxlMessageToSdis.getDescriptor().getExplicitAddress().setExplicitAddressValue(SDIS_C_ROUTING_KEY);
+        Message toFireMessage = new Message(edxlHandler.serializeJsonEDXL(edxlMessageToSdis).getBytes(), baseToSdis.getMessageProperties());
+
+        // Test message to SDIS
+        try (MockedStatic<ConversionHandler> mockedStatic = Mockito.mockStatic(ConversionHandler.class)) {
+            mockedStatic.when(() -> ConversionHandler.convertIncomingCisu(any(MessageHandler.class), any(EdxlMessage.class)))
+                    .thenAnswer(invocation -> invocation.getArgument(1));
+
+            dispatcher.dispatch(toFireMessage);
+            mockedStatic.verify(() -> ConversionHandler.convertIncomingCisu(any(MessageHandler.class), any(EdxlMessage.class)));
+        }
+    }
+
+    @Test
+    @DisplayName("should not call edxlHandler for health messages")
+    public void shouldNotCalledxlHandlerForHealthMessages() throws IOException {
+        // Create a message from and to health
+        Message message = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
+
+        try (MockedStatic<ConversionHandler> mockedStatic = Mockito.mockStatic(ConversionHandler.class)) {
+            mockedStatic.when(() -> ConversionHandler.convertIncomingCisu(any(MessageHandler.class), any(EdxlMessage.class)))
+                    .thenAnswer(invocation -> invocation.getArgument(1));
+
+            dispatcher.dispatch(message);
+            mockedStatic.verify(
+                () -> ConversionHandler.convertIncomingCisu(any(MessageHandler.class), any(EdxlMessage.class)),
+                Mockito.never()
+            );
+        }
+    }
+
+    @Test
     @DisplayName("should reset TTL if edxl dateTimeExpires is lower")
     public void shouldResetTTL() throws IOException {
         // get message and override dateTimeExpires field with sooner value
         Message base = createMessage("EDXL-DE",JSON, SAMU_A_ROUTING_KEY);
-        EdxlMessage edxlMessage = converter.deserializeJsonEDXL(new String(base.getBody(), StandardCharsets.UTF_8));
+        EdxlMessage edxlMessage = edxlHandler.deserializeJsonEDXL(new String(base.getBody(), StandardCharsets.UTF_8));
         setCustomExpirationDate(edxlMessage, 2);
-        Message customTTLMessage = new Message(converter.serializeJsonEDXL(edxlMessage).getBytes(), base.getMessageProperties());
+        Message customTTLMessage = new Message(edxlHandler.serializeJsonEDXL(edxlMessage).getBytes(), base.getMessageProperties());
 
         // before dispatch, the message has no expiration set
         assertNull(customTTLMessage.getMessageProperties().getExpiration());
@@ -387,7 +441,7 @@ public class DispatcherTest {
         Mockito.verify(rabbitTemplate, times(1)).send(
                 eq(DISTRIBUTION_EXCHANGE), eq(infoQueueName), argument.capture());
 
-        Error error = getErrorFromMessage(converter, argument.getValue());
+        Error error = getErrorFromMessage(edxlHandler, argument.getValue());
         assertEquals(errorCode, error.getErrorCode());
         assertEquals(referencedDistributionId, error.getReferencedDistributionID());
         if (errorCause != null) {

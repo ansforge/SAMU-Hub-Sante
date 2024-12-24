@@ -137,4 +137,9 @@ public class MessageTestUtils {
         edxlMessage.setDateTimeSent(now);
         edxlMessage.setDateTimeExpires(now.plusSeconds(offset_in_seconds));
     }
+
+    public static void setMessageConsistentWithRoutingKey(EdxlMessage edxlMessage, String routingKey) {
+        edxlMessage.setSenderID(routingKey);
+        edxlMessage.setDistributionID(routingKey + "_2608323d-507d-4cbf-bf74-52007f8124ea");
+    }
 }
