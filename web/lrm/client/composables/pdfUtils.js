@@ -22,6 +22,15 @@ const addSection = (pdf, section, yOffset) => {
   return yOffset + section.length * 5 // Add 10px padding after section
 }
 
+//addList function
+const addList = (pdf, list, x, y, fontSize = 10, textColor = color.black) => {
+  pdf.setFontSize(fontSize)
+  pdf.setTextColor(...textColor)
+  list.forEach((item, index) => {
+    pdf.text(item, x, y + index * 8)
+  })
+}
+
 const addTable = (pdf, table, yOffset) => {
   const rows = table.data.map((item) => {
     const { text, color } = getStatusTextAndColor(item.valid)

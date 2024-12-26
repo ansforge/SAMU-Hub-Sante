@@ -1,11 +1,10 @@
 <template>
-  <span class="ml-4 pl-4" data-cy="vhost-selector">
+  <span data-cy="vhost-selector">
     <v-combobox
       v-model="selectedVhost"
       :items="vhosts"
       item-title="vhost"
       label="vHost"
-      class="ml-4 pl-4"
       density="compact"
       hide-details
       variant="outlined"

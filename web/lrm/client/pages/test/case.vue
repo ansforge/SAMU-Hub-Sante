@@ -3,8 +3,8 @@
     <v-col cols="12" sm="7">
       <v-card class="main-card" style="height: 86vh;">
         <v-card-title class="d-flex text-h5 pb-0">
-          Cas de test <span class="font-weight-bold">&nbsp;{{ testCase.label }} </span>
-          <vhost-selector class="mr-5" />
+          Cas de test <span class="font-weight-bold mr-5 mb-4">&nbsp;{{ testCase.label }} </span>
+          <vhost-selector class="mr-5 mb-4"  />
           <v-btn v-if="testCase?.steps[currentStep]?.type === 'receive'" color="primary" @click="submitMessage(testCase?.steps[currentStep])">
             Re-envoyer le message
           </v-btn>
@@ -102,7 +102,7 @@
                 <v-list-item v-for="(requiredValue, name, index) in getAwaitedValues(testCase?.steps[currentStep])" :key="'requiredValue' + index">
                   <div class="d-flex">
                     <span>
-                      <v-icon v-if="requiredValue?.valid" style="flex:0" color="success">
+                      <v-icon v-if="requiredValue?.valid === 'valid'" style="flex:0" color="success">
                         mdi-check
                       </v-icon>
 
@@ -127,7 +127,7 @@
               <v-card-text>
                 <v-list>
                   <!-- Generate a list of paths:values from required values and add three buttons for each entry, letting user indicate whether the value they received is correct, 'somewhat' correct or incorrect-->
-                  <v-list-item v-for="(requiredValue, index) in testCase?.steps[currentStep].requiredValues" :key="'requiredValue' + index" class="received-values-list">
+                  <v-list-item v-for="(requiredValue, index) in testCase?.steps[currentStep].requiredValues" :key="'requiredValue' + index" class="received-values-list" :data-index="index">
                     <span class="d-flex flex-row align-center">
                       <span class="confirmation-buttons d-flex flex-row">
                         <!-- Grey out buttons that do not correspond to the validation state if the value has already been validated -->
@@ -139,7 +139,14 @@
                         <pre class="values" :style="{color: requiredValue.valid === 'valid' ? 'green' : requiredValue.valid === 'approximate' ? 'orange' : requiredValue.valid === 'invalid' ? 'red' : 'black'}"><b>{{ requiredValue.path.join('.') }}:</b> <br>{{ requiredValue.value }}</pre>
                       </span>
                     </span>
-                    <v-text-field v-if="requiredValue.valid === 'invalid' || requiredValue.valid === 'approximate'" v-model="requiredValue.description" class="mt-2" label="Commentaire"/>
+                    <v-text-field  
+                      v-model="requiredValue.description" 
+                      class="mt-2 comment-field"
+                      :data-valid="requiredValue.valid"
+                      :data-id="requiredValue.path.join('.')"
+                      :ref="el => textInputs[requiredValue.path.join('.')] = el"
+                      label="Commentaire"
+                    />
                   </v-list-item>
                 </v-list>
               </v-card-text>
@@ -427,13 +434,14 @@ function checkMessageContainsAllRequiredValues (message, requiredValues) {
 
   requiredValues.forEach(function (element) {
     const result = jsonpath.query(message.body.content[0].jsonContent.embeddedJsonContent.message, element.path.join('.'))
+
     if (result.length === 0 || !result.includes(element.value)) {
       valid = false
-      element.valid = false
+      element.valid = 'invalid'
       validatedValues.push({ valid: false, value: element, receivedValue: result[0] })
     } else {
       validatedValues.push({ valid: true, value: element })
-      element.valid = true
+      element.valid = 'valid'
     }
   })
 
@@ -509,8 +517,19 @@ function getTotalCounts () {
 
 const generatePdf = () => generateCasePdf(testCase, store, getCounts)
 
+const textInputs = ref({});
+
 const setValidationStatus = (requiredValue, status) =>  {
   requiredValue.valid = requiredValue.valid === status ? undefined : status;
+
+  const id = requiredValue.path.join('.');
+  const element = textInputs.value[id]?.$el;
+  const input = element.querySelector('input');
+
+  if (input) {
+    element.style.display = !requiredValue.valid || requiredValue.valid === "valid" ? "none" : "block";
+    input.focus();
+  }
 }
 
 // Watch the selectedTypeCaseMessages array
@@ -584,6 +603,11 @@ div.stepper.v-stepper {
   justify-content: space-between;
 }
 
+.v-card .v-card-title {
+  display: flex;
+  flex-wrap: wrap;
+}
+
 .message {
   position: relative;
 }
@@ -632,4 +656,9 @@ pre.values {
 span.confirmation-buttons>button {
   margin: 6px;
 }
+
+.comment-field {
+  display: none;
+}
+
 </style>

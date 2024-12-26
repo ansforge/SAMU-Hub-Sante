@@ -1,6 +1,7 @@
 import { generate, color } from './pdfUtils.js'
 
 const generateCasePdf = (testCase, store, getCounts) => {
+  console.log('testCase :', testCase)
   const config = {
     filename: 'test-results.pdf',
     sections: [
@@ -23,7 +24,7 @@ const generateCasePdf = (testCase, store, getCounts) => {
             { label: `Description : ${step.description}`, fontSize: 10, color: color.black },
             { label: `Fichier de test : ${step.file}`, fontSize: 10, color: color.black },
             { label: `Modèle : ${step.model}`, fontSize: 10, color: color.black },
-            { label: `Type : ${step.type === 'receive' ? 'Réception' : 'Envoie'}`, fontSize: 10, color: color.black }
+            { label: `Type : ${step.type === 'receive' ? 'Réception' : 'Envoi'}`, fontSize: 10, color: color.black }
           ],
           table: {
             headers: [['Path', 'Statut', 'Commentaire']],
@@ -35,12 +36,10 @@ const generateCasePdf = (testCase, store, getCounts) => {
             }
           },
           counts: [
-            { label: `Nombre de valeurs correctes: ${counts.valid}`, fontSize: 10, color: color.green },
-            { label: `Nombre de valeurs approximatives: ${counts.approximate}`, fontSize: 10, color: color.orange },
-            { label: `Nombre de valeurs incorrectes: ${counts.invalid}`, fontSize: 10, color: color.red },
-            { label: `Nombre de valeurs renseignées: ${counts.total - counts.unreviewed}`, fontSize: 10, color: color.black },
-            { label: `Nombre de valeurs non renseignées: ${counts.unreviewed}`, fontSize: 10, color: color.black },
-            { label: `Nombre total de valeurs: ${counts.total}`, fontSize: 10, color: color.black }
+            { label: `${counts.total - counts.unreviewed} valeurs renseignés sur ${counts.total} :`, fontSize: 10, color: color.black },
+            { label: `  - correctes: ${counts.valid}`, fontSize: 10, color: color.green },
+            { label: `  - approximatives: ${counts.approximate}`, fontSize: 10, color: color.orange },
+            { label: `  - incorrectes: ${counts.invalid}`, fontSize: 10, color: color.red },
           ]
         }
       })
