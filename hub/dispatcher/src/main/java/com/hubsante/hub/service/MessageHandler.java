@@ -58,7 +58,7 @@ import static com.hubsante.model.config.Constants.*;
 public class MessageHandler {
     private final RabbitTemplate rabbitTemplate;
     private final EdxlHandler edxlHandler;
-    private final HubConfiguration hubConfig;
+    final HubConfiguration hubConfig;
     private final Validator validator;
     private final MeterRegistry registry;
     @Autowired
@@ -124,7 +124,7 @@ public class MessageHandler {
         try {
             EdxlMessage errorEdxlMessage = edxlMessageFromHub(sender, wrapper);
             Message errorAmqpMessage;
-            if (convertToXML(sender, hubConfig.getClientPreferences().get(sender))) {
+            if (convertToXML(sender, hubConfig.getUseXmlPreferences().get(sender))) {
                 errorAmqpMessage = new Message(edxlHandler.serializeXmlEDXL(errorEdxlMessage).getBytes(),
                         MessagePropertiesBuilder.newInstance().setContentType(MessageProperties.CONTENT_TYPE_XML).build());
             } else {
@@ -247,7 +247,7 @@ public class MessageHandler {
         String edxlString;
 
         try {
-            if (convertToXML(recipientID, hubConfig.getClientPreferences().get(recipientID))) {
+            if (convertToXML(recipientID, hubConfig.getUseXmlPreferences().get(recipientID))) {
                 edxlString = edxlHandler.serializeXmlEDXL(edxlMessage);
                 fwdAmqpProperties.setContentType(MessageProperties.CONTENT_TYPE_XML);
             } else {

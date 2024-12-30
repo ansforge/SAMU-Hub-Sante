@@ -122,7 +122,8 @@ public class Dispatcher {
             // Deserialize the message according to its content type
             EdxlMessage edxlMessage = messageHandler.extractMessage(message);
             // Before running the validation checks, we convert the message if required to make sure the forwarded message is valid
-            if (ConversionUtils.isCisuExchange(edxlMessage)) {
+            // ToDo: see how hubConfig should be made available to the Dispatcher (and make it back final in MessageHandler)
+            if (ConversionUtils.requiresCisuConversion(messageHandler.hubConfig, edxlMessage)) {
                 edxlMessage = conversionHandler.convertIncomingCisu(messageHandler, edxlMessage);
             }
             // Reject the message if the sender is not consistent with the routing key

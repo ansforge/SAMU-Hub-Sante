@@ -15,14 +15,41 @@
  */
 package com.hubsante.hub.utils;
 
+import com.hubsante.model.cisu.CreateCaseWrapper;
 import com.hubsante.model.edxl.EdxlMessage;
+import com.hubsante.model.emsi.EmsiWrapper;
+import com.hubsante.hub.config.HubConfiguration;
 
 import static com.hubsante.hub.utils.MessageUtils.getRecipientID;
 
 public class ConversionUtils {
+    public static boolean requiresCisuConversion(HubConfiguration hubConfig, EdxlMessage edxlMessage) {
+        return isCisuExchange(edxlMessage) && 
+               // isCisuModel(edxlMessage) && // Not needed as RS-EDA to CISU actor should be converted for example
+               !isDirectCisuForHealthActor(hubConfig, edxlMessage);
+    }
+
     public static boolean isCisuExchange(EdxlMessage edxlMessage) {
+        // Checks if the message is from or to CISU (not health)
         String recipientID = getRecipientID(edxlMessage);
         String senderID = edxlMessage.getSenderID();
         return !(recipientID.startsWith("fr.health") && senderID.startsWith("fr.health"));
+    }
+
+    public static boolean isCisuModel(EdxlMessage edxlMessage) {
+        // Checks if the message is a CISU model
+        // ToDo: Remove if not used (nor adapted to only directCisuModel to target only EDA and not EMSI)
+        //  OR add a class in model lib to know if the message is a CISU model (to decouple dispatcher from model lib)
+        return edxlMessage.getFirstContentMessage() instanceof CreateCaseWrapper
+                || edxlMessage.getFirstContentMessage() instanceof EmsiWrapper;
+    }
+
+    public static boolean isDirectCisuForHealthActor(HubConfiguration hubConfig, EdxlMessage edxlMessage) {
+        // Checks if the health actor is direct CISU
+        String recipientID = getRecipientID(edxlMessage);
+        String senderID = edxlMessage.getSenderID();
+        String healthActor = senderID.startsWith("fr.health") ? senderID : recipientID;
+        Boolean directCisuPreference = hubConfig.getDirectCisuPreferences().get(healthActor);
+        return directCisuPreference != null && directCisuPreference;
     }
 }

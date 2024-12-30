@@ -38,7 +38,7 @@ import java.util.Locale;
 @Configuration
 public class HubConfiguration {
 
-    private static final int TOGGLE_ROW_LENGTH = 2;
+    private static final int TOGGLE_ROW_LENGTH = 3;
 
     @Value("${client.preferences.file}")
     private File configFile;
@@ -48,7 +48,8 @@ public class HubConfiguration {
     @Value("${dispatcher.vhost}")
     private String vhost;
 
-    private HashMap<String, Boolean> clientPreferences = new HashMap<>();
+    private HashMap<String, Boolean> useXmlPreferences = new HashMap<>();
+    private HashMap<String, Boolean> directCisuPreferences = new HashMap<>();
 
     @PostConstruct
     public void init() throws Exception {
@@ -70,7 +71,8 @@ public class HubConfiguration {
                         throw new IllegalArgumentException();
                     }
                     String[] items = Arrays.asList(objects).toArray(new String[TOGGLE_ROW_LENGTH]);
-                    clientPreferences.put(items[0], Boolean.parseBoolean(items[1]));
+                    useXmlPreferences.put(items[0], Boolean.parseBoolean(items[1]));
+                    directCisuPreferences.put(items[0], Boolean.parseBoolean(items[2]));
                 }
             };
             CsvParserSettings parserSettings = new CsvParserSettings();
@@ -87,8 +89,12 @@ public class HubConfiguration {
         }
     }
 
-    public HashMap<String, Boolean> getClientPreferences() {
-        return clientPreferences;
+    public HashMap<String, Boolean> getUseXmlPreferences() {
+        return useXmlPreferences;
+    }
+
+    public HashMap<String, Boolean> getDirectCisuPreferences() {
+        return directCisuPreferences;
     }
 
     public long getDefaultTTL() {

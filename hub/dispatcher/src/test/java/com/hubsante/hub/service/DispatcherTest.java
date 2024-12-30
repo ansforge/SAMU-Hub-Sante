@@ -179,7 +179,7 @@ public class DispatcherTest {
 
     @Test
     @DisplayName("should convert messages according to client preferences")
-    public void shouldConvertMessageAccordingToClientPreferences() throws IOException {
+    public void shouldConvertMessageAccordingToUseXmlPreferences() throws IOException {
         // JSON -> XML direction
         Message receivedJsonMessage = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
         assertEquals(JSON, receivedJsonMessage.getMessageProperties().getContentType());
