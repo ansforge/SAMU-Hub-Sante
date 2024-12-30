@@ -21,6 +21,7 @@ import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.hubsante.hub.HubApplication;
 import com.hubsante.hub.config.HubConfiguration;
 import com.hubsante.hub.service.utils.MessageTestUtils;
+import com.hubsante.hub.utils.ConversionUtils;
 import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.Validator;
 import com.hubsante.model.custom.CustomMessage;
@@ -206,36 +207,22 @@ public class DispatcherTest {
     @Test
     @DisplayName("should call conversion service for cisu messages")
     public void shouldCallConversionServiceForCisuMessages() throws IOException {
-        // Create a message from SDIS
-        Message baseFromSdis = createMessage("EDXL-DE", XML, SDIS_C_ROUTING_KEY);
-        EdxlMessage edxlMessageFromSdis = edxlHandler.deserializeXmlEDXL(new String(baseFromSdis.getBody(), StandardCharsets.UTF_8));
-        MessageTestUtils.setMessageConsistentWithRoutingKey(edxlMessageFromSdis, SDIS_C_ROUTING_KEY);
-        Message fromFireMessage = new Message(edxlHandler.serializeXmlEDXL(edxlMessageFromSdis).getBytes(), baseFromSdis.getMessageProperties());
+        try (MockedStatic<ConversionUtils> mockedConversionUtils = mockStatic(ConversionUtils.class)) {
+            // Create a message from SDIS
+            Message baseFromSdis = createMessage("EDXL-DE", XML, SDIS_C_ROUTING_KEY);
+            EdxlMessage edxlMessageFromSdis = spy(edxlHandler.deserializeXmlEDXL(new String(baseFromSdis.getBody(), StandardCharsets.UTF_8)));
+            MessageTestUtils.setMessageConsistentWithRoutingKey(edxlMessageFromSdis, SDIS_C_ROUTING_KEY);
+            Message fromFireMessage = new Message(edxlHandler.serializeXmlEDXL(edxlMessageFromSdis).getBytes(), baseFromSdis.getMessageProperties());
+            // Mock the ConversionUtils answer and the ConversionService
+            mockedConversionUtils.when(() -> ConversionUtils.requiresCisuConversion(any(), any())).thenReturn(true);
+            doAnswer(invocation -> invocation.getArgument(0)).when(conversionHandler).callConversionService(anyString());
 
-        // Mock the conversion service call
-        doAnswer(invocation -> invocation.getArgument(0)).when(conversionHandler).callConversionService(anyString());
+            // Test message from SDIS
+            dispatcher.dispatch(fromFireMessage);
 
-        // Test message from SDIS
-        dispatcher.dispatch(fromFireMessage);
-
-        // Verify conversion was called
-        verify(conversionHandler, times(1)).callConversionService(anyString());
-
-        // Reset mock
-        reset(conversionHandler);
-        doAnswer(invocation -> invocation.getArgument(0)).when(conversionHandler).callConversionService(anyString());
-
-        // Create message to SDIS
-        Message baseToSdis = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
-        EdxlMessage edxlMessageToSdis = edxlHandler.deserializeJsonEDXL(new String(baseToSdis.getBody(), StandardCharsets.UTF_8));
-        edxlMessageToSdis.getDescriptor().getExplicitAddress().setExplicitAddressValue(SDIS_C_ROUTING_KEY);
-        Message toFireMessage = new Message(edxlHandler.serializeJsonEDXL(edxlMessageToSdis).getBytes(), baseToSdis.getMessageProperties());
-
-        // Test message to SDIS
-        dispatcher.dispatch(toFireMessage);
-        
-        // Verify conversion was called again
-        verify(conversionHandler, times(1)).callConversionService(anyString());
+            // Verify conversion was called
+            verify(conversionHandler, times(1)).callConversionService(anyString());
+        }
     }
 
     @Test

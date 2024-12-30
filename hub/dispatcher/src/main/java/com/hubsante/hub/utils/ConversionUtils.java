@@ -16,8 +16,8 @@
 package com.hubsante.hub.utils;
 
 import com.hubsante.model.cisu.CreateCaseWrapper;
+import com.hubsante.model.health.CreateCaseHealthWrapper;
 import com.hubsante.model.edxl.EdxlMessage;
-import com.hubsante.model.emsi.EmsiWrapper;
 import com.hubsante.hub.config.HubConfiguration;
 
 import static com.hubsante.hub.utils.MessageUtils.HEALTH_PREFIX;
@@ -26,7 +26,7 @@ import static com.hubsante.hub.utils.MessageUtils.getRecipientID;
 public class ConversionUtils {
     public static boolean requiresCisuConversion(HubConfiguration hubConfig, EdxlMessage edxlMessage) {
         return isCisuExchange(edxlMessage) && 
-               // isCisuModel(edxlMessage) && // Not needed as RS-EDA to CISU actor should be converted for example
+               isConvertedModel(edxlMessage) &&
                !isDirectCisuForHealthActor(hubConfig, edxlMessage);
     }
 
@@ -37,12 +37,12 @@ public class ConversionUtils {
         return !(recipientID.startsWith(HEALTH_PREFIX) && senderID.startsWith(HEALTH_PREFIX));
     }
 
-    public static boolean isCisuModel(EdxlMessage edxlMessage) {
+    public static boolean isConvertedModel(EdxlMessage edxlMessage) {
         // Checks if the message is a CISU model
         // ToDo: Remove if not used (nor adapted to only directCisuModel to target only EDA and not EMSI)
         //  OR add a class in model lib to know if the message is a CISU model (to decouple dispatcher from model lib)
         return edxlMessage.getFirstContentMessage() instanceof CreateCaseWrapper
-                || edxlMessage.getFirstContentMessage() instanceof EmsiWrapper;
+                || edxlMessage.getFirstContentMessage() instanceof CreateCaseHealthWrapper;
     }
 
     public static boolean isDirectCisuForHealthActor(HubConfiguration hubConfig, EdxlMessage edxlMessage) {

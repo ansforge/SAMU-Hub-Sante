@@ -88,15 +88,15 @@ public class ConversionUtilsTest {
     void testIsCisuModel() {
         // CreateCaseWrapper
         when(edxlMessage.getFirstContentMessage()).thenReturn(createCaseWrapper);
-        assertTrue(ConversionUtils.isCisuModel(edxlMessage));
+        assertTrue(ConversionUtils.isConvertedModel(edxlMessage));
 
-        // EmsiWrapper
-        when(edxlMessage.getFirstContentMessage()).thenReturn(emsiWrapper);
-        assertTrue(ConversionUtils.isCisuModel(edxlMessage));
-
-        // Other type
+        // CreateCaseHealthWrapper
         when(edxlMessage.getFirstContentMessage()).thenReturn(createCaseHealthWrapper);
-        assertFalse(ConversionUtils.isCisuModel(edxlMessage));
+        assertTrue(ConversionUtils.isConvertedModel(edxlMessage));
+
+        // Other type (EMSI conversion not handled for now)
+        when(edxlMessage.getFirstContentMessage()).thenReturn(emsiWrapper);
+        assertFalse(ConversionUtils.isConvertedModel(edxlMessage));
     }
 
     @Test
@@ -122,14 +122,15 @@ public class ConversionUtilsTest {
     @Test
     void testRequiresCisuConversion() {
         try (MockedStatic<ConversionUtils> mockedConversionUtils = mockStatic(ConversionUtils.class)) {
-            // List of test cases: isCisuExchange, isCisuModel, isDirectCisuForHealthActor, expectedResult
-            // samuA uses health models but samuB is direct CISU | RS is health model and RC is CISU model
+            // List of test cases: isCisuExchange, isConvertedModel, isDirectCisuForHealthActor, expectedResult
+            // samuA uses health models but samuB uses CISU models (is direct CISU)
+            // EDA is a converted model
             // SNH = Should Not Happen
             List<Boolean[]> testCases = Arrays.asList(
-                new Boolean[]{true,  true,  false, true},    // samuA -[RC]-> sdis => SNH   | sdis -[RC]-> samuA => true
-                new Boolean[]{true,  true,  true,  false},   // samuB -[RC]-> sdis => false | sdis -[RC]-> samuB => false
-                new Boolean[]{true,  false, false, true},    // samuA -[RS]-> sdis => true  | sdis -[RS]-> samuA => SHN
-                new Boolean[]{true,  false, true,  false},   // samuB -[RS]-> sdis => SNH   | sdis -[RS]-> samuB => SNH
+                new Boolean[]{true,  true,  false, true},    // samuA -[RS-EDA]-> sdis => true  | sdis -[RC-EDA]-> samuA => true
+                new Boolean[]{true,  true,  true,  false},   // samuB -[RC-EDA]-> sdis => false | sdis -[RC-EDA]-> samuB => false
+                new Boolean[]{true,  false, false, false},    // Not CISU message => false
+                new Boolean[]{true,  false, true,  false},   // Not CISU message => false
                 new Boolean[]{false, true,  false, false},   // Not CISU exchange => false
                 new Boolean[]{false, true,  true,  false},   // Not CISU exchange => false
                 new Boolean[]{false, false, false, false},   // Not CISU exchange => false
@@ -145,12 +146,12 @@ public class ConversionUtilsTest {
                 
                 // Mock the helper methods
                 mockedConversionUtils.when(() -> ConversionUtils.isCisuExchange(edxlMessage)).thenReturn(testCase[0]);
-                mockedConversionUtils.when(() -> ConversionUtils.isCisuModel(edxlMessage)).thenReturn(testCase[1]);
+                mockedConversionUtils.when(() -> ConversionUtils.isConvertedModel(edxlMessage)).thenReturn(testCase[1]);
                 mockedConversionUtils.when(() -> ConversionUtils.isDirectCisuForHealthActor(hubConfig, edxlMessage)).thenReturn(testCase[2]);
 
                 // Assert with descriptive message
                 String testDescription = String.format(
-                    "Test case %d failed: isCisuExchange=%b, isCisuModel=%b, isDirectCisuForHealthActor=%b, expected=%b",
+                    "Test case %d failed: isCisuExchange=%b, isConvertedModel=%b, isDirectCisuForHealthActor=%b, expected=%b",
                     i, testCase[0], testCase[1], testCase[2], testCase[3]
                 );
                 assertEquals(testCase[3], ConversionUtils.requiresCisuConversion(hubConfig, edxlMessage), testDescription);
