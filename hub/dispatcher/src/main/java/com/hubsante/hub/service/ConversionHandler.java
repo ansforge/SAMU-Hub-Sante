@@ -52,9 +52,18 @@ public class ConversionHandler {
         return conversionWebClient.post()
                 .uri("/convert-cisu")
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(jsonEdxlString)
+                .bodyValue(String.format("{\"edxl\": %s}", jsonEdxlString))
                 .retrieve()
                 .bodyToMono(String.class)
+                .map(response -> {
+                    try {
+                        // Extract the edxl field from the response {'edxl': '...'}
+                        return response.substring(response.indexOf(":") + 1, response.length() - 1).trim();
+                    } catch (Exception e) {
+                        log.error("Error extracting edxl from response", e);
+                        throw new RuntimeException("Failed to extract edxl from response", e);
+                    }
+                })
                 .block(); // blocking call since the method is not async
     }
 }

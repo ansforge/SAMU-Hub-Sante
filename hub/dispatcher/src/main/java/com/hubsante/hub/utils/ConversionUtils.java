@@ -20,6 +20,7 @@ import com.hubsante.model.edxl.EdxlMessage;
 import com.hubsante.model.emsi.EmsiWrapper;
 import com.hubsante.hub.config.HubConfiguration;
 
+import static com.hubsante.hub.utils.MessageUtils.HEALTH_PREFIX;
 import static com.hubsante.hub.utils.MessageUtils.getRecipientID;
 
 public class ConversionUtils {
@@ -33,7 +34,7 @@ public class ConversionUtils {
         // Checks if the message is from or to CISU (not health)
         String recipientID = getRecipientID(edxlMessage);
         String senderID = edxlMessage.getSenderID();
-        return !(recipientID.startsWith("fr.health") && senderID.startsWith("fr.health"));
+        return !(recipientID.startsWith(HEALTH_PREFIX) && senderID.startsWith(HEALTH_PREFIX));
     }
 
     public static boolean isCisuModel(EdxlMessage edxlMessage) {
@@ -48,7 +49,7 @@ public class ConversionUtils {
         // Checks if the health actor is direct CISU
         String recipientID = getRecipientID(edxlMessage);
         String senderID = edxlMessage.getSenderID();
-        String healthActor = senderID.startsWith("fr.health") ? senderID : recipientID;
+        String healthActor = senderID.startsWith(HEALTH_PREFIX) ? senderID : recipientID;
         Boolean directCisuPreference = hubConfig.getDirectCisuPreferences().get(healthActor);
         return directCisuPreference != null && directCisuPreference;
     }

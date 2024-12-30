@@ -58,7 +58,7 @@ import static com.hubsante.model.config.Constants.*;
 public class MessageHandler {
     private final RabbitTemplate rabbitTemplate;
     private final EdxlHandler edxlHandler;
-    final HubConfiguration hubConfig;
+    private final HubConfiguration hubConfig;
     private final Validator validator;
     private final MeterRegistry registry;
     @Autowired
@@ -68,7 +68,6 @@ public class MessageHandler {
     @Qualifier("jsonMapper")
     private ObjectMapper jsonMapper;
 
-
     public MessageHandler(RabbitTemplate rabbitTemplate, EdxlHandler edxlHandler, HubConfiguration hubConfig, Validator validator, MeterRegistry registry, XmlMapper xmlMapper, ObjectMapper jsonMapper) {
         this.rabbitTemplate = rabbitTemplate;
         this.edxlHandler = edxlHandler;
@@ -77,6 +76,10 @@ public class MessageHandler {
         this.registry = registry;
         this.xmlMapper = xmlMapper;
         this.jsonMapper = jsonMapper;
+    }
+
+    public HubConfiguration getHubConfig() {
+        return hubConfig;
     }
 
     protected void handleError(AbstractHubException exception, Message message) {
