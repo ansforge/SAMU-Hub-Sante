@@ -37,7 +37,8 @@ public class ConversionHandler {
         String jsonEdxlString = messageHandler.serializeJsonEDXL(edxlMessage);
         
         try {
-            String convertedJson = callConversionService(jsonEdxlString);
+            // ToDo: handle the version logic
+            String convertedJson = callConversionService(jsonEdxlString, "v3", "v3", true);
 
             log.debug("Successfully converted CISU message");
             return messageHandler.deserializeJsonEDXL(convertedJson);
@@ -48,11 +49,17 @@ public class ConversionHandler {
         }
     }
 
-    protected String callConversionService(String jsonEdxlString) {
+    protected String callConversionService(String jsonEdxlString, String sourceVersion, String targetVersion, boolean cisuConversion) {
+        // Create request body with all required parameters
+        String requestBody = String.format(
+            "{\"edxl\": %s, \"sourceVersion\": \"%s\", \"targetVersion\": \"%s\", \"cisuConversion\": %s}",
+            jsonEdxlString, sourceVersion, targetVersion, cisuConversion
+        );
+
         return conversionWebClient.post()
-                .uri("/convert-cisu")
+                .uri("/convert")
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(String.format("{\"edxl\": %s}", jsonEdxlString))
+                .bodyValue(requestBody)
                 .retrieve()
                 .bodyToMono(String.class)
                 .map(response -> {

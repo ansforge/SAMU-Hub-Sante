@@ -215,13 +215,13 @@ public class DispatcherTest {
             Message fromFireMessage = new Message(edxlHandler.serializeXmlEDXL(edxlMessageFromSdis).getBytes(), baseFromSdis.getMessageProperties());
             // Mock the ConversionUtils answer and the ConversionService
             mockedConversionUtils.when(() -> ConversionUtils.requiresCisuConversion(any(), any())).thenReturn(true);
-            doAnswer(invocation -> invocation.getArgument(0)).when(conversionHandler).callConversionService(anyString());
+            doAnswer(invocation -> invocation.getArgument(0)).when(conversionHandler).callConversionService(anyString(), anyString(), anyString(), anyBoolean());
 
             // Test message from SDIS
             dispatcher.dispatch(fromFireMessage);
 
-            // Verify conversion was called
-            verify(conversionHandler, times(1)).callConversionService(anyString());
+            // Verify cisu conversion was called
+            verify(conversionHandler, times(1)).callConversionService(anyString(), anyString(), anyString(), eq(true));
         }
     }
 
@@ -235,7 +235,7 @@ public class DispatcherTest {
         dispatcher.dispatch(message);
 
         // Verify that conversion service was never called
-        verify(conversionHandler, never()).callConversionService(anyString());
+        verify(conversionHandler, never()).callConversionService(anyString(), anyString(), anyString(), anyBoolean());
     }
 
     @Test
