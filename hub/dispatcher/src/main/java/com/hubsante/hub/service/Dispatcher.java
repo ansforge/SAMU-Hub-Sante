@@ -123,6 +123,7 @@ public class Dispatcher {
             EdxlMessage edxlMessage = messageHandler.extractMessage(message);
             // Before running the validation checks, we convert the message if required to make sure the forwarded message is valid
             // ToDo: see how hubConfig should be made available to the Dispatcher (and remove getter in MessageHandler)
+            // ToDo: check this only on specific vhosts (like 15-NexSIS)?
             if (ConversionUtils.requiresCisuConversion(messageHandler.getHubConfig(), edxlMessage)) {
                 edxlMessage = conversionHandler.convertIncomingCisu(messageHandler, edxlMessage);
             }
