@@ -73,7 +73,8 @@ jobs:
           # Build for each model version
           for MODEL_VERSION in "1.0" "2.0"; do
             IMAGE_TAG="${TAG}-model-${MODEL_VERSION}"
-            ./gradlew jib 
+            echo "Building image for $IMAGE_TAG"
+            ./gradlew jib \
               -Pversion=$TAG \
               -PmodelVersion=$MODEL_VERSION \
               --image ghcr.io/${{ github.repository_owner }}/dispatcher:$IMAGE_TAG
