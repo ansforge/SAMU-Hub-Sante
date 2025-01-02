@@ -1,5 +1,6 @@
 const express = require('express');
 const octokit = require('octokit');
+const config = require('../config');
 
 const client = new octokit.Octokit({ auth: process.env.GITHUB_TOKEN });
 
@@ -67,17 +68,50 @@ const commitModelesChangesToExistingBranch = async ({
   return response.data;
 };
 
+const VALIDATION_ERROR_MESSAGE = 'Missing mandatory attribute in payload';
+
+const validatePayload = (body) => {
+  if (!body.fileName) {
+    throw new Error(`${VALIDATION_ERROR_MESSAGE}: fileName (name of the file to update)`);
+  }
+  if (!body.content) {
+    throw new Error(`${VALIDATION_ERROR_MESSAGE}: content (content of the file to update)`);
+  }
+  if (!body.branchConfig) {
+    throw new Error(`${VALIDATION_ERROR_MESSAGE}: branchConfig`);
+  }
+  if (!body.branchConfig.branch) {
+    throw new Error(`${VALIDATION_ERROR_MESSAGE}: branchConfig.branch (branch to update)`);
+  }
+  if (body.branchConfig.isNewBranch === undefined) {
+    throw new Error(`${VALIDATION_ERROR_MESSAGE}: branchConfig.isNewBranch (branch to update)`);
+  }
+  if (body.branchConfig.isNewBranch && !body.branchConfig.newBranch) {
+    throw new Error(`${VALIDATION_ERROR_MESSAGE}: branchConfig.newBranch (required because branchConfig.isNewBranch is set to true)`);
+  }
+};
+
 const commitModelesChanges = async (req, res) => {
   const {
     fileName,
     content,
     branchConfig,
+    password,
   } = req.body;
 
+  try {
+    validatePayload(req.body);
+  } catch (err) {
+    res.status(403).json({ message: err.message });
+    return;
+  }
+
+  if (password !== config.ADMIN_PASSWORD) {
+    res.status(404).json({ message: 'Unauthorized' });
+    return;
+  }
+
   if (branchConfig.isNewBranch) {
-    if (!branchConfig.baseBranch) {
-      res.json(403).send({ message: 'Missing branchConfig.baseBranch in payload' });
-    }
     await createNewBranch({
       baseBranch: branchConfig.baseBranch,
       newBranch: branchConfig.branch,
