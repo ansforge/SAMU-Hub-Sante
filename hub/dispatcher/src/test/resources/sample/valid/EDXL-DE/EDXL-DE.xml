@@ -1,4 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
+
 <edxlDistribution xlink:type="extended" xmlns="urn:oasis:names:tc:emergency:EDXL:DE:2.0" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:ct="urn:oasis:names:tc:emergency:edxl:ct:1.0">
     <distributionID>fr.health.samuB_2608323d-507d-4cbf-bf74-52007f8124ea</distributionID>
     <senderID>fr.health.samuB</senderID>
@@ -10,7 +11,7 @@
         <language>fr-FR</language>
         <keyword>
             <ct:ValueListURI>urn:hubsante:model</ct:ValueListURI>
-            <ct:Value>customContent</ct:Value>
+            <ct:Value>technicalNoreq</ct:Value>
         </keyword>
         <explicitAddress>
             <explicitAddressScheme>hubex</explicitAddressScheme>
