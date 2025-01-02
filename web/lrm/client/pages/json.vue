@@ -67,23 +67,34 @@
               <v-card title="Dialog">
                 <v-card-text>
                   <v-switch
-                    v-model="useExistingBranch"
+                    v-model="useNewBranch"
                     color="primary"
-                    label="Use existing branch ?"
+                    label="Use new branch ?"
                   />
                   <v-combobox
-                    v-if="useExistingBranch"
-                    label="Existing branch name"
+                    v-if="useNewBranch"
+                    v-model="baseBranch"
+                    label="Select base branch"
                     :items="branchesNames"
                   />
                   <v-text-field
-                    v-else
+                    v-if="useNewBranch"
+                    v-model="newBranch"
                     label="New branch name"
+                  />
+                  <v-combobox
+                    v-else
+                    v-model="selectedBranch"
+                    label="Select existing branch"
+                    :items="branchesNames"
                   />
                 </v-card-text>
                 <v-card-actions>
                   <v-btn @click="isActive.value = false">
                     Close Dialog
+                  </v-btn>
+                  <v-btn @click="commitChanges">
+                    Commit
                   </v-btn>
                 </v-card-actions>
               </v-card>
@@ -113,19 +124,20 @@
 </template>
 
 <script setup>
-import Ajv from 'ajv';
-import { useNuxtApp } from 'nuxt/app';
-import { REPOSITORY_URL } from '@/constants';
-import mixinWebsocket from '~/mixins/mixinWebsocket';
-import { trimEmptyValues } from '~/composables/messageUtils';
-import { useMainStore } from '~/store';
+import Ajv from 'ajv'
+import { useNuxtApp } from 'nuxt/app'
+import { REPOSITORY_URL } from '@/constants'
+import mixinWebsocket from '~/mixins/mixinWebsocket'
+import { trimEmptyValues } from '~/composables/messageUtils'
+import { useMainStore } from '~/store'
+import { isEnvProd } from '#build/composables/envUtils'
 
 // eslint-disable-next-line no-undef
 useHead({
   title: 'Json Creator - Hub Santé'
 })
 
-const useExistingBranch = ref(true)
+const useNewBranch = ref(true)
 
 </script>
 
@@ -261,7 +273,7 @@ export default {
       }
     },
     async fetchBranchesNames () {
-      this.branchesNames = await $fetch('http://localhost:8081/modeles/branches')
+      this.branchesNames = await $fetch(`${isEnvProd() ? 'https' : 'http'}://${this.$config.public.backendLrmServer}/modeles/branches`)
     },
     updateCurrentMessage (form) {
       this.store.currentMessage = form
@@ -292,21 +304,37 @@ export default {
     saveMessage() {
       // Download as file | Ref.: https://stackoverflow.com/a/34156339
       // JSON pretty-print | Ref.: https://stackoverflow.com/a/7220510
-      const data = JSON.stringify(
-        trimEmptyValues({
-          [this.currentMessageType?.schema?.title]: this.store.currentMessage,
-        }),
-        null,
-        2
-      );
-      const a = document.createElement('a');
-      const file = new Blob([data], { type: 'application/json' });
-      a.href = URL.createObjectURL(file);
-      a.download = `${this.currentMessageType?.label}-message.json`;
-      a.click();
+      const data = JSON.stringify(trimEmptyValues({ [this.currentMessageType?.schema?.title]: this.store.currentMessage }), null, 2)
+      const a = document.createElement('a')
+      const file = new Blob([data], { type: 'application/json' })
+      a.href = URL.createObjectURL(file)
+      a.download = `${this.currentMessageType?.label}-message.json`
+      a.click()
     },
-  },
-};
+    async commitChanges () {
+      const password = prompt('Enter admin password')
+      const data = JSON.stringify(trimEmptyValues({ [this.currentMessageType?.schema?.title]: this.store.currentMessage }), null, 2)
+      await $fetch(`${isEnvProd() ? 'https' : 'http'}://${this.$config.public.backendLrmServer}/modeles`, {
+        method: 'POST',
+        body: JSON.stringify({
+          password,
+          fileName: this.currentMessageType.examples[this.messageTypeTabIndex].file,
+          content: data,
+          branchConfig: this.useNewBranch
+            ? {
+                isNewBranch: true,
+                baseBranch: this.baseBranch,
+                branch: this.newBranch
+              }
+            : {
+                isNewBranch: false,
+                branch: this.selectedBranch
+              }
+        })
+      })
+    }
+  }
+}
 </script>
 
 <style lang="scss">
