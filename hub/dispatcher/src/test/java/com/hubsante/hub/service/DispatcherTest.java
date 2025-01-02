@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.hubsante.hub.HubApplication;
 import com.hubsante.hub.config.HubConfiguration;
+import com.hubsante.hub.exception.ConversionException;
 import com.hubsante.hub.service.utils.MessageTestUtils;
 import com.hubsante.hub.utils.ConversionUtils;
 import com.hubsante.model.EdxlHandler;
@@ -64,6 +65,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doThrow;
 
 @SpringBootTest
 @ContextConfiguration(classes = HubApplication.class)
@@ -210,9 +212,10 @@ public class DispatcherTest {
         try (MockedStatic<ConversionUtils> mockedConversionUtils = mockStatic(ConversionUtils.class)) {
             // Create a message from SDIS
             Message baseFromSdis = createMessage("EDXL-DE", XML, SDIS_C_ROUTING_KEY);
-            EdxlMessage edxlMessageFromSdis = spy(edxlHandler.deserializeXmlEDXL(new String(baseFromSdis.getBody(), StandardCharsets.UTF_8)));
+            EdxlMessage edxlMessageFromSdis = edxlHandler.deserializeXmlEDXL(new String(baseFromSdis.getBody(), StandardCharsets.UTF_8));
             MessageTestUtils.setMessageConsistentWithRoutingKey(edxlMessageFromSdis, SDIS_C_ROUTING_KEY);
             Message fromFireMessage = new Message(edxlHandler.serializeXmlEDXL(edxlMessageFromSdis).getBytes(), baseFromSdis.getMessageProperties());
+            
             // Mock the ConversionUtils answer and the ConversionService
             mockedConversionUtils.when(() -> ConversionUtils.requiresCisuConversion(any(), any())).thenReturn(true);
             doAnswer(invocation -> invocation.getArgument(0)).when(conversionHandler).callConversionService(anyString(), anyString(), anyString(), anyBoolean());
@@ -421,6 +424,44 @@ public class DispatcherTest {
         assertEquals(1, getCurrentCount(errorContentType.counter()));
         assertEquals(1, getCurrentCount(errorDeliveryMode.counter()));
         assertEquals(2, getOverallCounterForClient(registry, SAMU_A_ROUTING_KEY));
+    }
+
+    @Test
+    @DisplayName("should handle conversion service error correctly")
+    public void shouldHandleConversionServiceError() throws IOException {
+        try (MockedStatic<ConversionUtils> mockedConversionUtils = mockStatic(ConversionUtils.class)) {
+            // Create a spy of the messageHandler for this test only
+            MessageHandler messageHandlerSpy = spy(messageHandler);
+            Dispatcher testDispatcher = new Dispatcher(messageHandlerSpy, rabbitTemplate, edxlHandler, xmlMapper, jsonMapper, conversionHandler);
+            
+            Message receivedMessage = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
+            EdxlMessage edxlMessage = edxlHandler.deserializeJsonEDXL(new String(receivedMessage.getBody(), StandardCharsets.UTF_8));
+
+            // Mock ConversionUtils to require CISU conversion
+            mockedConversionUtils.when(() -> ConversionUtils.requiresCisuConversion(any(), any())).thenReturn(true);
+            
+            // Mock conversion service to throw exception with error message from conversion service
+            String conversionErrorMessage = "Conversion service error message";
+            doThrow(new RuntimeException(conversionErrorMessage))
+                .when(conversionHandler).callConversionService(anyString(), anyString(), anyString(), anyBoolean());
+
+            // Test that dispatching throws AmqpRejectAndDontRequeueException
+            assertThrows(AmqpRejectAndDontRequeueException.class, 
+                () -> testDispatcher.dispatch(receivedMessage));
+
+            // Verify handleError was called with correct ConversionException
+            ArgumentCaptor<ConversionException> exceptionCaptor = ArgumentCaptor.forClass(ConversionException.class);
+            ArgumentCaptor<Message> messageCaptor = ArgumentCaptor.forClass(Message.class);
+            
+            verify(messageHandlerSpy).handleError(exceptionCaptor.capture(), messageCaptor.capture());
+            
+            ConversionException thrownException = exceptionCaptor.getValue();
+            assertEquals(edxlMessage.getDistributionID(), thrownException.getReferencedDistributionID());
+            assertTrue(thrownException.getMessage().contains(conversionErrorMessage));
+            
+            Message handledMessage = messageCaptor.getValue();
+            assertEquals(receivedMessage, handledMessage);
+        }
     }
 
     private void assertErrorHasBeenSent(String infoQueueName, ErrorCode errorCode, String referencedDistributionId, String... errorCause) throws JsonProcessingException {

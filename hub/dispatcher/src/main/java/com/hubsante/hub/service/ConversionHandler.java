@@ -16,18 +16,23 @@
 package com.hubsante.hub.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.hubsante.hub.exception.ConversionException;
 import com.hubsante.model.edxl.EdxlMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.http.MediaType;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Component
 @Slf4j
 public class ConversionHandler {
     @Autowired
     private WebClient conversionWebClient;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public ConversionHandler(WebClient conversionWebClient) {
         this.conversionWebClient = conversionWebClient;
@@ -42,10 +47,10 @@ public class ConversionHandler {
 
             log.debug("Successfully converted CISU message");
             return messageHandler.deserializeJsonEDXL(convertedJson);
-            
-        } catch (Exception e) {
-            log.error("Error converting CISU message", e);
-            throw new RuntimeException("Failed to convert CISU message", e);
+        } catch (RuntimeException e) {
+            // Error raised by the conversion service or its call
+            log.error("Error during internal call to Hub Santé conversion service", e);
+            throw new ConversionException(e.getMessage(), edxlMessage.getDistributionID());
         }
     }
 
@@ -56,21 +61,29 @@ public class ConversionHandler {
             jsonEdxlString, sourceVersion, targetVersion, cisuConversion
         );
 
-        return conversionWebClient.post()
-                .uri("/convert")
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(requestBody)
-                .retrieve()
-                .bodyToMono(String.class)
-                .map(response -> {
-                    try {
-                        // Extract the edxl field from the response {'edxl': '...'}
-                        return response.substring(response.indexOf(":") + 1, response.length() - 1).trim();
-                    } catch (Exception e) {
-                        log.error("Error extracting edxl from response", e);
-                        throw new RuntimeException("Failed to extract edxl from response", e);
-                    }
-                })
-                .block(); // blocking call since the method is not async
+        try {
+            String response = conversionWebClient.post()
+                    .uri("/convert")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .bodyValue(requestBody)
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .block(); // blocking call since the method is not async
+
+            JsonNode jsonNode = objectMapper.readTree(response);
+            return jsonNode.get("edxl").toString();
+
+        } catch (WebClientResponseException e) {
+            // Handle HTTP error responses from conversion service
+            try {
+                JsonNode errorNode = objectMapper.readTree(e.getResponseBodyAsString());
+                String errorMessage = errorNode.has("error") ? errorNode.get("error").asText() : e.getMessage();
+                throw new RuntimeException(errorMessage);
+            } catch (JsonProcessingException jsonException) {
+                throw new RuntimeException("Failed to parse error response from conversion service: " + e.getMessage());
+            }
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Failed to parse response from conversion service: " + e.getMessage());
+        }
     }
 }
