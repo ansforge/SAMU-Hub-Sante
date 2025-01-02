@@ -130,7 +130,7 @@ import { REPOSITORY_URL } from '@/constants'
 import mixinWebsocket from '~/mixins/mixinWebsocket'
 import { trimEmptyValues } from '~/composables/messageUtils'
 import { useMainStore } from '~/store'
-import { isEnvProd } from '#build/composables/envUtils'
+import { isEnvProd } from '~/composables/envUtils'
 
 // eslint-disable-next-line no-undef
 useHead({
