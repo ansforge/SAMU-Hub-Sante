@@ -76,13 +76,14 @@ const commitModelesChanges = async (req, res) => {
 
   if (branchConfig.isNewBranch) {
     if (!branchConfig.baseBranch) {
-      res.json(403).send({ message: 'Missing branchConfig.baseBranch in paylaod' });
+      res.json(403).send({ message: 'Missing branchConfig.baseBranch in payload' });
     }
     await createNewBranch({
       baseBranch: branchConfig.baseBranch,
       newBranch: branchConfig.branch,
     });
   }
+
   const result = await commitModelesChangesToExistingBranch({
     branch: branchConfig.branch,
     fileName,
