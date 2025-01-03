@@ -1,3 +1,4 @@
 node_modules
 *.log
-rabbit/certs/*
+src/rabbit/certs/*
+dist/
