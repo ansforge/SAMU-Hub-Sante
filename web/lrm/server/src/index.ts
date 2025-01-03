@@ -11,11 +11,11 @@ class App {
       logger.info('Express server running');
     } catch (error) {
       console.error(error);
-      // @ts-ignore
+      // @ts-expect-error Will fix this soon
       logger.error(`Express Server failure: ${error.message}`);
       await this.expressServer?.close();
     }
   };
 }
 
-(new App()).launchServer().catch((e) => logger.error(`Error during server launch: ${e}`));
+new App().launchServer().catch((e) => logger.error(`Error during server launch: ${e}`));
