@@ -3,19 +3,12 @@ package com.hubsante;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.util.StdDateFormat;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.hubsante.model.cisu.*;
-import com.hubsante.model.edxl.*;
 import com.rabbitmq.client.*;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.TimeoutException;
 
 public abstract class Consumer {
@@ -37,24 +30,30 @@ public abstract class Consumer {
     /**
      * serveur distant
      */
-    private String host;
+    private final String host;
 
     /**
      * port du serveur distant
      */
-    private int port;
+    private final int port;
+
+    /**
+     * vhost
+     */
+    private final String vhost;
+
+    private final String exchangeName;
 
     public String getExchangeName() {
         return exchangeName;
     }
 
-    private String exchangeName;
-
     protected final ObjectMapper mapper = new ObjectMapper()
             .registerModule(new JavaTimeModule())
             .enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
             .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-            .disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE);
+            .disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE)
+            .setDateFormat(new StdDateFormat().withColonInTimeZone(true));
 
     protected final XmlMapper xmlMapper = (XmlMapper) new XmlMapper()
             .registerModule(new JavaTimeModule())
@@ -63,13 +62,14 @@ public abstract class Consumer {
             .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
             .disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE);
 
-    public Consumer(String host, int port, String exchangeName, String queueName, String clientId) {
+    public Consumer(String host, int port, String vhost, String exchangeName, String queueName, String clientId) {
         super();
 
         this.clientId = clientId;
         this.queueName = queueName;
         this.host = host;
         this.port = port;
+        this.vhost = vhost;
         this.exchangeName = exchangeName;
     }
 
@@ -86,6 +86,7 @@ public abstract class Consumer {
 
         factory.setHost(this.host);
         factory.setPort(this.port);
+        factory.setVirtualHost(this.vhost);
         if (tlsConf != null) {
             factory.useSslProtocol(tlsConf.getSslContext());
         }
@@ -94,14 +95,13 @@ public abstract class Consumer {
         Connection connection = factory.newConnection();
         if (connection != null) {
             // consumeChannel: where messages are received by the client from Hub Santé
-
             this.consumeChannel = connection.createChannel();
 
             // passive declare because the user have no rights to create the queue
             this.consumeChannel.queueDeclarePassive(this.queueName);
 
             // produceChannel: where ack messages are sent to Hub Santé
-            this.producerAck = new Producer(this.host, this.port, this.exchangeName);
+            this.producerAck = new Producer(this.host, this.port, this.vhost, this.exchangeName);
             this.producerAck.connect(tlsConf);
             this.consumeChannel.basicConsume(this.queueName, false, new DeliverCallback() {
 

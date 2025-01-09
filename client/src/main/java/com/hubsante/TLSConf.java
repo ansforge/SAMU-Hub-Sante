@@ -1,5 +1,4 @@
 package com.hubsante;
-
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
@@ -10,7 +9,8 @@ public class TLSConf {
 
     private SSLContext sslContext;
 
-    public TLSConf(String protocol, String keyPassphrase, String keyPath, String trustPassphrase, String trustStorePath) throws Exception {
+    public TLSConf(String protocol, String keyPassphrase, String keyPath, String trustPassphrase, String trustStorePath)
+            throws Exception {
         KeyManagerFactory kmf = loadClientKey(keyPassphrase.toCharArray(), keyPath);
         TrustManagerFactory tmf = loadTrustStore(trustPassphrase.toCharArray(), trustStorePath);
         this.sslContext = SSLContext.getInstance(protocol);

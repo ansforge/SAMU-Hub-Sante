@@ -1,5 +1,4 @@
 package com.hubsante;
-
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -30,12 +29,18 @@ public class Producer {
      */
     private int port;
 
+    /**
+     * vhost
+     */
+    private String vhost;
+
     private String exchangeName;
 
-    public Producer(String host, int port, String exchangeName) {
+    public Producer(String host, int port, String vhost, String exchangeName) {
         super();
         this.host = host;
         this.port = port;
+        this.vhost = vhost;
         this.exchangeName = exchangeName;
     }
 
@@ -45,10 +50,12 @@ public class Producer {
 
         factory.setHost(this.host);
         factory.setPort(this.port);
+        factory.setVirtualHost(this.vhost);
         if (tlsConf != null) {
             factory.useSslProtocol(tlsConf.getSslContext());
         }
         factory.enableHostnameVerification();
+
         this.connection = factory.newConnection();
         if (connection != null) {
             this.channelProducer = connection.createChannel();
@@ -80,13 +87,15 @@ public class Producer {
                 // required to preserve offset
                 .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
-
-        // Setting Content Type becomes mandatory to allow correct deserialization in HubSante
+        // Setting Content Type becomes mandatory to allow correct deserialization in
+        // HubSante
         // Only two content types are allowed : application/json and application/xml
-        // If not set, HubSante will not be able to deserialize the message and will reject it
+        // If not set, HubSante will not be able to deserialize the message and will
+        // reject it
         AMQP.BasicProperties properties = new AMQP.BasicProperties().builder()
                 .contentType("application/json")
-                .deliveryMode(2) // set persistent mode (for cloud resilience - no message is stored out of the transit scope)
+                .deliveryMode(2) // set persistent mode (for cloud resilience - no message is stored out of the
+                                 // transit scope)
                 .priority(0) // default priority
                 .build();
 
@@ -97,7 +106,8 @@ public class Producer {
                     properties,
                     mapper.writerWithDefaultPrettyPrinter().writeValueAsString(msg).getBytes(StandardCharsets.UTF_8));
         } catch (IOException e) {
-            // we log error here and propagate the exception to handle it in the business layer
+            // we log error here and propagate the exception to handle it in the business
+            // layer
             log.error("Could not publish message with id " + msg.getDistributionID(), e);
             throw e;
         }
@@ -117,12 +127,15 @@ public class Producer {
 
         xmlMapper.configure(ToXmlGenerator.Feature.WRITE_XML_DECLARATION, true);
 
-        // Setting Content Type becomes mandatory to allow correct deserialization in HubSante
+        // Setting Content Type becomes mandatory to allow correct deserialization in
+        // HubSante
         // Only two content types are allowed : application/json and application/xml
-        // If not set, HubSante will not be able to deserialize the message and will reject it
+        // If not set, HubSante will not be able to deserialize the message and will
+        // reject it
         AMQP.BasicProperties properties = new AMQP.BasicProperties().builder()
                 .contentType("application/xml")
-                .deliveryMode(2) // set persistent mode (for cloud resilience - no message is stored out of the transit scope)
+                .deliveryMode(2) // set persistent mode (for cloud resilience - no message is stored out of the
+                                 // transit scope)
                 .priority(0) // default priority
                 .build();
 
@@ -131,9 +144,11 @@ public class Producer {
                     this.exchangeName,
                     routingKey,
                     properties,
-                    xmlMapper.writerWithDefaultPrettyPrinter().writeValueAsString(msg).getBytes(StandardCharsets.UTF_8));
+                    xmlMapper.writerWithDefaultPrettyPrinter().writeValueAsString(msg)
+                            .getBytes(StandardCharsets.UTF_8));
         } catch (IOException e) {
-            // we log error here and propagate the exception to handle it in the business layer
+            // we log error here and propagate the exception to handle it in the business
+            // layer
             log.error("Could not publish message with id " + msg.getDistributionID(), e);
             throw e;
         }

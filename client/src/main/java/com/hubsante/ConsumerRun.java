@@ -1,31 +1,30 @@
 package com.hubsante;
-
 import com.hubsante.model.edxl.DistributionKind;
 import com.hubsante.model.edxl.EdxlMessage;
 import com.rabbitmq.client.Delivery;
 
-import java.io.IOException;
-
 import static com.hubsante.Utils.*;
 
-public class ConsumerRun {
+import java.io.IOException;
 
-    private static final String EXCHANGE_NAME = "hubsante";
-    private static final String HUB_HOSTNAME = "messaging.hub.esante.gouv.fr";
-    private static final int HUB_PORT = 5671;
+public class ConsumerRun {
+    private static String TLSProtocolVersion = "TLSv1.2";
 
     public static void main(String[] args) throws Exception {
+        Config config = new Config();
+
         TLSConf tlsConf = new TLSConf(
-                "TLSv1.2",
-                "certPassword",
-                "../certs/local_test.p12",
-                "trustStore",
-                "../certs/trustStore");
+                TLSProtocolVersion,
+                config.getKeyPassphrase(),
+                config.getCertPath(),
+                config.getTrustStorePassword(),
+                config.getTrustStorePath());
 
         String queueName = getRouting(args);
         String clientId = getClientId(args);
         boolean isJsonScheme = "json".equalsIgnoreCase(args[1]);
-        Consumer consumer = new Consumer(HUB_HOSTNAME, HUB_PORT, EXCHANGE_NAME,
+        Consumer consumer = new Consumer(config.getHubHostname(), config.getHubPort(), config.getVhost(),
+                config.getExchangeName(),
                 queueName, clientId) {
             @Override
             protected void deliverCallback(String consumerTag, Delivery delivery) throws IOException {
@@ -34,12 +33,17 @@ public class ConsumerRun {
                 EdxlMessage edxlMessage;
                 String msgString;
 
-                if(isJsonScheme) {
-                    edxlMessage = this.mapper.readValue(delivery.getBody(), EdxlMessage.class);
-                    msgString = this.mapper.writerWithDefaultPrettyPrinter().writeValueAsString(edxlMessage);
-                } else {
-                    edxlMessage = this.xmlMapper.readValue(delivery.getBody(), EdxlMessage.class);
-                    msgString = this.xmlMapper.writerWithDefaultPrettyPrinter().writeValueAsString(edxlMessage);
+                try {
+                    if (isJsonScheme) {
+                        edxlMessage = this.mapper.readValue(delivery.getBody(), EdxlMessage.class);
+                        msgString = this.mapper.writerWithDefaultPrettyPrinter().writeValueAsString(edxlMessage);
+                    } else {
+                        edxlMessage = this.xmlMapper.readValue(delivery.getBody(), EdxlMessage.class);
+                        msgString = this.xmlMapper.writerWithDefaultPrettyPrinter().writeValueAsString(edxlMessage);
+                    }
+                } catch (Exception error) {
+                    System.out.println(" [x] Error when receiving message:'" + error.getMessage());
+                    return;
                 }
                 System.out.println(" [x] Received from '" + routingKey + "':'" + msgString + "'");
 
@@ -55,12 +59,13 @@ public class ConsumerRun {
                         this.producerAck.xmlPublish(this.clientId, ackEdxl);
                     }
 
-                    String ackEdxlString = isJsonScheme ?
-                            mapper.writerWithDefaultPrettyPrinter().writeValueAsString(ackEdxl) :
-                            xmlMapper.writerWithDefaultPrettyPrinter().writeValueAsString(ackEdxl);
+                    String ackEdxlString = isJsonScheme
+                            ? mapper.writerWithDefaultPrettyPrinter().writeValueAsString(ackEdxl)
+                            : xmlMapper.writerWithDefaultPrettyPrinter().writeValueAsString(ackEdxl);
 
-                    System.out.println("  ↳ [x] Sent  to '" + getExchangeName() + " with routing key " + this.clientId + "':'"
-                            + ackEdxlString + "'");
+                    System.out.println(
+                            "  ↳ [x] Sent  to '" + getExchangeName() + " with routing key " + this.clientId + "':'"
+                                    + ackEdxlString + "'");
                 } else {
                     // Inform user that partner has correctly processed the message
                     System.out.println("  ↳ [x] Partner has processed the message.");
