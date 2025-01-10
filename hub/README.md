@@ -43,6 +43,10 @@ echo "client_id;useXML" > dispatcher/src/main/resources/client.preferences.csv
 - Set the Active profiles option to "local,XXX"
 - Under "Modify Options" check "Environment variables"
 
+**Troubleshooting:**
+
+- Make sure you do not have a conflicting Java version already installed on your machine. You should be using Java 21.
+
 **Run the dispatcher:**
 - Add `GITHUB_ACTOR` & `GITHUB_TOKEN` environment variables in the configuration.
 - Click "Apply" & "Ok"
