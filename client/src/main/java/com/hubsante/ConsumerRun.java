@@ -1,33 +1,31 @@
 package com.hubsante;
-
 import com.hubsante.model.edxl.DistributionKind;
 import com.hubsante.model.edxl.EdxlMessage;
 import com.rabbitmq.client.Delivery;
-
-import java.io.IOException;
+import io.github.cdimascio.dotenv.Dotenv;
 
 import static com.hubsante.Utils.*;
 
 import java.io.IOException;
 
 public class ConsumerRun {
-
-    private static final String EXCHANGE_NAME = "hubsante";
-    private static final String HUB_HOSTNAME = "messaging.hub.esante.gouv.fr";
-    private static final int HUB_PORT = 5671;
+    private static String TLSProtocolVersion = "TLSv1.2";
 
     public static void main(String[] args) throws Exception {
+        Dotenv dotenv = Dotenv.load();
+
         TLSConf tlsConf = new TLSConf(
-                "TLSv1.2",
-                "certPassword",
-                "../certs/local_test.p12",
-                "trustStore",
-                "../certs/trustStore");
+                TLSProtocolVersion,
+                dotenv.get("KEY_PASSPHRASE"),
+                dotenv.get("CERTIFICATE_PATH"),
+                dotenv.get("TRUST_STORE_PASSWORD"),
+                dotenv.get("TRUST_STORE_PATH"));
 
         String queueName = getRouting(args);
         String clientId = getClientId(args);
         boolean isJsonScheme = "json".equalsIgnoreCase(args[1]);
-        Consumer consumer = new Consumer(HUB_HOSTNAME, HUB_PORT, EXCHANGE_NAME,
+        Consumer consumer = new Consumer(dotenv.get("HUB_HOSTNAME"), Integer.parseInt(dotenv.get("HUB_PORT")), dotenv.get("VHOST"),
+                dotenv.get("EXCHANGE_NAME"),
                 queueName, clientId) {
             @Override
             protected void deliverCallback(String consumerTag, Delivery delivery) throws IOException {
