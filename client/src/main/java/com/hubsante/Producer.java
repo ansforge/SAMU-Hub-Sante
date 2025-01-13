@@ -1,5 +1,4 @@
 package com.hubsante;
-
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -30,12 +29,18 @@ public class Producer {
      */
     private int port;
 
+    /**
+     * vhost
+     */
+    private String vhost;
+
     private String exchangeName;
 
-    public Producer(String host, int port, String exchangeName) {
+    public Producer(String host, int port, String vhost, String exchangeName) {
         super();
         this.host = host;
         this.port = port;
+        this.vhost = vhost;
         this.exchangeName = exchangeName;
     }
 
@@ -45,6 +50,7 @@ public class Producer {
 
         factory.setHost(this.host);
         factory.setPort(this.port);
+        factory.setVirtualHost(this.vhost);
         if (tlsConf != null) {
             factory.useSslProtocol(tlsConf.getSslContext());
         }
