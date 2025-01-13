@@ -1,35 +1,33 @@
 package com.hubsante;
-
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.hubsante.model.edxl.EdxlMessage;
+import io.github.cdimascio.dotenv.Dotenv;
+
+import static com.hubsante.Utils.getRouting;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import static com.hubsante.Utils.getRouting;
-
 public class ProducerRun {
-    private static final String HUB_HOSTNAME = "hubsante.esante.gouv.fr";
-    private static final int HUB_PORT = 5671;
-    private static final String EXCHANGE_NAME = "hubsante";
+    private static final String TLS_PROTOCOL_VERSION = "TLSv1.2";
 
     public static void main(String[] args) throws Exception {
-        String routingKey = getRouting(args);
-        String messageString = Files.readString(Path.of(args[1]));
-        boolean isJsonScheme = args[1].endsWith("json");
+        Dotenv dotenv = Dotenv.load();
+        String JSON_FILE_EXTENSION = "json";
 
         TLSConf tlsConf = new TLSConf(
-                "TLSv1.2",
-                "certPassword",
-                "../certs/local_test.p12",
-                "trustStore",
-                "../certs/trustStore");
+                TLS_PROTOCOL_VERSION,
+                dotenv.get("KEY_PASSPHRASE"),
+                dotenv.get("CERTIFICATE_PATH"),
+                dotenv.get("TRUST_STORE_PASSWORD"),
+                dotenv.get("TRUST_STORE_PATH"));
 
-        Producer producer = new Producer(HUB_HOSTNAME, HUB_PORT, EXCHANGE_NAME);
+        Producer producer = new Producer(dotenv.get("HUB_HOSTNAME"), Integer.parseInt(dotenv.get("HUB_PORT")), dotenv.get("VHOST"),
+                dotenv.get("EXCHANGE_NAME"));
         producer.connect(tlsConf);
 
         // registering extra module is mandatory to handle date time
@@ -45,6 +43,10 @@ public class ProducerRun {
                 .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
                 .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
                 .disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE);
+
+        String routingKey = getRouting(args);
+        String messageString = Files.readString(Path.of(args[1]));
+        boolean isJsonScheme = args[1].endsWith(JSON_FILE_EXTENSION);
 
         if (isJsonScheme) {
             EdxlMessage edxlMessage = jsonMapper.readValue(messageString, EdxlMessage.class);
