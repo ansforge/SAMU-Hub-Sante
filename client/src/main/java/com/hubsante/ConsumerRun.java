@@ -8,6 +8,8 @@ import java.io.IOException;
 
 import static com.hubsante.Utils.*;
 
+import java.io.IOException;
+
 public class ConsumerRun {
 
     private static final String EXCHANGE_NAME = "hubsante";
@@ -34,12 +36,17 @@ public class ConsumerRun {
                 EdxlMessage edxlMessage;
                 String msgString;
 
-                if(isJsonScheme) {
-                    edxlMessage = this.mapper.readValue(delivery.getBody(), EdxlMessage.class);
-                    msgString = this.mapper.writerWithDefaultPrettyPrinter().writeValueAsString(edxlMessage);
-                } else {
-                    edxlMessage = this.xmlMapper.readValue(delivery.getBody(), EdxlMessage.class);
-                    msgString = this.xmlMapper.writerWithDefaultPrettyPrinter().writeValueAsString(edxlMessage);
+                try {
+                    if (isJsonScheme) {
+                        edxlMessage = this.mapper.readValue(delivery.getBody(), EdxlMessage.class);
+                        msgString = this.mapper.writerWithDefaultPrettyPrinter().writeValueAsString(edxlMessage);
+                    } else {
+                        edxlMessage = this.xmlMapper.readValue(delivery.getBody(), EdxlMessage.class);
+                        msgString = this.xmlMapper.writerWithDefaultPrettyPrinter().writeValueAsString(edxlMessage);
+                    }
+                } catch (Exception error) {
+                    System.out.println(" [x] Error when receiving message:'" + error.getMessage());
+                    return;
                 }
                 System.out.println(" [x] Received from '" + routingKey + "':'" + msgString + "'");
 
