@@ -7,28 +7,33 @@ import java.io.IOException;
 import java.util.concurrent.TimeoutException;
 
 public abstract class Consumer {
-
+    /**
+     * Channel where messages are received by the client from Hub Santé
+     */
     protected Channel consumeChannel;
 
+    /**
+     * Channel where ACK messages are sent to Hub Santé
+     */
     protected Producer producerAck;
 
     /**
-     * identifiant du client
+     * Client identifier
      */
     protected String clientId;
 
     /**
-     * Nom de la file
+     * Queue name
      */
     protected String queueName;
 
     /**
-     * serveur distant
+     * Distant server
      */
     private final String host;
 
     /**
-     * port du serveur distant
+     * Distant server port
      */
     private final int port;
 
@@ -37,6 +42,9 @@ public abstract class Consumer {
      */
     private final String vhost;
 
+    /**
+     * Exchange name
+     */
     private final String exchangeName;
 
     public String getExchangeName() {
@@ -69,7 +77,7 @@ public abstract class Consumer {
     }
 
     /**
-     * Connexion a la file
+     * Connects to the queue using the configuration provided
      *
      * @param tlsConf
      * @throws IOException
@@ -89,13 +97,11 @@ public abstract class Consumer {
 
         Connection connection = factory.newConnection();
         if (connection != null) {
-            // consumeChannel: where messages are received by the client from Hub Santé
             this.consumeChannel = connection.createChannel();
 
-            // passive declare because the user have no rights to create the queue
+            // Passive declaration because the user has no rights to create the queue
             this.consumeChannel.queueDeclarePassive(this.queueName);
 
-            // produceChannel: where ack messages are sent to Hub Santé
             this.producerAck = new Producer(this.host, this.port, this.vhost, this.exchangeName);
             this.producerAck.connect(tlsConf);
             this.consumeChannel.basicConsume(this.queueName, false, new DeliverCallback() {
@@ -111,7 +117,7 @@ public abstract class Consumer {
     }
 
     /**
-     * Traitement d'un message recu du Hub
+     * Processes the received message from the Hub Santé
      *
      * @param consumerTag
      * @param delivery
