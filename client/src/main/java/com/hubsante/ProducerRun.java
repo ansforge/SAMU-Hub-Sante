@@ -31,7 +31,7 @@ public class ProducerRun {
                 dotenv.get("EXCHANGE_NAME"));
         producer.connect(tlsConf);
 
-        // registering extra module is mandatory to handle date time
+        // Registering extra module is mandatory to handle date time
         ObjectMapper jsonMapper = new ObjectMapper()
                 .registerModule(new JavaTimeModule())
                 .enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY)

@@ -19,13 +19,14 @@ public class Producer {
     private static final Logger log = LoggerFactory.getLogger(Producer.class);
     private Channel channelProducer;
     private Connection connection;
+
     /**
-     * serveur distant
+     * Distant server
      */
     private String host;
 
     /**
-     * port du serveur distant
+     * Distant server port
      */
     private int port;
 
@@ -34,6 +35,9 @@ public class Producer {
      */
     private String vhost;
 
+    /**
+     * Exchange name
+     */
     private String exchangeName;
 
     public Producer(String host, int port, String vhost, String exchangeName) {
@@ -67,7 +71,7 @@ public class Producer {
     }
 
     /**
-     * Publication d'un message
+     * Publishes a message with the passed routing key
      *
      * @param routingKey
      * @param msg
@@ -80,10 +84,10 @@ public class Producer {
             throw new IOException("Unconnected AMQP channel");
         }
 
-        // registering extra module is mandatory to correctly handle DateTimes
+        // Registering extra module is mandatory to correctly handle DateTimes
         ObjectMapper mapper = new ObjectMapper()
                 .registerModule(new JavaTimeModule())
-                // required to preserve offset
+                // Required to preserve offset
                 .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
 

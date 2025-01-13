@@ -67,7 +67,6 @@ public class ConsumerRun {
                     System.out.println("  ↳ [x] Sent  to '" + getExchangeName() + " with routing key " + this.clientId + "':'"
                             + ackEdxlString + "'");
                 } else {
-                    // Inform user that partner has correctly processed the message
                     System.out.println("  ↳ [x] Partner has processed the message.");
                 }
             }
