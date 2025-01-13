@@ -123,7 +123,9 @@ public class Dispatcher {
             // Reject the message if the delivery mode is not PERSISTENT
             checkDeliveryModeIsPersistent(message, edxlMessage.getDistributionID());
             // Reject the message if distributionID does not respect the format (senderID_internalID)
-            checkDistributionIDFormat(edxlMessage);
+            if (message.getMessageProperties().getReceivedRoutingKey().startsWith("fr.health")) {
+                checkDistributionIDFormat(edxlMessage);
+            }
             // Forward the message according to the recipient preferences. Conversion JSON <-> XML can happen here
             Message forwardedMsg = messageHandler.forwardedMessage(edxlMessage, message);
             // Extract recipient queue name from the message (explicit address and distribution kind)
