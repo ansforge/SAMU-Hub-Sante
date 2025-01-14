@@ -349,7 +349,7 @@ public class DispatcherTest {
 
         assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
         assertErrorHasBeenSent(SAMU_B_INFO_QUEUE, ErrorCode.INVALID_MESSAGE, "fr.health.samuB_2608323d-507d-4cbf-bf74-52007f8124ea",
-                "Invalid content was found starting with element '{\"urn:emergency:cisu:2.0:reference\":reference}'.");
+                "Invalid content was found starting with element '{\"urn:emergency:eda:1.9:reference\":reference}'.");
     }
 
     @Test
