@@ -102,7 +102,7 @@
                 <v-list-item v-for="(requiredValue, name, index) in getAwaitedValues(testCase?.steps[currentStep])" :key="'requiredValue' + index">
                   <div class="d-flex">
                     <span>
-                      <v-icon v-if="requiredValue?.valid" style="flex:0" color="success">
+                      <v-icon v-if="requiredValue?.valid === 'valid'" style="flex:0" color="success">
                         mdi-check
                       </v-icon>
 
@@ -113,7 +113,7 @@
                     <span>
                       <pre><b>{{ name }}:</b></pre>
                       <pre>{{ requiredValue.value }}</pre>
-                      <pre v-if="!requiredValue?.valid" class="wrong-received">(Reçu: {{ requiredValue?.receivedValue || 'null' }}) </pre>
+                      <pre v-if="!requiredValue?.valid === 'valid'" class="wrong-received">(Reçu: {{ requiredValue?.receivedValue || 'null' }}) </pre>
                     </span>
                   </div>
                 </v-list-item>
@@ -192,8 +192,15 @@ import jsonpath from 'jsonpath'
 import mixinWebsocket from '~/mixins/mixinWebsocket'
 import { useMainStore } from '~/store'
 import { REPOSITORY_URL } from '@/constants'
-import { isOut, getCaseId, getMessageType, setCaseId, buildMessage, sendMessage } from '~/composables/messageUtils.js'
+import { isOut, getCaseId, getMessageType, setCaseId, buildMessage, sendMessage, getDistributionID } from '~/composables/messageUtils.js'
 import { generateCasePdf } from '../../composables/generateCasePdf';
+
+// Object for message validation status
+const ValidationStatus = {
+  VALID: 'valid',
+  APPROXIMATE: 'approximate',
+  INVALID: 'invalid'
+}
 
 const store = useMainStore()
 const selectedRequiredValuesIndex = ref(null)
@@ -382,11 +389,14 @@ function getAwaitedReferenceDistributionIdJson (step) {
 }
 
 function getAwaitedReferenceDistributionObject (step) {
+  const lastDistributionID = getDistributionID(lastMessage.value)
+  const validationStatus = lastDistributionID === step?.awaitedReferenceDistributionID ? ValidationStatus.VALID : !!lastDistributionID ? ValidationStatus.APPROXIMATE : ValidationStatus.INVALID
+
   return {
     '$.reference.distributionID': {
       value: step?.awaitedReferenceDistributionID,
-      valid: lastMessage?.value?.body?.content[0]?.jsonContent.embeddedJsonContent.message.reference.distributionID === step?.awaitedReferenceDistributionID,
-      receivedValue: lastMessage?.value?.body?.content[0]?.jsonContent.embeddedJsonContent.message.reference.distributionID
+      valid: validationStatus,
+      receivedValue: getDistributionID(lastMessage)
     }
   }
 }
@@ -394,7 +404,7 @@ function getAwaitedReferenceDistributionObject (step) {
 function checkMessage (message) {
   const currentTestStep = testCase.value.steps[currentStep.value]
 
-  if (currentTestStep.type === 'send') {
+  if (currentTestStep?.type === 'send') {
     return checkMessageContainsAllRequiredValues(message, currentTestStep.requiredValues)
   } else {
     message.validatedAcknowledgement = checkMessageContainsAllRequiredValues(
@@ -420,11 +430,11 @@ function checkMessageContainsAllRequiredValues (message, requiredValues) {
 
     if (result.length === 0 || !result.includes(element.value)) {
       valid = false
-      element.valid = 'invalid'
+      element.valid = ValidationStatus.INVALID
       validatedValues.push({ valid: false, value: element, receivedValue: result[0] })
     } else {
       validatedValues.push({ valid: true, value: element })
-      element.valid = 'valid'
+      element.valid = ValidationStatus.VALID
     }
   })
 
@@ -468,9 +478,9 @@ function getCounts (step = testCase.value.steps[currentStep.value]) {
   return {
     total: requiredValues.length,
     unreviewed: requiredValues.filter(value => value.valid === undefined).length,
-    valid: requiredValues.filter(value => value.valid === 'valid').length,
-    approximate: requiredValues.filter(value => value.valid === 'approximate').length,
-    invalid: requiredValues.filter(value => value.valid === 'invalid').length
+    valid: requiredValues.filter(value => value.valid === ValidationStatus.VALID).length,
+    approximate: requiredValues.filter(value => value.valid === ValidationStatus.APPROXIMATE).length,
+    invalid: requiredValues.filter(value => value.valid === ValidationStatus.INVALID).length
   }
 }
 
@@ -508,7 +518,9 @@ watch(selectedTypeCaseMessages, (newMessages) => {
   if (currentStep.value <= testCase.value.steps.length && newMessages.length > 0) {
     // Iterate over new messages starting from the latest added
     for (let i = (newMessages.length - handledLength.value - 1); i >= 0; i--) {
-      const isNewMessage = !lastMessage?.value || lastMessage?.value?.body?.distributionID != newMessages[i]?.value?.body?.distributionID
+      const lastDistributionID = lastMessage?.value?.body?.distributionID;
+      const newDistributionID = newMessages[i]?.value?.body?.distributionID;
+      const isNewMessage = !lastMessage?.value || lastDistributionID != newDistributionID
       lastMessage.value = newMessages[i]
 
       if (isNewMessage) {
@@ -517,10 +529,7 @@ watch(selectedTypeCaseMessages, (newMessages) => {
 
       // If message is an ack and outgoing, find related message and update relatedStep
       if (getMessageType(lastMessage.value) === 'ack' && isOut(lastMessage.value.direction)) {
-        const relatedMessage = selectedTypeCaseMessages.value.find(message =>
-          message.body?.content[0]?.jsonContent?.embeddedJsonContent?.message?.reference.distributionID ===
-              lastMessage.value.body?.content[0]?.jsonContent?.embeddedJsonContent?.message?.reference?.distributionID)
-
+        const relatedMessage = selectedTypeCaseMessages.value.find(message => getDistributionID(message) === getDistributionID(lastMessage.value))
         lastMessage.value.relatedStep = relatedMessage.relatedStep
       } else {
         lastMessage.value.relatedStep = currentStep.value
@@ -528,12 +537,10 @@ watch(selectedTypeCaseMessages, (newMessages) => {
 
       // Check and validate the message if it's incoming
       if (!lastMessage.value.isOut) {
-        if (true) {
-          const shouldStayOnStep = testCase.value.steps[currentStep.value].type === 'receive' &&
-                !(testCase.value.steps[currentStep.value].validatedAcknowledgement &&
-                  testCase.value.steps[currentStep.value].validatedReceivedValues)
-          validateMessage(newMessages.indexOf(lastMessage.value), true, shouldStayOnStep)
-        }
+        const shouldStayOnStep = testCase.value.steps[currentStep.value].type === 'receive' &&
+              !(testCase.value.steps[currentStep.value].validatedAcknowledgement &&
+                testCase.value.steps[currentStep.value].validatedReceivedValues)
+        validateMessage(newMessages.indexOf(lastMessage.value), true, shouldStayOnStep)
       }
     }
     handledLength.value = newMessages.length
@@ -558,7 +565,7 @@ export default {
       const commentField = commentFieldRef[0];
       
       // add the class "d-block" to the comment field
-      if (requiredValue.valid != "valid") {
+      if (requiredValue.valid != ValidationStatus.VALID) {
         commentField.$el.classList.add('d-block')
         commentField.focus()
       } else {

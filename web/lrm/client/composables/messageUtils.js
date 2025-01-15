@@ -34,6 +34,10 @@ export function getCaseId (message, isRootMessage = false) {
   }
 }
 
+export function getDistributionID(message) {
+  return message?.body?.content?.[0]?.jsonContent?.embeddedJsonContent?.message?.reference?.distributionID;
+}
+
 /**
  * Returns a string representing message type (RC-EDA, EMSI, RS-EDA ou RS-EDA-SMUR)
  * @param {*} message

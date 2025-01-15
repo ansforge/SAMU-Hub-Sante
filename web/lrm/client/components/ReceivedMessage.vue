@@ -80,7 +80,7 @@ import { computed } from 'vue'
 import { DIRECTIONS } from '@/constants'
 import mixinWebsocket from '~/mixins/mixinWebsocket'
 import { useMainStore } from '~/store'
-import { buildAck, sendMessage, getMessageType } from '~/composables/messageUtils.js'
+import { buildAck, sendMessage, getMessageType, getDistributionID } from '~/composables/messageUtils.js'
 
 const showFullMessage = ref(false)
 
@@ -138,7 +138,7 @@ const acked = computed(() => {
   return useMainStore().messages.filter(
     message => getMessageType(message) === 'ack'
   ).find(
-    message => message.body.content[0].jsonContent.embeddedJsonContent.message.reference.distributionID === props.body.distributionID
+    message => getDistributionID(message) === props.body.distributionID
   )
 })
 
@@ -172,7 +172,6 @@ export default {
   methods: {
     sendAck () {
       try {
-        // Send ack
         const distributionID = this.body.distributionID;
         const msg = buildAck(distributionID)
         sendMessage(msg, this.vhost)
