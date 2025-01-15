@@ -101,6 +101,11 @@ public class MessageHandler {
                 message.getMessageProperties().getHeader(DLQ_ORIGINAL_ROUTING_KEY) :
                 message.getMessageProperties().getReceivedRoutingKey();
 
+        // TODO: do better than that ! temp fix to test routing of info messages for NexSIS
+        if (senderClientID.equals("partage-affaire")) {
+            senderClientID = "fr.health.fire";
+        }
+
         logErrorAndSendReport(error, senderClientID);
         // increment metric like dispatch_error{reason="INVALID_MESSAGE",sender="fr.health.samuXXX"}
         publishErrorMetric(exception.getErrorCode().getStatusString(), senderClientID);

@@ -44,7 +44,7 @@
                             &lt;contentObject xlink:type="resource">&#xd;
                             &lt;contentXML>&#xd;
                             &lt;embeddedXMLContent>&#xd;
-                            &lt;message xmlns="urn:emergency:cisu:2.0">&#xd;
+                            &lt;message xmlns="urn:emergency:eda:1.9">&#xd;
                             &lt;messageId>fr.health.samuB_2608323d-507d-4cbf-bf74-52007f8124ea&lt;/messageId>&#xd;
                             &lt;sender>&#xd;
                             &lt;name>samuB&lt;/name>&#xd;
