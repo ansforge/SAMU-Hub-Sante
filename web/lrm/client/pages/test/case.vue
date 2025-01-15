@@ -102,7 +102,7 @@
                 <v-list-item v-for="(requiredValue, name, index) in getAwaitedValues(testCase?.steps[currentStep])" :key="'requiredValue' + index">
                   <div class="d-flex">
                     <span>
-                      <v-icon v-if="requiredValue?.valid === 'valid'" style="flex:0" color="success">
+                      <v-icon v-if="requiredValue?.valid" style="flex:0" color="success">
                         mdi-check
                       </v-icon>
 
@@ -139,8 +139,8 @@
                         <pre class="values" :style="{color: requiredValue.valid === 'valid' ? 'green' : requiredValue.valid === 'approximate' ? 'orange' : requiredValue.valid === 'invalid' ? 'red' : 'black'}"><b>{{ requiredValue.path.join('.') }}:</b> <br>{{ requiredValue.value }}</pre>
                       </span>
                     </span>
-                    <v-text-field  
-                      v-model="requiredValue.description" 
+                    <v-text-field
+                      v-model="requiredValue.description"
                       class="mt-2 comment-field"
                       :data-valid="requiredValue.valid"
                       :data-id="requiredValue.path.join('.')"
@@ -205,6 +205,7 @@ const currentStep = ref(0)
 const selectedMessageIndex = ref(0)
 const selectedCaseIds = ref([])
 const handledLength = ref(0)
+const lastMessage = ref(null)
 
 useHead({
   titleTemplate: toRef(useMainStore(), 'testHeadTitle')
@@ -244,6 +245,7 @@ const selectedTypeCaseMessages = computed(() => {
   if (selectedCaseIds.value.length === 0) {
     return selectedTypeMessages.value
   }
+
   return selectedTypeMessages.value.filter(message =>
     selectedCaseIds.value.includes(getCaseId(message, true))
   )
@@ -382,29 +384,11 @@ function getAwaitedReferenceDistributionIdJson (step) {
 function getAwaitedReferenceDistributionObject (step) {
   return {
     '$.reference.distributionID': {
-      value: step?.awaitedReferenceDistributionID
+      value: step?.awaitedReferenceDistributionID,
+      valid: lastMessage?.value?.body?.content[0]?.jsonContent.embeddedJsonContent.message.reference.distributionID === step?.awaitedReferenceDistributionID,
+      receivedValue: lastMessage?.value?.body?.content[0]?.jsonContent.embeddedJsonContent.message.reference.distributionID
     }
   }
-}
-
-function flattenObject (ob) {
-  const toReturn = {}
-
-  for (const i in ob) {
-    if (!Object.prototype.hasOwnProperty.call(ob, i)) { continue }
-
-    if (typeof ob[i] === 'object' && ob[i] !== null) {
-      const flatObject = flattenObject(ob[i])
-      for (const x in flatObject) {
-        if (!Object.prototype.hasOwnProperty.call(flatObject, x)) { continue }
-        toReturn[i + '.' + x] = flatObject[x]
-      }
-    } else {
-      toReturn[i] = ob[i]
-    }
-  }
-
-  return toReturn
 }
 
 function checkMessage (message) {
@@ -412,7 +396,7 @@ function checkMessage (message) {
 
   if (currentTestStep.type === 'send') {
     return checkMessageContainsAllRequiredValues(message, currentTestStep.requiredValues)
-  } else if (!currentTestStep.validatedAcknowledgement) {
+  } else {
     message.validatedAcknowledgement = checkMessageContainsAllRequiredValues(
       message,
       getAwaitedReferenceDistributionIdJson(currentTestStep)
@@ -524,25 +508,31 @@ watch(selectedTypeCaseMessages, (newMessages) => {
   if (currentStep.value <= testCase.value.steps.length && newMessages.length > 0) {
     // Iterate over new messages starting from the latest added
     for (let i = (newMessages.length - handledLength.value - 1); i >= 0; i--) {
-      const lastMessage = newMessages[i]
+      const isNewMessage = !lastMessage?.value || lastMessage?.value?.body?.distributionID != newMessages[i]?.value?.body?.distributionID
+      lastMessage.value = newMessages[i]
+
+      if (isNewMessage) {
+        checkMessage(lastMessage.value)
+      }
 
       // If message is an ack and outgoing, find related message and update relatedStep
-      if (getMessageType(lastMessage) === 'ack' && isOut(lastMessage.direction)) {
+      if (getMessageType(lastMessage.value) === 'ack' && isOut(lastMessage.value.direction)) {
         const relatedMessage = selectedTypeCaseMessages.value.find(message =>
-          message.body?.content[0]?.jsonContent?.embeddedJsonContent?.message?.messageId ===
-              lastMessage.body?.content[0]?.jsonContent?.embeddedJsonContent?.message?.reference?.distributionID)
-        lastMessage.relatedStep = relatedMessage.relatedStep
+          message.body?.content[0]?.jsonContent?.embeddedJsonContent?.message?.reference.distributionID ===
+              lastMessage.value.body?.content[0]?.jsonContent?.embeddedJsonContent?.message?.reference?.distributionID)
+
+        lastMessage.value.relatedStep = relatedMessage.relatedStep
       } else {
-        lastMessage.relatedStep = currentStep.value
+        lastMessage.value.relatedStep = currentStep.value
       }
 
       // Check and validate the message if it's incoming
-      if (!lastMessage.isOut) {
-        if (checkMessage(lastMessage)) {
+      if (!lastMessage.value.isOut) {
+        if (true) {
           const shouldStayOnStep = testCase.value.steps[currentStep.value].type === 'receive' &&
                 !(testCase.value.steps[currentStep.value].validatedAcknowledgement &&
                   testCase.value.steps[currentStep.value].validatedReceivedValues)
-          validateMessage(newMessages.indexOf(lastMessage), true, shouldStayOnStep)
+          validateMessage(newMessages.indexOf(lastMessage.value), true, shouldStayOnStep)
         }
       }
     }
@@ -580,6 +570,7 @@ export default {
 </script>
 
 <style scoped>
+
 div.v-stepper-header>div.v-col {
   flex-basis: auto;
 }
