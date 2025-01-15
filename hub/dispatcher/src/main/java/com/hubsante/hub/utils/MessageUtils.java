@@ -25,6 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageDeliveryMode;
 import org.springframework.amqp.core.MessageProperties;
+import org.springframework.amqp.core.ReturnedMessage;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -116,7 +117,14 @@ public class MessageUtils {
     }
 
     public static boolean isXML(Message message) {
-        return (MessageProperties.CONTENT_TYPE_XML.equals(message.getMessageProperties().getContentType()) || !message.getMessageProperties().getReceivedRoutingKey().startsWith(HEALTH_PREFIX));
+        return (MessageProperties.CONTENT_TYPE_XML.equals(message.getMessageProperties().getContentType()) ||
+                message.getMessageProperties().getReceivedRoutingKey() == null ||
+                !message.getMessageProperties().getReceivedRoutingKey().startsWith(HEALTH_PREFIX));
+    }
+
+    public static boolean isXML(ReturnedMessage returned) {
+        return MessageProperties.CONTENT_TYPE_XML.equals(returned.getMessage().getMessageProperties().getContentType()) ||
+                        returned.getRoutingKey().startsWith(HEALTH_PREFIX);
     }
 
     public static void overrideExpirationIfNeeded(EdxlMessage edxlMessage, MessageProperties properties, long defaultTTL) {

@@ -87,7 +87,7 @@ public class Dispatcher {
             String returnedEdxlString = new String(returned.getMessage().getBody(), StandardCharsets.UTF_8);
 
             try {
-                returnedEdxlMessage = isXML(returned.getMessage()) ?
+                returnedEdxlMessage = isXML(returned) ?
                         edxlHandler.deserializeXmlEDXL(returnedEdxlString) :
                         edxlHandler.deserializeJsonEDXL(returnedEdxlString);
             } catch ( JsonProcessingException e) {
