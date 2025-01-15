@@ -24,4 +24,7 @@ public class Constants {
     public static final String CLIENT_ID_TAG = "sender";
     public static final String VHOST_TAG = "vhost";
     public static final String DISTRIBUTION_ID_UNAVAILABLE = "distributionID_could_not_be_extracted";
+    public static final String DISPATCHED_MESSAGE = "dispatch.message";
+    public static final String USE_CASE_TAG = "use_case";
+    public static final String UNKNOWN = "unknown";
 }

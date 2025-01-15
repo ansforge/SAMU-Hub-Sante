@@ -26,6 +26,7 @@ out/
 !**/src/main/**/out/
 !**/src/test/**/out/
 **/application-bbo.properties
+**/client.preferences.csv
 
 ### NetBeans ###
 /nbproject/private/

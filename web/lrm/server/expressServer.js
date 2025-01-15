@@ -35,7 +35,9 @@ class ExpressServer {
 
     // Subscribe to Hub messages and send them to the client through web socket
     logger.info(`Demo client ids: ${DEMO_CLIENT_IDS}`);
-    for (const vhost of VHOSTS) {
+    // Get list of keys (corresponding to vhosts) from the VHOSTS map
+    const vhostsArray = Object.keys(VHOSTS);
+    for (const vhost of vhostsArray) {
       connect(vhost, (connection, channel) => {
         this.connection = connection;
         this.connections[vhost] = connection;

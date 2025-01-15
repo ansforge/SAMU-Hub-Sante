@@ -1,5 +1,6 @@
 <template>
   <v-combobox
+    data-cy="source-selector"
     v-model="selectedSource"
     :items="sources"
     label="Source des schémas"
@@ -29,7 +30,6 @@ import { useMainStore } from '~/store'
 import { REPOSITORY_URL } from '@/constants'
 
 const store = useMainStore()
-const config = useRuntimeConfig()
 
 onMounted(() => {
   selectedSource.value = store.selectedVhost.modelVersion
@@ -37,7 +37,7 @@ onMounted(() => {
 })
 
 const sources = [
-  store.selectedVhost.modelVersion,
+  ...new Set(store.vhostMap.map(vhost => vhost.modelVersion)),
   'main',
   'develop',
   'auto/model_tracker',

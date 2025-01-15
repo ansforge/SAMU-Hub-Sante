@@ -16,12 +16,14 @@
           ref="uploader"
           class="d-none"
           type="file"
+          onclick="this.value = null"
           @change="onFileChanged"
         >
       </v-col>
       <v-col>
         <v-chip-group
           v-model="selectedExample"
+          data-cy="examples-chips"
           selected-class="primary--text"
           column
         >
@@ -39,6 +41,8 @@
 </template>
 
 <script>
+import { consola } from 'consola'
+import { toast } from 'vue3-toastify'
 import { REPOSITORY_URL } from '@/constants'
 import { useMainStore } from '~/store'
 
@@ -104,14 +108,21 @@ export default {
     onFileChanged (event) {
       const $this = this
       function onReaderLoad (event) {
-        console.log(event.target.result)
+        consola.log(event.target.result)
         // We're going to assume that the example we're trying to load starts
         // with a use case property (such as createCase, emsi, etc.) and that
         // it's the first and only property at the root level of the example.
         // TODO: instead of taking the first property and praying, we should extract
         // the name of the use case from somewhere and use it to properly access that
         // property in the parsed json object.
-        const parsedJson = JSON.parse(event.target.result)
+        let parsedJson = {}
+        try {
+          parsedJson = JSON.parse(event.target.result)
+        } catch (error) {
+          toast.error('Erreur lors du chargement : structure du fichier JSON invalide')
+          consola.error(error)
+          return
+        }
         $this.store.currentMessage = parsedJson[Object.keys(parsedJson)[0]]
       }
       const reader = new FileReader()
@@ -128,6 +139,9 @@ export default {
           .then((data) => {
             this.store.currentMessage = data[Object.keys(data)[0]]
             this.emitExampleLoaded()
+          }).catch((error) => {
+            toast.error('Erreur lors du chargement de l\'exemple ' + exampleFilepath)
+            consola.error(error)
           })
       } else {
         this.store.currentMessage = {}

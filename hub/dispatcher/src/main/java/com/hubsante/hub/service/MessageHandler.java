@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.hubsante.hub.config.HubConfiguration;
 import com.hubsante.hub.exception.*;
+import com.hubsante.hub.utils.MessageUtils;
 import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.Validator;
 import com.hubsante.model.builders.ErrorWrapperBuilder;
@@ -48,6 +49,7 @@ import static com.hubsante.hub.config.AmqpConfiguration.DISTRIBUTION_EXCHANGE;
 import static com.hubsante.hub.config.AmqpConfiguration.DLQ_ORIGINAL_ROUTING_KEY;
 import static com.hubsante.hub.config.Constants.*;
 import static com.hubsante.hub.utils.EdxlUtils.edxlMessageFromHub;
+import static com.hubsante.hub.utils.EdxlUtils.getUseCaseFromMessage;
 import static com.hubsante.hub.utils.MessageUtils.*;
 import static com.hubsante.model.config.Constants.*;
 
@@ -98,6 +100,11 @@ public class MessageHandler {
         String senderClientID = exception instanceof DeadLetteredMessageException ?
                 message.getMessageProperties().getHeader(DLQ_ORIGINAL_ROUTING_KEY) :
                 message.getMessageProperties().getReceivedRoutingKey();
+
+        // TODO: do better than that ! temp fix to test routing of info messages for NexSIS
+        if (senderClientID.equals("partage-affaire")) {
+            senderClientID = "fr.health.fire";
+        }
 
         logErrorAndSendReport(error, senderClientID);
         // increment metric like dispatch_error{reason="INVALID_MESSAGE",sender="fr.health.samuXXX"}
@@ -276,6 +283,13 @@ public class MessageHandler {
 
     private void publishErrorMetric(String error, String sender) {
         registry.counter(DISPATCH_ERROR, REASON_TAG, error, CLIENT_ID_TAG, sender, VHOST_TAG, hubConfig.getVhost()).increment();
+    }
+
+    protected void publishMetrics(EdxlMessage edxlMessage, Message amqpMessage) {
+        String sender = MessageUtils.getSenderFromRoutingKey(amqpMessage);
+        String useCase = getUseCaseFromMessage(edxlMessage.getFirstContentMessage());
+
+        registry.counter(DISPATCHED_MESSAGE,CLIENT_ID_TAG, sender, VHOST_TAG, hubConfig.getVhost(),USE_CASE_TAG, useCase).increment();
     }
 
 }
