@@ -190,10 +190,10 @@ export default {
     },
     autoAckConfig: {
       get () {
-        return this.autoAck
+        return this.store.autoAckConfig
       },
       set (value) {
-        this.store.setAutoAck(value)
+        this.store.setAutoAckConfig(value)
       }
     },
     clientMessages () {
@@ -265,7 +265,6 @@ export default {
         message => getMessageType(message) === type
       )
     },
-
     useMessageToReply (message) {
       // Use message to fill the form
       if (message[this.store.selectedSchema.schema.title]) {

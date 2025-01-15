@@ -124,19 +124,10 @@ const props = defineProps({
   body: {
     type: Object,
     required: true
-  }
+  },
 })
 
 defineEmits(['useMessageToReply'])
-
-function sendAck () {
-  try {
-    const msg = buildAck(props.body.distributionID)
-    sendMessage(msg, props.vhost)
-  } catch (error) {
-    console.error("Erreur lors de l'envoi de l'acquittement", error)
-  }
-}
 
 function useMessageToReply () {
   emit('useMessageToReply', props.body.content[0].jsonContent.embeddedJsonContent.message)
@@ -150,6 +141,7 @@ const acked = computed(() => {
     message => message.body.content[0].jsonContent.embeddedJsonContent.message.reference.distributionID === props.body.distributionID
   )
 })
+
 </script>
 
 <script>
@@ -159,6 +151,39 @@ export default {
     return {
       store: useMainStore(),
       DIRECTIONS
+    }
+  },
+  computed: {
+    autoAckConfig: {
+      get () {
+        return this.store.autoAckConfig
+      },
+      set (value) {
+        this.store.setAutoAckConfig(value)
+      }
+    },
+  },
+  watch: {
+    autoAckConfig (value) {
+      if(!value) return
+      this.sendAck()
+    }
+  },
+  methods: {
+    sendAck () {
+      try {
+        // Send ack
+        const distributionID = this.body.distributionID;
+        const msg = buildAck(distributionID)
+        sendMessage(msg, this.vhost)
+      } catch (error) {
+        console.error("Erreur lors de l'envoi de l'acquittement", error)
+      }
+    },
+  },
+  mounted () {
+    if (this.autoAckConfig) {
+      this.sendAck()
     }
   }
 }
