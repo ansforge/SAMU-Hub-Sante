@@ -3,6 +3,8 @@ import com.hubsante.model.edxl.DistributionKind;
 import com.hubsante.model.edxl.EdxlMessage;
 import com.rabbitmq.client.Delivery;
 import io.github.cdimascio.dotenv.Dotenv;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static com.hubsante.Utils.*;
 
@@ -10,7 +12,8 @@ import java.io.IOException;
 
 public class ConsumerRun {
     private static final String TLS_PROTOCOL_VERSION = "TLSv1.2";
-    private static String TLSProtocolVersion = "TLSv1.2";
+    private static final Logger logger = LoggerFactory.getLogger(ConsumerRun.class);
+
 
     public static void main(String[] args) throws Exception {
         Dotenv dotenv = Dotenv.load();
@@ -44,10 +47,10 @@ public class ConsumerRun {
                         msgString = this.xmlMapper.writerWithDefaultPrettyPrinter().writeValueAsString(edxlMessage);
                     }
                 } catch (Exception error) {
-                    System.out.println(" [x] Error when receiving message:'" + error.getMessage());
+                    logger.error(" [x] Error when receiving message:'"+  error.getMessage());
                     return;
                 }
-                System.out.println(" [x] Received from '" + routingKey + "':'" + msgString + "'");
+                logger.warn(" [x] Received from '" + routingKey + "':'" + msgString + "'");
 
                 // Sending back technical ack as delivery responsibility is removed from the Hub
                 consumeChannel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
@@ -65,14 +68,14 @@ public class ConsumerRun {
                             mapper.writerWithDefaultPrettyPrinter().writeValueAsString(ackEdxl) :
                             xmlMapper.writerWithDefaultPrettyPrinter().writeValueAsString(ackEdxl);
 
-                    System.out.println("  ↳ [x] Sent  to '" + getExchangeName() + " with routing key " + this.clientId + "':'"
+                    logger.warn("  ↳ [x] Sent  to '" + getExchangeName() + " with routing key " + this.clientId + "':'"
                             + ackEdxlString + "'");
                 } else {
-                    System.out.println("  ↳ [x] Partner has processed the message.");
+                    logger.warn("  ↳ [x] Partner has processed the message.");
                 }
             }
         };
         consumer.connect(tlsConf);
-        System.out.println(" [*] Waiting for messages on " + queueName + ". To exit press CTRL+C");
+        logger.warn(" [*] Waiting for messages on " + queueName + ". To exit press CTRL+C");
     }
 }

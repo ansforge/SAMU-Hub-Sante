@@ -16,7 +16,7 @@ import java.util.concurrent.TimeoutException;
 
 public class Producer {
 
-    private static final Logger log = LoggerFactory.getLogger(Producer.class);
+    private static final Logger logger = LoggerFactory.getLogger(Producer.class);
     private Channel channelProducer;
     private Connection connection;
 
@@ -79,7 +79,7 @@ public class Producer {
      */
     public void publish(String routingKey, EdxlMessage msg) throws IOException {
         if (this.channelProducer == null) {
-            log.warn("Channel producer unreachable, please ensure that connection has been established" +
+            logger.warn("Channel producer unreachable, please ensure that connection has been established" +
                     "(Producer.connect() method has been called)");
             throw new IOException("Unconnected AMQP channel");
         }
@@ -107,15 +107,14 @@ public class Producer {
                     properties,
                     mapper.writerWithDefaultPrettyPrinter().writeValueAsString(msg).getBytes(StandardCharsets.UTF_8));
         } catch (IOException e) {
-            // we log error here and propagate the exception to handle it in the business layer
-            log.error("Could not publish message with id " + msg.getDistributionID(), e);
+            logger.error("Could not publish message with id " + msg.getDistributionID(), e);
             throw e;
         }
     }
 
     public void xmlPublish(String routingKey, EdxlMessage msg) throws IOException {
         if (this.channelProducer == null) {
-            log.warn("Channel producer unreachable, please ensure that connection has been established" +
+            logger.warn("Channel producer unreachable, please ensure that connection has been established" +
                     "(Producer.connect() method has been called)");
             throw new IOException("Unconnected AMQP channel");
         }
@@ -143,8 +142,7 @@ public class Producer {
                     properties,
                     xmlMapper.writerWithDefaultPrettyPrinter().writeValueAsString(msg).getBytes(StandardCharsets.UTF_8));
         } catch (IOException e) {
-            // we log error here and propagate the exception to handle it in the business layer
-            log.error("Could not publish message with id " + msg.getDistributionID(), e);
+            logger.error("Could not publish message with id " + msg.getDistributionID(), e);
             throw e;
         }
     }
