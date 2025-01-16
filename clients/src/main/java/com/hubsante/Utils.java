@@ -10,6 +10,7 @@ import com.hubsante.model.rcde.Recipient;
 import com.hubsante.model.reference.ReferenceWrapper;
 
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -60,5 +61,9 @@ public class Utils {
                 .distributionStatus(receivedMessage.getDistributionStatus())
                 .contentMessage(referenceWrapper)
                 .build();
+    }
+
+    public static String convertBytesToString(byte[] content){
+        return new String(content, StandardCharsets.UTF_8);
     }
 }

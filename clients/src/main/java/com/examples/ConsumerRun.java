@@ -8,14 +8,15 @@ import io.github.cdimascio.dotenv.Dotenv;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static com.hubsante.Constants.JSON_CONTENT_TYPE;
+import static com.hubsante.Constants.TLS_PROTOCOL_VERSION;
 import static com.hubsante.Utils.*;
 
 import java.io.IOException;
+import java.util.Objects;
 
 public class ConsumerRun {
-    private static final String TLS_PROTOCOL_VERSION = "TLSv1.2";
     private static final Logger logger = LoggerFactory.getLogger(ConsumerRun.class);
-
 
     public static void main(String[] args) throws Exception {
         Dotenv dotenv = Dotenv.load();
@@ -29,7 +30,6 @@ public class ConsumerRun {
 
         String queueName = getRouting(args);
         String clientId = getClientId(args);
-        boolean isJsonScheme = "json".equalsIgnoreCase(args[1]);
         Consumer consumer = new Consumer(dotenv.get("HUB_HOSTNAME"), Integer.parseInt(dotenv.get("HUB_PORT")), dotenv.get("VHOST"),
                 dotenv.get("EXCHANGE_NAME"),
                 queueName, clientId) {
@@ -37,47 +37,59 @@ public class ConsumerRun {
             protected void deliverCallback(String consumerTag, Delivery delivery) throws IOException {
                 String routingKey = delivery.getEnvelope().getRoutingKey();
 
-                EdxlMessage edxlMessage;
-                String msgString;
+                String contentType = delivery.getProperties().getContentType();
+                boolean isJsonScheme = Objects.equals(contentType, JSON_CONTENT_TYPE);
 
+                String message = convertBytesToString(delivery.getBody());
+                EdxlMessage edxlMessage;
+                String stringMessage;
+
+                // STEP 2 - Deserialize received message
                 try {
                     if (isJsonScheme) {
-                        edxlMessage = this.mapper.readValue(delivery.getBody(), EdxlMessage.class);
-                        msgString = this.mapper.writerWithDefaultPrettyPrinter().writeValueAsString(edxlMessage);
+                        edxlMessage = edxlHandler.deserializeJsonEDXL(message);
+                        stringMessage = edxlHandler.serializeJsonEDXL(edxlMessage);
                     } else {
-                        edxlMessage = this.xmlMapper.readValue(delivery.getBody(), EdxlMessage.class);
-                        msgString = this.xmlMapper.writerWithDefaultPrettyPrinter().writeValueAsString(edxlMessage);
+                        edxlMessage = edxlHandler.deserializeXmlEDXL(message);
+                        stringMessage = edxlHandler.serializeXmlEDXL(edxlMessage);
                     }
                 } catch (Exception error) {
-                    logger.error(" [x] Error when receiving message:'"+  error.getMessage());
+                    logger.error("[x] Error when receiving message:'"+  error.getMessage());
                     return;
                 }
-                logger.warn(" [x] Received from '" + routingKey + "':'" + msgString + "'");
+                logger.info("[x] Received from '" + routingKey + "':'" + stringMessage + "'");
 
-                // Sending back technical ack as delivery responsibility is removed from the Hub
+                // STEP 3 - Send back technical ACK as delivery responsibility is removed from the Hub
                 consumeChannel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
 
-                // Sending back functional ack as info has been processed on the Consumer side
-                if (!edxlMessage.getDistributionKind().equals(DistributionKind.ACK)) {
-                    EdxlMessage ackEdxl = referenceMessageFromReceivedMessage(edxlMessage);
+                // STEP 4 - Apply business rules
+                // ...
+                // If an error occurs, send a message to the "info" queue
+
+                // STEP 5 - Sending back functional ACK to inform that the message has been processed on the Consumer side
+                boolean isAckMessage = edxlMessage.getDistributionKind().equals(DistributionKind.ACK);
+                if (!isAckMessage) {
+                    EdxlMessage ackEdxlMessage = referenceMessageFromReceivedMessage(edxlMessage);
                     if (isJsonScheme) {
-                        this.producerAck.publish(this.clientId, ackEdxl);
+                        this.producerAck.publish(this.clientId, ackEdxlMessage);
                     } else {
-                        this.producerAck.xmlPublish(this.clientId, ackEdxl);
+                        this.producerAck.xmlPublish(this.clientId, ackEdxlMessage);
                     }
 
                     String ackEdxlString = isJsonScheme ?
-                            mapper.writerWithDefaultPrettyPrinter().writeValueAsString(ackEdxl) :
-                            xmlMapper.writerWithDefaultPrettyPrinter().writeValueAsString(ackEdxl);
+                            edxlHandler.serializeJsonEDXL(ackEdxlMessage) :
+                            edxlHandler.serializeXmlEDXL(ackEdxlMessage);
 
-                    logger.warn("  ↳ [x] Sent  to '" + getExchangeName() + " with routing key " + this.clientId + "':'"
+                    logger.info("  ↳ [x] Sent  to '" + getExchangeName() + " with routing key " + this.clientId + "':'"
                             + ackEdxlString + "'");
                 } else {
-                    logger.warn("  ↳ [x] Partner has processed the message.");
+                    logger.info("  ↳ [x] Partner has processed the message.");
                 }
             }
         };
+
+        // STEP 1 - Connect to Hub
         consumer.connect(tlsConf);
-        logger.warn(" [*] Waiting for messages on " + queueName + ". To exit press CTRL+C");
+        logger.info(" [*] Waiting for messages on " + queueName + ". To exit press CTRL+C");
     }
 }

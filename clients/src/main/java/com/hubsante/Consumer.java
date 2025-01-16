@@ -47,23 +47,11 @@ public abstract class Consumer {
      */
     private final String exchangeName;
 
+    protected final EdxlHandler edxlHandler = new EdxlHandler();
+
     public String getExchangeName() {
         return exchangeName;
     }
-
-    protected final ObjectMapper mapper = new ObjectMapper()
-            .registerModule(new JavaTimeModule())
-            .enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
-            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-            .disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE)
-            .setDateFormat(new StdDateFormat().withColonInTimeZone(true));
-
-    protected final XmlMapper xmlMapper = (XmlMapper) new XmlMapper()
-            .registerModule(new JavaTimeModule())
-            .enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
-            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-            .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-            .disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE);
 
     public Consumer(String host, int port, String vhost, String exchangeName, String queueName, String clientId) {
         super();
@@ -85,17 +73,20 @@ public abstract class Consumer {
      */
     public void connect(TLSConf tlsConf) throws IOException, TimeoutException {
         ConnectionFactory factory = new ConnectionFactory();
-        factory.setSaslConfig(DefaultSaslConfig.EXTERNAL);
 
+        factory.setSaslConfig(DefaultSaslConfig.EXTERNAL);
         factory.setHost(this.host);
         factory.setPort(this.port);
         factory.setVirtualHost(this.vhost);
+
         if (tlsConf != null) {
             factory.useSslProtocol(tlsConf.getSslContext());
         }
+
         factory.enableHostnameVerification();
 
         Connection connection = factory.newConnection();
+
         if (connection != null) {
             this.consumeChannel = connection.createChannel();
 

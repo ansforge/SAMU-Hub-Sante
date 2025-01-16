@@ -6,20 +6,22 @@ import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.hubsante.Producer;
 import com.hubsante.TLSConf;
+import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.edxl.EdxlMessage;
 import io.github.cdimascio.dotenv.Dotenv;
 
+import static com.hubsante.Constants.JSON_FILE_EXTENSION;
+import static com.hubsante.Constants.TLS_PROTOCOL_VERSION;
 import static com.hubsante.Utils.getRouting;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class ProducerRun {
-    private static final String TLS_PROTOCOL_VERSION = "TLSv1.2";
 
     public static void main(String[] args) throws Exception {
         Dotenv dotenv = Dotenv.load();
-        String JSON_FILE_EXTENSION = "json";
+        EdxlHandler edxlHandler = new EdxlHandler();
 
         TLSConf tlsConf = new TLSConf(
                 TLS_PROTOCOL_VERSION,
@@ -30,33 +32,26 @@ public class ProducerRun {
 
         Producer producer = new Producer(dotenv.get("HUB_HOSTNAME"), Integer.parseInt(dotenv.get("HUB_PORT")), dotenv.get("VHOST"),
                 dotenv.get("EXCHANGE_NAME"));
+
+        // STEP 1 - Connect to Hub
         producer.connect(tlsConf);
 
-        // Registering extra module is mandatory to handle date time
-        ObjectMapper jsonMapper = new ObjectMapper()
-                .registerModule(new JavaTimeModule())
-                .enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
-                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-                .disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE);
-
-        XmlMapper xmlMapper = (XmlMapper) new XmlMapper()
-                .registerModule(new JavaTimeModule())
-                .enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
-                .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-                .disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE);
-
+        // STEP 2 - Build message & apply business rules
         String routingKey = getRouting(args);
-        String messageString = Files.readString(Path.of(args[1]));
-        boolean isJsonScheme = args[1].endsWith(JSON_FILE_EXTENSION);
+        String messageFilePath = args[1];
+        String stringMessage = Files.readString(Path.of(messageFilePath));
 
+        // STEP 3 - Convert message to EDXL & publish it
+        boolean isJsonScheme = messageFilePath.endsWith(JSON_FILE_EXTENSION);
         if (isJsonScheme) {
-            EdxlMessage edxlMessage = jsonMapper.readValue(messageString, EdxlMessage.class);
+            EdxlMessage edxlMessage = edxlHandler.deserializeJsonEDXL(stringMessage);
             producer.publish(routingKey, edxlMessage);
         } else {
-            EdxlMessage edxlMessage = xmlMapper.readValue(messageString, EdxlMessage.class);
+            EdxlMessage edxlMessage = edxlHandler.deserializeXmlEDXL(stringMessage);
             producer.xmlPublish(routingKey, edxlMessage);
         }
+
+        // STEP 4 - Close the connection
         producer.close();
     }
 }
