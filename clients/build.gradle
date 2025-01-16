@@ -51,7 +51,7 @@ dependencies {
 
 application {
     mainClassName = project.hasProperty("main") ?
-            project.getProperty("main") : 'com.hubsante.ConsumerRun'
+            project.getProperty("main") : 'com.examples.ConsumerRun'
 }
 
 jib {

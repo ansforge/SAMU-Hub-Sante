@@ -27,7 +27,7 @@ In `/client`, run :
 
 [Producer]
 In `/client`, run :
-`./gradlew run -Pmain=com.hubsante.ProducerRun --args='<client_id> <path/to/message>'`
+`./gradlew run -Pmain=com.examples.ProducerRun --args='<client_id> <path/to/message>'`
 
 # Perform Manual Tests
 

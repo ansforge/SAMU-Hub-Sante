@@ -1,4 +1,6 @@
-package com.hubsante;
+package com.examples;
+import com.hubsante.Consumer;
+import com.hubsante.TLSConf;
 import com.hubsante.model.edxl.DistributionKind;
 import com.hubsante.model.edxl.EdxlMessage;
 import com.rabbitmq.client.Delivery;

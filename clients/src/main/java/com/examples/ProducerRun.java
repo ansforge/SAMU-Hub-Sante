@@ -1,9 +1,11 @@
-package com.hubsante;
+package com.examples;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.hubsante.Producer;
+import com.hubsante.TLSConf;
 import com.hubsante.model.edxl.EdxlMessage;
 import io.github.cdimascio.dotenv.Dotenv;
 
