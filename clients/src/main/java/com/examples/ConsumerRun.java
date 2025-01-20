@@ -54,7 +54,9 @@ public class ConsumerRun {
                         stringMessage = edxlHandler.serializeXmlEDXL(edxlMessage);
                     }
                 } catch (Exception error) {
-                    logger.error("[x] Error when receiving message:'"+  error.getMessage());
+                    logger.error("[x] Error when receiving message: '"+  error.getMessage());
+                    consumeChannel.basicNack(delivery.getEnvelope().getDeliveryTag(), false, false);
+
                     return;
                 }
                 logger.info("[x] Received from '" + routingKey + "':'" + stringMessage + "'");
