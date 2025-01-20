@@ -6,6 +6,8 @@ import com.rabbitmq.client.*;
 import java.io.IOException;
 import java.util.concurrent.TimeoutException;
 
+import static com.hubsante.Constants.NETWORK_RECOVERY_INTERVAL;
+
 public abstract class Consumer {
     /**
      * Channel where messages are received by the client from Hub Santé
@@ -78,6 +80,8 @@ public abstract class Consumer {
         factory.setHost(this.host);
         factory.setPort(this.port);
         factory.setVirtualHost(this.vhost);
+        factory.setNetworkRecoveryInterval(NETWORK_RECOVERY_INTERVAL);
+        factory.setAutomaticRecoveryEnabled(true);
 
         if (tlsConf != null) {
             factory.useSslProtocol(tlsConf.getSslContext());

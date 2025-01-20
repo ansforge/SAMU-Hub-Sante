@@ -10,8 +10,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeoutException;
 
-import static com.hubsante.Constants.JSON_CONTENT_TYPE;
-import static com.hubsante.Constants.XML_CONTENT_TYPE;
+import static com.hubsante.Constants.*;
 
 public class Producer {
 
@@ -54,6 +53,8 @@ public class Producer {
         factory.setHost(this.host);
         factory.setPort(this.port);
         factory.setVirtualHost(this.vhost);
+        factory.setNetworkRecoveryInterval(NETWORK_RECOVERY_INTERVAL);
+        factory.setAutomaticRecoveryEnabled(true);
 
         if (tlsConf != null) {
             factory.useSslProtocol(tlsConf.getSslContext());
