@@ -1,7 +1,6 @@
 import { generate, color } from './pdfUtils.js'
 
 const generateCasePdf = (testCase, store, getCounts) => {
-  console.log('testCase :', testCase)
   const config = {
     filename: 'test-results.pdf',
     sections: [

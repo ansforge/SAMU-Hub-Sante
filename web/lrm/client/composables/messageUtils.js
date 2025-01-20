@@ -11,6 +11,12 @@ export function isOut (direction) {
   return direction === DIRECTIONS.OUT
 }
 
+export const ValidationStatus = {
+  VALID: 'valid',
+  APPROXIMATE: 'approximate',
+  INVALID: 'invalid'
+}
+
 const caseIdMap = {
   'RC-EDA': 'createCase.caseId',
   EMSI: 'emsi.EVENT.MAIN_EVENT_ID',

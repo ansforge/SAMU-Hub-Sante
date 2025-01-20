@@ -192,15 +192,8 @@ import jsonpath from 'jsonpath'
 import mixinWebsocket from '~/mixins/mixinWebsocket'
 import { useMainStore } from '~/store'
 import { REPOSITORY_URL } from '@/constants'
-import { isOut, getCaseId, getMessageType, setCaseId, buildMessage, sendMessage, getDistributionID } from '~/composables/messageUtils.js'
+import { isOut, getCaseId, getMessageType, setCaseId, buildMessage, sendMessage, getDistributionID, ValidationStatus } from '~/composables/messageUtils.js'
 import { generateCasePdf } from '../../composables/generateCasePdf';
-
-// Object for message validation status
-const ValidationStatus = {
-  VALID: 'valid',
-  APPROXIMATE: 'approximate',
-  INVALID: 'invalid'
-}
 
 const store = useMainStore()
 const selectedRequiredValuesIndex = ref(null)
