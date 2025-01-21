@@ -80,6 +80,8 @@ public abstract class Consumer {
         factory.setHost(this.host);
         factory.setPort(this.port);
         factory.setVirtualHost(this.vhost);
+
+        // Here, configure the connection recovery policies
         factory.setNetworkRecoveryInterval(NETWORK_RECOVERY_INTERVAL);
         factory.setAutomaticRecoveryEnabled(true);
 
