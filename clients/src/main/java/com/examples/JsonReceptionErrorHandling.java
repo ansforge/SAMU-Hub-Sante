@@ -2,7 +2,6 @@ package com.examples;
 
 import com.hubsante.Consumer;
 import com.hubsante.TLSConf;
-import com.hubsante.model.edxl.EdxlMessage;
 import com.rabbitmq.client.Delivery;
 import io.github.cdimascio.dotenv.Dotenv;
 import org.slf4j.Logger;
@@ -37,21 +36,18 @@ public class JsonReceptionErrorHandling {
                 String routingKey = delivery.getEnvelope().getRoutingKey();
 
                 String message = convertBytesToString(delivery.getBody());
-                EdxlMessage edxlMessage;
-                String stringMessage;
+                logger.info("[x] Received from '" + routingKey + "':'" + message + "'");
 
                 try {
-                    edxlMessage = edxlHandler.deserializeJsonEDXL(message);
-                    stringMessage = edxlHandler.serializeJsonEDXL(edxlMessage);
+                     edxlHandler.deserializeJsonEDXL(message);
                 } catch (IOException error) {
                     logger.error("[x] Error when receiving message: '"+  error.getMessage());
 
-                    // Send back technical non ACK as delivery responsibility is removed from the Hub
+                    // Send back technical non ACK to RabbitMQ as delivery responsibility is removed from the Hub
                     consumeChannel.basicNack(delivery.getEnvelope().getDeliveryTag(), false, false);
 
                     return;
                 }
-                logger.info("[x] Received from '" + routingKey + "':'" + stringMessage + "'");
 
                 consumeChannel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
 

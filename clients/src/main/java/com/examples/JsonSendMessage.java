@@ -46,8 +46,8 @@ public class JsonSendMessage {
         String messageFilePath = args[1];
         String stringMessage = Files.readString(Path.of(messageFilePath));
 
-        boolean isJSONScheme = messageFilePath.endsWith(JSON_FILE_EXTENSION);
-        if (!isJSONScheme) {
+        boolean hasJsonExtension = messageFilePath.endsWith(JSON_FILE_EXTENSION);
+        if (!hasJsonExtension) {
             logger.warn("You are trying to send a file with the wrong format");
         }
 

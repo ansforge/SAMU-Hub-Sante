@@ -46,8 +46,8 @@ public class XmlSendMessage {
         String messageFilePath = args[1];
         String stringMessage = Files.readString(Path.of(messageFilePath));
 
-        boolean isXMLScheme = messageFilePath.endsWith(XML_FILE_EXTENSION);
-        if (!isXMLScheme) {
+        boolean hasXmlExtension = messageFilePath.endsWith(XML_FILE_EXTENSION);
+        if (!hasXmlExtension) {
             logger.warn("You are trying to send a file with the wrong format");
         }
 

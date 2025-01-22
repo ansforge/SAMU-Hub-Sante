@@ -2,7 +2,6 @@ package com.examples;
 
 import com.hubsante.Consumer;
 import com.hubsante.TLSConf;
-import com.hubsante.model.edxl.DistributionKind;
 import com.hubsante.model.edxl.EdxlMessage;
 import com.rabbitmq.client.Delivery;
 import io.github.cdimascio.dotenv.Dotenv;
@@ -39,19 +38,18 @@ public class XmlReceiveAndAckMessage {
                 String routingKey = delivery.getEnvelope().getRoutingKey();
 
                 String message = convertBytesToString(delivery.getBody());
+                logger.info("[x] Received from '" + routingKey + "':'" + message + "'");
+
                 EdxlMessage edxlMessage;
-                String stringMessage;
 
                 try {
                     edxlMessage = edxlHandler.deserializeXmlEDXL(message);
-                    stringMessage = edxlHandler.serializeXmlEDXL(edxlMessage);
                 } catch (Exception error) {
                     logger.error("[x] Error when receiving message: '"+  error.getMessage());
                     consumeChannel.basicNack(delivery.getEnvelope().getDeliveryTag(), false, false);
 
                     return;
                 }
-                logger.info("[x] Received from '" + routingKey + "':'" + stringMessage + "'");
 
                 consumeChannel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
 
@@ -60,12 +58,11 @@ public class XmlReceiveAndAckMessage {
                 // If an error occurs, send a message to the "info" queue
 
                 // STEP 2 - Sending back functional ACK to inform that the message has been processed on the Consumer side
-                boolean isAckMessage = edxlMessage.getDistributionKind().equals(DistributionKind.ACK);
-                if (!isAckMessage) {
+                if (!isAckMessage(edxlMessage)) {
                     EdxlMessage ackEdxlMessage = referenceMessageFromReceivedMessage(edxlMessage);
                     this.producerAck.xmlPublish(this.clientId, ackEdxlMessage);
 
-                    // [For demo purposes] ackEdxlString variable is used to log the received message in the terminal
+                    // [For demo purposes] ackEdxlString variable is used to log the message in the terminal
                     String ackEdxlString = edxlHandler.serializeXmlEDXL(ackEdxlMessage);
                     logger.info("  ↳ [x] ACK sent  to '" + getExchangeName() + " with routing key " + this.clientId + "':'"
                             + ackEdxlString + "'");

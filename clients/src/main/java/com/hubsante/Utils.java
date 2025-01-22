@@ -66,4 +66,8 @@ public class Utils {
     public static String convertBytesToString(byte[] content){
         return new String(content, StandardCharsets.UTF_8);
     }
+
+    public static boolean isAckMessage (EdxlMessage message){
+        return message.getDistributionKind().equals(DistributionKind.ACK);
+    }
 }
