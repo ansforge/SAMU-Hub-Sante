@@ -19,6 +19,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.hubsante.hub.exception.*;
+import com.hubsante.hub.utils.ConversionUtils;
 import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.edxl.EdxlMessage;
 import com.hubsante.model.report.ErrorCode;
@@ -69,13 +70,15 @@ public class Dispatcher {
     @Autowired
     @Qualifier("jsonMapper")
     private ObjectMapper jsonMapper;
+    private final ConversionHandler conversionHandler;
 
-    public Dispatcher(MessageHandler messageHandler, RabbitTemplate rabbitTemplate, EdxlHandler edxlHandler, XmlMapper xmlMapper, ObjectMapper jsonMapper) {
+    public Dispatcher(MessageHandler messageHandler, RabbitTemplate rabbitTemplate, EdxlHandler edxlHandler, XmlMapper xmlMapper, ObjectMapper jsonMapper, ConversionHandler conversionHandler) {
         this.messageHandler = messageHandler;
         this.rabbitTemplate = rabbitTemplate;
         this.edxlHandler = edxlHandler;
         this.xmlMapper = xmlMapper;
         this.jsonMapper = jsonMapper;
+        this.conversionHandler = conversionHandler;
         initReturnsCallback();
     }
 
@@ -118,6 +121,12 @@ public class Dispatcher {
         try {
             // Deserialize the message according to its content type
             EdxlMessage edxlMessage = messageHandler.extractMessage(message);
+            // Before running the validation checks, we convert the message if required to make sure the forwarded message is valid
+            // ToDo: see how hubConfig should be made available to the Dispatcher (and remove getter in MessageHandler)
+            // ToDo: check this only on specific vhosts (like 15-NexSIS)?
+            if (ConversionUtils.requiresCisuConversion(messageHandler.getHubConfig(), edxlMessage)) {
+                edxlMessage = conversionHandler.convertIncomingCisu(messageHandler, edxlMessage);
+            }
             // Reject the message if the sender is not consistent with the routing key
             checkSenderConsistency(message, edxlMessage);
             // Reject the message if the delivery mode is not PERSISTENT

@@ -68,7 +68,6 @@ public class MessageHandler {
     @Qualifier("jsonMapper")
     private ObjectMapper jsonMapper;
 
-
     public MessageHandler(RabbitTemplate rabbitTemplate, EdxlHandler edxlHandler, HubConfiguration hubConfig, Validator validator, MeterRegistry registry, XmlMapper xmlMapper, ObjectMapper jsonMapper) {
         this.rabbitTemplate = rabbitTemplate;
         this.edxlHandler = edxlHandler;
@@ -77,6 +76,10 @@ public class MessageHandler {
         this.registry = registry;
         this.xmlMapper = xmlMapper;
         this.jsonMapper = jsonMapper;
+    }
+
+    public HubConfiguration getHubConfig() {
+        return hubConfig;
     }
 
     protected void handleError(AbstractHubException exception, Message message) {
@@ -129,7 +132,7 @@ public class MessageHandler {
         try {
             EdxlMessage errorEdxlMessage = edxlMessageFromHub(sender, wrapper);
             Message errorAmqpMessage;
-            if (convertToXML(sender, hubConfig.getClientPreferences().get(sender))) {
+            if (convertToXML(sender, hubConfig.getUseXmlPreferences().get(sender))) {
                 errorAmqpMessage = new Message(edxlHandler.serializeXmlEDXL(errorEdxlMessage).getBytes(),
                         MessagePropertiesBuilder.newInstance().setContentType(MessageProperties.CONTENT_TYPE_XML).build());
             } else {
@@ -252,7 +255,7 @@ public class MessageHandler {
         String edxlString;
 
         try {
-            if (convertToXML(recipientID, hubConfig.getClientPreferences().get(recipientID))) {
+            if (convertToXML(recipientID, hubConfig.getUseXmlPreferences().get(recipientID))) {
                 edxlString = edxlHandler.serializeXmlEDXL(edxlMessage);
                 fwdAmqpProperties.setContentType(MessageProperties.CONTENT_TYPE_XML);
             } else {
@@ -292,4 +295,11 @@ public class MessageHandler {
         registry.counter(DISPATCHED_MESSAGE,CLIENT_ID_TAG, sender, VHOST_TAG, hubConfig.getVhost(),USE_CASE_TAG, useCase).increment();
     }
 
+    protected String serializeJsonEDXL(EdxlMessage edxlMessage) throws JsonProcessingException {
+        return edxlHandler.serializeJsonEDXL(edxlMessage);
+    }
+
+    protected EdxlMessage deserializeJsonEDXL(String edxlString) throws JsonProcessingException {
+        return edxlHandler.deserializeJsonEDXL(edxlString);
+    }
 }

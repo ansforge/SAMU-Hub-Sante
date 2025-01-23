@@ -9,6 +9,8 @@ plugins {
 
 group = 'com.hubsante'
 
+def modelVersion = project.hasProperty('modelVersion') ? project.getProperty('modelVersion') : '3.0-RC-3'
+
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(21)
@@ -64,7 +66,7 @@ ext {
 }
 
 dependencies {
-    implementation 'com.hubsante:models:2.1-RC-4'
+    implementation "com.hubsante:models:${modelVersion}"
 
     implementation 'org.codehaus.groovy:groovy-json:3.0.9'
     implementation 'org.springframework.boot:spring-boot-starter-amqp'
@@ -80,6 +82,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web:3.1.2'
     implementation 'org.springframework.boot:spring-boot-starter-aop:3.1.2'
     implementation 'org.aspectj:aspectjtools:'
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
 
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     annotationProcessor 'org.projectlombok:lombok'
@@ -122,7 +125,7 @@ jib {
         image 'eclipse-temurin:21-jre'
     }
     to {
-        image 'romainfd/dispatcher:latest'
+        image "ghcr.io/${System.getenv('GITHUB_REPOSITORY_OWNER')}/dispatcher"
         tags = gitRefs()
     }
 }
