@@ -22,12 +22,12 @@ public abstract class Consumer {
     /**
      * Client identifier
      */
-    protected String clientId;
+    protected final String clientId;
 
     /**
      * Queue name
      */
-    protected String queueName;
+    protected final String queueName;
 
     /**
      * Distant server
@@ -74,7 +74,7 @@ public abstract class Consumer {
      * @throws TimeoutException
      */
     public void connect(TLSConf tlsConf) throws IOException, TimeoutException {
-        ConnectionFactory factory = new ConnectionFactory();
+        final ConnectionFactory factory = new ConnectionFactory();
 
         factory.setSaslConfig(DefaultSaslConfig.EXTERNAL);
         factory.setHost(this.host);
@@ -94,7 +94,7 @@ public abstract class Consumer {
 
         factory.enableHostnameVerification();
 
-        Connection connection = factory.newConnection();
+        final Connection connection = factory.newConnection();
 
         if (connection != null) {
             this.consumeChannel = connection.createChannel();

@@ -21,9 +21,9 @@ public class _05_JsonSendMessage {
     private static final Logger logger = LoggerFactory.getLogger(_05_JsonSendMessage.class);
 
     public static void main(String[] args) throws Exception {
-        Dotenv dotenv = Dotenv.load();
+        final Dotenv dotenv = Dotenv.load();
 
-        TLSConf tlsConf = new TLSConf(
+        final TLSConf tlsConf = new TLSConf(
                 TLS_PROTOCOL_VERSION,
                 dotenv.get("KEY_PASSPHRASE"),
                 dotenv.get("CERTIFICATE_PATH"),
@@ -31,18 +31,18 @@ public class _05_JsonSendMessage {
                 dotenv.get("TRUST_STORE_PATH"));
 
         // STEP 1 - Instantiate Producer using environment variables
-        Producer producer = new Producer(dotenv.get("HUB_HOSTNAME"), Integer.parseInt(dotenv.get("HUB_PORT")), dotenv.get("VHOST"),
+        final Producer producer = new Producer(dotenv.get("HUB_HOSTNAME"), Integer.parseInt(dotenv.get("HUB_PORT")), dotenv.get("VHOST"),
                 dotenv.get("EXCHANGE_NAME"));
 
         // STEP 2 - Instantiate a EDXL handler and Validator to use Hub utils
-        EdxlHandler edxlHandler = new EdxlHandler();
-        Validator validator = new Validator();
+        final EdxlHandler edxlHandler = new EdxlHandler();
+        final Validator validator = new Validator();
 
         // STEP 3 - Connect to Hub
         producer.connect(tlsConf);
 
         // STEP 4 - Get your message. For demo purpose, we pass it as argument in command line
-        String routingKey = getRouting(args);
+        final String routingKey = getRouting(args);
         String messageFilePath = args[1];
         String stringMessage = Files.readString(Path.of(messageFilePath));
 
@@ -53,7 +53,7 @@ public class _05_JsonSendMessage {
 
         // STEP 5 - Validate JSON message nomenclature
         try {
-             validator.validateJSON(stringMessage,"EDXL-DE-full.schema.json" );
+             validator.validateJSON(stringMessage,JSON_VALIDATION_SCHEMA );
          } catch(ValidationException error){
              logger.error("The message does not match the validation rules", error);
          } catch (IOException error){

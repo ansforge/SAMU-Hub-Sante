@@ -47,7 +47,7 @@ public class Producer {
     }
 
     public void connect(TLSConf tlsConf) throws IOException, TimeoutException {
-        ConnectionFactory factory = new ConnectionFactory();
+        final ConnectionFactory factory = new ConnectionFactory();
 
         factory.setSaslConfig(DefaultSaslConfig.EXTERNAL);
         factory.setHost(this.host);
@@ -58,7 +58,7 @@ public class Producer {
         // NB - You can set a fixed time interval using setNetworkRecoveryInterval(NETWORK_RECOVERY_INTERVAL);
         // NB - You can optionally configure ExponentialBackoffDelayHandler with your own backoff sequence.
         factory.setAutomaticRecoveryEnabled(true);
-        RecoveryDelayHandler delayHandler = new RecoveryDelayHandler.ExponentialBackoffDelayHandler();
+        final RecoveryDelayHandler delayHandler = new RecoveryDelayHandler.ExponentialBackoffDelayHandler();
         factory.setRecoveryDelayHandler(delayHandler);
 
         if (tlsConf != null) {
@@ -89,13 +89,13 @@ public class Producer {
         // Setting Content Type becomes mandatory to allow correct deserialization in HubSante
         // Only two content types are allowed : application/json and application/xml
         // If not set, HubSante will not be able to deserialize the message and will reject it
-        AMQP.BasicProperties properties = new AMQP.BasicProperties().builder()
+        final AMQP.BasicProperties properties = new AMQP.BasicProperties().builder()
                 .contentType(JSON_CONTENT_TYPE)
                 .deliveryMode(2) // set persistent mode (for cloud resilience - no message is stored out of the transit scope)
                 .priority(0) // default priority
                 .build();
 
-        EdxlHandler edxlHandler = new EdxlHandler();
+        final EdxlHandler edxlHandler = new EdxlHandler();
         byte[] messageBody = edxlHandler.serializeJsonEDXL(edxlMessage).getBytes(StandardCharsets.UTF_8);
 
         try {
@@ -122,13 +122,13 @@ public class Producer {
         // Setting Content Type becomes mandatory to allow correct deserialization in HubSante
         // Only two content types are allowed : application/json and application/xml
         // If not set, HubSante will not be able to deserialize the message and will reject it
-        AMQP.BasicProperties properties = new AMQP.BasicProperties().builder()
+        final AMQP.BasicProperties properties = new AMQP.BasicProperties().builder()
                 .contentType(XML_CONTENT_TYPE)
                 .deliveryMode(2) // set persistent mode (for cloud resilience - no message is stored out of the transit scope)
                 .priority(0) // default priority
                 .build();
 
-        EdxlHandler edxlHandler = new EdxlHandler();
+        final EdxlHandler edxlHandler = new EdxlHandler();
         byte[] messageBody = edxlHandler.serializeXmlEDXL(edxlMessage).getBytes(StandardCharsets.UTF_8);
 
         try {

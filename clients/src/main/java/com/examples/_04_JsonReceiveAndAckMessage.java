@@ -18,24 +18,24 @@ public class _04_JsonReceiveAndAckMessage {
     private static final Logger logger = LoggerFactory.getLogger(_04_JsonReceiveAndAckMessage.class);
 
     public static void main(String[] args) throws Exception {
-        Dotenv dotenv = Dotenv.load();
+        final Dotenv dotenv = Dotenv.load();
 
-        TLSConf tlsConf = new TLSConf(
+        final TLSConf tlsConf = new TLSConf(
                 TLS_PROTOCOL_VERSION,
                 dotenv.get("KEY_PASSPHRASE"),
                 dotenv.get("CERTIFICATE_PATH"),
                 dotenv.get("TRUST_STORE_PASSWORD"),
                 dotenv.get("TRUST_STORE_PATH"));
 
-        String queueName = getRouting(args);
-        String clientId = getClientId(args);
+        final String queueName = getRouting(args);
+        final String clientId = getClientId(args);
 
-        Consumer consumer = new Consumer(dotenv.get("HUB_HOSTNAME"), Integer.parseInt(dotenv.get("HUB_PORT")), dotenv.get("VHOST"),
+        final Consumer consumer = new Consumer(dotenv.get("HUB_HOSTNAME"), Integer.parseInt(dotenv.get("HUB_PORT")), dotenv.get("VHOST"),
                 dotenv.get("EXCHANGE_NAME"),
                 queueName, clientId) {
             @Override
             protected void deliverCallback(String consumerTag, Delivery delivery) throws IOException {
-                String routingKey = delivery.getEnvelope().getRoutingKey();
+                final String routingKey = delivery.getEnvelope().getRoutingKey();
 
                 String message = convertBytesToString(delivery.getBody());
                 logger.info("[x] Received from '" + routingKey + "':'" + message + "'");
