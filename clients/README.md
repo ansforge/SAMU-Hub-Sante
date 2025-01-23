@@ -102,10 +102,8 @@ Si le format du message envoyé est
 
 Pour aller plus loin :
 Combiner les deux derniers tutoriels :
-- Ecoutez la queue "info" en lançant dans un autre onglet de votre terminal : `./gradlew run -Pmain=com.examples._04_JsonReceiveAndAckMessage --args='<client_id>.info json'`
-- Puis, envoyez un message au Hub. 
-Vous recevez dans votre terminal l'ACK fonctionnel : le message que vous avez envoyé a été traité.
 
-
-
-
+- Ecoutez la queue "ack" en lançant dans un autre onglet de votre terminal : `./gradlew run -Pmain=com.examples._04_JsonReceiveAndAckMessage --args='<client_id>.ack json'`
+- Envoyez un message au Hub
+- Acquitter le message depuis le BAS en cliquant sur le tick de validation
+  Vous recevez dans votre terminal l'ACK fonctionnel.
