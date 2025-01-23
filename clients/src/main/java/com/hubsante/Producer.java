@@ -53,8 +53,12 @@ public class Producer {
         factory.setHost(this.host);
         factory.setPort(this.port);
         factory.setVirtualHost(this.vhost);
-        factory.setNetworkRecoveryInterval(NETWORK_RECOVERY_INTERVAL);
+        // Here, configure the connection recovery policies
         factory.setAutomaticRecoveryEnabled(true);
+        RecoveryDelayHandler delayHandler = new RecoveryDelayHandler.ExponentialBackoffDelayHandler();
+        factory.setRecoveryDelayHandler(delayHandler);
+        // Or, you can set a fixed time interval: factory.setNetworkRecoveryInterval(NETWORK_RECOVERY_INTERVAL);
+
 
         if (tlsConf != null) {
             factory.useSslProtocol(tlsConf.getSslContext());

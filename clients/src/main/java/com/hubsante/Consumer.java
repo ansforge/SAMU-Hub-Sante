@@ -80,10 +80,11 @@ public abstract class Consumer {
         factory.setHost(this.host);
         factory.setPort(this.port);
         factory.setVirtualHost(this.vhost);
-
         // Here, configure the connection recovery policies
-        factory.setNetworkRecoveryInterval(NETWORK_RECOVERY_INTERVAL);
         factory.setAutomaticRecoveryEnabled(true);
+        RecoveryDelayHandler delayHandler = new RecoveryDelayHandler.ExponentialBackoffDelayHandler();
+        factory.setRecoveryDelayHandler(delayHandler);
+        // Or, you can set a fixed time interval: factory.setNetworkRecoveryInterval(NETWORK_RECOVERY_INTERVAL);
 
         if (tlsConf != null) {
             factory.useSslProtocol(tlsConf.getSslContext());
