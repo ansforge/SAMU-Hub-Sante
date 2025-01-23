@@ -12,10 +12,9 @@ import java.io.IOException;
 
 import static com.hubsante.Constants.TLS_PROTOCOL_VERSION;
 import static com.hubsante.Utils.*;
-import static com.hubsante.Utils.referenceMessageFromReceivedMessage;
 
-public class XmlReceiveAndAckMessage {
-    private static final Logger logger = LoggerFactory.getLogger(XmlReceiveAndAckMessage.class);
+public class _02_XmlReceiveMessage {
+    private static final Logger logger = LoggerFactory.getLogger(_02_XmlReceiveMessage.class);
 
     public static void main(String[] args) throws Exception {
         Dotenv dotenv = Dotenv.load();
@@ -37,38 +36,23 @@ public class XmlReceiveAndAckMessage {
             protected void deliverCallback(String consumerTag, Delivery delivery) throws IOException {
                 String routingKey = delivery.getEnvelope().getRoutingKey();
 
+                // STEP 1 - Convert received EDXL message to string
                 String message = convertBytesToString(delivery.getBody());
-                logger.info("[x] Received from '" + routingKey + "':'" + message + "'");
-
                 EdxlMessage edxlMessage;
+                String stringMessage;
 
-                try {
-                    edxlMessage = edxlHandler.deserializeXmlEDXL(message);
-                } catch (Exception error) {
-                    logger.error("[x] Error when receiving message: '"+  error.getMessage());
-                    consumeChannel.basicNack(delivery.getEnvelope().getDeliveryTag(), false, false);
+                // STEP 2 - Deserialize received message
+                edxlMessage = edxlHandler.deserializeXmlEDXL(message);
 
-                    return;
-                }
+                // [For demo purposes] stringMessage variable is used to log the received message in the terminal
+                stringMessage = edxlHandler.serializeXmlEDXL(edxlMessage);
+                logger.info("[x] You have received from '" + routingKey + "':'" + stringMessage + "'");
 
+                // STEP 3 - Send back technical ACK as delivery responsibility is removed from the Hub
                 consumeChannel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
 
-                // STEP 1 - Apply business rules
+                // STEP 4 - Apply business rules
                 // ...
-                // If an error occurs, send a message to the "info" queue
-
-                // STEP 2 - Sending back functional ACK to inform that the message has been processed on the Consumer side
-                if (!isAckMessage(edxlMessage)) {
-                    EdxlMessage ackEdxlMessage = referenceMessageFromReceivedMessage(edxlMessage);
-                    this.producerAck.xmlPublish(this.clientId, ackEdxlMessage);
-
-                    // [For demo purposes] ackEdxlString variable is used to log the message in the terminal
-                    String ackEdxlString = edxlHandler.serializeXmlEDXL(ackEdxlMessage);
-                    logger.info("  ↳ [x] ACK sent  to '" + getExchangeName() + " with routing key " + this.clientId + "':'"
-                            + ackEdxlString + "'");
-                } else {
-                    logger.info("↳ [x] Partner has processed the message.");
-                }
             }
         };
 

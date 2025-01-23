@@ -17,8 +17,8 @@ import java.nio.file.Path;
 import static com.hubsante.Constants.*;
 import static com.hubsante.Utils.getRouting;
 
-public class XmlSendMessage {
-    private static final Logger logger = LoggerFactory.getLogger(XmlSendMessage.class);
+public class _05_JsonSendMessage {
+    private static final Logger logger = LoggerFactory.getLogger(_05_JsonSendMessage.class);
 
     public static void main(String[] args) throws Exception {
         Dotenv dotenv = Dotenv.load();
@@ -46,27 +46,29 @@ public class XmlSendMessage {
         String messageFilePath = args[1];
         String stringMessage = Files.readString(Path.of(messageFilePath));
 
-        boolean hasXmlExtension = messageFilePath.endsWith(XML_FILE_EXTENSION);
-        if (!hasXmlExtension) {
+        boolean hasJsonExtension = messageFilePath.endsWith(JSON_FILE_EXTENSION);
+        if (!hasJsonExtension) {
             logger.warn("You are trying to send a file with the wrong format");
         }
 
-        // STEP 5 - Validate XML message nomenclature
+        // STEP 5 - Validate JSON message nomenclature
         try {
-            validator.validateXML(stringMessage, "EDXL-DE-full.xsd");
-        } catch(ValidationException error){
-            logger.error("The message does not match the validation rules", error);
-        } catch (IOException error){
+             validator.validateJSON(stringMessage,"EDXL-DE-full.schema.json" );
+         } catch(ValidationException error){
+             logger.error("The message does not match the validation rules", error);
+         } catch (IOException error){
             logger.error("An error occurred while validating the message", error);
         }
 
         // STEP 6 - Convert message to EDXL standards & publish it
-        EdxlMessage edxlMessage = edxlHandler.deserializeXmlEDXL(stringMessage);
+        EdxlMessage edxlMessage = edxlHandler.deserializeJsonEDXL(stringMessage);
+
         try {
-            producer.xmlPublish(routingKey, edxlMessage);
+            producer.publish(routingKey, edxlMessage);
         } catch(IOException error){
             logger.error("An error occurred while sending the message:", error);
         }
+
 
         // STEP 7 - Close the connection
         producer.close();

@@ -2,7 +2,6 @@ package com.examples;
 
 import com.hubsante.Consumer;
 import com.hubsante.TLSConf;
-import com.hubsante.model.edxl.EdxlMessage;
 import com.rabbitmq.client.Delivery;
 import io.github.cdimascio.dotenv.Dotenv;
 import org.slf4j.Logger;
@@ -12,10 +11,9 @@ import java.io.IOException;
 
 import static com.hubsante.Constants.TLS_PROTOCOL_VERSION;
 import static com.hubsante.Utils.*;
-import static com.hubsante.Utils.referenceMessageFromReceivedMessage;
 
-public class JsonReceiveAndAckMessage {
-    private static final Logger logger = LoggerFactory.getLogger(JsonReceiveAndAckMessage.class);
+public class _03_XmlReceptionErrorHandling {
+    private static final Logger logger = LoggerFactory.getLogger(_03_XmlReceptionErrorHandling.class);
 
     public static void main(String[] args) throws Exception {
         Dotenv dotenv = Dotenv.load();
@@ -40,12 +38,12 @@ public class JsonReceiveAndAckMessage {
                 String message = convertBytesToString(delivery.getBody());
                 logger.info("[x] Received from '" + routingKey + "':'" + message + "'");
 
-                EdxlMessage edxlMessage;
-
                 try {
-                    edxlMessage = edxlHandler.deserializeJsonEDXL(message);
-                } catch (Exception error) {
+                    edxlHandler.deserializeXmlEDXL(message);
+                } catch (IOException error) {
                     logger.error("[x] Error when receiving message: '"+  error.getMessage());
+
+                    // Send back technical non ACK to RabbitMQ as delivery responsibility is removed from the Hub
                     consumeChannel.basicNack(delivery.getEnvelope().getDeliveryTag(), false, false);
 
                     return;
@@ -53,26 +51,15 @@ public class JsonReceiveAndAckMessage {
 
                 consumeChannel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
 
-                // STEP 1 - Apply business rules
+                // Apply business rules
                 // ...
                 // If an error occurs, send a message to the "info" queue
 
-                // STEP 2 - Sending back functional ACK to inform that the message has been processed on the Consumer side
-                if (!isAckMessage(edxlMessage)) {
-                    EdxlMessage ackEdxlMessage = referenceMessageFromReceivedMessage(edxlMessage);
-                    this.producerAck.publish(this.clientId, ackEdxlMessage);
-
-                    // [For demo purposes] ackEdxlString variable is used to log the message in the terminal
-                    String ackEdxlString = edxlHandler.serializeJsonEDXL(ackEdxlMessage);
-                    logger.info("  ↳ [x] ACK sent  to '" + getExchangeName() + " with routing key " + this.clientId + "':'"
-                            + ackEdxlString + "'");
-                } else {
-                    logger.info("↳ [x] Partner has processed the message.");
-                }
             }
         };
 
         consumer.connect(tlsConf);
         logger.info(" [*] Waiting for messages on " + queueName + ". To exit press CTRL+C");
     }
+
 }

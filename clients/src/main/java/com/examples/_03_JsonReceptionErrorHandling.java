@@ -2,7 +2,6 @@ package com.examples;
 
 import com.hubsante.Consumer;
 import com.hubsante.TLSConf;
-import com.hubsante.model.edxl.EdxlMessage;
 import com.rabbitmq.client.Delivery;
 import io.github.cdimascio.dotenv.Dotenv;
 import org.slf4j.Logger;
@@ -13,8 +12,8 @@ import java.io.IOException;
 import static com.hubsante.Constants.TLS_PROTOCOL_VERSION;
 import static com.hubsante.Utils.*;
 
-public class JsonReceiveMessage {
-    private static final Logger logger = LoggerFactory.getLogger(JsonReceiveMessage.class);
+public class _03_JsonReceptionErrorHandling {
+    private static final Logger logger = LoggerFactory.getLogger(_03_JsonReceptionErrorHandling.class);
 
     public static void main(String[] args) throws Exception {
         Dotenv dotenv = Dotenv.load();
@@ -36,23 +35,26 @@ public class JsonReceiveMessage {
             protected void deliverCallback(String consumerTag, Delivery delivery) throws IOException {
                 String routingKey = delivery.getEnvelope().getRoutingKey();
 
-                // STEP 1 - Convert received EDXL message to string
                 String message = convertBytesToString(delivery.getBody());
-                EdxlMessage edxlMessage;
-                String stringMessage;
+                logger.info("[x] Received from '" + routingKey + "':'" + message + "'");
 
-                // STEP 2 - Deserialize received message to JSON format
-                edxlMessage = edxlHandler.deserializeJsonEDXL(message);
+                try {
+                     edxlHandler.deserializeJsonEDXL(message);
+                } catch (IOException error) {
+                    logger.error("[x] Error when receiving message: '"+  error.getMessage());
 
-                // [For demo purposes] stringMessage variable is used to log the received message in the terminal
-                stringMessage = edxlHandler.serializeJsonEDXL(edxlMessage);
-                logger.info("[x] You have received from '" + routingKey + "':'" + stringMessage + "'");
+                    // Send back technical non ACK to RabbitMQ as delivery responsibility is removed from the Hub
+                    consumeChannel.basicNack(delivery.getEnvelope().getDeliveryTag(), false, false);
 
-                // STEP 3 - Send back technical ACK as delivery responsibility is removed from the Hub
+                    return;
+                }
+
                 consumeChannel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
 
-                // STEP 4 - Apply business rules
+                // Apply business rules
                 // ...
+                // If an error occurs, send a message to the "info" queue
+
             }
         };
 

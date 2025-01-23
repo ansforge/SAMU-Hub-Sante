@@ -12,12 +12,13 @@ import java.io.IOException;
 import static com.hubsante.Constants.TLS_PROTOCOL_VERSION;
 import static com.hubsante.Utils.*;
 
-public class JsonReceptionErrorHandling {
-    private static final Logger logger = LoggerFactory.getLogger(JsonReceptionErrorHandling.class);
+public class _01_GettingStarted {
+    private static final Logger logger = LoggerFactory.getLogger(_01_GettingStarted.class);
 
     public static void main(String[] args) throws Exception {
         Dotenv dotenv = Dotenv.load();
 
+        // STEP 1 - Define TLS Configuration to protect connection
         TLSConf tlsConf = new TLSConf(
                 TLS_PROTOCOL_VERSION,
                 dotenv.get("KEY_PASSPHRASE"),
@@ -28,37 +29,23 @@ public class JsonReceptionErrorHandling {
         String queueName = getRouting(args);
         String clientId = getClientId(args);
 
+        // STEP 2 - Instantiate consumer
         Consumer consumer = new Consumer(dotenv.get("HUB_HOSTNAME"), Integer.parseInt(dotenv.get("HUB_PORT")), dotenv.get("VHOST"),
                 dotenv.get("EXCHANGE_NAME"),
                 queueName, clientId) {
             @Override
+            // STEP 3 - Define delivery callback, for now, we only log a simple line in the terminal when a message is received
             protected void deliverCallback(String consumerTag, Delivery delivery) throws IOException {
-                String routingKey = delivery.getEnvelope().getRoutingKey();
+                logger.info("[x] You have received a message from the Hub");
 
-                String message = convertBytesToString(delivery.getBody());
-                logger.info("[x] Received from '" + routingKey + "':'" + message + "'");
-
-                try {
-                     edxlHandler.deserializeJsonEDXL(message);
-                } catch (IOException error) {
-                    logger.error("[x] Error when receiving message: '"+  error.getMessage());
-
-                    // Send back technical non ACK to RabbitMQ as delivery responsibility is removed from the Hub
-                    consumeChannel.basicNack(delivery.getEnvelope().getDeliveryTag(), false, false);
-
-                    return;
-                }
-
+                // STEP 5 - Send back technical ACK as delivery responsibility is removed from the Hub
                 consumeChannel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
-
-                // Apply business rules
-                // ...
-                // If an error occurs, send a message to the "info" queue
-
             }
         };
 
+        // STEP 4 - Connect to Hub
         consumer.connect(tlsConf);
         logger.info(" [*] Waiting for messages on " + queueName + ". To exit press CTRL+C");
     }
+
 }

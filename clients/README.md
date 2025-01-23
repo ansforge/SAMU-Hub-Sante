@@ -39,7 +39,7 @@ Il est possible de suivre les tutoriels pour échanger des messages soit au form
 Pour démarrer, on va configurer la connexion au Hub. L'objectif est de voir affiché dans le terminal un log suite à la réception d'un message envoyé depuis le Bac à Sable.
 
 Dans le dossier `/client`, lancer la commande:
-`./gradlew run -Pmain=com.examples.GettingStarted --args='<your_client_id>.message json'`
+`./gradlew run -Pmain=com.examples._01_GettingStarted --args='<your_client_id>.message json'`
 
 On va ensuite utiliser le Bac à Sable (BAS) pour faire les tests de raccordement
 1. Ouvrir le lien https://bac-a-sable.hub.esante.gouv.fr/lrm
@@ -58,10 +58,10 @@ Il peut cependant recevoir des messages JSON ou XML.
 Dans le dossier `/client`, au choix :
 
  Lancer la commande dans votre terminal:
-`./gradlew run -Pmain=com.examples.JsonReceiveMessage --args='<client_id>.message json'`
+`./gradlew run -Pmain=com.examples._02_JsonReceiveMessage --args='<client_id>.message json'`
 
 ou,
-`./gradlew run -Pmain=com.examples.XmlReceiveMessage --args='<client_id>.message xml'`
+`./gradlew run -Pmain=com.examples._02_XmlReceiveMessage --args='<client_id>.message xml'`
 
 Puis, utilisez le BAS pour envoyer un message. Vous devez le voir apparaître dans votre terminal.
 
@@ -69,20 +69,20 @@ Puis, utilisez le BAS pour envoyer un message. Vous devez le voir apparaître da
 Dans le dossier `/client`, au choix :
 
 Lancer la commande dans votre terminal:
-`./gradlew run -Pmain=com.examples.JsonReceptionErrorHandling --args='<client_id>.message json'`
+`./gradlew run -Pmain=com.examples._03_JsonReceptionErrorHandling --args='<client_id>.message json'`
 
 ou,
-`./gradlew run -Pmain=com.examples.XmlReceptionErrorHandling --args='<client_id>.message xml'`
+`./gradlew run -Pmain=com.examples._03_XmlReceptionErrorHandling --args='<client_id>.message xml'`
 
 
 ### Recevoir un message et envoyer ACK fonctionnel 
 Dans le dossier `/client`, au choix :
 
 Lancer la commande dans votre terminal :
-`./gradlew run -Pmain=com.examples.JsonReceiveAndAckMessage --args='<client_id>.message json'`
+`./gradlew run -Pmain=com.examples._04_JsonReceiveAndAckMessage --args='<client_id>.message json'`
 
 ou,
-`./gradlew run -Pmain=com.examples.XmlReceiveAndAckMessage --args='<client_id>.message xml'`
+`./gradlew run -Pmain=com.examples._04_XmlReceiveAndAckMessage --args='<client_id>.message xml'`
 
 Puis, utilisez le BAS pour envoyer un message. Vous devez le voir apparaître dans votre terminal, suivi d'un log d'acquittement. 
 
@@ -90,9 +90,9 @@ Puis, utilisez le BAS pour envoyer un message. Vous devez le voir apparaître da
 Dans le dossier `/client`, au choix :
 
 Lancer la commande dans votre terminal :
-`./gradlew run -Pmain=com.examples.JsonSendMessage --args='<client_id> <path/to/message>'`
+`./gradlew run -Pmain=com.examples._05_JsonSendMessage --args='<client_id> <path/to/message>'`
 ou,
-`./gradlew run -Pmain=com.examples.XmlSendMessage --args='<client_id> <path/to/message>'`
+`./gradlew run -Pmain=com.examples._05_XmlSendMessage --args='<client_id> <path/to/message>'`
 
 Vous passez en argument le chemin du message à envoyer qui doit être au format JSON dans le premier cas, et XML dans le second.
 
@@ -102,7 +102,7 @@ Si le format du message envoyé est
 
 Pour aller plus loin :
 Combiner les deux derniers tutoriels :
-- Ecoutez la queue "info" en lançant dans un autre onglet de votre terminal : `./gradlew run -Pmain=com.examples.JsonReceiveAndAckMessage --args='<client_id>.info json'`
+- Ecoutez la queue "info" en lançant dans un autre onglet de votre terminal : `./gradlew run -Pmain=com.examples._04_JsonReceiveAndAckMessage --args='<client_id>.info json'`
 - Puis, envoyez un message au Hub. 
 Vous recevez dans votre terminal l'ACK fonctionnel : le message que vous avez envoyé a été traité.
 
