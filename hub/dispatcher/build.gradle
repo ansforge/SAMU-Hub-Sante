@@ -9,7 +9,7 @@ plugins {
 
 group = 'com.hubsante'
 
-def modelVersion = project.hasProperty('modelVersion') ? project.getProperty('modelVersion') : '2.0'
+def modelVersion = project.hasProperty('modelVersion') ? project.getProperty('modelVersion') : '3.0-RC-3'
 
 java {
     toolchain {
