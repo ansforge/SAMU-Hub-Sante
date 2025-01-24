@@ -22,12 +22,12 @@ public abstract class Consumer {
     /**
      * Client identifier
      */
-    protected String clientId;
+    protected final String clientId;
 
     /**
      * Queue name
      */
-    protected String queueName;
+    protected final String queueName;
 
     /**
      * Distant server
@@ -74,14 +74,19 @@ public abstract class Consumer {
      * @throws TimeoutException
      */
     public void connect(TLSConf tlsConf) throws IOException, TimeoutException {
-        ConnectionFactory factory = new ConnectionFactory();
+        final ConnectionFactory factory = new ConnectionFactory();
 
         factory.setSaslConfig(DefaultSaslConfig.EXTERNAL);
         factory.setHost(this.host);
         factory.setPort(this.port);
         factory.setVirtualHost(this.vhost);
-        factory.setNetworkRecoveryInterval(NETWORK_RECOVERY_INTERVAL);
+
+        // Here, configure the connection recovery policies
+        // NB - You can set a fixed time interval using setNetworkRecoveryInterval(NETWORK_RECOVERY_INTERVAL);
+        // NB - You can optionally configure ExponentialBackoffDelayHandler with your own backoff sequence.
         factory.setAutomaticRecoveryEnabled(true);
+        RecoveryDelayHandler delayHandler = new RecoveryDelayHandler.ExponentialBackoffDelayHandler();
+        factory.setRecoveryDelayHandler(delayHandler);
 
         if (tlsConf != null) {
             factory.useSslProtocol(tlsConf.getSslContext());
@@ -89,7 +94,7 @@ public abstract class Consumer {
 
         factory.enableHostnameVerification();
 
-        Connection connection = factory.newConnection();
+        final Connection connection = factory.newConnection();
 
         if (connection != null) {
             this.consumeChannel = connection.createChannel();
