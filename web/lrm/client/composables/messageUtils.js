@@ -40,7 +40,7 @@ export function getCaseId (message, isRootMessage = false) {
   }
 }
 
-export function getDistributionID(message) {
+export function getDistributionIdOfAckedMessage(message) {
   return message?.body?.content?.[0]?.jsonContent?.embeddedJsonContent?.message?.reference?.distributionID;
 }
 

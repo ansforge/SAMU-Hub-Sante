@@ -52,7 +52,7 @@
                       :required-values-count="testCase?.steps[message.relatedStep]?.type === 'send' ? testCase?.steps[message.relatedStep]?.requiredValues?.length : 1"
                       v-bind="message"
                       class="message mb-4"
-                      :class="{ stale: message.stale, validated: message.validated, selected: selectedMessageIndex === index }"
+                      :class="{ stale: message.stale, selected: selectedMessageIndex === index }"
                     />
                   </div>
                 </template>
@@ -63,9 +63,11 @@
                   v-if="selectedMessage"
                   :key="selectedMessage?.time"
                   :json-depth="10"
+                  :required-values-count="testCase?.steps[selectedMessage.relatedStep]?.type === 'send' ? testCase?.steps[selectedMessage.relatedStep]?.requiredValues?.length : 1"
+                  :validated-values-count="selectedMessage?.validatedValues?.filter(value => value.valid).length"
                   v-bind="selectedMessage"
                   class="message mb-4"
-                  :class="{ stale: selectedMessage?.stale, validated: selectedMessage?.validated }"
+                  :class="{ stale: selectedMessage?.stale}"
                 />
               </v-col>
             </v-row>
@@ -102,7 +104,7 @@
                 <v-list-item v-for="(requiredValue, name, index) in getAwaitedValues(testCase?.steps[currentStep])" :key="'requiredValue' + index">
                   <div class="d-flex">
                     <span>
-                      <v-icon v-if="requiredValue?.valid === 'valid'" style="flex:0" color="success">
+                      <v-icon v-if="requiredValue.value && requiredValue?.valid === 'valid'" style="flex:0" color="success">
                         mdi-check
                       </v-icon>
 
@@ -189,11 +191,11 @@
 <script setup>
 import { onMounted, toRefs } from 'vue'
 import jsonpath from 'jsonpath'
+import { generateCasePdf } from '../../composables/generateCasePdf';
 import mixinWebsocket from '~/mixins/mixinWebsocket'
 import { useMainStore } from '~/store'
 import { REPOSITORY_URL } from '@/constants'
-import { isOut, getCaseId, getMessageType, setCaseId, buildMessage, sendMessage, getDistributionID, ValidationStatus } from '~/composables/messageUtils.js'
-import { generateCasePdf } from '../../composables/generateCasePdf';
+import { isOut, getCaseId, getMessageType, setCaseId, buildMessage, sendMessage, getDistributionIdOfAckedMessage, ValidationStatus } from '~/composables/messageUtils.js'
 
 const store = useMainStore()
 const selectedRequiredValuesIndex = ref(null)
@@ -205,7 +207,6 @@ const currentStep = ref(0)
 const selectedMessageIndex = ref(0)
 const selectedCaseIds = ref([])
 const handledLength = ref(0)
-const lastMessage = ref(null)
 
 useHead({
   titleTemplate: toRef(useMainStore(), 'testHeadTitle')
@@ -382,14 +383,15 @@ function getAwaitedReferenceDistributionIdJson (step) {
 }
 
 function getAwaitedReferenceDistributionObject (step) {
-  const lastDistributionID = getDistributionID(lastMessage.value)
-  const validationStatus = lastDistributionID === step?.awaitedReferenceDistributionID ? ValidationStatus.VALID : !!lastDistributionID ? ValidationStatus.APPROXIMATE : ValidationStatus.INVALID
+  const currentStepSelectedTypeMessages = selectedTypeCaseMessages.value.filter(message => message.relatedStep === currentStep.value)
+  const lastCurrentStepAckedDistributionID = currentStepSelectedTypeMessages[0] ? getDistributionIdOfAckedMessage(currentStepSelectedTypeMessages[0]) : null
+  const validationStatus = lastCurrentStepAckedDistributionID === step?.awaitedReferenceDistributionID ? ValidationStatus.VALID : !!lastCurrentStepAckedDistributionID ? ValidationStatus.APPROXIMATE : ValidationStatus.INVALID
 
   return {
     '$.reference.distributionID': {
       value: step?.awaitedReferenceDistributionID,
       valid: validationStatus,
-      receivedValue: getDistributionID(lastMessage)
+      receivedValue: getDistributionIdOfAckedMessage(currentStepSelectedTypeMessages[0]) ?? 'N/A'
     }
   }
 }
@@ -511,29 +513,23 @@ watch(selectedTypeCaseMessages, (newMessages) => {
   if (currentStep.value <= testCase.value.steps.length && newMessages.length > 0) {
     // Iterate over new messages starting from the latest added
     for (let i = (newMessages.length - handledLength.value - 1); i >= 0; i--) {
-      const lastDistributionID = lastMessage?.value?.body?.distributionID;
-      const newDistributionID = newMessages[i]?.value?.body?.distributionID;
-      const isNewMessage = !lastMessage?.value || lastDistributionID != newDistributionID
-      lastMessage.value = newMessages[i]
-
-      if (isNewMessage) {
-        checkMessage(lastMessage.value)
-      }
+      const lastMessage = newMessages[i]
+      checkMessage(lastMessage)
 
       // If message is an ack and outgoing, find related message and update relatedStep
-      if (getMessageType(lastMessage.value) === 'ack' && isOut(lastMessage.value.direction)) {
-        const relatedMessage = selectedTypeCaseMessages.value.find(message => getDistributionID(message) === getDistributionID(lastMessage.value))
-        lastMessage.value.relatedStep = relatedMessage.relatedStep
+      if (getMessageType(lastMessage) === 'ack' && isOut(lastMessage.direction)) {
+        const relatedMessage = selectedTypeCaseMessages.value.find(message => getDistributionIdOfAckedMessage(message) === getDistributionIdOfAckedMessage(lastMessage))
+        lastMessage.relatedStep = relatedMessage.relatedStep
       } else {
-        lastMessage.value.relatedStep = currentStep.value
+        lastMessage.relatedStep = currentStep.value
       }
 
       // Check and validate the message if it's incoming
-      if (!lastMessage.value.isOut) {
+      if (!lastMessage.isOut) {
         const shouldStayOnStep = testCase.value.steps[currentStep.value].type === 'receive' &&
               !(testCase.value.steps[currentStep.value].validatedAcknowledgement &&
                 testCase.value.steps[currentStep.value].validatedReceivedValues)
-        validateMessage(newMessages.indexOf(lastMessage.value), true, shouldStayOnStep)
+        validateMessage(newMessages.indexOf(lastMessage), true, shouldStayOnStep)
       }
     }
     handledLength.value = newMessages.length

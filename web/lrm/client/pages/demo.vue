@@ -188,14 +188,6 @@ export default {
         this.store.setShowSentMessages(value)
       }
     },
-    autoAckConfig: {
-      get () {
-        return this.store.autoAckConfig
-      },
-      set (value) {
-        this.store.setAutoAckConfig(value)
-      }
-    },
     clientMessages () {
       return this.store.messages.filter(
         message => (

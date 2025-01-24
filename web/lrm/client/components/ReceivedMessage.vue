@@ -22,7 +22,7 @@
         :content="vhost"
       />
     </div>
-    <div class="elevation-4 pt-8" :class="{ 'grey lighten-4': isOut(direction) }">
+    <div class="elevation-4 pt-8" :class="{ 'grey lighten-4': isOut(direction), 'validated': validatedValuesCount === requiredValuesCount }">
       <v-row class="mx-4" :class="{ 'pb-2': dense }">
         <span>
           <v-icon size="small" start>mdi-email-fast</v-icon>{{ direction }} {{ isOut(direction) ? routingKey :
@@ -76,13 +76,15 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { DIRECTIONS } from '@/constants'
 import mixinWebsocket from '~/mixins/mixinWebsocket'
 import { useMainStore } from '~/store'
-import { buildAck, sendMessage, getMessageType, getDistributionID } from '~/composables/messageUtils.js'
+import { buildAck, sendMessage, getMessageType, getDistributionIdOfAckedMessage } from '~/composables/messageUtils'
 
+const store = useMainStore()
 const showFullMessage = ref(false)
+const autoAckConfig = computed(() => store.autoAckConfig)
 
 const props = defineProps({
   dense: {
@@ -138,8 +140,25 @@ const acked = computed(() => {
   return useMainStore().messages.filter(
     message => getMessageType(message) === 'ack'
   ).find(
-    message => getDistributionID(message) === props.body.distributionID
+    message => getDistributionIdOfAckedMessage(message) === props.body.distributionID
   )
+})
+
+const sendAck = () => {
+  try {
+    const distributionID = props.body.distributionID;
+    const msg = buildAck(distributionID)
+    sendMessage(msg, props.vhost)
+  } catch (error) {
+    console.error("Erreur lors de l'envoi de l'acquittement", error)
+  }
+}
+
+//on mounted, send ack if autoAckConfig is enabled
+onMounted(() => {
+  if (autoAckConfig.value) {
+    sendAck()
+  }
 })
 
 </script>
@@ -150,41 +169,9 @@ export default {
   data () {
     return {
       store: useMainStore(),
-      DIRECTIONS
+      DIRECTIONS,
     }
   },
-  computed: {
-    autoAckConfig: {
-      get () {
-        return this.store.autoAckConfig
-      },
-      set (value) {
-        this.store.setAutoAckConfig(value)
-      }
-    },
-  },
-  watch: {
-    autoAckConfig (value) {
-      if(!value) return
-      this.sendAck()
-    }
-  },
-  methods: {
-    sendAck () {
-      try {
-        const distributionID = this.body.distributionID;
-        const msg = buildAck(distributionID)
-        sendMessage(msg, this.vhost)
-      } catch (error) {
-        console.error("Erreur lors de l'envoi de l'acquittement", error)
-      }
-    },
-  },
-  mounted () {
-    if (this.autoAckConfig) {
-      this.sendAck()
-    }
-  }
 }
 </script>
 <style lang="scss">
@@ -276,7 +263,7 @@ export default {
   }
 }
 
-.validated>*:last-child {
+.validated {
   background-color: rgba(76, 175, 80, 0.2)
 }
 
