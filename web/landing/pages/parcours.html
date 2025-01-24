@@ -425,7 +425,7 @@
                         </div>
 
                         <!-- droits admin -->
-                        <div class="wysiwyg mt-2">
+                        <div class="wysiwyg mt-2" id="etape3.1">
                             <p>
                             <h3>1 - Commande de cartes CPX et obtention des droits d'administrateur technique</h3>
                             Afin de pouvoir générer des certificats, vous devez obtenir des cartes CPX et
@@ -458,7 +458,7 @@
                         </div>
 
                         <!-- lecture des cartes -->
-                        <div class="wysiwyg mt-2">
+                        <div class="wysiwyg mt-2" id="etape3.2">
                             <p>
                             <h3>2 - Lecture des cartes CPX</h3>
                             Afin de pouvoir générer les certificats via les cartes CPX et les droits d'administrateur
@@ -487,12 +487,14 @@
                         </div>
 
                         <!-- génération -->
-                        <div class="wysiwyg mt-4">
+                        <div class="wysiwyg mt-4" id="etape3.3">
                             <p>
                             <h3>3 - Génération des certificats </h3>
                             Une fois les cartes et droits d'administrateur technique obtenus et lisibles par un lecteur
                             de cartes,
-                            il faut utiliser la plateforme IGC pour générer des certificats SSL_SERV.
+                            il faut utiliser la plateforme IGC pour générer des certificats SSL_SERV. 
+                            Le FQDN (domaine) utilisé est à votre main mais doit permettre d'identifier l'entité concernée. 
+                            Le Hub Santé ne fera pas de requêtes vers ce domaine et n'y demande pas l'exposition de services (ni sur ce domaine ni sur tout autre domaine).
                             </p>
 
                             <div class="container mb-2"
@@ -521,7 +523,7 @@
                         </div>
 
                         <!-- enregistrement -->
-                        <div class="wysiwyg mt-2">
+                        <div class="wysiwyg mt-2" id="etape3.4">
 
                             <h3>4 - Enregistrement des certificats sur le Hub Santé </h3>
                             <p>Une fois les certificats obtenus, veuillez <strong>envoyer le certificat public à
@@ -540,6 +542,30 @@
                                 test.chu-xxx.fr.crt).
                             </p>
 
+                        </div>
+
+                        <!-- truststore -->
+                        <div class="wysiwyg mt-2" id="etape3.5">
+                        
+                            <h3>5 - Chaîne de certification et truststore</h3>
+                            <p>
+                                Les étapes précédentes permettent de générer un certificat SSL_SERV auprès de l'IGC Santé pour vous identifier lors de vos accès au Hub Santé.
+                                Les échanges étant en mTLS (mutual TLS), le Hub Santé présente également un certificat serveur. 
+                                Afin que la connexion puisse s'établir correctement, vous devez également autoriser ce certificat de votre côté.
+                            </p>
+                            <p>
+                                Pour cela, il est recommandé d'autoriser plutôt les certificats de l'Autorité de Certification (AC, ou CA en anglais) qui constituent la chaine de certification du certificat pour que cette autorisation reste valable lorsque nous renouvelerons nos certificats.
+                                Les chaînes de certification sont les suivantes :
+                                <ul>
+                                    <li>TEST : nos certificats sont signés par <a href="https://igc-sante.esante.gouv.fr/AC%20TEST/ACI-EL-ORG-TEST.cer"
+                                        target="_blank">TEST AC IGC-SANTE ELEMENTAIRE ORGANISATIONS</a> lui-même signé par le certificat racine <a
+                                        href="https://igc-sante.esante.gouv.fr/AC%20TEST/ACR-EL-TEST.cer" target="_blank">TEST AC RACINE IGC-SANTE ELEMENTAIRE</a>.</li>
+                                    <li>PROD : nos certificats sont signés par <a href="https://igc-sante.esante.gouv.fr/AC/ACI-EL-ORG.cer"
+                                        target="_blank">AC IGC-SANTE ELEMENTAIRE ORGANISATIONS</a> lui-même signé par le certificat racine <a
+                                        href="https://igc-sante.esante.gouv.fr/AC/ACR-EL.cer" target="_blank">AC RACINE IGC-SANTE ELEMENTAIRE</a>.</li>
+                                </ul>
+                            </p>
+                        
                         </div>
                 </div>
             </div>
