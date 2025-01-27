@@ -25,6 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageDeliveryMode;
 import org.springframework.amqp.core.MessageProperties;
+import org.springframework.amqp.core.ReturnedMessage;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -44,13 +45,20 @@ import static com.hubsante.hub.config.Constants.DISTRIBUTION_ID_UNAVAILABLE;
 
 @Slf4j
 public class MessageUtils {
-    private static final String HEALTH_PREFIX = "fr.health";
+    static final String HEALTH_PREFIX = "fr.health";
+    private static final String CISU_LRM_USER = "fr.cisu.sdisY";
     public static String getSenderFromRoutingKey(Message message) {
         return message.getMessageProperties().getReceivedRoutingKey();
     }
     public static void checkSenderConsistency(Message message, EdxlMessage edxlMessage) {
         String receivedRoutingKey = getSenderFromRoutingKey(message);
         if (!receivedRoutingKey.equals(edxlMessage.getSenderID())) {
+            if (!receivedRoutingKey.startsWith(HEALTH_PREFIX)) {
+                log.error("Message has been received from hubex with inconsistent routing key: routing key was {} and senderID was {}",
+                        message.getMessageProperties().getReceivedRoutingKey(),
+                        edxlMessage.getDistributionID());
+                return;
+            }
             String errorCause = "Sender inconsistency for message " +
                     edxlMessage.getDistributionID() +
                     " : message sender is " +
@@ -63,6 +71,10 @@ public class MessageUtils {
 
     public static void checkDeliveryModeIsPersistent(Message message, String messageId) {
         if (!MessageDeliveryMode.PERSISTENT.equals(message.getMessageProperties().getReceivedDeliveryMode())) {
+            if (!message.getMessageProperties().getReceivedRoutingKey().startsWith(HEALTH_PREFIX)) {
+                log.error("Message has been received from hubex with routing key {} without persistent mode enabled", message.getMessageProperties().getReceivedRoutingKey());
+                return;
+            }
             String errorCause = "Message " + messageId + " has been sent with non-persistent delivery mode";
             throw new DeliveryModeInconsistencyException(errorCause, messageId);
         }
@@ -93,7 +105,7 @@ public class MessageUtils {
 
     public static boolean convertToXML(String recipientID, Boolean useXML) {
         // sending message to outer hubex is always XML
-        if (!recipientID.startsWith(HEALTH_PREFIX)) {
+        if (!(recipientID.startsWith(HEALTH_PREFIX) || recipientID.equals(CISU_LRM_USER))) {
             return true;
         }
         // sending message to health clients is based on client preference (default to JSON)
@@ -106,7 +118,14 @@ public class MessageUtils {
     }
 
     public static boolean isXML(Message message) {
-        return MessageProperties.CONTENT_TYPE_XML.equals(message.getMessageProperties().getContentType());
+        return (MessageProperties.CONTENT_TYPE_XML.equals(message.getMessageProperties().getContentType()) ||
+                message.getMessageProperties().getReceivedRoutingKey() == null ||
+                !message.getMessageProperties().getReceivedRoutingKey().startsWith(HEALTH_PREFIX));
+    }
+
+    public static boolean isXML(ReturnedMessage returned) {
+        return MessageProperties.CONTENT_TYPE_XML.equals(returned.getMessage().getMessageProperties().getContentType()) ||
+                        returned.getRoutingKey().startsWith(HEALTH_PREFIX);
     }
 
     public static void overrideExpirationIfNeeded(EdxlMessage edxlMessage, MessageProperties properties, long defaultTTL) {

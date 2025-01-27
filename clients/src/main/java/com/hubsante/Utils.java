@@ -10,6 +10,7 @@ import com.hubsante.model.rcde.Recipient;
 import com.hubsante.model.reference.ReferenceWrapper;
 
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -19,8 +20,7 @@ import java.util.stream.Collectors;
 public class Utils {
 
     /*
-    * Dans le contexte de ce code exemple, cette méthode permet de récupérer un clientId à partir
-    * de la routing key fournie en argument de run
+     * In the context of the code example, retrieves the client id thanks to the routing key passed as argument
      */
     public static String getClientId(String[] strings) {
         String[] routing = getRouting(strings).split("[.]");
@@ -29,8 +29,7 @@ public class Utils {
     }
 
     /*
-    * Dans le contexte de ce code exemple, cette méthode permet de récupérer la routing key
-    * passée en argument de run
+     * In the context of the code example, retrieves the routing key passed as argument
      */
     public static String getRouting(String[] strings) {
         if (strings.length < 1)
@@ -62,5 +61,13 @@ public class Utils {
                 .distributionStatus(receivedMessage.getDistributionStatus())
                 .contentMessage(referenceWrapper)
                 .build();
+    }
+
+    public static String convertBytesToString(byte[] content){
+        return new String(content, StandardCharsets.UTF_8);
+    }
+
+    public static boolean isAckMessage (EdxlMessage message){
+        return message.getDistributionKind().equals(DistributionKind.ACK);
     }
 }

@@ -8,5 +8,5 @@
  */
 
 rootProject.name = 'SAMU-Hub-Sante'
-include 'client'
+include 'clients'
 include 'hub:dispatcher'
