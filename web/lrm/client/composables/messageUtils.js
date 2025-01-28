@@ -11,6 +11,12 @@ export function isOut (direction) {
   return direction === DIRECTIONS.OUT
 }
 
+export const ValidationStatus = {
+  VALID: 'valid',
+  APPROXIMATE: 'approximate',
+  INVALID: 'invalid'
+}
+
 const caseIdMap = {
   'RC-EDA': 'createCase.caseId',
   EMSI: 'emsi.EVENT.MAIN_EVENT_ID',
@@ -32,6 +38,10 @@ export function getCaseId (message, isRootMessage = false) {
   } else {
     return caseIdKey.split('.').reduce((acc, key) => acc[key], message)
   }
+}
+
+export function getDistributionIdOfAckedMessage(message) {
+  return message?.body?.content?.[0]?.jsonContent?.embeddedJsonContent?.message?.reference?.distributionID;
 }
 
 /**

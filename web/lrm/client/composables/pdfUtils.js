@@ -1,5 +1,7 @@
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
+import { ValidationStatus } from '~/composables/messageUtils.js'
+
 
 const color = {
   black: [0, 0, 0], // Black
@@ -20,15 +22,6 @@ const addSection = (pdf, section, yOffset) => {
   })
 
   return yOffset + section.length * 5 // Add 10px padding after section
-}
-
-//addList function
-const addList = (pdf, list, x, y, fontSize = 10, textColor = color.black) => {
-  pdf.setFontSize(fontSize)
-  pdf.setTextColor(...textColor)
-  list.forEach((item, index) => {
-    pdf.text(item, x, y + index * 8)
-  })
 }
 
 const addTable = (pdf, table, yOffset) => {
@@ -53,11 +46,11 @@ const addTable = (pdf, table, yOffset) => {
 
 const getStatusTextAndColor = (valid) => {
   switch (valid) {
-    case 'valid':
+    case ValidationStatus.VALID:
       return { text: 'Valide', color: color.green }
-    case 'invalid':
+    case ValidationStatus.INVALID:
       return { text: 'Invalide', color: color.red }
-    case 'approximate':
+    case ValidationStatus.APPROXIMATE:
       return { text: 'Approximatif', color: color.orange }
     default:
       return { text: 'Non renseigné', color: color.black }

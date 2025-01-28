@@ -188,14 +188,6 @@ export default {
         this.store.setShowSentMessages(value)
       }
     },
-    autoAckConfig: {
-      get () {
-        return this.autoAck
-      },
-      set (value) {
-        this.store.setAutoAck(value)
-      }
-    },
     clientMessages () {
       return this.store.messages.filter(
         message => (
@@ -265,7 +257,6 @@ export default {
         message => getMessageType(message) === type
       )
     },
-
     useMessageToReply (message) {
       // Use message to fill the form
       if (message[this.store.selectedSchema.schema.title]) {
