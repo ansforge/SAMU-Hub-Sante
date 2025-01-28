@@ -157,7 +157,7 @@ export function buildMessage (innerMessage, distributionKind = 'Report') {
   message.content[0].jsonContent.embeddedJsonContent.message.kind = message.distributionKind
   message.content[0].jsonContent.embeddedJsonContent.message.sender = { name, URI: `hubex:${store.user.clientId}` }
   message.content[0].jsonContent.embeddedJsonContent.message.sentAt = sentAt
-  message.content[0].jsonContent.embeddedJsonContent.message.recipient = [{ name: clientInfos().name, URI: `hubex:${targetId}` }]
+  message.content[0].jsonContent.embeddedJsonContent.message.recipient = [{ name: clientInfos(store.user.targetId).name, URI: `hubex:${targetId}` }]
   return trimEmptyValues(message)
 }
 
