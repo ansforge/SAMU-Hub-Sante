@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "prepare": "husky install",
+    "prepare": "cd ../../.. && husky web/lrm/client/.husky",
     "setup": "npm run cp:schemas && npm run cp:examples",
     "cp:schemas": "rm static/schemas/json-schema/* && cp -R ../../../../SAMU-Hub-Modeles/src/main/resources/json-schema/ static/schemas/",
     "cp:examples": "rm static/examples/* && cp -R ../../../../SAMU-Hub-Modeles/src/main/resources/sample/examples/ static/",
