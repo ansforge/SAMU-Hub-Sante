@@ -115,7 +115,7 @@
                     <span>
                       <pre><b>{{ name }}:</b></pre>
                       <pre>{{ requiredValue.value }}</pre>
-                      <pre v-if="!requiredValue?.valid === 'valid'" class="wrong-received">(Reçu: {{ requiredValue?.receivedValue || 'null' }}) </pre>
+                      <pre v-if="requiredValue?.valid !== ValidationStatus.VALID" class="wrong-received">(Reçu: {{ requiredValue?.receivedValue || 'null' }}) </pre>
                     </span>
                   </div>
                 </v-list-item>
