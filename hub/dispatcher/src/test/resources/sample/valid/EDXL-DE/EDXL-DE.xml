@@ -18,9 +18,9 @@
             <contentXML>
                 <embeddedXMLContent>
                     <message xmlns="urn:emergency:eda:1.9">
-                        <customContent>
-                            <key>value</key>
-                        </customContent>
+                        <technicalNoreq xmlns="urn:emergency:eda:1.9:technicalNoreq">
+                            <optionalStringField>value</optionalStringField>
+                        </technicalNoreq>
                     </message>
                 </embeddedXMLContent>
             </contentXML>
