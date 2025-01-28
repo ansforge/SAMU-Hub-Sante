@@ -3,7 +3,7 @@
     <v-col cols="12" sm="7">
       <v-card style="height: 86vh; overflow-y: auto;">
         <v-card-title class="text-h5 d-flex justify-space-between align-center">
-          Formulaire
+          <span class="mr-5">Formulaire</span>
           <vhost-selector class="mr-5" />
           <send-button @click="submit(store.currentMessage)" />
         </v-card-title>
