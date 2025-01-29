@@ -54,9 +54,9 @@
         <slot />
       </v-container>
     </v-main>
-    <v-footer app>
-      <span
-        ><a :href="repositoryUrl + 'tree/' + $store.selectedVhost.modelVersion"
+    <v-footer>
+      <span>
+        <a :href="computedRepositoryUrl"
           >SAMU Hub Modeles - v{{ $store.selectedVhost.modelVersion }}</a
         >&nbsp;&copy; {{ new Date().getFullYear() }}</span
       >
@@ -71,15 +71,17 @@
         </span>
         <v-icon
           class="ml-2"
-          icon="mdi-circle"
           :color="store.isWebsocketConnected ? 'success' : 'warning'"
-        />
+        >
+          mdi-circle
+        </v-icon>
       </span>
     </v-footer>
   </v-app>
 </template>
 
 <script>
+import { useRouter } from 'vue-router';
 import { useMainStore } from '~/store';
 import mixinUser from '~/mixins/mixinUser';
 import { REPOSITORY_URL } from '~/constants';
@@ -99,6 +101,11 @@ export default {
         ? 'Connexion établie'
         : 'Connexion en attente';
     },
+    computedRepositoryUrl() {
+      return (
+        this.repositoryUrl + 'tree/' + this.$store.selectedVhost.modelVersion
+      );
+    },
   },
   methods: {
     toggleAdvanced() {
@@ -113,8 +120,8 @@ export default {
           clientId: this.store.user.targetId,
         });
       } else {
-        // eslint-disable-next-line no-undef
-        return navigateTo('/');
+        const router = useRouter();
+        return router.push('/');
       }
     },
   },
@@ -141,9 +148,13 @@ html {
 }
 
 .v-footer {
+  z-index: 999;
+  position: sticky;
+  bottom: 0;
+
   display: flex;
-  flex-direction: row;
   justify-content: space-between;
+  max-height: fit-content;
 }
 
 .v-footer > span {
