@@ -1,11 +1,16 @@
 <template>
   <v-row justify="center">
     <v-col cols="12" sm="7">
-      <v-card style="height: 86vh; overflow-y: auto;">
+      <v-card style="height: 86vh; overflow-y: auto">
         <v-card-title class="text-h5 d-flex align-center">
           Formulaire
-          <source-selector @source-changed="source=$event" />
-          <v-btn icon="mdi-reload" density="compact" :loading="jsonMessagesLoading" @click="updateForm" />
+          <source-selector @source-changed="source = $event" />
+          <v-btn
+            icon="mdi-reload"
+            density="compact"
+            :loading="jsonMessagesLoading"
+            @click="updateForm"
+          />
         </v-card-title>
         <v-card-text>
           <v-tabs
@@ -15,10 +20,7 @@
             align-tabs="title"
           >
             <v-tabs color="primary" />
-            <v-tab
-              v-for="{label} in store.messageTypes"
-              :key="label"
-            >
+            <v-tab v-for="{ label } in store.messageTypes" :key="label">
               {{ label }}
             </v-tab>
           </v-tabs>
@@ -34,29 +36,33 @@
       </v-card>
     </v-col>
     <v-col cols="12" sm="5">
-      <v-card style="height: 86vh; overflow-y: auto;">
+      <v-card style="height: 86vh; overflow-y: auto">
         <v-card-title class="text-h5">
           Json live view
-          <v-spacer/>
+          <v-spacer />
           <v-btn primary @click="saveMessage">
-            <v-icon start>
-              mdi-file-download-outline
-            </v-icon>
+            <v-icon start> mdi-file-download-outline </v-icon>
             Enregistrer
           </v-btn>
           <v-btn secondary @click="validateMessage">
-            <v-icon start>
-              mdi-text-box-check-outline
-            </v-icon>
+            <v-icon start> mdi-text-box-check-outline </v-icon>
             Valider
           </v-btn>
         </v-card-title>
         <v-card-text>
           <json-viewer
             v-if="store.currentMessage"
-            :value="trimEmptyValues({[currentMessageType?.schema?.title]: store.currentMessage})"
+            :value="
+              trimEmptyValues({
+                [currentMessageType?.schema?.title]: store.currentMessage,
+              })
+            "
             :expand-depth="10"
-            :copyable="{copyText: 'Copier', copiedText: 'Copié !', timeout: 1000}"
+            :copyable="{
+              copyText: 'Copier',
+              copiedText: 'Copié !',
+              timeout: 1000,
+            }"
             theme="json-theme"
           />
         </v-card-text>
@@ -66,26 +72,26 @@
 </template>
 
 <script setup>
-import Ajv from 'ajv'
-import { useNuxtApp } from 'nuxt/app'
-import { REPOSITORY_URL } from '@/constants'
-import mixinWebsocket from '~/mixins/mixinWebsocket'
-import { trimEmptyValues } from '~/composables/messageUtils'
-import { useMainStore } from '~/store'
+import Ajv from 'ajv';
+import { useNuxtApp } from 'nuxt/app';
+import { REPOSITORY_URL } from '@/constants';
+import mixinWebsocket from '~/mixins/mixinWebsocket';
+import { trimEmptyValues } from '~/composables/messageUtils';
+import { useMainStore } from '~/store';
 
+// eslint-disable-next-line no-undef
 useHead({
-  title: 'Json Creator - Hub Santé'
-})
-
+  title: 'Json Creator - Hub Santé',
+});
 </script>
 
 <script>
-import { consola } from 'consola'
+import { consola } from 'consola';
 
 export default {
   name: 'JsonCreator',
   mixins: [mixinWebsocket],
-  data () {
+  data() {
     return {
       app: useNuxtApp(),
       toasts: [],
@@ -93,7 +99,7 @@ export default {
       ajv: new Ajv({
         code: { es5: true },
         allErrors: true,
-        strict: false
+        strict: false,
       }),
       source: null,
       messageTypeTabIndex: null,
@@ -101,118 +107,155 @@ export default {
       selectedMessageType: 'message',
       selectedClientId: null,
       selectedCaseIds: [],
-      queueTypes: [{
-        name: 'Message',
-        type: 'message',
-        icon: 'mdi-message'
-      }, {
-        name: 'Ack',
-        type: 'ack',
-        icon: 'mdi-check'
-      }, {
-        name: 'Info',
-        type: 'info',
-        icon: 'mdi-information'
-      }],
+      queueTypes: [
+        {
+          name: 'Message',
+          type: 'message',
+          icon: 'mdi-message',
+        },
+        {
+          name: 'Ack',
+          type: 'ack',
+          icon: 'mdi-check',
+        },
+        {
+          name: 'Info',
+          type: 'info',
+          icon: 'mdi-information',
+        },
+      ],
       form: {},
-      jsonMessagesLoading: false
-    }
+      jsonMessagesLoading: false,
+    };
   },
   computed: {
-    currentMessageType () {
-      return this.store.messageTypes[this.messageTypeTabIndex]
-    }
+    currentMessageType() {
+      return this.store.messageTypes[this.messageTypeTabIndex];
+    },
   },
   watch: {
-    source () {
-      this.updateForm()
+    source() {
+      this.updateForm();
     },
-    currentMessageType () {
-      this.store.selectedSchema = this.store.messageTypes[this.messageTypeTabIndex]
-    }
+    currentMessageType() {
+      this.store.selectedSchema =
+        this.store.messageTypes[this.messageTypeTabIndex];
+    },
   },
   methods: {
-    updateForm () {
-      this.jsonMessagesLoading = true
+    updateForm() {
+      this.jsonMessagesLoading = true;
       // To automatically generate the UI and input fields based on the JSON Schema
       // We need to wait the acquisition of 'messagesList' before attempting to acquire the schemas
-      this.store.loadMessageTypes(REPOSITORY_URL + this.source + '/src/main/resources/sample/examples/messagesList.json').then(
-        () => this.store.loadSchemas(REPOSITORY_URL + this.source + '/src/main/resources/json-schema/').then(
-          () => {
-            this.messageTypeTabIndex = 0
-          }).catch((reason) => {
-          consola.error(reason)
-          this.toasts.push(this.app.$toast.error('Erreur lors de l\'acquisition des schémas de version ' + this.source))
+      this.store
+        .loadMessageTypes(
+          REPOSITORY_URL +
+            this.source +
+            '/src/main/resources/sample/examples/messagesList.json'
+        )
+        .then(() =>
+          this.store
+            .loadSchemas(
+              REPOSITORY_URL + this.source + '/src/main/resources/json-schema/'
+            )
+            .then(() => {
+              this.messageTypeTabIndex = 0;
+            })
+            .catch((reason) => {
+              consola.error(reason);
+              this.toasts.push(
+                this.app.$toast.error(
+                  "Erreur lors de l'acquisition des schémas de version " +
+                    this.source
+                )
+              );
+            })
+        )
+        .catch(() => {
+          consola.error("Couldn't get messagesList.json");
+          this.clearToasts();
+          this.toasts.push(
+            this.app.$toast.error(
+              "Erreur lors de l'acquisition de la liste des schémas de version " +
+                this.source
+            )
+          );
         })
-      ).catch(() => {
-        consola.error('Couldn\'t get messagesList.json')
-        this.clearToasts()
-        this.toasts.push(this.app.$toast.error('Erreur lors de l\'acquisition de la liste des schémas de version ' + this.source))
-      }).finally(() => {
-        this.jsonMessagesLoading = false
-      })
+        .finally(() => {
+          this.jsonMessagesLoading = false;
+        });
     },
-    useSchema (schema) {
+    useSchema(schema) {
       // We empty the cache since all out schemas have the same $id and we can't add duplicate id schemas to the cache
       for (const key in this.ajv.schemas) {
-        this.ajv.removeSchema(key)
-        this.ajv.removeKeyword(key)
+        this.ajv.removeSchema(key);
+        this.ajv.removeKeyword(key);
       }
       for (const key in this.ajv.refs) {
-        delete this.ajv.refs[key]
+        delete this.ajv.refs[key];
       }
       // We do not validate the schema itself due to ajv being very strict on several points (e.g. uniqueness in 'required' properties) which are not mandatory
-      this.ajv.addSchema(schema, schema.title, undefined, false)
+      this.ajv.addSchema(schema, schema.title, undefined, false);
     },
-    validateJson (json) {
-      this.useSchema(this.currentMessageType.schema)
+    validateJson(json) {
+      this.useSchema(this.currentMessageType.schema);
       // Then we validate using the schema
       try {
-        this.ajv.validate(this.currentMessageType.schema.title, json)
-        return this.ajv.errors
+        this.ajv.validate(this.currentMessageType.schema.title, json);
+        return this.ajv.errors;
       } catch (error) {
         return [
           {
             instancePath: '',
-            message: 'Un problème est survenu lors de la validation du message'
-          }
-        ]
+            message: 'Un problème est survenu lors de la validation du message',
+          },
+        ];
       }
     },
-    updateCurrentMessage (form) {
-      this.store.currentMessage = form
+    updateCurrentMessage(form) {
+      this.store.currentMessage = form;
     },
-    clearToasts () {
+    clearToasts() {
       for (const toastId of this.toasts) {
-        this.app.$toast.remove(toastId)
+        this.app.$toast.remove(toastId);
       }
     },
-    validateMessage () {
-      this.clearToasts()
-      const validationResult = this.validateJson(trimEmptyValues(this.store.currentMessage))
+    validateMessage() {
+      this.clearToasts();
+      const validationResult = this.validateJson(
+        trimEmptyValues(this.store.currentMessage)
+      );
       if (validationResult) {
         // Toast all errors, showing instance path at the start of the line
-        this.toasts.push(this.app.$toast.error(
-          validationResult.map(error => `${error.instancePath}/: ${error.message}`).join('<br>')
-        ))
+        this.toasts.push(
+          this.app.$toast.error(
+            validationResult
+              .map((error) => `${error.instancePath}/: ${error.message}`)
+              .join('<br>')
+          )
+        );
       } else {
-        this.toasts.push(this.app.$toast.success(
-          'Le message est valide'
-        ))
+        this.toasts.push(this.app.$toast.success('Le message est valide'));
       }
     },
-    saveMessage () {
+    saveMessage() {
       // Download as file | Ref.: https://stackoverflow.com/a/34156339
       // JSON pretty-print | Ref.: https://stackoverflow.com/a/7220510
-      const data = JSON.stringify(trimEmptyValues({ [this.currentMessageType?.schema?.title]: this.store.currentMessage }), null, 2)
-      const a = document.createElement('a')
-      const file = new Blob([data], { type: 'application/json' })
-      a.href = URL.createObjectURL(file)
-      a.download = `${this.currentMessageType?.label}-message.json`
-      a.click()
-    }
-  }
-}
+      const data = JSON.stringify(
+        trimEmptyValues({
+          [this.currentMessageType?.schema?.title]: this.store.currentMessage,
+        }),
+        null,
+        2
+      );
+      const a = document.createElement('a');
+      const file = new Blob([data], { type: 'application/json' });
+      a.href = URL.createObjectURL(file);
+      a.download = `${this.currentMessageType?.label}-message.json`;
+      a.click();
+    },
+  },
+};
 </script>
 
 <style lang="scss">
@@ -239,44 +282,44 @@ export default {
   }
 
   .jv-button {
-    color: #49b3ff
+    color: #49b3ff;
   }
 
   .jv-key {
-    color: #111111
+    color: #111111;
   }
 
   .jv-item {
     &.jv-array {
-      color: #111111
+      color: #111111;
     }
 
     &.jv-boolean {
-      color: #fc1e70
+      color: #fc1e70;
     }
 
     &.jv-function {
-      color: #067bca
+      color: #067bca;
     }
 
     &.jv-number {
-      color: #fc1e70
+      color: #fc1e70;
     }
 
     &.jv-number-float {
-      color: #fc1e70
+      color: #fc1e70;
     }
 
     &.jv-number-integer {
-      color: #fc1e70
+      color: #fc1e70;
     }
 
     &.jv-object {
-      color: #111111
+      color: #111111;
     }
 
     &.jv-undefined {
-      color: #e08331
+      color: #e08331;
     }
 
     &.jv-string {

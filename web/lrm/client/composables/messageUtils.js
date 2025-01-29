@@ -14,8 +14,8 @@ export function isOut(direction) {
 export const ValidationStatus = {
   VALID: 'valid',
   APPROXIMATE: 'approximate',
-  INVALID: 'invalid'
-}
+  INVALID: 'invalid',
+};
 
 const caseIdMap = {
   'RC-EDA': 'createCase.caseId',
@@ -41,7 +41,8 @@ export function getCaseId(message, isRootMessage = false) {
 }
 
 export function getDistributionIdOfAckedMessage(message) {
-  return message?.body?.content?.[0]?.jsonContent?.embeddedJsonContent?.message?.reference?.distributionID;
+  return message?.body?.content?.[0]?.jsonContent?.embeddedJsonContent?.message
+    ?.reference?.distributionID;
 }
 
 /**
@@ -133,7 +134,6 @@ export function buildMessage(innerMessage, distributionKind = 'Report') {
     throw new Error('Inner message should only have one key');
   }
   const store = useMainStore();
-  console.log('store', store);
   const message = JSON.parse(JSON.stringify(EDXL_ENVELOPE)); // Deep copy
   if (/^((1\.)|(2\.))/.test(store.selectedVhost.modelVersion)) {
     // We delete 'keyword' from 'descriptor' if the model version is 1.* or 2.*
@@ -144,22 +144,29 @@ export function buildMessage(innerMessage, distributionKind = 'Report') {
   const formattedInnerMessage = formatIdsInMessage(innerMessage);
   message.content[0].jsonContent.embeddedJsonContent.message = {
     ...message.content[0].jsonContent.embeddedJsonContent.message,
-    ...formattedInnerMessage
-  }
-  const name = clientInfos().name
-  const targetId = store.user.targetId
-  const sentAt = moment().format()
-  message.distributionID = `${store.user.clientId}_${uuidv4()}`
-  message.distributionKind = distributionKind
-  message.senderID = store.user.clientId
-  message.dateTimeSent = sentAt
-  message.descriptor.explicitAddress.explicitAddressValue = targetId
-  message.content[0].jsonContent.embeddedJsonContent.message.messageId = message.distributionID
-  message.content[0].jsonContent.embeddedJsonContent.message.kind = message.distributionKind
-  message.content[0].jsonContent.embeddedJsonContent.message.sender = { name, URI: `hubex:${store.user.clientId}` }
-  message.content[0].jsonContent.embeddedJsonContent.message.sentAt = sentAt
-  message.content[0].jsonContent.embeddedJsonContent.message.recipient = [{ name: clientInfos(store.user.targetId).name, URI: `hubex:${targetId}` }]
-  return trimEmptyValues(message)
+    ...formattedInnerMessage,
+  };
+  const name = clientInfos().name;
+  const targetId = store.user.targetId;
+  const sentAt = moment().format();
+  message.distributionID = `${store.user.clientId}_${uuidv4()}`;
+  message.distributionKind = distributionKind;
+  message.senderID = store.user.clientId;
+  message.dateTimeSent = sentAt;
+  message.descriptor.explicitAddress.explicitAddressValue = targetId;
+  message.content[0].jsonContent.embeddedJsonContent.message.messageId =
+    message.distributionID;
+  message.content[0].jsonContent.embeddedJsonContent.message.kind =
+    message.distributionKind;
+  message.content[0].jsonContent.embeddedJsonContent.message.sender = {
+    name,
+    URI: `hubex:${store.user.clientId}`,
+  };
+  message.content[0].jsonContent.embeddedJsonContent.message.sentAt = sentAt;
+  message.content[0].jsonContent.embeddedJsonContent.message.recipient = [
+    { name: clientInfos(store.user.targetId).name, URI: `hubex:${targetId}` },
+  ];
+  return trimEmptyValues(message);
 }
 
 function formatIdsInMessage(innerMessage) {

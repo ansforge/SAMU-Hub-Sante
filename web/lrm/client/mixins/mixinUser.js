@@ -1,25 +1,26 @@
-import { useMainStore } from '~/store'
+import { useMainStore } from '~/store';
 
 export default {
-  data () {
+  data() {
     return {
-      store: useMainStore()
-    }
+      store: useMainStore(),
+    };
   },
   computed: {
-    userInfos () {
+    userInfos() {
       if (this.store.isAuthenticated) {
-        return this.clientInfos(this.store.user.clientId)
+        return this.clientInfos(this.store.user.clientId);
       }
-      return {}
-    }
+      return {};
+    },
   },
   methods: {
-    clientInfos (clientId) {
+    clientInfos(clientId) {
       return {
         name: clientId.split('.').splice(2).join('.'), // Remove the first two parts of the clientId (ex: fr.health)
-        icon: clientId.split('.')[1] === 'health' ? 'mdi-heart-pulse' : 'mdi-fire'
-      }
-    }
-  }
-}
+        icon:
+          clientId.split('.')[1] === 'health' ? 'mdi-heart-pulse' : 'mdi-fire',
+      };
+    },
+  },
+};

@@ -10,27 +10,30 @@
       variant="outlined"
     >
       <template #item="{ props, item }">
-        <v-list-item v-bind="props" :subtitle="item.raw.modelVersion" />
-      </template>"
+        <v-list-item
+          v-bind="props"
+          :subtitle="item.raw.modelVersion"
+        /> </template
+      >"
     </v-combobox>
   </span>
 </template>
 
 <script setup>
-import { useMainStore } from '~/store'
-const store = useMainStore()
+import { useMainStore } from '~/store';
+import { toRefs, onMounted } from 'vue';
+const store = useMainStore();
 
-const { selectedVhost } = toRefs(store)
-const vhosts = store.vhostMap
+const { selectedVhost } = toRefs(store);
+const vhosts = store.vhostMap;
 
 onMounted(() => {
-  selectedVhost.value = store.selectedVhost
-})
-
+  selectedVhost.value = store.selectedVhost;
+});
 </script>
 
 <style scoped>
-  span {
-    flex: 1 1 auto;
-  }
+span {
+  flex: 1 1 auto;
+}
 </style>
