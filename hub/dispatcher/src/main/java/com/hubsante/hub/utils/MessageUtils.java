@@ -54,9 +54,9 @@ public class MessageUtils {
         String receivedRoutingKey = getSenderFromRoutingKey(message);
         if (!receivedRoutingKey.equals(edxlMessage.getSenderID())) {
             if (!receivedRoutingKey.startsWith(HEALTH_PREFIX)) {
-                log.error("Message has been received from hubex with inconsistent routing key: routing key was {} and senderID was {}",
+                log.info("Message has been received from hubex partner with routing key {} and senderID {}",
                         message.getMessageProperties().getReceivedRoutingKey(),
-                        edxlMessage.getDistributionID());
+                        edxlMessage.getSenderID());
                 return;
             }
             String errorCause = "Sender inconsistency for message " +
