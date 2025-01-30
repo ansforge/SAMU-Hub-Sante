@@ -34,7 +34,7 @@ public class EdxlUtils {
     }
 
     public static String getUseCaseFromMessage(ContentMessage contentMessage) {
-        return contentMessage.getClass().getName();
+        return contentMessage.getClass().getSimpleName();
     }
     private static String UUID() {
         return HUB_ID + "_" + UUID.randomUUID();

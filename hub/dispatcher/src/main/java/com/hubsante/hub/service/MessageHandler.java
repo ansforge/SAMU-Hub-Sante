@@ -284,7 +284,7 @@ public class MessageHandler {
         log.debug(receivedEdxl);
     }
 
-    private void publishErrorMetric(String error, String sender) {
+    protected void publishErrorMetric(String error, String sender) {
         registry.counter(DISPATCH_ERROR, REASON_TAG, error, CLIENT_ID_TAG, sender, VHOST_TAG, hubConfig.getVhost()).increment();
     }
 
