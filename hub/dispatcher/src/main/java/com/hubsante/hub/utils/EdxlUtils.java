@@ -1,5 +1,5 @@
 /**
- * Copyright © 2023-2024 Agence du Numerique en Sante (ANS)
+ * Copyright © 2023-2025 Agence du Numerique en Sante (ANS)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ public class EdxlUtils {
     }
 
     public static String getUseCaseFromMessage(ContentMessage contentMessage) {
-        return contentMessage.getClass().getName();
+        return contentMessage.getClass().getSimpleName();
     }
     private static String UUID() {
         return HUB_ID + "_" + UUID.randomUUID();

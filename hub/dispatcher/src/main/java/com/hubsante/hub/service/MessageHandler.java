@@ -1,5 +1,5 @@
 /**
- * Copyright © 2023-2024 Agence du Numerique en Sante (ANS)
+ * Copyright © 2023-2025 Agence du Numerique en Sante (ANS)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -284,7 +284,7 @@ public class MessageHandler {
         log.debug(receivedEdxl);
     }
 
-    private void publishErrorMetric(String error, String sender) {
+    protected void publishErrorMetric(String error, String sender) {
         registry.counter(DISPATCH_ERROR, REASON_TAG, error, CLIENT_ID_TAG, sender, VHOST_TAG, hubConfig.getVhost()).increment();
     }
 
