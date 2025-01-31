@@ -24,8 +24,9 @@
               {{ label }}
             </v-tab>
           </v-tabs>
-          <v-window v-model="messageTypeTabIndex">
+          <v-window v-if="currentMessageType" v-model="messageTypeTabIndex">
             <schema-form
+              v-if="currentMessageType"
               :source="source"
               :current-message-type="currentMessageType"
               :message-type-tab-index="messageTypeTabIndex"
@@ -72,194 +73,197 @@
 </template>
 
 <script setup>
-import Ajv from 'ajv';
-import { useNuxtApp } from 'nuxt/app';
-import { REPOSITORY_URL } from '@/constants';
-import mixinWebsocket from '~/mixins/mixinWebsocket';
-import { trimEmptyValues } from '~/composables/messageUtils';
-import { useMainStore } from '~/store';
+  import Ajv from 'ajv';
+  import { useNuxtApp } from 'nuxt/app';
+  import { REPOSITORY_URL } from '@/constants';
+  import mixinWebsocket from '~/mixins/mixinWebsocket';
+  import { trimEmptyValues } from '~/composables/messageUtils';
+  import { useMainStore } from '~/store';
 
-// eslint-disable-next-line no-undef
-useHead({
-  title: 'Json Creator - Hub Santé',
-});
+  // eslint-disable-next-line no-undef
+  useHead({
+    title: 'Json Creator - Hub Santé',
+  });
 </script>
 
 <script>
-import { consola } from 'consola';
+  import { consola } from 'consola';
 
-export default {
-  name: 'JsonCreator',
-  mixins: [mixinWebsocket],
-  data() {
-    return {
-      app: useNuxtApp(),
-      toasts: [],
-      store: useMainStore(),
-      ajv: new Ajv({
-        code: { es5: true },
-        allErrors: true,
-        strict: false,
-      }),
-      source: null,
-      messageTypeTabIndex: null,
-      currentMessage: null,
-      selectedMessageType: 'message',
-      selectedClientId: null,
-      selectedCaseIds: [],
-      queueTypes: [
-        {
-          name: 'Message',
-          type: 'message',
-          icon: 'mdi-message',
-        },
-        {
-          name: 'Ack',
-          type: 'ack',
-          icon: 'mdi-check',
-        },
-        {
-          name: 'Info',
-          type: 'info',
-          icon: 'mdi-information',
-        },
-      ],
-      form: {},
-      jsonMessagesLoading: false,
-    };
-  },
-  computed: {
-    currentMessageType() {
-      return this.store.messageTypes[this.messageTypeTabIndex];
+  export default {
+    name: 'JsonCreator',
+    mixins: [mixinWebsocket],
+    data() {
+      return {
+        app: useNuxtApp(),
+        toasts: [],
+        store: useMainStore(),
+        ajv: new Ajv({
+          code: { es5: true },
+          allErrors: true,
+          strict: false,
+        }),
+        source: null,
+        messageTypeTabIndex: null,
+        currentMessage: null,
+        selectedMessageType: 'message',
+        selectedClientId: null,
+        selectedCaseIds: [],
+        queueTypes: [
+          {
+            name: 'Message',
+            type: 'message',
+            icon: 'mdi-message',
+          },
+          {
+            name: 'Ack',
+            type: 'ack',
+            icon: 'mdi-check',
+          },
+          {
+            name: 'Info',
+            type: 'info',
+            icon: 'mdi-information',
+          },
+        ],
+        form: {},
+        jsonMessagesLoading: false,
+      };
     },
-  },
-  watch: {
-    source() {
-      this.updateForm();
+    computed: {
+      currentMessageType() {
+        return this.store.messageTypes[this.messageTypeTabIndex];
+      },
     },
-    currentMessageType() {
-      this.store.selectedSchema =
-        this.store.messageTypes[this.messageTypeTabIndex];
+    watch: {
+      source() {
+        this.updateForm();
+      },
+      currentMessageType() {
+        this.store.selectedSchema =
+          this.store.messageTypes[this.messageTypeTabIndex];
+      },
     },
-  },
-  methods: {
-    updateForm() {
-      this.jsonMessagesLoading = true;
-      // To automatically generate the UI and input fields based on the JSON Schema
-      // We need to wait the acquisition of 'messagesList' before attempting to acquire the schemas
-      this.store
-        .loadMessageTypes(
-          REPOSITORY_URL +
-            this.source +
-            '/src/main/resources/sample/examples/messagesList.json'
-        )
-        .then(() =>
-          this.store
-            .loadSchemas(
-              REPOSITORY_URL + this.source + '/src/main/resources/json-schema/'
-            )
-            .then(() => {
-              this.messageTypeTabIndex = 0;
-            })
-            .catch((reason) => {
-              consola.error(reason);
-              this.toasts.push(
-                this.app.$toast.error(
-                  "Erreur lors de l'acquisition des schémas de version " +
-                    this.source
-                )
-              );
-            })
-        )
-        .catch(() => {
-          consola.error("Couldn't get messagesList.json");
-          this.clearToasts();
+    methods: {
+      updateForm() {
+        this.jsonMessagesLoading = true;
+        // To automatically generate the UI and input fields based on the JSON Schema
+        // We need to wait the acquisition of 'messagesList' before attempting to acquire the schemas
+        this.store
+          .loadMessageTypes(
+            REPOSITORY_URL +
+              this.source +
+              '/src/main/resources/sample/examples/messagesList.json'
+          )
+          .then(() =>
+            this.store
+              .loadSchemas(
+                REPOSITORY_URL +
+                  this.source +
+                  '/src/main/resources/json-schema/'
+              )
+              .then(() => {
+                this.messageTypeTabIndex = 0;
+              })
+              .catch((reason) => {
+                consola.error(reason);
+                this.toasts.push(
+                  this.app.$toast.error(
+                    "Erreur lors de l'acquisition des schémas de version " +
+                      this.source
+                  )
+                );
+              })
+          )
+          .catch(() => {
+            consola.error("Couldn't get messagesList.json");
+            this.clearToasts();
+            this.toasts.push(
+              this.app.$toast.error(
+                "Erreur lors de l'acquisition de la liste des schémas de version " +
+                  this.source
+              )
+            );
+          })
+          .finally(() => {
+            this.jsonMessagesLoading = false;
+          });
+      },
+      useSchema(schema) {
+        // We empty the cache since all out schemas have the same $id and we can't add duplicate id schemas to the cache
+        for (const key in this.ajv.schemas) {
+          this.ajv.removeSchema(key);
+          this.ajv.removeKeyword(key);
+        }
+        for (const key in this.ajv.refs) {
+          delete this.ajv.refs[key];
+        }
+        // We do not validate the schema itself due to ajv being very strict on several points (e.g. uniqueness in 'required' properties) which are not mandatory
+        this.ajv.addSchema(schema, schema.title, undefined, false);
+      },
+      validateJson(json) {
+        this.useSchema(this.currentMessageType.schema);
+        // Then we validate using the schema
+        try {
+          this.ajv.validate(this.currentMessageType.schema.title, json);
+          return this.ajv.errors;
+        } catch (error) {
+          return [
+            {
+              instancePath: '',
+              message:
+                'Un problème est survenu lors de la validation du message',
+            },
+          ];
+        }
+      },
+      updateCurrentMessage(form) {
+        this.store.currentMessage = form;
+      },
+      clearToasts() {
+        for (const toastId of this.toasts) {
+          this.app.$toast.remove(toastId);
+        }
+      },
+      validateMessage() {
+        this.clearToasts();
+        const validationResult = this.validateJson(
+          trimEmptyValues(this.store.currentMessage)
+        );
+        if (validationResult) {
+          // Toast all errors, showing instance path at the start of the line
           this.toasts.push(
             this.app.$toast.error(
-              "Erreur lors de l'acquisition de la liste des schémas de version " +
-                this.source
+              validationResult
+                .map((error) => `${error.instancePath}/: ${error.message}`)
+                .join('<br>')
             )
           );
-        })
-        .finally(() => {
-          this.jsonMessagesLoading = false;
-        });
-    },
-    useSchema(schema) {
-      // We empty the cache since all out schemas have the same $id and we can't add duplicate id schemas to the cache
-      for (const key in this.ajv.schemas) {
-        this.ajv.removeSchema(key);
-        this.ajv.removeKeyword(key);
-      }
-      for (const key in this.ajv.refs) {
-        delete this.ajv.refs[key];
-      }
-      // We do not validate the schema itself due to ajv being very strict on several points (e.g. uniqueness in 'required' properties) which are not mandatory
-      this.ajv.addSchema(schema, schema.title, undefined, false);
-    },
-    validateJson(json) {
-      this.useSchema(this.currentMessageType.schema);
-      // Then we validate using the schema
-      try {
-        this.ajv.validate(this.currentMessageType.schema.title, json);
-        return this.ajv.errors;
-      } catch (error) {
-        return [
-          {
-            instancePath: '',
-            message: 'Un problème est survenu lors de la validation du message',
-          },
-        ];
-      }
-    },
-    updateCurrentMessage(form) {
-      this.store.currentMessage = form;
-    },
-    clearToasts() {
-      for (const toastId of this.toasts) {
-        this.app.$toast.remove(toastId);
-      }
-    },
-    validateMessage() {
-      this.clearToasts();
-      const validationResult = this.validateJson(
-        trimEmptyValues(this.store.currentMessage)
-      );
-      if (validationResult) {
-        // Toast all errors, showing instance path at the start of the line
-        this.toasts.push(
-          this.app.$toast.error(
-            validationResult
-              .map((error) => `${error.instancePath}/: ${error.message}`)
-              .join('<br>')
-          )
+        } else {
+          this.toasts.push(this.app.$toast.success('Le message est valide'));
+        }
+      },
+      saveMessage() {
+        // Download as file | Ref.: https://stackoverflow.com/a/34156339
+        // JSON pretty-print | Ref.: https://stackoverflow.com/a/7220510
+        const data = JSON.stringify(
+          trimEmptyValues({
+            [this.currentMessageType?.schema?.title]: this.store.currentMessage,
+          }),
+          null,
+          2
         );
-      } else {
-        this.toasts.push(this.app.$toast.success('Le message est valide'));
-      }
+        const a = document.createElement('a');
+        const file = new Blob([data], { type: 'application/json' });
+        a.href = URL.createObjectURL(file);
+        a.download = `${this.currentMessageType?.label}-message.json`;
+        a.click();
+      },
     },
-    saveMessage() {
-      // Download as file | Ref.: https://stackoverflow.com/a/34156339
-      // JSON pretty-print | Ref.: https://stackoverflow.com/a/7220510
-      const data = JSON.stringify(
-        trimEmptyValues({
-          [this.currentMessageType?.schema?.title]: this.store.currentMessage,
-        }),
-        null,
-        2
-      );
-      const a = document.createElement('a');
-      const file = new Blob([data], { type: 'application/json' });
-      a.href = URL.createObjectURL(file);
-      a.download = `${this.currentMessageType?.label}-message.json`;
-      a.click();
-    },
-  },
-};
+  };
 </script>
 
 <style lang="scss">
-// Ref.: https://github.com/chenfengjw163/vue-json-viewer/tree/master#theming
+  // Ref.: https://github.com/chenfengjw163/vue-json-viewer/tree/master#theming
 // values are default one from jv-light template
 .json-theme {
   background: rgba(0, 0, 0, 0);

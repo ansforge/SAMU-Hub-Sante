@@ -1,15 +1,15 @@
-import { useMainStore } from '~/store';
+import { useAuthStore } from '@/store/auth';
 
 export default {
   data() {
     return {
-      store: useMainStore(),
+      authStore: useAuthStore(),
     };
   },
   computed: {
     userInfos() {
-      if (this.store.isAuthenticated) {
-        return this.clientInfos(this.store.user.clientId);
+      if (this.authStore.isAuthenticated) {
+        return this.clientInfos(this.authStore.user.clientId);
       }
       return {};
     },
@@ -17,9 +17,9 @@ export default {
   methods: {
     clientInfos(clientId) {
       return {
-        name: clientId.split('.').splice(2).join('.'), // Remove the first two parts of the clientId (ex: fr.health)
+        name: clientId?.split('.').splice(2).join('.'), // Remove the first two parts of the clientId (ex: fr.health)
         icon:
-          clientId.split('.')[1] === 'health' ? 'mdi-heart-pulse' : 'mdi-fire',
+          clientId?.split('.')[1] === 'health' ? 'mdi-heart-pulse' : 'mdi-fire',
       };
     },
   },

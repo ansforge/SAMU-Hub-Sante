@@ -53,7 +53,7 @@
       </v-col>
     </v-row>
     <exampleDetails
-      v-if="selectedExample !== undefined"
+      v-if="selectedExample"
       class="mb-4"
       v-bind="selectedExample"
     />
@@ -61,141 +61,139 @@
 </template>
 
 <script>
-import { consola } from 'consola';
-import { toast } from 'vue3-toastify';
-import { REPOSITORY_URL } from '@/constants';
-import { useMainStore } from '~/store';
+  import { consola } from 'consola';
+  import { toast } from 'vue3-toastify';
+  import { REPOSITORY_URL } from '@/constants';
+  import { useMainStore } from '~/store';
 
-export default {
-  props: {
-    source: {
-      type: String,
-      required: true,
+  export default {
+    props: {
+      source: {
+        type: String,
+        required: true,
+      },
+      examples: {
+        type: Array,
+        required: true,
+      },
     },
-    examples: {
-      type: Array,
-      required: true,
+    emits: ['exampleLoaded'],
+    setup(_, { emit }) {
+      const emitExampleLoaded = () => {
+        emit('exampleLoaded');
+      };
+      return {
+        emitExampleLoaded,
+      };
     },
-  },
-  emits: ['exampleLoaded'],
-  setup(_, { emit }) {
-    const emitExampleLoaded = () => {
-      emit('exampleLoaded');
-    };
-    return {
-      emitExampleLoaded,
-    };
-  },
-  data() {
-    return {
-      store: useMainStore(),
-      isSelectingUpload: false,
-      selectedExample: {},
-    };
-  },
-  computed: {
-    selectedSchema() {
-      return this.store.selectedSchema;
+    data() {
+      return {
+        store: useMainStore(),
+        isSelectingUpload: false,
+        selectedExample: null,
+      };
     },
-  },
-  watch: {
-    selectedSchema() {
-      this.selectedExample = {};
+    computed: {
+      selectedSchema() {
+        return this.store.selectedSchema;
+      },
+    },
+    watch: {
+      selectedSchema() {
+        this.selectedExample = null;
+        this.selectFirstExample();
+      },
+    },
+    mounted() {
       this.selectFirstExample();
     },
-  },
-  mounted() {
-    this.selectFirstExample();
-  },
-  methods: {
-    selectFirstExample() {
-      if (this.examples.length > 0) {
-        this.handleExampleSelection(this.examples[0]);
-        this.selectedExample = this.examples[0];
-      }
-    },
-    handleFileImport() {
-      this.isSelectingUpload = true;
-
-      // After obtaining the focus when closing the FilePicker, return the button state to normal
-      window.addEventListener(
-        'focus',
-        () => {
-          this.isSelectingUpload = false;
-        },
-        { once: true }
-      );
-
-      // Trigger click on the FileInput
-      this.$refs.uploader.click();
-    },
-    onFileChanged(event) {
-      const onReaderLoad = (event) => {
-        consola.log(event.target.result);
-        // We're going to assume that the example we're trying to load starts
-        // with a use case property (such as createCase, emsi, etc.) and that
-        // it's the first and only property at the root level of the example.
-        // TODO: instead of taking the first property and praying, we should extract
-        // the name of the use case from somewhere and use it to properly access that
-        // property in the parsed json object.
-        let parsedJson = {};
-        try {
-          parsedJson = JSON.parse(event.target.result);
-        } catch (error) {
-          toast.error(
-            'Erreur lors du chargement : structure du fichier JSON invalide'
-          );
-          consola.error(error);
-          return;
+    methods: {
+      selectFirstExample() {
+        if (this.examples.length > 0) {
+          this.handleExampleSelection(this.examples[0]);
+          this.selectedExample = this.examples[0];
         }
-        consola.log('this.store', this.store);
-        this.store.currentMessage = parsedJson[Object.keys(parsedJson)[0]];
-      };
+      },
+      handleFileImport() {
+        this.isSelectingUpload = true;
 
-      const reader = new FileReader();
-      reader.onload = onReaderLoad;
-      if (event.target.files[0]) {
-        reader.readAsText(event.target.files[0]);
-      }
-    },
-    loadExample(exampleFilepath) {
-      // If example filepath corresponds to one of the examples in the selected schema's 'file' attribute, we go on
-      if (
-        exampleFilepath &&
-        this.store.selectedSchema.examples.some(
-          (example) => example.file === exampleFilepath
-        )
-      ) {
-        fetch(
-          REPOSITORY_URL +
-            this.source +
-            '/src/main/resources/sample/examples/' +
-            exampleFilepath
-        )
-          .then((response) => response.json())
-          .then((data) => {
-            this.store.currentMessage = data[Object.keys(data)[0]];
-            this.emitExampleLoaded();
-          })
-          .catch((error) => {
+        // After obtaining the focus when closing the FilePicker, return the button state to normal
+        window.addEventListener(
+          'focus',
+          () => {
+            this.isSelectingUpload = false;
+          },
+          { once: true }
+        );
+
+        // Trigger click on the FileInput
+        this.$refs.uploader.click();
+      },
+      onFileChanged(event) {
+        const onReaderLoad = (event) => {
+          // We're going to assume that the example we're trying to load starts
+          // with a use case property (such as createCase, emsi, etc.) and that
+          // it's the first and only property at the root level of the example.
+          // TODO: instead of taking the first property and praying, we should extract
+          // the name of the use case from somewhere and use it to properly access that
+          // property in the parsed json object.
+          let parsedJson = {};
+          try {
+            parsedJson = JSON.parse(event.target.result);
+          } catch (error) {
             toast.error(
-              "Erreur lors du chargement de l'exemple " + exampleFilepath
+              'Erreur lors du chargement : structure du fichier JSON invalide'
             );
             consola.error(error);
-          });
-      } else {
-        this.store.currentMessage = {};
-        this.emitExampleLoaded();
-      }
+            return;
+          }
+          this.store.currentMessage = parsedJson[Object.keys(parsedJson)[0]];
+        };
+
+        const reader = new FileReader();
+        reader.onload = onReaderLoad;
+        if (event.target.files[0]) {
+          reader.readAsText(event.target.files[0]);
+        }
+      },
+      loadExample(exampleFilepath) {
+        // If example filepath corresponds to one of the examples in the selected schema's 'file' attribute, we go on
+        if (
+          exampleFilepath &&
+          this.store.selectedSchema.examples.some(
+            (example) => example.file === exampleFilepath
+          )
+        ) {
+          fetch(
+            REPOSITORY_URL +
+              this.source +
+              '/src/main/resources/sample/examples/' +
+              exampleFilepath
+          )
+            .then((response) => response.json())
+            .then((data) => {
+              this.store.currentMessage = data[Object.keys(data)[0]];
+              this.emitExampleLoaded();
+            })
+            .catch((error) => {
+              toast.error(
+                "Erreur lors du chargement de l'exemple " + exampleFilepath
+              );
+              consola.error(error);
+            });
+        } else {
+          this.store.currentMessage = {};
+          this.emitExampleLoaded();
+        }
+      },
+      handleExampleSelection(example) {
+        // If currently selected example is clicked, deselect it
+        if (this.selectedExample?.file === example?.file) {
+          this.loadExample(null);
+        } else {
+          this.loadExample(example.file);
+        }
+      },
     },
-    handleExampleSelection(example) {
-      // If currently selected example is clicked, deselect it
-      if (this.selectedExample?.file === example?.file) {
-        this.loadExample(null);
-      } else {
-        this.loadExample(example.file);
-      }
-    },
-  },
-};
+  };
 </script>

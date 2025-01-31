@@ -9,6 +9,7 @@ function isEnvProd() {
 export default defineNuxtConfig({
   ssr: true,
   vite: {
+    plugins: [vuetify({ autoImport: true })],
     vue: {
       template: {
         transformAssetUrls,
@@ -19,35 +20,20 @@ export default defineNuxtConfig({
     },
   },
 
-  // Target: https://go.nuxtjs.dev/config-target
-  target: 'server',
+  css: ['vuetify/styles'],
 
-  // Global CSS: https://go.nuxtjs.dev/config-css
-  css: [],
-
-  // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
-  plugins: [{ src: '~/plugins/jsonViewer', mode: 'client' }],
-
-  // Modules: https://go.nuxtjs.dev/config-modules
-  modules: [
-    '@pinia/nuxt',
-    (_options, nuxt) => {
-      nuxt.hooks.hook('vite:extendConfig', (config) => {
-        config.plugins = config.plugins || [];
-        config.plugins.push(vuetify({ autoImport: true }));
-      });
-    },
+  plugins: [
+    { src: '~/plugins/jsonViewer', mode: 'client' },
+    { src: '~/plugins/auth', mode: 'client' },
   ],
 
-  // Build Configuration: https://go.nuxtjs.dev/config-build
+  modules: ['@pinia/nuxt'],
+
   build: {
-    // Necessary for "à la carte" import of vuetify components as the js import in vjsf.js was failing
-    // Ref.: https://koumoul-dev.github.io/vuetify-jsonschema-form/latest/getting-started
-    transpile: ['vuetify/lib', '@koumoul/vjsf'],
+    transpile: ['vuetify', '@koumoul/vjsf'],
   },
 
   generate: {
-    // Ignore href links of default.vue | Ref.: https://github.com/nuxt/nuxt.js/issues/8105#issuecomment-706702793
     exclude: [],
   },
 
@@ -58,14 +44,10 @@ export default defineNuxtConfig({
         {
           rel: 'icon',
           type: 'image/x-icon',
-          href: (isEnvProd() ? '/lrm/' : '/') + 'favicon.ico',
+          href: `${isEnvProd() ? '/lrm/' : '/'}favicon.ico`,
         },
       ],
     },
-  },
-
-  router: {
-    middleware: ['auth'],
   },
 
   runtimeConfig: {

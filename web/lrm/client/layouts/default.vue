@@ -30,7 +30,7 @@
         @click="toggleAdvanced"
       />
       <span
-        v-if="store.isAuthenticated"
+        v-if="authStore.isAuthenticated"
         class="mr-2"
         style="cursor: pointer"
         @click="clickHandler"
@@ -44,9 +44,9 @@
         </v-icon>
         <v-icon v-else color="primary"> mdi-swap-horizontal </v-icon>
         <v-icon color="rgb(100,100,100)">
-          {{ clientInfos(store.user.targetId).icon }}
+          {{ clientInfos(authStore.user.targetId).icon }}
         </v-icon>
-        {{ clientInfos(store.user.targetId).name }}
+        {{ clientInfos(authStore.user.targetId).name }}
       </span>
     </v-app-bar>
     <v-main style="padding-bottom: 0">
@@ -81,55 +81,59 @@
 </template>
 
 <script>
-import { useRouter } from 'vue-router';
-import { useMainStore } from '~/store';
-import mixinUser from '~/mixins/mixinUser';
-import { REPOSITORY_URL } from '~/constants';
+  import { useMainStore } from '~/store';
+  import { useAuthStore } from '@/store/auth'; // Adjust the path as necessary
+  import mixinUser from '~/mixins/mixinUser';
+  import { REPOSITORY_URL } from '~/constants';
+  import { navigateTo } from 'nuxt/app';
 
-export default {
-  name: 'DefaultLayout',
-  mixins: [mixinUser],
-  data() {
-    return {
-      store: useMainStore(),
-      repositoryUrl: REPOSITORY_URL.replace('raw.githubusercontent', 'github'),
-    };
-  },
-  computed: {
-    readableWebsocketStatus() {
-      return this.store.isWebsocketConnected
-        ? 'Connexion établie'
-        : 'Connexion en attente';
+  export default {
+    name: 'DefaultLayout',
+    mixins: [mixinUser],
+    data() {
+      return {
+        store: useMainStore(),
+        authStore: useAuthStore(),
+        repositoryUrl: REPOSITORY_URL.replace(
+          'raw.githubusercontent',
+          'github'
+        ),
+      };
     },
-    computedRepositoryUrl() {
-      return (
-        this.repositoryUrl + 'tree/' + this.$store.selectedVhost.modelVersion
-      );
+    computed: {
+      readableWebsocketStatus() {
+        return this.store.isWebsocketConnected
+          ? 'Connexion établie'
+          : 'Connexion en attente';
+      },
+      computedRepositoryUrl() {
+        return (
+          this.repositoryUrl + 'tree/' + this.$store.selectedVhost.modelVersion
+        );
+      },
     },
-  },
-  methods: {
-    toggleAdvanced() {
-      this.store.toggleAdvanced();
+    methods: {
+      toggleAdvanced() {
+        this.store.toggleAdvanced();
+      },
+      clickHandler() {
+        if (this.store.isAdvanced) {
+          // No control as this will anyway fail, user is expected to be advanced
+          this.store.logInUser({
+            ...this.authStore.user,
+            targetId: this.authStore.user.clientId,
+            clientId: this.authStore.user.targetId,
+          });
+        } else {
+          navigateTo('/');
+        }
+      },
     },
-    clickHandler() {
-      if (this.store.isAdvanced) {
-        // No control as this will anyway fail, user is expected to be advanced
-        this.store.logInUser({
-          ...this.store.user,
-          targetId: this.store.user.clientId,
-          clientId: this.store.user.targetId,
-        });
-      } else {
-        const router = useRouter();
-        return router.push('/');
-      }
-    },
-  },
-};
+  };
 </script>
 
 <style>
-header.v-toolbar {
+  header.v-toolbar {
   position: sticky !important;
 }
 
@@ -151,7 +155,6 @@ html {
   z-index: 999;
   position: sticky;
   bottom: 0;
-
   display: flex;
   justify-content: space-between;
   max-height: fit-content;

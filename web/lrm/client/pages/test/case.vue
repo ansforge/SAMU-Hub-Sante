@@ -256,7 +256,15 @@
                     <v-text-field
                       :ref="'commentField' + index"
                       v-model="requiredValue.description"
-                      class="mt-2 comment-field"
+                      :class="[
+                        'mt-2',
+                        'comment-field',
+                        {
+                          'd-block':
+                            requiredValue.valid &&
+                            requiredValue.valid !== ValidationStatus.VALID,
+                        },
+                      ]"
                       :data-valid="requiredValue.valid"
                       :data-id="requiredValue.path.join('.')"
                       label="Commentaire"
@@ -318,497 +326,506 @@
 </template>
 
 <script setup>
-import { onMounted, toRefs, ref, toRef, computed, watch } from 'vue';
-import jsonpath from 'jsonpath';
-import { generateCasePdf } from '../../composables/generateCasePdf';
-import mixinWebsocket from '~/mixins/mixinWebsocket';
-import { useMainStore } from '~/store';
-import { REPOSITORY_URL } from '@/constants';
-import {
-  isOut,
-  getCaseId,
-  getMessageType,
-  setCaseId,
-  buildMessage,
-  sendMessage,
-  getDistributionIdOfAckedMessage,
-  ValidationStatus,
-  buildAck,
-} from '~/composables/messageUtils.js';
+  import { onMounted, toRefs, ref, toRef, computed, watch } from 'vue';
+  import jsonpath from 'jsonpath';
+  import { generateCasePdf } from '../../composables/generateCasePdf';
+  import mixinWebsocket from '~/mixins/mixinWebsocket';
+  import { useMainStore } from '~/store';
+  import { useAuthStore } from '@/store/auth'; // Adjust the path as necessary
+  import { REPOSITORY_URL } from '@/constants';
+  import {
+    isOut,
+    getCaseId,
+    getMessageType,
+    setCaseId,
+    buildMessage,
+    sendMessage,
+    getDistributionIdOfAckedMessage,
+    ValidationStatus,
+    buildAck,
+  } from '~/composables/messageUtils.js';
 
-const store = useMainStore();
-const selectedRequiredValuesIndex = ref(null);
-const currentCaseId = ref(null);
-const localCaseId = ref(null);
-const { testCase } = toRefs(store);
-const currentlySelectedStep = ref(0);
-const currentStep = ref(0);
-const selectedMessageIndex = ref(0);
-const selectedCaseIds = ref([]);
-const handledLength = ref(0);
+  const store = useMainStore();
+  const authStore = useAuthStore();
+  const selectedRequiredValuesIndex = ref(null);
+  const currentCaseId = ref(null);
+  const localCaseId = ref(null);
+  const { testCase } = toRefs(store);
+  const currentlySelectedStep = ref(0);
+  const currentStep = ref(0);
+  const selectedMessageIndex = ref(0);
+  const selectedCaseIds = ref([]);
+  const handledLength = ref(0);
 
-// eslint-disable-next-line no-undef
-useHead({
-  titleTemplate: toRef(useMainStore(), 'testHeadTitle'),
-});
-
-onMounted(() => {
-  selectedRequiredValuesIndex.value = null;
-  currentCaseId.value = null;
-  localCaseId.value = generateCaseId();
-  currentStep.value = 0;
-  initialize();
-});
-
-const clientMessages = computed(() => {
-  return store.messages.filter(
-    (message) =>
-      (isOut(message.direction) &&
-        message.body.senderID === store.user.clientId) ||
-      (!isOut(message.direction) &&
-        message.routingKey.startsWith(store.user.clientId))
-  );
-});
-
-const selectedMessage = computed(() => {
-  return selectedTypeCaseMessages.value[selectedMessageIndex.value];
-});
-
-const showableMessages = computed(() => {
-  return store.showSentMessages
-    ? clientMessages.value
-    : clientMessages.value.filter((message) => !isOut(message.direction));
-});
-const selectedTypeMessages = computed(() => {
-  return showableMessages.value;
-});
-const selectedTypeCaseMessages = computed(() => {
-  if (selectedCaseIds.value.length === 0) {
-    return selectedTypeMessages.value;
-  }
-
-  return selectedTypeMessages.value.filter((message) =>
-    selectedCaseIds.value.includes(getCaseId(message, true))
-  );
-});
-
-async function initialize() {
-  await loadJsonSteps();
-
-  if (testCase.value.steps[currentStep.value]?.type === 'receive') {
-    submitMessage(testCase.value.steps[currentStep.value]);
-  }
-}
-
-async function loadJsonSteps() {
-  for (const step of testCase.value.steps) {
-    if (step.type === 'receive') {
-      const response = await fetch(
-        REPOSITORY_URL +
-          store.selectedVhost.modelVersion +
-          '/src/main/resources/sample/examples/' +
-          step.model +
-          '/' +
-          step.file
-      );
-      const json = await response.json();
-      step.json = json;
-    }
-  }
-}
-
-function validateMessage(index, ack, stayOnStep = false) {
-  selectedTypeCaseMessages.value.forEach((message, i) => {
-    if (i === index) {
-      if (!currentCaseId.value) {
-        currentCaseId.value = getCaseId(message, true);
-      }
-      message.validatedStep = currentStep.value;
-      message.validated = true;
-      if (ack) {
-        if (
-          getMessageType(message) !== 'ack' &&
-          message.routingKey.startsWith(store.user.clientId)
-        ) {
-          const msg = buildAck(message.body.distributionID);
-          sendMessage(msg);
-        }
-      }
-    } else if (
-      !message.validated &&
-      message.relatedStep === currentStep.value
-    ) {
-      message.stale = true;
-    }
+  // eslint-disable-next-line no-undef
+  useHead({
+    titleTemplate: toRef(useMainStore(), 'testHeadTitle'),
   });
-  if (!stayOnStep) {
+
+  onMounted(() => {
+    selectedRequiredValuesIndex.value = null;
+    currentCaseId.value = null;
+    localCaseId.value = generateCaseId();
+    currentStep.value = 0;
+    initialize();
+  });
+
+  const clientMessages = computed(() => {
+    return store.messages.filter(
+      (message) =>
+        (isOut(message.direction) &&
+          message.body.senderID === authStore.user.clientId) ||
+        (!isOut(message.direction) &&
+          message.routingKey.startsWith(authStore.user.clientId))
+    );
+  });
+
+  const selectedMessage = computed(() => {
+    return selectedTypeCaseMessages.value[selectedMessageIndex.value];
+  });
+
+  const showableMessages = computed(() => {
+    return store.showSentMessages
+      ? clientMessages.value
+      : clientMessages.value.filter((message) => !isOut(message.direction));
+  });
+  const selectedTypeMessages = computed(() => {
+    return showableMessages.value;
+  });
+  const selectedTypeCaseMessages = computed(() => {
+    if (selectedCaseIds.value.length === 0) {
+      return selectedTypeMessages.value;
+    }
+
+    return selectedTypeMessages.value.filter((message) =>
+      selectedCaseIds.value.includes(getCaseId(message, true))
+    );
+  });
+
+  async function initialize() {
+    await loadJsonSteps();
+
+    if (testCase.value.steps[currentStep.value]?.type === 'receive') {
+      submitMessage(testCase.value.steps[currentStep.value]);
+    }
+  }
+
+  async function loadJsonSteps() {
+    for (const step of testCase.value.steps) {
+      if (step.type === 'receive') {
+        const response = await fetch(
+          REPOSITORY_URL +
+            store.selectedVhost.modelVersion +
+            '/src/main/resources/sample/examples/' +
+            step.model +
+            '/' +
+            step.file
+        );
+        const json = await response.json();
+        step.json = json;
+      }
+    }
+  }
+
+  function validateMessage(index, ack, stayOnStep = false) {
+    selectedTypeCaseMessages.value.forEach((message, i) => {
+      if (i === index) {
+        if (!currentCaseId.value) {
+          currentCaseId.value = getCaseId(message, true);
+        }
+        message.validatedStep = currentStep.value;
+        message.validated = true;
+        if (ack) {
+          if (
+            getMessageType(message) !== 'ack' &&
+            message.routingKey.startsWith(authStore.user.clientId)
+          ) {
+            const msg = buildAck(message.body.distributionID);
+            sendMessage(msg);
+          }
+        }
+      } else if (
+        !message.validated &&
+        message.relatedStep === currentStep.value
+      ) {
+        message.stale = true;
+      }
+    });
+    if (!stayOnStep) {
+      nextStep();
+    }
+  }
+
+  function nextStep() {
+    currentStep.value++;
+    currentlySelectedStep.value = currentStep.value;
+    if (testCase.value.steps[currentStep.value]?.type === 'receive') {
+      submitMessage(testCase.value.steps[currentStep.value]);
+    }
+  }
+
+  function goToStep(step) {
+    currentStep.value = step;
+    currentlySelectedStep.value = step;
+  }
+
+  function submitMessage(step) {
+    let message = step.json;
+    message = replaceValues(message, step.requiredValues);
+    if (step.idOverrideProperties) {
+      message = overrideIds(message, step.idOverrideProperties);
+    }
+    if (!currentCaseId.value) {
+      currentCaseId.value = localCaseId.value;
+    }
+    setCaseId(message, currentCaseId.value, localCaseId.value);
+    const builtMessage = buildMessage(message);
+    testCase.value.steps[currentStep.value].awaitedReferenceDistributionID =
+      builtMessage.distributionID;
+    sendMessage(builtMessage);
+  }
+
+  /**
+   * Replaces values in a message using jsonpath:value pairs
+   */
+  function replaceValues(message, requiredValues) {
+    requiredValues.forEach((entry) => {
+      jsonpath.value(message, entry.path.join('.'), entry.value);
+    });
+    return message;
+  }
+
+  /**
+   * Replaces specified values with currently connected client's clientId
+   */
+  function overrideIds(message, idReplacementPaths) {
+    for (const path of idReplacementPaths) {
+      jsonpath.value(message, path, authStore.user.clientId);
+    }
+    return message;
+  }
+
+  function generateCaseId() {
+    const currentDate = new Date();
+    const year = currentDate.getFullYear().toString().slice(-2);
+    const dayOfYear = Math.floor(
+      (currentDate - new Date(currentDate.getFullYear(), 0, 0)) /
+        (1000 * 60 * 60 * 24)
+    )
+      .toString()
+      .padStart(3, '0');
+    const hour = currentDate.getHours().toString().padStart(2, '0');
+    const minutes = currentDate.getMinutes().toString().padStart(2, '0');
+    const seconds = currentDate.getSeconds().toString().slice(-1);
+
+    const time = year + dayOfYear + hour + minutes + seconds;
+    return authStore.user.clientId + '.' + 'DRMFR15690' + time;
+  }
+
+  function getAwaitedValues(step) {
+    if (step.type === 'send') {
+      const requiredValuesObject = {};
+      step.requiredValues.forEach((entry) => {
+        requiredValuesObject[entry.path.join('.')] = {
+          value: entry.value,
+          valid: entry.valid,
+        };
+      });
+      return requiredValuesObject;
+    } else {
+      return getAwaitedReferenceDistributionObject(step);
+    }
+  }
+
+  function validateStep(stepIndex) {
+    testCase.value.steps[stepIndex].validatedReceivedValues = true;
     nextStep();
   }
-}
 
-function nextStep() {
-  currentStep.value++;
-  currentlySelectedStep.value = currentStep.value;
-  if (testCase.value.steps[currentStep.value]?.type === 'receive') {
-    submitMessage(testCase.value.steps[currentStep.value]);
+  function getAwaitedReferenceDistributionIdJson(step) {
+    return [
+      {
+        path: ['$', 'reference', 'distributionID'],
+        value: step?.awaitedReferenceDistributionID,
+      },
+    ];
   }
-}
 
-function goToStep(step) {
-  currentStep.value = step;
-  currentlySelectedStep.value = step;
-}
+  function getAwaitedReferenceDistributionObject(step) {
+    const currentStepSelectedTypeMessages =
+      selectedTypeCaseMessages.value.filter(
+        (message) => message.relatedStep === currentStep.value
+      );
+    const lastCurrentStepAckedDistributionID =
+      currentStepSelectedTypeMessages[0]
+        ? getDistributionIdOfAckedMessage(currentStepSelectedTypeMessages[0])
+        : null;
+    const validationStatus =
+      lastCurrentStepAckedDistributionID ===
+      step?.awaitedReferenceDistributionID
+        ? ValidationStatus.VALID
+        : lastCurrentStepAckedDistributionID
+        ? ValidationStatus.APPROXIMATE
+        : ValidationStatus.INVALID;
 
-function submitMessage(step) {
-  let message = step.json;
-  message = replaceValues(message, step.requiredValues);
-  if (step.idOverrideProperties) {
-    message = overrideIds(message, step.idOverrideProperties);
+    return {
+      '$.reference.distributionID': {
+        value: step?.awaitedReferenceDistributionID,
+        valid: validationStatus,
+        receivedValue:
+          getDistributionIdOfAckedMessage(currentStepSelectedTypeMessages[0]) ??
+          'N/A',
+      },
+    };
   }
-  if (!currentCaseId.value) {
-    currentCaseId.value = localCaseId.value;
-  }
-  setCaseId(message, currentCaseId.value, localCaseId.value);
-  const builtMessage = buildMessage(message);
-  testCase.value.steps[currentStep.value].awaitedReferenceDistributionID =
-    builtMessage.distributionID;
-  sendMessage(builtMessage);
-}
 
-/**
- * Replaces values in a message using jsonpath:value pairs
- */
-function replaceValues(message, requiredValues) {
-  requiredValues.forEach((entry) => {
-    jsonpath.value(message, entry.path.join('.'), entry.value);
-  });
-  return message;
-}
+  function checkMessage(message) {
+    const currentTestStep = testCase.value.steps[currentStep.value];
 
-/**
- * Replaces specified values with currently connected client's clientId
- */
-function overrideIds(message, idReplacementPaths) {
-  for (const path of idReplacementPaths) {
-    jsonpath.value(message, path, store.user.clientId);
-  }
-  return message;
-}
+    if (currentTestStep?.type === 'send') {
+      return checkMessageContainsAllRequiredValues(
+        message,
+        currentTestStep.requiredValues
+      );
+    } else {
+      message.validatedAcknowledgement = checkMessageContainsAllRequiredValues(
+        message,
+        getAwaitedReferenceDistributionIdJson(currentTestStep)
+      );
 
-function generateCaseId() {
-  const currentDate = new Date();
-  const year = currentDate.getFullYear().toString().slice(-2);
-  const dayOfYear = Math.floor(
-    (currentDate - new Date(currentDate.getFullYear(), 0, 0)) /
-      (1000 * 60 * 60 * 24)
-  )
-    .toString()
-    .padStart(3, '0');
-  const hour = currentDate.getHours().toString().padStart(2, '0');
-  const minutes = currentDate.getMinutes().toString().padStart(2, '0');
-  const seconds = currentDate.getSeconds().toString().slice(-1);
+      currentTestStep.validatedAcknowledgement =
+        message.validatedAcknowledgement;
+      if (message.validatedAcknowledgement) {
+        validateMessage(
+          selectedTypeCaseMessages.value.indexOf(message),
+          false,
+          true
+        );
+      }
 
-  const time = year + dayOfYear + hour + minutes + seconds;
-  return store.user.clientId + '.' + 'DRMFR15690' + time;
-}
-
-function getAwaitedValues(step) {
-  if (step.type === 'send') {
-    const requiredValuesObject = {};
-    step.requiredValues.forEach((entry) => {
-      requiredValuesObject[entry.path.join('.')] = {
-        value: entry.value,
-        valid: entry.valid,
-      };
-    });
-    return requiredValuesObject;
-  } else {
-    return getAwaitedReferenceDistributionObject(step);
-  }
-}
-
-function validateStep(stepIndex) {
-  testCase.value.steps[stepIndex].validatedReceivedValues = true;
-  nextStep();
-}
-
-function getAwaitedReferenceDistributionIdJson(step) {
-  return [
-    {
-      path: ['$', 'reference', 'distributionID'],
-      value: step?.awaitedReferenceDistributionID,
-    },
-  ];
-}
-
-function getAwaitedReferenceDistributionObject(step) {
-  const currentStepSelectedTypeMessages = selectedTypeCaseMessages.value.filter(
-    (message) => message.relatedStep === currentStep.value
-  );
-  const lastCurrentStepAckedDistributionID = currentStepSelectedTypeMessages[0]
-    ? getDistributionIdOfAckedMessage(currentStepSelectedTypeMessages[0])
-    : null;
-  const validationStatus =
-    lastCurrentStepAckedDistributionID === step?.awaitedReferenceDistributionID
-      ? ValidationStatus.VALID
-      : lastCurrentStepAckedDistributionID
-      ? ValidationStatus.APPROXIMATE
-      : ValidationStatus.INVALID;
-
-  return {
-    '$.reference.distributionID': {
-      value: step?.awaitedReferenceDistributionID,
-      valid: validationStatus,
-      receivedValue:
-        getDistributionIdOfAckedMessage(currentStepSelectedTypeMessages[0]) ??
-        'N/A',
-    },
-  };
-}
-
-function checkMessage(message) {
-  const currentTestStep = testCase.value.steps[currentStep.value];
-
-  if (currentTestStep?.type === 'send') {
-    return checkMessageContainsAllRequiredValues(
-      message,
-      currentTestStep.requiredValues
-    );
-  } else {
-    message.validatedAcknowledgement = checkMessageContainsAllRequiredValues(
-      message,
-      getAwaitedReferenceDistributionIdJson(currentTestStep)
-    );
-
-    currentTestStep.validatedAcknowledgement = message.validatedAcknowledgement;
-    if (message.validatedAcknowledgement) {
-      validateMessage(
-        selectedTypeCaseMessages.value.indexOf(message),
-        false,
-        true
+      return (
+        currentTestStep.validatedAcknowledgement &&
+        currentTestStep.validatedReceivedValues
       );
     }
-
-    return (
-      currentTestStep.validatedAcknowledgement &&
-      currentTestStep.validatedReceivedValues
-    );
-  }
-}
-
-function checkMessageContainsAllRequiredValues(message, requiredValues) {
-  let valid = true;
-  const validatedValues = [];
-
-  requiredValues.forEach(function (element) {
-    const result = jsonpath.query(
-      message.body.content[0].jsonContent.embeddedJsonContent.message,
-      element.path.join('.')
-    );
-
-    if (result.length === 0 || !result.includes(element.value)) {
-      valid = false;
-      element.valid = ValidationStatus.INVALID;
-      validatedValues.push({
-        valid: false,
-        value: element,
-        receivedValue: result[0],
-      });
-    } else {
-      validatedValues.push({ valid: true, value: element });
-      element.valid = ValidationStatus.VALID;
-    }
-  });
-
-  message.validatedValues = JSON.parse(JSON.stringify(validatedValues));
-  // set(message, 'message', message)
-  return valid;
-}
-
-function getStepColor(index) {
-  // For reception steps, color is determined by the average color of the received values
-  if (testCase.value.steps[index].type === 'receive') {
-    const counts = getCounts(testCase.value.steps[index]);
-    return getAverageColor(
-      counts.unreviewed,
-      counts.valid,
-      counts.approximate,
-      counts.invalid,
-      counts.total
-    );
-  } else {
-    // For send steps, color is determined by the validation state of the step
-    return testCase.value.steps[index]?.validatedReceivedValues
-      ? 'success'
-      : 'grey';
-  }
-}
-
-function getAverageColor(unset, success, warning, error, total) {
-  // grey: #9e9e9e, success: #4caf50, warning: #fb8c00, error: #b00020, total: #000000
-  const unsetPercent = (unset / total) * 100;
-  const successPercent = (success / total) * 100;
-  const warningPercent = (warning / total) * 100;
-  const errorPercent = (error / total) * 100;
-
-  const red = Math.round(
-    (unsetPercent * 158 +
-      successPercent * 76 +
-      warningPercent * 251 +
-      errorPercent * 176) /
-      100
-  );
-  const green = Math.round(
-    (unsetPercent * 158 +
-      successPercent * 175 +
-      warningPercent * 140 +
-      errorPercent * 0) /
-      100
-  );
-  const blue = Math.round(
-    (unsetPercent * 158 +
-      successPercent * 80 +
-      warningPercent * 0 +
-      errorPercent * 32) /
-      100
-  );
-
-  return `rgb(${red}, ${green}, ${blue})`;
-}
-
-function setSelectedMessage(message) {
-  selectedMessageIndex.value = selectedTypeCaseMessages.value.indexOf(message);
-}
-
-function getCounts(step = testCase.value.steps[currentStep.value]) {
-  const requiredValues = step.requiredValues;
-
-  return {
-    total: requiredValues.length,
-    unreviewed: requiredValues.filter((value) => value.valid === undefined)
-      .length,
-    valid: requiredValues.filter(
-      (value) => value.valid === ValidationStatus.VALID
-    ).length,
-    approximate: requiredValues.filter(
-      (value) => value.valid === ValidationStatus.APPROXIMATE
-    ).length,
-    invalid: requiredValues.filter(
-      (value) => value.valid === ValidationStatus.INVALID
-    ).length,
-  };
-}
-
-function getTotalCounts() {
-  let total = 0;
-  let valid = 0;
-  let approximate = 0;
-  let invalid = 0;
-
-  for (const step of testCase.value.steps) {
-    if (step.type === 'receive') {
-      const counts = getCounts(step);
-      total += counts.total;
-      valid += counts.valid;
-      approximate += counts.approximate;
-      invalid += counts.invalid;
-    }
   }
 
-  return {
-    total,
-    valid,
-    approximate,
-    invalid,
-  };
-}
+  function checkMessageContainsAllRequiredValues(message, requiredValues) {
+    let valid = true;
+    const validatedValues = [];
 
-const generatePdf = () => generateCasePdf(testCase, store, getCounts);
+    requiredValues.forEach(function (element) {
+      const result = jsonpath.query(
+        message.body.content[0].jsonContent.embeddedJsonContent.message,
+        element.path.join('.')
+      );
 
-// Watch the selectedTypeCaseMessages array
-watch(
-  selectedTypeCaseMessages,
-  (newMessages) => {
-    selectedMessageIndex.value = 0;
-
-    // Ensure the current step is within bounds and new messages have arrived
-    if (
-      currentStep.value <= testCase.value.steps.length &&
-      newMessages.length > 0
-    ) {
-      // Iterate over new messages starting from the latest added
-      for (let i = newMessages.length - handledLength.value - 1; i >= 0; i--) {
-        const lastMessage = newMessages[i];
-        checkMessage(lastMessage);
-
-        // If message is an ack and outgoing, find related message and update relatedStep
-        if (
-          getMessageType(lastMessage) === 'ack' &&
-          isOut(lastMessage.direction)
-        ) {
-          const relatedMessage = selectedTypeCaseMessages.value.find(
-            (message) =>
-              getDistributionIdOfAckedMessage(message) ===
-              getDistributionIdOfAckedMessage(lastMessage)
-          );
-          lastMessage.relatedStep = relatedMessage.relatedStep;
-        } else {
-          lastMessage.relatedStep = currentStep.value;
-        }
-
-        // Check and validate the message if it's incoming
-        if (!lastMessage.isOut) {
-          const shouldStayOnStep =
-            testCase.value.steps[currentStep.value].type === 'receive' &&
-            !(
-              testCase.value.steps[currentStep.value]
-                .validatedAcknowledgement &&
-              testCase.value.steps[currentStep.value].validatedReceivedValues
-            );
-          validateMessage(
-            newMessages.indexOf(lastMessage),
-            true,
-            shouldStayOnStep
-          );
-        }
+      if (result.length === 0 || !result.includes(element.value)) {
+        valid = false;
+        element.valid = ValidationStatus.INVALID;
+        validatedValues.push({
+          valid: false,
+          value: element,
+          receivedValue: result[0],
+        });
+      } else {
+        validatedValues.push({ valid: true, value: element });
+        element.valid = ValidationStatus.VALID;
       }
-      handledLength.value = newMessages.length;
+    });
+
+    message.validatedValues = JSON.parse(JSON.stringify(validatedValues));
+    // set(message, 'message', message)
+    return valid;
+  }
+
+  function getStepColor(index) {
+    // For reception steps, color is determined by the average color of the received values
+    if (testCase.value.steps[index].type === 'receive') {
+      const counts = getCounts(testCase.value.steps[index]);
+      return getAverageColor(
+        counts.unreviewed,
+        counts.valid,
+        counts.approximate,
+        counts.invalid,
+        counts.total
+      );
+    } else {
+      // For send steps, color is determined by the validation state of the step
+      return testCase.value.steps[index]?.validatedReceivedValues
+        ? 'success'
+        : 'grey';
     }
-  },
-  { deep: true }
-);
+  }
+
+  function getAverageColor(unset, success, warning, error, total) {
+    // grey: #9e9e9e, success: #4caf50, warning: #fb8c00, error: #b00020, total: #000000
+    const unsetPercent = (unset / total) * 100;
+    const successPercent = (success / total) * 100;
+    const warningPercent = (warning / total) * 100;
+    const errorPercent = (error / total) * 100;
+
+    const red = Math.round(
+      (unsetPercent * 158 +
+        successPercent * 76 +
+        warningPercent * 251 +
+        errorPercent * 176) /
+        100
+    );
+    const green = Math.round(
+      (unsetPercent * 158 +
+        successPercent * 175 +
+        warningPercent * 140 +
+        errorPercent * 0) /
+        100
+    );
+    const blue = Math.round(
+      (unsetPercent * 158 +
+        successPercent * 80 +
+        warningPercent * 0 +
+        errorPercent * 32) /
+        100
+    );
+
+    return `rgb(${red}, ${green}, ${blue})`;
+  }
+
+  function setSelectedMessage(message) {
+    selectedMessageIndex.value =
+      selectedTypeCaseMessages.value.indexOf(message);
+  }
+
+  function getCounts(step = testCase.value.steps[currentStep.value]) {
+    const requiredValues = step.requiredValues;
+
+    return {
+      total: requiredValues.length,
+      unreviewed: requiredValues.filter((value) => value.valid === undefined)
+        .length,
+      valid: requiredValues.filter(
+        (value) => value.valid === ValidationStatus.VALID
+      ).length,
+      approximate: requiredValues.filter(
+        (value) => value.valid === ValidationStatus.APPROXIMATE
+      ).length,
+      invalid: requiredValues.filter(
+        (value) => value.valid === ValidationStatus.INVALID
+      ).length,
+    };
+  }
+
+  function getTotalCounts() {
+    let total = 0;
+    let valid = 0;
+    let approximate = 0;
+    let invalid = 0;
+
+    for (const step of testCase.value.steps) {
+      if (step.type === 'receive') {
+        const counts = getCounts(step);
+        total += counts.total;
+        valid += counts.valid;
+        approximate += counts.approximate;
+        invalid += counts.invalid;
+      }
+    }
+
+    return {
+      total,
+      valid,
+      approximate,
+      invalid,
+    };
+  }
+
+  const generatePdf = () => generateCasePdf(testCase, store, getCounts);
+
+  // Watch the selectedTypeCaseMessages array
+  watch(
+    selectedTypeCaseMessages,
+    (newMessages) => {
+      selectedMessageIndex.value = 0;
+
+      // Ensure the current step is within bounds and new messages have arrived
+      if (
+        currentStep.value <= testCase.value.steps.length &&
+        newMessages.length > 0
+      ) {
+        // Iterate over new messages starting from the latest added
+        for (
+          let i = newMessages.length - handledLength.value - 1;
+          i >= 0;
+          i--
+        ) {
+          const lastMessage = newMessages[i];
+          checkMessage(lastMessage);
+
+          // If message is an ack and outgoing, find related message and update relatedStep
+          if (
+            getMessageType(lastMessage) === 'ack' &&
+            isOut(lastMessage.direction)
+          ) {
+            const relatedMessage = selectedTypeCaseMessages.value.find(
+              (message) =>
+                getDistributionIdOfAckedMessage(message) ===
+                getDistributionIdOfAckedMessage(lastMessage)
+            );
+            lastMessage.relatedStep = relatedMessage.relatedStep;
+          } else {
+            lastMessage.relatedStep = currentStep.value;
+          }
+
+          // Check and validate the message if it's incoming
+          if (!lastMessage.isOut) {
+            const shouldStayOnStep =
+              testCase.value.steps[currentStep.value].type === 'receive' &&
+              !(
+                testCase.value.steps[currentStep.value]
+                  .validatedAcknowledgement &&
+                testCase.value.steps[currentStep.value].validatedReceivedValues
+              );
+            validateMessage(
+              newMessages.indexOf(lastMessage),
+              true,
+              shouldStayOnStep
+            );
+          }
+        }
+        handledLength.value = newMessages.length;
+      }
+    },
+    { deep: true }
+  );
 </script>
 
 <script>
-export default {
-  name: 'Testcase',
-  mixins: [mixinWebsocket],
-  beforeRouteEnter(_to, _from) {
-    if (!useMainStore().isAuthenticated) {
-      return { name: 'index' };
-    }
-  },
-  methods: {
-    setValidationStatus(requiredValue, status, index) {
-      requiredValue.valid = requiredValue.valid === status ? undefined : status;
-      const commentFieldRef = this.$refs['commentField' + index];
-      if (!commentFieldRef) return;
-      const commentField = commentFieldRef[0];
-
-      // add the class "d-block" to the comment field
-      if (requiredValue.valid != ValidationStatus.VALID) {
-        commentField.$el.classList.add('d-block');
-        commentField.focus();
-      } else {
-        commentField.$el.classList.remove('d-block');
+  export default {
+    name: 'Testcase',
+    mixins: [mixinWebsocket],
+    beforeRouteEnter(_to, _from) {
+      if (!useAuthStore().isAuthenticated) {
+        return { name: 'index' };
       }
     },
-  },
-};
+    methods: {
+      setValidationStatus(requiredValue, status, index) {
+        requiredValue.valid =
+          requiredValue.valid === status ? undefined : status;
+        const commentFieldRef = this.$refs['commentField' + index];
+        if (!commentFieldRef) return;
+        const commentField = commentFieldRef[0];
+        commentField.focus();
+
+        this.$nextTick(() => {
+          commentField.focus();
+        });
+      },
+    },
+  };
 </script>
 
 <style scoped>
-div.v-stepper-header > div.v-col {
+  div.v-stepper-header > div.v-col {
   flex-basis: auto;
 }
 

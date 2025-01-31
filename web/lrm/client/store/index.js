@@ -1,6 +1,7 @@
 import { useRuntimeConfig } from 'nuxt/app';
 import { defineStore } from 'pinia';
 import { isEnvProd } from '~/composables/envUtils';
+import { useAuthStore } from './auth';
 
 export const useMainStore = defineStore('main', {
   state: () => ({
@@ -46,40 +47,38 @@ export const useMainStore = defineStore('main', {
   }),
 
   getters: {
-    isAuthenticated(state) {
-      return !!state._auth.user.clientId;
-    },
+    demoHeadTitle() {
+      const authStore = useAuthStore();
 
-    user(state) {
-      return state._auth.user;
-    },
-
-    demoHeadTitle(state) {
       return (
         'Démo [' +
-        state._auth.user.clientId?.split('.').splice(2).join('.') +
+        authStore.user.clientId?.split('.').splice(2).join('.') +
         '] - Hub Santé'
       );
     },
 
-    testHeadTitle(state) {
+    testHeadTitle() {
+      const authStore = useAuthStore();
       return (
         'Test [' +
-        state._auth.user.clientId?.split('.').splice(2).join('.') +
+        authStore.user.clientId?.split('.').splice(2).join('.') +
         '] - Hub Santé'
       );
     },
 
-    isAdvanced(state) {
-      return state._auth.user.advanced;
+    isAdvanced() {
+      const authStore = useAuthStore();
+      return authStore.user.advanced;
     },
 
-    showSentMessages(state) {
-      return state._auth.user.showSentMessages;
+    showSentMessages() {
+      const authStore = useAuthStore();
+      return authStore.user.showSentMessages;
     },
 
-    autoAck(state) {
-      return state._auth.user.autoAck;
+    autoAck() {
+      const authStore = useAuthStore();
+      return authStore.user.autoAck;
     },
 
     messages(state) {
@@ -98,31 +97,35 @@ export const useMainStore = defineStore('main', {
   actions: {
     logInUser(userData) {
       // use state.auth.user to get default values
-      this._auth.user = userData;
+      const authStore = useAuthStore();
+      authStore.user = userData;
       return userData;
     },
 
     toggleAdvanced() {
-      this._auth.user = {
-        ...this._auth.user,
-        advanced: !this._auth.user.advanced,
-      };
+      const authStore = useAuthStore();
+      authStore.setUser({
+        ...authStore.user,
+        advanced: !authStore.user.advanced,
+      });
       return this.isAdvanced;
     },
 
     setShowSentMessages(showSentMessages) {
-      this._auth.user = {
-        ...this._auth.user,
+      const authStore = useAuthStore();
+      authStore.setUser({
+        ...authStore.user,
         showSentMessages,
-      };
+      });
       return showSentMessages;
     },
 
     setAutoAck(autoAck) {
-      this._auth.user = {
-        ...this._auth.user,
+      const authStore = useAuthStore();
+      authStore.setUser({
+        ...authStore.user,
         autoAck,
-      };
+      });
       return autoAck;
     },
 
