@@ -738,7 +738,8 @@
     };
   }
 
-  const generatePdf = () => generateCasePdf(testCase, store, getCounts);
+  const generatePdf = () =>
+    generateCasePdf(testCase, store, authStore, getCounts);
 
   // Watch the selectedTypeCaseMessages array
   watch(
