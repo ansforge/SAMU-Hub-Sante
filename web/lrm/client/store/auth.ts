@@ -34,10 +34,7 @@ export const useAuthStore = defineStore('auth', {
     },
 
     initializeAuth() {
-      const storedToken = localStorage.getItem('token');
-      if (storedToken) {
-        this.token = storedToken;
-      }
+      // retrieve session if needed
     },
   },
 });
