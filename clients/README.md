@@ -2,15 +2,13 @@
 
 ## Description
 
-Le projet Clients propose un SDK Java accompagné d'un ensemble de tutoriels détaillés. Ce SDK permet d'interagir avec le HUB via un ensemble de méthodes prêtes à l'emploi pour :
+Le projet Clients propose un [SDK Java](./src/main/java/com/hubsante) accompagné d'un ensemble de tutoriels détaillés. Ce SDK permet d'interagir avec le Hub Santé via un ensemble de méthodes prêtes à l'emploi pour :
 
-- Se connecter et se déconnecter du HUB,
-- Publier des messages vers des files du HUB,
-- Écouter des messages en provenance du HUB.
+- Se connecter et se déconnecter du Hub Santé,
+- Publier des messages vers des files du Hub Santé,
+- Écouter des messages en provenance du Hub Santé.
 
-Regarder : clients/src/main/java/com/hubsante
-
-En complément, des tutoriels spécifiques sont fournis pour illustrer l'utilisation du SDK, ainsi qu'un ensemble de guides dédiés à RabbitMQ pour une meilleure compréhension des principes fondamentaux.
+En complément, des [tutoriels spécifiques](./src/main/java/com/examples/) sont fournis pour illustrer l'utilisation du [SDK](./src/main/java/com/hubsante), ainsi qu'un ensemble de [guides dédiés à RabbitMQ](./src/main/java/com/tutorials/) pour une meilleure compréhension des principes fondamentaux.
 
 ## Fonctionnalité importante du SDK
 
@@ -37,13 +35,13 @@ Ce mécanisme vous évite d’avoir à gérer manuellement les déconnexions tem
 - Gestion des files et des échanges,
 - Bonnes pratiques pour maximiser la fiabilité des messages.
 
-Suivre : clients/src/main/java/com/examples/README.md
+Suivre : [clients/src/main/java/com/examples/README.md](./src/main/java/com/examples/README.md)
 
 ### Tutoriels RabbitMQ :
 
 - Comprendre les concepts clés (exchange, queue, binding...),
 
-Suivre : clients/src/main/java/com/tutorials/README.md
+Suivre : [clients/src/main/java/com/tutorials/README.md](./src/main/java/com/tutorials/README.md)
 
 ## Contribution
 
