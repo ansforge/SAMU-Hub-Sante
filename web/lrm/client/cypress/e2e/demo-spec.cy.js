@@ -1,5 +1,5 @@
+/* eslint-disable no-undef */
 import 'cypress-cdp';
-import { describe, it, cy } from 'cypress';
 
 describe('Demo page spec', () => {
   it('Accesses the demo page, successfully download all the schemas and example messages from the branch indicated in the config, verify presence of all required visual elements', () => {
