@@ -228,9 +228,10 @@
                         </ol>
                     </nav>
                     <div class="o-banner__content">
-                        <h1>Raccordement </h1>
+                        <h1>Raccordement et implémentation </h1>
                         <p class="lead"> Rejoignez le Hub Santé.</p>
-                        Retrouvez ci-dessous toutes les étapes pour vous connecter au Hub Santé.
+                        Retrouvez ci-dessous toutes les étapes pour vous connecter au Hub Santé et implémenter les
+                        messages des différents périmètres.
                         <div class="container" style="display: flex;  ">
 
                         </div>
@@ -492,9 +493,11 @@
                             <h3>3 - Génération des certificats </h3>
                             Une fois les cartes et droits d'administrateur technique obtenus et lisibles par un lecteur
                             de cartes,
-                            il faut utiliser la plateforme IGC pour générer des certificats SSL_SERV. 
-                            Le FQDN (domaine) utilisé est à votre main mais doit permettre d'identifier l'entité concernée. 
-                            Le Hub Santé ne fera pas de requêtes vers ce domaine et n'y demande pas l'exposition de services (ni sur ce domaine ni sur tout autre domaine).
+                            il faut utiliser la plateforme IGC pour générer des certificats SSL_SERV.
+                            Le FQDN (domaine) utilisé est à votre main mais doit permettre d'identifier l'entité
+                            concernée.
+                            Le Hub Santé ne fera pas de requêtes vers ce domaine et n'y demande pas l'exposition de
+                            services (ni sur ce domaine ni sur tout autre domaine).
                             </p>
 
                             <div class="container mb-2"
@@ -532,13 +535,18 @@
                                 configurés.
                             </p>
 
-                            <p>Afin d'<strong>extraire le certificat public</strong> du fichier p12 généré sur la plateforme IGC, vous
+                            <p>Afin d'<strong>extraire le certificat public</strong> du fichier p12 généré sur la
+                                plateforme IGC, vous
                                 pouvez utiliser la commande suivante :
                                 <span
                                     style="display: inline-block; text-align: center; width: 100%; margin-top: 10px; margin-bottom: 10px;">
-                                    openssl pkcs12 -in <span style="color: #1D71B8;"><i>cert.p12</i></span> -clcerts -nokeys -out <span style="color: #1D71B8;"> <i>publicCert.crt</i></span></span>
-                                dans laquelle vous remplacerez <span style="color: #1D71B8;"><i>cert.p12</i></span> par le <u>nom du fichier p12</u>
-                                généré sur la plateforme IGC et <span style="color: #1D71B8;"><i>publicCert.crt</i></span> par le <u>nom du domaine utilisé.crt</u> (par exemple :
+                                    openssl pkcs12 -in <span style="color: #1D71B8;"><i>cert.p12</i></span> -clcerts
+                                    -nokeys -out <span style="color: #1D71B8;"> <i>publicCert.crt</i></span></span>
+                                dans laquelle vous remplacerez <span style="color: #1D71B8;"><i>cert.p12</i></span> par
+                                le <u>nom du fichier p12</u>
+                                généré sur la plateforme IGC et <span
+                                    style="color: #1D71B8;"><i>publicCert.crt</i></span> par le <u>nom du domaine
+                                    utilisé.crt</u> (par exemple :
                                 test.chu-xxx.fr.crt).
                             </p>
 
@@ -546,26 +554,38 @@
 
                         <!-- truststore -->
                         <div class="wysiwyg mt-2" id="etape3.5">
-                        
+
                             <h3>5 - Chaîne de certification et truststore</h3>
                             <p>
-                                Les étapes précédentes permettent de générer un certificat SSL_SERV auprès de l'IGC Santé pour vous identifier lors de vos accès au Hub Santé.
-                                Les échanges étant en mTLS (mutual TLS), le Hub Santé présente également un certificat serveur. 
-                                Afin que la connexion puisse s'établir correctement, vous devez également autoriser ce certificat de votre côté.
+                                Les étapes précédentes permettent de générer un certificat SSL_SERV auprès de l'IGC
+                                Santé pour vous identifier lors de vos accès au Hub Santé.
+                                Les échanges étant en mTLS (mutual TLS), le Hub Santé présente également un certificat
+                                serveur.
+                                Afin que la connexion puisse s'établir correctement, vous devez également autoriser ce
+                                certificat de votre côté.
                             </p>
                             <p>
-                                Pour cela, il est recommandé d'autoriser plutôt les certificats de l'Autorité de Certification (AC, ou CA en anglais) qui constituent la chaine de certification du certificat pour que cette autorisation reste valable lorsque nous renouvelerons nos certificats.
+                                Pour cela, il est recommandé d'autoriser plutôt les certificats de l'Autorité de
+                                Certification (AC, ou CA en anglais) qui constituent la chaine de certification du
+                                certificat pour que cette autorisation reste valable lorsque nous renouvelerons nos
+                                certificats.
                                 Les chaînes de certification sont les suivantes :
-                                <ul>
-                                    <li>TEST : nos certificats sont signés par <a href="https://igc-sante.esante.gouv.fr/AC%20TEST/ACI-EL-ORG-TEST.cer"
-                                        target="_blank">TEST AC IGC-SANTE ELEMENTAIRE ORGANISATIONS</a> lui-même signé par le certificat racine <a
-                                        href="https://igc-sante.esante.gouv.fr/AC%20TEST/ACR-EL-TEST.cer" target="_blank">TEST AC RACINE IGC-SANTE ELEMENTAIRE</a>.</li>
-                                    <li>PROD : nos certificats sont signés par <a href="https://igc-sante.esante.gouv.fr/AC/ACI-EL-ORG.cer"
-                                        target="_blank">AC IGC-SANTE ELEMENTAIRE ORGANISATIONS</a> lui-même signé par le certificat racine <a
-                                        href="https://igc-sante.esante.gouv.fr/AC/ACR-EL.cer" target="_blank">AC RACINE IGC-SANTE ELEMENTAIRE</a>.</li>
-                                </ul>
+                            <ul>
+                                <li>TEST : nos certificats sont signés par <a
+                                        href="https://igc-sante.esante.gouv.fr/AC%20TEST/ACI-EL-ORG-TEST.cer"
+                                        target="_blank">TEST AC IGC-SANTE ELEMENTAIRE ORGANISATIONS</a> lui-même signé
+                                    par le certificat racine <a
+                                        href="https://igc-sante.esante.gouv.fr/AC%20TEST/ACR-EL-TEST.cer"
+                                        target="_blank">TEST AC RACINE IGC-SANTE ELEMENTAIRE</a>.</li>
+                                <li>PROD : nos certificats sont signés par <a
+                                        href="https://igc-sante.esante.gouv.fr/AC/ACI-EL-ORG.cer" target="_blank">AC
+                                        IGC-SANTE ELEMENTAIRE ORGANISATIONS</a> lui-même signé par le certificat racine
+                                    <a href="https://igc-sante.esante.gouv.fr/AC/ACR-EL.cer" target="_blank">AC RACINE
+                                        IGC-SANTE ELEMENTAIRE</a>.
+                                </li>
+                            </ul>
                             </p>
-                        
+
                         </div>
                 </div>
             </div>
@@ -724,6 +744,83 @@
             </div>
             <div class="o-paragraph--parcours__container">
                 <div class="o-paragraph--parcours__content">
+                    <h2>Implémentation des messages fonctionnels </h2>
+
+                    <div class="wysiwyg">
+                        <p>Pour chaque périmètre, il est nécessaire d'implémenter et de tester les messages fonctionnels
+                            associés.
+                        </p>
+
+                        <h3>1 - Implémentation des messages</h3>
+                        <p> Les messages à implémenter pour chaque périmètre fonctionnel sont décrits dans la
+                            documentation téléchargeable dans la rubrique
+                            <a href="/pages/accompagnement.html#fonctionnel" target="_blank">
+                                Ressources éditeurs</a>.
+                            <br> Une roadmap d'implémentation spécifique à chaque périmètre est également disponible :
+                            dans les supports des
+                            <a href="/pages/webinaires.html#projectathon8" target="_blank">
+                                Projectathons </a> et séparément sur demande.
+                            <br> Nous mettons également à votre disposition un <a
+                                href="/pages/accompagnement.html#outils" target="_blank">
+                                LRM de test </a> , ainsi que des cahiers de recette
+                            spécifiques à chaque périmètre, publiés dans le <a
+                                href="/pages/accompagnement.html#historique" target="_blank">
+                                bundle </a> de chaque version .
+                        </p>
+                        <h3>2 - Recette ANS </h3>
+                        <p>
+                            L'équipe du Hub Santé procède à une première recette avec chaque éditeur, sur la base des
+                            cahiers de recette fournis, afin de valider l'implémentation des messages par rapport au modèle publié.
+                        </p>
+
+                        <h3>3 - Recette fonctionnelle </h3>
+                        <p>
+                            Une fois la recette ANS validée, des tests de bout en bout sont réalisés avec un autre
+                            éditeur. Puis, pour chaque première mise en production, des tests utilisateurs de bout
+                            en bout sont effectués au sein des SAMU pilotes.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+        <!-- Etape 7 -->
+        <div class="container paragraph-space o-paragraph--parcours__wrapper" id="etape7">
+            <div class="o-paragraph--parcours has-number">
+                <div class="o-paragraph--parcours__petal">
+                    <p><b>07</b></p>
+                </div>
+                <div class="o-paragraph--parcours__container">
+                    <div class="o-paragraph--parcours__content">
+                        <h2>Compatibilité Hub Santé</h2>
+    
+                        <div class="wysiwyg">
+                            <p> Lorsque l'intégralité d'un périmètre fonctionnel a été implémenté et validé en recette, a minima avec
+                                l'équipe du Hub Santé (recette ANS), il est possible pour l'éditeur d'utiliser le badge Hub Santé
+                                correspondant.  La charte d'utilisation du badge
+                                est téléchargeable ci-dessous.</p>
+                        </div>
+    
+                        <div class="paragraph--lien">
+    
+                            <a href="/resources/Badges/PDF Badge A4.pdf" target="_blank"
+                                class="btn btn--style1 btn--white">Badge Hub Santé (charte d'utilisation)</a>
+                        </div>
+                        <div class="paragraph--lien"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    <!-- Etape 8 -->
+    <div class="container paragraph-space o-paragraph--parcours__wrapper" id="etape8">
+        <div class="o-paragraph--parcours has-number">
+            <div class="o-paragraph--parcours__petal">
+                <p><b>08</b></p>
+            </div>
+            <div class="o-paragraph--parcours__container">
+                <div class="o-paragraph--parcours__content">
                     <h2>Adhésion à la charte du Hub Santé</h2>
 
                     <div class="wysiwyg">
@@ -745,6 +842,7 @@
             </div>
         </div>
     </div>
+
 
 
     <!-- scripts -->
