@@ -18,12 +18,15 @@
         <v-btn
           icon
           variant="text"
-          :href="REPOSITORY_URL + $store.selectedVhost.modelVersion + '/src/main/resources/sample/examples/' + file"
+          :href="
+            REPOSITORY_URL +
+            $store.selectedVhost.modelVersion +
+            '/src/main/resources/sample/examples/' +
+            file
+          "
           target="_blank"
         >
-          <v-icon color="primary">
-            mdi-open-in-new
-          </v-icon>
+          <v-icon color="primary"> mdi-open-in-new </v-icon>
         </v-btn>
       </template>
     </v-list-item>
@@ -53,58 +56,58 @@
 </template>
 
 <script>
-import { REPOSITORY_URL } from '@/constants'
+import { REPOSITORY_URL } from '@/constants';
 
 export default {
   props: {
     file: {
       type: String,
-      required: true
+      required: true,
     },
     icon: {
       type: String,
-      required: true
+      required: true,
     },
     name: {
       type: String,
-      required: true
+      required: true,
     },
     caller: {
       type: String,
-      required: true
+      required: true,
     },
     context: {
       type: String,
-      required: true
+      required: true,
     },
     environment: {
       type: String,
-      required: true
+      required: true,
     },
     victims: {
       type: String,
-      required: true
+      required: true,
     },
     victim: {
       type: String,
-      required: true
+      required: true,
     },
     medicalSituation: {
       type: String,
-      required: true
-    }
+      required: true,
+    },
   },
-  data () {
+  data() {
     return {
       showDetails: false,
-      REPOSITORY_URL
-    }
-  }
-}
+      REPOSITORY_URL,
+    };
+  },
+};
 </script>
 
 <style scoped>
-  i {
-    color: rgb(100,100,100)
-  }
+i {
+  color: rgb(100 100 100);
+}
 </style>

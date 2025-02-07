@@ -1,7 +1,7 @@
 <template>
   <v-btn
     :color="store.messageJustSent ? 'secondary' : 'primary'"
-    :disabled="(!store.isAdvanced) && store.messageJustSent"
+    :disabled="!store.isAdvanced && store.messageJustSent"
     variant="flat"
   >
     <v-icon start>
@@ -12,13 +12,12 @@
 </template>
 
 <script>
-import { useMainStore } from '~/store'
+import { useMainStore } from '~/store';
 
 export default {
   data: () => ({
-    store: useMainStore()
+    store: useMainStore(),
   }),
-  computed: {
-  }
-}
+  computed: {},
+};
 </script>
