@@ -71,7 +71,7 @@ jobs:
           TAG: ${{ steps.extract_info.outputs.version }}
         run: |
           # Build for each model version
-          for MODEL_VERSION in "1.0" "2.0" "3.0-RC-6"; do
+          for MODEL_VERSION in "1.1" "2.2" "3.0-RC-6"; do
             IMAGE_TAG="${TAG}-model-${MODEL_VERSION}"
             echo "Building image for $IMAGE_TAG"
             ./gradlew jib \
