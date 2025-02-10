@@ -53,7 +53,7 @@ On va ensuite utiliser le LRM de test du Bac à Sable pour faire les tests de ra
 5. [Attention] Bien sélectionner le vHost correspondant à la version de la dépendance "com.hubsante:models" définie dans le build.gradle ET correspondant à la variable d'environnement VHOST. Autrement, vous ne pourrez ni recevoir, ni envoyer de messages.
 6. Sélectionner un message et cliquer sur "Envoyer"
 
-<img src="../../../resources/images/send_message.png" title="Steps to send message">
+<img src="../../../../resources/images/send_message.png" title="Steps to send message">
 
 Vous devez maintenant voir un log apparaître dans votre terminal.
 
@@ -116,5 +116,5 @@ Combiner les deux derniers tutoriels :
 - Ecoutez la queue "ack" en lançant dans un autre onglet de votre terminal : `./gradlew run -Pmain=com.hubsante.examples._04_JsonReceiveAndAckMessage --args='<client_id>.ack json'`
 - Envoyez un message au Hub Santé
 - Acquitter le message depuis le LRM de test en cliquant sur le tick de validation
-  <img src="../../../resources/images/ack_message.png" title="ACK received message">
+  <img src="../../../../resources/images/ack_message.png" title="ACK received message">
   Vous recevez dans votre terminal l'ACK fonctionnel.
