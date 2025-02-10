@@ -8,7 +8,7 @@ Le projet Clients propose un [SDK Java](./src/main/java/com/hubsante) accompagn�
 - Publier des messages vers des files du Hub Santé,
 - Écouter des messages en provenance du Hub Santé.
 
-En complément, des [tutoriels spécifiques](./src/main/java/com/examples/) sont fournis pour illustrer l'utilisation du [SDK](./src/main/java/com/hubsante), ainsi qu'un ensemble de [guides dédiés à RabbitMQ](./src/main/java/com/tutorials/) pour une meilleure compréhension des principes fondamentaux.
+En complément, des [tutoriels spécifiques](./src/main/java/com/hubsante/examples/) sont fournis pour illustrer l'utilisation du [SDK](./src/main/java/com/hubsante), ainsi qu'un ensemble de [guides dédiés à RabbitMQ](./src/main/java/com/tutorials/) pour une meilleure compréhension des principes fondamentaux.
 
 ## Fonctionnalité importante du SDK
 
@@ -35,7 +35,7 @@ Ce mécanisme vous évite d’avoir à gérer manuellement les déconnexions tem
 - Gestion des files et des échanges,
 - Bonnes pratiques pour maximiser la fiabilité des messages.
 
-Suivre : [clients/src/main/java/com/examples/README.md](./src/main/java/com/examples/README.md)
+Suivre : [./src/main/java/com/hubsante/examples/README.md](./src/main/java/com/hubsante/examples/README.md)
 
 ### Tutoriels RabbitMQ :
 

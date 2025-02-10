@@ -1,4 +1,4 @@
-package com.examples;
+package com.hubsante.examples;
 
 import com.hubsante.Consumer;
 import com.hubsante.TLSConf;
@@ -14,8 +14,8 @@ import static com.hubsante.Constants.TLS_PROTOCOL_VERSION;
 import static com.hubsante.Utils.*;
 import static com.hubsante.Utils.referenceMessageFromReceivedMessage;
 
-public class _04_XmlReceiveAndAckMessage {
-    private static final Logger logger = LoggerFactory.getLogger(_04_XmlReceiveAndAckMessage.class);
+public class _04_JsonReceiveAndAckMessage {
+    private static final Logger logger = LoggerFactory.getLogger(_04_JsonReceiveAndAckMessage.class);
 
     public static void main(String[] args) throws Exception {
         final Dotenv dotenv = Dotenv.load();
@@ -43,7 +43,7 @@ public class _04_XmlReceiveAndAckMessage {
                 EdxlMessage edxlMessage;
 
                 try {
-                    edxlMessage = edxlHandler.deserializeXmlEDXL(message);
+                    edxlMessage = edxlHandler.deserializeJsonEDXL(message);
                 } catch (Exception error) {
                     logger.error("[x] Error when receiving message: '"+  error.getMessage());
                     consumeChannel.basicNack(delivery.getEnvelope().getDeliveryTag(), false, false);
@@ -60,10 +60,10 @@ public class _04_XmlReceiveAndAckMessage {
                 // STEP 2 - Sending back functional ACK to inform that the message has been processed on the Consumer side
                 if (!isAckMessage(edxlMessage)) {
                     EdxlMessage ackEdxlMessage = referenceMessageFromReceivedMessage(edxlMessage);
-                    this.producerAck.xmlPublish(this.clientId, ackEdxlMessage);
+                    this.producerAck.publish(this.clientId, ackEdxlMessage);
 
                     // [For demo purposes] ackEdxlString variable is used to log the message in the terminal
-                    String ackEdxlString = edxlHandler.serializeXmlEDXL(ackEdxlMessage);
+                    String ackEdxlString = edxlHandler.serializeJsonEDXL(ackEdxlMessage);
                     logger.info("  ↳ [x] ACK sent  to '" + getExchangeName() + " with routing key " + this.clientId + "':'"
                             + ackEdxlString + "'");
                 } else {

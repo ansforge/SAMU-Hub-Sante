@@ -31,18 +31,18 @@ TRUST_STORE_PATH=<path/to/trustore>
 
 ## Tutoriels
 
-Les tutoriels se trouvent dans le dossier `/examples`.
+Les tutoriels se trouvent dans le dossier `/hubsante/examples`.
 
 Il est possible de suivre les tutoriels pour échanger des messages soit au format JSON, soit au format XML.
 
-À noter que, dans un cas d'utilisation réel, une configuration permet de définir un format unique pour l'envoi et la réception de messages.
+À noter que la configuration par défaut d'un client sur le Hub Santé correspond à des envois et réceptions de messages au format JSON. Si vous souhaitez pouvoir échanger en XML et non en JSON, merci de l'indiquer à l'équipe Hub Santé lors de la configuration de votre client sur le Hub Santé.
 
 ### Getting Started
 
 Pour démarrer, on va configurer la connexion au Hub Santé. L'objectif est de voir affiché dans le terminal un log suite à la réception d'un message envoyé depuis le LRM de test.
 
 Dans le dossier `/clients`, lancer la commande:
-`./gradlew run -Pmain=com.examples._01_GettingStarted --args='<your_client_id>.message json'`
+`./gradlew run -Pmain=com.hubsante.examples._01_GettingStarted --args='<your_client_id>.message json'`
 
 On va ensuite utiliser le LRM de test du Bac à Sable pour faire les tests de raccordement.
 
@@ -65,10 +65,10 @@ Il peut cependant recevoir des messages JSON ou XML.
 Dans le dossier `/clients`, au choix :
 
 Lancer la commande dans votre terminal:
-`./gradlew run -Pmain=com.examples._02_JsonReceiveMessage --args='<client_id>.message json'`
+`./gradlew run -Pmain=com.hubsante.examples._02_JsonReceiveMessage --args='<client_id>.message json'`
 
 ou,
-`./gradlew run -Pmain=com.examples._02_XmlReceiveMessage --args='<client_id>.message xml'`
+`./gradlew run -Pmain=com.hubsante.examples._02_XmlReceiveMessage --args='<client_id>.message xml'`
 
 Puis, utilisez le LRM de test pour envoyer un message. Vous devez le voir apparaître dans votre terminal.
 
@@ -77,20 +77,20 @@ Puis, utilisez le LRM de test pour envoyer un message. Vous devez le voir appara
 Dans le dossier `/clients`, au choix :
 
 Lancer la commande dans votre terminal:
-`./gradlew run -Pmain=com.examples._03_JsonReceptionErrorHandling --args='<client_id>.message json'`
+`./gradlew run -Pmain=com.hubsante.examples._03_JsonReceptionErrorHandling --args='<client_id>.message json'`
 
 ou,
-`./gradlew run -Pmain=com.examples._03_XmlReceptionErrorHandling --args='<client_id>.message xml'`
+`./gradlew run -Pmain=com.hubsante.examples._03_XmlReceptionErrorHandling --args='<client_id>.message xml'`
 
 ### Recevoir un message et envoyer ACK fonctionnel
 
 Dans le dossier `/clients`, au choix :
 
 Lancer la commande dans votre terminal :
-`./gradlew run -Pmain=com.examples._04_JsonReceiveAndAckMessage --args='<client_id>.message json'`
+`./gradlew run -Pmain=com.hubsante.examples._04_JsonReceiveAndAckMessage --args='<client_id>.message json'`
 
 ou,
-`./gradlew run -Pmain=com.examples._04_XmlReceiveAndAckMessage --args='<client_id>.message xml'`
+`./gradlew run -Pmain=com.hubsante.examples._04_XmlReceiveAndAckMessage --args='<client_id>.message xml'`
 
 Puis, utilisez le LRM de test pour envoyer un message. Vous devez le voir apparaître dans votre terminal, suivi d'un log d'acquittement.
 
@@ -99,9 +99,9 @@ Puis, utilisez le LRM de test pour envoyer un message. Vous devez le voir appara
 Dans le dossier `/clients`, au choix :
 
 Lancer la commande dans votre terminal :
-`./gradlew run -Pmain=com.examples._05_JsonSendMessage --args='<client_id> <path/to/message>'`
+`./gradlew run -Pmain=com.hubsante.examples._05_JsonSendMessage --args='<client_id> <path/to/message>'`
 ou,
-`./gradlew run -Pmain=com.examples._05_XmlSendMessage --args='<client_id> <path/to/message>'`
+`./gradlew run -Pmain=com.hubsante.examples._05_XmlSendMessage --args='<client_id> <path/to/message>'`
 
 Vous passez en argument le chemin du message à envoyer qui doit être au format JSON dans le premier cas, et XML dans le second.
 
@@ -113,7 +113,7 @@ Si le format du message envoyé est
 Pour aller plus loin :
 Combiner les deux derniers tutoriels :
 
-- Ecoutez la queue "ack" en lançant dans un autre onglet de votre terminal : `./gradlew run -Pmain=com.examples._04_JsonReceiveAndAckMessage --args='<client_id>.ack json'`
+- Ecoutez la queue "ack" en lançant dans un autre onglet de votre terminal : `./gradlew run -Pmain=com.hubsante.examples._04_JsonReceiveAndAckMessage --args='<client_id>.ack json'`
 - Envoyez un message au Hub Santé
 - Acquitter le message depuis le LRM de test en cliquant sur le tick de validation
   <img src="../../../resources/images/ack_message.png" title="ACK received message">

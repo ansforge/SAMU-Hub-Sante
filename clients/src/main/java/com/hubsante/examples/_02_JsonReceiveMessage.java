@@ -1,7 +1,8 @@
-package com.examples;
+package com.hubsante.examples;
 
 import com.hubsante.Consumer;
 import com.hubsante.TLSConf;
+import com.hubsante.model.edxl.EdxlMessage;
 import com.rabbitmq.client.Delivery;
 import io.github.cdimascio.dotenv.Dotenv;
 import org.slf4j.Logger;
@@ -12,13 +13,12 @@ import java.io.IOException;
 import static com.hubsante.Constants.TLS_PROTOCOL_VERSION;
 import static com.hubsante.Utils.*;
 
-public class _01_GettingStarted {
-    private static final Logger logger = LoggerFactory.getLogger(_01_GettingStarted.class);
+public class _02_JsonReceiveMessage {
+    private static final Logger logger = LoggerFactory.getLogger(_02_JsonReceiveMessage.class);
 
     public static void main(String[] args) throws Exception {
         final Dotenv dotenv = Dotenv.load();
 
-        // STEP 1 - Define TLS Configuration to protect connection
         final TLSConf tlsConf = new TLSConf(
                 TLS_PROTOCOL_VERSION,
                 dotenv.get("KEY_PASSPHRASE"),
@@ -29,23 +29,34 @@ public class _01_GettingStarted {
         final String queueName = getRouting(args);
         final String clientId = getClientId(args);
 
-        // STEP 2 - Instantiate consumer
         final Consumer consumer = new Consumer(dotenv.get("HUB_HOSTNAME"), Integer.parseInt(dotenv.get("HUB_PORT")), dotenv.get("VHOST"),
                 dotenv.get("EXCHANGE_NAME"),
                 queueName, clientId) {
             @Override
-            // STEP 3 - Define delivery callback, for now, we only log a simple line in the terminal when a message is received
             protected void deliverCallback(String consumerTag, Delivery delivery) throws IOException {
-                logger.info("[x] You have received a message from the Hub");
+                final String routingKey = delivery.getEnvelope().getRoutingKey();
 
-                // STEP 5 - Send back technical ACK as delivery responsibility is removed from the Hub
+                // STEP 1 - Convert received EDXL message to string
+                String message = convertBytesToString(delivery.getBody());
+                EdxlMessage edxlMessage;
+                String stringMessage;
+
+                // STEP 2 - Deserialize received message to JSON format
+                edxlMessage = edxlHandler.deserializeJsonEDXL(message);
+
+                // [For demo purposes] stringMessage variable is used to log the received message in the terminal
+                stringMessage = edxlHandler.serializeJsonEDXL(edxlMessage);
+                logger.info("[x] You have received from '" + routingKey + "':'" + stringMessage + "'");
+
+                // STEP 3 - Send back technical ACK as delivery responsibility is removed from the Hub
                 consumeChannel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
+
+                // STEP 4 - Apply business rules
+                // ...
             }
         };
 
-        // STEP 4 - Connect to Hub
         consumer.connect(tlsConf);
         logger.info(" [*] Waiting for messages on " + queueName + ". To exit press CTRL+C");
     }
-
 }
