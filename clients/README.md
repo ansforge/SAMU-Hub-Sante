@@ -14,18 +14,18 @@ En complément, des [tutoriels spécifiques](./src/main/java/com/hubsante/exampl
 
 Le SDK propose une configuration de rétablissement de connexion. Ce mécanisme vous protège contre les déconnexions involontaires et les interruptions temporaires de votre connexion avec RabbitMQ.
 
-Il vous protège :
+Il vous protège notamment :
 
 - Des déconnexions temporaires du réseau,
 - Des timeouts sur les lectures du socket,
 - Des pannes temporaires du serveur RabbitMQ,
-- Des exceptions inattendues dans la boucle I/O.
+- Des exceptions inattendues dans la boucle I/O de RabbitMQ.
 
 Mais, il ne couvre pas les échecs de connexion initiale.
 
-cf - https://www.rabbitmq.com/client-libraries/java-api-guide#recovery
+cf la documentation officielle de RabbitMQ - https://www.rabbitmq.com/client-libraries/java-api-guide#recovery
 
-Ce mécanisme vous évite d’avoir à gérer manuellement les déconnexions temporaires et assure une meilleure résilience de votre application face aux perturbations réseau.
+Ce mécanisme vous évite d’avoir à gérer manuellement les déconnexions temporaires et assure une meilleure résilience de votre application face aux perturbations réseau. Prêter une attention particulière au délai défini pour retenter la connexion : une fois ce délai écoulé, le processus de reconnexion s’arrête.
 
 ## Tutoriels inclus
 
