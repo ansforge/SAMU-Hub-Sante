@@ -1,4 +1,4 @@
-package com.examples;
+package com.hubsante.examples;
 
 import com.hubsante.Producer;
 import com.hubsante.TLSConf;
