@@ -102,11 +102,6 @@
                           ?.requiredValues?.length
                       : 1
                   "
-                  :validated-values-count="
-                    selectedMessage?.validatedValues?.filter(
-                      (value) => value.valid
-                    ).length
-                  "
                   v-bind="selectedMessage"
                   class="message mb-4"
                   :class="{ stale: selectedMessage?.stale }"
