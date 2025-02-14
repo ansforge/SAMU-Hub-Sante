@@ -791,11 +791,17 @@ export default {
   mixins: [mixinWebsocket],
   methods: {
     setValidationStatus(requiredValue, status, index) {
-      requiredValue.valid = requiredValue.valid === status ? undefined : status;
+      requiredValue.valid =
+        requiredValue.valid === status ? undefined : status;
       const commentFieldRef = this.$refs['commentField' + index];
       if (!commentFieldRef) return;
       const commentField = commentFieldRef[0];
-      commentField.focus();
+      if (requiredValue.valid === ValidationStatus.VALID) {
+        commentField.savedDescription = requiredValue.description;
+        requiredValue.description = '';
+      } else if (commentField.savedDescription) {
+        requiredValue.description = commentField.savedDescription;
+      }
 
       this.$nextTick(() => {
         commentField.focus();
