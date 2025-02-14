@@ -30,9 +30,13 @@
                       :value="step.id"
                       editable
                       style="cursor: pointer"
-                      :color="getStepColor(index)"
+                      :color="
+                        currentStep === index
+                          ? 'rgb(24,103,192)'
+                          : getStepColor(index)
+                      "
                       :step="index + 1"
-                      edit-icon="mdi-circle"
+                      :edit-icon="false"
                       @click="goToStep(index)"
                     >
                       {{ step.label }}
