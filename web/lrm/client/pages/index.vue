@@ -65,73 +65,73 @@
 </template>
 
 <script setup>
-import { useMainStore } from '~/store';
+  import { useMainStore } from '~/store';
 
-// eslint-disable-next-line no-undef
-useHead({
-  title: 'Connexion - Hub Santé',
-});
+  // eslint-disable-next-line no-undef
+  useHead({
+    title: 'Connexion - Hub Santé',
+  });
 </script>
 
 <script>
-export default {
-  name: 'Login',
+  export default {
+    name: 'Login',
 
-  data() {
-    return {
-      store: useMainStore(),
-      alert: {
-        show: false,
-        type: 'error',
-        message: '',
-      },
-      clientIds:
-        Object.keys(this.$config.public.clientMap).length === 0
-          ? new Map()
-          : new Map(this.$config.public.clientMap),
-      form: {
-        clientId: 'fr.health.samuA',
-        targetId: 'fr.health.samuC',
-        tester: false,
-      },
-      rules: {
-        required: (v) => !!v || 'This field is required',
-        testTargetId: (v) => {
-          if (
-            this.form.clientId.startsWith('fr.health.test') &&
-            !this.targetClientIds.includes(v)
-          ) {
-            return "Tests are only allowed on editor's systems";
-          }
-          return true;
+    data() {
+      return {
+        store: useMainStore(),
+        alert: {
+          show: false,
+          type: 'error',
+          message: '',
         },
+        clientIds:
+          Object.keys(this.$config.public.clientMap).length === 0
+            ? new Map()
+            : new Map(this.$config.public.clientMap),
+        form: {
+          clientId: 'fr.health.samuA',
+          targetId: 'fr.health.samuC',
+          tester: false,
+        },
+        rules: {
+          required: (v) => !!v || 'This field is required',
+          testTargetId: (v) => {
+            if (
+              this.form.clientId.startsWith('fr.health.test') &&
+              !this.targetClientIds.includes(v)
+            ) {
+              return "Tests are only allowed on editor's systems";
+            }
+            return true;
+          },
+        },
+      };
+    },
+    computed: {
+      targetClientIds() {
+        return this.clientIds.get(this.form.clientId);
       },
-    };
-  },
-  computed: {
-    targetClientIds() {
-      return this.clientIds.get(this.form.clientId);
     },
-  },
-  methods: {
-    async login(target) {
-      if (!(await this.$refs.form.validate()).valid) {
-        return;
-      }
-      await this.store.logInUser(this.form);
-      // eslint-disable-next-line no-undef
-      await navigateTo(target);
+    methods: {
+      async login(target) {
+        if (!(await this.$refs.form.validate()).valid) {
+          return;
+        }
+        await this.store.logInUser(this.form);
+        // eslint-disable-next-line no-undef
+        await navigateTo(target);
+      },
+      swap() {
+        const clientId = this.form.clientId;
+        if (this.clientIds.has(this.form.targetId)) {
+          this.form.clientId = this.form.targetId;
+        } else {
+          // Can only connect as a clientId in the authorized clientIds
+          this.form.clientId = null;
+        }
+        this.form.targetId = clientId;
+      },
     },
-    swap() {
-      const clientId = this.form.clientId;
-      if (this.clientIds.has(this.form.targetId)) {
-        this.form.clientId = this.form.targetId;
-      } else {
-        // Can only connect as a clientId in the authorized clientIds
-        this.form.clientId = null;
-      }
-      this.form.targetId = clientId;
-    },
-  },
-};
+  };
 </script>
