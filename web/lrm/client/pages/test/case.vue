@@ -436,33 +436,35 @@ async function loadShemas() {
 }
 
 const getLabelByPath = (path) => {
+  function getRefFromPath(ref, path, index) {
+    if (index >= path.length) return ref;
+    const currentPath = path[index];
+
+    if (typeof currentPath === 'number') {
+      return getRefFromPath(ref, path, index + 1);
+    }
+
+    const refProperty = ref?.properties[currentPath];
+
+    if (refProperty?.$ref || refProperty?.type === 'array') {
+      const refName =
+        refProperty.$ref?.split('/').pop() ??
+        refProperty.items.$ref.split('/').pop();
+      const newRef = schema.definitions[refName];
+      return getRefFromPath(newRef, path, index + 1);
+    }
+
+    return refProperty;
+  }
+
   const messageTypes = store.messageTypes;
   const step = testCase.value.steps[currentStep.value];
   const model = step.model;
   const messageType = messageTypes.find((type) => type.label === model);
-
-  function getTitleFromRef(ref, path, index) {
-    const refPropertyType = ref.properties[path[index]]?.type;
-    if (refPropertyType === 'string')
-      return ref.properties[path[index]].title;
-    if (ref.properties[path[index]]?.$ref || refPropertyType === 'array') {
-      const refName =
-        ref.properties[path[index]]?.$ref?.split('/').pop() ??
-        ref.properties[path[index]].items.$ref.split('/').pop();
-      const newRef = messageType.schema.definitions[refName];
-      return `${getTitleFromRef(
-        newRef,
-        path,
-        refPropertyType === 'array' ? index + 2 : index + 1
-      )}`;
-    }
-  }
-
-  if (messageType?.schema?.properties[path[2]].$ref) {
-    return getTitleFromRef(messageType.schema, path, 2);
-  }
-
-  return messageType?.schema?.properties[path[2]].title;
+  if (!messageType) return null;
+  const schema = messageType.schema;
+  const ref = getRefFromPath(schema, path.slice(2), 0);
+  return ref?.title;
 };
 
 async function loadJsonSteps() {
