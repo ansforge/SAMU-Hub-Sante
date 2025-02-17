@@ -36,7 +36,7 @@
                           : getStepColor(index)
                       "
                       :step="index + 1"
-                      :edit-icon="false"
+                      edit-icon=""
                       @click="goToStep(index)"
                     >
                       {{ step.label }}
