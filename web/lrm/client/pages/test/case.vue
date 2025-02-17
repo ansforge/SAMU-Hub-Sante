@@ -249,7 +249,7 @@
                                 ? 'red'
                                 : 'black',
                           }"
-                        ><b>{{ requiredValue.path.join('.') }}:</b> <br>{{ requiredValue.value }}</pre>
+                        ><b>{{ getLabelByPath(requiredValue.path) }} ({{ requiredValue.path.join('.') }}):</b> <br>{{ requiredValue.value }}</pre>
                       </span>
                     </span>
                     <v-text-field
@@ -403,11 +403,67 @@ const selectedTypeCaseMessages = computed(() => {
 
 async function initialize() {
   await loadJsonSteps();
+  await loadShemas();
 
   if (testCase.value.steps[currentStep.value]?.type === 'receive') {
     submitMessage(testCase.value.steps[currentStep.value]);
   }
 }
+
+async function loadShemas() {
+  const source = store.selectedVhost.modelVersion;
+  store
+    .loadMessageTypes(
+      REPOSITORY_URL +
+        source +
+        '/src/main/resources/sample/examples/messagesList.json'
+    )
+    .then(() =>
+      store
+        .loadSchemas(
+          REPOSITORY_URL + source + '/src/main/resources/json-schema/'
+        )
+        .then(() => {
+          console.info('messagesList.json and schemas loaded for ' + source);
+        })
+        .catch((reason) => {
+          console.error(reason);
+        })
+    )
+    .catch((reason) => {
+      console.error(reason);
+    });
+}
+
+const getLabelByPath = (path) => {
+  const messageTypes = store.messageTypes;
+  const step = testCase.value.steps[currentStep.value];
+  const model = step.model;
+  const messageType = messageTypes.find((type) => type.label === model);
+
+  function getTitleFromRef(ref, path, index) {
+    const refPropertyType = ref.properties[path[index]]?.type;
+    if (refPropertyType === 'string')
+      return ref.properties[path[index]].title;
+    if (ref.properties[path[index]]?.$ref || refPropertyType === 'array') {
+      const refName =
+        ref.properties[path[index]]?.$ref?.split('/').pop() ??
+        ref.properties[path[index]].items.$ref.split('/').pop();
+      const newRef = messageType.schema.definitions[refName];
+      return `${getTitleFromRef(
+        newRef,
+        path,
+        refPropertyType === 'array' ? index + 2 : index + 1
+      )}`;
+    }
+  }
+
+  if (messageType?.schema?.properties[path[2]].$ref) {
+    return getTitleFromRef(messageType.schema, path, 2);
+  }
+
+  return messageType?.schema?.properties[path[2]].title;
+};
 
 async function loadJsonSteps() {
   for (const step of testCase.value.steps) {
