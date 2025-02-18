@@ -1,4 +1,6 @@
 {
   "singleQuote": true,
-  "semi": true
+  "semi": true,
+  "vueIndentScriptAndStyle": false,
+  "plugins": ["prettier-plugin-vue"]
 }
