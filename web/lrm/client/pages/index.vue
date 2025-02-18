@@ -65,81 +65,81 @@
 </template>
 
 <script setup>
-  // eslint-disable-next-line no-undef
-  useHead({
-    title: 'Connexion - Hub Santé',
-  });
+// eslint-disable-next-line no-undef
+useHead({
+  title: 'Connexion - Hub Santé',
+});
 </script>
 
 <script>
-  import { navigateTo } from 'nuxt/app';
-  import { useMainStore } from '~/store';
-  import { useAuthStore } from '~/store/auth'; // ✅ Use the new Pinia auth store
+import { navigateTo } from 'nuxt/app';
+import { useMainStore } from '~/store';
+import { useAuthStore } from '~/store/auth'; // ✅ Use the new Pinia auth store
 
-  export default {
-    name: 'Login',
+export default {
+  name: 'Login',
 
-    data() {
-      return {
-        store: useMainStore(),
-        alert: {
-          show: false,
+  data() {
+    return {
+      store: useMainStore(),
+      alert: {
+        show: false,
+        type: 'error',
+        message: '',
+      },
+      clientIds:
+        Object.keys(this.$config.public.clientMap).length === 0
+          ? new Map()
+          : new Map(this.$config.public.clientMap),
+      form: {
+        clientId: 'fr.health.samuA',
+        targetId: 'fr.health.samuC',
+        tester: false,
+      },
+      rules: {
+        required: (v) => !!v || 'This field is required',
+        testTargetId: (v) => {
+          if (
+            this.form.clientId.startsWith('fr.health.test') &&
+            !this.targetClientIds.includes(v)
+          ) {
+            return "Tests are only allowed on editor's systems";
+          }
+          return true;
+        },
+      },
+    };
+  },
+  computed: {
+    targetClientIds() {
+      return this.clientIds.get(this.form.clientId);
+    },
+  },
+  methods: {
+    async login(target) {
+      try {
+        const authStore = useAuthStore();
+        await authStore.login(this.form); // Replace with actual API call
+        navigateTo(target);
+      } catch (error) {
+        alert.value = {
+          show: true,
           type: 'error',
-          message: '',
-        },
-        clientIds:
-          Object.keys(this.$config.public.clientMap).length === 0
-            ? new Map()
-            : new Map(this.$config.public.clientMap),
-        form: {
-          clientId: 'fr.health.samuA',
-          targetId: 'fr.health.samuC',
-          tester: false,
-        },
-        rules: {
-          required: (v) => !!v || 'This field is required',
-          testTargetId: (v) => {
-            if (
-              this.form.clientId.startsWith('fr.health.test') &&
-              !this.targetClientIds.includes(v)
-            ) {
-              return "Tests are only allowed on editor's systems";
-            }
-            return true;
-          },
-        },
-      };
+          message: 'Login failed. Please try again.',
+        };
+      }
+      // eslint-disable-next-line no-undef
     },
-    computed: {
-      targetClientIds() {
-        return this.clientIds.get(this.form.clientId);
-      },
+    swap() {
+      const clientId = this.form.clientId;
+      if (this.clientIds.has(this.form.targetId)) {
+        this.form.clientId = this.form.targetId;
+      } else {
+        // Can only connect as a clientId in the authorized clientIds
+        this.form.clientId = null;
+      }
+      this.form.targetId = clientId;
     },
-    methods: {
-      async login(target) {
-        try {
-          const authStore = useAuthStore();
-          await authStore.login(this.form); // Replace with actual API call
-          navigateTo(target);
-        } catch (error) {
-          alert.value = {
-            show: true,
-            type: 'error',
-            message: 'Login failed. Please try again.',
-          };
-        }
-        // eslint-disable-next-line no-undef
-      },
-      swap() {
-        const clientId = this.form.clientId;
-        if (this.clientIds.has(this.form.targetId)) {
-          this.form.clientId = this.form.targetId;
-        } else {
-          // Can only connect as a clientId in the authorized clientIds
-          this.form.clientId = null;
-        }
-        this.form.targetId = clientId;
-      },
-    },
-  };
+  },
+};
 </script>

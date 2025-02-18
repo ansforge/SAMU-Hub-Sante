@@ -124,205 +124,203 @@
 </template>
 
 <script setup>
-  import { toRef } from 'vue';
-  import { toast } from 'vue3-toastify';
-  import { consola } from 'consola';
-  import mixinWebsocket from '~/mixins/mixinWebsocket';
-  import { REPOSITORY_URL } from '@/constants';
-  import { useMainStore } from '~/store';
-  import { useAuthStore } from '@/store/auth';
+import { toRef } from 'vue';
+import { toast } from 'vue3-toastify';
+import { consola } from 'consola';
+import mixinWebsocket from '~/mixins/mixinWebsocket';
+import { REPOSITORY_URL } from '@/constants';
+import { useMainStore } from '~/store';
+import { useAuthStore } from '@/store/auth';
 
-  import {
-    buildMessage,
-    sendMessage,
-    isOut,
-    getMessageType,
-    getCaseId,
-  } from '~/composables/messageUtils.js';
+import {
+  buildMessage,
+  sendMessage,
+  isOut,
+  getMessageType,
+  getCaseId,
+} from '~/composables/messageUtils.js';
 
-  function submit(form) {
-    try {
-      const data = buildMessage({
-        [useMainStore().currentUseCase]: form,
-      });
-      sendMessage(data);
-    } catch (error) {
-      console.error("Erreur lors de l'envoi du message", error);
-    }
+function submit(form) {
+  try {
+    const data = buildMessage({
+      [useMainStore().currentUseCase]: form,
+    });
+    sendMessage(data);
+  } catch (error) {
+    console.error("Erreur lors de l'envoi du message", error);
   }
+}
 
-  // eslint-disable-next-line no-undef
-  useHead({
-    titleTemplate: toRef(useMainStore(), 'demoHeadTitle'),
-  });
+// eslint-disable-next-line no-undef
+useHead({
+  titleTemplate: toRef(useMainStore(), 'demoHeadTitle'),
+});
 </script>
 
 <script>
-  export default {
-    name: 'Demo',
-    mixins: [mixinWebsocket],
-    beforeRouteEnter(_to, _from) {
-      // Redirect to parent if we're not authenticated
-      if (!useAuthStore().isAuthenticated) {
-        return { name: 'index' };
+export default {
+  name: 'Demo',
+  mixins: [mixinWebsocket],
+  beforeRouteEnter(_to, _from) {
+    // Redirect to parent if we're not authenticated
+    if (!useAuthStore().isAuthenticated) {
+      return { name: 'index' };
+    }
+  },
+  data() {
+    return {
+      config: null,
+      source: null,
+      store: useMainStore(),
+      authStore: useAuthStore(),
+      messageTypeTabIndex: null,
+      selectedMessageType: 'message',
+      selectedClientId: null,
+      selectedCaseIds: [],
+      queueTypes: [
+        {
+          name: 'Message',
+          type: 'message',
+          icon: 'mdi-message',
+        },
+        {
+          name: 'Ack',
+          type: 'ack',
+          icon: 'mdi-check',
+        },
+        {
+          name: 'Info',
+          type: 'info',
+          icon: 'mdi-information',
+        },
+      ],
+      form: {},
+    };
+  },
+  computed: {
+    currentMessageType() {
+      return this.store.messageTypes[this.messageTypeTabIndex];
+    },
+    showSentMessagesConfig: {
+      get() {
+        return this.store.showSentMessages;
+      },
+      set(value) {
+        this.store.setShowSentMessages(value);
+      },
+    },
+    clientMessages() {
+      return this.store.messages.filter(
+        (message) =>
+          (isOut(message.direction) &&
+            message.body.senderID === this.authStore.user.clientId) ||
+          (!isOut(message.direction) &&
+            message.routingKey.startsWith(this.authStore.user.clientId))
+      );
+    },
+    showableMessages() {
+      return this.store.showSentMessages
+        ? this.clientMessages
+        : this.clientMessages?.filter((message) => !isOut(message.direction));
+    },
+    selectedTypeMessages() {
+      return this.showableMessages.filter(
+        (message) => getMessageType(message) === this.selectedMessageType
+      );
+    },
+    selectedVhost() {
+      return this.store.selectedVhost;
+    },
+    selectedTypeCaseMessages() {
+      if (this.selectedCaseIds.length === 0) {
+        return this.selectedTypeMessages;
       }
+      return this.selectedTypeMessages.filter((message) =>
+        this.selectedCaseIds.includes(getCaseId(message, true))
+      );
     },
-    data() {
-      return {
-        config: null,
-        source: null,
-        store: useMainStore(),
-        authStore: useAuthStore(),
-        messageTypeTabIndex: null,
-        selectedMessageType: 'message',
-        selectedClientId: null,
-        selectedCaseIds: [],
-        queueTypes: [
-          {
-            name: 'Message',
-            type: 'message',
-            icon: 'mdi-message',
-          },
-          {
-            name: 'Ack',
-            type: 'ack',
-            icon: 'mdi-check',
-          },
-          {
-            name: 'Info',
-            type: 'info',
-            icon: 'mdi-information',
-          },
-        ],
-        form: {},
-      };
+    messagesSentCount() {
+      return this.clientMessages.filter((message) => isOut(message.direction))
+        .length;
     },
-    computed: {
-      currentMessageType() {
-        return this.store.messageTypes[this.messageTypeTabIndex];
-      },
-      showSentMessagesConfig: {
-        get() {
-          return this.store.showSentMessages;
-        },
-        set(value) {
-          this.store.setShowSentMessages(value);
-        },
-      },
-      clientMessages() {
-        return this.store.messages.filter(
-          (message) =>
-            (isOut(message.direction) &&
-              message.body.senderID === this.authStore.user.clientId) ||
-            (!isOut(message.direction) &&
-              message.routingKey.startsWith(this.authStore.user.clientId))
-        );
-      },
-      showableMessages() {
-        return this.store.showSentMessages
-          ? this.clientMessages
-          : this.clientMessages?.filter((message) => !isOut(message.direction));
-      },
-      selectedTypeMessages() {
-        return this.showableMessages.filter(
-          (message) => getMessageType(message) === this.selectedMessageType
-        );
-      },
-      selectedVhost() {
-        return this.store.selectedVhost;
-      },
-      selectedTypeCaseMessages() {
-        if (this.selectedCaseIds.length === 0) {
-          return this.selectedTypeMessages;
-        }
-        return this.selectedTypeMessages.filter((message) =>
-          this.selectedCaseIds.includes(getCaseId(message, true))
-        );
-      },
-      messagesSentCount() {
-        return this.clientMessages.filter((message) => isOut(message.direction))
-          .length;
-      },
-      caseIds() {
-        return [
-          ...new Set(this.selectedTypeMessages.map((m) => getCaseId(m, true))),
-        ];
-      },
+    caseIds() {
+      return [
+        ...new Set(this.selectedTypeMessages.map((m) => getCaseId(m, true))),
+      ];
     },
-    watch: {
-      source() {
-        this.updateForm();
-      },
-      currentMessageType() {
-        this.store.selectedSchema =
-          this.store.messageTypes[this.messageTypeTabIndex];
-      },
-      selectedVhost() {
-        this.source = this.store.selectedVhost.modelVersion;
-      },
+  },
+  watch: {
+    source() {
+      this.updateForm();
     },
-    mounted() {
+    currentMessageType() {
+      this.store.selectedSchema =
+        this.store.messageTypes[this.messageTypeTabIndex];
+    },
+    selectedVhost() {
       this.source = this.store.selectedVhost.modelVersion;
     },
-    methods: {
-      updateForm() {
-        // To automatically generate the UI and input fields based on the JSON Schema
-        // We need to wait the acquisition of 'messagesList' before attempting to acquire the schemas
-        this.store
-          .loadMessageTypes(
-            REPOSITORY_URL +
-              this.source +
-              '/src/main/resources/sample/examples/messagesList.json'
-          )
-          .then(() =>
-            this.store
-              .loadSchemas(
-                REPOSITORY_URL +
-                  this.source +
-                  '/src/main/resources/json-schema/'
-              )
-              .then(() => {
-                consola.log(
-                  'messagesList.json and schemas loaded for ' + this.source
-                );
-                this.messageTypeTabIndex = 0;
-              })
-              .catch((reason) => {
-                consola.error(reason);
-                toast.error(
-                  "Erreur lors de l'acquisition des schémas de version " +
-                    this.source
-                );
-              })
-          )
-          .catch((reason) => {
-            consola.error(reason);
-            toast.error(
-              "Erreur lors de l'acquisition de la liste des schémas de version " +
-                this.source
-            );
-          });
-      },
-      typeMessages(type) {
-        return this.showableMessages.filter(
-          (message) => getMessageType(message) === type
-        );
-      },
-      useMessageToReply(message) {
-        // Use message to fill the form
-        if (message[this.store.selectedSchema.schema.title]) {
-          this.store.currentMessage =
-            message[this.store.selectedSchema.schema.title];
-        } else {
-          // TODO: automatically switch to the corresponding schema?
-          toast.error('Le message ne correspond pas au schéma sélectionné');
-        }
-      },
+  },
+  mounted() {
+    this.source = this.store.selectedVhost.modelVersion;
+  },
+  methods: {
+    updateForm() {
+      // To automatically generate the UI and input fields based on the JSON Schema
+      // We need to wait the acquisition of 'messagesList' before attempting to acquire the schemas
+      this.store
+        .loadMessageTypes(
+          REPOSITORY_URL +
+            this.source +
+            '/src/main/resources/sample/examples/messagesList.json'
+        )
+        .then(() =>
+          this.store
+            .loadSchemas(
+              REPOSITORY_URL + this.source + '/src/main/resources/json-schema/'
+            )
+            .then(() => {
+              consola.log(
+                'messagesList.json and schemas loaded for ' + this.source
+              );
+              this.messageTypeTabIndex = 0;
+            })
+            .catch((reason) => {
+              consola.error(reason);
+              toast.error(
+                "Erreur lors de l'acquisition des schémas de version " +
+                  this.source
+              );
+            })
+        )
+        .catch((reason) => {
+          consola.error(reason);
+          toast.error(
+            "Erreur lors de l'acquisition de la liste des schémas de version " +
+              this.source
+          );
+        });
     },
-  };
+    typeMessages(type) {
+      return this.showableMessages.filter(
+        (message) => getMessageType(message) === type
+      );
+    },
+    useMessageToReply(message) {
+      // Use message to fill the form
+      if (message[this.store.selectedSchema.schema.title]) {
+        this.store.currentMessage =
+          message[this.store.selectedSchema.schema.title];
+      } else {
+        // TODO: automatically switch to the corresponding schema?
+        toast.error('Le message ne correspond pas au schéma sélectionné');
+      }
+    },
+  },
+};
 </script>
 <style>
-  .message {
+.message {
   transition: all 0.5s;
 }
 

@@ -81,59 +81,56 @@
 </template>
 
 <script>
-  import { useMainStore } from '~/store';
-  import { useAuthStore } from '@/store/auth'; // Adjust the path as necessary
-  import mixinUser from '~/mixins/mixinUser';
-  import { REPOSITORY_URL } from '~/constants';
-  import { navigateTo } from 'nuxt/app';
+import { useMainStore } from '~/store';
+import { useAuthStore } from '@/store/auth'; // Adjust the path as necessary
+import mixinUser from '~/mixins/mixinUser';
+import { REPOSITORY_URL } from '~/constants';
+import { navigateTo } from 'nuxt/app';
 
-  export default {
-    name: 'DefaultLayout',
-    mixins: [mixinUser],
-    data() {
-      return {
-        store: useMainStore(),
-        authStore: useAuthStore(),
-        repositoryUrl: REPOSITORY_URL.replace(
-          'raw.githubusercontent',
-          'github'
-        ),
-      };
+export default {
+  name: 'DefaultLayout',
+  mixins: [mixinUser],
+  data() {
+    return {
+      store: useMainStore(),
+      authStore: useAuthStore(),
+      repositoryUrl: REPOSITORY_URL.replace('raw.githubusercontent', 'github'),
+    };
+  },
+  computed: {
+    readableWebsocketStatus() {
+      return this.store.isWebsocketConnected
+        ? 'Connexion établie'
+        : 'Connexion en attente';
     },
-    computed: {
-      readableWebsocketStatus() {
-        return this.store.isWebsocketConnected
-          ? 'Connexion établie'
-          : 'Connexion en attente';
-      },
-      computedRepositoryUrl() {
-        return (
-          this.repositoryUrl + 'tree/' + this.$store.selectedVhost.modelVersion
-        );
-      },
+    computedRepositoryUrl() {
+      return (
+        this.repositoryUrl + 'tree/' + this.$store.selectedVhost.modelVersion
+      );
     },
-    methods: {
-      toggleAdvanced() {
-        this.store.toggleAdvanced();
-      },
-      clickHandler() {
-        if (this.store.isAdvanced) {
-          // No control as this will anyway fail, user is expected to be advanced
-          this.store.logInUser({
-            ...this.authStore.user,
-            targetId: this.authStore.user.clientId,
-            clientId: this.authStore.user.targetId,
-          });
-        } else {
-          navigateTo('/');
-        }
-      },
+  },
+  methods: {
+    toggleAdvanced() {
+      this.store.toggleAdvanced();
     },
-  };
+    clickHandler() {
+      if (this.store.isAdvanced) {
+        // No control as this will anyway fail, user is expected to be advanced
+        this.store.logInUser({
+          ...this.authStore.user,
+          targetId: this.authStore.user.clientId,
+          clientId: this.authStore.user.targetId,
+        });
+      } else {
+        navigateTo('/');
+      }
+    },
+  },
+};
 </script>
 
 <style>
-  header.v-toolbar {
+header.v-toolbar {
   position: sticky !important;
 }
 
