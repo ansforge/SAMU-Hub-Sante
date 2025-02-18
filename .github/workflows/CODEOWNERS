@@ -3,8 +3,6 @@
 # Each line is a file pattern followed by one or more owners.
 
 # These owners will be the default owners for everything in
-# the repo. Unless a later match takes precedence,
-# @global-owner1 and @global-owner2 will be requested for
-# review when someone opens a pull request.
-*       @romainfd
-*       @ansforge/samu-hub-sante-ecriture
+# the repo.
+* @romainfd
+* @ansforge/samu-hub-sante-ecriture
