@@ -80,52 +80,49 @@
 </template>
 
 <script>
-  import { useMainStore } from '~/store';
-  import mixinUser from '~/mixins/mixinUser';
-  import { REPOSITORY_URL } from '~/constants';
+import { useMainStore } from '~/store';
+import mixinUser from '~/mixins/mixinUser';
+import { REPOSITORY_URL } from '~/constants';
 
-  export default {
-    name: 'DefaultLayout',
-    mixins: [mixinUser],
-    data() {
-      return {
-        store: useMainStore(),
-        repositoryUrl: REPOSITORY_URL.replace(
-          'raw.githubusercontent',
-          'github'
-        ),
-      };
+export default {
+  name: 'DefaultLayout',
+  mixins: [mixinUser],
+  data() {
+    return {
+      store: useMainStore(),
+      repositoryUrl: REPOSITORY_URL.replace('raw.githubusercontent', 'github'),
+    };
+  },
+  computed: {
+    readableWebsocketStatus() {
+      return this.store.isWebsocketConnected
+        ? 'Connexion établie'
+        : 'Connexion en attente';
     },
-    computed: {
-      readableWebsocketStatus() {
-        return this.store.isWebsocketConnected
-          ? 'Connexion établie'
-          : 'Connexion en attente';
-      },
+  },
+  methods: {
+    toggleAdvanced() {
+      this.store.toggleAdvanced();
     },
-    methods: {
-      toggleAdvanced() {
-        this.store.toggleAdvanced();
-      },
-      clickHandler() {
-        if (this.store.isAdvanced) {
-          // No control as this will anyway fail, user is expected to be advanced
-          this.store.logInUser({
-            ...this.store.user,
-            targetId: this.store.user.clientId,
-            clientId: this.store.user.targetId,
-          });
-        } else {
-          // eslint-disable-next-line no-undef
-          return navigateTo('/');
-        }
-      },
+    clickHandler() {
+      if (this.store.isAdvanced) {
+        // No control as this will anyway fail, user is expected to be advanced
+        this.store.logInUser({
+          ...this.store.user,
+          targetId: this.store.user.clientId,
+          clientId: this.store.user.targetId,
+        });
+      } else {
+        // eslint-disable-next-line no-undef
+        return navigateTo('/');
+      }
     },
-  };
+  },
+};
 </script>
 
 <style>
-  header.v-toolbar {
+header.v-toolbar {
   position: sticky !important;
 }
 

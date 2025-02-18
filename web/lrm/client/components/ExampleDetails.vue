@@ -56,58 +56,58 @@
 </template>
 
 <script>
-  import { REPOSITORY_URL } from '@/constants';
+import { REPOSITORY_URL } from '@/constants';
 
-  export default {
-    props: {
-      file: {
-        type: String,
-        required: true,
-      },
-      icon: {
-        type: String,
-        required: true,
-      },
-      name: {
-        type: String,
-        required: true,
-      },
-      caller: {
-        type: String,
-        required: true,
-      },
-      context: {
-        type: String,
-        required: true,
-      },
-      environment: {
-        type: String,
-        required: true,
-      },
-      victims: {
-        type: String,
-        required: true,
-      },
-      victim: {
-        type: String,
-        required: true,
-      },
-      medicalSituation: {
-        type: String,
-        required: true,
-      },
+export default {
+  props: {
+    file: {
+      type: String,
+      required: true,
     },
-    data() {
-      return {
-        showDetails: false,
-        REPOSITORY_URL,
-      };
+    icon: {
+      type: String,
+      required: true,
     },
-  };
+    name: {
+      type: String,
+      required: true,
+    },
+    caller: {
+      type: String,
+      required: true,
+    },
+    context: {
+      type: String,
+      required: true,
+    },
+    environment: {
+      type: String,
+      required: true,
+    },
+    victims: {
+      type: String,
+      required: true,
+    },
+    victim: {
+      type: String,
+      required: true,
+    },
+    medicalSituation: {
+      type: String,
+      required: true,
+    },
+  },
+  data() {
+    return {
+      showDetails: false,
+      REPOSITORY_URL,
+    };
+  },
+};
 </script>
 
 <style scoped>
-  i {
+i {
   color: rgb(100 100 100);
 }
 </style>

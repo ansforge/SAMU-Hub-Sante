@@ -22,64 +22,64 @@
 </template>
 
 <script setup>
-  import { ref, computed, watch } from 'vue';
-  import { useMainStore } from '~/store';
-  const store = useMainStore();
+import { ref, computed, watch } from 'vue';
+import { useMainStore } from '~/store';
+const store = useMainStore();
 
-  const props = defineProps({
-    currentMessageType: {
-      type: Object,
-      required: true,
-    },
-    messageTypeTabIndex: {
-      type: Number,
-      required: true,
-    },
-    source: {
-      type: String,
-      required: true,
-    },
-    label: {
-      type: String,
-      required: true,
-    },
-    schemaName: {
-      type: String,
-      required: true,
-    },
-    examples: {
-      type: Array,
-      required: true,
-    },
-    noSendButton: {
-      type: Boolean,
-      default: false,
-    },
-  });
+const props = defineProps({
+  currentMessageType: {
+    type: Object,
+    required: true,
+  },
+  messageTypeTabIndex: {
+    type: Number,
+    required: true,
+  },
+  source: {
+    type: String,
+    required: true,
+  },
+  label: {
+    type: String,
+    required: true,
+  },
+  schemaName: {
+    type: String,
+    required: true,
+  },
+  examples: {
+    type: Array,
+    required: true,
+  },
+  noSendButton: {
+    type: Boolean,
+    default: false,
+  },
+});
 
-  const requestFormRef = ref(null);
-  const examplesListRef = ref(null);
-  const exampleLoadDatetime = ref(undefined);
-  const schema = computed(
-    () => store.messageTypes[props.messageTypeTabIndex]?.schema
-  );
+const requestFormRef = ref(null);
+const examplesListRef = ref(null);
+const exampleLoadDatetime = ref(undefined);
+const schema = computed(
+  () => store.messageTypes[props.messageTypeTabIndex]?.schema
+);
 
-  watch(
-    () => props.messageTypeTabIndex,
-    () => {
-      store.currentUseCase =
-        store.messageTypes[props.messageTypeTabIndex].schema.title;
-    }
-  );
+watch(
+  () => props.messageTypeTabIndex,
+  () => {
+    store.currentUseCase =
+      store.messageTypes[props.messageTypeTabIndex].schema.title;
+  }
+);
 
-  defineExpose({
-    props,
-    requestFormRef,
-  });
+defineExpose({
+  props,
+  requestFormRef,
+});
 </script>
 
 <style>
-  .v-application div.vjsf-array-header {
+.v-application div.vjsf-array-header {
   margin-bottom: 28px !important;
 }
 

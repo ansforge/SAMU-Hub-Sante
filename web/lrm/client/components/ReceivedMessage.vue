@@ -111,115 +111,115 @@
 </template>
 
 <script setup>
-  import { computed, ref, onMounted } from 'vue';
-  import { DIRECTIONS } from '@/constants';
-  import mixinWebsocket from '~/mixins/mixinWebsocket';
-  import { useMainStore } from '~/store';
-  import {
-    buildAck,
-    sendMessage,
-    getMessageType,
-    getDistributionIdOfAckedMessage,
-  } from '~/composables/messageUtils';
+import { computed, ref, onMounted } from 'vue';
+import { DIRECTIONS } from '@/constants';
+import mixinWebsocket from '~/mixins/mixinWebsocket';
+import { useMainStore } from '~/store';
+import {
+  buildAck,
+  sendMessage,
+  getMessageType,
+  getDistributionIdOfAckedMessage,
+} from '~/composables/messageUtils';
 
-  const store = useMainStore();
-  const showFullMessage = ref(false);
-  const autoAckConfig = computed(() => store.autoAckConfig);
+const store = useMainStore();
+const showFullMessage = ref(false);
+const autoAckConfig = computed(() => store.autoAckConfig);
 
-  const props = defineProps({
-    dense: {
-      type: Boolean,
-      default: false,
-    },
-    vhost: {
-      type: String,
-      required: true,
-    },
-    direction: {
-      type: String,
-      required: true,
-    },
-    jsonDepth: {
-      type: Number,
-      default: 1,
-    },
-    requiredValuesCount: {
-      type: Number,
-      default: 0,
-    },
-    validatedValuesCount: {
-      type: Number,
-      default: 0,
-    },
-    routingKey: {
-      type: String,
-      required: true,
-    },
-    time: {
-      type: String,
-      required: true,
-    },
-    receivedTime: {
-      type: String,
-      default: null,
-    },
-    body: {
-      type: Object,
-      required: true,
-    },
-  });
+const props = defineProps({
+  dense: {
+    type: Boolean,
+    default: false,
+  },
+  vhost: {
+    type: String,
+    required: true,
+  },
+  direction: {
+    type: String,
+    required: true,
+  },
+  jsonDepth: {
+    type: Number,
+    default: 1,
+  },
+  requiredValuesCount: {
+    type: Number,
+    default: 0,
+  },
+  validatedValuesCount: {
+    type: Number,
+    default: 0,
+  },
+  routingKey: {
+    type: String,
+    required: true,
+  },
+  time: {
+    type: String,
+    required: true,
+  },
+  receivedTime: {
+    type: String,
+    default: null,
+  },
+  body: {
+    type: Object,
+    required: true,
+  },
+});
 
-  defineEmits(['useMessageToReply']);
+defineEmits(['useMessageToReply']);
 
-  function useMessageToReply() {
-    // eslint-disable-next-line no-undef
-    emit(
-      'useMessageToReply',
-      props.body.content[0].jsonContent.embeddedJsonContent.message
+function useMessageToReply() {
+  // eslint-disable-next-line no-undef
+  emit(
+    'useMessageToReply',
+    props.body.content[0].jsonContent.embeddedJsonContent.message
+  );
+}
+
+const acked = computed(() => {
+  // Within Ack messages, check if there is one matching the message
+  return useMainStore()
+    .messages.filter((message) => getMessageType(message) === 'ack')
+    .find(
+      (message) =>
+        getDistributionIdOfAckedMessage(message) === props.body.distributionID
     );
+});
+
+const sendAck = () => {
+  try {
+    const distributionID = props.body.distributionID;
+    const msg = buildAck(distributionID);
+    sendMessage(msg, props.vhost);
+  } catch (error) {
+    console.error("Erreur lors de l'envoi de l'acquittement", error);
   }
+};
 
-  const acked = computed(() => {
-    // Within Ack messages, check if there is one matching the message
-    return useMainStore()
-      .messages.filter((message) => getMessageType(message) === 'ack')
-      .find(
-        (message) =>
-          getDistributionIdOfAckedMessage(message) === props.body.distributionID
-      );
-  });
-
-  const sendAck = () => {
-    try {
-      const distributionID = props.body.distributionID;
-      const msg = buildAck(distributionID);
-      sendMessage(msg, props.vhost);
-    } catch (error) {
-      console.error("Erreur lors de l'envoi de l'acquittement", error);
-    }
-  };
-
-  //on mounted, send ack if autoAckConfig is enabled
-  onMounted(() => {
-    if (autoAckConfig.value) {
-      sendAck();
-    }
-  });
+//on mounted, send ack if autoAckConfig is enabled
+onMounted(() => {
+  if (autoAckConfig.value) {
+    sendAck();
+  }
+});
 </script>
 
 <script>
-  export default {
-    mixins: [mixinWebsocket],
-    data() {
-      return {
-        store: useMainStore(),
-        DIRECTIONS,
-      };
-    },
-  };
+export default {
+  mixins: [mixinWebsocket],
+  data() {
+    return {
+      store: useMainStore(),
+      DIRECTIONS,
+    };
+  },
+};
 </script>
 <style lang="scss">
-  // Ref.: https://github.com/chenfengjw163/vue-json-viewer/tree/master#theming
+// Ref.: https://github.com/chenfengjw163/vue-json-viewer/tree/master#theming
 // values are default one from jv-light template
 .json-theme {
   background: rgba(0, 0, 0, 0);

@@ -12,12 +12,12 @@
 </template>
 
 <script>
-  import { useMainStore } from '~/store';
+import { useMainStore } from '~/store';
 
-  export default {
-    data: () => ({
-      store: useMainStore(),
-    }),
-    computed: {},
-  };
+export default {
+  data: () => ({
+    store: useMainStore(),
+  }),
+  computed: {},
+};
 </script>

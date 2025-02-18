@@ -20,20 +20,20 @@
 </template>
 
 <script setup>
-  import { useMainStore } from '~/store';
-  import { toRefs, onMounted } from 'vue';
-  const store = useMainStore();
+import { useMainStore } from '~/store';
+import { toRefs, onMounted } from 'vue';
+const store = useMainStore();
 
-  const { selectedVhost } = toRefs(store);
-  const vhosts = store.vhostMap;
+const { selectedVhost } = toRefs(store);
+const vhosts = store.vhostMap;
 
-  onMounted(() => {
-    selectedVhost.value = store.selectedVhost;
-  });
+onMounted(() => {
+  selectedVhost.value = store.selectedVhost;
+});
 </script>
 
 <style scoped>
-  span {
+span {
   flex: 1 1 auto;
 }
 </style>

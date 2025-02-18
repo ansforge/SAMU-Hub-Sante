@@ -24,48 +24,48 @@
 </template>
 
 <script setup>
-  import { computed, onMounted, ref } from 'vue';
-  import { useMainStore } from '~/store';
-  import { REPOSITORY_URL } from '@/constants';
+import { computed, onMounted, ref } from 'vue';
+import { useMainStore } from '~/store';
+import { REPOSITORY_URL } from '@/constants';
 
-  const store = useMainStore();
+const store = useMainStore();
 
-  onMounted(() => {
-    selectedSource.value = store.selectedVhost.modelVersion;
-    emit('sourceChanged', selectedSource.value);
-  });
+onMounted(() => {
+  selectedSource.value = store.selectedVhost.modelVersion;
+  emit('sourceChanged', selectedSource.value);
+});
 
-  const sources = [
-    ...new Set(store.vhostMap.map((vhost) => vhost.modelVersion)),
-    'main',
-    'develop',
-    'auto/model_tracker',
-    '{branchName}',
-  ];
+const sources = [
+  ...new Set(store.vhostMap.map((vhost) => vhost.modelVersion)),
+  'main',
+  'develop',
+  'auto/model_tracker',
+  '{branchName}',
+];
 
-  const selectedSource = ref('');
-  const emit = defineEmits(['sourceChanged']);
+const selectedSource = ref('');
+const emit = defineEmits(['sourceChanged']);
 
-  function sourceSelected() {
-    emit('sourceChanged', selectedSource.value);
-  }
+function sourceSelected() {
+  emit('sourceChanged', selectedSource.value);
+}
 
-  computed(() => {
-    return {
-      currentSchemaOnGitHub() {
-        return currentSchemaOnGitHub();
-      },
-    };
-  });
-  function currentSchemaOnGitHub() {
-    return (
-      REPOSITORY_URL.replace(
-        'https://raw.githubusercontent.com/',
-        'https://github.com/'
-      ).replace('SAMU-Hub-Modeles/', 'SAMU-Hub-Modeles/tree/') +
-      store.selectedVhost.modelVersion +
-      '/src/main/resources/json-schema/' +
-      store.selectedSchema.schemaName
-    );
-  }
+computed(() => {
+  return {
+    currentSchemaOnGitHub() {
+      return currentSchemaOnGitHub();
+    },
+  };
+});
+function currentSchemaOnGitHub() {
+  return (
+    REPOSITORY_URL.replace(
+      'https://raw.githubusercontent.com/',
+      'https://github.com/'
+    ).replace('SAMU-Hub-Modeles/', 'SAMU-Hub-Modeles/tree/') +
+    store.selectedVhost.modelVersion +
+    '/src/main/resources/json-schema/' +
+    store.selectedSchema.schemaName
+  );
+}
 </script>

@@ -12,28 +12,28 @@
 </template>
 
 <script>
-  import { DIRECTIONS } from '@/constants';
+import { DIRECTIONS } from '@/constants';
 
-  export default {
-    props: {
-      direction: {
-        type: String,
-        required: true,
-      },
-      acked: {
-        type: Object,
-        default: null,
-      },
+export default {
+  props: {
+    direction: {
+      type: String,
+      required: true,
     },
-    data() {
-      return {
-        DIRECTIONS,
-      };
+    acked: {
+      type: Object,
+      default: null,
     },
-    methods: {
-      isOut(direction) {
-        return direction === DIRECTIONS.OUT;
-      },
+  },
+  data() {
+    return {
+      DIRECTIONS,
+    };
+  },
+  methods: {
+    isOut(direction) {
+      return direction === DIRECTIONS.OUT;
     },
-  };
+  },
+};
 </script>

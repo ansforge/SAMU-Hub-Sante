@@ -93,140 +93,140 @@
 </template>
 
 <script setup>
-  import jsonpath from 'jsonpath';
-  import { REPOSITORY_URL } from '@/constants';
-  import { ref, toRef, onMounted, computed, watch } from 'vue';
-  import { useRouter } from 'vue-router';
-  import { useMainStore } from '~/store';
+import jsonpath from 'jsonpath';
+import { REPOSITORY_URL } from '@/constants';
+import { ref, toRef, onMounted, computed, watch } from 'vue';
+import { useRouter } from 'vue-router';
+import { useMainStore } from '~/store';
 
-  const store = useMainStore();
-  const loadingTestCases = ref(false);
-  const router = useRouter();
+const store = useMainStore();
+const loadingTestCases = ref(false);
+const router = useRouter();
 
-  const testCaseFileAuto = ref([]);
-  const testCases = ref([]);
+const testCaseFileAuto = ref([]);
+const testCases = ref([]);
 
-  // eslint-disable-next-line no-undef
-  useHead({
-    title: toRef(useMainStore(), 'testHeadTitle'),
-  });
+// eslint-disable-next-line no-undef
+useHead({
+  title: toRef(useMainStore(), 'testHeadTitle'),
+});
 
-  onMounted(() => {
-    initialize();
-  });
+onMounted(() => {
+  initialize();
+});
 
-  async function initialize() {
-    await reloadTestCases();
+async function initialize() {
+  await reloadTestCases();
+}
+
+async function reloadTestCases() {
+  loadingTestCases.value = true;
+  testCases.value = [];
+  try {
+    await fetchGeneratedTestCases();
+    await loadTestCases();
+    loadingTestCases.value = false;
+  } catch (error) {
+    loadingTestCases.value = false;
   }
+}
 
-  async function reloadTestCases() {
-    loadingTestCases.value = true;
-    testCases.value = [];
-    try {
-      await fetchGeneratedTestCases();
-      await loadTestCases();
-      loadingTestCases.value = false;
-    } catch (error) {
-      loadingTestCases.value = false;
-    }
+async function fetchGeneratedTestCases() {
+  const response = await fetch(
+    REPOSITORY_URL +
+      store.selectedVhost.modelVersion +
+      '/csv_parser/out/test_cases.json'
+  );
+  if (response.ok) {
+    testCaseFileAuto.value = await response.json();
   }
-
-  async function fetchGeneratedTestCases() {
-    const response = await fetch(
-      REPOSITORY_URL +
-        store.selectedVhost.modelVersion +
-        '/csv_parser/out/test_cases.json'
-    );
-    if (response.ok) {
-      testCaseFileAuto.value = await response.json();
-    }
-  }
-  /**
-   * Copies the test cases from the JSON file to the component data,
-   * resetting any potential changes to the test cases made during
-   * test execution.
-   */
-  async function loadTestCases() {
-    const parsedTestCases = [];
-    for (const category of testCaseFileAuto.value) {
-      const newTestCases = ref([]);
-      for (const testCase of category.testCases) {
-        const newTestCase = JSON.parse(JSON.stringify(testCase));
-        newTestCase.label = `${newTestCase.label}`;
-        newTestCase.description = `${newTestCase.description}`;
-        // We load the example files for test case steps
-        for (const step of newTestCase.steps) {
-          const response = await fetch(
-            REPOSITORY_URL +
-              store.selectedVhost.modelVersion +
-              '/src/main/resources/sample/examples/' +
-              step.model +
-              '/' +
-              step.file
+}
+/**
+ * Copies the test cases from the JSON file to the component data,
+ * resetting any potential changes to the test cases made during
+ * test execution.
+ */
+async function loadTestCases() {
+  const parsedTestCases = [];
+  for (const category of testCaseFileAuto.value) {
+    const newTestCases = ref([]);
+    for (const testCase of category.testCases) {
+      const newTestCase = JSON.parse(JSON.stringify(testCase));
+      newTestCase.label = `${newTestCase.label}`;
+      newTestCase.description = `${newTestCase.description}`;
+      // We load the example files for test case steps
+      for (const step of newTestCase.steps) {
+        const response = await fetch(
+          REPOSITORY_URL +
+            store.selectedVhost.modelVersion +
+            '/src/main/resources/sample/examples/' +
+            step.model +
+            '/' +
+            step.file
+        );
+        const receivedMessage = await response.json();
+        // We transform the received message json to an array of jsonpaths
+        let jsonpaths = [];
+        jsonpath.nodes(receivedMessage, '$..*').forEach((path) => {
+          jsonpaths.push(path);
+        });
+        // We're only interested in paths with simple values (no objects, but arrays are allowed)
+        jsonpaths = jsonpaths.filter((value) => {
+          return typeof value.value !== 'object';
+        });
+        // We filter out the properties in 'ignoredProperties' from the jsonpaths array
+        jsonpaths = jsonpaths.filter((value) => {
+          return !step.ignoredProperties.includes(value.path.join('.'));
+        });
+        // We filter out datetime properties from the jsonpaths array using a regex \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}
+        jsonpaths = jsonpaths.filter((value) => {
+          return !/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}/.test(
+            value.value
           );
-          const receivedMessage = await response.json();
-          // We transform the received message json to an array of jsonpaths
-          let jsonpaths = [];
-          jsonpath.nodes(receivedMessage, '$..*').forEach((path) => {
-            jsonpaths.push(path);
-          });
-          // We're only interested in paths with simple values (no objects, but arrays are allowed)
-          jsonpaths = jsonpaths.filter((value) => {
-            return typeof value.value !== 'object';
-          });
-          // We filter out the properties in 'ignoredProperties' from the jsonpaths array
-          jsonpaths = jsonpaths.filter((value) => {
-            return !step.ignoredProperties.includes(value.path.join('.'));
-          });
-          // We filter out datetime properties from the jsonpaths array using a regex \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}
-          jsonpaths = jsonpaths.filter((value) => {
-            return !/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}/.test(
-              value.value
-            );
-          });
-          step.json = receivedMessage;
-          step.requiredValues = jsonpaths;
-        }
-        newTestCases.value.push(newTestCase);
+        });
+        step.json = receivedMessage;
+        step.requiredValues = jsonpaths;
       }
-      parsedTestCases.push({
-        categoryLabel: category.categoryLabel,
-        testCases: newTestCases.value,
-      });
+      newTestCases.value.push(newTestCase);
     }
-    testCases.value = [...JSON.parse(JSON.stringify(parsedTestCases))];
-  }
-
-  function goToTestCase(testCase, event) {
-    event.stopPropagation();
-    store.resetMessages();
-    // Vue3 breaking change: [Vue Router warn]: Discarded invalid param(s) "testCase" when navigating.
-    // See https://github.com/vuejs/router/blob/main/packages/router/CHANGELOG.md#414-2022-08-22 for more details.
-    // So we just store the selected test case in the store and navigate to the test case page.
-    store.testCase = testCase;
-    router.push({
-      name: 'test-case',
+    parsedTestCases.push({
+      categoryLabel: category.categoryLabel,
+      testCases: newTestCases.value,
     });
   }
+  testCases.value = [...JSON.parse(JSON.stringify(parsedTestCases))];
+}
 
-  const selectedVhost = computed(() => store.selectedVhost);
-
-  watch(selectedVhost, () => {
-    reloadTestCases();
+function goToTestCase(testCase, event) {
+  event.stopPropagation();
+  store.resetMessages();
+  // Vue3 breaking change: [Vue Router warn]: Discarded invalid param(s) "testCase" when navigating.
+  // See https://github.com/vuejs/router/blob/main/packages/router/CHANGELOG.md#414-2022-08-22 for more details.
+  // So we just store the selected test case in the store and navigate to the test case page.
+  store.testCase = testCase;
+  router.push({
+    name: 'test-case',
   });
+}
+
+const selectedVhost = computed(() => store.selectedVhost);
+
+watch(selectedVhost, () => {
+  reloadTestCases();
+});
 </script>
 
 <script>
-  export default {
-    beforeRouteEnter(_to, _from) {
-      if (!useMainStore().isAuthenticated) {
-        return { name: 'index' };
-      }
-    },
-  };
+export default {
+  beforeRouteEnter(_to, _from) {
+    if (!useMainStore().isAuthenticated) {
+      return { name: 'index' };
+    }
+  },
+};
 </script>
 <style>
-  div.v-card.test-step-card {
+div.v-card.test-step-card {
   padding: 1rem;
   margin: 1rem;
 }
