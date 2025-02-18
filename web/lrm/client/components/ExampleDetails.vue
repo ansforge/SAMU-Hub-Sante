@@ -1,5 +1,5 @@
 <template>
-  <v-card class="mx-auto" :border="true" tile elevation="4">
+  <v-card class="mx-auto" border="true" tile elevation="4">
     <v-list-item lines="two">
       <template #prepend>
         <v-avatar size="64" color="grey">
