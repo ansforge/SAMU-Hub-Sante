@@ -137,8 +137,8 @@ export function buildMessage(innerMessage, distributionKind = 'Report') {
   const store = useMainStore();
   const authStore = useAuthStore();
   const message = JSON.parse(JSON.stringify(EDXL_ENVELOPE)); // Deep copy
-  if (/^((1\.)|(2\.))/.test(store.selectedVhost.modelVersion)) {
-    // We delete 'keyword' from 'descriptor' if the model version is 1.* or 2.*
+  if (/^((1\.)|(2\.)|(3\.))/.test(store.selectedVhost.modelVersion)) {
+    // We delete 'keyword' from 'descriptor' if the model version is 1.*, 2.* or 3.*
     delete message.descriptor.keyword;
   } else {
     message.descriptor.keyword[0].value = useCase;
