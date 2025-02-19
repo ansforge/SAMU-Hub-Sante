@@ -169,7 +169,7 @@
                       </v-icon>
                     </span>
                     <span>
-                      <pre><b>{{ getLabelByPath(name.split('.')) }} <br> ({{ name }}):</b></pre>
+                      <pre><b>{{ requiredValue?.label }}<br>{{ name }}:</b></pre>
                       <pre>{{ requiredValue.value }}</pre>
                       <pre
                         v-if="requiredValue?.valid !== ValidationStatus.VALID"
@@ -249,7 +249,7 @@
                                 ? 'red'
                                 : 'black',
                           }"
-                        ><b>{{ getLabelByPath(requiredValue.path) }}<br>{{ requiredValue.path.join('.') }}:</b> <br>{{ requiredValue.value }}</pre>
+                        ><b>{{ requiredValue.label }}<br>{{ requiredValue.path.join('.') }}:</b> <br>{{ requiredValue.value }}</pre>
                       </span>
                     </span>
                     <v-text-field
@@ -404,11 +404,28 @@
   async function initialize() {
     await loadJsonSteps();
     await loadShemas();
+    loadLabelBySchema();
 
     if (testCase.value.steps[currentStep.value]?.type === 'receive') {
       submitMessage(testCase.value.steps[currentStep.value]);
     }
   }
+
+  const loadLabelBySchema = () => {
+    testCase.value.steps.forEach((step) =>
+      step.requiredValues.forEach((requiredValue) => {
+        const schema = getSchemaByStep(step);
+        requiredValue.label = getLabelByPath(schema, requiredValue.path);
+      })
+    );
+  };
+
+  const getSchemaByStep = (step) => {
+    const messageTypes = store.messageTypes;
+    const model = step.model;
+    const messageType = messageTypes.find((type) => type.label === model);
+    return messageType?.schema;
+  };
 
   async function loadShemas() {
     const source = store.selectedVhost.modelVersion;
@@ -435,7 +452,7 @@
       });
   }
 
-  const getLabelByPath = (path) => {
+  const getLabelByPath = (schema, path) => {
     function getRefFromPath(ref, path, index) {
       if (index >= path.length) return ref?.title || '';
       const currentPath = path[index];
@@ -457,12 +474,6 @@
       return refProperty?.title || '';
     }
 
-    const messageTypes = store.messageTypes;
-    const step = testCase.value.steps[currentStep.value];
-    const model = step.model;
-    const messageType = messageTypes.find((type) => type.label === model);
-    if (!messageType) return null;
-    const schema = messageType.schema;
     const label = getRefFromPath(schema, path.slice(2), 0);
     return label;
   };
@@ -583,9 +594,11 @@
     if (step.type === 'send') {
       const requiredValuesObject = {};
       step.requiredValues.forEach((entry) => {
+        const schema = getSchemaByStep(step);
         requiredValuesObject[entry.path.join('.')] = {
           value: entry.value,
           valid: entry.valid,
+          label: getLabelByPath(schema, entry.path),
         };
       });
       return requiredValuesObject;
@@ -629,6 +642,7 @@
       '$.reference.distributionID': {
         value: step?.awaitedReferenceDistributionID,
         valid: validationStatus,
+        label: 'Id de distribution',
         receivedValue:
           getDistributionIdOfAckedMessage(currentStepSelectedTypeMessages[0]) ??
           'N/A',
