@@ -169,7 +169,7 @@
                       </v-icon>
                     </span>
                     <span>
-                      <pre><b>{{ getLabelByPath(name.split('.')) }} ({{ name }}):</b></pre>
+                      <pre><b>{{ getLabelByPath(name.split('.')) }} <br> ({{ name }}):</b></pre>
                       <pre>{{ requiredValue.value }}</pre>
                       <pre
                         v-if="requiredValue?.valid !== ValidationStatus.VALID"
@@ -249,7 +249,7 @@
                                 ? 'red'
                                 : 'black',
                           }"
-                        ><b>{{ getLabelByPath(requiredValue.path) }} ({{ requiredValue.path.join('.') }}):</b> <br>{{ requiredValue.value }}</pre>
+                        ><b>{{ getLabelByPath(requiredValue.path) }}<br>{{ requiredValue.path.join('.') }}:</b> <br>{{ requiredValue.value }}</pre>
                       </span>
                     </span>
                     <v-text-field
@@ -441,11 +441,7 @@
       const currentPath = path[index];
 
       if (!isNaN(Number(currentPath))) {
-        return `${currentPath.toString() || ''} - ${getRefFromPath(
-          ref,
-          path,
-          index + 1
-        )}`;
+        return getRefFromPath(ref, path, index + 1);
       }
 
       const refProperty = ref?.properties[currentPath];
@@ -455,11 +451,7 @@
           refProperty.$ref?.split('/').pop() ??
           refProperty.items.$ref.split('/').pop();
         const newRef = schema.definitions[refName];
-        return `${newRef?.title || ''} - ${getRefFromPath(
-          newRef,
-          path,
-          index + 1
-        )}`;
+        return getRefFromPath(newRef, path, index + 1);
       }
 
       return refProperty?.title || '';
