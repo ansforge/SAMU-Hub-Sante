@@ -437,11 +437,15 @@
 
   const getLabelByPath = (path) => {
     function getRefFromPath(ref, path, index) {
-      if (index >= path.length) return ref;
+      if (index >= path.length) return ref?.title || '';
       const currentPath = path[index];
 
       if (!isNaN(Number(currentPath))) {
-        return getRefFromPath(ref, path, index + 1);
+        return `${currentPath.toString() || ''} - ${getRefFromPath(
+          ref,
+          path,
+          index + 1
+        )}`;
       }
 
       const refProperty = ref?.properties[currentPath];
@@ -451,10 +455,14 @@
           refProperty.$ref?.split('/').pop() ??
           refProperty.items.$ref.split('/').pop();
         const newRef = schema.definitions[refName];
-        return getRefFromPath(newRef, path, index + 1);
+        return `${newRef?.title || ''} - ${getRefFromPath(
+          newRef,
+          path,
+          index + 1
+        )}`;
       }
 
-      return refProperty;
+      return refProperty?.title || '';
     }
 
     const messageTypes = store.messageTypes;
@@ -463,8 +471,8 @@
     const messageType = messageTypes.find((type) => type.label === model);
     if (!messageType) return null;
     const schema = messageType.schema;
-    const ref = getRefFromPath(schema, path.slice(2), 0);
-    return ref?.title;
+    const label = getRefFromPath(schema, path.slice(2), 0);
+    return label;
   };
 
   async function loadJsonSteps() {
