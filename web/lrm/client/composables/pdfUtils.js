@@ -34,7 +34,7 @@ const addTable = (pdf, table, yOffset) => {
   const rows = table.data.map((item) => {
     const { text, color } = getStatusTextAndColor(item.valid);
     return [
-      item.path.join('.'),
+      `${item.label}\n${item.path.join('.')}`,
       { content: text, styles: { textColor: color } },
       item.description,
     ];

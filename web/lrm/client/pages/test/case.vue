@@ -9,16 +9,16 @@
           </span>
           <vhost-selector class="mr-5 mb-4" />
           <v-btn
-            v-if="testCase?.steps[currentStep]?.type === 'receive'"
+            v-if="testCase?.steps[currentStepIndex]?.type === 'receive'"
             color="primary"
-            @click="submitMessage(testCase?.steps[currentStep])"
+            @click="submitMessage(testCase?.steps[currentStepIndex])"
           >
             Re-envoyer le message
           </v-btn>
         </v-card-title>
         <v-card-actions class="pt-0" style="flex-direction: column">
           <v-container class="pt-0" full-width>
-            <v-stepper v-model="currentStep" class="stepper">
+            <v-stepper v-model="currentStepIndex" class="stepper">
               <v-stepper-header>
                 <template
                   v-for="(step, index) in testCase?.steps"
@@ -31,7 +31,7 @@
                       editable
                       style="cursor: pointer"
                       :color="
-                        currentStep === index
+                        currentStepIndex === index
                           ? 'rgb(24,103,192)'
                           : getStepColor(index)
                       "
@@ -118,11 +118,11 @@
     </v-col>
     <v-col cols="12" sm="5">
       <v-card class="main-card" style="height: 86vh; overflow-y: auto">
-        <template v-if="currentStep < testCase?.steps.length">
+        <template v-if="currentStepIndex < testCase?.steps.length">
           <span>
             <v-card-title class="d-flex justify-space-between">
               <!-- Button that validates the step and goes to the next -->
-              <v-btn color="primary" @click="validateStep(currentStep)">
+              <v-btn color="primary" @click="validateStep(currentStepIndex)">
                 Passer à l'étape suivante
               </v-btn>
               <span id="result-counter">
@@ -135,19 +135,23 @@
             </v-card-title>
             <v-card-title>
               {{
-                testCase?.steps[currentStep]?.type === 'send'
+                testCase?.steps[currentStepIndex]?.type === 'send'
                   ? 'Valeurs attendues dans le message'
                   : "Valeurs attendues dans l'acquittement"
               }}
             </v-card-title>
             <v-card-text>
-              <p v-if="getAwaitedValues(testCase?.steps[currentStep]) === null">
+              <p
+                v-if="
+                  getAwaitedValues(testCase?.steps[currentStepIndex]) === null
+                "
+              >
                 En attente de la réception de l'ID de distribution...
               </p>
               <v-list>
                 <v-list-item
                   v-for="(requiredValue, name, index) in getAwaitedValues(
-                    testCase?.steps[currentStep]
+                    testCase?.steps[currentStepIndex]
                   )"
                   :key="'requiredValue' + index"
                 >
@@ -183,15 +187,13 @@
               </v-list>
             </v-card-text>
 
-            <div v-if="testCase?.steps[currentStep]?.type === 'receive'">
+            <div v-if="testCase?.steps[currentStepIndex]?.type === 'receive'">
               <v-card-title> Valeurs reçues dans le message </v-card-title>
               <v-card-text>
                 <v-list>
                   <!-- Generate a list of paths:values from required values and add three buttons for each entry, letting user indicate whether the value they received is correct, 'somewhat' correct or incorrect-->
                   <v-list-item
-                    v-for="(requiredValue, index) in testCase?.steps[
-                      currentStep
-                    ].requiredValues"
+                    v-for="(requiredValue, index) in currentStep.requiredValues"
                     :key="'requiredValue' + index"
                     class="received-values-list"
                     :data-index="index"
@@ -351,10 +353,15 @@
   const localCaseId = ref(null);
   const { testCase } = toRefs(store);
   const currentlySelectedStep = ref(0);
-  const currentStep = ref(0);
+  const currentStepIndex = ref(0);
   const selectedMessageIndex = ref(0);
   const selectedCaseIds = ref([]);
   const handledLength = ref(0);
+
+  const currentStep = computed(() => {
+    loadLabelBySchema(testCase.value.steps[currentStepIndex.value]);
+    return testCase.value.steps[currentStepIndex.value];
+  });
 
   // eslint-disable-next-line no-undef
   useHead({
@@ -365,7 +372,7 @@
     selectedRequiredValuesIndex.value = null;
     currentCaseId.value = null;
     localCaseId.value = generateCaseId();
-    currentStep.value = 0;
+    currentStepIndex.value = 0;
     initialize();
   });
 
@@ -404,26 +411,28 @@
   async function initialize() {
     await loadJsonSteps();
     await loadShemas();
-    loadLabelBySchema();
-
-    if (testCase.value.steps[currentStep.value]?.type === 'receive') {
-      submitMessage(testCase.value.steps[currentStep.value]);
+    await loadLabelBySchema();
+    if (testCase.value.steps[currentStepIndex.value]?.type === 'receive') {
+      submitMessage(testCase.value.steps[currentStepIndex.value]);
     }
   }
 
-  const loadLabelBySchema = () => {
-    testCase.value.steps.forEach((step) =>
-      step.requiredValues.forEach((requiredValue) => {
-        const schema = getSchemaByStep(step);
-        requiredValue.label = getLabelByPath(schema, requiredValue.path);
-      })
-    );
+  const loadLabelBySchema = (step) => {
+    const steps = step ? [step] : testCase.value.steps;
+    steps.forEach((step) => {
+      const schema = getSchemaByStep(step);
+      step.requiredValues.forEach(
+        (requiredValue) =>
+          (requiredValue.label = getLabelByPath(schema, requiredValue.path))
+      );
+    });
   };
 
   const getSchemaByStep = (step) => {
     const messageTypes = store.messageTypes;
     const model = step.model;
     const messageType = messageTypes.find((type) => type.label === model);
+    if (!messageType) return;
     return messageType?.schema;
   };
 
@@ -501,7 +510,7 @@
         if (!currentCaseId.value) {
           currentCaseId.value = getCaseId(message, true);
         }
-        message.validatedStep = currentStep.value;
+        message.validatedStep = currentStepIndex.value;
         message.validated = true;
         if (ack) {
           if (
@@ -514,7 +523,7 @@
         }
       } else if (
         !message.validated &&
-        message.relatedStep === currentStep.value
+        message.relatedStep === currentStepIndex.value
       ) {
         message.stale = true;
       }
@@ -525,15 +534,15 @@
   }
 
   function nextStep() {
-    currentStep.value++;
-    currentlySelectedStep.value = currentStep.value;
-    if (testCase.value.steps[currentStep.value]?.type === 'receive') {
-      submitMessage(testCase.value.steps[currentStep.value]);
+    currentStepIndex.value++;
+    currentlySelectedStep.value = currentStepIndex.value;
+    if (testCase.value.steps[currentStepIndex.value]?.type === 'receive') {
+      submitMessage(testCase.value.steps[currentStepIndex.value]);
     }
   }
 
   function goToStep(step) {
-    currentStep.value = step;
+    currentStepIndex.value = step;
     currentlySelectedStep.value = step;
   }
 
@@ -548,8 +557,9 @@
     }
     setCaseId(message, currentCaseId.value, localCaseId.value);
     const builtMessage = buildMessage(message);
-    testCase.value.steps[currentStep.value].awaitedReferenceDistributionID =
-      builtMessage.distributionID;
+    testCase.value.steps[
+      currentStepIndex.value
+    ].awaitedReferenceDistributionID = builtMessage.distributionID;
     sendMessage(builtMessage);
   }
 
@@ -624,7 +634,7 @@
   function getAwaitedReferenceDistributionObject(step) {
     const currentStepSelectedTypeMessages =
       selectedTypeCaseMessages.value.filter(
-        (message) => message.relatedStep === currentStep.value
+        (message) => message.relatedStep === currentStepIndex.value
       );
     const lastCurrentStepAckedDistributionID =
       currentStepSelectedTypeMessages[0]
@@ -651,7 +661,7 @@
   }
 
   function checkMessage(message) {
-    const currentTestStep = testCase.value.steps[currentStep.value];
+    const currentTestStep = testCase.value.steps[currentStepIndex.value];
 
     if (currentTestStep?.type === 'send') {
       return checkMessageContainsAllRequiredValues(
@@ -766,7 +776,7 @@
       selectedTypeCaseMessages.value.indexOf(message);
   }
 
-  function getCounts(step = testCase.value.steps[currentStep.value]) {
+  function getCounts(step = testCase.value.steps[currentStepIndex.value]) {
     const requiredValues = step.requiredValues;
 
     return {
@@ -820,7 +830,7 @@
 
       // Ensure the current step is within bounds and new messages have arrived
       if (
-        currentStep.value <= testCase.value.steps.length &&
+        currentStepIndex.value <= testCase.value.steps.length &&
         newMessages.length > 0
       ) {
         // Iterate over new messages starting from the latest added
@@ -844,17 +854,18 @@
             );
             lastMessage.relatedStep = relatedMessage.relatedStep;
           } else {
-            lastMessage.relatedStep = currentStep.value;
+            lastMessage.relatedStep = currentStepIndex.value;
           }
 
           // Check and validate the message if it's incoming
           if (!lastMessage.isOut) {
             const shouldStayOnStep =
-              testCase.value.steps[currentStep.value].type === 'receive' &&
+              testCase.value.steps[currentStepIndex.value].type === 'receive' &&
               !(
-                testCase.value.steps[currentStep.value]
+                testCase.value.steps[currentStepIndex.value]
                   .validatedAcknowledgement &&
-                testCase.value.steps[currentStep.value].validatedReceivedValues
+                testCase.value.steps[currentStepIndex.value]
+                  .validatedReceivedValues
               );
             validateMessage(
               newMessages.indexOf(lastMessage),
