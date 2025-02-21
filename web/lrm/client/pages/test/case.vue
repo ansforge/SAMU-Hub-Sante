@@ -331,7 +331,7 @@ import jsonpath from 'jsonpath';
 import { generateCasePdf } from '../../composables/generateCasePdf';
 import mixinWebsocket from '~/mixins/mixinWebsocket';
 import { useMainStore } from '~/store';
-import { useAuthStore } from '@/store/auth'; // Adjust the path as necessary
+import { useAuthStore } from '@/store/auth';
 import { REPOSITORY_URL } from '@/constants';
 import {
   isOut,
