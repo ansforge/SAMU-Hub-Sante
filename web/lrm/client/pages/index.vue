@@ -119,7 +119,7 @@ export default {
     async login(target) {
       try {
         const authStore = useAuthStore();
-        await authStore.login(this.form); // Replace with actual API call
+        await authStore.login(this.form);
         navigateTo(target);
       } catch (error) {
         alert.value = {
