@@ -74,7 +74,7 @@ useHead({
 <script>
 import { navigateTo } from 'nuxt/app';
 import { useMainStore } from '~/store';
-import { useAuthStore } from '~/store/auth'; // ✅ Use the new Pinia auth store
+import { useAuthStore } from '~/store/auth';
 
 export default {
   name: 'Login',
