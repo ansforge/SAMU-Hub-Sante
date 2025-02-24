@@ -472,7 +472,10 @@
 
       const refProperty = ref?.properties[currentPath];
 
-      if (refProperty?.$ref || refProperty?.type === 'array') {
+      if (
+        refProperty?.$ref ||
+        (refProperty?.type === 'array' && refProperty.items.$ref)
+      ) {
         const refName =
           refProperty.$ref?.split('/').pop() ??
           refProperty.items.$ref.split('/').pop();
