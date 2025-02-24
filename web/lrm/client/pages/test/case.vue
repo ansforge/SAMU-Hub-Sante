@@ -507,7 +507,7 @@
     }
   }
 
-  function validateMessage(index, ack, stayOnStep = false) {
+  function validateMessage(index, ack) {
     selectedTypeCaseMessages.value.forEach((message, i) => {
       if (i === index) {
         if (!currentCaseId.value) {
@@ -531,9 +531,6 @@
         message.stale = true;
       }
     });
-    if (!stayOnStep) {
-      nextStep();
-    }
   }
 
   function nextStep() {
@@ -680,11 +677,7 @@
       currentTestStep.validatedAcknowledgement =
         message.validatedAcknowledgement;
       if (message.validatedAcknowledgement) {
-        validateMessage(
-          selectedTypeCaseMessages.value.indexOf(message),
-          false,
-          true
-        );
+        validateMessage(selectedTypeCaseMessages.value.indexOf(message), false);
       }
 
       return (
@@ -862,19 +855,7 @@
 
           // Check and validate the message if it's incoming
           if (!lastMessage.isOut) {
-            const shouldStayOnStep =
-              testCase.value.steps[currentStepIndex.value].type === 'receive' &&
-              !(
-                testCase.value.steps[currentStepIndex.value]
-                  .validatedAcknowledgement &&
-                testCase.value.steps[currentStepIndex.value]
-                  .validatedReceivedValues
-              );
-            validateMessage(
-              newMessages.indexOf(lastMessage),
-              true,
-              shouldStayOnStep
-            );
+            validateMessage(newMessages.indexOf(lastMessage), true);
           }
         }
         handledLength.value = newMessages.length;
