@@ -7,12 +7,26 @@ const color = {
   green: [0, 128, 0], // Green
   red: [255, 0, 0], // Red
   orange: [255, 165, 0], // Orange
+  blue: [0, 0, 255], // Blue
 };
 
-const addText = (pdf, text, x, y, fontSize = 10, textColor = color.black) => {
+const addText = (
+  pdf,
+  text,
+  x,
+  y,
+  fontSize = 10,
+  textColor = color.black,
+  link
+) => {
   pdf.setFontSize(fontSize);
   pdf.setTextColor(...textColor);
   pdf.text(text, x, y);
+  if (link) {
+    pdf.textWithLink(text, x, y, { url: link });
+  } else {
+    pdf.text(text, x, y);
+  }
 };
 
 const addSection = (pdf, section, yOffset) => {
@@ -23,7 +37,8 @@ const addSection = (pdf, section, yOffset) => {
       14,
       yOffset + index * 8,
       item.fontSize,
-      item.color
+      item.color,
+      item.link
     );
   });
 

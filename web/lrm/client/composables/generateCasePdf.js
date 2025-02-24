@@ -56,7 +56,8 @@ const generateCasePdf = (testCase, store, authStore, getCounts) => {
             {
               label: `Fichier de test : ${step.file}`,
               fontSize: 10,
-              color: color.black,
+              color: color.blue,
+              link: `https://raw.githubusercontent.com/ansforge/SAMU-Hub-Modeles/refs/heads/main/src/main/resources/sample/examples/${step.model}/${step.file}`,
             },
             {
               label: `Modèle : ${step.model}`,
