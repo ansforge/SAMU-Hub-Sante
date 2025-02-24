@@ -18,6 +18,13 @@
         </v-card-title>
         <v-card-actions class="pt-0" style="flex-direction: column">
           <v-container class="pt-0" full-width>
+            <v-alert
+              color="info"
+              icon="$info"
+              text="Les actions testées sont indiquées du point de vue de l'éditeur"
+              density="compact"
+              variant="elevated"
+            ></v-alert>
             <v-stepper v-model="currentStepIndex" class="stepper">
               <v-stepper-header>
                 <template
@@ -39,7 +46,7 @@
                       edit-icon=""
                       @click="goToStep(index)"
                     >
-                      {{ step.label }}
+                      {{ step.label.replace('Réception', 'Intégration') }}
                     </v-stepper-item>
                   </v-col>
                   <v-divider
