@@ -15,8 +15,8 @@ export const useAuthStore = defineStore('auth', {
   }),
 
   getters: {
-    isAuthenticated: (state) => !!state?.user?.clientId, // Returns true if logged in
-    getUser: (state) => state.user, // Retrieve user data
+    isAuthenticated: (state) => !!state?.user?.clientId,
+    getUser: (state) => state.user,
   },
 
   actions: {
@@ -30,7 +30,7 @@ export const useAuthStore = defineStore('auth', {
 
     logout() {
       this.user = null;
-      navigateTo('/'); // Redirect to login page
+      navigateTo('/');
     },
 
     initializeAuth() {
