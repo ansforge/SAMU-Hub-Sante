@@ -98,7 +98,6 @@ import { REPOSITORY_URL } from '@/constants';
 import { ref, toRef, onMounted, computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useMainStore } from '~/store';
-import { useAuthStore } from '@/store/auth';
 
 const store = useMainStore();
 const loadingTestCases = ref(false);
@@ -217,15 +216,6 @@ watch(selectedVhost, () => {
 });
 </script>
 
-<script>
-export default {
-  beforeRouteEnter(_to, _from) {
-    if (!useAuthStore().isAuthenticated) {
-      return { name: 'index' };
-    }
-  },
-};
-</script>
 <style>
 div.v-card.test-step-card {
   padding: 1rem;
