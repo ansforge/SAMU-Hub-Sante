@@ -161,12 +161,6 @@ useHead({
 export default {
   name: 'Demo',
   mixins: [mixinWebsocket],
-  beforeRouteEnter(_to, _from) {
-    // Redirect to parent if we're not authenticated
-    if (!useAuthStore().isAuthenticated) {
-      return { name: 'index' };
-    }
-  },
   data() {
     return {
       config: null,

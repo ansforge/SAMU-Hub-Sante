@@ -794,11 +794,6 @@ watch(
 export default {
   name: 'Testcase',
   mixins: [mixinWebsocket],
-  beforeRouteEnter(_to, _from) {
-    if (!useAuthStore().isAuthenticated) {
-      return { name: 'index' };
-    }
-  },
   methods: {
     setValidationStatus(requiredValue, status, index) {
       requiredValue.valid = requiredValue.valid === status ? undefined : status;
