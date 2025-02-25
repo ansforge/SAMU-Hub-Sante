@@ -1,6 +1,5 @@
 import { consola } from 'consola';
 import { DIRECTIONS } from '@/constants';
-import mixinUser from '~/mixins/mixinUser';
 import { useMainStore } from '~/store';
 import {
   buildAck,
@@ -11,7 +10,6 @@ import {
 } from '~/composables/messageUtils';
 
 export default {
-  mixins: [mixinUser],
   data: () => ({
     store: useMainStore(),
   }),

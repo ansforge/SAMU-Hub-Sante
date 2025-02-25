@@ -36,9 +36,9 @@
         @click="clickHandler"
       >
         <v-icon color="rgb(100,100,100)">
-          {{ userInfos.icon }}
+          {{ clientInfos().icon }}
         </v-icon>
-        <b>{{ userInfos.name }}</b>
+        <b>{{ clientInfos().name }}</b>
         <v-icon v-if="!store.isAdvanced" color="primary">
           mdi-arrow-right-thin
         </v-icon>
@@ -83,13 +83,11 @@
 <script>
 import { useMainStore } from '~/store';
 import { useAuthStore } from '@/store/auth'; // Adjust the path as necessary
-import mixinUser from '~/mixins/mixinUser';
 import { REPOSITORY_URL } from '~/constants';
 import { navigateTo } from 'nuxt/app';
 
 export default {
   name: 'DefaultLayout',
-  mixins: [mixinUser],
   data() {
     return {
       store: useMainStore(),
