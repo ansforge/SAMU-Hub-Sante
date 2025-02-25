@@ -22,10 +22,7 @@ export default defineNuxtConfig({
 
   css: ['vuetify/styles'],
 
-  plugins: [
-    { src: '~/plugins/jsonViewer', mode: 'client' },
-    { src: '~/plugins/auth', mode: 'client' },
-  ],
+  plugins: [{ src: '~/plugins/jsonViewer', mode: 'client' }],
 
   modules: ['@pinia/nuxt'],
 
