@@ -20,17 +20,24 @@ export default defineNuxtConfig({
     },
   },
 
+  // Global CSS: https://go.nuxtjs.dev/config-css
   css: ['vuetify/styles'],
 
+  // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
   plugins: [{ src: '~/plugins/jsonViewer', mode: 'client' }],
 
+  // Modules: https://go.nuxtjs.dev/config-modules
   modules: ['@pinia/nuxt'],
 
+  // Build Configuration: https://go.nuxtjs.dev/config-build
   build: {
-    transpile: ['vuetify', '@koumoul/vjsf'],
+    // Necessary for "à la carte" import of vuetify components as the js import in vjsf.js was failing
+    // Ref.: https://koumoul-dev.github.io/vuetify-jsonschema-form/latest/getting-started
+    transpile: ['vuetify/lib', '@koumoul/vjsf'],
   },
 
   generate: {
+    // Ignore href links of default.vue | Ref.: https://github.com/nuxt/nuxt.js/issues/8105#issuecomment-706702793
     exclude: [],
   },
 
