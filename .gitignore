@@ -20,18 +20,7 @@ target/
 python/templates/4. tls/cert/
 
 # Certificates
-certs/CA/
-certs/environments/
-!certs/CA/sign.sh
-!certs/CA/rootCA.crt
-!certs/CA/rootCATrue.crt
-!certs/CA/hub.ext
-!certs/CA/hub.preprod.ext
-!certs/CA/rabbitmq.ext
-!certs/CA/client.ext
-!certs/dispatcher.tmp.p12
-certs/users/
-certs/sslforfree/
+certs/
 
 # personal application.properties
 hub/dispatcher/src/main/resources/*.properties
