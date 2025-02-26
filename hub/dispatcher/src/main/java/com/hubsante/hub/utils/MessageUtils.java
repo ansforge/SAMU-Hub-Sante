@@ -15,10 +15,7 @@
  */
 package com.hubsante.hub.utils;
 
-import com.hubsante.hub.exception.DeliveryModeInconsistencyException;
-import com.hubsante.hub.exception.ExpiredBeforeDispatchMessageException;
-import com.hubsante.hub.exception.InvalidDistributionIDException;
-import com.hubsante.hub.exception.SenderInconsistencyException;
+import com.hubsante.hub.exception.*;
 import com.hubsante.model.edxl.DistributionKind;
 import com.hubsante.model.edxl.EdxlMessage;
 import lombok.extern.slf4j.Slf4j;
@@ -66,6 +63,14 @@ public class MessageUtils {
                     " but received routing key is " +
                     receivedRoutingKey;
             throw new SenderInconsistencyException(errorCause, edxlMessage.getDistributionID());
+        }
+    }
+
+    public static void checkHealthActorIsInvolved(EdxlMessage edxlMessage) {
+        if(!edxlMessage.getSenderID().startsWith(HEALTH_PREFIX) &&
+                !edxlMessage.getDescriptor().getExplicitAddress().getExplicitAddressValue().startsWith(HEALTH_PREFIX)) {
+            String errorCause = "Unable to route message with id " + edxlMessage.getDistributionID() +", no health actor involved.";
+            throw new UnroutableMessageException(errorCause, edxlMessage.getDistributionID());
         }
     }
 

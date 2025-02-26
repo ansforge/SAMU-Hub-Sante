@@ -21,6 +21,7 @@ import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.hubsante.hub.HubApplication;
 import com.hubsante.hub.config.HubConfiguration;
 import com.hubsante.hub.exception.ConversionException;
+import com.hubsante.hub.exception.UnroutableMessageException;
 import com.hubsante.hub.service.utils.MessageTestUtils;
 import com.hubsante.hub.utils.ConversionUtils;
 import com.hubsante.model.EdxlHandler;
@@ -220,13 +221,13 @@ public class DispatcherTest {
             
             // Mock the ConversionUtils answer and the ConversionService
             mockedConversionUtils.when(() -> ConversionUtils.requiresCisuConversion(any(), any())).thenReturn(true);
-            doAnswer(invocation -> invocation.getArgument(0)).when(conversionHandler).callConversionService(anyString(), anyString(), anyString(), anyBoolean());
+            doAnswer(invocation -> invocation.getArgument(0)).when(conversionHandler).callConversionService(anyString(), anyString(), anyString(), anyBoolean(), anyString());
 
             // Test message from SDIS
             dispatcher.dispatch(fromFireMessage);
 
             // Verify cisu conversion was called
-            verify(conversionHandler, times(1)).callConversionService(anyString(), anyString(), anyString(), eq(true));
+            verify(conversionHandler, times(1)).callConversionService(anyString(), anyString(), anyString(), eq(true), anyString());
         }
     }
 
@@ -240,7 +241,7 @@ public class DispatcherTest {
         dispatcher.dispatch(message);
 
         // Verify that conversion service was never called
-        verify(conversionHandler, never()).callConversionService(anyString(), anyString(), anyString(), anyBoolean());
+        verify(conversionHandler, never()).callConversionService(anyString(), anyString(), anyString(), anyBoolean(), anyString());
     }
 
     @Test
@@ -444,8 +445,8 @@ public class DispatcherTest {
             
             // Mock conversion service to throw exception with error message from conversion service
             String conversionErrorMessage = "Conversion service error message";
-            doThrow(new RuntimeException(conversionErrorMessage))
-                .when(conversionHandler).callConversionService(anyString(), anyString(), anyString(), anyBoolean());
+            doThrow(new ConversionException(conversionErrorMessage, edxlMessage.getDistributionID()))
+                .when(conversionHandler).callConversionService(anyString(), anyString(), anyString(), anyBoolean(), anyString());
 
             // Test that dispatching throws AmqpRejectAndDontRequeueException
             assertThrows(AmqpRejectAndDontRequeueException.class, 
@@ -464,6 +465,15 @@ public class DispatcherTest {
             Message handledMessage = messageCaptor.getValue();
             assertEquals(receivedMessage, handledMessage);
         }
+    }
+
+    @Test
+    @DisplayName("should reject message if no health actor is involved")
+    public void shouldRejectMessageIfNoHealthActorIsInvolved() throws IOException {
+        Message receivedMessage = createInvalidMessage("EDXL-DE/no-health-actor.json", JSON, "fr.police.random");
+        assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
+        assertErrorHasBeenSent("fr.police.random.info", ErrorCode.UNROUTABLE_MESSAGE, "fr.police.random_2608323d-507d-4cbf-bf74-52007f8124ea",
+                "Unable to route message with id fr.police.random_2608323d-507d-4cbf-bf74-52007f8124ea, no health actor involved.");
     }
 
     private void assertErrorHasBeenSent(String infoQueueName, ErrorCode errorCode, String referencedDistributionId, String... errorCause) throws JsonProcessingException {

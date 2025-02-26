@@ -18,6 +18,7 @@ package com.hubsante.hub.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import com.hubsante.hub.config.HubConfiguration;
 import com.hubsante.hub.exception.*;
 import com.hubsante.hub.utils.ConversionUtils;
 import com.hubsante.model.EdxlHandler;
@@ -71,6 +72,8 @@ public class Dispatcher {
     @Qualifier("jsonMapper")
     private ObjectMapper jsonMapper;
     private final ConversionHandler conversionHandler;
+    @Autowired
+    private HubConfiguration hubConfiguration;
 
     public Dispatcher(MessageHandler messageHandler, RabbitTemplate rabbitTemplate, EdxlHandler edxlHandler, XmlMapper xmlMapper, ObjectMapper jsonMapper, ConversionHandler conversionHandler) {
         this.messageHandler = messageHandler;
@@ -122,6 +125,8 @@ public class Dispatcher {
         try {
             // Deserialize the message according to its content type
             EdxlMessage edxlMessage = messageHandler.extractMessage(message);
+            // reject the message if no health actor is involved (as sender or recipient)
+            checkHealthActorIsInvolved(edxlMessage);
             // Before running the validation checks, we convert the message if required to make sure the forwarded message is valid
             // ToDo: see how hubConfig should be made available to the Dispatcher (and remove getter in MessageHandler)
             // ToDo: check this only on specific vhosts (like 15-NexSIS)?
