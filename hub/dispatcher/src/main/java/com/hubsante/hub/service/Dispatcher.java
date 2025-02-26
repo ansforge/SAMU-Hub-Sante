@@ -18,7 +18,6 @@ package com.hubsante.hub.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import com.hubsante.hub.config.HubConfiguration;
 import com.hubsante.hub.exception.*;
 import com.hubsante.hub.utils.ConversionUtils;
 import com.hubsante.model.EdxlHandler;
@@ -72,8 +71,6 @@ public class Dispatcher {
     @Qualifier("jsonMapper")
     private ObjectMapper jsonMapper;
     private final ConversionHandler conversionHandler;
-    @Autowired
-    private HubConfiguration hubConfiguration;
 
     public Dispatcher(MessageHandler messageHandler, RabbitTemplate rabbitTemplate, EdxlHandler edxlHandler, XmlMapper xmlMapper, ObjectMapper jsonMapper, ConversionHandler conversionHandler) {
         this.messageHandler = messageHandler;
