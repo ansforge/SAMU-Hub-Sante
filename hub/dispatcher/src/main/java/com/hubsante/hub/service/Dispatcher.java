@@ -122,6 +122,8 @@ public class Dispatcher {
         try {
             // Deserialize the message according to its content type
             EdxlMessage edxlMessage = messageHandler.extractMessage(message);
+            // reject the message if no health actor is involved (as sender or recipient)
+            checkHealthActorIsInvolved(edxlMessage);
             // Before running the validation checks, we convert the message if required to make sure the forwarded message is valid
             // ToDo: see how hubConfig should be made available to the Dispatcher (and remove getter in MessageHandler)
             // ToDo: check this only on specific vhosts (like 15-NexSIS)?

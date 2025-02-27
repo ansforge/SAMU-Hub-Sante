@@ -43,18 +43,17 @@ public class ConversionHandler {
         
         try {
             // ToDo: handle the version logic
-            String convertedJson = callConversionService(jsonEdxlString, "v3", "v3", true);
+            String convertedJson = callConversionService(jsonEdxlString, "v3", "v3", true, edxlMessage.getDistributionID());
 
             log.debug("Successfully converted CISU message");
             return messageHandler.deserializeJsonEDXL(convertedJson);
-        } catch (RuntimeException e) {
-            // Error raised by the conversion service or its call
-            log.error("Error during internal call to Hub Santé conversion service", e);
+        } catch (JsonProcessingException e) {
+            log.error("Error during CISU message conversion", e);
             throw new ConversionException(e.getMessage(), edxlMessage.getDistributionID());
         }
     }
 
-    protected String callConversionService(String jsonEdxlString, String sourceVersion, String targetVersion, boolean cisuConversion) {
+    protected String callConversionService(String jsonEdxlString, String sourceVersion, String targetVersion, boolean cisuConversion, String distributionID) {
         // Create request body with all required parameters
         String requestBody = String.format(
             "{\"edxl\": %s, \"sourceVersion\": \"%s\", \"targetVersion\": \"%s\", \"cisuConversion\": %s}",
@@ -78,12 +77,15 @@ public class ConversionHandler {
             try {
                 JsonNode errorNode = objectMapper.readTree(e.getResponseBodyAsString());
                 String errorMessage = errorNode.has("error") ? errorNode.get("error").asText() : e.getMessage();
-                throw new RuntimeException(errorMessage);
+                log.error("Error received from converter service " + errorMessage);
+                throw new ConversionException(errorMessage, distributionID);
             } catch (JsonProcessingException jsonException) {
-                throw new RuntimeException("Failed to parse error response from conversion service: " + e.getMessage());
+                // this should never happen as long as the objectMapper.readTree method has already been called earlier in the 'try' block
+                throw new ConversionException("Failed to parse error response from conversion service: " + e.getMessage(), distributionID);
             }
         } catch (JsonProcessingException e) {
-            throw new RuntimeException("Failed to parse response from conversion service: " + e.getMessage());
+            log.error("Failed to parse error response from conversion service: " + e.getMessage());
+            throw new ConversionException("Failed to parse response from conversion service: " + e.getMessage(), distributionID);
         }
     }
 }
