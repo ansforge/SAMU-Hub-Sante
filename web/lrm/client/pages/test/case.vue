@@ -20,15 +20,19 @@
             >Recommencer</v-btn
           >
         </v-card-title>
+        <v-container class="py-2" full-width>
+          <v-alert
+            color="primary"
+            theme="dark"
+            density="compact"
+            variant="elevated"
+            icon="$info"
+          >
+            Les actions testées sont indiquées du point de vue de l'éditeur.
+          </v-alert>
+        </v-container>
         <v-card-actions class="pt-0" style="flex-direction: column">
           <v-container class="pt-0" full-width>
-            <v-alert
-              color="info"
-              icon="$info"
-              text="Les actions testées sont indiquées du point de vue de l'éditeur"
-              density="compact"
-              variant="elevated"
-            ></v-alert>
             <v-stepper v-model="currentStepIndex" class="stepper">
               <v-stepper-header>
                 <template
