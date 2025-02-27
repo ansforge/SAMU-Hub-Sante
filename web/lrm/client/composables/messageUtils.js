@@ -225,7 +225,17 @@ export function sendMessage(msg, vhost = null) {
         messageType: getReadableMessageType(msg.distributionKind),
         body: msg,
       });
+      const alert = {
+        message: 'Message envoyé avec succès',
+        type: 'success',
+      };
+      store.addAlertWithTimeout(alert, 5000);
     } catch (e) {
+      const alert = {
+        message: "Erreur lors de l'envoi du message",
+        type: 'error',
+      };
+      store.addAlertWithTimeout(alert, 5000);
       alert(`Erreur lors de l'envoi du message: ${e}`);
     }
   } else {

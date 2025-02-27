@@ -20,6 +20,7 @@ export const useMainStore = defineStore('main', {
     currentMessage: null,
     currentUseCase: null,
     selectedSchema: 'RS-EDA',
+    alerts: [],
     _auth: {
       user: {
         clientId: null,
@@ -145,6 +146,16 @@ export const useMainStore = defineStore('main', {
           this._messageJustSent = false;
         }, 1000);
       }
+    },
+
+    addAlertWithTimeout(element, timeout) {
+      this.alerts.push(element);
+      setTimeout(() => {
+        const index = this.alerts.indexOf(element);
+        if (index > -1) {
+          this.alerts.splice(index, 1);
+        }
+      }, timeout);
     },
 
     resetMessages() {
