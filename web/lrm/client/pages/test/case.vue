@@ -12,7 +12,7 @@
             v-if="testCase?.steps[currentStepIndex]?.type === 'receive'"
             color="primary"
             class="mr-5"
-            @click="submitMessage(testCase?.steps[currentStep])"
+            @click="submitMessage(currentStep)"
           >
             Re-envoyer le message
           </v-btn>
@@ -428,7 +428,7 @@ const reset = () => {
   selectedRequiredValuesIndex.value = null;
   currentCaseId.value = null;
   localCaseId.value = generateCaseId();
-  currentStep.value = 0;
+  currentStepIndex.value = 0;
   initialize();
 };
 
@@ -571,7 +571,7 @@ function goToStep(step) {
 }
 
 function submitMessage(step) {
-  let message = step.json;
+  let message = currentStep.value.json;
   message = replaceValues(message, step.requiredValues);
   if (step.idOverrideProperties) {
     message = overrideIds(message, step.idOverrideProperties);
