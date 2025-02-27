@@ -53,7 +53,7 @@
       </v-col>
     </v-row>
     <exampleDetails
-      v-if="selectedExample !== undefined"
+      v-if="selectedExample"
       class="mb-4"
       v-bind="selectedExample"
     />
@@ -90,7 +90,7 @@ export default {
     return {
       store: useMainStore(),
       isSelectingUpload: false,
-      selectedExample: {},
+      selectedExample: null,
     };
   },
   computed: {
@@ -100,7 +100,7 @@ export default {
   },
   watch: {
     selectedSchema() {
-      this.selectedExample = {};
+      this.selectedExample = null;
       this.selectFirstExample();
     },
   },
@@ -131,7 +131,6 @@ export default {
     },
     onFileChanged(event) {
       const onReaderLoad = (event) => {
-        consola.log(event.target.result);
         // We're going to assume that the example we're trying to load starts
         // with a use case property (such as createCase, emsi, etc.) and that
         // it's the first and only property at the root level of the example.
@@ -148,7 +147,6 @@ export default {
           consola.error(error);
           return;
         }
-        consola.log('this.store', this.store);
         this.store.currentMessage = parsedJson[Object.keys(parsedJson)[0]];
       };
 

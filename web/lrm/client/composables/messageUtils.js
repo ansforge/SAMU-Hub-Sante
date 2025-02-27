@@ -4,6 +4,7 @@ import { consola } from 'consola';
 import { clientInfos } from './userUtils';
 import { EDXL_ENVELOPE, DIRECTIONS } from '@/constants';
 import { useMainStore } from '~/store';
+import { useAuthStore } from '~/store/auth';
 
 const VALUES_TO_DROP = [null, undefined, ''];
 
@@ -134,6 +135,7 @@ export function buildMessage(innerMessage, distributionKind = 'Report') {
     throw new Error('Inner message should only have one key');
   }
   const store = useMainStore();
+  const authStore = useAuthStore();
   const message = JSON.parse(JSON.stringify(EDXL_ENVELOPE)); // Deep copy
   if (/^((1\.)|(2\.)|(3\.))/.test(store.selectedVhost.modelVersion)) {
     // We delete 'keyword' from 'descriptor' if the model version is 1.*, 2.* or 3.*
@@ -147,11 +149,11 @@ export function buildMessage(innerMessage, distributionKind = 'Report') {
     ...formattedInnerMessage,
   };
   const name = clientInfos().name;
-  const targetId = store.user.targetId;
+  const targetId = authStore.user.targetId;
   const sentAt = moment().format();
-  message.distributionID = `${store.user.clientId}_${uuidv4()}`;
+  message.distributionID = `${authStore.user.clientId}_${uuidv4()}`;
   message.distributionKind = distributionKind;
-  message.senderID = store.user.clientId;
+  message.senderID = authStore.user.clientId;
   message.dateTimeSent = sentAt;
   message.descriptor.explicitAddress.explicitAddressValue = targetId;
   message.content[0].jsonContent.embeddedJsonContent.message.messageId =
@@ -160,11 +162,14 @@ export function buildMessage(innerMessage, distributionKind = 'Report') {
     message.distributionKind;
   message.content[0].jsonContent.embeddedJsonContent.message.sender = {
     name,
-    URI: `hubex:${store.user.clientId}`,
+    URI: `hubex:${authStore.user.clientId}`,
   };
   message.content[0].jsonContent.embeddedJsonContent.message.sentAt = sentAt;
   message.content[0].jsonContent.embeddedJsonContent.message.recipient = [
-    { name: clientInfos(store.user.targetId).name, URI: `hubex:${targetId}` },
+    {
+      name: clientInfos(authStore.user.targetId).name,
+      URI: `hubex:${targetId}`,
+    },
   ];
   return trimEmptyValues(message);
 }
@@ -202,6 +207,7 @@ function isEmpty(obj) {
 
 export function sendMessage(msg, vhost = null) {
   const store = useMainStore();
+  const authStore = useAuthStore();
   if (store.socket?.readyState === 1) {
     if (!vhost) {
       vhost = store.selectedVhost.vhost;
@@ -209,12 +215,12 @@ export function sendMessage(msg, vhost = null) {
     try {
       consola.log('Sending message', msg);
       store.socket.send(
-        JSON.stringify({ key: store.user.clientId, vhost, msg })
+        JSON.stringify({ key: authStore.user.clientId, vhost, msg })
       );
       store.addMessage({
         direction: DIRECTIONS.OUT,
         vhost,
-        routingKey: store.user.targetId,
+        routingKey: authStore.user.targetId,
         time: timeDisplayFormat(),
         messageType: getReadableMessageType(msg.distributionKind),
         body: msg,

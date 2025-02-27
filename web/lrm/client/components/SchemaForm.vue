@@ -39,18 +39,6 @@ const props = defineProps({
     type: String,
     required: true,
   },
-  label: {
-    type: String,
-    required: true,
-  },
-  schemaName: {
-    type: String,
-    required: true,
-  },
-  examples: {
-    type: Array,
-    required: true,
-  },
   noSendButton: {
     type: Boolean,
     default: false,

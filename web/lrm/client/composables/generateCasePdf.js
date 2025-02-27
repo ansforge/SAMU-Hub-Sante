@@ -1,6 +1,6 @@
 import { generate, color } from './pdfUtils.js';
 
-const generateCasePdf = (testCase, store, getCounts) => {
+const generateCasePdf = (testCase, store, authStore, getCounts) => {
   const config = {
     filename: 'test-results.pdf',
     sections: [
@@ -17,12 +17,12 @@ const generateCasePdf = (testCase, store, getCounts) => {
             color: color.black,
           },
           {
-            label: `Client: ${store.user.clientId}`,
+            label: `Client: ${authStore.user.clientId}`,
             fontSize: 16,
             color: color.black,
           },
           {
-            label: `Target: ${store.user.targetId}`,
+            label: `Target: ${authStore.user.targetId}`,
             fontSize: 16,
             color: color.black,
           },

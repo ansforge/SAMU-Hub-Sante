@@ -13,10 +13,12 @@
 
 <script>
 import { useMainStore } from '~/store';
+import { useAuthStore } from '@/store/auth';
 
 export default {
   data: () => ({
     store: useMainStore(),
+    authStore: useAuthStore(),
   }),
   computed: {},
 };

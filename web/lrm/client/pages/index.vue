@@ -65,8 +65,6 @@
 </template>
 
 <script setup>
-import { useMainStore } from '~/store';
-
 // eslint-disable-next-line no-undef
 useHead({
   title: 'Connexion - Hub Santé',
@@ -74,6 +72,10 @@ useHead({
 </script>
 
 <script>
+import { navigateTo } from 'nuxt/app';
+import { useMainStore } from '~/store';
+import { useAuthStore } from '~/store/auth';
+
 export default {
   name: 'Login',
 
@@ -115,12 +117,18 @@ export default {
   },
   methods: {
     async login(target) {
-      if (!(await this.$refs.form.validate()).valid) {
-        return;
+      try {
+        const authStore = useAuthStore();
+        await authStore.login(this.form);
+        navigateTo(target);
+      } catch (error) {
+        alert.value = {
+          show: true,
+          type: 'error',
+          message: 'Login failed. Please try again.',
+        };
       }
-      await this.store.logInUser(this.form);
       // eslint-disable-next-line no-undef
-      await navigateTo(target);
     },
     swap() {
       const clientId = this.form.clientId;

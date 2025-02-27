@@ -9,6 +9,7 @@ function isEnvProd() {
 export default defineNuxtConfig({
   ssr: true,
   vite: {
+    plugins: [vuetify({ autoImport: true })],
     vue: {
       template: {
         transformAssetUrls,
@@ -19,25 +20,14 @@ export default defineNuxtConfig({
     },
   },
 
-  // Target: https://go.nuxtjs.dev/config-target
-  target: 'server',
-
   // Global CSS: https://go.nuxtjs.dev/config-css
-  css: [],
+  css: ['vuetify/styles'],
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
   plugins: [{ src: '~/plugins/jsonViewer', mode: 'client' }],
 
   // Modules: https://go.nuxtjs.dev/config-modules
-  modules: [
-    '@pinia/nuxt',
-    (_options, nuxt) => {
-      nuxt.hooks.hook('vite:extendConfig', (config) => {
-        config.plugins = config.plugins || [];
-        config.plugins.push(vuetify({ autoImport: true }));
-      });
-    },
-  ],
+  modules: ['@pinia/nuxt'],
 
   // Build Configuration: https://go.nuxtjs.dev/config-build
   build: {
@@ -58,14 +48,10 @@ export default defineNuxtConfig({
         {
           rel: 'icon',
           type: 'image/x-icon',
-          href: (isEnvProd() ? '/lrm/' : '/') + 'favicon.ico',
+          href: `${isEnvProd() ? '/lrm/' : '/'}favicon.ico`,
         },
       ],
     },
-  },
-
-  router: {
-    middleware: ['auth'],
   },
 
   runtimeConfig: {

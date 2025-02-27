@@ -24,8 +24,9 @@
               {{ label }}
             </v-tab>
           </v-tabs>
-          <v-window v-model="messageTypeTabIndex">
+          <v-window v-if="currentMessageType" v-model="messageTypeTabIndex">
             <schema-form
+              v-if="currentMessageType"
               :source="source"
               :current-message-type="currentMessageType"
               :message-type-tab-index="messageTypeTabIndex"

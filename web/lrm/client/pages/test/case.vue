@@ -256,7 +256,15 @@
                     <v-text-field
                       :ref="'commentField' + index"
                       v-model="requiredValue.description"
-                      class="mt-2 comment-field"
+                      :class="[
+                        'mt-2',
+                        'comment-field',
+                        {
+                          'd-block':
+                            requiredValue.valid &&
+                            requiredValue.valid !== ValidationStatus.VALID,
+                        },
+                      ]"
                       :data-valid="requiredValue.valid"
                       :data-id="requiredValue.path.join('.')"
                       label="Commentaire"
@@ -323,6 +331,7 @@ import jsonpath from 'jsonpath';
 import { generateCasePdf } from '../../composables/generateCasePdf';
 import mixinWebsocket from '~/mixins/mixinWebsocket';
 import { useMainStore } from '~/store';
+import { useAuthStore } from '@/store/auth';
 import { REPOSITORY_URL } from '@/constants';
 import {
   isOut,
@@ -337,6 +346,7 @@ import {
 } from '~/composables/messageUtils.js';
 
 const store = useMainStore();
+const authStore = useAuthStore();
 const selectedRequiredValuesIndex = ref(null);
 const currentCaseId = ref(null);
 const localCaseId = ref(null);
@@ -364,9 +374,9 @@ const clientMessages = computed(() => {
   return store.messages.filter(
     (message) =>
       (isOut(message.direction) &&
-        message.body.senderID === store.user.clientId) ||
+        message.body.senderID === authStore.user.clientId) ||
       (!isOut(message.direction) &&
-        message.routingKey.startsWith(store.user.clientId))
+        message.routingKey.startsWith(authStore.user.clientId))
   );
 });
 
@@ -428,7 +438,7 @@ function validateMessage(index, ack, stayOnStep = false) {
       if (ack) {
         if (
           getMessageType(message) !== 'ack' &&
-          message.routingKey.startsWith(store.user.clientId)
+          message.routingKey.startsWith(authStore.user.clientId)
         ) {
           const msg = buildAck(message.body.distributionID);
           sendMessage(msg);
@@ -490,7 +500,7 @@ function replaceValues(message, requiredValues) {
  */
 function overrideIds(message, idReplacementPaths) {
   for (const path of idReplacementPaths) {
-    jsonpath.value(message, path, store.user.clientId);
+    jsonpath.value(message, path, authStore.user.clientId);
   }
   return message;
 }
@@ -509,7 +519,7 @@ function generateCaseId() {
   const seconds = currentDate.getSeconds().toString().slice(-1);
 
   const time = year + dayOfYear + hour + minutes + seconds;
-  return store.user.clientId + '.' + 'DRMFR15690' + time;
+  return authStore.user.clientId + '.' + 'DRMFR15690' + time;
 }
 
 function getAwaitedValues(step) {
@@ -723,7 +733,8 @@ function getTotalCounts() {
   };
 }
 
-const generatePdf = () => generateCasePdf(testCase, store, getCounts);
+const generatePdf = () =>
+  generateCasePdf(testCase, store, authStore, getCounts);
 
 // Watch the selectedTypeCaseMessages array
 watch(
@@ -783,25 +794,17 @@ watch(
 export default {
   name: 'Testcase',
   mixins: [mixinWebsocket],
-  beforeRouteEnter(_to, _from) {
-    if (!useMainStore().isAuthenticated) {
-      return { name: 'index' };
-    }
-  },
   methods: {
     setValidationStatus(requiredValue, status, index) {
       requiredValue.valid = requiredValue.valid === status ? undefined : status;
       const commentFieldRef = this.$refs['commentField' + index];
       if (!commentFieldRef) return;
       const commentField = commentFieldRef[0];
+      commentField.focus();
 
-      // add the class "d-block" to the comment field
-      if (requiredValue.valid != ValidationStatus.VALID) {
-        commentField.$el.classList.add('d-block');
+      this.$nextTick(() => {
         commentField.focus();
-      } else {
-        commentField.$el.classList.remove('d-block');
-      }
+      });
     },
   },
 };

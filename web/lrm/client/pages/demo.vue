@@ -19,8 +19,13 @@
               {{ label }}
             </v-tab>
           </v-tabs>
-          <v-window v-model="messageTypeTabIndex" fixed-tabs>
+          <v-window
+            v-if="store.messageTypes.length"
+            v-model="messageTypeTabIndex"
+            fixed-tabs
+          >
             <schema-form
+              v-if="currentMessageType"
               ref="schemaForm"
               :source="source"
               :current-message-type="currentMessageType"
@@ -47,7 +52,7 @@
           <v-spacer />
           <v-switch
             v-if="store.isAdvanced"
-            v-model="store.autoAckConfig"
+            v-model="authStore.user.autoAck"
             inset
             color="primary"
             :label="'Auto ack'"
@@ -125,6 +130,8 @@ import { consola } from 'consola';
 import mixinWebsocket from '~/mixins/mixinWebsocket';
 import { REPOSITORY_URL } from '@/constants';
 import { useMainStore } from '~/store';
+import { useAuthStore } from '@/store/auth';
+
 import {
   buildMessage,
   sendMessage,
@@ -154,17 +161,12 @@ useHead({
 export default {
   name: 'Demo',
   mixins: [mixinWebsocket],
-  beforeRouteEnter(_to, _from) {
-    // Redirect to parent if we're not authenticated
-    if (!useMainStore().isAuthenticated) {
-      return { name: 'index' };
-    }
-  },
   data() {
     return {
       config: null,
       source: null,
       store: useMainStore(),
+      authStore: useAuthStore(),
       messageTypeTabIndex: null,
       selectedMessageType: 'message',
       selectedClientId: null,
@@ -205,9 +207,9 @@ export default {
       return this.store.messages.filter(
         (message) =>
           (isOut(message.direction) &&
-            message.body.senderID === this.store.user.clientId) ||
+            message.body.senderID === this.authStore.user.clientId) ||
           (!isOut(message.direction) &&
-            message.routingKey.startsWith(this.store.user.clientId))
+            message.routingKey.startsWith(this.authStore.user.clientId))
       );
     },
     showableMessages() {

@@ -216,15 +216,6 @@ watch(selectedVhost, () => {
 });
 </script>
 
-<script>
-export default {
-  beforeRouteEnter(_to, _from) {
-    if (!useMainStore().isAuthenticated) {
-      return { name: 'index' };
-    }
-  },
-};
-</script>
 <style>
 div.v-card.test-step-card {
   padding: 1rem;

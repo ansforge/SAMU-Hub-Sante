@@ -30,23 +30,23 @@
         @click="toggleAdvanced"
       />
       <span
-        v-if="store.isAuthenticated"
+        v-if="authStore.isAuthenticated"
         class="mr-2"
         style="cursor: pointer"
         @click="clickHandler"
       >
         <v-icon color="rgb(100,100,100)">
-          {{ userInfos.icon }}
+          {{ clientInfos().icon }}
         </v-icon>
-        <b>{{ userInfos.name }}</b>
+        <b>{{ clientInfos().name }}</b>
         <v-icon v-if="!store.isAdvanced" color="primary">
           mdi-arrow-right-thin
         </v-icon>
         <v-icon v-else color="primary"> mdi-swap-horizontal </v-icon>
         <v-icon color="rgb(100,100,100)">
-          {{ clientInfos(store.user.targetId).icon }}
+          {{ clientInfos(authStore.user.targetId).icon }}
         </v-icon>
-        {{ clientInfos(store.user.targetId).name }}
+        {{ clientInfos(authStore.user.targetId).name }}
       </span>
     </v-app-bar>
     <v-main style="padding-bottom: 0">
@@ -54,9 +54,9 @@
         <slot />
       </v-container>
     </v-main>
-    <v-footer app>
-      <span
-        ><a :href="repositoryUrl + 'tree/' + $store.selectedVhost.modelVersion"
+    <v-footer>
+      <span>
+        <a :href="computedRepositoryUrl"
           >SAMU Hub Modeles - v{{ $store.selectedVhost.modelVersion }}</a
         >&nbsp;&copy; {{ new Date().getFullYear() }}</span
       >
@@ -71,9 +71,10 @@
         </span>
         <v-icon
           class="ml-2"
-          icon="mdi-circle"
           :color="store.isWebsocketConnected ? 'success' : 'warning'"
-        />
+        >
+          mdi-circle
+        </v-icon>
       </span>
     </v-footer>
   </v-app>
@@ -81,15 +82,16 @@
 
 <script>
 import { useMainStore } from '~/store';
-import mixinUser from '~/mixins/mixinUser';
+import { useAuthStore } from '@/store/auth'; // Adjust the path as necessary
 import { REPOSITORY_URL } from '~/constants';
+import { navigateTo } from 'nuxt/app';
 
 export default {
   name: 'DefaultLayout',
-  mixins: [mixinUser],
   data() {
     return {
       store: useMainStore(),
+      authStore: useAuthStore(),
       repositoryUrl: REPOSITORY_URL.replace('raw.githubusercontent', 'github'),
     };
   },
@@ -98,6 +100,11 @@ export default {
       return this.store.isWebsocketConnected
         ? 'Connexion établie'
         : 'Connexion en attente';
+    },
+    computedRepositoryUrl() {
+      return (
+        this.repositoryUrl + 'tree/' + this.$store.selectedVhost.modelVersion
+      );
     },
   },
   methods: {
@@ -108,13 +115,12 @@ export default {
       if (this.store.isAdvanced) {
         // No control as this will anyway fail, user is expected to be advanced
         this.store.logInUser({
-          ...this.store.user,
-          targetId: this.store.user.clientId,
-          clientId: this.store.user.targetId,
+          ...this.authStore.user,
+          targetId: this.authStore.user.clientId,
+          clientId: this.authStore.user.targetId,
         });
       } else {
-        // eslint-disable-next-line no-undef
-        return navigateTo('/');
+        navigateTo('/');
       }
     },
   },
@@ -141,9 +147,12 @@ html {
 }
 
 .v-footer {
+  z-index: 999;
+  position: sticky;
+  bottom: 0;
   display: flex;
-  flex-direction: row;
   justify-content: space-between;
+  max-height: fit-content;
 }
 
 .v-footer > span {
