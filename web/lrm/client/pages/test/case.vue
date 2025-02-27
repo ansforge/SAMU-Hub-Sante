@@ -733,53 +733,32 @@ function checkMessageContainsAllRequiredValues(message, requiredValues) {
 
 function getStepColor(index) {
   // For reception steps, color is determined by the average color of the received values
-  if (testCase.value.steps[index].type === 'receive') {
-    const counts = getCounts(testCase.value.steps[index]);
-    return getAverageColor(
-      counts.unreviewed,
-      counts.valid,
-      counts.approximate,
-      counts.invalid,
-      counts.total
-    );
-  } else {
-    // For send steps, color is determined by the validation state of the step
-    return testCase.value.steps[index]?.validatedReceivedValues
-      ? 'success'
-      : 'grey';
-  }
+  const counts = getCounts(testCase.value.steps[index]);
+  return getAverageColor(
+    counts.unreviewed,
+    counts.valid,
+    counts.approximate,
+    counts.invalid,
+    counts.total
+  );
 }
 
 function getAverageColor(unset, success, warning, error, total) {
-  // grey: #9e9e9e, success: #4caf50, warning: #fb8c00, error: #b00020, total: #000000
-  const unsetPercent = (unset / total) * 100;
-  const successPercent = (success / total) * 100;
-  const warningPercent = (warning / total) * 100;
-  const errorPercent = (error / total) * 100;
+  // grey: #9e9e9e, success: #008000, warning: #fb8c00, error: #b00020, total: #000000
+  const sumUnfit = unset + error + warning;
 
-  const red = Math.round(
-    (unsetPercent * 158 +
-      successPercent * 76 +
-      warningPercent * 251 +
-      errorPercent * 176) /
-      100
-  );
-  const green = Math.round(
-    (unsetPercent * 158 +
-      successPercent * 175 +
-      warningPercent * 140 +
-      errorPercent * 0) /
-      100
-  );
-  const blue = Math.round(
-    (unsetPercent * 158 +
-      successPercent * 80 +
-      warningPercent * 0 +
-      errorPercent * 32) /
-      100
-  );
+  const successRatio = 1 - sumUnfit / total;
 
-  return `rgb(${red}, ${green}, ${blue})`;
+  switch (true) {
+    case successRatio === 1:
+      return 'rgb(0, 128, 0)'; // green
+    case unset === total:
+      return 'rgb(158, 158, 158)'; // grey
+    case successRatio > 0.9:
+      return 'rgb(255, 165, 0)'; // orange
+    default:
+      return 'rgb(176, 0, 32)'; // red
+  }
 }
 
 function setSelectedMessage(message) {
