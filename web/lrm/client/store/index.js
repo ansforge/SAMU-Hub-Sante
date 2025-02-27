@@ -85,6 +85,12 @@ export const useMainStore = defineStore('main', {
       return state._messages;
     },
 
+    clearMessages() {
+      return () => {
+        this._messages = [];
+      };
+    },
+
     messageJustSent(state) {
       return state._messageJustSent;
     },
