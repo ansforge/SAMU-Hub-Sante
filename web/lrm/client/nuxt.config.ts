@@ -8,7 +8,6 @@ function isEnvProd() {
 
 export default defineNuxtConfig({
   ssr: true,
-  dev: process.env.NODE_ENV === 'development', // define if Nuxt run in a dev env https://nuxt.com/docs/api/nuxt-config#dev
   vite: {
     plugins: [vuetify({ autoImport: true })],
     vue: {
