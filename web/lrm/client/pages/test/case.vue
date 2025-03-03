@@ -67,7 +67,7 @@
           </v-container>
           <v-container>
             <span>
-              {{ testCase?.steps[currentlySelectedStep]?.description }}
+              {{ testCase?.steps[currentlySelectedStepIndex]?.description }}
             </span>
           </v-container>
         </v-card-actions>
@@ -77,7 +77,7 @@
               <v-col class="small-message">
                 <template v-for="(message, index) in selectedTypeCaseMessages">
                   <div
-                    v-if="message.relatedStep === currentlySelectedStep"
+                    v-if="message.relatedStep === currentlySelectedStepIndex"
                     :key="'wrapper' + index"
                     class="d-flex flex-column flex-wrap pb-1 pt-1"
                     @click="setSelectedMessage(message)"
@@ -106,7 +106,9 @@
                 </template>
               </v-col>
               <v-col
-                v-if="selectedMessage?.relatedStep === currentlySelectedStep"
+                v-if="
+                  selectedMessage?.relatedStep === currentlySelectedStepIndex
+                "
                 class="full-message"
               >
                 <!-- Details of selected message (last received or sent by default)-->
@@ -363,7 +365,7 @@ const selectedRequiredValuesIndex = ref(null);
 const currentCaseId = ref(null);
 const localCaseId = ref(null);
 const { testCase } = toRefs(store);
-const currentlySelectedStep = ref(0);
+const currentlySelectedStepIndex = ref(0);
 const currentStepIndex = ref(0);
 const selectedMessageIndex = ref(0);
 const selectedCaseIds = ref([]);
@@ -556,7 +558,7 @@ function validateMessage(index, ack) {
 
 function nextStep() {
   currentStepIndex.value++;
-  currentlySelectedStep.value = currentStepIndex.value;
+  currentlySelectedStepIndex.value = currentStepIndex.value;
   if (currentStep.value?.type === 'receive') {
     submitMessage(currentStep.value);
   }
@@ -564,7 +566,7 @@ function nextStep() {
 
 function goToStep(step) {
   currentStepIndex.value = step;
-  currentlySelectedStep.value = step;
+  currentlySelectedStepIndex.value = step;
 }
 
 function submitMessage(step) {
