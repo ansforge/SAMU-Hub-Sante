@@ -9,7 +9,7 @@
           </span>
           <vhost-selector class="mr-5 mb-4" />
           <v-btn
-            v-if="testCase?.steps[currentStepIndex]?.type === 'receive'"
+            v-if="currentStep?.type === 'receive'"
             color="primary"
             class="mr-5"
             @click="submitMessage(currentStep)"
@@ -150,23 +150,19 @@
             </v-card-title>
             <v-card-title>
               {{
-                testCase?.steps[currentStepIndex]?.type === 'send'
+                currentStep?.type === 'send'
                   ? 'Valeurs attendues dans le message'
                   : "Valeurs attendues dans l'acquittement"
               }}
             </v-card-title>
             <v-card-text>
-              <p
-                v-if="
-                  getAwaitedValues(testCase?.steps[currentStepIndex]) === null
-                "
-              >
+              <p v-if="getAwaitedValues(currentStep) === null">
                 En attente de la réception de l'ID de distribution...
               </p>
               <v-list>
                 <v-list-item
                   v-for="(requiredValue, name, index) in getAwaitedValues(
-                    testCase?.steps[currentStepIndex]
+                    currentStep
                   )"
                   :key="'requiredValue' + index"
                 >
@@ -202,7 +198,7 @@
               </v-list>
             </v-card-text>
 
-            <div v-if="testCase?.steps[currentStepIndex]?.type === 'receive'">
+            <div v-if="currentStep?.type === 'receive'">
               <v-card-title> Valeurs reçues dans le message </v-card-title>
               <v-card-text>
                 <v-list>
@@ -376,8 +372,9 @@ const handledLength = ref(0);
 const initialTestCase = store.testCase;
 
 const currentStep = computed(() => {
-  loadLabelBySchema(testCase.value.steps[currentStepIndex.value]);
-  return testCase.value.steps[currentStepIndex.value];
+  const step = testCase.value.steps[currentStepIndex.value];
+  loadLabelBySchema(step);
+  return step;
 });
 
 // eslint-disable-next-line no-undef
@@ -435,9 +432,9 @@ const reset = () => {
 async function initialize() {
   await loadJsonSteps();
   await loadShemas();
-  await loadLabelBySchema();
-  if (testCase.value.steps[currentStepIndex.value]?.type === 'receive') {
-    submitMessage(testCase.value.steps[currentStepIndex.value]);
+
+  if (currentStep.value?.type === 'receive') {
+    submitMessage(currentStep.value);
   }
 }
 
@@ -560,8 +557,8 @@ function validateMessage(index, ack) {
 function nextStep() {
   currentStepIndex.value++;
   currentlySelectedStep.value = currentStepIndex.value;
-  if (testCase.value.steps[currentStepIndex.value]?.type === 'receive') {
-    submitMessage(testCase.value.steps[currentStepIndex.value]);
+  if (currentStep.value?.type === 'receive') {
+    submitMessage(currentStep.value);
   }
 }
 
@@ -581,7 +578,7 @@ function submitMessage(step) {
   }
   setCaseId(message, currentCaseId.value, localCaseId.value);
   const builtMessage = buildMessage(message);
-  testCase.value.steps[currentStepIndex.value].awaitedReferenceDistributionID =
+  currentStep.value.awaitedReferenceDistributionID =
     builtMessage.distributionID;
   sendMessage(builtMessage);
 }
@@ -681,27 +678,26 @@ function getAwaitedReferenceDistributionObject(step) {
 }
 
 function checkMessage(message) {
-  const currentTestStep = testCase.value.steps[currentStepIndex.value];
-
-  if (currentTestStep?.type === 'send') {
+  if (currentStep.value?.type === 'send') {
     return checkMessageContainsAllRequiredValues(
       message,
-      currentTestStep.requiredValues
+      currentStep.value.requiredValues
     );
   } else {
     message.validatedAcknowledgement = checkMessageContainsAllRequiredValues(
       message,
-      getAwaitedReferenceDistributionIdJson(currentTestStep)
+      getAwaitedReferenceDistributionIdJson(currentStep.value)
     );
 
-    currentTestStep.validatedAcknowledgement = message.validatedAcknowledgement;
+    currentStep.value.validatedAcknowledgement =
+      message.validatedAcknowledgement;
     if (message.validatedAcknowledgement) {
       validateMessage(selectedTypeCaseMessages.value.indexOf(message), false);
     }
 
     return (
-      currentTestStep.validatedAcknowledgement &&
-      currentTestStep.validatedReceivedValues
+      currentStep.value.validatedAcknowledgement &&
+      currentStep.value.validatedReceivedValues
     );
   }
 }
@@ -769,7 +765,7 @@ function setSelectedMessage(message) {
   selectedMessageIndex.value = selectedTypeCaseMessages.value.indexOf(message);
 }
 
-function getCounts(step = testCase.value.steps[currentStepIndex.value]) {
+function getCounts(step = currentStep.value) {
   const requiredValues = step.requiredValues;
 
   return {
