@@ -358,6 +358,7 @@ import {
   ValidationStatus,
   buildAck,
 } from '~/composables/messageUtils.js';
+import { loadSchemas } from '~/composables/schemaUtils';
 
 const store = useMainStore();
 const authStore = useAuthStore();
@@ -433,7 +434,7 @@ const reset = () => {
 
 async function initialize() {
   await loadJsonSteps();
-  await loadShemas();
+  await loadSchemas();
 
   if (currentStep.value?.type === 'receive') {
     submitMessage(currentStep.value);
@@ -458,31 +459,6 @@ const getSchemaByStep = (step) => {
   if (!messageType) return;
   return messageType?.schema;
 };
-
-async function loadShemas() {
-  const source = store.selectedVhost.modelVersion;
-  store
-    .loadMessageTypes(
-      REPOSITORY_URL +
-        source +
-        '/src/main/resources/sample/examples/messagesList.json'
-    )
-    .then(() =>
-      store
-        .loadSchemas(
-          REPOSITORY_URL + source + '/src/main/resources/json-schema/'
-        )
-        .then(() => {
-          console.info('messagesList.json and schemas loaded for ' + source);
-        })
-        .catch((reason) => {
-          console.error(reason);
-        })
-    )
-    .catch((reason) => {
-      console.error(reason);
-    });
-}
 
 const getLabelByPath = (schema, path) => {
   function getRefFromPath(ref, path, index) {

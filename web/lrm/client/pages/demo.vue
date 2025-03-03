@@ -128,7 +128,6 @@ import { toRef } from 'vue';
 import { toast } from 'vue3-toastify';
 import { consola } from 'consola';
 import mixinWebsocket from '~/mixins/mixinWebsocket';
-import { REPOSITORY_URL } from '@/constants';
 import { useMainStore } from '~/store';
 import { useAuthStore } from '@/store/auth';
 
@@ -139,6 +138,7 @@ import {
   getMessageType,
   getCaseId,
 } from '~/composables/messageUtils.js';
+import { loadSchemas } from '~/composables/schemaUtils';
 
 function submit(form) {
   try {
@@ -264,38 +264,10 @@ export default {
     updateForm() {
       // To automatically generate the UI and input fields based on the JSON Schema
       // We need to wait the acquisition of 'messagesList' before attempting to acquire the schemas
-      this.store
-        .loadMessageTypes(
-          REPOSITORY_URL +
-            this.source +
-            '/src/main/resources/sample/examples/messagesList.json'
-        )
-        .then(() =>
-          this.store
-            .loadSchemas(
-              REPOSITORY_URL + this.source + '/src/main/resources/json-schema/'
-            )
-            .then(() => {
-              consola.log(
-                'messagesList.json and schemas loaded for ' + this.source
-              );
-              this.messageTypeTabIndex = 0;
-            })
-            .catch((reason) => {
-              consola.error(reason);
-              toast.error(
-                "Erreur lors de l'acquisition des schémas de version " +
-                  this.source
-              );
-            })
-        )
-        .catch((reason) => {
-          consola.error(reason);
-          toast.error(
-            "Erreur lors de l'acquisition de la liste des schémas de version " +
-              this.source
-          );
-        });
+      loadSchemas().then(() => {
+        consola.log('messagesList.json and schemas loaded for ' + this.source);
+        this.messageTypeTabIndex = 0;
+      });
     },
     typeMessages(type) {
       return this.showableMessages.filter(
