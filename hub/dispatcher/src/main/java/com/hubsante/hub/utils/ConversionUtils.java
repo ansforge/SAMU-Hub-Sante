@@ -50,7 +50,7 @@ public class ConversionUtils {
         String recipientID = getRecipientID(edxlMessage);
         String senderID = edxlMessage.getSenderID();
         String healthActor = senderID.startsWith(HEALTH_PREFIX) ? senderID : recipientID;
-        Boolean directCisuPreference = hubConfig.getDirectCisuPreferences().get(healthActor);
+        Boolean directCisuPreference = hubConfig.getDirectCisuPreferences().getOrDefault(healthActor, false);
         return directCisuPreference != null && directCisuPreference;
     }
 }

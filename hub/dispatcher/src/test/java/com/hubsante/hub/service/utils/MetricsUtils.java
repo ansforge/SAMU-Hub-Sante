@@ -23,7 +23,7 @@ import io.micrometer.core.instrument.search.Search;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static com.hubsante.hub.config.Constants.DISPATCH_ERROR;
+import static com.hubsante.hub.config.Constants.*;
 
 public class MetricsUtils {
 
@@ -38,7 +38,31 @@ public class MetricsUtils {
     public static double getOverallCounterForClient(MeterRegistry registry, String sender) {
         AtomicReference<Double> overall = new AtomicReference<>(0.0);
         registry.forEachMeter(meter -> {
-            if (meter.getId().getTags().contains(Tag.of("sender", sender))) {
+            if (meter.getId().getTags().contains(Tag.of(CLIENT_ID_TAG, sender))) {
+                Counter counter = registry.find(DISPATCH_ERROR).tags(meter.getId().getTags()).counter();
+                double meterValue = counter != null ? counter.count() : 0.0;
+                overall.set(overall.get() + meterValue);
+            }
+        });
+        return overall.get();
+    }
+
+    public static double getOverallCounterForEditor(MeterRegistry registry, String editor) {
+        AtomicReference<Double> overall = new AtomicReference<>(0.0);
+        registry.forEachMeter(meter -> {
+            if (meter.getId().getTags().contains(Tag.of(EDITOR_TAG, editor))) {
+                Counter counter = registry.find(DISPATCH_ERROR).tags(meter.getId().getTags()).counter();
+                double meterValue = counter != null ? counter.count() : 0.0;
+                overall.set(overall.get() + meterValue);
+            }
+        });
+        return overall.get();
+    }
+
+    public static double getOverallCounterForError(MeterRegistry registry, String reason) {
+        AtomicReference<Double> overall = new AtomicReference<>(0.0);
+        registry.forEachMeter(meter -> {
+            if (meter.getId().getTags().contains(Tag.of(REASON_TAG, reason))) {
                 Counter counter = registry.find(DISPATCH_ERROR).tags(meter.getId().getTags()).counter();
                 double meterValue = counter != null ? counter.count() : 0.0;
                 overall.set(overall.get() + meterValue);

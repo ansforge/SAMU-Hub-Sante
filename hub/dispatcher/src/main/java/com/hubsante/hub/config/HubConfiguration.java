@@ -50,6 +50,7 @@ public class HubConfiguration {
 
     private HashMap<String, Boolean> useXmlPreferences = new HashMap<>();
     private HashMap<String, Boolean> directCisuPreferences = new HashMap<>();
+    private HashMap<String, String> clientsEditorMap = new HashMap<>();
 
     @PostConstruct
     public void init() throws Exception {
@@ -70,6 +71,7 @@ public class HubConfiguration {
                     String[] items = Arrays.asList(objects).toArray(new String[TOGGLE_ROW_LENGTH]);
                     useXmlPreferences.put(items[0], Boolean.parseBoolean(items[1]));
                     directCisuPreferences.put(items[0], Boolean.parseBoolean(items[2]));
+                    clientsEditorMap.put(items[0], items[3]);
                 }
             };
             CsvParserSettings parserSettings = new CsvParserSettings();
@@ -92,6 +94,10 @@ public class HubConfiguration {
 
     public HashMap<String, Boolean> getDirectCisuPreferences() {
         return directCisuPreferences;
+    }
+
+    public HashMap<String, String> getClientsEditorMap() {
+        return clientsEditorMap;
     }
 
     public long getDefaultTTL() {

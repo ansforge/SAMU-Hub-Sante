@@ -104,6 +104,7 @@ public class DispatcherTest {
     private final String SDIS_C_ROUTING_KEY = "fr.fire.sdisC";
 
     private final String TEST_VHOST = "default-vhost";
+    private final String TEST_EDITOR = "default-editor";
     private final String INCONSISTENT_ROUTING_KEY = "fr.health.no-samu";
     private final String JSON = MessageProperties.CONTENT_TYPE_JSON;
     private final String XML = MessageProperties.CONTENT_TYPE_XML;
@@ -403,30 +404,58 @@ public class DispatcherTest {
     @Test
     @DisplayName("should increment counter")
     public void incrementMetricsCounter() throws IOException {
-        Search errorOverall = targetCounter(registry, CLIENT_ID_TAG, SAMU_A_ROUTING_KEY, VHOST_TAG, TEST_VHOST);
-        Search errorContentType = targetCounter(registry, REASON_TAG, ErrorCode.NOT_ALLOWED_CONTENT_TYPE.getStatusString(),
-                CLIENT_ID_TAG, SAMU_A_ROUTING_KEY, VHOST_TAG, TEST_VHOST);
-        Search errorDeliveryMode = targetCounter(registry, REASON_TAG, ErrorCode.DELIVERY_MODE_INCONSISTENCY.getStatusString(),
-                CLIENT_ID_TAG, SAMU_A_ROUTING_KEY, VHOST_TAG, TEST_VHOST);
+        // First we define specific searches to restrict metric vector on specific tags
 
-        assertNull(errorOverall.counter());
-        assertNull(errorContentType.counter());
-        assertNull(errorDeliveryMode.counter());
+        // total errors for samuA client (any reason, any vhost, etc)
+        Search errorOverallSamuA = targetCounter(registry, CLIENT_ID_TAG, SAMU_A_ROUTING_KEY);
+        // total contentType tagged errors for samuA client
+        Search errorContentTypeSamuA = targetCounter(registry, REASON_TAG, ErrorCode.NOT_ALLOWED_CONTENT_TYPE.getStatusString(),
+                CLIENT_ID_TAG, SAMU_A_ROUTING_KEY);
+        // total deliveryMode tagged errors for samuA client
+        Search errorDeliveryModeSamuA = targetCounter(registry, REASON_TAG, ErrorCode.DELIVERY_MODE_INCONSISTENCY.getStatusString(),
+                CLIENT_ID_TAG, SAMU_A_ROUTING_KEY);
+        // total deliveryMode tagged error for samu B client
+        Search errorDeliveryModeSamuB = targetCounter(registry, REASON_TAG, ErrorCode.DELIVERY_MODE_INCONSISTENCY.getStatusString(),
+                CLIENT_ID_TAG, SAMU_B_ROUTING_KEY);
 
-        Message noContentTypeMessage = createMessage("EDXL-DE", null, SAMU_A_ROUTING_KEY);
-        assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(noContentTypeMessage));
+        // ensure counters are empty at startup
+        assertNull(errorOverallSamuA.counter());
+        assertNull(errorContentTypeSamuA.counter());
+        assertNull(errorDeliveryModeSamuA.counter());
 
-        assertEquals(1, getCurrentCount(errorContentType.counter()));
-        assertNull(errorDeliveryMode.counter());
+        // message without content type sent by SamuA
+        Message noContentTypeMessageSamuA = createMessage("EDXL-DE", null, SAMU_A_ROUTING_KEY);
+        assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(noContentTypeMessageSamuA));
+
+        // metrics filtered by "sender==samuA", or "sender==samuA && reason=NOT_ALLOWED_CONTENT_TYPE" should be 1
+        // metrics filtered by "sender==samuA && reason==DELIVERY_MODE_INCONSISTENCY" should be 0
+        assertEquals(1, getCurrentCount(errorContentTypeSamuA.counter()));
+        assertNull(errorDeliveryModeSamuA.counter());
         assertEquals(1, getOverallCounterForClient(registry, SAMU_A_ROUTING_KEY));
 
-        Message nonPersistentMessage = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
-        nonPersistentMessage.getMessageProperties().setReceivedDeliveryMode(MessageDeliveryMode.NON_PERSISTENT);
-        assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(nonPersistentMessage));
+        // same sender, different error
+        Message nonPersistentMessageSamuA = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
+        nonPersistentMessageSamuA.getMessageProperties().setReceivedDeliveryMode(MessageDeliveryMode.NON_PERSISTENT);
+        assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(nonPersistentMessageSamuA));
 
-        assertEquals(1, getCurrentCount(errorContentType.counter()));
-        assertEquals(1, getCurrentCount(errorDeliveryMode.counter()));
+        // samuA && reason==NOT_ALLOWED_CONTENT_TYPE didn't increment
+        // samuA && reason==DELIVERY_MODE_INCONSISTENCY is now 1
+        // all errors for samuA is now 2
+        assertEquals(1, getCurrentCount(errorContentTypeSamuA.counter()));
+        assertEquals(1, getCurrentCount(errorDeliveryModeSamuA.counter()));
         assertEquals(2, getOverallCounterForClient(registry, SAMU_A_ROUTING_KEY));
+
+        // create an DELIEVRY_MODE_INCONSISTENCY error, now from SamuB
+        Message nonPersistentMessageSamuB = createMessage("EDXL-DE", XML, SAMU_B_ROUTING_KEY);
+        nonPersistentMessageSamuB.getMessageProperties().setReceivedDeliveryMode(MessageDeliveryMode.NON_PERSISTENT);
+        assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(nonPersistentMessageSamuB));
+
+        // samuB && reason==DELIVERY_MODE_INCONSISTENCY is now 1
+        // overall reason==DELIVERY_MODE_INCONSISTENCY is now 2
+        // overall editor=default-editor is now 3
+        assertEquals(1, getCurrentCount(errorDeliveryModeSamuB.counter()));
+        assertEquals(2, getOverallCounterForError(registry, ErrorCode.DELIVERY_MODE_INCONSISTENCY.getStatusString()));
+        assertEquals(3, getOverallCounterForEditor(registry, TEST_EDITOR));
     }
 
     @Test
