@@ -67,9 +67,6 @@ public class HubConfiguration {
             ObjectRowProcessor rowProcessor = new ObjectRowProcessor() {
                 @Override
                 public void rowProcessed(Object[] objects, ParsingContext parsingContext) {
-                    if (objects.length != TOGGLE_ROW_LENGTH) {
-                        throw new IllegalArgumentException();
-                    }
                     String[] items = Arrays.asList(objects).toArray(new String[TOGGLE_ROW_LENGTH]);
                     useXmlPreferences.put(items[0], Boolean.parseBoolean(items[1]));
                     directCisuPreferences.put(items[0], Boolean.parseBoolean(items[2]));
