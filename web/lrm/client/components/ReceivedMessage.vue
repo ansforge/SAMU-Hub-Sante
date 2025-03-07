@@ -21,7 +21,10 @@
       class="elevation-4 pt-8"
       :class="{
         'grey lighten-4': isOut(direction),
-        validated: validatedValuesCount === requiredValuesCount,
+        validated:
+          validatedValuesCount &&
+          requiredValuesCount &&
+          validatedValuesCount === requiredValuesCount,
       }"
     >
       <v-row class="mx-4" :class="{ 'pb-2': dense }">

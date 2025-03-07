@@ -9,16 +9,31 @@
           </span>
           <vhost-selector class="mr-5 mb-4" />
           <v-btn
-            v-if="testCase?.steps[currentStep]?.type === 'receive'"
+            v-if="currentStep?.type === 'receive'"
             color="primary"
-            @click="submitMessage(testCase?.steps[currentStep])"
+            class="mr-5"
+            @click="submitMessage(currentStep)"
           >
             Re-envoyer le message
           </v-btn>
+          <v-btn color="primary" variant="outlined" @click="reset"
+            >Recommencer</v-btn
+          >
         </v-card-title>
+        <v-container class="py-2" full-width>
+          <v-alert
+            color="primary"
+            theme="dark"
+            density="compact"
+            variant="elevated"
+            icon="$info"
+          >
+            Les actions testées sont indiquées du point de vue de l'éditeur.
+          </v-alert>
+        </v-container>
         <v-card-actions class="pt-0" style="flex-direction: column">
           <v-container class="pt-0" full-width>
-            <v-stepper v-model="currentStep" class="stepper">
+            <v-stepper v-model="currentStepIndex" class="stepper">
               <v-stepper-header>
                 <template
                   v-for="(step, index) in testCase?.steps"
@@ -30,12 +45,16 @@
                       :value="step.id"
                       editable
                       style="cursor: pointer"
-                      :color="getStepColor(index)"
+                      :color="
+                        currentStepIndex === index
+                          ? 'rgb(24,103,192)'
+                          : getStepColor(index)
+                      "
                       :step="index + 1"
-                      edit-icon="mdi-circle"
+                      edit-icon=""
                       @click="goToStep(index)"
                     >
-                      {{ step.label }}
+                      {{ step.label.replace('Réception', 'Intégration') }}
                     </v-stepper-item>
                   </v-col>
                   <v-divider
@@ -48,7 +67,7 @@
           </v-container>
           <v-container>
             <span>
-              {{ testCase?.steps[currentlySelectedStep]?.description }}
+              {{ testCase?.steps[currentlySelectedStepIndex]?.description }}
             </span>
           </v-container>
         </v-card-actions>
@@ -58,7 +77,7 @@
               <v-col class="small-message">
                 <template v-for="(message, index) in selectedTypeCaseMessages">
                   <div
-                    v-if="message.relatedStep === currentlySelectedStep"
+                    v-if="message.relatedStep === currentlySelectedStepIndex"
                     :key="'wrapper' + index"
                     class="d-flex flex-column flex-wrap pb-1 pt-1"
                     @click="setSelectedMessage(message)"
@@ -87,7 +106,9 @@
                 </template>
               </v-col>
               <v-col
-                v-if="selectedMessage?.relatedStep === currentlySelectedStep"
+                v-if="
+                  selectedMessage?.relatedStep === currentlySelectedStepIndex
+                "
                 class="full-message"
               >
                 <!-- Details of selected message (last received or sent by default)-->
@@ -102,11 +123,6 @@
                           ?.requiredValues?.length
                       : 1
                   "
-                  :validated-values-count="
-                    selectedMessage?.validatedValues?.filter(
-                      (value) => value.valid
-                    ).length
-                  "
                   v-bind="selectedMessage"
                   class="message mb-4"
                   :class="{ stale: selectedMessage?.stale }"
@@ -119,11 +135,11 @@
     </v-col>
     <v-col cols="12" sm="5">
       <v-card class="main-card" style="height: 86vh; overflow-y: auto">
-        <template v-if="currentStep < testCase?.steps.length">
+        <template v-if="currentStepIndex < testCase?.steps.length">
           <span>
             <v-card-title class="d-flex justify-space-between">
               <!-- Button that validates the step and goes to the next -->
-              <v-btn color="primary" @click="validateStep(currentStep)">
+              <v-btn color="primary" @click="validateStep(currentStepIndex)">
                 Passer à l'étape suivante
               </v-btn>
               <span id="result-counter">
@@ -136,19 +152,19 @@
             </v-card-title>
             <v-card-title>
               {{
-                testCase?.steps[currentStep]?.type === 'send'
+                currentStep?.type === 'send'
                   ? 'Valeurs attendues dans le message'
                   : "Valeurs attendues dans l'acquittement"
               }}
             </v-card-title>
             <v-card-text>
-              <p v-if="getAwaitedValues(testCase?.steps[currentStep]) === null">
+              <p v-if="getAwaitedValues(currentStep) === null">
                 En attente de la réception de l'ID de distribution...
               </p>
               <v-list>
                 <v-list-item
                   v-for="(requiredValue, name, index) in getAwaitedValues(
-                    testCase?.steps[currentStep]
+                    currentStep
                   )"
                   :key="'requiredValue' + index"
                 >
@@ -170,7 +186,7 @@
                       </v-icon>
                     </span>
                     <span>
-                      <pre><b>{{ name }}:</b></pre>
+                      <pre><b>{{ requiredValue?.label }}<br>{{ name }}:</b></pre>
                       <pre>{{ requiredValue.value }}</pre>
                       <pre
                         v-if="requiredValue?.valid !== ValidationStatus.VALID"
@@ -184,15 +200,13 @@
               </v-list>
             </v-card-text>
 
-            <div v-if="testCase?.steps[currentStep]?.type === 'receive'">
+            <div v-if="currentStep?.type === 'receive'">
               <v-card-title> Valeurs reçues dans le message </v-card-title>
               <v-card-text>
                 <v-list>
                   <!-- Generate a list of paths:values from required values and add three buttons for each entry, letting user indicate whether the value they received is correct, 'somewhat' correct or incorrect-->
                   <v-list-item
-                    v-for="(requiredValue, index) in testCase?.steps[
-                      currentStep
-                    ].requiredValues"
+                    v-for="(requiredValue, index) in currentStep.requiredValues"
                     :key="'requiredValue' + index"
                     class="received-values-list"
                     :data-index="index"
@@ -250,7 +264,7 @@
                                 ? 'red'
                                 : 'black',
                           }"
-                        ><b>{{ requiredValue.path.join('.') }}:</b> <br>{{ requiredValue.value }}</pre>
+                        ><b>{{ requiredValue.label }}<br>{{ requiredValue.path.join('.') }}:</b> <br>{{ requiredValue.value }}</pre>
                       </span>
                     </span>
                     <v-text-field
@@ -344,6 +358,7 @@ import {
   ValidationStatus,
   buildAck,
 } from '~/composables/messageUtils.js';
+import { loadSchemas } from '~/composables/schemaUtils';
 
 const store = useMainStore();
 const authStore = useAuthStore();
@@ -351,24 +366,26 @@ const selectedRequiredValuesIndex = ref(null);
 const currentCaseId = ref(null);
 const localCaseId = ref(null);
 const { testCase } = toRefs(store);
-const currentlySelectedStep = ref(0);
-const currentStep = ref(0);
+const currentlySelectedStepIndex = ref(0);
+const currentStepIndex = ref(0);
 const selectedMessageIndex = ref(0);
 const selectedCaseIds = ref([]);
 const handledLength = ref(0);
+
+const initialTestCase = store.testCase;
+
+const currentStep = computed(() => {
+  const step = testCase.value.steps[currentStepIndex.value];
+  loadLabelBySchema(step);
+  return step;
+});
 
 // eslint-disable-next-line no-undef
 useHead({
   titleTemplate: toRef(useMainStore(), 'testHeadTitle'),
 });
 
-onMounted(() => {
-  selectedRequiredValuesIndex.value = null;
-  currentCaseId.value = null;
-  localCaseId.value = generateCaseId();
-  currentStep.value = 0;
-  initialize();
-});
+onMounted(() => reset());
 
 const clientMessages = computed(() => {
   return store.messages.filter(
@@ -402,13 +419,75 @@ const selectedTypeCaseMessages = computed(() => {
   );
 });
 
+const reset = () => {
+  store.clearMessages();
+  selectedCaseIds.value = [];
+  handledLength.value = 0;
+  if (initialTestCase)
+    store.testCase = JSON.parse(JSON.stringify(initialTestCase));
+  selectedRequiredValuesIndex.value = null;
+  currentCaseId.value = null;
+  localCaseId.value = generateCaseId();
+  currentStepIndex.value = 0;
+  initialize();
+};
+
 async function initialize() {
   await loadJsonSteps();
+  await loadSchemas();
 
-  if (testCase.value.steps[currentStep.value]?.type === 'receive') {
-    submitMessage(testCase.value.steps[currentStep.value]);
+  if (currentStep.value?.type === 'receive') {
+    submitMessage(currentStep.value);
   }
 }
+
+const loadLabelBySchema = (step) => {
+  const steps = step ? [step] : testCase.value.steps;
+  steps.forEach((step) => {
+    const schema = getSchemaByStep(step);
+    step.requiredValues.forEach(
+      (requiredValue) =>
+        (requiredValue.label = getLabelByPath(schema, requiredValue.path))
+    );
+  });
+};
+
+const getSchemaByStep = (step) => {
+  const messageTypes = store.messageTypes;
+  const model = step.model;
+  const messageType = messageTypes.find((type) => type.label === model);
+  if (!messageType) return;
+  return messageType?.schema;
+};
+
+const getLabelByPath = (schema, path) => {
+  function getRefFromPath(ref, path, index) {
+    if (index >= path.length) return ref?.title || '';
+    const currentPath = path[index];
+
+    if (!isNaN(Number(currentPath))) {
+      return getRefFromPath(ref, path, index + 1);
+    }
+
+    const refProperty = ref?.properties[currentPath];
+
+    if (
+      refProperty?.$ref ||
+      (refProperty?.type === 'array' && refProperty.items.$ref)
+    ) {
+      const refName =
+        refProperty.$ref?.split('/').pop() ??
+        refProperty.items.$ref.split('/').pop();
+      const newRef = schema.definitions[refName];
+      return getRefFromPath(newRef, path, index + 1);
+    }
+
+    return refProperty?.title || '';
+  }
+
+  const label = getRefFromPath(schema, path.slice(2), 0);
+  return label;
+};
 
 async function loadJsonSteps() {
   for (const step of testCase.value.steps) {
@@ -427,13 +506,13 @@ async function loadJsonSteps() {
   }
 }
 
-function validateMessage(index, ack, stayOnStep = false) {
+function validateMessage(index, ack) {
   selectedTypeCaseMessages.value.forEach((message, i) => {
     if (i === index) {
       if (!currentCaseId.value) {
         currentCaseId.value = getCaseId(message, true);
       }
-      message.validatedStep = currentStep.value;
+      message.validatedStep = currentStepIndex.value;
       message.validated = true;
       if (ack) {
         if (
@@ -446,31 +525,28 @@ function validateMessage(index, ack, stayOnStep = false) {
       }
     } else if (
       !message.validated &&
-      message.relatedStep === currentStep.value
+      message.relatedStep === currentStepIndex.value
     ) {
       message.stale = true;
     }
   });
-  if (!stayOnStep) {
-    nextStep();
-  }
 }
 
 function nextStep() {
-  currentStep.value++;
-  currentlySelectedStep.value = currentStep.value;
-  if (testCase.value.steps[currentStep.value]?.type === 'receive') {
-    submitMessage(testCase.value.steps[currentStep.value]);
+  currentStepIndex.value++;
+  currentlySelectedStepIndex.value = currentStepIndex.value;
+  if (currentStep.value?.type === 'receive') {
+    submitMessage(currentStep.value);
   }
 }
 
 function goToStep(step) {
-  currentStep.value = step;
-  currentlySelectedStep.value = step;
+  currentStepIndex.value = step;
+  currentlySelectedStepIndex.value = step;
 }
 
 function submitMessage(step) {
-  let message = step.json;
+  let message = currentStep.value.json;
   message = replaceValues(message, step.requiredValues);
   if (step.idOverrideProperties) {
     message = overrideIds(message, step.idOverrideProperties);
@@ -480,7 +556,7 @@ function submitMessage(step) {
   }
   setCaseId(message, currentCaseId.value, localCaseId.value);
   const builtMessage = buildMessage(message);
-  testCase.value.steps[currentStep.value].awaitedReferenceDistributionID =
+  currentStep.value.awaitedReferenceDistributionID =
     builtMessage.distributionID;
   sendMessage(builtMessage);
 }
@@ -526,9 +602,11 @@ function getAwaitedValues(step) {
   if (step.type === 'send') {
     const requiredValuesObject = {};
     step.requiredValues.forEach((entry) => {
+      const schema = getSchemaByStep(step);
       requiredValuesObject[entry.path.join('.')] = {
         value: entry.value,
         valid: entry.valid,
+        label: getLabelByPath(schema, entry.path),
       };
     });
     return requiredValuesObject;
@@ -553,7 +631,7 @@ function getAwaitedReferenceDistributionIdJson(step) {
 
 function getAwaitedReferenceDistributionObject(step) {
   const currentStepSelectedTypeMessages = selectedTypeCaseMessages.value.filter(
-    (message) => message.relatedStep === currentStep.value
+    (message) => message.relatedStep === currentStepIndex.value
   );
   const lastCurrentStepAckedDistributionID = currentStepSelectedTypeMessages[0]
     ? getDistributionIdOfAckedMessage(currentStepSelectedTypeMessages[0])
@@ -569,6 +647,7 @@ function getAwaitedReferenceDistributionObject(step) {
     '$.reference.distributionID': {
       value: step?.awaitedReferenceDistributionID,
       valid: validationStatus,
+      label: 'Id de distribution',
       receivedValue:
         getDistributionIdOfAckedMessage(currentStepSelectedTypeMessages[0]) ??
         'N/A',
@@ -577,31 +656,26 @@ function getAwaitedReferenceDistributionObject(step) {
 }
 
 function checkMessage(message) {
-  const currentTestStep = testCase.value.steps[currentStep.value];
-
-  if (currentTestStep?.type === 'send') {
+  if (currentStep.value?.type === 'send') {
     return checkMessageContainsAllRequiredValues(
       message,
-      currentTestStep.requiredValues
+      currentStep.value.requiredValues
     );
   } else {
     message.validatedAcknowledgement = checkMessageContainsAllRequiredValues(
       message,
-      getAwaitedReferenceDistributionIdJson(currentTestStep)
+      getAwaitedReferenceDistributionIdJson(currentStep.value)
     );
 
-    currentTestStep.validatedAcknowledgement = message.validatedAcknowledgement;
+    currentStep.value.validatedAcknowledgement =
+      message.validatedAcknowledgement;
     if (message.validatedAcknowledgement) {
-      validateMessage(
-        selectedTypeCaseMessages.value.indexOf(message),
-        false,
-        true
-      );
+      validateMessage(selectedTypeCaseMessages.value.indexOf(message), false);
     }
 
     return (
-      currentTestStep.validatedAcknowledgement &&
-      currentTestStep.validatedReceivedValues
+      currentStep.value.validatedAcknowledgement &&
+      currentStep.value.validatedReceivedValues
     );
   }
 }
@@ -637,60 +711,39 @@ function checkMessageContainsAllRequiredValues(message, requiredValues) {
 
 function getStepColor(index) {
   // For reception steps, color is determined by the average color of the received values
-  if (testCase.value.steps[index].type === 'receive') {
-    const counts = getCounts(testCase.value.steps[index]);
-    return getAverageColor(
-      counts.unreviewed,
-      counts.valid,
-      counts.approximate,
-      counts.invalid,
-      counts.total
-    );
-  } else {
-    // For send steps, color is determined by the validation state of the step
-    return testCase.value.steps[index]?.validatedReceivedValues
-      ? 'success'
-      : 'grey';
-  }
+  const counts = getCounts(testCase.value.steps[index]);
+  return getAverageColor(
+    counts.unreviewed,
+    counts.valid,
+    counts.approximate,
+    counts.invalid,
+    counts.total
+  );
 }
 
 function getAverageColor(unset, success, warning, error, total) {
-  // grey: #9e9e9e, success: #4caf50, warning: #fb8c00, error: #b00020, total: #000000
-  const unsetPercent = (unset / total) * 100;
-  const successPercent = (success / total) * 100;
-  const warningPercent = (warning / total) * 100;
-  const errorPercent = (error / total) * 100;
+  // grey: #9e9e9e, success: #008000, warning: #fb8c00, error: #b00020, total: #000000
+  const sumUnfit = unset + error + warning;
 
-  const red = Math.round(
-    (unsetPercent * 158 +
-      successPercent * 76 +
-      warningPercent * 251 +
-      errorPercent * 176) /
-      100
-  );
-  const green = Math.round(
-    (unsetPercent * 158 +
-      successPercent * 175 +
-      warningPercent * 140 +
-      errorPercent * 0) /
-      100
-  );
-  const blue = Math.round(
-    (unsetPercent * 158 +
-      successPercent * 80 +
-      warningPercent * 0 +
-      errorPercent * 32) /
-      100
-  );
+  const successRatio = 1 - sumUnfit / total;
 
-  return `rgb(${red}, ${green}, ${blue})`;
+  switch (true) {
+    case successRatio === 1:
+      return 'rgb(0, 128, 0)'; // green
+    case unset === total:
+      return 'rgb(158, 158, 158)'; // grey
+    case successRatio > 0.9:
+      return 'rgb(255, 165, 0)'; // orange
+    default:
+      return 'rgb(176, 0, 32)'; // red
+  }
 }
 
 function setSelectedMessage(message) {
   selectedMessageIndex.value = selectedTypeCaseMessages.value.indexOf(message);
 }
 
-function getCounts(step = testCase.value.steps[currentStep.value]) {
+function getCounts(step = currentStep.value) {
   const requiredValues = step.requiredValues;
 
   return {
@@ -744,7 +797,7 @@ watch(
 
     // Ensure the current step is within bounds and new messages have arrived
     if (
-      currentStep.value <= testCase.value.steps.length &&
+      currentStepIndex.value <= testCase.value.steps.length &&
       newMessages.length > 0
     ) {
       // Iterate over new messages starting from the latest added
@@ -764,23 +817,12 @@ watch(
           );
           lastMessage.relatedStep = relatedMessage.relatedStep;
         } else {
-          lastMessage.relatedStep = currentStep.value;
+          lastMessage.relatedStep = currentStepIndex.value;
         }
 
         // Check and validate the message if it's incoming
         if (!lastMessage.isOut) {
-          const shouldStayOnStep =
-            testCase.value.steps[currentStep.value].type === 'receive' &&
-            !(
-              testCase.value.steps[currentStep.value]
-                .validatedAcknowledgement &&
-              testCase.value.steps[currentStep.value].validatedReceivedValues
-            );
-          validateMessage(
-            newMessages.indexOf(lastMessage),
-            true,
-            shouldStayOnStep
-          );
+          validateMessage(newMessages.indexOf(lastMessage), true);
         }
       }
       handledLength.value = newMessages.length;
@@ -800,7 +842,12 @@ export default {
       const commentFieldRef = this.$refs['commentField' + index];
       if (!commentFieldRef) return;
       const commentField = commentFieldRef[0];
-      commentField.focus();
+      if (requiredValue.valid === ValidationStatus.VALID) {
+        commentField.savedDescription = requiredValue.description;
+        requiredValue.description = '';
+      } else if (commentField.savedDescription) {
+        requiredValue.description = commentField.savedDescription;
+      }
 
       this.$nextTick(() => {
         commentField.focus();

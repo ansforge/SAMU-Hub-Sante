@@ -54,6 +54,18 @@
         <slot />
       </v-container>
     </v-main>
+
+    <div class="alerts">
+      <v-alert
+        v-for="(alert, index) in alerts"
+        :key="index"
+        :type="alert.type ?? 'info'"
+        :variant="alert.variant ?? 'elevated'"
+        :density="alert.density ?? 'compact'"
+      >
+        {{ alert.message }}
+      </v-alert>
+    </div>
     <v-footer>
       <span>
         <a :href="computedRepositoryUrl"
@@ -106,6 +118,9 @@ export default {
         this.repositoryUrl + 'tree/' + this.$store.selectedVhost.modelVersion
       );
     },
+    alerts() {
+      return this.store.alerts;
+    },
   },
   methods: {
     toggleAdvanced() {
@@ -134,6 +149,19 @@ header.v-toolbar {
 
 html {
   overflow-y: auto;
+}
+
+.alerts {
+  position: fixed;
+  bottom: 5%;
+  right: 5%;
+  z-index: 9999999;
+  width: 33%;
+  display: flex;
+  justify-content: center;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
 .v-main {
