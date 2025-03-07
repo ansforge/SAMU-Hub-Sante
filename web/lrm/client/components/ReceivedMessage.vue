@@ -15,35 +15,59 @@
         :distribution-id="body.distributionID"
         class="pl-1"
       />
-      <v-badge
-        floating
-        class="pl-1"
-        color="primary"
-        :content="vhost"
-      />
+      <v-badge floating class="pl-1" color="primary" :content="vhost" />
     </div>
-    <div class="elevation-4 pt-8" :class="{ 'grey lighten-4': isOut(direction) }">
+    <div
+      class="elevation-4 pt-8"
+      :class="{
+        'grey lighten-4': isOut(direction),
+        validated:
+          validatedValuesCount &&
+          requiredValuesCount &&
+          validatedValuesCount === requiredValuesCount,
+      }"
+    >
       <v-row class="mx-4" :class="{ 'pb-2': dense }">
         <span>
-          <v-icon size="small" start>mdi-email-fast</v-icon>{{ direction }} {{ isOut(direction) ? routingKey :
-            body.senderID }}
-          <br>
-          <v-icon size="small" start>mdi-timer</v-icon>{{ time }} → {{ isOut(direction) ? acked?.time : receivedTime }}
+          <v-icon size="small" start>mdi-email-fast</v-icon>{{ direction }}
+          {{ isOut(direction) ? routingKey : body.senderID }}
+          <br />
+          <v-icon size="small" start>mdi-timer</v-icon>{{ time }} →
+          {{ isOut(direction) ? acked?.time : receivedTime }}
           <div v-if="dense && !isOut(direction)">
             <v-icon
               size="small"
               start
-              :color="validatedValuesCount === requiredValuesCount ? 'green' : validatedValuesCount === 0 ? 'red' : 'orange'"
+              :color="
+                validatedValuesCount === requiredValuesCount
+                  ? 'green'
+                  : validatedValuesCount === 0
+                  ? 'red'
+                  : 'orange'
+              "
             >
-              {{ validatedValuesCount === requiredValuesCount ? 'mdi-check' : 'mdi-close' }}
+              {{
+                validatedValuesCount === requiredValuesCount
+                  ? 'mdi-check'
+                  : 'mdi-close'
+              }}
             </v-icon>
-            <span>Valeurs valides: {{ validatedValuesCount }} / {{ requiredValuesCount }} </span>
+            <span
+              >Valeurs valides: {{ validatedValuesCount }} /
+              {{ requiredValuesCount }}
+            </span>
           </div>
         </span>
         <v-spacer />
         <span v-if="!dense" class="d-flex row">
           <div v-if="getMessageType({ body }) !== 'ack' && !isOut(direction)">
-            <v-btn icon variant="text" size="x-small" :color="acked ? 'accent' : 'primary'" @click="sendAck">
+            <v-btn
+              icon
+              variant="text"
+              size="x-small"
+              :color="acked ? 'accent' : 'primary'"
+              @click="sendAck"
+            >
               <v-icon size="24">mdi-check-all</v-icon>
             </v-btn>
           </div>
@@ -57,15 +81,29 @@
           >
             <v-icon size="24">mdi-reply</v-icon>
           </v-btn>
-          <v-btn icon variant="text" size="x-small" color="primary" @click="showFullMessage = !showFullMessage">
-            <v-icon size="24">{{ showFullMessage ? 'mdi-magnify-plus-outline' : 'mdi-magnify-minus-outline' }}</v-icon>
+          <v-btn
+            icon
+            variant="text"
+            size="x-small"
+            color="primary"
+            @click="showFullMessage = !showFullMessage"
+          >
+            <v-icon size="24">{{
+              showFullMessage
+                ? 'mdi-magnify-plus-outline'
+                : 'mdi-magnify-minus-outline'
+            }}</v-icon>
           </v-btn>
         </span>
       </v-row>
 
       <json-viewer
         v-if="!dense"
-        :value="showFullMessage ? body : body.content[0].jsonContent.embeddedJsonContent.message"
+        :value="
+          showFullMessage
+            ? body
+            : body.content[0].jsonContent.embeddedJsonContent.message
+        "
         :expand-depth="jsonDepth"
         :copyable="{ copyText: 'Copier', copiedText: 'Copié !', timeout: 1000 }"
         expanded
@@ -76,92 +114,112 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
-import { DIRECTIONS } from '@/constants'
-import mixinWebsocket from '~/mixins/mixinWebsocket'
-import { useMainStore } from '~/store'
-import { buildAck, sendMessage, getMessageType } from '~/composables/messageUtils.js'
+import { computed, ref, onMounted } from 'vue';
+import { DIRECTIONS } from '@/constants';
+import mixinWebsocket from '~/mixins/mixinWebsocket';
+import { useMainStore } from '~/store';
+import {
+  buildAck,
+  sendMessage,
+  getMessageType,
+  getDistributionIdOfAckedMessage,
+} from '~/composables/messageUtils';
 
-const showFullMessage = ref(false)
+const store = useMainStore();
+const showFullMessage = ref(false);
+const autoAckConfig = computed(() => store.autoAckConfig);
 
 const props = defineProps({
   dense: {
     type: Boolean,
-    default: false
+    default: false,
   },
   vhost: {
     type: String,
-    required: true
+    required: true,
   },
   direction: {
     type: String,
-    required: true
+    required: true,
   },
   jsonDepth: {
     type: Number,
-    default: 1
+    default: 1,
   },
   requiredValuesCount: {
     type: Number,
-    default: 0
+    default: 0,
   },
   validatedValuesCount: {
     type: Number,
-    default: 0
+    default: 0,
   },
   routingKey: {
     type: String,
-    required: true
+    required: true,
   },
   time: {
     type: String,
-    required: true
+    required: true,
   },
   receivedTime: {
     type: String,
-    default: null
+    default: null,
   },
   body: {
     type: Object,
-    required: true
-  }
-})
+    required: true,
+  },
+});
 
-defineEmits(['useMessageToReply'])
+defineEmits(['useMessageToReply']);
 
-function sendAck () {
-  try {
-    const msg = buildAck(props.body.distributionID)
-    sendMessage(msg, props.vhost)
-  } catch (error) {
-    console.error("Erreur lors de l'envoi de l'acquittement", error)
-  }
-}
-
-function useMessageToReply () {
-  emit('useMessageToReply', props.body.content[0].jsonContent.embeddedJsonContent.message)
+function useMessageToReply() {
+  // eslint-disable-next-line no-undef
+  emit(
+    'useMessageToReply',
+    props.body.content[0].jsonContent.embeddedJsonContent.message
+  );
 }
 
 const acked = computed(() => {
   // Within Ack messages, check if there is one matching the message
-  return useMainStore().messages.filter(
-    message => getMessageType(message) === 'ack'
-  ).find(
-    message => message.body.content[0].jsonContent.embeddedJsonContent.message.reference.distributionID === props.body.distributionID
-  )
-})
+  return useMainStore()
+    .messages.filter((message) => getMessageType(message) === 'ack')
+    .find(
+      (message) =>
+        getDistributionIdOfAckedMessage(message) === props.body.distributionID
+    );
+});
+
+const sendAck = () => {
+  try {
+    const distributionID = props.body.distributionID;
+    const msg = buildAck(distributionID);
+    sendMessage(msg, props.vhost);
+  } catch (error) {
+    console.error("Erreur lors de l'envoi de l'acquittement", error);
+  }
+};
+
+//on mounted, send ack if autoAckConfig is enabled
+onMounted(() => {
+  if (autoAckConfig.value) {
+    sendAck();
+  }
+});
 </script>
 
 <script>
 export default {
   mixins: [mixinWebsocket],
-  data () {
+  data() {
     return {
       store: useMainStore(),
-      DIRECTIONS
-    }
-  }
-}
+      DIRECTIONS,
+    };
+  },
+};
 </script>
 <style lang="scss">
 // Ref.: https://github.com/chenfengjw163/vue-json-viewer/tree/master#theming
@@ -187,44 +245,44 @@ export default {
   }
 
   .jv-button {
-    color: #49b3ff
+    color: #49b3ff;
   }
 
   .jv-key {
-    color: #111111
+    color: #111111;
   }
 
   .jv-item {
     &.jv-array {
-      color: #111111
+      color: #111111;
     }
 
     &.jv-boolean {
-      color: #fc1e70
+      color: #fc1e70;
     }
 
     &.jv-function {
-      color: #067bca
+      color: #067bca;
     }
 
     &.jv-number {
-      color: #fc1e70
+      color: #fc1e70;
     }
 
     &.jv-number-float {
-      color: #fc1e70
+      color: #fc1e70;
     }
 
     &.jv-number-integer {
-      color: #fc1e70
+      color: #fc1e70;
     }
 
     &.jv-object {
-      color: #111111
+      color: #111111;
     }
 
     &.jv-undefined {
-      color: #e08331
+      color: #e08331;
     }
 
     &.jv-string {
@@ -252,12 +310,14 @@ export default {
   }
 }
 
-.validated>*:last-child {
-  background-color: rgba(76, 175, 80, 0.2)
+.validated {
+  background-color: rgba(76, 175, 80, 0.2);
 }
 
-.selected>*.elevation-4:last-child {
-  box-shadow: 0px 2px 4px -1px rgba(6, 123, 202, 0.6), 0px 4px 5px 0px rgba(6, 123, 202, 0.5), 0px 1px 10px 0px rgba(6, 123, 202, 0.12) !important
+.selected > *.elevation-4:last-child {
+  box-shadow: 0px 2px 4px -1px rgba(6, 123, 202, 0.6),
+    0px 4px 5px 0px rgba(6, 123, 202, 0.5),
+    0px 1px 10px 0px rgba(6, 123, 202, 0.12) !important;
 }
 
 .v-badge__badge {

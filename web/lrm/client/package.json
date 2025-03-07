@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
+    "prepare": "cd ../../.. && husky web/lrm/client/.husky",
     "setup": "npm run cp:schemas && npm run cp:examples",
     "cp:schemas": "rm static/schemas/json-schema/* && cp -R ../../../../SAMU-Hub-Modeles/src/main/resources/json-schema/ static/schemas/",
     "cp:examples": "rm static/examples/* && cp -R ../../../../SAMU-Hub-Modeles/src/main/resources/sample/examples/ static/",
@@ -12,14 +13,16 @@
     "start": "nuxt start",
     "generate": "cross-env NODE_OPTIONS=--openssl-legacy-provider nuxt generate",
     "lint:js": "eslint --ext \".js,.ts,.vue\" --ignore-path .gitignore .",
-    "lint": "npm run lint:js",
-    "lintfix": "npm run lint:js -- --fix"
+    "lint:css": "stylelint \"**/*.{css,scss}\"",
+    "lint": "npm run lint:js && npm run lint:css",
+    "lintfix": "npm run lint:js -- --fix && npm run lint:css -- --fix"
   },
   "dependencies": {
     "@babel/types": "^7.24.7",
     "@koumoul/vjsf": "^3.0.0-beta.43",
     "@koumoul/vjsf-markdown": "^0.2.1",
     "@mdi/font": "^7.4.47",
+    "@nuxtjs/dotenv": "^1.4.2",
     "@pinia/nuxt": "^0.5.1",
     "@types/node": "^20.14.9",
     "ajv-formats": "^2.1.1",
@@ -27,6 +30,8 @@
     "core-js": "^3.37.1",
     "eslint-plugin-vuetify": "^2.4.0",
     "jsonpath": "^1.1.1",
+    "jspdf": "^2.5.2",
+    "jspdf-autotable": "^3.8.4",
     "markdown-it": "^13.0.2",
     "moment": "^2.30.1",
     "nuxt": "^3.12.2",
@@ -44,14 +49,39 @@
   "devDependencies": {
     "@babel/eslint-parser": "^7.24.7",
     "@nuxtjs/eslint-config-typescript": "^12.1.0",
+    "@typescript-eslint/eslint-plugin": "^5.62.0",
+    "@typescript-eslint/parser": "^5.62.0",
     "cross-env": "^7.0.3",
     "cypress": "^13.15.0",
     "cypress-cdp": "^1.5.3",
+    "eslint": "^8.57.1",
+    "eslint-config-prettier": "^8.10.0",
     "eslint-plugin-nuxt": "^4.0.0",
-    "eslint-plugin-vue": "^9.5.1",
+    "eslint-plugin-prettier": "^4.2.1",
+    "eslint-plugin-vue": "^9.32.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.4.2",
     "nuxi": "^3.12.0",
+    "postcss-html": "^1.8.0",
+    "prettier": "^2.8.8",
+    "prettier-plugin-vue": "^1.1.6",
     "sass": "^1.77.8",
+    "stylelint": "^16.13.2",
+    "stylelint-config-recommended-scss": "^14.1.0",
+    "stylelint-config-recommended-vue": "^1.6.0",
+    "stylelint-config-standard": "^37.0.0",
+    "stylelint-scss": "^6.10.1",
     "typescript": "^5.5.3",
     "vuetify": "^3.6.10"
+  },
+  "lint-staged": {
+    "*.{js,ts,vue}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{css,scss}": [
+      "stylelint --fix",
+      "prettier --write"
+    ]
   }
 }

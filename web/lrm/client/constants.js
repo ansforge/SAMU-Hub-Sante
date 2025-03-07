@@ -1,7 +1,7 @@
 export const DIRECTIONS = {
   IN: '←',
-  OUT: '→'
-}
+  OUT: '→',
+};
 export const EDXL_ENVELOPE = {
   distributionID: '{{ fr.health.samuA_2608323d-507d-4cbf-bf74-52007f8124ea }}',
   senderID: '{{ fr.health.samuA }}',
@@ -13,34 +13,39 @@ export const EDXL_ENVELOPE = {
     language: 'fr-FR',
     explicitAddress: {
       explicitAddressScheme: 'hubex',
-      explicitAddressValue: '{{ fr.health.samuB }}'
+      explicitAddressValue: '{{ fr.health.samuB }}',
     },
-    keyword: [{
-      valueListURI: 'urn:hubsante:model',
-      value: '{{ createCase }}'
-    }]
+    keyword: [
+      {
+        valueListURI: 'urn:hubsante:model',
+        value: '{{ createCase }}',
+      },
+    ],
   },
-  content: [{
-    jsonContent: {
-      embeddedJsonContent: {
-        message: {
-          messageId: '{{ 2608323d-507d-4cbf-bf74-52007f8124ea }}',
-          sender: {
-            name: '{{ samuA }}',
-            URI: '{{ hubsante:fr.health.samuA }}'
+  content: [
+    {
+      jsonContent: {
+        embeddedJsonContent: {
+          message: {
+            messageId: '{{ 2608323d-507d-4cbf-bf74-52007f8124ea }}',
+            sender: {
+              name: '{{ samuA }}',
+              URI: '{{ hubsante:fr.health.samuA }}',
+            },
+            sentAt: '{{ 2022-09-27T08:23:34+02:00 }}',
+            status: 'Actual',
+            kind: '{{ Report }}',
+            recipient: [
+              {
+                name: '{{ samuB }}',
+                URI: '{{ hubsante:fr.health.samuB }}',
+              },
+            ],
           },
-          sentAt: '{{ 2022-09-27T08:23:34+02:00 }}',
-          status: 'Actual',
-          kind: '{{ Report }}',
-          recipient: [
-            {
-              name: '{{ samuB }}',
-              URI: '{{ hubsante:fr.health.samuB }}'
-            }
-          ]
-        }
-      }
-    }
-  }]
-}
-export const REPOSITORY_URL = 'https://raw.githubusercontent.com/ansforge/SAMU-Hub-Modeles/'
+        },
+      },
+    },
+  ],
+};
+export const REPOSITORY_URL =
+  'https://raw.githubusercontent.com/ansforge/SAMU-Hub-Modeles/';

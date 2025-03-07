@@ -1,0 +1,9 @@
+echo "Running pre-commit hook"
+
+cd web/lrm/client
+
+echo "Running lint-staged"
+npx lint-staged
+
+echo "Running lintfix"
+npm run lintfix

@@ -1,7 +1,7 @@
 <template>
   <v-container fill-height>
     <v-layout class="d-flex justify-center">
-      <v-col class="login-form text-center " style="max-width: 450px;">
+      <v-col class="login-form text-center" style="max-width: 450px">
         <div class="text-h4 my-10">
           <v-icon class="mr-2" size="small" color="rgb(100,100,100)">
             mdi-heart-pulse
@@ -20,9 +20,7 @@
                 :items="[...clientIds.keys()]"
                 :rules="[rules.required]"
               />
-              <v-icon class="mb-4" @click="swap">
-                mdi-swap-vertical
-              </v-icon>
+              <v-icon class="mb-4" @click="swap"> mdi-swap-vertical </v-icon>
               <v-combobox
                 v-model="form.targetId"
                 label="ID du système cible"
@@ -67,65 +65,81 @@
 </template>
 
 <script setup>
-import { useMainStore } from '~/store'
-
+// eslint-disable-next-line no-undef
 useHead({
-  title: 'Connexion - Hub Santé'
-})
+  title: 'Connexion - Hub Santé',
+});
 </script>
 
 <script>
+import { navigateTo } from 'nuxt/app';
+import { useMainStore } from '~/store';
+import { useAuthStore } from '~/store/auth';
 
 export default {
-
   name: 'Login',
 
-  data () {
+  data() {
     return {
       store: useMainStore(),
       alert: {
         show: false,
         type: 'error',
-        message: ''
+        message: '',
       },
-      clientIds: Object.keys(this.$config.public.clientMap).length === 0 ? new Map() : new Map(this.$config.public.clientMap),
+      clientIds:
+        Object.keys(this.$config.public.clientMap).length === 0
+          ? new Map()
+          : new Map(this.$config.public.clientMap),
       form: {
         clientId: 'fr.health.samuA',
         targetId: 'fr.health.samuC',
-        tester: false
+        tester: false,
       },
       rules: {
-        required: v => !!v || 'This field is required',
+        required: (v) => !!v || 'This field is required',
         testTargetId: (v) => {
-          if (this.form.clientId.startsWith('fr.health.test') && !this.targetClientIds.includes(v)) {
-            return "Tests are only allowed on editor's systems"
+          if (
+            this.form.clientId.startsWith('fr.health.test') &&
+            !this.targetClientIds.includes(v)
+          ) {
+            return "Tests are only allowed on editor's systems";
           }
-          return true
-        }
-      }
-    }
+          return true;
+        },
+      },
+    };
   },
   computed: {
-    targetClientIds () {
-      return this.clientIds.get(this.form.clientId)
-    }
+    targetClientIds() {
+      return this.clientIds.get(this.form.clientId);
+    },
   },
   methods: {
-    async login (target) {
-      if (!(await this.$refs.form.validate()).valid) { return }
-      await this.store.logInUser(this.form)
-      await navigateTo(target)
+    async login(target) {
+      try {
+        const authStore = useAuthStore();
+        await authStore.login(this.form);
+        navigateTo(target);
+      } catch (error) {
+        alert.value = {
+          show: true,
+          type: 'error',
+          message: 'Login failed. Please try again.',
+        };
+      }
+      // eslint-disable-next-line no-undef
     },
-    swap () {
-      const clientId = this.form.clientId
+    swap() {
+      const clientId = this.form.clientId;
       if (this.clientIds.has(this.form.targetId)) {
-        this.form.clientId = this.form.targetId
+        this.form.clientId = this.form.targetId;
       } else {
         // Can only connect as a clientId in the authorized clientIds
-        this.form.clientId = null
+        this.form.clientId = null;
       }
-      this.form.targetId = clientId
-    }
-  }
-}
+      this.form.targetId = clientId;
+    },
+  },
+};
 </script>

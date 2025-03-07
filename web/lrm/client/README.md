@@ -2,16 +2,25 @@
 
 ## Build Setup
 
+- Create a custom a `.env` file with the following content: 
 ```bash
-# install dependencies
-$ npm install
+NUXT_PUBLIC_BACKEND_LRM_SERVER=integration.hub.esante.gouv.fr
+```
 
-# serve with hot reload at localhost:3000
-# N.B: in order to test message sending/reception (without deploying the app in a complete local environment such as minikube) and/or test case interface, it is necessary to define the following environment variables:
-# NUXT_PUBLIC_MODEL_BRANCH: model repository branch with the up-to-date test_cases.json (e.g. "feature/lrm/test-interface-rework")
-# NUXT_PUBLIC_BACKEND_LRM_SERVER: remove backend server (e.g. integration.hub.esante.gouv.fr)
-$ npm run dev
+- Install dependencies
+```bash
+npm install
+```
 
+- Serve with hot reload at [localhost:3000](http://localhost:3000)
+
+```bash
+npm run dev
+```
+
+## Production
+
+```bash
 # build for production and launch server
 $ npm run build
 $ npm run start

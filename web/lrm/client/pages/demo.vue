@@ -1,9 +1,9 @@
 <template>
   <v-row justify="center">
     <v-col cols="12" sm="7">
-      <v-card style="height: 86vh; overflow-y: auto;">
+      <v-card style="height: 86vh; overflow-y: auto">
         <v-card-title class="text-h5 d-flex justify-space-between align-center">
-          Formulaire
+          <span class="mr-5">Formulaire</span>
           <vhost-selector class="mr-5" />
           <send-button @click="submit(store.currentMessage)" />
         </v-card-title>
@@ -15,15 +15,17 @@
             align-tabs="title"
           >
             <v-tabs color="primary" />
-            <v-tab
-              v-for="{label} in store.messageTypes"
-              :key="label"
-            >
+            <v-tab v-for="{ label } in store.messageTypes" :key="label">
               {{ label }}
             </v-tab>
           </v-tabs>
-          <v-window v-model="messageTypeTabIndex" fixed-tabs>
+          <v-window
+            v-if="store.messageTypes.length"
+            v-model="messageTypeTabIndex"
+            fixed-tabs
+          >
             <schema-form
+              v-if="currentMessageType"
               ref="schemaForm"
               :source="source"
               :current-message-type="currentMessageType"
@@ -34,7 +36,7 @@
       </v-card>
     </v-col>
     <v-col cols="12" sm="5">
-      <v-card style="height: 86vh; overflow-y: auto;">
+      <v-card style="height: 86vh; overflow-y: auto">
         <v-card-title class="text-h5 d-flex">
           <span class="mb-4">
             {{ showSentMessagesConfig ? 'Messages' : 'Messages reçus' }}
@@ -50,7 +52,7 @@
           <v-spacer />
           <v-switch
             v-if="store.isAdvanced"
-            v-model="store.autoAckConfig"
+            v-model="authStore.user.autoAck"
             inset
             color="primary"
             :label="'Auto ack'"
@@ -70,7 +72,12 @@
           density="compact"
           mandatory
         >
-          <v-btn v-for="{name, type, icon} in queueTypes" :key="type" :value="type" class="px-4">
+          <v-btn
+            v-for="{ name, type, icon } in queueTypes"
+            :key="type"
+            :value="type"
+            class="px-4"
+          >
             <v-icon start>
               {{ icon }}
             </v-icon>
@@ -117,166 +124,168 @@
 </template>
 
 <script setup>
-import { toRef } from 'vue'
-import { toast } from 'vue3-toastify'
-import { consola } from 'consola'
-import mixinWebsocket from '~/mixins/mixinWebsocket'
-import { REPOSITORY_URL } from '@/constants'
-import { useMainStore } from '~/store'
-import { buildMessage, sendMessage, isOut, getMessageType, getCaseId } from '~/composables/messageUtils.js'
+import { toRef } from 'vue';
+import { toast } from 'vue3-toastify';
+import { consola } from 'consola';
+import mixinWebsocket from '~/mixins/mixinWebsocket';
+import { useMainStore } from '~/store';
+import { useAuthStore } from '@/store/auth';
 
-function submit (form) {
+import {
+  buildMessage,
+  sendMessage,
+  isOut,
+  getMessageType,
+  getCaseId,
+} from '~/composables/messageUtils.js';
+import { loadSchemas } from '~/composables/schemaUtils';
+
+function submit(form) {
   try {
     const data = buildMessage({
-      [useMainStore().currentUseCase]: form
-    })
-    sendMessage(data)
+      [useMainStore().currentUseCase]: form,
+    });
+    sendMessage(data);
   } catch (error) {
-    console.error("Erreur lors de l'envoi du message", error)
+    console.error("Erreur lors de l'envoi du message", error);
   }
 }
 
+// eslint-disable-next-line no-undef
 useHead({
-  titleTemplate: toRef(useMainStore(), 'demoHeadTitle')
-})
+  titleTemplate: toRef(useMainStore(), 'demoHeadTitle'),
+});
 </script>
 
 <script>
 export default {
   name: 'Demo',
   mixins: [mixinWebsocket],
-  beforeRouteEnter (to, from) {
-    // Redirect to parent if we're not authenticated
-    if (!useMainStore().isAuthenticated) {
-      return { name: 'index' }
-    }
-  },
-  data () {
+  data() {
     return {
       config: null,
       source: null,
       store: useMainStore(),
+      authStore: useAuthStore(),
       messageTypeTabIndex: null,
       selectedMessageType: 'message',
       selectedClientId: null,
       selectedCaseIds: [],
-      queueTypes: [{
-        name: 'Message',
-        type: 'message',
-        icon: 'mdi-message'
-      }, {
-        name: 'Ack',
-        type: 'ack',
-        icon: 'mdi-check'
-      }, {
-        name: 'Info',
-        type: 'info',
-        icon: 'mdi-information'
-      }],
-      form: {}
-    }
+      queueTypes: [
+        {
+          name: 'Message',
+          type: 'message',
+          icon: 'mdi-message',
+        },
+        {
+          name: 'Ack',
+          type: 'ack',
+          icon: 'mdi-check',
+        },
+        {
+          name: 'Info',
+          type: 'info',
+          icon: 'mdi-information',
+        },
+      ],
+      form: {},
+    };
   },
   computed: {
-    currentMessageType () {
-      return this.store.messageTypes[this.messageTypeTabIndex]
+    currentMessageType() {
+      return this.store.messageTypes[this.messageTypeTabIndex];
     },
     showSentMessagesConfig: {
-      get () {
-        return this.store.showSentMessages
+      get() {
+        return this.store.showSentMessages;
       },
-      set (value) {
-        this.store.setShowSentMessages(value)
-      }
-    },
-    autoAckConfig: {
-      get () {
-        return this.autoAck
+      set(value) {
+        this.store.setShowSentMessages(value);
       },
-      set (value) {
-        this.store.setAutoAck(value)
-      }
     },
-    clientMessages () {
+    clientMessages() {
       return this.store.messages.filter(
-        message => (
-          (isOut(message.direction) && message.body.senderID === this.store.user.clientId) ||
-          (!isOut(message.direction) && message.routingKey.startsWith(this.store.user.clientId))
-        )
-      )
+        (message) =>
+          (isOut(message.direction) &&
+            message.body.senderID === this.authStore.user.clientId) ||
+          (!isOut(message.direction) &&
+            message.routingKey.startsWith(this.authStore.user.clientId))
+      );
     },
-    showableMessages () {
-      return this.store.showSentMessages ? this.clientMessages : this.clientMessages?.filter(message => !isOut(message.direction))
+    showableMessages() {
+      return this.store.showSentMessages
+        ? this.clientMessages
+        : this.clientMessages?.filter((message) => !isOut(message.direction));
     },
-    selectedTypeMessages () {
-      return this.showableMessages.filter(message => getMessageType(message) === this.selectedMessageType)
+    selectedTypeMessages() {
+      return this.showableMessages.filter(
+        (message) => getMessageType(message) === this.selectedMessageType
+      );
     },
-    selectedVhost () {
-      return this.store.selectedVhost
+    selectedVhost() {
+      return this.store.selectedVhost;
     },
-    selectedTypeCaseMessages () {
+    selectedTypeCaseMessages() {
       if (this.selectedCaseIds.length === 0) {
-        return this.selectedTypeMessages
+        return this.selectedTypeMessages;
       }
-      return this.selectedTypeMessages.filter(
-        message => this.selectedCaseIds.includes(getCaseId(message, true))
-      )
+      return this.selectedTypeMessages.filter((message) =>
+        this.selectedCaseIds.includes(getCaseId(message, true))
+      );
     },
-    messagesSentCount () {
-      return this.clientMessages.filter(message => isOut(message.direction)).length
+    messagesSentCount() {
+      return this.clientMessages.filter((message) => isOut(message.direction))
+        .length;
     },
-    caseIds () {
-      return [...new Set(this.selectedTypeMessages.map(m => getCaseId(m, true)))]
-    }
+    caseIds() {
+      return [
+        ...new Set(this.selectedTypeMessages.map((m) => getCaseId(m, true))),
+      ];
+    },
   },
   watch: {
-    source () {
-      this.updateForm()
+    source() {
+      this.updateForm();
     },
-    currentMessageType () {
-      this.store.selectedSchema = this.store.messageTypes[this.messageTypeTabIndex]
+    currentMessageType() {
+      this.store.selectedSchema =
+        this.store.messageTypes[this.messageTypeTabIndex];
+      this.store.currentUseCase =
+        this.store.messageTypes[this.messageTypeTabIndex].schema.title;
     },
-    selectedVhost () {
-      this.source = this.store.selectedVhost.modelVersion
-    }
+    selectedVhost() {
+      this.source = this.store.selectedVhost.modelVersion;
+    },
   },
-  mounted () {
-    this.source = this.store.selectedVhost.modelVersion
+  mounted() {
+    this.source = this.store.selectedVhost.modelVersion;
   },
   methods: {
-    updateForm () {
+    updateForm() {
       // To automatically generate the UI and input fields based on the JSON Schema
       // We need to wait the acquisition of 'messagesList' before attempting to acquire the schemas
-      this.store.loadMessageTypes(REPOSITORY_URL + this.source + '/src/main/resources/sample/examples/messagesList.json').then(
-        () => this.store.loadSchemas(REPOSITORY_URL + this.source + '/src/main/resources/json-schema/').then(
-          () => {
-            consola.log('messagesList.json and schemas loaded for ' + this.source)
-            this.messageTypeTabIndex = 0
-          }).catch((reason) => {
-          consola.error(reason)
-          toast.error("Erreur lors de l'acquisition des schémas de version " + this.source)
-        })
-      ).catch((reason) => {
-        consola.error(reason)
-        toast.error("Erreur lors de l'acquisition de la liste des schémas de version " + this.source)
-      })
+      loadSchemas().then(() => {
+        consola.log('messagesList.json and schemas loaded for ' + this.source);
+        this.messageTypeTabIndex = 0;
+      });
     },
-    typeMessages (type) {
+    typeMessages(type) {
       return this.showableMessages.filter(
-        message => getMessageType(message) === type
-      )
+        (message) => getMessageType(message) === type
+      );
     },
-
-    useMessageToReply (message) {
+    useMessageToReply(message) {
       // Use message to fill the form
       if (message[this.store.selectedSchema.schema.title]) {
-        this.store.currentMessage = message[this.store.selectedSchema.schema.title]
+        this.store.currentMessage =
+          message[this.store.selectedSchema.schema.title];
       } else {
         // TODO: automatically switch to the corresponding schema?
-        toast.error('Le message ne correspond pas au schéma sélectionné')
+        toast.error('Le message ne correspond pas au schéma sélectionné');
       }
-    }
-  }
-}
+    },
+  },
+};
 </script>
 <style>
 .message {
@@ -284,8 +293,7 @@ export default {
 }
 
 .message-enter, .message-leave-to
-  /* .message-leave-active for <2.1.8 */
-{
+  /* .message-leave-active for <2.1.8 */ {
   opacity: 0;
   transform: scale(0.7) translateY(-500px);
 }
@@ -296,7 +304,7 @@ export default {
 }
 
 .message-leave-active {
-  /*position: absolute;*/
+  /* position: absolute; */
 }
 
 .message-move {
