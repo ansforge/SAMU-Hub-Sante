@@ -50,20 +50,18 @@
             Valider
           </v-btn>
           <v-dialog max-width="500">
-            <template v-slot:activator="{ props: activatorProps }">
+            <template #activator="{ props: activatorProps }">
               <v-btn
                 v-bind="activatorProps"
                 color="surface-variant"
                 variant="flat"
               >
-                <v-icon start>
-                  mdi-github
-                </v-icon>
+                <v-icon start> mdi-github </v-icon>
                 Commit changes
               </v-btn>
             </template>
 
-            <template v-slot:default="{ isActive }">
+            <template #default="{ isActive }">
               <v-card title="Dialog">
                 <v-card-text>
                   <v-switch
@@ -90,12 +88,8 @@
                   />
                 </v-card-text>
                 <v-card-actions>
-                  <v-btn @click="isActive.value = false">
-                    Close Dialog
-                  </v-btn>
-                  <v-btn @click="commitChanges">
-                    Commit
-                  </v-btn>
+                  <v-btn @click="isActive.value = false"> Close Dialog </v-btn>
+                  <v-btn @click="commitChanges"> Commit </v-btn>
                 </v-card-actions>
               </v-card>
             </template>
@@ -124,21 +118,21 @@
 </template>
 
 <script setup>
-import Ajv from 'ajv'
-import { useNuxtApp } from 'nuxt/app'
-import { REPOSITORY_URL } from '@/constants'
-import mixinWebsocket from '~/mixins/mixinWebsocket'
-import { trimEmptyValues } from '~/composables/messageUtils'
-import { useMainStore } from '~/store'
-import { isEnvProd } from '~/composables/envUtils'
+import Ajv from 'ajv';
+import { useNuxtApp } from 'nuxt/app';
+import { REPOSITORY_URL } from '@/constants';
+import mixinWebsocket from '~/mixins/mixinWebsocket';
+import { trimEmptyValues } from '~/composables/messageUtils';
+import { useMainStore } from '~/store';
+import { isEnvProd } from '~/composables/envUtils';
 
 // eslint-disable-next-line no-undef
 useHead({
-  title: 'Json Creator - Hub Santé'
-})
+  title: 'Json Creator - Hub Santé',
+});
 
-const useNewBranch = ref(true)
-
+// eslint-disable-next-line no-undef
+const useNewBranch = ref(true);
 </script>
 
 <script>
@@ -182,8 +176,8 @@ export default {
       ],
       form: {},
       jsonMessagesLoading: false,
-      branchesNames: []
-    }
+      branchesNames: [],
+    };
   },
   computed: {
     currentMessageType() {
@@ -199,8 +193,8 @@ export default {
         this.store.messageTypes[this.messageTypeTabIndex];
     },
   },
-  mounted () {
-    this.fetchBranchesNames()
+  mounted() {
+    this.fetchBranchesNames();
   },
   methods: {
     updateForm() {
@@ -272,11 +266,16 @@ export default {
         ];
       }
     },
-    async fetchBranchesNames () {
-      this.branchesNames = await $fetch(`${isEnvProd() ? 'https' : 'http'}://${this.$config.public.backendLrmServer}/modeles/branches`)
+    async fetchBranchesNames() {
+      // eslint-disable-next-line no-undef
+      this.branchesNames = await $fetch(
+        `${isEnvProd() ? 'https' : 'http'}://${
+          this.$config.public.backendLrmServer
+        }/modeles/branches`
+      );
     },
-    updateCurrentMessage (form) {
-      this.store.currentMessage = form
+    updateCurrentMessage(form) {
+      this.store.currentMessage = form;
     },
     clearToasts() {
       for (const toastId of this.toasts) {
@@ -304,37 +303,56 @@ export default {
     saveMessage() {
       // Download as file | Ref.: https://stackoverflow.com/a/34156339
       // JSON pretty-print | Ref.: https://stackoverflow.com/a/7220510
-      const data = JSON.stringify(trimEmptyValues({ [this.currentMessageType?.schema?.title]: this.store.currentMessage }), null, 2)
-      const a = document.createElement('a')
-      const file = new Blob([data], { type: 'application/json' })
-      a.href = URL.createObjectURL(file)
-      a.download = `${this.currentMessageType?.label}-message.json`
-      a.click()
+      const data = JSON.stringify(
+        trimEmptyValues({
+          [this.currentMessageType?.schema?.title]: this.store.currentMessage,
+        }),
+        null,
+        2
+      );
+      const a = document.createElement('a');
+      const file = new Blob([data], { type: 'application/json' });
+      a.href = URL.createObjectURL(file);
+      a.download = `${this.currentMessageType?.label}-message.json`;
+      a.click();
     },
-    async commitChanges () {
-      const password = prompt('Enter admin password')
-      const data = JSON.stringify(trimEmptyValues({ [this.currentMessageType?.schema?.title]: this.store.currentMessage }), null, 2)
-      await $fetch(`${isEnvProd() ? 'https' : 'http'}://${this.$config.public.backendLrmServer}/modeles`, {
-        method: 'POST',
-        body: JSON.stringify({
-          password,
-          fileName: this.currentMessageType.examples[this.messageTypeTabIndex].file,
-          content: data,
-          branchConfig: this.useNewBranch
-            ? {
-                isNewBranch: true,
-                baseBranch: this.baseBranch,
-                branch: this.newBranch
-              }
-            : {
-                isNewBranch: false,
-                branch: this.selectedBranch
-              }
-        })
-      })
-    }
-  }
-}
+    async commitChanges() {
+      const password = prompt('Enter admin password');
+      const data = JSON.stringify(
+        trimEmptyValues({
+          [this.currentMessageType?.schema?.title]: this.store.currentMessage,
+        }),
+        null,
+        2
+      );
+      // eslint-disable-next-line no-undef
+      await $fetch(
+        `${isEnvProd() ? 'https' : 'http'}://${
+          this.$config.public.backendLrmServer
+        }/modeles`,
+        {
+          method: 'POST',
+          body: JSON.stringify({
+            password,
+            fileName:
+              this.currentMessageType.examples[this.messageTypeTabIndex].file,
+            content: data,
+            branchConfig: this.useNewBranch
+              ? {
+                  isNewBranch: true,
+                  baseBranch: this.baseBranch,
+                  branch: this.newBranch,
+                }
+              : {
+                  isNewBranch: false,
+                  branch: this.selectedBranch,
+                },
+          }),
+        }
+      );
+    },
+  },
+};
 </script>
 
 <style lang="scss">
