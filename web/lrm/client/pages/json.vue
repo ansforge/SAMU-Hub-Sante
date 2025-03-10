@@ -65,18 +65,18 @@
               <v-card title="Dialog">
                 <v-card-text>
                   <v-switch
-                    v-model="useNewBranch"
+                    v-model="isExistingBranchSelected"
                     color="primary"
                     label="Use new branch ?"
                   />
                   <v-combobox
-                    v-if="useNewBranch"
+                    v-if="isExistingBranchSelected"
                     v-model="baseBranch"
                     label="Select base branch"
                     :items="branchesNames"
                   />
                   <v-text-field
-                    v-if="useNewBranch"
+                    v-if="isExistingBranchSelected"
                     v-model="newBranch"
                     label="New branch name"
                   />
@@ -132,7 +132,7 @@ useHead({
 });
 
 // eslint-disable-next-line no-undef
-const useNewBranch = ref(true);
+const isExistingBranchSelected = ref(true);
 </script>
 
 <script>
@@ -337,7 +337,7 @@ export default {
             fileName:
               this.currentMessageType.examples[this.messageTypeTabIndex].file,
             content: data,
-            branchConfig: this.useNewBranch
+            branchConfig: this.isExistingBranchSelected
               ? {
                   isNewBranch: true,
                   baseBranch: this.baseBranch,

@@ -38,15 +38,15 @@ const commitModelesChanges = async (req, res) => {
     password,
   } = req.body;
 
+  if (password !== config.ADMIN_PASSWORD) {
+    res.status(404).json({ message: 'Unauthorized' });
+    return;
+  }
+
   try {
     validatePayload(req.body);
   } catch (err) {
     res.status(403).json({ message: err.message });
-    return;
-  }
-
-  if (password !== config.ADMIN_PASSWORD) {
-    res.status(404).json({ message: 'Unauthorized' });
     return;
   }
 
