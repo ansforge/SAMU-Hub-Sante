@@ -39,7 +39,7 @@ const commitModelesChanges = async (req, res) => {
   } = req.body;
 
   if (password !== config.ADMIN_PASSWORD) {
-    res.status(404).json({ message: 'Unauthorized' });
+    res.status(401).json({ message: 'Unauthorized' });
     return;
   }
 
