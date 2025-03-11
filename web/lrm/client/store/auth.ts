@@ -9,9 +9,18 @@ type User = {
   autoAck: boolean;
 };
 
+const initialUser: User = {
+  clientId: '',
+  targetId: '',
+  tester: false,
+  advanced: false,
+  showSentMessages: false,
+  autoAck: false,
+};
+
 export const useAuthStore = defineStore('auth', {
   state: () => ({
-    user: null as User | null,
+    user: initialUser,
   }),
 
   getters: {
@@ -29,7 +38,7 @@ export const useAuthStore = defineStore('auth', {
     },
 
     logout() {
-      this.user = null;
+      this.user = initialUser;
       navigateTo('/');
     },
   },
