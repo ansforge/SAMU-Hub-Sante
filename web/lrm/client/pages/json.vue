@@ -4,7 +4,10 @@
       <v-card style="height: 86vh; overflow-y: auto">
         <v-card-title class="text-h5 d-flex align-center">
           Formulaire
-          <source-selector @source-changed="source = $event" />
+          <source-selector
+            :branch-names="branchesNames"
+            @source-changed="source = $event"
+          />
           <v-btn
             icon="mdi-reload"
             density="compact"
