@@ -90,6 +90,7 @@
                     v-if="isExistingBranchSelected"
                     v-model="newBranch"
                     label="New branch name"
+                    :prefix="VALID_BRANCH_PREFIX"
                   />
                   <v-text-field
                     v-else
@@ -146,13 +147,12 @@ import { isEnvProd } from '~/composables/envUtils';
 useHead({
   title: 'Json Creator - Hub Santé',
 });
-
-// eslint-disable-next-line no-undef
-const isExistingBranchSelected = ref(true);
 </script>
 
 <script>
 import { consola } from 'consola';
+
+const VALID_BRANCH_PREFIX = 'auto-json-creator/';
 
 export default {
   name: 'JsonCreator',
@@ -194,6 +194,7 @@ export default {
       jsonMessagesLoading: false,
       branchesNames: [],
       newBranch: '',
+      isExistingBranchSelected: false,
     };
   },
   computed: {
@@ -359,7 +360,7 @@ export default {
                 ? {
                     isNewBranch: true,
                     baseBranch: this.source,
-                    branch: this.newBranch,
+                    branch: `${VALID_BRANCH_PREFIX}${this.newBranch}`,
                   }
                 : {
                     isNewBranch: false,
