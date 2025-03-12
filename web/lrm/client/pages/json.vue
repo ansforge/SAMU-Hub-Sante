@@ -325,31 +325,36 @@ export default {
         null,
         2
       );
-      // eslint-disable-next-line no-undef
-      await $fetch(
-        `${isEnvProd() ? 'https' : 'http'}://${
-          this.$config.public.backendLrmServer
-        }/modeles`,
-        {
-          method: 'POST',
-          body: JSON.stringify({
-            password,
-            fileName:
-              this.currentMessageType.examples[this.messageTypeTabIndex].file,
-            content: data,
-            branchConfig: this.isExistingBranchSelected
-              ? {
-                  isNewBranch: true,
-                  baseBranch: this.baseBranch,
-                  branch: this.newBranch,
-                }
-              : {
-                  isNewBranch: false,
-                  branch: this.selectedBranch,
-                },
-          }),
-        }
-      );
+      try {
+        // eslint-disable-next-line no-undef
+        await $fetch(
+          `${isEnvProd() ? 'https' : 'http'}://${
+            this.$config.public.backendLrmServer
+          }/modeles`,
+          {
+            method: 'POST',
+            body: JSON.stringify({
+              password,
+              fileName:
+                this.currentMessageType.examples[this.messageTypeTabIndex].file,
+              content: data,
+              branchConfig: this.isExistingBranchSelected
+                ? {
+                    isNewBranch: true,
+                    baseBranch: this.baseBranch,
+                    branch: this.newBranch,
+                  }
+                : {
+                    isNewBranch: false,
+                    branch: this.selectedBranch,
+                  },
+            }),
+          }
+        );
+        this.toasts.push(this.app.$toast.success('Le commit a été effectué.'));
+      } catch (err) {
+        this.toasts.push(this.app.$toast.error(err.data.message));
+      }
     },
   },
 };

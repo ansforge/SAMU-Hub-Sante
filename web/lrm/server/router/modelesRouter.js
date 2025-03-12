@@ -50,20 +50,30 @@ const commitModelesChanges = async (req, res) => {
     return;
   }
 
-  if (branchConfig.isNewBranch) {
-    await createNewBranch({
-      baseBranch: branchConfig.baseBranch,
-      newBranch: branchConfig.branch,
+  try {
+    if (branchConfig.isNewBranch) {
+      await createNewBranch({
+        baseBranch: branchConfig.baseBranch,
+        newBranch: branchConfig.branch,
+      });
+    }
+
+    const result = await commitModelesChangesToExistingBranch({
+      branch: branchConfig.branch,
+      fileName,
+      content,
     });
+
+    res.status(200).json({ message: 'Commit created', data: result });
+  } catch (err) {
+    res
+      .status(500)
+      .json(
+        `An unexpected error happend: ${
+          err.message || 'Internal Server Error'
+        }`,
+      );
   }
-
-  const result = await commitModelesChangesToExistingBranch({
-    branch: branchConfig.branch,
-    fileName,
-    content,
-  });
-
-  res.status(200).json({ message: 'Commit created', data: result });
 };
 
 const ModelesRouter = express.Router();
