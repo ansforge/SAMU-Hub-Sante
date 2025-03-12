@@ -65,7 +65,15 @@
             </template>
 
             <template #default="{ isActive }">
-              <v-card title="Dialog">
+              <v-card title="Commit les changements">
+                <template #append>
+                  <v-btn
+                    icon="mdi-close"
+                    density="comfortable"
+                    variant="text"
+                    @click="isActive.value = false"
+                  ></v-btn>
+                </template>
                 <v-card-text>
                   <v-switch
                     v-model="isExistingBranchSelected"
@@ -91,8 +99,13 @@
                   />
                 </v-card-text>
                 <v-card-actions>
-                  <v-btn @click="isActive.value = false"> Close Dialog </v-btn>
-                  <v-btn @click="commitChanges"> Commit </v-btn>
+                  <v-btn
+                    variant="flat"
+                    color="surface-variant"
+                    @click="commitChanges"
+                  >
+                    Commit
+                  </v-btn>
                 </v-card-actions>
               </v-card>
             </template>
@@ -180,6 +193,7 @@ export default {
       form: {},
       jsonMessagesLoading: false,
       branchesNames: [],
+      newBranch: '',
     };
   },
   computed: {
