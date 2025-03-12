@@ -7,7 +7,8 @@
     "dev": "nodemon -r dotenv/config index.js",
     "prestart": "npm install",
     "start": "node index.js",
-    "setup": "cd ../client && npm ci && npm run setup && npm run generate && cp -R dist/. ../server/ui"
+    "setup": "cd ../client && npm ci && npm run setup && npm run generate && cp -R dist/. ../server/ui",
+    "test": "jest"
   },
   "keywords": [],
   "author": "",
@@ -27,6 +28,7 @@
     "eslint": "^8.56.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-plugin-import": "^2.29.1",
+    "jest": "^29.7.0",
     "nodemon": "^3.0.2"
   },
   "eslintConfig": {
