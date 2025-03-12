@@ -19,8 +19,8 @@ target/
 
 python/templates/4. tls/cert/
 
-# Certificates
-certs/
+## Certificates
+#certs/
 
 # personal application.properties
 hub/dispatcher/src/main/resources/*.properties
