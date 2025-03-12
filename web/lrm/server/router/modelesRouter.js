@@ -4,6 +4,9 @@ const { getModelesBranchNames, createNewBranch, commitModelesChangesToExistingBr
 
 const VALIDATION_ERROR_MESSAGE = 'Missing mandatory attribute in payload';
 
+const AUTHORIZED_BRANCH_PATTERN = /auto-json-creator\/.*/;
+const AUTHORIZED_BRANCH_ERROR_MESSAGE = 'Invalid branch name';
+
 const getModelesBranchesHandler = async (_, res) => {
   const branchNames = await getModelesBranchNames();
   res.status(200).json(branchNames);
@@ -22,11 +25,31 @@ const validatePayload = (body) => {
   if (!body.branchConfig.branch) {
     throw new Error(`${VALIDATION_ERROR_MESSAGE}: branchConfig.branch (branch to update)`);
   }
+  // Check the branchConfig.branch name matching the authorized pattern
+  // only if therer is no new branch in branchConfig (to avoid direct
+  // commit on unauthorized branch)
+  if (
+    !body.branchConfig.isNewBranch
+    && !body.branchConfig.branch.match(AUTHORIZED_BRANCH_PATTERN)
+  ) {
+    throw new Error(
+      `${AUTHORIZED_BRANCH_ERROR_MESSAGE}: branchConfig.branch must match "${AUTHORIZED_BRANCH_PATTERN}"`,
+    );
+  }
   if (body.branchConfig.isNewBranch === undefined) {
     throw new Error(`${VALIDATION_ERROR_MESSAGE}: branchConfig.isNewBranch (branch to update)`);
   }
-  if (body.branchConfig.isNewBranch && !body.branchConfig.newBranch) {
-    throw new Error(`${VALIDATION_ERROR_MESSAGE}: branchConfig.newBranch (required because branchConfig.isNewBranch is set to true)`);
+  if (body.branchConfig.isNewBranch) {
+    if (!body.branchConfig.newBranch) {
+      throw new Error(
+        `${VALIDATION_ERROR_MESSAGE}: branchConfig.newBranch (required because branchConfig.isNewBranch is set to true)`,
+      );
+    }
+    if (!body.branchConfig.newBranch.match(AUTHORIZED_BRANCH_PATTERN)) {
+      throw new Error(
+        `${AUTHORIZED_BRANCH_ERROR_MESSAGE}: branchConfig.newBranch must match "${AUTHORIZED_BRANCH_PATTERN}"`,
+      );
+    }
   }
 };
 
@@ -68,11 +91,11 @@ const commitModelesChanges = async (req, res) => {
   } catch (err) {
     res
       .status(500)
-      .json(
-        `An unexpected error happend: ${
+      .json({
+        message: `An unexpected error happend: ${
           err.message || 'Internal Server Error'
         }`,
-      );
+      });
   }
 };
 
