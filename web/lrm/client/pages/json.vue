@@ -72,22 +72,22 @@
                     color="primary"
                     label="Use new branch ?"
                   />
-                  <v-combobox
+                  <v-text-field
                     v-if="isExistingBranchSelected"
-                    v-model="baseBranch"
-                    label="Select base branch"
-                    :items="branchesNames"
+                    v-model="source"
+                    readonly
+                    label="Selected base branch"
                   />
                   <v-text-field
                     v-if="isExistingBranchSelected"
                     v-model="newBranch"
                     label="New branch name"
                   />
-                  <v-combobox
+                  <v-text-field
                     v-else
-                    v-model="selectedBranch"
-                    label="Select existing branch"
-                    :items="branchesNames"
+                    v-model="source"
+                    readonly
+                    label="Selected existing branch"
                   />
                 </v-card-text>
                 <v-card-actions>
@@ -344,12 +344,12 @@ export default {
               branchConfig: this.isExistingBranchSelected
                 ? {
                     isNewBranch: true,
-                    baseBranch: this.baseBranch,
+                    baseBranch: this.source,
                     branch: this.newBranch,
                   }
                 : {
                     isNewBranch: false,
-                    branch: this.selectedBranch,
+                    branch: this.source,
                   },
             }),
           }
