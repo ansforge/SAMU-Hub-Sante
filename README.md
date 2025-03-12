@@ -12,10 +12,15 @@
 
 ## Usage
 
-Vous êtes un éditeur et vous souhaitez vous raccorder au Hub Santé -> rendez-vous sur votre page dédiée [`docs/`](docs/README.md)
+Vous êtes un éditeur et vous souhaitez vous raccorder au Hub Santé -> rendez-vous sur [votre page dédiée](https://hub.esante.gouv.fr/pages/accompagnement.html)
 
 Vous êtes un développeur et vous voulez contribuez ou reproduire le Hub Santé -> rendez-vous sur la page développeur [`hub/`](hub/README.md) 
 
+## 📚 Architecture
+- [`clients/`](clients) contient l'implémentation de clients en Java, en consommation et en publication.
+    - Ce client Java nous permet de tester notre infrastructure et peut vous servir de base ou d'exemple pour votre implémentation
+- [`hub/`](hub) contient l'implémentation du composant de routage du Hub Santé (Dispatcher)
+- 
 ## Auteur
 
 👤 **ANS > Equipe Hub Santé**
