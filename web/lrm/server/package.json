@@ -8,7 +8,9 @@
     "prestart": "npm install",
     "start": "node index.js",
     "setup": "cd ../client && npm ci && npm run setup && npm run generate && cp -R dist/. ../server/ui",
-    "test": "jest"
+    "test": "jest",
+    "lint": "eslint --ext \".js\" .",
+    "lint:fix": "npm run lint -- --fix"
   },
   "keywords": [],
   "author": "",

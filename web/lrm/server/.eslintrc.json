@@ -2,7 +2,17 @@
 // Copy this file, and add rule overrides as needed.
 {
   "extends": "airbnb-base",
+  // TODO: fix errors in expressServer.js and remove it from ignoredFiles
+  "ignorePatterns": ["jest.config.js", "expressServer.js"],
   "rules": {
     "no-console": "off"
-  }
+  },
+  "overrides": [
+    {
+      "files": ["*/**/*.test.js"],
+      "env": {
+        "jest": true
+      }
+    }
+  ]
 }
