@@ -105,4 +105,4 @@ ModelesRouter.get('/branches', getModelesBranchesHandler);
 
 ModelesRouter.post('/', commitModelesChanges);
 
-module.exports = ModelesRouter;
+module.exports = { ModelesRouter, validatePayload };

@@ -11,7 +11,7 @@ const {
   connect, connectAsync, close, computeVhostFromMessage,
   HUB_SANTE_EXCHANGE, DEMO_CLIENT_IDS, VHOSTS, messageProperties,
 } = require('./rabbit/utils');
-const ModelesRouter = require('./router/modelesRouter');
+const { ModelesRouter } = require('./router/modelesRouter');
 
 class ExpressServer {
   constructor(port) {
