@@ -101,7 +101,7 @@ const commitModelesChanges = async (req, res) => {
     let pullRequestUrl;
 
     if (branchConfig.isNewBranch) {
-      const { url } = await createPullRequest({
+      const { html_url: url } = await createPullRequest({
         headBranch: branchConfig.branch,
         baseBranch: branchConfig.baseBranch,
       });
@@ -111,7 +111,7 @@ const commitModelesChanges = async (req, res) => {
         headBranch: branchConfig.branch,
         baseBranch: branchConfig.baseBranch,
       });
-      pullRequestUrl = pullRequests[0].url;
+      pullRequestUrl = pullRequests[0].html_url;
     }
 
     res.status(200).json({

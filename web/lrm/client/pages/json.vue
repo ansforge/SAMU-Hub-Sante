@@ -101,8 +101,18 @@
                 </v-card-text>
                 <v-card-actions>
                   <v-btn
+                    v-if="openedPullRequestLink"
+                    color="primary"
+                    variant="text"
+                    :href="openedPullRequestLink"
+                    target="_blank"
+                  >
+                    Open pull request
+                  </v-btn>
+                  <v-btn
                     variant="flat"
                     color="surface-variant"
+                    :loading="isCommiting"
                     @click="commitChanges"
                   >
                     Commit
@@ -195,6 +205,8 @@ export default {
       branchesNames: [],
       newBranch: '',
       isExistingBranchSelected: false,
+      isCommiting: false,
+      openedPullRequestLink: '',
     };
   },
   computed: {
@@ -343,9 +355,10 @@ export default {
         null,
         2
       );
+      this.isCommiting = true;
       try {
         // eslint-disable-next-line no-undef
-        await $fetch(
+        const commitResponse = await $fetch(
           `${isEnvProd() ? 'https' : 'http'}://${
             this.$config.public.backendLrmServer
           }/modeles`,
@@ -369,9 +382,12 @@ export default {
             }),
           }
         );
+        this.openedPullRequestLink = commitResponse.data.pull_request_url;
         this.toasts.push(this.app.$toast.success('Le commit a été effectué.'));
       } catch (err) {
         this.toasts.push(this.app.$toast.error(err.data.message));
+      } finally {
+        this.isCommiting = false;
       }
     },
   },
