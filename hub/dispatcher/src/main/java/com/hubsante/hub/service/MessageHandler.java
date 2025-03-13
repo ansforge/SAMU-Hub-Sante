@@ -66,6 +66,8 @@ public class MessageHandler {
     @Qualifier("jsonMapper")
     private ObjectMapper jsonMapper;
 
+    private final static boolean DEFAULT_USE_XML_PREFERENCE = false;
+
     public MessageHandler(RabbitTemplate rabbitTemplate, EdxlHandler edxlHandler, HubConfiguration hubConfig, Validator validator, MeterRegistry registry, XmlMapper xmlMapper, ObjectMapper jsonMapper) {
         this.rabbitTemplate = rabbitTemplate;
         this.edxlHandler = edxlHandler;
@@ -130,7 +132,7 @@ public class MessageHandler {
         try {
             EdxlMessage errorEdxlMessage = edxlMessageFromHub(sender, wrapper);
             Message errorAmqpMessage;
-            if (convertToXML(sender, hubConfig.getUseXmlPreferences().getOrDefault(sender, false))) {
+            if (convertToXML(sender, hubConfig.getUseXmlPreferences().getOrDefault(sender, DEFAULT_USE_XML_PREFERENCE))) {
                 errorAmqpMessage = new Message(edxlHandler.serializeXmlEDXL(errorEdxlMessage).getBytes(),
                         MessagePropertiesBuilder.newInstance().setContentType(MessageProperties.CONTENT_TYPE_XML).build());
             } else {
@@ -253,7 +255,7 @@ public class MessageHandler {
         String edxlString;
 
         try {
-            if (convertToXML(recipientID, hubConfig.getUseXmlPreferences().getOrDefault(recipientID, false))) {
+            if (convertToXML(recipientID, hubConfig.getUseXmlPreferences().getOrDefault(recipientID, DEFAULT_USE_XML_PREFERENCE))) {
                 edxlString = edxlHandler.serializeXmlEDXL(edxlMessage);
                 fwdAmqpProperties.setContentType(MessageProperties.CONTENT_TYPE_XML);
             } else {

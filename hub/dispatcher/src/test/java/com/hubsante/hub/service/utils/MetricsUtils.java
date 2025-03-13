@@ -36,38 +36,29 @@ public class MetricsUtils {
     }
 
     public static double getOverallCounterForClient(MeterRegistry registry, String sender) {
-        AtomicReference<Double> overall = new AtomicReference<>(0.0);
-        registry.forEachMeter(meter -> {
-            if (meter.getId().getTags().contains(Tag.of(CLIENT_ID_TAG, sender))) {
-                Counter counter = registry.find(DISPATCH_ERROR).tags(meter.getId().getTags()).counter();
-                double meterValue = counter != null ? counter.count() : 0.0;
-                overall.set(overall.get() + meterValue);
-            }
-        });
-        return overall.get();
+        return registry.get(DISPATCH_ERROR)
+                .tag(CLIENT_ID_TAG, sender)
+                .counters()
+                .stream()
+                .mapToDouble(Counter::count)
+                .sum();
     }
 
     public static double getOverallCounterForEditor(MeterRegistry registry, String editor) {
-        AtomicReference<Double> overall = new AtomicReference<>(0.0);
-        registry.forEachMeter(meter -> {
-            if (meter.getId().getTags().contains(Tag.of(EDITOR_TAG, editor))) {
-                Counter counter = registry.find(DISPATCH_ERROR).tags(meter.getId().getTags()).counter();
-                double meterValue = counter != null ? counter.count() : 0.0;
-                overall.set(overall.get() + meterValue);
-            }
-        });
-        return overall.get();
+        return registry.get(DISPATCH_ERROR)
+                .tag(EDITOR_TAG, editor)
+                .counters()
+                .stream()
+                .mapToDouble(Counter::count)
+                .sum();
     }
 
     public static double getOverallCounterForError(MeterRegistry registry, String reason) {
-        AtomicReference<Double> overall = new AtomicReference<>(0.0);
-        registry.forEachMeter(meter -> {
-            if (meter.getId().getTags().contains(Tag.of(REASON_TAG, reason))) {
-                Counter counter = registry.find(DISPATCH_ERROR).tags(meter.getId().getTags()).counter();
-                double meterValue = counter != null ? counter.count() : 0.0;
-                overall.set(overall.get() + meterValue);
-            }
-        });
-        return overall.get();
+        return registry.get(DISPATCH_ERROR)
+                .tag(REASON_TAG, reason)
+                .counters()
+                .stream()
+                .mapToDouble(Counter::count)
+                .sum();
     }
 }

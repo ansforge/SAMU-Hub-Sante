@@ -24,6 +24,9 @@ import static com.hubsante.hub.utils.MessageUtils.HEALTH_PREFIX;
 import static com.hubsante.hub.utils.MessageUtils.getRecipientID;
 
 public class ConversionUtils {
+
+    private final static boolean DEFAULT_DIRECT_CISU_PREFERENCE = false;
+
     public static boolean requiresCisuConversion(HubConfiguration hubConfig, EdxlMessage edxlMessage) {
         return isCisuExchange(edxlMessage) && 
                isConvertedModel(edxlMessage) &&
@@ -50,7 +53,7 @@ public class ConversionUtils {
         String recipientID = getRecipientID(edxlMessage);
         String senderID = edxlMessage.getSenderID();
         String healthActor = senderID.startsWith(HEALTH_PREFIX) ? senderID : recipientID;
-        Boolean directCisuPreference = hubConfig.getDirectCisuPreferences().getOrDefault(healthActor, false);
+        Boolean directCisuPreference = hubConfig.getDirectCisuPreferences().getOrDefault(healthActor, DEFAULT_DIRECT_CISU_PREFERENCE);
         return directCisuPreference != null && directCisuPreference;
     }
 }
