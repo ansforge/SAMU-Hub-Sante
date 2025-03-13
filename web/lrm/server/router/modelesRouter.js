@@ -26,7 +26,7 @@ const validatePayload = (body) => {
     throw new Error(`${VALIDATION_ERROR_MESSAGE}: branchConfig.branch (branch to update)`);
   }
   // Check the branchConfig.branch name matching the authorized pattern
-  // only if therer is no new branch in branchConfig (to avoid direct
+  // only if there is no new branch in branchConfig (to avoid direct
   // commit on unauthorized branch)
   if (
     !body.branchConfig.isNewBranch
@@ -40,14 +40,14 @@ const validatePayload = (body) => {
     throw new Error(`${VALIDATION_ERROR_MESSAGE}: branchConfig.isNewBranch (branch to update)`);
   }
   if (body.branchConfig.isNewBranch) {
-    if (!body.branchConfig.newBranch) {
+    if (!body.branchConfig.branch) {
       throw new Error(
-        `${VALIDATION_ERROR_MESSAGE}: branchConfig.newBranch (required because branchConfig.isNewBranch is set to true)`,
+        `${VALIDATION_ERROR_MESSAGE}: branchConfig.branch (required because branchConfig.isNewBranch is set to true)`,
       );
     }
-    if (!body.branchConfig.newBranch.match(AUTHORIZED_BRANCH_PATTERN)) {
+    if (!body.branchConfig.branch.match(AUTHORIZED_BRANCH_PATTERN)) {
       throw new Error(
-        `${AUTHORIZED_BRANCH_ERROR_MESSAGE}: branchConfig.newBranch must match "${AUTHORIZED_BRANCH_PATTERN}"`,
+        `${AUTHORIZED_BRANCH_ERROR_MESSAGE}: branchConfig.branch must match "${AUTHORIZED_BRANCH_PATTERN}"`,
       );
     }
   }

@@ -14,8 +14,8 @@ const generateValidInputWithNewBranch = () => {
   const result = generateValidInput();
   result.branchConfig = {
     isNewBranch: true,
-    branch: 'mock-branch-name',
-    newBranch: 'auto-json-creator/mock-branch-name',
+    baseBranch: 'mock-branch-name',
+    branch: 'auto-json-creator/mock-branch-name',
   };
   return result;
 };
@@ -40,16 +40,16 @@ describe('modelesRouter - validatePayload', () => {
     expect(() => validatePayload(input)).not.toThrow();
   });
 
-  it('throws when isNewBranch is true and no newBranchName is porvided', () => {
+  it('throws when isNewBranch is true and no newBranchName is provided', () => {
     const input = generateValidInputWithNewBranch();
-    delete input.branchConfig.newBranch;
+    delete input.branchConfig.branch;
 
     expect(() => validatePayload(input)).toThrow();
   });
 
   it('throws when isNewBranch is true and new branch name is invalid', () => {
     const input = generateValidInputWithNewBranch();
-    input.branchConfig.newBranch = 'invalid-branch-name';
+    input.branchConfig.branch = 'invalid-branch-name';
 
     expect(() => validatePayload(input)).toThrow();
   });
