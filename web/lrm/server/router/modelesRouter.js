@@ -1,6 +1,12 @@
 const express = require('express');
 const config = require('../config');
-const { getModelesBranchNames, createNewBranch, commitModelesChangesToExistingBranch } = require('../service/modeles');
+const {
+  getModelesBranchNames,
+  createNewBranch,
+  commitModelesChangesToExistingBranch,
+  createPullRequest,
+  findExistingPullRequest,
+} = require('../service/modeles');
 
 const VALIDATION_ERROR_MESSAGE = 'Missing mandatory attribute in payload';
 
@@ -14,16 +20,22 @@ const getModelesBranchesHandler = async (_, res) => {
 
 const validatePayload = (body) => {
   if (!body.fileName) {
-    throw new Error(`${VALIDATION_ERROR_MESSAGE}: fileName (name of the file to update)`);
+    throw new Error(
+      `${VALIDATION_ERROR_MESSAGE}: fileName (name of the file to update)`,
+    );
   }
   if (!body.content) {
-    throw new Error(`${VALIDATION_ERROR_MESSAGE}: content (content of the file to update)`);
+    throw new Error(
+      `${VALIDATION_ERROR_MESSAGE}: content (content of the file to update)`,
+    );
   }
   if (!body.branchConfig) {
     throw new Error(`${VALIDATION_ERROR_MESSAGE}: branchConfig`);
   }
   if (!body.branchConfig.branch) {
-    throw new Error(`${VALIDATION_ERROR_MESSAGE}: branchConfig.branch (branch to update)`);
+    throw new Error(
+      `${VALIDATION_ERROR_MESSAGE}: branchConfig.branch (branch to update)`,
+    );
   }
   // Check the branchConfig.branch name matching the authorized pattern
   // only if there is no new branch in branchConfig (to avoid direct
@@ -37,7 +49,9 @@ const validatePayload = (body) => {
     );
   }
   if (body.branchConfig.isNewBranch === undefined) {
-    throw new Error(`${VALIDATION_ERROR_MESSAGE}: branchConfig.isNewBranch (branch to update)`);
+    throw new Error(
+      `${VALIDATION_ERROR_MESSAGE}: branchConfig.isNewBranch (branch to update)`,
+    );
   }
   if (body.branchConfig.isNewBranch) {
     if (!body.branchConfig.branch) {
@@ -55,10 +69,7 @@ const validatePayload = (body) => {
 
 const commitModelesChanges = async (req, res) => {
   const {
-    fileName,
-    content,
-    branchConfig,
-    password,
+    fileName, content, branchConfig, password,
   } = req.body;
 
   if (password !== config.ADMIN_PASSWORD) {
@@ -87,15 +98,35 @@ const commitModelesChanges = async (req, res) => {
       content,
     });
 
-    res.status(200).json({ message: 'Commit created', data: result });
-  } catch (err) {
-    res
-      .status(500)
-      .json({
-        message: `An unexpected error happend: ${
-          err.message || 'Internal Server Error'
-        }`,
+    let pullRequestUrl;
+
+    if (branchConfig.isNewBranch) {
+      const { url } = await createPullRequest({
+        headBranch: branchConfig.branch,
+        baseBranch: branchConfig.baseBranch,
       });
+      pullRequestUrl = url;
+    } else {
+      const pullRequests = await findExistingPullRequest({
+        headBranch: branchConfig.branch,
+        baseBranch: branchConfig.baseBranch,
+      });
+      pullRequestUrl = pullRequests[0].url;
+    }
+
+    res.status(200).json({
+      message: 'Commit created',
+      data: {
+        pull_request_url: pullRequestUrl,
+        commit_sha: result.commit.sha,
+      },
+    });
+  } catch (err) {
+    res.status(500).json({
+      message: `An unexpected error happend: ${
+        err.message || 'Internal Server Error'
+      }`,
+    });
   }
 };
 
