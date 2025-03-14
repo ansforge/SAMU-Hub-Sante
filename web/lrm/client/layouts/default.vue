@@ -153,10 +153,12 @@ html {
 
 .alerts {
   position: fixed;
-  bottom: 5%;
-  right: 5%;
+  top: 2%;
+  right: 0;
+  left: 0;
   z-index: 9999999;
   width: 33%;
+  margin: auto;
   display: flex;
   justify-content: center;
   display: flex;
