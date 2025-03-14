@@ -34,6 +34,13 @@ describe('modelesRouter - validatePayload', () => {
     expect(() => validatePayload(input)).toThrow();
   });
 
+  it('throws when isNewBranch is false and branch name does not start with expected pattern', () => {
+    const input = generateValidInput();
+    input.branchConfig.branch = 'mock-branch-name/auto-json-creator/test-branch';
+
+    expect(() => validatePayload(input)).toThrow();
+  });
+
   it('validate payload with new branch', () => {
     const input = generateValidInputWithNewBranch();
 

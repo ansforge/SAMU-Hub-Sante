@@ -10,7 +10,7 @@ const {
 
 const VALIDATION_ERROR_MESSAGE = 'Missing mandatory attribute in payload';
 
-const AUTHORIZED_BRANCH_PATTERN = /auto-json-creator\/.*/;
+const AUTHORIZED_BRANCH_PATTERN = /^auto-json-creator\/.*/;
 const AUTHORIZED_BRANCH_ERROR_MESSAGE = 'Invalid branch name';
 
 const getModelesBranchesHandler = async (_, res) => {
