@@ -16,8 +16,12 @@
           >
             Re-envoyer le message
           </v-btn>
-          <v-btn color="primary" variant="outlined" @click="reset"
-            >Recommencer</v-btn
+          <v-btn
+            prepend-icon="mdi-reload"
+            color="primary"
+            variant="outlined"
+            @click="reset"
+            >RÉINITIALISER</v-btn
           >
         </v-card-title>
         <v-card-actions class="pt-0" style="flex-direction: column">
