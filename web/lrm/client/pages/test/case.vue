@@ -16,13 +16,15 @@
           >
             Re-envoyer le message
           </v-btn>
-          <v-btn
-            prepend-icon="mdi-reload"
-            color="primary"
-            variant="outlined"
-            @click="reset"
-            >RÉINITIALISER</v-btn
-          >
+          <ConfirmationDialog
+            title="Réinitialiser le cas de test ?"
+            message="Êtes-vous sûr de vouloir réinitialiser le cas de test ?"
+            button-text="RÉINITIALISER"
+            icon="mdi-alert-box"
+            btn-icon="mdi-reload"
+            max-width="500"
+            @agree="reset"
+          />
         </v-card-title>
         <v-card-actions class="pt-0" style="flex-direction: column">
           <v-container class="pt-0" full-width>
@@ -364,6 +366,7 @@ import {
   buildAck,
 } from '~/composables/messageUtils.js';
 import { loadSchemas } from '~/composables/schemaUtils';
+import ConfirmationDialog from '~/components/ConfirmationDialog.vue';
 
 const store = useMainStore();
 const authStore = useAuthStore();
