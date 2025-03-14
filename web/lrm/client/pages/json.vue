@@ -52,7 +52,7 @@
             <v-icon start> mdi-text-box-check-outline </v-icon>
             Valider
           </v-btn>
-          <v-dialog max-width="500">
+          <v-dialog v-if="store.isAdvanced" max-width="500">
             <template #activator="{ props: activatorProps }">
               <v-btn
                 v-bind="activatorProps"
