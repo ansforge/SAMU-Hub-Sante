@@ -792,7 +792,13 @@ function getTotalCounts() {
 }
 
 const generatePdf = () =>
-  generateCasePdf(testCase, store, authStore, getCounts);
+  generateCasePdf(
+    testCase,
+    store,
+    authStore,
+    getCounts,
+    `${new Date().toISOString().split('T')[0]} ${testCase.value.label}.pdf`
+  );
 
 const setValidationStatus = (requiredValue, status, index) => {
   requiredValue.valid = requiredValue.valid === status ? undefined : status;
