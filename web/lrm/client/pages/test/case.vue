@@ -20,17 +20,6 @@
             >Recommencer</v-btn
           >
         </v-card-title>
-        <v-container class="py-2" full-width>
-          <v-alert
-            color="primary"
-            theme="dark"
-            density="compact"
-            variant="elevated"
-            icon="$info"
-          >
-            Les actions testées sont indiquées du point de vue de l'éditeur.
-          </v-alert>
-        </v-container>
         <v-card-actions class="pt-0" style="flex-direction: column">
           <v-container class="pt-0" full-width>
             <v-stepper v-model="currentStepIndex" class="stepper">
@@ -64,6 +53,18 @@
                 </template>
               </v-stepper-header>
             </v-stepper>
+          </v-container>
+          <v-container class="py-2" full-width>
+            <v-alert
+              color="primary"
+              density="compact"
+              variant="outlined"
+              icon="$info"
+            >
+              <i>
+                Les actions testées sont indiquées du point de vue del'éditeur.
+              </i>
+            </v-alert>
           </v-container>
           <v-container>
             <span>
