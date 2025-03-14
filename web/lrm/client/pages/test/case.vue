@@ -273,7 +273,7 @@
                       </span>
                     </span>
                     <v-text-field
-                      :ref="'commentField' + index"
+                      ref="commentsRefs"
                       v-model="requiredValue.description"
                       :class="[
                         'mt-2',
@@ -345,7 +345,7 @@
 </template>
 
 <script setup>
-import { onMounted, toRefs, ref, toRef, computed, watch } from 'vue';
+import { onMounted, toRefs, ref, toRef, computed, watch, nextTick } from 'vue';
 import jsonpath from 'jsonpath';
 import { generateCasePdf } from '../../composables/generateCasePdf';
 import mixinWebsocket from '~/mixins/mixinWebsocket';
@@ -376,7 +376,7 @@ const currentStepIndex = ref(0);
 const selectedMessageIndex = ref(0);
 const selectedCaseIds = ref([]);
 const handledLength = ref(0);
-
+const commentsRefs = ref([]);
 const initialTestCase = store.testCase;
 
 const currentStep = computed(() => {
@@ -794,6 +794,22 @@ function getTotalCounts() {
 const generatePdf = () =>
   generateCasePdf(testCase, store, authStore, getCounts);
 
+const setValidationStatus = (requiredValue, status, index) => {
+  requiredValue.valid = requiredValue.valid === status ? undefined : status;
+  const commentFieldRef = commentsRefs.value[index];
+
+  if (requiredValue.valid === ValidationStatus.VALID) {
+    requiredValue.savedDescription = requiredValue.description;
+    requiredValue.description = '';
+  } else if (requiredValue.savedDescription) {
+    requiredValue.description = requiredValue.savedDescription;
+  }
+
+  nextTick(() => {
+    commentFieldRef.focus();
+  });
+};
+
 // Watch the selectedTypeCaseMessages array
 watch(
   selectedTypeCaseMessages,
@@ -841,24 +857,6 @@ watch(
 export default {
   name: 'Testcase',
   mixins: [mixinWebsocket],
-  methods: {
-    setValidationStatus(requiredValue, status, index) {
-      requiredValue.valid = requiredValue.valid === status ? undefined : status;
-      const commentFieldRef = this.$refs['commentField' + index];
-      if (!commentFieldRef) return;
-      const commentField = commentFieldRef[0];
-      if (requiredValue.valid === ValidationStatus.VALID) {
-        commentField.savedDescription = requiredValue.description;
-        requiredValue.description = '';
-      } else if (commentField.savedDescription) {
-        requiredValue.description = commentField.savedDescription;
-      }
-
-      this.$nextTick(() => {
-        commentField.focus();
-      });
-    },
-  },
 };
 </script>
 
