@@ -19,6 +19,7 @@ import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.Validator;
 import io.micrometer.core.aop.TimedAspect;
 import io.micrometer.core.instrument.MeterRegistry;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.params.shadow.com.univocity.parsers.common.ParsingContext;
 import org.junit.jupiter.params.shadow.com.univocity.parsers.common.processor.ObjectRowProcessor;
 import org.junit.jupiter.params.shadow.com.univocity.parsers.csv.CsvParser;
@@ -35,10 +36,11 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Locale;
 
+@Slf4j
 @Configuration
 public class HubConfiguration {
 
-    private static final int TOGGLE_ROW_LENGTH = 3;
+    private static final int TOGGLE_ROW_LENGTH = 4;
 
     @Value("${client.preferences.file}")
     private File configFile;
@@ -50,6 +52,7 @@ public class HubConfiguration {
 
     private HashMap<String, Boolean> useXmlPreferences = new HashMap<>();
     private HashMap<String, Boolean> directCisuPreferences = new HashMap<>();
+    private HashMap<String, String> clientsEditorMap = new HashMap<>();
 
     @PostConstruct
     public void init() throws Exception {
@@ -68,11 +71,12 @@ public class HubConfiguration {
                 @Override
                 public void rowProcessed(Object[] objects, ParsingContext parsingContext) {
                     if (objects.length != TOGGLE_ROW_LENGTH) {
-                        throw new IllegalArgumentException();
+                        log.warn("There were more than {} columns in the client preferences file, extra columns are being ignored", TOGGLE_ROW_LENGTH);
                     }
                     String[] items = Arrays.asList(objects).toArray(new String[TOGGLE_ROW_LENGTH]);
                     useXmlPreferences.put(items[0], Boolean.parseBoolean(items[1]));
                     directCisuPreferences.put(items[0], Boolean.parseBoolean(items[2]));
+                    clientsEditorMap.put(items[0], items[3]);
                 }
             };
             CsvParserSettings parserSettings = new CsvParserSettings();
@@ -95,6 +99,10 @@ public class HubConfiguration {
 
     public HashMap<String, Boolean> getDirectCisuPreferences() {
         return directCisuPreferences;
+    }
+
+    public HashMap<String, String> getClientsEditorMap() {
+        return clientsEditorMap;
     }
 
     public long getDefaultTTL() {

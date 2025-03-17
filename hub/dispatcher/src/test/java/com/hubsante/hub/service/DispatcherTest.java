@@ -21,6 +21,7 @@ import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.hubsante.hub.HubApplication;
 import com.hubsante.hub.config.HubConfiguration;
 import com.hubsante.hub.exception.ConversionException;
+import com.hubsante.hub.exception.UnroutableMessageException;
 import com.hubsante.hub.service.utils.MessageTestUtils;
 import com.hubsante.hub.utils.ConversionUtils;
 import com.hubsante.model.EdxlHandler;
@@ -103,6 +104,7 @@ public class DispatcherTest {
     private final String SDIS_C_ROUTING_KEY = "fr.fire.sdisC";
 
     private final String TEST_VHOST = "default-vhost";
+    private final String TEST_EDITOR = "default-editor";
     private final String INCONSISTENT_ROUTING_KEY = "fr.health.no-samu";
     private final String JSON = MessageProperties.CONTENT_TYPE_JSON;
     private final String XML = MessageProperties.CONTENT_TYPE_XML;
@@ -220,13 +222,13 @@ public class DispatcherTest {
             
             // Mock the ConversionUtils answer and the ConversionService
             mockedConversionUtils.when(() -> ConversionUtils.requiresCisuConversion(any(), any())).thenReturn(true);
-            doAnswer(invocation -> invocation.getArgument(0)).when(conversionHandler).callConversionService(anyString(), anyString(), anyString(), anyBoolean());
+            doAnswer(invocation -> invocation.getArgument(0)).when(conversionHandler).callConversionService(anyString(), anyString(), anyString(), anyBoolean(), anyString());
 
             // Test message from SDIS
             dispatcher.dispatch(fromFireMessage);
 
             // Verify cisu conversion was called
-            verify(conversionHandler, times(1)).callConversionService(anyString(), anyString(), anyString(), eq(true));
+            verify(conversionHandler, times(1)).callConversionService(anyString(), anyString(), anyString(), eq(true), anyString());
         }
     }
 
@@ -240,7 +242,7 @@ public class DispatcherTest {
         dispatcher.dispatch(message);
 
         // Verify that conversion service was never called
-        verify(conversionHandler, never()).callConversionService(anyString(), anyString(), anyString(), anyBoolean());
+        verify(conversionHandler, never()).callConversionService(anyString(), anyString(), anyString(), anyBoolean(), anyString());
     }
 
     @Test
@@ -402,30 +404,58 @@ public class DispatcherTest {
     @Test
     @DisplayName("should increment counter")
     public void incrementMetricsCounter() throws IOException {
-        Search errorOverall = targetCounter(registry, CLIENT_ID_TAG, SAMU_A_ROUTING_KEY, VHOST_TAG, TEST_VHOST);
-        Search errorContentType = targetCounter(registry, REASON_TAG, ErrorCode.NOT_ALLOWED_CONTENT_TYPE.getStatusString(),
-                CLIENT_ID_TAG, SAMU_A_ROUTING_KEY, VHOST_TAG, TEST_VHOST);
-        Search errorDeliveryMode = targetCounter(registry, REASON_TAG, ErrorCode.DELIVERY_MODE_INCONSISTENCY.getStatusString(),
-                CLIENT_ID_TAG, SAMU_A_ROUTING_KEY, VHOST_TAG, TEST_VHOST);
+        // First we define specific searches to restrict metric vector on specific tags
 
-        assertNull(errorOverall.counter());
-        assertNull(errorContentType.counter());
-        assertNull(errorDeliveryMode.counter());
+        // total errors for samuA client (any reason, any vhost, etc)
+        Search errorOverallSamuA = targetCounter(registry, CLIENT_ID_TAG, SAMU_A_ROUTING_KEY);
+        // total contentType tagged errors for samuA client
+        Search errorContentTypeSamuA = targetCounter(registry, REASON_TAG, ErrorCode.NOT_ALLOWED_CONTENT_TYPE.getStatusString(),
+                CLIENT_ID_TAG, SAMU_A_ROUTING_KEY);
+        // total deliveryMode tagged errors for samuA client
+        Search errorDeliveryModeSamuA = targetCounter(registry, REASON_TAG, ErrorCode.DELIVERY_MODE_INCONSISTENCY.getStatusString(),
+                CLIENT_ID_TAG, SAMU_A_ROUTING_KEY);
+        // total deliveryMode tagged error for samu B client
+        Search errorDeliveryModeSamuB = targetCounter(registry, REASON_TAG, ErrorCode.DELIVERY_MODE_INCONSISTENCY.getStatusString(),
+                CLIENT_ID_TAG, SAMU_B_ROUTING_KEY);
 
-        Message noContentTypeMessage = createMessage("EDXL-DE", null, SAMU_A_ROUTING_KEY);
-        assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(noContentTypeMessage));
+        // ensure counters are empty at startup
+        assertNull(errorOverallSamuA.counter());
+        assertNull(errorContentTypeSamuA.counter());
+        assertNull(errorDeliveryModeSamuA.counter());
 
-        assertEquals(1, getCurrentCount(errorContentType.counter()));
-        assertNull(errorDeliveryMode.counter());
+        // message without content type sent by SamuA
+        Message noContentTypeMessageSamuA = createMessage("EDXL-DE", null, SAMU_A_ROUTING_KEY);
+        assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(noContentTypeMessageSamuA));
+
+        // metrics filtered by "sender==samuA", or "sender==samuA && reason=NOT_ALLOWED_CONTENT_TYPE" should be 1
+        // metrics filtered by "sender==samuA && reason==DELIVERY_MODE_INCONSISTENCY" should be 0
+        assertEquals(1, getCurrentCount(errorContentTypeSamuA.counter()));
+        assertNull(errorDeliveryModeSamuA.counter());
         assertEquals(1, getOverallCounterForClient(registry, SAMU_A_ROUTING_KEY));
 
-        Message nonPersistentMessage = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
-        nonPersistentMessage.getMessageProperties().setReceivedDeliveryMode(MessageDeliveryMode.NON_PERSISTENT);
-        assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(nonPersistentMessage));
+        // same sender, different error
+        Message nonPersistentMessageSamuA = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
+        nonPersistentMessageSamuA.getMessageProperties().setReceivedDeliveryMode(MessageDeliveryMode.NON_PERSISTENT);
+        assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(nonPersistentMessageSamuA));
 
-        assertEquals(1, getCurrentCount(errorContentType.counter()));
-        assertEquals(1, getCurrentCount(errorDeliveryMode.counter()));
+        // samuA && reason==NOT_ALLOWED_CONTENT_TYPE didn't increment
+        // samuA && reason==DELIVERY_MODE_INCONSISTENCY is now 1
+        // all errors for samuA is now 2
+        assertEquals(1, getCurrentCount(errorContentTypeSamuA.counter()));
+        assertEquals(1, getCurrentCount(errorDeliveryModeSamuA.counter()));
         assertEquals(2, getOverallCounterForClient(registry, SAMU_A_ROUTING_KEY));
+
+        // create an DELIEVRY_MODE_INCONSISTENCY error, now from SamuB
+        Message nonPersistentMessageSamuB = createMessage("EDXL-DE", XML, SAMU_B_ROUTING_KEY);
+        nonPersistentMessageSamuB.getMessageProperties().setReceivedDeliveryMode(MessageDeliveryMode.NON_PERSISTENT);
+        assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(nonPersistentMessageSamuB));
+
+        // samuB && reason==DELIVERY_MODE_INCONSISTENCY is now 1
+        // overall reason==DELIVERY_MODE_INCONSISTENCY is now 2
+        // overall editor=default-editor is now 3
+        assertEquals(1, getCurrentCount(errorDeliveryModeSamuB.counter()));
+        assertEquals(2, getOverallCounterForError(registry, ErrorCode.DELIVERY_MODE_INCONSISTENCY.getStatusString()));
+        assertEquals(3, getOverallCounterForEditor(registry, TEST_EDITOR));
     }
 
     @Test
@@ -444,8 +474,8 @@ public class DispatcherTest {
             
             // Mock conversion service to throw exception with error message from conversion service
             String conversionErrorMessage = "Conversion service error message";
-            doThrow(new RuntimeException(conversionErrorMessage))
-                .when(conversionHandler).callConversionService(anyString(), anyString(), anyString(), anyBoolean());
+            doThrow(new ConversionException(conversionErrorMessage, edxlMessage.getDistributionID()))
+                .when(conversionHandler).callConversionService(anyString(), anyString(), anyString(), anyBoolean(), anyString());
 
             // Test that dispatching throws AmqpRejectAndDontRequeueException
             assertThrows(AmqpRejectAndDontRequeueException.class, 
@@ -464,6 +494,15 @@ public class DispatcherTest {
             Message handledMessage = messageCaptor.getValue();
             assertEquals(receivedMessage, handledMessage);
         }
+    }
+
+    @Test
+    @DisplayName("should reject message if no health actor is involved")
+    public void shouldRejectMessageIfNoHealthActorIsInvolved() throws IOException {
+        Message receivedMessage = createInvalidMessage("EDXL-DE/no-health-actor.json", JSON, "fr.police.random");
+        assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
+        assertErrorHasBeenSent("fr.police.random.info", ErrorCode.UNROUTABLE_MESSAGE, "fr.police.random_2608323d-507d-4cbf-bf74-52007f8124ea",
+                "Unable to route message with id fr.police.random_2608323d-507d-4cbf-bf74-52007f8124ea, no health actor involved.");
     }
 
     private void assertErrorHasBeenSent(String infoQueueName, ErrorCode errorCode, String referencedDistributionId, String... errorCause) throws JsonProcessingException {
