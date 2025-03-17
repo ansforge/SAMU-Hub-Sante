@@ -64,11 +64,11 @@
             <v-alert
               color="primary"
               density="compact"
-              variant="outlined"
+              variant="text"
               icon="$info"
             >
               <i>
-                Les actions testées sont indiquées du point de vue del'éditeur.
+                Les actions testées sont indiquées du point de vue de l'éditeur.
               </i>
             </v-alert>
           </v-container>
