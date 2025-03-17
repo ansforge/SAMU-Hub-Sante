@@ -20,7 +20,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.hubsante.hub.config.HubConfiguration;
 import com.hubsante.hub.exception.*;
-import com.hubsante.hub.utils.MessageUtils;
 import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.Validator;
 import com.hubsante.model.builders.ErrorWrapperBuilder;
@@ -42,7 +41,6 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 
 import static com.hubsante.hub.config.AmqpConfiguration.DISTRIBUTION_EXCHANGE;
@@ -67,6 +65,8 @@ public class MessageHandler {
     @Autowired
     @Qualifier("jsonMapper")
     private ObjectMapper jsonMapper;
+
+    private final static boolean DEFAULT_USE_XML_PREFERENCE = false;
 
     public MessageHandler(RabbitTemplate rabbitTemplate, EdxlHandler edxlHandler, HubConfiguration hubConfig, Validator validator, MeterRegistry registry, XmlMapper xmlMapper, ObjectMapper jsonMapper) {
         this.rabbitTemplate = rabbitTemplate;
@@ -132,7 +132,7 @@ public class MessageHandler {
         try {
             EdxlMessage errorEdxlMessage = edxlMessageFromHub(sender, wrapper);
             Message errorAmqpMessage;
-            if (convertToXML(sender, hubConfig.getUseXmlPreferences().get(sender))) {
+            if (convertToXML(sender, hubConfig.getUseXmlPreferences().getOrDefault(sender, DEFAULT_USE_XML_PREFERENCE))) {
                 errorAmqpMessage = new Message(edxlHandler.serializeXmlEDXL(errorEdxlMessage).getBytes(),
                         MessagePropertiesBuilder.newInstance().setContentType(MessageProperties.CONTENT_TYPE_XML).build());
             } else {
@@ -255,7 +255,7 @@ public class MessageHandler {
         String edxlString;
 
         try {
-            if (convertToXML(recipientID, hubConfig.getUseXmlPreferences().get(recipientID))) {
+            if (convertToXML(recipientID, hubConfig.getUseXmlPreferences().getOrDefault(recipientID, DEFAULT_USE_XML_PREFERENCE))) {
                 edxlString = edxlHandler.serializeXmlEDXL(edxlMessage);
                 fwdAmqpProperties.setContentType(MessageProperties.CONTENT_TYPE_XML);
             } else {
@@ -285,14 +285,20 @@ public class MessageHandler {
     }
 
     protected void publishErrorMetric(String error, String sender) {
-        registry.counter(DISPATCH_ERROR, REASON_TAG, error, CLIENT_ID_TAG, sender, VHOST_TAG, hubConfig.getVhost()).increment();
+        String editor = getEditorFromSender(sender);
+        registry.counter(DISPATCH_ERROR, REASON_TAG, error, CLIENT_ID_TAG, sender, VHOST_TAG, hubConfig.getVhost(), EDITOR_TAG, editor).increment();
     }
 
     protected void publishMetrics(EdxlMessage edxlMessage, Message amqpMessage) {
-        String sender = MessageUtils.getSenderFromRoutingKey(amqpMessage);
+        String sender = getSenderFromRoutingKey(amqpMessage);
         String useCase = getUseCaseFromMessage(edxlMessage.getFirstContentMessage());
+        String editor = getEditorFromSender(sender);
 
-        registry.counter(DISPATCHED_MESSAGE,CLIENT_ID_TAG, sender, VHOST_TAG, hubConfig.getVhost(),USE_CASE_TAG, useCase).increment();
+        registry.counter(DISPATCHED_MESSAGE,CLIENT_ID_TAG, sender, VHOST_TAG, hubConfig.getVhost(),USE_CASE_TAG, useCase, EDITOR_TAG, editor).increment();
+    }
+
+    private String getEditorFromSender(String sender) {
+        return hubConfig.getClientsEditorMap().getOrDefault(sender, UNKNOWN);
     }
 
     protected String serializeJsonEDXL(EdxlMessage edxlMessage) throws JsonProcessingException {
