@@ -19,7 +19,7 @@
           <ConfirmationDialog
             title="Réinitialiser le cas de test ?"
             message="Êtes-vous sûr de vouloir réinitialiser le cas de test ?"
-            button-text="RÉINITIALISER"
+            button-text="Réinitialiser"
             icon="mdi-alert-box"
             btn-icon="mdi-reload"
             max-width="500"
@@ -367,6 +367,7 @@ import {
 } from '~/composables/messageUtils.js';
 import { loadSchemas } from '~/composables/schemaUtils';
 import ConfirmationDialog from '~/components/ConfirmationDialog.vue';
+import moment from 'moment';
 
 const store = useMainStore();
 const authStore = useAuthStore();
@@ -793,7 +794,7 @@ function getTotalCounts() {
 }
 
 const generatePdf = () => {
-  const date = new Date().toISOString().split('T')[0];
+  const date = moment().format('YYYY-MM-DD');
   const label = testCase?.value?.label || 'lrm-test-case';
   const fileName = `${date} ${label}.pdf`;
   try {
