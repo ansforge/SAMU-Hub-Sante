@@ -5,8 +5,8 @@ const client = new octokit.Octokit({ auth: process.env.GITHUB_TOKEN });
 const GITHUB_OWNER = 'ansforge';
 const GITHUB_REPO = 'SAMU-Hub-Modeles';
 const EXAMPLE_FILES_PATH = 'src/main/resources/sample/examples';
-const DEFAULT_PR_TITLE = 'JSON Creator Examples Update';
-const DEFAULT_PR_DESCRIPTION = 'PR opened automatically through the JSON Creator UI.';
+const DEFAULT_PR_TITLE = '[AUTO] JSON Creator Examples Update';
+const DEFAULT_PR_DESCRIPTION = 'This PR has been opened automatically using the JSON Creator UI.\n\nIt contains update to the json samples displayed in the JSON Creator.\n\nPlease ask for a reviewer from the development team.';
 const GITHUB_TOKEN_USER = 'ansforge';
 
 const generateCommitMessage = (fileName) => `Update of the json example ${fileName}`;

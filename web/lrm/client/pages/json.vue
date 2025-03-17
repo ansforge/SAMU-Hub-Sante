@@ -60,7 +60,7 @@
                 variant="flat"
               >
                 <v-icon start> mdi-github </v-icon>
-                Commit changes
+                Commit
               </v-btn>
             </template>
 
@@ -78,25 +78,25 @@
                   <v-switch
                     v-model="isExistingBranchSelected"
                     color="primary"
-                    label="Use new branch ?"
+                    label="Utiliser une nouvelle branche ?"
                   />
                   <v-text-field
                     v-if="isExistingBranchSelected"
                     v-model="source"
                     readonly
-                    label="Selected base branch"
+                    label="Branch de base selectionnée"
                   />
                   <v-text-field
                     v-if="isExistingBranchSelected"
                     v-model="newBranch"
-                    label="New branch name"
+                    label="Nom de la nouvelle branche"
                     :prefix="VALID_BRANCH_PREFIX"
                   />
                   <v-text-field
                     v-else
                     v-model="source"
                     readonly
-                    label="Selected existing branch"
+                    label="Branche existante selectionnée"
                   />
                 </v-card-text>
                 <v-card-actions>
@@ -296,12 +296,15 @@ export default {
         ];
       }
     },
+    getServerUrl() {
+      return `${isEnvProd() ? 'https' : 'http'}://${
+        this.$config.public.backendLrmServer
+      }`;
+    },
     async fetchBranchesNames() {
       // eslint-disable-next-line no-undef
       this.branchesNames = await $fetch(
-        `${isEnvProd() ? 'https' : 'http'}://${
-          this.$config.public.backendLrmServer
-        }/modeles/branches`
+        `${this.getServerUrl()}/modeles/branches`
       );
     },
     updateCurrentMessage(form) {
@@ -358,30 +361,25 @@ export default {
       this.isCommiting = true;
       try {
         // eslint-disable-next-line no-undef
-        const commitResponse = await $fetch(
-          `${isEnvProd() ? 'https' : 'http'}://${
-            this.$config.public.backendLrmServer
-          }/modeles`,
-          {
-            method: 'POST',
-            body: JSON.stringify({
-              password,
-              fileName:
-                this.currentMessageType.examples[this.messageTypeTabIndex].file,
-              content: data,
-              branchConfig: this.isExistingBranchSelected
-                ? {
-                    isNewBranch: true,
-                    baseBranch: this.source,
-                    branch: `${VALID_BRANCH_PREFIX}${this.newBranch}`,
-                  }
-                : {
-                    isNewBranch: false,
-                    branch: this.source,
-                  },
-            }),
-          }
-        );
+        const commitResponse = await $fetch(`${this.getServerUrl()}/modeles`, {
+          method: 'POST',
+          body: JSON.stringify({
+            password,
+            fileName:
+              this.currentMessageType.examples[this.messageTypeTabIndex].file,
+            content: data,
+            branchConfig: this.isExistingBranchSelected
+              ? {
+                  isNewBranch: true,
+                  baseBranch: this.source,
+                  branch: `${VALID_BRANCH_PREFIX}${this.newBranch}`,
+                }
+              : {
+                  isNewBranch: false,
+                  branch: this.source,
+                },
+          }),
+        });
         this.openedPullRequestLink = commitResponse.data.pull_request_url;
         this.toasts.push(this.app.$toast.success('Le commit a été effectué.'));
       } catch (err) {

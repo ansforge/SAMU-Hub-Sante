@@ -32,6 +32,11 @@ const validatePayload = (body) => {
   if (!body.branchConfig) {
     throw new Error(`${VALIDATION_ERROR_MESSAGE}: branchConfig`);
   }
+  if (body.branchConfig.isNewBranch === undefined) {
+    throw new Error(
+      `${VALIDATION_ERROR_MESSAGE}: branchConfig.isNewBranch (indicate wether to use a new branch or not)`,
+    );
+  }
   if (!body.branchConfig.branch) {
     throw new Error(
       `${VALIDATION_ERROR_MESSAGE}: branchConfig.branch (branch to update)`,
@@ -41,29 +46,16 @@ const validatePayload = (body) => {
   // only if there is no new branch in branchConfig (to avoid direct
   // commit on unauthorized branch)
   if (
-    !body.branchConfig.isNewBranch
-    && !body.branchConfig.branch.match(AUTHORIZED_BRANCH_PATTERN)
+    !body.branchConfig.branch.match(AUTHORIZED_BRANCH_PATTERN)
   ) {
     throw new Error(
       `${AUTHORIZED_BRANCH_ERROR_MESSAGE}: branchConfig.branch must match "${AUTHORIZED_BRANCH_PATTERN}"`,
     );
   }
-  if (body.branchConfig.isNewBranch === undefined) {
+  if (body.branchConfig.isNewBranch && !body.branchConfig.baseBranch) {
     throw new Error(
-      `${VALIDATION_ERROR_MESSAGE}: branchConfig.isNewBranch (branch to update)`,
+      `${AUTHORIZED_BRANCH_ERROR_MESSAGE}: branchConfig.baseBranch (branch from where to create the new one)`,
     );
-  }
-  if (body.branchConfig.isNewBranch) {
-    if (!body.branchConfig.branch) {
-      throw new Error(
-        `${VALIDATION_ERROR_MESSAGE}: branchConfig.branch (required because branchConfig.isNewBranch is set to true)`,
-      );
-    }
-    if (!body.branchConfig.branch.match(AUTHORIZED_BRANCH_PATTERN)) {
-      throw new Error(
-        `${AUTHORIZED_BRANCH_ERROR_MESSAGE}: branchConfig.branch must match "${AUTHORIZED_BRANCH_PATTERN}"`,
-      );
-    }
   }
 };
 
@@ -80,7 +72,7 @@ const commitModelesChanges = async (req, res) => {
   try {
     validatePayload(req.body);
   } catch (err) {
-    res.status(403).json({ message: err.message });
+    res.status(400).json({ message: err.message });
     return;
   }
 
