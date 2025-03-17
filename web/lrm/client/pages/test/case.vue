@@ -792,14 +792,16 @@ function getTotalCounts() {
   };
 }
 
-const generatePdf = () =>
-  generateCasePdf(
-    testCase,
-    store,
-    authStore,
-    getCounts,
-    `${new Date().toISOString().split('T')[0]} ${testCase.value.label}.pdf`
-  );
+const generatePdf = () => {
+  const date = new Date().toISOString().split('T')[0];
+  const label = testCase?.value?.label || 'lrm-test-case';
+  const fileName = `${date} ${label}.pdf`;
+  try {
+    generateCasePdf(testCase, store, authStore, getCounts, fileName);
+  } catch (error) {
+    console.error('Error generating PDF:', error);
+  }
+};
 
 const setValidationStatus = (requiredValue, status, index) => {
   requiredValue.valid = requiredValue.valid === status ? undefined : status;
