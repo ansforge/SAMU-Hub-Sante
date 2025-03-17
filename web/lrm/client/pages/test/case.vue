@@ -615,6 +615,7 @@ function getAwaitedValues(step) {
         value: entry.value,
         valid: entry.valid,
         label: getLabelByPath(schema, entry.path),
+        receivedValue: entry.receivedValue,
       };
     });
     return requiredValuesObject;
@@ -701,15 +702,12 @@ function checkMessageContainsAllRequiredValues(message, requiredValues) {
     if (result.length === 0 || !result.includes(element.value)) {
       valid = false;
       element.valid = ValidationStatus.INVALID;
-      validatedValues.push({
-        valid: false,
-        value: element,
-        receivedValue: result[0],
-      });
+      validatedValues.push({ valid: false, value: element });
     } else {
       validatedValues.push({ valid: true, value: element });
       element.valid = ValidationStatus.VALID;
     }
+    element.receivedValue = result[0];
   });
 
   message.validatedValues = JSON.parse(JSON.stringify(validatedValues));
