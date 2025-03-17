@@ -1,5 +1,5 @@
 # 1. Build
-FROM --platform=linux/amd64 node:19 AS builder
+FROM node:19 AS builder
 
 # Set working directory
 WORKDIR /app
@@ -17,7 +17,7 @@ COPY . .
 RUN npm run build
 
 # 2. Start
-FROM --platform=linux/amd64 node:19 AS runner
+FROM node:19 AS runner
 
 WORKDIR /app
 
