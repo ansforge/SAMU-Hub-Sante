@@ -76,18 +76,18 @@
                 </template>
                 <v-card-text>
                   <v-switch
-                    v-model="isExistingBranchSelected"
+                    v-model="createNewBranch"
                     color="primary"
                     label="Utiliser une nouvelle branche ?"
                   />
                   <v-text-field
-                    v-if="isExistingBranchSelected"
+                    v-if="createNewBranch"
                     v-model="source"
                     readonly
-                    label="Branch de base selectionnée"
+                    label="Branche de base selectionnée"
                   />
                   <v-text-field
-                    v-if="isExistingBranchSelected"
+                    v-if="createNewBranch"
                     v-model="newBranch"
                     label="Nom de la nouvelle branche"
                     :prefix="VALID_BRANCH_PREFIX"
@@ -204,7 +204,7 @@ export default {
       jsonMessagesLoading: false,
       branchesNames: [],
       newBranch: '',
-      isExistingBranchSelected: false,
+      createNewBranch: false,
       isCommiting: false,
       openedPullRequestLink: '',
     };
@@ -368,7 +368,7 @@ export default {
             fileName:
               this.currentMessageType.examples[this.messageTypeTabIndex].file,
             content: data,
-            branchConfig: this.isExistingBranchSelected
+            branchConfig: this.createNewBranch
               ? {
                   isNewBranch: true,
                   baseBranch: this.source,
