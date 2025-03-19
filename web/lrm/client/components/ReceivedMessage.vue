@@ -114,10 +114,11 @@
 </template>
 
 <script setup>
-import { computed, ref, onMounted } from 'vue';
+import { computed, ref, onMounted, watch } from 'vue';
 import { DIRECTIONS } from '@/constants';
 import mixinWebsocket from '~/mixins/mixinWebsocket';
 import { useMainStore } from '~/store';
+import { useAuthStore } from '@/store/auth';
 import {
   buildAck,
   sendMessage,
@@ -126,8 +127,10 @@ import {
 } from '~/composables/messageUtils';
 
 const store = useMainStore();
+const authStore = useAuthStore();
 const showFullMessage = ref(false);
-const autoAckConfig = computed(() => store.autoAckConfig);
+const autoAckConfig = computed(() => authStore.user?.autoAck ?? false);
+const isAcked = ref(false);
 
 const props = defineProps({
   dense: {
@@ -197,6 +200,7 @@ const sendAck = () => {
     const distributionID = props.body.distributionID;
     const msg = buildAck(distributionID);
     sendMessage(msg, props.vhost);
+    isAcked.value = true;
   } catch (error) {
     console.error("Erreur lors de l'envoi de l'acquittement", error);
   }
@@ -205,6 +209,12 @@ const sendAck = () => {
 //on mounted, send ack if autoAckConfig is enabled
 onMounted(() => {
   if (autoAckConfig.value) {
+    sendAck();
+  }
+});
+
+watch(autoAckConfig, (newVal) => {
+  if (newVal && isAcked.value === false) {
     sendAck();
   }
 });

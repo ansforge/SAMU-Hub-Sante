@@ -16,21 +16,16 @@
           >
             Re-envoyer le message
           </v-btn>
-          <v-btn color="primary" variant="outlined" @click="reset"
-            >Recommencer</v-btn
-          >
+          <ConfirmationDialog
+            title="Réinitialiser le cas de test ?"
+            message="Êtes-vous sûr de vouloir réinitialiser le cas de test ?"
+            button-text="Réinitialiser"
+            icon="mdi-alert-box"
+            btn-icon="mdi-reload"
+            max-width="500"
+            @agree="reset"
+          />
         </v-card-title>
-        <v-container class="py-2" full-width>
-          <v-alert
-            color="primary"
-            theme="dark"
-            density="compact"
-            variant="elevated"
-            icon="$info"
-          >
-            Les actions testées sont indiquées du point de vue de l'éditeur.
-          </v-alert>
-        </v-container>
         <v-card-actions class="pt-0" style="flex-direction: column">
           <v-container class="pt-0" full-width>
             <v-stepper v-model="currentStepIndex" class="stepper">
@@ -64,6 +59,18 @@
                 </template>
               </v-stepper-header>
             </v-stepper>
+          </v-container>
+          <v-container class="py-2" full-width>
+            <v-alert
+              color="primary"
+              density="compact"
+              variant="text"
+              icon="$info"
+            >
+              <i>
+                Les actions testées sont indiquées du point de vue de l'éditeur.
+              </i>
+            </v-alert>
           </v-container>
           <v-container>
             <span>
@@ -268,7 +275,7 @@
                       </span>
                     </span>
                     <v-text-field
-                      :ref="'commentField' + index"
+                      ref="commentsRefs"
                       v-model="requiredValue.description"
                       :class="[
                         'mt-2',
@@ -340,7 +347,7 @@
 </template>
 
 <script setup>
-import { onMounted, toRefs, ref, toRef, computed, watch } from 'vue';
+import { onMounted, toRefs, ref, toRef, computed, watch, nextTick } from 'vue';
 import jsonpath from 'jsonpath';
 import { generateCasePdf } from '../../composables/generateCasePdf';
 import mixinWebsocket from '~/mixins/mixinWebsocket';
@@ -359,6 +366,8 @@ import {
   buildAck,
 } from '~/composables/messageUtils.js';
 import { loadSchemas } from '~/composables/schemaUtils';
+import ConfirmationDialog from '~/components/ConfirmationDialog.vue';
+import moment from 'moment';
 
 const store = useMainStore();
 const authStore = useAuthStore();
@@ -371,7 +380,7 @@ const currentStepIndex = ref(0);
 const selectedMessageIndex = ref(0);
 const selectedCaseIds = ref([]);
 const handledLength = ref(0);
-
+const commentsRefs = ref([]);
 const initialTestCase = store.testCase;
 
 const currentStep = computed(() => {
@@ -607,6 +616,7 @@ function getAwaitedValues(step) {
         value: entry.value,
         valid: entry.valid,
         label: getLabelByPath(schema, entry.path),
+        receivedValue: entry.receivedValue,
       };
     });
     return requiredValuesObject;
@@ -690,14 +700,12 @@ function checkMessageContainsAllRequiredValues(message, requiredValues) {
       element.path.join('.')
     );
 
-    if (result.length === 0 || !result.includes(element.value)) {
+    element.receivedValue = result[0];
+
+    if (result.length === 0 || result[0] !== element.value) {
       valid = false;
       element.valid = ValidationStatus.INVALID;
-      validatedValues.push({
-        valid: false,
-        value: element,
-        receivedValue: result[0],
-      });
+      validatedValues.push({ valid: false, value: element });
     } else {
       validatedValues.push({ valid: true, value: element });
       element.valid = ValidationStatus.VALID;
@@ -786,8 +794,32 @@ function getTotalCounts() {
   };
 }
 
-const generatePdf = () =>
-  generateCasePdf(testCase, store, authStore, getCounts);
+const generatePdf = () => {
+  const date = moment().format('YYYY-MM-DD');
+  const label = testCase?.value?.label || 'lrm-test-case';
+  const fileName = `${date} ${label}.pdf`;
+  try {
+    generateCasePdf(testCase, store, authStore, getCounts, fileName);
+  } catch (error) {
+    console.error('Error generating PDF:', error);
+  }
+};
+
+const setValidationStatus = (requiredValue, status, index) => {
+  requiredValue.valid = requiredValue.valid === status ? undefined : status;
+  const commentFieldRef = commentsRefs.value[index];
+
+  if (requiredValue.valid === ValidationStatus.VALID) {
+    requiredValue.savedDescription = requiredValue.description;
+    requiredValue.description = '';
+  } else if (requiredValue.savedDescription) {
+    requiredValue.description = requiredValue.savedDescription;
+  }
+
+  nextTick(() => {
+    commentFieldRef.focus();
+  });
+};
 
 // Watch the selectedTypeCaseMessages array
 watch(
@@ -836,24 +868,6 @@ watch(
 export default {
   name: 'Testcase',
   mixins: [mixinWebsocket],
-  methods: {
-    setValidationStatus(requiredValue, status, index) {
-      requiredValue.valid = requiredValue.valid === status ? undefined : status;
-      const commentFieldRef = this.$refs['commentField' + index];
-      if (!commentFieldRef) return;
-      const commentField = commentFieldRef[0];
-      if (requiredValue.valid === ValidationStatus.VALID) {
-        commentField.savedDescription = requiredValue.description;
-        requiredValue.description = '';
-      } else if (commentField.savedDescription) {
-        requiredValue.description = commentField.savedDescription;
-      }
-
-      this.$nextTick(() => {
-        commentField.focus();
-      });
-    },
-  },
 };
 </script>
 
