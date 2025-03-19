@@ -700,7 +700,9 @@ function checkMessageContainsAllRequiredValues(message, requiredValues) {
       element.path.join('.')
     );
 
-    if (result.length === 0 || !result.includes(element.value)) {
+    element.receivedValue = result[0];
+
+    if (result.length === 0 || result[0] !== element.value) {
       valid = false;
       element.valid = ValidationStatus.INVALID;
       validatedValues.push({ valid: false, value: element });
@@ -708,7 +710,6 @@ function checkMessageContainsAllRequiredValues(message, requiredValues) {
       validatedValues.push({ valid: true, value: element });
       element.valid = ValidationStatus.VALID;
     }
-    element.receivedValue = result[0];
   });
 
   message.validatedValues = JSON.parse(JSON.stringify(validatedValues));
