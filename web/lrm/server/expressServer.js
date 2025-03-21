@@ -11,6 +11,7 @@ const {
   connect, connectAsync, close, computeVhostFromMessage,
   HUB_SANTE_EXCHANGE, DEMO_CLIENT_IDS, VHOSTS, messageProperties,
 } = require('./rabbit/utils');
+const { ModelesRouter } = require('./router/modelesRouter');
 
 class ExpressServer {
   constructor(port) {
@@ -29,6 +30,8 @@ class ExpressServer {
     this.app.use(cookieParser());
     // Simple test to see that the server is up and responding
     this.app.get('/hello', (req, res) => res.send(`Hello World. path: ${this.openApiPath}`));
+
+    this.app.use('/modeles', ModelesRouter);
 
     // Serve distribution UI
     this.app.use('/', express.static(path.join(__dirname, 'ui')));

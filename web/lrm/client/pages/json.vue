@@ -4,7 +4,10 @@
       <v-card style="height: 86vh; overflow-y: auto">
         <v-card-title class="text-h5 d-flex align-center">
           Formulaire
-          <source-selector @source-changed="source = $event" />
+          <source-selector
+            :branch-names="branchesNames"
+            @source-changed="source = $event"
+          />
           <v-btn
             icon="mdi-reload"
             density="compact"
@@ -49,6 +52,75 @@
             <v-icon start> mdi-text-box-check-outline </v-icon>
             Valider
           </v-btn>
+          <v-dialog v-if="store.isAdvanced" max-width="500">
+            <template #activator="{ props: activatorProps }">
+              <v-btn
+                v-bind="activatorProps"
+                color="surface-variant"
+                variant="flat"
+              >
+                <v-icon start> mdi-github </v-icon>
+                Commit
+              </v-btn>
+            </template>
+
+            <template #default="{ isActive }">
+              <v-card title="Commit les changements">
+                <template #append>
+                  <v-btn
+                    icon="mdi-close"
+                    density="comfortable"
+                    variant="text"
+                    @click="isActive.value = false"
+                  ></v-btn>
+                </template>
+                <v-card-text>
+                  <v-switch
+                    v-model="createNewBranch"
+                    color="primary"
+                    label="Utiliser une nouvelle branche ?"
+                  />
+                  <v-text-field
+                    v-if="createNewBranch"
+                    v-model="source"
+                    readonly
+                    label="Branche de base selectionnée"
+                  />
+                  <v-text-field
+                    v-if="createNewBranch"
+                    v-model="newBranch"
+                    label="Nom de la nouvelle branche"
+                    :prefix="VALID_BRANCH_PREFIX"
+                  />
+                  <v-text-field
+                    v-else
+                    v-model="source"
+                    readonly
+                    label="Branche existante selectionnée"
+                  />
+                </v-card-text>
+                <v-card-actions>
+                  <v-btn
+                    v-if="openedPullRequestLink"
+                    color="primary"
+                    variant="text"
+                    :href="openedPullRequestLink"
+                    target="_blank"
+                  >
+                    Open pull request
+                  </v-btn>
+                  <v-btn
+                    variant="flat"
+                    color="surface-variant"
+                    :loading="isCommiting"
+                    @click="commitChanges"
+                  >
+                    Commit
+                  </v-btn>
+                </v-card-actions>
+              </v-card>
+            </template>
+          </v-dialog>
         </v-card-title>
         <v-card-text>
           <json-viewer
@@ -79,6 +151,7 @@ import { REPOSITORY_URL } from '@/constants';
 import mixinWebsocket from '~/mixins/mixinWebsocket';
 import { trimEmptyValues } from '~/composables/messageUtils';
 import { useMainStore } from '~/store';
+import { isEnvProd } from '~/composables/envUtils';
 
 // eslint-disable-next-line no-undef
 useHead({
@@ -88,6 +161,8 @@ useHead({
 
 <script>
 import { consola } from 'consola';
+
+const VALID_BRANCH_PREFIX = 'auto-json-creator/';
 
 export default {
   name: 'JsonCreator',
@@ -127,6 +202,11 @@ export default {
       ],
       form: {},
       jsonMessagesLoading: false,
+      branchesNames: [],
+      newBranch: '',
+      createNewBranch: false,
+      isCommiting: false,
+      openedPullRequestLink: '',
     };
   },
   computed: {
@@ -142,6 +222,9 @@ export default {
       this.store.selectedSchema =
         this.store.messageTypes[this.messageTypeTabIndex];
     },
+  },
+  mounted() {
+    this.fetchBranchesNames();
   },
   methods: {
     updateForm() {
@@ -213,6 +296,17 @@ export default {
         ];
       }
     },
+    getServerUrl() {
+      return `${isEnvProd() ? 'https' : 'http'}://${
+        this.$config.public.backendLrmServer
+      }`;
+    },
+    async fetchBranchesNames() {
+      // eslint-disable-next-line no-undef
+      this.branchesNames = await $fetch(
+        `${this.getServerUrl()}/modeles/branches`
+      );
+    },
     updateCurrentMessage(form) {
       this.store.currentMessage = form;
     },
@@ -254,6 +348,45 @@ export default {
       a.href = URL.createObjectURL(file);
       a.download = `${this.currentMessageType?.label}-message.json`;
       a.click();
+    },
+    async commitChanges() {
+      const password = prompt('Enter admin password');
+      const data = JSON.stringify(
+        trimEmptyValues({
+          [this.currentMessageType?.schema?.title]: this.store.currentMessage,
+        }),
+        null,
+        2
+      );
+      this.isCommiting = true;
+      try {
+        // eslint-disable-next-line no-undef
+        const commitResponse = await $fetch(`${this.getServerUrl()}/modeles`, {
+          method: 'POST',
+          body: JSON.stringify({
+            password,
+            fileName:
+              this.currentMessageType.examples[this.messageTypeTabIndex].file,
+            content: data,
+            branchConfig: this.createNewBranch
+              ? {
+                  isNewBranch: true,
+                  baseBranch: this.source,
+                  branch: `${VALID_BRANCH_PREFIX}${this.newBranch}`,
+                }
+              : {
+                  isNewBranch: false,
+                  branch: this.source,
+                },
+          }),
+        });
+        this.openedPullRequestLink = commitResponse.data.pull_request_url;
+        this.toasts.push(this.app.$toast.success('Le commit a été effectué.'));
+      } catch (err) {
+        this.toasts.push(this.app.$toast.error(err.data.message));
+      } finally {
+        this.isCommiting = false;
+      }
     },
   },
 };

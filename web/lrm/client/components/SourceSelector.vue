@@ -30,18 +30,22 @@ import { REPOSITORY_URL } from '@/constants';
 
 const store = useMainStore();
 
+const props = defineProps({
+  branchNames: {
+    type: Array,
+    required: true,
+  },
+});
+
 onMounted(() => {
   selectedSource.value = store.selectedVhost.modelVersion;
   emit('sourceChanged', selectedSource.value);
 });
 
-const sources = [
+const sources = computed(() => [
   ...new Set(store.vhostMap.map((vhost) => vhost.modelVersion)),
-  'main',
-  'develop',
-  'auto/model_tracker',
-  '{branchName}',
-];
+  ...props.branchNames,
+]);
 
 const selectedSource = ref('');
 const emit = defineEmits(['sourceChanged']);
@@ -63,7 +67,7 @@ function currentSchemaOnGitHub() {
       'https://raw.githubusercontent.com/',
       'https://github.com/'
     ).replace('SAMU-Hub-Modeles/', 'SAMU-Hub-Modeles/tree/') +
-    store.selectedVhost.modelVersion +
+    selectedSource.value +
     '/src/main/resources/json-schema/' +
     store.selectedSchema.schemaName
   );
