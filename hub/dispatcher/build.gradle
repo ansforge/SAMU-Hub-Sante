@@ -1,3 +1,5 @@
+import org.springframework.boot.gradle.plugin.SpringBootPlugin
+
 plugins {
     id 'java'
     id 'org.springframework.boot' version '3.2.0'
@@ -83,6 +85,9 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-aop:3.1.2'
     implementation 'org.aspectj:aspectjtools:'
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
+    implementation(platform(SpringBootPlugin.BOM_COORDINATES))
+    implementation(platform("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:2.14.0"))
+    implementation("io.opentelemetry.instrumentation:opentelemetry-spring-boot-starter")
 
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     annotationProcessor 'org.projectlombok:lombok'
