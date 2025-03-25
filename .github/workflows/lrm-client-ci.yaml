@@ -1,17 +1,48 @@
-name: Run Cypress tests
+name: LRM Client CI
 
 on:
   push:
     branches:
-      - main
-
+      - 'main'
+    paths:
+      - 'web/lrm/client/**'
   pull_request:
     branches:
       - '**'
+    paths:
+      - 'web/lrm/client/**'
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web/lrm/client
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint:js
+
+      - name: Run Stylelint
+        run: npm run lint:css
+
+      - name: Run Prettier check
+        run: npx prettier --check "**/*.{js,ts,vue,css,scss}"
+
   cypress-run:
     runs-on: ubuntu-22.04
+
     env:
       NUXT_PUBLIC_VHOST_MAP: |
         {
@@ -27,6 +58,7 @@ jobs:
         ]
       NUXT_PUBLIC_MODEL_BRANCH: develop
       NUXT_PUBLIC_BACKEND_LRM_SERVER: integration.hub.esante.gouv.fr
+
     steps:
       - name: Checkout
         uses: actions/checkout@v2
