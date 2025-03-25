@@ -63,6 +63,7 @@ repositories {
 
 ext {
     set('testcontainersVersion', "1.17.6")
+    set('otlVersion', "2.14.0")
 }
 
 dependencies {
@@ -83,6 +84,9 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-aop:3.1.2'
     implementation 'org.aspectj:aspectjtools:'
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
+    implementation 'io.opentelemetry.instrumentation:opentelemetry-spring-boot-starter'
+    implementation 'io.micrometer:micrometer-registry-otlp:1.11.2'
+    implementation 'io.opentelemetry:opentelemetry-api'
 
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     annotationProcessor 'org.projectlombok:lombok'
@@ -98,6 +102,7 @@ dependencies {
 dependencyManagement {
     imports {
         mavenBom "org.testcontainers:testcontainers-bom:${testcontainersVersion}"
+        mavenBom "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:${otlVersion}"
     }
 }
 

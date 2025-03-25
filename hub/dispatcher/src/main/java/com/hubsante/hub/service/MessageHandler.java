@@ -163,14 +163,12 @@ public class MessageHandler {
     /*
      ** Deserialize the message according to its content type
      */
-    @Timed(value = "extract.received.message", description = "Extract incoming message - include validation and deseralization")
     protected EdxlMessage extractMessage(Message message) {
         String receivedEdxl = new String(message.getBody(), StandardCharsets.UTF_8);
         validateFullMessage(message, receivedEdxl);
         return deserializeMessage(message, receivedEdxl);
     }
 
-    @Timed(value = "validate.received.message", description = "Validate incoming message")
     private void validateFullMessage(Message message, String receivedEdxl) {
         // We deserialize according to the content type
         // It MUST be explicitly set by the client
@@ -191,7 +189,6 @@ public class MessageHandler {
         }
     }
 
-    @Timed(value = "validate.received.envelope", description = "Validate incoming envelope")
     private void validateEnvelopeOnly(Message message, String receivedEdxl, ValidationException contentValidationException) {
         try {
             String distributionID = null;
@@ -218,7 +215,6 @@ public class MessageHandler {
         }
     }
 
-    @Timed(value = "deserialize.received.message", description = "Deserialize incoming message")
     private EdxlMessage deserializeMessage(Message message, String receivedEdxl) {
         EdxlMessage edxlMessage;
 
@@ -248,7 +244,6 @@ public class MessageHandler {
         return edxlMessage;
     }
 
-    @Timed(value = "serialize.forwarded.message", description = "Serialize forwarded message and return new AMQP message")
     private Message getFwdMessageBody(EdxlMessage edxlMessage, Message receivedAmqpMessage, MessageProperties fwdAmqpProperties) {
         String recipientID = getRecipientID(edxlMessage);
         String senderID = getSenderFromRoutingKey(receivedAmqpMessage);

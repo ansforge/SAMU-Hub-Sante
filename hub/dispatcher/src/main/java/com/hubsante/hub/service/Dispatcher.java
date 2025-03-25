@@ -24,7 +24,8 @@ import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.edxl.EdxlMessage;
 import com.hubsante.model.report.ErrorCode;
 import com.hubsante.model.report.Error;
-import io.micrometer.core.annotation.Timed;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.context.Scope;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.AmqpRejectAndDontRequeueException;
 import org.springframework.amqp.core.Message;
@@ -33,6 +34,7 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import io.opentelemetry.api.trace.Tracer;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -71,6 +73,8 @@ public class Dispatcher {
     @Qualifier("jsonMapper")
     private ObjectMapper jsonMapper;
     private final ConversionHandler conversionHandler;
+    @Autowired
+    private Tracer tracer;
 
     public Dispatcher(MessageHandler messageHandler, RabbitTemplate rabbitTemplate, EdxlHandler edxlHandler, XmlMapper xmlMapper, ObjectMapper jsonMapper, ConversionHandler conversionHandler) {
         this.messageHandler = messageHandler;
@@ -117,9 +121,13 @@ public class Dispatcher {
     }
 
     @RabbitListener(queues = DISPATCH_QUEUE_NAME)
-    @Timed(value = DISPATCH_TIMED_METRIC, description = "Time taken to fully dispatch a message")
     public void dispatch(Message message) {
-        try {
+        Span rootSpan = tracer.spanBuilder("dispatch")
+                // TODO: use distribution id
+                .setAttribute("distribution.id", "fakeID")
+                .startSpan();
+
+        try (Scope scope = rootSpan.makeCurrent()) {
             // Deserialize the message according to its content type
             EdxlMessage edxlMessage = messageHandler.extractMessage(message);
             // reject the message if no health actor is involved (as sender or recipient)
@@ -152,11 +160,12 @@ public class Dispatcher {
             // a hole in our error cover
             log.error("Unexpected error occurred while dispatching message from " + message.getMessageProperties().getReceivedRoutingKey(), e);
             throw new AmqpRejectAndDontRequeueException(e);
+        } finally {
+            rootSpan.end();
         }
     }
 
     @RabbitListener(queues = DISPATCH_DLQ_NAME)
-    @Timed(value = DLQ_TIMED_METRIC, description = "Time taken to fully dispatch a dead letter queued message")
     public void dispatchDLQ(Message message) {
         try {
             // TODO bbo
