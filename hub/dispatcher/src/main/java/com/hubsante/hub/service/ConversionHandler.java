@@ -38,9 +38,9 @@ public class ConversionHandler {
         this.conversionWebClient = conversionWebClient;
     }
 
-    protected EdxlMessage convertIncomingCisu(MessageHandler messageHandler, EdxlMessage edxlMessage) throws JsonProcessingException {
+    protected EdxlMessage applyConversionRules(MessageHandler messageHandler, EdxlMessage edxlMessage) throws JsonProcessingException {
         String jsonEdxlString = messageHandler.serializeJsonEDXL(edxlMessage);
-        
+
         try {
             // ToDo: handle the version logic
             String convertedJson = callConversionService(jsonEdxlString, "v3", "v3", true, edxlMessage.getDistributionID());

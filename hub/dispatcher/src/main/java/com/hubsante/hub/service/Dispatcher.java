@@ -128,8 +128,9 @@ public class Dispatcher {
             // ToDo: see how hubConfig should be made available to the Dispatcher (and remove getter in MessageHandler)
             // ToDo: check this only on specific vhosts (like 15-NexSIS)?
             if (ConversionUtils.requiresCisuConversion(messageHandler.getHubConfig(), edxlMessage)) {
-                edxlMessage = conversionHandler.convertIncomingCisu(messageHandler, edxlMessage);
+                edxlMessage = conversionHandler.applyConversionRules(messageHandler, edxlMessage);
             }
+
             // Reject the message if the sender is not consistent with the routing key
             checkSenderConsistency(message, edxlMessage);
             // Reject the message if the delivery mode is not PERSISTENT
