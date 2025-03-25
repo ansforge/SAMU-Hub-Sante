@@ -24,11 +24,25 @@ import static com.hubsante.hub.utils.MessageUtils.HEALTH_PREFIX;
 import static com.hubsante.hub.utils.MessageUtils.getRecipientID;
 
 public class ConversionUtils {
-
     private final static boolean DEFAULT_DIRECT_CISU_PREFERENCE = false;
 
+    public static boolean requiresConversion(HubConfiguration hubConfig, EdxlMessage edxlMessage){
+        boolean isCisuConversion = ConversionUtils.requiresCisuConversion(hubConfig, edxlMessage);
+        boolean isVersionConversion = ConversionUtils.requiresVersionConversion();
+
+        return isVersionConversion || isCisuConversion;
+    }
+
+    public static boolean requiresVersionConversion(){
+        String sourceVersion = "v1";
+        String targetVersion = "v1";
+        // todo - récupérer les valeurs du hub config
+
+        return sourceVersion != targetVersion;
+    }
+
     public static boolean requiresCisuConversion(HubConfiguration hubConfig, EdxlMessage edxlMessage) {
-        return isCisuExchange(edxlMessage) && 
+        return isCisuExchange(edxlMessage) &&
                isConvertedModel(edxlMessage) &&
                !isDirectCisuForHealthActor(hubConfig, edxlMessage);
     }
