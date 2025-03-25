@@ -158,4 +158,9 @@ public class ConversionUtilsTest {
             }
         }
     }
+
+    @Test
+    void testBuildExchange(){
+        assertEquals("transferV1toV2", ConversionUtils.buildExchangeDestination("v1", "v2"));
+    }
 }

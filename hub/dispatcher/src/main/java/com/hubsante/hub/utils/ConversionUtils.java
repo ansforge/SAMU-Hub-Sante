@@ -20,11 +20,16 @@ import com.hubsante.model.health.CreateCaseHealthWrapper;
 import com.hubsante.model.edxl.EdxlMessage;
 import com.hubsante.hub.config.HubConfiguration;
 
+import static com.hubsante.hub.config.AmqpConfiguration.TRANSFER_EXCHANGE_PREFIX;
 import static com.hubsante.hub.utils.MessageUtils.HEALTH_PREFIX;
 import static com.hubsante.hub.utils.MessageUtils.getRecipientID;
 
 public class ConversionUtils {
     private final static boolean DEFAULT_DIRECT_CISU_PREFERENCE = false;
+
+    public static String buildExchangeDestination(String sourceVersion, String targetVersion) {
+        return TRANSFER_EXCHANGE_PREFIX + sourceVersion.toUpperCase() + "to" + targetVersion.toUpperCase();
+    }
 
     public static boolean requiresConversion(HubConfiguration hubConfig, EdxlMessage edxlMessage){
         boolean isCisuConversion = ConversionUtils.requiresCisuConversion(hubConfig, edxlMessage);
