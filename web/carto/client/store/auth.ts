@@ -26,7 +26,7 @@ export const useAuthStore = defineStore('auth', {
 
   actions: {
     async login(password: string) {
-      const response = await fetch(this.getServerUrl() + '/login', {
+      const response = await fetch(this.getServerUrl() + '/carto/api/login', {
         method: 'POST',
         body: JSON.stringify({ password: password }),
         headers: {
