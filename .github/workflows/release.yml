@@ -42,8 +42,11 @@ jobs:
           elif [[ "$RELEASE_NAME" == healthcheck-* ]]; then
             PROJECT="healthcheck"
             VERSION=${RELEASE_NAME#healthcheck-}
+          elif [[ "$RELEASE_NAME" == carto-* ]]; then
+            PROJECT="carto"
+            VERSION=${RELEASE_NAME#carto-}
           else
-            echo "Invalid release name prefix. Must be 'dispatcher', 'lrm', 'landing' or 'healthcheck'."
+            echo "Invalid release name prefix. Must be 'dispatcher', 'lrm', 'landing', 'carto' or 'healthcheck'."
             exit 1
           fi
           
@@ -115,3 +118,21 @@ jobs:
           platforms: linux/amd64
           tags: ghcr.io/${{ github.repository_owner }}/hub-healthcheck:${{ steps.extract_info.outputs.version }}
           context: ./tools/healthcheck
+
+      - name: Build and push carto backend Docker image
+        if: steps.extract_info.outputs.project == 'carto'
+        uses: docker/build-push-action@v5
+        with:
+          push: true
+          platforms: linux/amd64
+          tags: ghcr.io/${{ github.repository_owner }}/hub-carto-back:${{ steps.extract_info.outputs.version }}
+          context: ./web/carto/server
+
+      - name: Build and push carto frontend Docker image
+        if: steps.extract_info.outputs.project == 'carto'
+        uses: docker/build-push-action@v5
+        with:
+          push: true
+          platforms: linux/amd64
+          tags: ghcr.io/${{ github.repository_owner }}/hub-carto-front:${{ steps.extract_info.outputs.version }}
+          context: ./web/carto/client

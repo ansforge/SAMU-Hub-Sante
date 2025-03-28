@@ -29,8 +29,6 @@ hub/dispatcher/src/main/resources/*.properties
 
 # Needed as GitHub action for AsyncAPI generation installs npm packages
 node_modules/
-package-lock.json
-package.json
 
 # Class generation
 models/node_modules
