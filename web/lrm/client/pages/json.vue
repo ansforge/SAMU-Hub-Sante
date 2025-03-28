@@ -299,7 +299,7 @@ export default {
     getServerUrl() {
       return `${isEnvProd() ? 'https' : 'http'}://${
         this.$config.public.backendLrmServer
-      }`;
+      }/lrm/api`;
     },
     async fetchBranchesNames() {
       // eslint-disable-next-line no-undef
