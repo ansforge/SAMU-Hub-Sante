@@ -98,6 +98,14 @@
                     readonly
                     label="Branche existante selectionnée"
                   />
+                  <v-text-field
+                    v-model="adminPassword"
+                    type="password"
+                    label="Mot de passe administrateur"
+                    style="width: 75%"
+                    density="compact"
+                    prepend-inner-icon="mdi-lock-outline"
+                  />
                 </v-card-text>
                 <v-card-actions>
                   <v-btn
@@ -207,6 +215,7 @@ export default {
       createNewBranch: false,
       isCommiting: false,
       openedPullRequestLink: '',
+      adminPassword: '',
     };
   },
   computed: {
@@ -350,7 +359,6 @@ export default {
       a.click();
     },
     async commitChanges() {
-      const password = prompt('Enter admin password');
       const data = JSON.stringify(
         trimEmptyValues({
           [this.currentMessageType?.schema?.title]: this.store.currentMessage,
@@ -364,7 +372,7 @@ export default {
         const commitResponse = await $fetch(`${this.getServerUrl()}/modeles`, {
           method: 'POST',
           body: JSON.stringify({
-            password,
+            password: this.adminPassword,
             fileName:
               this.currentMessageType.examples[this.messageTypeTabIndex].file,
             content: data,
