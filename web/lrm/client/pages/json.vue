@@ -367,16 +367,13 @@ export default {
         2
       );
       this.isCommiting = true;
-      console.log('examples:', this.currentMessageType.examples);
-      console.log('current message:', this.store.currentMessage);
       try {
         // eslint-disable-next-line no-undef
         const commitResponse = await $fetch(`${this.getServerUrl()}/modeles`, {
           method: 'POST',
           body: JSON.stringify({
             password: this.adminPassword,
-            fileName:
-              this.currentMessageType.examples[this.messageTypeTabIndex].file,
+            fileName: this.store.currentMessageFilePath,
             content: data,
             branchConfig: this.createNewBranch
               ? {

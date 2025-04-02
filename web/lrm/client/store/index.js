@@ -18,6 +18,7 @@ export const useMainStore = defineStore('main', {
     socket: null,
     isWebsocketConnected: false,
     currentMessage: null,
+    currentMessageFilePath: null,
     currentUseCase: null,
     selectedSchema: 'RS-EDA',
     alerts: [],

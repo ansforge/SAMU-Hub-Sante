@@ -173,6 +173,7 @@ export default {
           .then((response) => response.json())
           .then((data) => {
             this.store.currentMessage = data[Object.keys(data)[0]];
+            this.store.currentMessageFilePath = exampleFilepath;
             this.emitExampleLoaded();
           })
           .catch((error) => {
