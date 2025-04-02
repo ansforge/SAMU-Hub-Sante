@@ -71,7 +71,10 @@
                     icon="mdi-close"
                     density="comfortable"
                     variant="text"
-                    @click="isActive.value = false"
+                    @click="
+                      isActive.value = false;
+                      resetCommitModal();
+                    "
                   ></v-btn>
                 </template>
                 <v-card-text>
@@ -395,6 +398,11 @@ export default {
       } finally {
         this.isCommiting = false;
       }
+    },
+    resetCommitModal() {
+      this.adminPassword = '';
+      this.newBranch = '';
+      this.createNewBranch = false;
     },
   },
 };
