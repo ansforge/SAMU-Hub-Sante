@@ -6,7 +6,7 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const WebSocket = require('ws');
-const logger = require('./logger');
+const logger = require('./logger').logger;
 const {
   connect, connectAsync, close,
   HUB_SANTE_EXCHANGE, VHOST_CLIENT_MAP, messageProperties,
