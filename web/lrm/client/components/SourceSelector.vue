@@ -1,5 +1,5 @@
 <template>
-  <v-combobox
+  <v-autocomplete
     v-model="selectedSource"
     data-cy="source-selector"
     :items="sources"
@@ -9,6 +9,7 @@
     hide-details
     variant="outlined"
     :return-object="false"
+    :clearable="false"
     @update:model-value="sourceSelected"
   />
   <v-btn
@@ -51,7 +52,10 @@ const selectedSource = ref('');
 const emit = defineEmits(['sourceChanged']);
 
 function sourceSelected() {
-  emit('sourceChanged', selectedSource.value);
+  // Prevent sending event for empty value when clearing the input
+  if (selectedSource.value) {
+    emit('sourceChanged', selectedSource.value);
+  }
 }
 
 computed(() => {

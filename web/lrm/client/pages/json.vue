@@ -52,74 +52,78 @@
             <v-icon start> mdi-text-box-check-outline </v-icon>
             Valider
           </v-btn>
-          <v-dialog v-if="store.isAdvanced" max-width="500">
-            <template #activator="{ props: activatorProps }">
-              <v-btn
-                v-bind="activatorProps"
-                color="surface-variant"
-                variant="flat"
-              >
-                <v-icon start> mdi-github </v-icon>
-                Commit
-              </v-btn>
-            </template>
-
-            <template #default="{ isActive }">
-              <v-card title="Commit les changements">
-                <template #append>
-                  <v-btn
-                    icon="mdi-close"
-                    density="comfortable"
-                    variant="text"
-                    @click="isActive.value = false"
-                  ></v-btn>
-                </template>
-                <v-card-text>
-                  <v-switch
-                    v-model="createNewBranch"
-                    color="primary"
-                    label="Utiliser une nouvelle branche ?"
-                  />
-                  <v-text-field
-                    v-if="createNewBranch"
-                    v-model="source"
-                    readonly
-                    label="Branche de base selectionnée"
-                  />
-                  <v-text-field
-                    v-if="createNewBranch"
-                    v-model="newBranch"
-                    label="Nom de la nouvelle branche"
-                    :prefix="VALID_BRANCH_PREFIX"
-                  />
-                  <v-text-field
-                    v-else
-                    v-model="source"
-                    readonly
-                    label="Branche existante selectionnée"
-                  />
-                </v-card-text>
-                <v-card-actions>
-                  <v-btn
-                    v-if="openedPullRequestLink"
-                    color="primary"
-                    variant="text"
-                    :href="openedPullRequestLink"
-                    target="_blank"
-                  >
-                    Open pull request
-                  </v-btn>
-                  <v-btn
-                    variant="flat"
-                    color="surface-variant"
-                    :loading="isCommiting"
-                    @click="commitChanges"
-                  >
-                    Commit
-                  </v-btn>
-                </v-card-actions>
-              </v-card>
-            </template>
+          <v-btn
+            v-if="store.isAdvanced"
+            color="surface-variant"
+            variant="flat"
+            @click="isCommitDialogOpen = true"
+          >
+            <v-icon start> mdi-github </v-icon>
+            Commit
+          </v-btn>
+          <v-dialog v-model="isCommitDialogOpen" max-width="500">
+            <v-card title="Commit les changements">
+              <template #append>
+                <v-btn
+                  icon="mdi-close"
+                  density="comfortable"
+                  variant="text"
+                  @click="resetCommitModal"
+                ></v-btn>
+              </template>
+              <v-card-text>
+                <v-switch
+                  v-model="createNewBranch"
+                  color="primary"
+                  label="Utiliser une nouvelle branche ?"
+                />
+                <v-text-field
+                  v-if="createNewBranch"
+                  v-model="source"
+                  readonly
+                  label="Branche de base selectionnée"
+                />
+                <v-text-field
+                  v-if="createNewBranch"
+                  v-model="newBranch"
+                  label="Nom de la nouvelle branche"
+                  :prefix="VALID_BRANCH_PREFIX"
+                />
+                <v-text-field
+                  v-else
+                  v-model="source"
+                  readonly
+                  label="Branche existante selectionnée"
+                />
+                <v-text-field
+                  v-model="adminPassword"
+                  type="password"
+                  label="Mot de passe administrateur"
+                  width="75%"
+                  density="compact"
+                  prepend-inner-icon="mdi-lock-outline"
+                />
+              </v-card-text>
+              <v-card-actions>
+                <v-btn
+                  v-if="openedPullRequestLink"
+                  color="primary"
+                  variant="text"
+                  :href="openedPullRequestLink"
+                  target="_blank"
+                >
+                  Open pull request
+                </v-btn>
+                <v-btn
+                  variant="flat"
+                  color="surface-variant"
+                  :loading="isCommiting"
+                  @click="commitChanges"
+                >
+                  Commit
+                </v-btn>
+              </v-card-actions>
+            </v-card>
           </v-dialog>
         </v-card-title>
         <v-card-text>
@@ -207,6 +211,8 @@ export default {
       createNewBranch: false,
       isCommiting: false,
       openedPullRequestLink: '',
+      adminPassword: '',
+      isCommitDialogOpen: false,
     };
   },
   computed: {
@@ -299,7 +305,7 @@ export default {
     getServerUrl() {
       return `${isEnvProd() ? 'https' : 'http'}://${
         this.$config.public.backendLrmServer
-      }`;
+      }/lrm/api`;
     },
     async fetchBranchesNames() {
       // eslint-disable-next-line no-undef
@@ -350,7 +356,6 @@ export default {
       a.click();
     },
     async commitChanges() {
-      const password = prompt('Enter admin password');
       const data = JSON.stringify(
         trimEmptyValues({
           [this.currentMessageType?.schema?.title]: this.store.currentMessage,
@@ -364,9 +369,8 @@ export default {
         const commitResponse = await $fetch(`${this.getServerUrl()}/modeles`, {
           method: 'POST',
           body: JSON.stringify({
-            password,
-            fileName:
-              this.currentMessageType.examples[this.messageTypeTabIndex].file,
+            password: this.adminPassword,
+            fileName: this.store.currentMessageFilePath,
             content: data,
             branchConfig: this.createNewBranch
               ? {
@@ -383,10 +387,18 @@ export default {
         this.openedPullRequestLink = commitResponse.data.pull_request_url;
         this.toasts.push(this.app.$toast.success('Le commit a été effectué.'));
       } catch (err) {
-        this.toasts.push(this.app.$toast.error(err.data.message));
+        const errorMessage =
+          err?.data?.message || 'Une erreur inattendue est survenue.';
+        this.toasts.push(this.app.$toast.error(errorMessage));
       } finally {
         this.isCommiting = false;
       }
+    },
+    resetCommitModal() {
+      this.isCommitDialogOpen = false;
+      this.adminPassword = '';
+      this.newBranch = '';
+      this.createNewBranch = false;
     },
   },
 };
