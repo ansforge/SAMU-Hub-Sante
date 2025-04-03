@@ -56,12 +56,12 @@
             v-if="store.isAdvanced"
             color="surface-variant"
             variant="flat"
-            @click="dialog = true"
+            @click="isCommitDialogOpen = true"
           >
             <v-icon start> mdi-github </v-icon>
             Commit
           </v-btn>
-          <v-dialog v-model="dialog" max-width="500">
+          <v-dialog v-model="isCommitDialogOpen" max-width="500">
             <v-card title="Commit les changements">
               <template #append>
                 <v-btn
@@ -212,7 +212,7 @@ export default {
       isCommiting: false,
       openedPullRequestLink: '',
       adminPassword: '',
-      dialog: false,
+      isCommitDialogOpen: false,
     };
   },
   computed: {
@@ -305,7 +305,7 @@ export default {
     getServerUrl() {
       return `${isEnvProd() ? 'https' : 'http'}://${
         this.$config.public.backendLrmServer
-      }`;
+      }/lrm/api`;
     },
     async fetchBranchesNames() {
       // eslint-disable-next-line no-undef
@@ -387,7 +387,6 @@ export default {
         this.openedPullRequestLink = commitResponse.data.pull_request_url;
         this.toasts.push(this.app.$toast.success('Le commit a été effectué.'));
       } catch (err) {
-        console.log(err);
         const errorMessage =
           err?.data?.message || 'Une erreur inattendue est survenue.';
         this.toasts.push(this.app.$toast.error(errorMessage));
@@ -396,7 +395,7 @@ export default {
       }
     },
     resetCommitModal() {
-      this.dialog = false;
+      this.isCommitDialogOpen = false;
       this.adminPassword = '';
       this.newBranch = '';
       this.createNewBranch = false;
