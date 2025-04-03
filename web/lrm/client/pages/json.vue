@@ -68,10 +68,7 @@
                   icon="mdi-close"
                   density="comfortable"
                   variant="text"
-                  @click="
-                    dialog = false;
-                    resetCommitModal();
-                  "
+                  @click="resetCommitModal"
                 ></v-btn>
               </template>
               <v-card-text>
@@ -308,7 +305,7 @@ export default {
     getServerUrl() {
       return `${isEnvProd() ? 'https' : 'http'}://${
         this.$config.public.backendLrmServer
-      }/lrm/api`;
+      }`;
     },
     async fetchBranchesNames() {
       // eslint-disable-next-line no-undef
@@ -390,6 +387,7 @@ export default {
         this.openedPullRequestLink = commitResponse.data.pull_request_url;
         this.toasts.push(this.app.$toast.success('Le commit a été effectué.'));
       } catch (err) {
+        console.log(err);
         const errorMessage =
           err?.data?.message || 'Une erreur inattendue est survenue.';
         this.toasts.push(this.app.$toast.error(errorMessage));
@@ -398,7 +396,7 @@ export default {
       }
     },
     resetCommitModal() {
-      this.dalog = false;
+      this.dialog = false;
       this.adminPassword = '';
       this.newBranch = '';
       this.createNewBranch = false;
