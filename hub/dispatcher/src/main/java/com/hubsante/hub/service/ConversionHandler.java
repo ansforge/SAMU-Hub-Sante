@@ -38,17 +38,17 @@ public class ConversionHandler {
         this.conversionWebClient = conversionWebClient;
     }
 
-    protected EdxlMessage applyConversionRules(MessageHandler messageHandler, EdxlMessage edxlMessage) throws JsonProcessingException {
+    protected String applyConversionRules(MessageHandler messageHandler, EdxlMessage edxlMessage, String sourceVersion, String targetVersion, Boolean isCisuConversion) throws JsonProcessingException {
         String jsonEdxlString = messageHandler.serializeJsonEDXL(edxlMessage);
 
         try {
-            // ToDo: handle the version logic
-            String convertedJson = callConversionService(jsonEdxlString, "v3", "v3", true, edxlMessage.getDistributionID());
+            String convertedJson = callConversionService(jsonEdxlString, sourceVersion, targetVersion, isCisuConversion, edxlMessage.getDistributionID());
+            log.debug("Message converted successfully");
 
-            log.debug("Successfully converted CISU message");
-            return messageHandler.deserializeJsonEDXL(convertedJson);
-        } catch (JsonProcessingException e) {
-            log.error("Error during CISU message conversion", e);
+            return convertedJson; // returns a string (deserialization is not possible because of version change)
+        } catch (RuntimeException e) {
+            // Error raised by the conversion service or its call
+            log.error("Error during internal call to Hub Santé conversion service", e);
             throw new ConversionException(e.getMessage(), edxlMessage.getDistributionID());
         }
     }
