@@ -32,15 +32,18 @@ import org.springframework.web.reactive.function.client.WebClient;
 import jakarta.annotation.PostConstruct;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 
 @Slf4j
 @Configuration
 public class HubConfiguration {
 
-    private static final int TOGGLE_ROW_LENGTH = 4;
+    private static final int TOGGLE_ROW_LENGTH = 5;
+    private static final String DATA_DIVIDER = ",";
 
     @Value("${client.preferences.file}")
     private File configFile;
@@ -53,6 +56,7 @@ public class HubConfiguration {
     private HashMap<String, Boolean> useXmlPreferences = new HashMap<>();
     private HashMap<String, Boolean> directCisuPreferences = new HashMap<>();
     private HashMap<String, String> clientsEditorMap = new HashMap<>();
+    private HashMap<String, String[]> lrmPerimeterVersions = new HashMap<>();
 
     @PostConstruct
     public void init() throws Exception {
@@ -77,6 +81,7 @@ public class HubConfiguration {
                     useXmlPreferences.put(items[0], Boolean.parseBoolean(items[1]));
                     directCisuPreferences.put(items[0], Boolean.parseBoolean(items[2]));
                     clientsEditorMap.put(items[0], items[3]);
+                    lrmPerimeterVersions.put(items[0], formatLrmPerimeterVersions(items[4]));
                 }
             };
             CsvParserSettings parserSettings = new CsvParserSettings();
@@ -105,6 +110,10 @@ public class HubConfiguration {
         return clientsEditorMap;
     }
 
+    public HashMap<String, String[]> getLrmPerimeterVersions() {
+        return lrmPerimeterVersions;
+    }
+
     public long getDefaultTTL() {
         return defaultTTL;
     }
@@ -124,6 +133,37 @@ public class HubConfiguration {
     @Bean
     public TimedAspect timedAspect(MeterRegistry registry) {
         return new TimedAspect(registry);
+    }
+
+    public static String[] formatLrmPerimeterVersions(String hubConfigVersions){
+        String[] nonFormattedVersions = splitString(hubConfigVersions);
+
+        if (nonFormattedVersions == null){
+            return null;
+        }
+
+        List<String> formattedVersions = new ArrayList<>();
+        // todo - changer pour que ce soit scalable (pour prochaines versions)
+        for (String value : nonFormattedVersions) {
+            if (value.contains("1.")) {
+                formattedVersions.add(Constants.V1_TAG);
+            }
+            if (value.contains("2.")) {
+                formattedVersions.add(Constants.V2_TAG);
+            }
+            if (value.contains("3.")) {
+                formattedVersions.add(Constants.V3_TAG);
+            }
+        }
+
+        return formattedVersions.toArray(new String[0]);
+    }
+
+    public static String[] splitString(String input) {
+        if (input == null || input.isEmpty()) {
+            return null;
+        }
+        return input.split(DATA_DIVIDER);
     }
 
     @Bean
