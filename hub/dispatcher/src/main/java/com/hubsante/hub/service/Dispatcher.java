@@ -18,6 +18,7 @@ package com.hubsante.hub.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import com.hubsante.hub.config.Constants;
 import com.hubsante.hub.exception.*;
 import com.hubsante.hub.utils.ConversionUtils;
 import com.hubsante.model.EdxlHandler;
@@ -137,7 +138,7 @@ public class Dispatcher {
             // Reject the message if the delivery mode is not PERSISTENT
             checkDeliveryModeIsPersistent(message, edxlMessage.getDistributionID());
             // Reject the message if distributionID does not respect the format (senderID_internalID)
-            if (message.getMessageProperties().getReceivedRoutingKey().startsWith("fr.health")) {
+            if (message.getMessageProperties().getReceivedRoutingKey().startsWith(Constants.FR_HEALTH_PREFIX)) {
                 checkDistributionIDFormat(edxlMessage);
             }
             // Forward the message according to the recipient preferences. Conversion JSON <-> XML can happen here

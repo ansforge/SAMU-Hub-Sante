@@ -31,4 +31,5 @@ public class Constants {
     public static final String V1_TAG = "v1";
     public static final String V2_TAG = "v2";
     public static final String V3_TAG = "v3";
+    public static final String FR_HEALTH_PREFIX = "fr.health";
 }
