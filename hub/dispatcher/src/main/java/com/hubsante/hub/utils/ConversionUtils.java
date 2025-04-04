@@ -32,18 +32,48 @@ public class ConversionUtils {
     }
 
     public static boolean requiresConversion(HubConfiguration hubConfig, EdxlMessage edxlMessage){
-        boolean isCisuConversion = ConversionUtils.requiresCisuConversion(hubConfig, edxlMessage);
-        boolean isVersionConversion = ConversionUtils.requiresVersionConversion();
+        boolean isCisuConversion = requiresCisuConversion(hubConfig, edxlMessage);
+        boolean isVersionConversion = requiresVersionConversion(hubConfig, edxlMessage);
 
         return isVersionConversion || isCisuConversion;
     }
 
-    public static boolean requiresVersionConversion(){
-        String sourceVersion = "v1";
-        String targetVersion = "v1";
-        // todo - récupérer les valeurs du hub config
+    public static boolean requiresVersionConversion(HubConfiguration hubConfig, EdxlMessage edxlMessage){
+        String recipientID = getRecipientID(edxlMessage);
+        String senderID = edxlMessage.getSenderID();
 
-        return sourceVersion != targetVersion;
+        String[] sourceVersions= hubConfig.getLrmPerimeterVersions().get(senderID);
+        String[] targetVersions= hubConfig.getLrmPerimeterVersions().get(recipientID);
+
+        if (sourceVersions == null || targetVersions == null){
+            return false;
+        }
+
+        if (sourceVersions.length != 1 || targetVersions.length != 1){
+            return false;
+        }
+
+        return sourceVersions[0] != targetVersions[0];
+    }
+
+    public static String getSourceVersion(HubConfiguration hubConfig, EdxlMessage edxlMessage){
+        String senderID = edxlMessage.getSenderID();
+
+        String[] sourceVersions= hubConfig.getLrmPerimeterVersions().get(senderID);
+
+        if (sourceVersions == null || sourceVersions.length == 0){ return null;}
+
+        return sourceVersions[0]; // todo - choix arbitraire, à changer quand la refacto des versions sera faite (passer de list[] à une version par client)
+    }
+
+    public static String getTargetVersion(HubConfiguration hubConfig, EdxlMessage edxlMessage){
+        String recipientID = getRecipientID(edxlMessage);
+
+        String[] targetVersions= hubConfig.getLrmPerimeterVersions().get(recipientID);
+
+        if (targetVersions == null || targetVersions.length == 0){ return null;}
+
+        return targetVersions[0]; // todo - choix arbitraire, à changer quand la refacto des versions sera faite (passer de list[] à une version par client)
     }
 
     public static boolean requiresCisuConversion(HubConfiguration hubConfig, EdxlMessage edxlMessage) {
