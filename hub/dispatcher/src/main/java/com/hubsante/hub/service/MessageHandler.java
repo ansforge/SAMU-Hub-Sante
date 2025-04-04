@@ -160,6 +160,17 @@ public class MessageHandler {
         return getFwdMessageBody(edxlMessage, receivedAmqpMessage, forwardedMessageProperties);
     }
 
+    protected Message forwardedStringMessage(String stringMessage, Message receivedAmqpMessage) {
+        MessageProperties receivedAmqpProperties = receivedAmqpMessage.getMessageProperties();
+        MessageProperties forwardedMessageProperties =
+                MessagePropertiesBuilder.fromClonedProperties(receivedAmqpProperties).build();
+
+        // TODO - set a per-message TTL if the EDXL.dateTimeExpires is before the queue TTL
+
+        // we serialize the message according to the recipient preferences
+        return getFwdStringMessageBody(stringMessage, receivedAmqpMessage, forwardedMessageProperties);
+    }
+
     /*
      ** Deserialize the message according to its content type
      */
@@ -274,6 +285,18 @@ public class MessageHandler {
             // because the same methods have already been called in the deserializeMessage method
             throw new RuntimeException("Could not serialize message " + edxlMessage.getDistributionID(), e);
         }
+    }
+
+    @Timed(value = "serialize.forwarded.message", description = "Serialize forwarded string message and return new AMQP message")
+    private Message getFwdStringMessageBody(String message, Message receivedAmqpMessage, MessageProperties fwdAmqpProperties) {
+        String senderID = getSenderFromRoutingKey(receivedAmqpMessage);
+
+        fwdAmqpProperties.setContentType(MessageProperties.CONTENT_TYPE_JSON);
+
+        log.info("  ↳ [x] Forwarding converted message from {} with hashed value {}", senderID, hashBody(receivedAmqpMessage));
+
+        fwdAmqpProperties.setHeader(DLQ_ORIGINAL_ROUTING_KEY, senderID);
+        return new Message(message.getBytes(StandardCharsets.UTF_8), fwdAmqpProperties);
     }
 
     private void logMessage(Message message, EdxlMessage edxlMessage, String receivedEdxl) {
