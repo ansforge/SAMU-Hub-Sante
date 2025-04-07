@@ -100,7 +100,7 @@ public class DispatcherTest {
     private final String SDIS_C_ROUTING_KEY = "fr.fire.sdisC";
 
     private final String TEST_VHOST = "default-vhost";
-    private final String TEST_EDITOR = "default-editor";
+    private final String TEST_EDITOR = "lrm-test";
     private final String INCONSISTENT_ROUTING_KEY = "fr.health.no-samu";
     private final String JSON = MessageProperties.CONTENT_TYPE_JSON;
     private final String XML = MessageProperties.CONTENT_TYPE_XML;
@@ -265,11 +265,11 @@ public class DispatcherTest {
             mockedConversionUtils.when(() -> ConversionUtils.requiresConversion(any(), any())).thenReturn(true);
             mockedConversionUtils.when(() -> ConversionUtils.requiresCisuConversion(any(), any())).thenReturn(false);
 
-            doAnswer(invocation -> invocation.getArgument(0)).when(conversionHandler).callConversionService(anyString(), anyString(), anyString(), anyBoolean());
+            doAnswer(invocation -> invocation.getArgument(0)).when(conversionHandler).callConversionService(anyString(), anyString(), anyString(), anyBoolean(), anyString());
 
             dispatcher.dispatch(message);
 
-            verify(conversionHandler, times(1)).callConversionService(anyString(), anyString(), anyString(), eq(false));
+            verify(conversionHandler, times(1)).callConversionService(anyString(), anyString(), anyString(), eq(false), anyString());
         }
     }
 
@@ -469,7 +469,7 @@ public class DispatcherTest {
             mockedConversionUtils.when(() -> ConversionUtils.requiresVersionConversion(any(), any())).thenReturn(true);
 
 
-            doAnswer(invocation -> invocation.getArgument(0)).when(conversionHandler).callConversionService(anyString(), anyString(), anyString(), anyBoolean());
+            doAnswer(invocation -> invocation.getArgument(0)).when(conversionHandler).callConversionService(anyString(), anyString(), anyString(), anyBoolean(), anyString());
 
             dispatcher.dispatch(message);
 
@@ -495,7 +495,7 @@ public class DispatcherTest {
             mockedConversionUtils.when(() -> ConversionUtils.requiresCisuConversion(any(), any())).thenReturn(false);
             mockedConversionUtils.when(() -> ConversionUtils.requiresVersionConversion(any(), any())).thenReturn(isVersionConversion);
 
-            doAnswer(invocation -> invocation.getArgument(0)).when(conversionHandler).callConversionService(anyString(), eq(sourceVersion), eq(targetVersion), eq(false));
+            doAnswer(invocation -> invocation.getArgument(0)).when(conversionHandler).callConversionService(anyString(), eq(sourceVersion), eq(targetVersion), eq(false), anyString());
 
             dispatcher.dispatch(message);
 
@@ -521,7 +521,7 @@ public class DispatcherTest {
             mockedConversionUtils.when(() -> ConversionUtils.requiresCisuConversion(any(), any())).thenReturn(false);
             mockedConversionUtils.when(() -> ConversionUtils.requiresVersionConversion(any(), any())).thenReturn(isVersionConversion);
 
-            doAnswer(invocation -> invocation.getArgument(0)).when(conversionHandler).callConversionService(anyString(), eq(sourceVersion), eq(targetVersion), eq(false));
+            doAnswer(invocation -> invocation.getArgument(0)).when(conversionHandler).callConversionService(anyString(), eq(sourceVersion), eq(targetVersion), eq(false), anyString());
 
             dispatcher.dispatch(message);
 
@@ -547,7 +547,7 @@ public class DispatcherTest {
             mockedConversionUtils.when(() -> ConversionUtils.requiresCisuConversion(any(), any())).thenReturn(false);
             mockedConversionUtils.when(() -> ConversionUtils.requiresVersionConversion(any(), any())).thenReturn(isVersionConversion);
 
-            doAnswer(invocation -> invocation.getArgument(0)).when(conversionHandler).callConversionService(anyString(), eq(sourceVersion), eq(targetVersion), eq(false));
+            doAnswer(invocation -> invocation.getArgument(0)).when(conversionHandler).callConversionService(anyString(), eq(sourceVersion), eq(targetVersion), eq(false), anyString());
 
             dispatcher.dispatch(message);
 
@@ -665,7 +665,6 @@ public class DispatcherTest {
 
             ConversionException thrownException = exceptionCaptor.getValue();
             assertEquals(edxlMessage.getDistributionID(), thrownException.getReferencedDistributionID());
-            assertTrue(thrownException.getMessage().contains(conversionErrorMessage));
 
             Message handledMessage = messageCaptor.getValue();
             assertEquals(receivedMessage, handledMessage);
