@@ -1,4 +1,4 @@
-const { validatePayload } = require('./modelesRouter');
+import { validatePayload } from './modelesRouter';
 
 const generateValidInput = () => ({
   password: 'mockPassword',
