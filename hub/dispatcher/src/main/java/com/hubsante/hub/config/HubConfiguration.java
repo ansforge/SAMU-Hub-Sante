@@ -37,6 +37,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 @Slf4j
 @Configuration
@@ -142,17 +143,20 @@ public class HubConfiguration {
             return null;
         }
 
+        Map<String, String> versionMap = Map.of(
+            "1.", Constants.V1_TAG,
+            "2.", Constants.V2_TAG,
+            "3.", Constants.V3_TAG
+            // Add new versions here as needed
+        );
+
         List<String> formattedVersions = new ArrayList<>();
-        // todo - changer pour que ce soit scalable (pour prochaines versions)
+
         for (String value : nonFormattedVersions) {
-            if (value.contains("1.")) {
-                formattedVersions.add(Constants.V1_TAG);
-            }
-            if (value.contains("2.")) {
-                formattedVersions.add(Constants.V2_TAG);
-            }
-            if (value.contains("3.")) {
-                formattedVersions.add(Constants.V3_TAG);
+            for (Map.Entry<String, String> entry : versionMap.entrySet()) {
+                if (value.contains(entry.getKey())) {
+                    formattedVersions.add(entry.getValue());
+                }
             }
         }
 
