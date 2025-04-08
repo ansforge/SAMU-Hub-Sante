@@ -8,7 +8,7 @@
     "prestart": "npm install",
     "start": "node index.js",
     "setup": "cd ../client && npm ci && npm run setup && npm run generate && cp -R dist/. ../server/ui",
-    "test": "jest src/**/*.test.*s",
+    "test": "jest src/**",
     "build": "tsc",
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix"
