@@ -1,6 +1,5 @@
 services:
-  lrm-backend:
-    image: lrm-backend
+  lrm-server:
     build:
       context: .
       dockerfile: Dockerfile
