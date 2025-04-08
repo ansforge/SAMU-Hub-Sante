@@ -1,6 +1,6 @@
 import { config } from './config';
 import { logger } from './logger';
-import ExpressServer from './expressServer';
+import { ExpressServer } from './expressServer';
 
 class App {
   private expressServer: ExpressServer | undefined;
