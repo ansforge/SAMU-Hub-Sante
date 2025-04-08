@@ -74,6 +74,9 @@ export class ExpressServer {
                   const body = JSON.parse(msg.content);
                   logger.info(` [x] Received for ${clientId} (${vhost}): ${body.distributionID}`);
                   logger.debug(
+                    // TODO: handle msg content properly
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-expect-error
                     ` [x] Received for ${clientId} (${vhost}): ${body.distributionID} of content ${msg.content}`,
                   );
                   const d = new Date();
