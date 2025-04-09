@@ -45,7 +45,7 @@ onMounted(() => {
 
 const sources = computed(() => [
   ...new Set(store.vhostMap.map((vhost) => vhost.modelVersion)),
-  ...props.branchNames,
+  ...(store.isAdvanced ? props.branchNames : []),
 ]);
 
 const selectedSource = ref('');
