@@ -165,8 +165,6 @@ public class MessageHandler {
         MessageProperties forwardedMessageProperties =
                 MessagePropertiesBuilder.fromClonedProperties(receivedAmqpProperties).build();
 
-        // TODO - set a per-message TTL if the EDXL.dateTimeExpires is before the queue TTL
-
         // we serialize the message according to the recipient preferences
         return getFwdStringMessageBody(stringMessage, receivedAmqpMessage, forwardedMessageProperties);
     }
