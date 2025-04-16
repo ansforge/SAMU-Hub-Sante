@@ -1,6 +1,7 @@
 import vuetify, { transformAssetUrls } from 'vite-plugin-vuetify';
 import { commonjsDeps } from '@koumoul/vjsf/utils/build.js';
 import { defineNuxtConfig } from 'nuxt/config';
+import istanbul from 'vite-plugin-istanbul';
 
 function isEnvProd() {
   return process.env.NODE_ENV === 'production';
@@ -9,7 +10,14 @@ function isEnvProd() {
 export default defineNuxtConfig({
   ssr: true,
   vite: {
-    plugins: [vuetify({ autoImport: true })],
+    plugins: [
+      vuetify({ autoImport: true }),
+      istanbul({
+        exclude: ['node_modules', 'test/', 'coverage/'],
+        extension: ['.js', '.ts', '.vue'],
+        cypress: true,
+      }),
+    ],
     vue: {
       template: {
         transformAssetUrls,

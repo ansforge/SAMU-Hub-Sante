@@ -6,6 +6,8 @@ export default defineConfig({
     experimentalStudio: true,
     setupNodeEvents(_on, _config) {
       // implement node event listeners here
+      require('@cypress/code-coverage/task')(_on, _config);
+      return _config;
     },
   },
 });
