@@ -100,7 +100,7 @@ public class DispatcherTest {
     private final String SDIS_C_ROUTING_KEY = "fr.fire.sdisC";
 
     private final String TEST_VHOST = "default-vhost";
-    private final String TEST_EDITOR = "lrm-test";
+    private final String TEST_EDITOR = "default-editor";
     private final String INCONSISTENT_ROUTING_KEY = "fr.health.no-samu";
     private final String JSON = MessageProperties.CONTENT_TYPE_JSON;
     private final String XML = MessageProperties.CONTENT_TYPE_XML;
