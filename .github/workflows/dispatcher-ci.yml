@@ -1,13 +1,17 @@
-name: Run Tests
+name: Dispatcher CI
 
 on:
   push:
     branches:
       - main
+    paths:
+      - 'hub/dispatcher/**'
 
   pull_request:
     branches:
       - '**'
+    paths:
+      - 'hub/dispatcher/**'
 
 jobs:
   coverage:

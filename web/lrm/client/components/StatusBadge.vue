@@ -2,38 +2,38 @@
   <v-badge
     v-if="isOut(direction)"
     :color="acked ? 'green' : 'orange'"
-    :content="acked ? 'Acquitté': 'En envoi'"
+    :content="acked ? 'Acquitté' : 'En envoi'"
   />
   <v-badge
     v-else
     :color="acked ? 'green' : 'orange'"
-    :content="acked ? 'Acquitté': 'Délivré'"
+    :content="acked ? 'Acquitté' : 'Délivré'"
   />
 </template>
 
 <script>
-import { DIRECTIONS } from '@/constants'
+import { DIRECTIONS } from '@/constants';
 
 export default {
   props: {
     direction: {
       type: String,
-      required: true
+      required: true,
     },
     acked: {
       type: Object,
-      default: null
-    }
+      default: null,
+    },
   },
-  data () {
+  data() {
     return {
-      DIRECTIONS
-    }
+      DIRECTIONS,
+    };
   },
   methods: {
-    isOut (direction) {
-      return direction === DIRECTIONS.OUT
-    }
-  }
-}
+    isOut(direction) {
+      return direction === DIRECTIONS.OUT;
+    },
+  },
+};
 </script>

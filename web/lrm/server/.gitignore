@@ -3,3 +3,5 @@ combined.log
 info.log
 node_modules/
 ui/
+coverage/
+.env

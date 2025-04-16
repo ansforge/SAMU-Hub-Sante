@@ -1,5 +1,6 @@
 import { defineNuxtPlugin } from 'nuxt/app'
-import Vue3Toastify, { toast, type CSSTransitionProps } from 'vue3-toastify'
+import Vue3Toastify, { toast } from 'vue3-toastify'
+import type { CSSTransitionProps } from 'vue3-toastify';
 import 'vue3-toastify/dist/index.css'
 
 export default defineNuxtPlugin((nuxtApp) => {
