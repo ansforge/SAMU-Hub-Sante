@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.hubsante.hub.config.Constants;
 import com.hubsante.hub.exception.*;
+import com.hubsante.hub.utils.ApplyConversionRulesCommand;
 import com.hubsante.hub.utils.ConversionUtils;
 import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.edxl.EdxlMessage;
@@ -135,22 +136,14 @@ public class Dispatcher {
             if (message.getMessageProperties().getReceivedRoutingKey().startsWith(Constants.FR_HEALTH_PREFIX)) {
                 checkDistributionIDFormat(edxlMessage);
             }
-            // Extract recipient queue name from the message (explicit address and distribution kind)
-            String queueName = getRecipientQueueName(edxlMessage);
 
             boolean isConversionRequired = ConversionUtils.requiresConversion(messageHandler.getHubConfig(), edxlMessage);
             if (isConversionRequired) {
-                boolean isCisuConversion = ConversionUtils.requiresCisuConversion(messageHandler.getHubConfig(), edxlMessage);
-                boolean isVersionConversion = ConversionUtils.requiresVersionConversion(messageHandler.getHubConfig(), edxlMessage);
+                ApplyConversionRulesCommand applyConversionRulesCommand = new ApplyConversionRulesCommand(edxlMessage, messageHandler);
+                String convertedMessage = conversionHandler.applyConversionRules(applyConversionRulesCommand);
 
-                String sourceVersion = ConversionUtils.getSourceVersion(messageHandler.getHubConfig(), edxlMessage);
-                String targetVersion = ConversionUtils.getTargetVersion(messageHandler.getHubConfig(), edxlMessage);
-
-                String convertedMessage = conversionHandler.applyConversionRules(messageHandler, edxlMessage, sourceVersion, targetVersion, isCisuConversion);
-
-                boolean isTransferredToOtherVhost = isVersionConversion & sourceVersion != null & targetVersion != null;
-                if(isTransferredToOtherVhost) {
-                    sendToTransferExchange(convertedMessage, message, queueName, sourceVersion,targetVersion);
+                if(ConversionUtils.isTransferredToOtherVhost(messageHandler, edxlMessage)) {
+                    sendToTransferExchange(convertedMessage, message, edxlMessage);
                 }
                 else {
                     edxlMessage = messageHandler.deserializeJsonEDXL(convertedMessage);
@@ -159,6 +152,8 @@ public class Dispatcher {
 
             // Forward the message according to the recipient preferences. Conversion JSON <-> XML can happen here
             Message forwardedMsg = messageHandler.forwardedMessage(edxlMessage, message);
+            // Extract recipient queue name from the message (explicit address and distribution kind)
+            String queueName = getRecipientQueueName(edxlMessage);
             // publish the message to the recipient queue
             rabbitTemplate.send(DISTRIBUTION_EXCHANGE, queueName, forwardedMsg);
             messageHandler.publishMetrics(edxlMessage, forwardedMsg);
@@ -172,10 +167,14 @@ public class Dispatcher {
         }
     }
 
-    public void sendToTransferExchange(String convertedMessage, Message message, String queueName, String sourceVersion, String targetVersion){
+    public void sendToTransferExchange(String convertedMessage, Message message, EdxlMessage edxlMessage){
         Message forwardedMsg = messageHandler.forwardedStringMessage(convertedMessage, message);
+        String sourceVersion = ConversionUtils.getSourceVersion(messageHandler.getHubConfig(), edxlMessage);
+        String targetVersion = ConversionUtils.getTargetVersion(messageHandler.getHubConfig(), edxlMessage);
+
         String transferExchangeName = ConversionUtils.buildExchangeDestination(sourceVersion, targetVersion);
-        rabbitTemplate.send(transferExchangeName, queueName, forwardedMsg);
+        String routingKey = message.getMessageProperties().getReceivedRoutingKey();
+        rabbitTemplate.send(transferExchangeName, routingKey, forwardedMsg);
     }
 
     @RabbitListener(queues = DISPATCH_DLQ_NAME)

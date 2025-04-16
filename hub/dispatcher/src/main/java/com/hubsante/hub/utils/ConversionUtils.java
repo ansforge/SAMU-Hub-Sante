@@ -15,6 +15,7 @@
  */
 package com.hubsante.hub.utils;
 
+import com.hubsante.hub.service.MessageHandler;
 import com.hubsante.model.cisu.CreateCaseWrapper;
 import com.hubsante.model.health.CreateCaseHealthWrapper;
 import com.hubsante.model.edxl.EdxlMessage;
@@ -104,5 +105,13 @@ public class ConversionUtils {
         String healthActor = senderID.startsWith(HEALTH_PREFIX) ? senderID : recipientID;
         Boolean directCisuPreference = hubConfig.getDirectCisuPreferences().getOrDefault(healthActor, DEFAULT_DIRECT_CISU_PREFERENCE);
         return directCisuPreference != null && directCisuPreference;
+    }
+
+    public static boolean isTransferredToOtherVhost(MessageHandler messageHandler, EdxlMessage edxlMessage){
+        String sourceVersion = ConversionUtils.getSourceVersion(messageHandler.getHubConfig(), edxlMessage);
+        String targetVersion = ConversionUtils.getTargetVersion(messageHandler.getHubConfig(), edxlMessage);
+        boolean isVersionConversion = ConversionUtils.requiresVersionConversion(messageHandler.getHubConfig(), edxlMessage);
+
+        return isVersionConversion & sourceVersion != null & targetVersion != null;
     }
 }
