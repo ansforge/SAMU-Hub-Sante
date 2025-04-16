@@ -1,5 +1,5 @@
 /**
- * Copyright © 2023-2024 Agence du Numerique en Sante (ANS)
+ * Copyright © 2023-2025 Agence du Numerique en Sante (ANS)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.Validator;
 import io.micrometer.core.aop.TimedAspect;
 import io.micrometer.core.instrument.MeterRegistry;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.params.shadow.com.univocity.parsers.common.ParsingContext;
 import org.junit.jupiter.params.shadow.com.univocity.parsers.common.processor.ObjectRowProcessor;
 import org.junit.jupiter.params.shadow.com.univocity.parsers.csv.CsvParser;
@@ -26,6 +27,7 @@ import org.junit.jupiter.params.shadow.com.univocity.parsers.csv.CsvParserSettin
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import jakarta.annotation.PostConstruct;
 import java.io.*;
@@ -34,10 +36,11 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Locale;
 
+@Slf4j
 @Configuration
 public class HubConfiguration {
 
-    private static final int TOGGLE_ROW_LENGTH = 2;
+    private static final int TOGGLE_ROW_LENGTH = 4;
 
     @Value("${client.preferences.file}")
     private File configFile;
@@ -47,7 +50,9 @@ public class HubConfiguration {
     @Value("${dispatcher.vhost}")
     private String vhost;
 
-    private HashMap<String, Boolean> clientPreferences = new HashMap<>();
+    private HashMap<String, Boolean> useXmlPreferences = new HashMap<>();
+    private HashMap<String, Boolean> directCisuPreferences = new HashMap<>();
+    private HashMap<String, String> clientsEditorMap = new HashMap<>();
 
     @PostConstruct
     public void init() throws Exception {
@@ -66,10 +71,12 @@ public class HubConfiguration {
                 @Override
                 public void rowProcessed(Object[] objects, ParsingContext parsingContext) {
                     if (objects.length != TOGGLE_ROW_LENGTH) {
-                        throw new IllegalArgumentException();
+                        log.warn("There were more than {} columns in the client preferences file, extra columns are being ignored", TOGGLE_ROW_LENGTH);
                     }
                     String[] items = Arrays.asList(objects).toArray(new String[TOGGLE_ROW_LENGTH]);
-                    clientPreferences.put(items[0], Boolean.parseBoolean(items[1]));
+                    useXmlPreferences.put(items[0], Boolean.parseBoolean(items[1]));
+                    directCisuPreferences.put(items[0], Boolean.parseBoolean(items[2]));
+                    clientsEditorMap.put(items[0], items[3]);
                 }
             };
             CsvParserSettings parserSettings = new CsvParserSettings();
@@ -86,8 +93,16 @@ public class HubConfiguration {
         }
     }
 
-    public HashMap<String, Boolean> getClientPreferences() {
-        return clientPreferences;
+    public HashMap<String, Boolean> getUseXmlPreferences() {
+        return useXmlPreferences;
+    }
+
+    public HashMap<String, Boolean> getDirectCisuPreferences() {
+        return directCisuPreferences;
+    }
+
+    public HashMap<String, String> getClientsEditorMap() {
+        return clientsEditorMap;
     }
 
     public long getDefaultTTL() {
@@ -109,5 +124,12 @@ public class HubConfiguration {
     @Bean
     public TimedAspect timedAspect(MeterRegistry registry) {
         return new TimedAspect(registry);
+    }
+
+    @Bean
+    public WebClient conversionWebClient(@Value("${conversion.service.url}") String baseUrl) {
+        return WebClient.builder()
+                .baseUrl(baseUrl)
+                .build();
     }
 }

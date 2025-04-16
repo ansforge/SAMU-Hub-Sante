@@ -1,5 +1,5 @@
 /**
- * Copyright © 2023-2024 Agence du Numerique en Sante (ANS)
+ * Copyright © 2023-2025 Agence du Numerique en Sante (ANS)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -136,5 +136,10 @@ public class MessageTestUtils {
         OffsetDateTime now = OffsetDateTime.now();
         edxlMessage.setDateTimeSent(now);
         edxlMessage.setDateTimeExpires(now.plusSeconds(offset_in_seconds));
+    }
+
+    public static void setMessageConsistentWithRoutingKey(EdxlMessage edxlMessage, String routingKey) {
+        edxlMessage.setSenderID(routingKey);
+        edxlMessage.setDistributionID(routingKey + "_2608323d-507d-4cbf-bf74-52007f8124ea");
     }
 }

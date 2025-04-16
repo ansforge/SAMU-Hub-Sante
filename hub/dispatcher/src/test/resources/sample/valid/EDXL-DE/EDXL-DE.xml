@@ -17,10 +17,10 @@
         <contentObject xlink:type="resource">
             <contentXML>
                 <embeddedXMLContent>
-                    <message xmlns="urn:emergency:cisu:2.0">
-                        <customContent>
-                            <key>value</key>
-                        </customContent>
+                    <message xmlns="urn:emergency:eda:1.9">
+                        <technicalNoreq xmlns="urn:emergency:eda:1.9:technicalNoreq">
+                            <optionalStringField>value</optionalStringField>
+                        </technicalNoreq>
                     </message>
                 </embeddedXMLContent>
             </contentXML>

@@ -17,8 +17,8 @@
         <contentObject xlink:type="resource">
             <contentXML>
                 <embeddedXMLContent>
-                    <message xmlns="urn:emergency:cisu:2.0">
-                        <reference xmlns="urn:emergency:cisu:2.0:reference">
+                    <message xmlns="urn:emergency:eda:1.9">
+                        <reference xmlns="urn:emergency:eda:1.9:reference">
                             <distributionID>fr.health.hub_2608323d-507d-4cbf-bf74-52007f8124ea</distributionID>
                             <invalid_key>invalid_value</invalid_key>
                         </reference>
