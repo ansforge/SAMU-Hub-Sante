@@ -17,6 +17,7 @@ package com.hubsante.hub.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.hubsante.hub.exception.ConversionException;
+import com.hubsante.hub.utils.ApplyConversionRulesCommand;
 import com.hubsante.model.edxl.EdxlMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +39,13 @@ public class ConversionHandler {
         this.conversionWebClient = conversionWebClient;
     }
 
-    protected String applyConversionRules(MessageHandler messageHandler, EdxlMessage edxlMessage, String sourceVersion, String targetVersion, Boolean isCisuConversion) throws JsonProcessingException {
+    protected String applyConversionRules(ApplyConversionRulesCommand applyConversionRulesCommand) throws JsonProcessingException {
+        String sourceVersion = applyConversionRulesCommand.getSourceVersion();
+        String targetVersion = applyConversionRulesCommand.getTargetVersion();
+        Boolean isCisuConversion = applyConversionRulesCommand.getCisuConversion();
+        EdxlMessage edxlMessage = applyConversionRulesCommand.getEdxlMessage();
+        MessageHandler messageHandler = applyConversionRulesCommand.getMessageHandler();
+
         String jsonEdxlString = messageHandler.serializeJsonEDXL(edxlMessage);
 
         try {
