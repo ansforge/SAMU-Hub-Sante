@@ -50,12 +50,8 @@ public class HubConfigurationTest {
 
         Assertions.assertNull(HubConfiguration.formatLrmPerimeterVersions(null));
 
-        // todo - gérer le cas des versions non existantes
         input = "4.1";
-        expectedOutput =  new String[]{};
+        expectedOutput =  new String[]{"v4"};
         assertArrayEquals(expectedOutput, HubConfiguration.formatLrmPerimeterVersions(input));
-
     }
-
-
 }

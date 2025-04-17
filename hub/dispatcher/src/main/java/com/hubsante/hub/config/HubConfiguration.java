@@ -138,25 +138,21 @@ public class HubConfiguration {
 
     public static String[] formatLrmPerimeterVersions(String hubConfigVersions){
         String[] nonFormattedVersions = splitString(hubConfigVersions);
+        String VERSION_TAG_PREFIX = "v";
 
         if (nonFormattedVersions == null){
             return null;
         }
 
-        Map<String, String> versionMap = Map.of(
-            "1.", Constants.V1_TAG,
-            "2.", Constants.V2_TAG,
-            "3.", Constants.V3_TAG
-            // Add new versions here as needed
-        );
-
         List<String> formattedVersions = new ArrayList<>();
 
         for (String value : nonFormattedVersions) {
-            for (Map.Entry<String, String> entry : versionMap.entrySet()) {
-                if (value.contains(entry.getKey())) {
-                    formattedVersions.add(entry.getValue());
-                }
+            try {
+                double number = Double.parseDouble(value);  // ex -> 2.0
+                int intPart = (int) number; // ex -> 2
+                formattedVersions.add(VERSION_TAG_PREFIX + intPart);    // ex -> "v2"
+            } catch (NumberFormatException e) {
+                log.error("Wrong input format - it should be a number");
             }
         }
 
