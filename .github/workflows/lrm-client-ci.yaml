@@ -69,6 +69,6 @@ jobs:
           wait-on: 'http://localhost:3000/lrm'
           wait-on-timeout: 60
           working-directory: ./web/lrm/client
-          build: npm run build
+          build: npm run build:test
           start: npm run start
           browser: chrome

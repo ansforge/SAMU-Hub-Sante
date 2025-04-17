@@ -13,8 +13,8 @@ export default defineNuxtConfig({
     plugins: [
       vuetify({ autoImport: true }),
       istanbul({
-        forceBuildInstrument: true,
-        exclude: ['node_modules', 'test/', 'coverage/'],
+        forceBuildInstrument: process.env.INSTRUMENT_BUILD === 'true',
+        exclude: ['node_modules', 'cypress/', 'coverage/'],
         extension: ['.js', '.ts', '.vue'],
         cypress: true,
       }),

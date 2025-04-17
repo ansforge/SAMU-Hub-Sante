@@ -10,6 +10,7 @@
     "dev": "nuxt dev",
     "vite": "vite",
     "build": "cross-env NODE_OPTIONS=--openssl-legacy-provider nuxi build --force",
+    "build:test": "INSTRUMENT_BUILD=true npm run build",
     "start": "nuxt start",
     "generate": "cross-env NODE_OPTIONS=--openssl-legacy-provider nuxt generate",
     "lint:js": "eslint --ext \".js,.ts,.vue\" --ignore-path .gitignore .",
