@@ -17,7 +17,7 @@
     "lint": "npm run lint:js && npm run lint:css",
     "lintfix": "npm run lint:js -- --fix && npm run lint:css -- --fix",
     "test:e2e": "npx cypress run",
-    "test:e2e:report": "npx nyc report --reporter=text-summary"
+    "test:e2e:report": "npx nyc report --reporter=text"
   },
   "dependencies": {
     "@babel/types": "^7.24.7",
@@ -86,6 +86,13 @@
     "*.{css,scss}": [
       "stylelint --fix",
       "prettier --write"
+    ]
+  },
+  "nyc": {
+    "extension": [
+      ".ts",
+      ".js",
+      ".vue"
     ]
   }
 }
