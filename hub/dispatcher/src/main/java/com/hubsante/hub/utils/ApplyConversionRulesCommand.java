@@ -14,8 +14,8 @@ public class ApplyConversionRulesCommand {
     public ApplyConversionRulesCommand(EdxlMessage edxlMessage, MessageHandler messageHandler) {
         this.messageHandler = messageHandler;
         this.edxlMessage = edxlMessage;
-        this.sourceVersion = ConversionUtils.getSourceVersion(messageHandler.getHubConfig(), edxlMessage);
-        this.targetVersion = ConversionUtils.getTargetVersion(messageHandler.getHubConfig(), edxlMessage);
+        this.sourceVersion = ConversionUtils.getSourceVersion(messageHandler.getHubConfig());
+        this.targetVersion = ConversionUtils.getTargetVersions(messageHandler.getHubConfig(), edxlMessage)[0]; // todo - choix arbitraire à revoir
         this.isCisuConversion = ConversionUtils.requiresCisuConversion(messageHandler.getHubConfig(), edxlMessage);
     }
 

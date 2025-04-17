@@ -142,7 +142,7 @@ public class Dispatcher {
                 ApplyConversionRulesCommand applyConversionRulesCommand = new ApplyConversionRulesCommand(edxlMessage, messageHandler);
                 String convertedMessage = conversionHandler.applyConversionRules(applyConversionRulesCommand);
 
-                if(ConversionUtils.isTransferredToOtherVhost(messageHandler, edxlMessage)) {
+                if(ConversionUtils.isTransferredToOtherVhost(messageHandler.getHubConfig(), edxlMessage)) {
                     sendToTransferExchange(convertedMessage, message, edxlMessage);
                 }
                 else {
@@ -169,11 +169,13 @@ public class Dispatcher {
 
     public void sendToTransferExchange(String convertedMessage, Message message, EdxlMessage edxlMessage){
         Message forwardedMsg = messageHandler.forwardedStringMessage(convertedMessage, message);
-        String sourceVersion = ConversionUtils.getSourceVersion(messageHandler.getHubConfig(), edxlMessage);
-        String targetVersion = ConversionUtils.getTargetVersion(messageHandler.getHubConfig(), edxlMessage);
 
+        String sourceVersion = ConversionUtils.getSourceVersion(messageHandler.getHubConfig());
+        String targetVersion = ConversionUtils.getTargetVersions(messageHandler.getHubConfig(), edxlMessage)[0]; // todo - choix arbitraire à revoir
         String transferExchangeName = ConversionUtils.buildExchangeDestination(sourceVersion, targetVersion);
+
         String routingKey = message.getMessageProperties().getReceivedRoutingKey();
+
         rabbitTemplate.send(transferExchangeName, routingKey, forwardedMsg);
     }
 

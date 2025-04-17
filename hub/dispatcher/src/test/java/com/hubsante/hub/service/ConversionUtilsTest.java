@@ -106,82 +106,73 @@ public class ConversionUtilsTest {
     @Test
     void testRequiresVersionConversion(){
         try (MockedStatic<MessageUtils> mockedMessageUtils = mockStatic(MessageUtils.class)) {
-            when(edxlMessage.getSenderID()).thenReturn("fr.health.samuA");
+            when(hubConfig.getVhost()).thenReturn("15-15_v2.0");
             mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage)).thenReturn("fr.health.samuV1");
-            assertFalse(ConversionUtils.requiresConversion(hubConfig, edxlMessage));
+            assertTrue(ConversionUtils.requiresVersionConversion(hubConfig, edxlMessage));
 
-            when(edxlMessage.getSenderID()).thenReturn("fr.health.samuV1");
-            mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage)).thenReturn("fr.health.samuA");
-            assertFalse(ConversionUtils.requiresConversion(hubConfig, edxlMessage));
-
-            when(edxlMessage.getSenderID()).thenReturn("fr.health.samuA");
-            mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage)).thenReturn("fr.health.samuA");
-            assertFalse(ConversionUtils.requiresConversion(hubConfig, edxlMessage));
-
-            when(edxlMessage.getSenderID()).thenReturn("fr.health.samuEmpty");
-            mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage)).thenReturn("fr.health.samuEmpty");
-            assertFalse(ConversionUtils.requiresConversion(hubConfig, edxlMessage));
-
-            when(edxlMessage.getSenderID()).thenReturn("fr.health.samuEmpty");
+            when(hubConfig.getVhost()).thenReturn("15-15_v1.5");
             mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage)).thenReturn("fr.health.samuV1");
-            assertFalse(ConversionUtils.requiresConversion(hubConfig, edxlMessage));
+            assertFalse(ConversionUtils.requiresVersionConversion(hubConfig, edxlMessage));
 
-            when(edxlMessage.getSenderID()).thenReturn("fr.health.samuV1");
-            mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage)).thenReturn("fr.health.samuEmpty");
-            assertFalse(ConversionUtils.requiresConversion(hubConfig, edxlMessage));
-
-            when(edxlMessage.getSenderID()).thenReturn("fr.health.samuNull");
-            mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage)).thenReturn("fr.health.samuNull");
-            assertFalse(ConversionUtils.requiresConversion(hubConfig, edxlMessage));
-
-            when(edxlMessage.getSenderID()).thenReturn("fr.health.samuNull");
-            mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage)).thenReturn("fr.health.samuV1");
-            assertFalse(ConversionUtils.requiresConversion(hubConfig, edxlMessage));
-
-            when(edxlMessage.getSenderID()).thenReturn("fr.health.samuV1");
-            mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage)).thenReturn("fr.health.samuNull");
-            assertFalse(ConversionUtils.requiresConversion(hubConfig, edxlMessage));
-
-            when(edxlMessage.getSenderID()).thenReturn("fr.health.samuV1");
-            mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage)).thenReturn("fr.health.samuV1");
-            assertFalse(ConversionUtils.requiresConversion(hubConfig, edxlMessage));
-
-            when(edxlMessage.getSenderID()).thenReturn("fr.health.samuV1");
+            when(hubConfig.getVhost()).thenReturn("15-15_v2.0");
             mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage)).thenReturn("fr.health.samuV2");
-            assertTrue(ConversionUtils.requiresConversion(hubConfig, edxlMessage));
+            assertFalse(ConversionUtils.requiresVersionConversion(hubConfig, edxlMessage));
+
+            when(hubConfig.getVhost()).thenReturn("15-15_v1.5");
+            mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage)).thenReturn("fr.health.samuV2");
+            assertTrue(ConversionUtils.requiresVersionConversion(hubConfig, edxlMessage));
+
+            when(hubConfig.getVhost()).thenReturn("15-15_v2.0");
+            mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage)).thenReturn("fr.health.samuA");
+            assertFalse(ConversionUtils.requiresVersionConversion(hubConfig, edxlMessage));
+
+            when(hubConfig.getVhost()).thenReturn("15-15_v1.5");
+            mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage)).thenReturn("fr.health.samuA");
+            assertFalse(ConversionUtils.requiresVersionConversion(hubConfig, edxlMessage));
+
+            when(hubConfig.getVhost()).thenReturn("15-15_v3.0");
+            mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage)).thenReturn("fr.health.samuA");
+            assertFalse(ConversionUtils.requiresVersionConversion(hubConfig, edxlMessage));
+
+            when(hubConfig.getVhost()).thenReturn("15-15_v1.5");
+            mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage)).thenReturn("fr.health.samuNull");
+            assertFalse(ConversionUtils.requiresVersionConversion(hubConfig, edxlMessage));
+
+            when(hubConfig.getVhost()).thenReturn("15-15_v1.5");
+            mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage)).thenReturn("fr.health.samuEmpty");
+            assertFalse(ConversionUtils.requiresVersionConversion(hubConfig, edxlMessage));
         }
     }
 
     @Test
     void testGetSourceVersion(){
-            when(edxlMessage.getSenderID()).thenReturn("fr.health.samuA");
-            assertEquals("v1", ConversionUtils.getSourceVersion(hubConfig, edxlMessage));
+        when(hubConfig.getVhost()).thenReturn("15-15_v1.5");
+        assertEquals("v1", ConversionUtils.getSourceVersion(hubConfig));
 
-            when(edxlMessage.getSenderID()).thenReturn("fr.health.samuV1");
-            assertEquals("v1", ConversionUtils.getSourceVersion(hubConfig, edxlMessage));
+        when(hubConfig.getVhost()).thenReturn("15-15_v2.0");
+        assertEquals("v2", ConversionUtils.getSourceVersion(hubConfig));
 
-            when(edxlMessage.getSenderID()).thenReturn("fr.health.samuNull");
-            assertNull(ConversionUtils.getSourceVersion(hubConfig, edxlMessage));
+        when(hubConfig.getVhost()).thenReturn("15-15_v3.0");
+        assertEquals("v3", ConversionUtils.getSourceVersion(hubConfig));
 
-            when(edxlMessage.getSenderID()).thenReturn("fr.health.samuEmpty");
-            assertNull(ConversionUtils.getSourceVersion(hubConfig, edxlMessage));
+        when(hubConfig.getVhost()).thenReturn("15-nexsis_v1.5");
+        assertEquals("v1", ConversionUtils.getSourceVersion(hubConfig));
     }
 
     @Test
     void testGetTargetVersion(){
         try (MockedStatic<MessageUtils> mockedMessageUtils = mockStatic(MessageUtils.class)) {
             mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage)).thenReturn("fr.health.samuA");
-            assertEquals("v1", ConversionUtils.getTargetVersion(hubConfig, edxlMessage));
+            assertArrayEquals(new String[]{"v1", "v2","v3"}, ConversionUtils.getTargetVersions(hubConfig, edxlMessage));
 
             mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage)).thenReturn("fr.health.samuV1");
-
-            assertEquals("v1", ConversionUtils.getTargetVersion(hubConfig, edxlMessage));
+            assertArrayEquals(new String[]{"v1"}, ConversionUtils.getTargetVersions(hubConfig, edxlMessage));
 
             mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage)).thenReturn("fr.health.samuNull");
-            assertNull(ConversionUtils.getTargetVersion(hubConfig, edxlMessage));
+            assertNull(ConversionUtils.getTargetVersions(hubConfig, edxlMessage));
 
             mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage)).thenReturn("fr.health.samuEmpty");
-            assertNull(ConversionUtils.getTargetVersion(hubConfig, edxlMessage));
+            assertArrayEquals(new String[]{},ConversionUtils.getTargetVersions(hubConfig, edxlMessage));
         }
     }
 
@@ -283,5 +274,22 @@ public class ConversionUtilsTest {
     void testBuildExchange(){
         assertEquals("transferV1toV2", ConversionUtils.buildExchangeDestination("v1", "v2"));
         assertEquals("transferTOTOtoTITI", ConversionUtils.buildExchangeDestination("toto", "titi"));
+    }
+
+    @Test
+    void testIsTransferredToOtherVhost(){
+        try (MockedStatic<ConversionUtils> mockedConversionUtils = mockStatic(ConversionUtils.class)) {
+            mockedConversionUtils.when(() -> ConversionUtils.isTransferredToOtherVhost(hubConfig, edxlMessage))
+                    .thenCallRealMethod();
+            mockedConversionUtils.when(() -> ConversionUtils.requiresVersionConversion(hubConfig, edxlMessage))
+                    .thenReturn(true);
+
+            assertTrue(ConversionUtils.isTransferredToOtherVhost(hubConfig, edxlMessage));
+
+            mockedConversionUtils.when(() -> ConversionUtils.requiresVersionConversion(hubConfig, edxlMessage))
+                    .thenReturn(false);
+
+            assertFalse(ConversionUtils.isTransferredToOtherVhost(hubConfig, edxlMessage));
+        }
     }
 }
