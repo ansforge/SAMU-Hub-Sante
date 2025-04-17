@@ -92,7 +92,7 @@ public class ConversionUtils {
     }
 
     public static boolean isTransferredToOtherVhost(HubConfiguration hubConfig, EdxlMessage edxlMessage){
-        return ConversionUtils.requiresVersionConversion(hubConfig, edxlMessage);
+        return requiresVersionConversion(hubConfig, edxlMessage);
     }
 
     public static String extractVersionFromVhost(String vhost) {
