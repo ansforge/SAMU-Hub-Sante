@@ -8,6 +8,8 @@ public class ConversionRulesCommand {
     EdxlMessage edxlMessage;
     String sourceVersion;
     String targetVersion;
+    String sourceModelVersion;
+    String targetModelVersion;
     Boolean isCisuConversion;
 
 
@@ -17,6 +19,8 @@ public class ConversionRulesCommand {
         this.sourceVersion = ConversionUtils.getSourceVersion(messageHandler.getHubConfig());
         this.targetVersion = ConversionUtils.getTargetVersions(messageHandler.getHubConfig(), edxlMessage)[0]; // todo - choix arbitraire à revoir
         this.isCisuConversion = ConversionUtils.requiresCisuConversion(messageHandler.getHubConfig(), edxlMessage);
+        this.sourceModelVersion = getMatchingModelVersion(sourceVersion);
+        this.targetModelVersion = getMatchingModelVersion(targetVersion);
     }
 
     public String getTargetVersion() {
@@ -31,11 +35,28 @@ public class ConversionRulesCommand {
         return sourceVersion;
     }
 
+    public String getSourceModelVersion() {
+        return sourceModelVersion;
+    }
+
+    public String getTargetModelVersion() {
+        return targetModelVersion;
+    }
+
     public MessageHandler getMessageHandler() {
         return messageHandler;
     }
 
     public EdxlMessage getEdxlMessage() {
         return edxlMessage;
+    }
+
+    public String getMatchingModelVersion(String perimeterVersion){
+        // todo - temp implementation (cf requiresVersionConversion commentary)
+        int dotIndex = perimeterVersion.indexOf(".");   // ex: perimeterVersion: 1.5
+        if (dotIndex != -1) {
+            return "v" + perimeterVersion.substring(0, dotIndex); // ex: "v1"
+        }
+        return perimeterVersion;
     }
 }

@@ -40,8 +40,8 @@ public class ConversionHandler {
     }
 
     protected String applyConversionRules(ConversionRulesCommand applyConversionRulesCommand) throws JsonProcessingException {
-        String sourceVersion = applyConversionRulesCommand.getSourceVersion();
-        String targetVersion = applyConversionRulesCommand.getTargetVersion();
+        String sourceModelVersion = applyConversionRulesCommand.getSourceModelVersion();
+        String targetModelVersion = applyConversionRulesCommand.getTargetModelVersion();
         Boolean isCisuConversion = applyConversionRulesCommand.getCisuConversion();
         EdxlMessage edxlMessage = applyConversionRulesCommand.getEdxlMessage();
         MessageHandler messageHandler = applyConversionRulesCommand.getMessageHandler();
@@ -49,7 +49,7 @@ public class ConversionHandler {
         String jsonEdxlString = messageHandler.serializeJsonEDXL(edxlMessage);
 
         try {
-            String convertedJson = callConversionService(jsonEdxlString, sourceVersion, targetVersion, isCisuConversion, edxlMessage.getDistributionID());
+            String convertedJson = callConversionService(jsonEdxlString, sourceModelVersion, targetModelVersion, isCisuConversion, edxlMessage.getDistributionID());
             log.debug("Message converted successfully");
 
             return convertedJson; // returns a string (deserialization is not possible because of version change)
