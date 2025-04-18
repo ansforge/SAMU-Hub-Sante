@@ -30,7 +30,7 @@ public class ConversionUtils {
     private final static boolean DEFAULT_DIRECT_CISU_PREFERENCE = false;
 
     public static String buildExchangeDestination(String sourceVersion, String targetVersion) {
-        return TRANSFER_EXCHANGE_PREFIX + "V" + sourceVersion.toUpperCase() + "toV" + targetVersion.toUpperCase();
+        return TRANSFER_EXCHANGE_PREFIX + "V" + sourceVersion + "toV" + targetVersion;
     }
 
     public static boolean requiresConversion(HubConfiguration hubConfig, EdxlMessage edxlMessage){
@@ -97,8 +97,8 @@ public class ConversionUtils {
 
     public static String extractVersionFromVhost(String vhost) {
         String VHOST_DIVIDER = "_";
-        String[] parts = vhost.split(VHOST_DIVIDER);    // ex: ["15-15","v1.5"]
-
+        String sanitizedVhost = vhost.replace("\"", "");
+        String[] parts = sanitizedVhost.split(VHOST_DIVIDER);    // ex: ["15-15","v1.5"]
         if (parts.length == 2) {
             String versionPart = parts[1];  // ex: "v1.5"
             return versionPart.replace("v", ""); // ex: "1.5"
