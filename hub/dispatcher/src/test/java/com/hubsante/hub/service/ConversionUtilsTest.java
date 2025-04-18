@@ -66,9 +66,9 @@ public class ConversionUtilsTest {
         when(hubConfig.getDirectCisuPreferences()).thenReturn(directCisuPreferences);
 
         lrmPerimeterVersions = new HashMap<>();
-        lrmPerimeterVersions.put("fr.health.samuA", new String[]{"v1", "v2", "v3"});
-        lrmPerimeterVersions.put("fr.health.samuV1", new String[]{"v1"});
-        lrmPerimeterVersions.put("fr.health.samuV2", new String[]{"v2"});
+        lrmPerimeterVersions.put("fr.health.samuA", new String[]{"1.5", "2.0", "2.1"});
+        lrmPerimeterVersions.put("fr.health.samuV1", new String[]{"1.5"});
+        lrmPerimeterVersions.put("fr.health.samuV2", new String[]{"2.0"});
         lrmPerimeterVersions.put("fr.health.samuEmpty", new String[]{});
         lrmPerimeterVersions.put("fr.health.samuNull", null);
         when(hubConfig.getLrmPerimeterVersions()).thenReturn(lrmPerimeterVersions);
@@ -130,7 +130,7 @@ public class ConversionUtilsTest {
             mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage)).thenReturn("fr.health.samuA");
             assertFalse(ConversionUtils.requiresVersionConversion(hubConfig, edxlMessage));
 
-            when(hubConfig.getVhost()).thenReturn("15-15_v3.0");
+            when(hubConfig.getVhost()).thenReturn("15-15_v2.1");
             mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage)).thenReturn("fr.health.samuA");
             assertFalse(ConversionUtils.requiresVersionConversion(hubConfig, edxlMessage));
 
@@ -147,26 +147,26 @@ public class ConversionUtilsTest {
     @Test
     void testGetSourceVersion(){
         when(hubConfig.getVhost()).thenReturn("15-15_v1.5");
-        assertEquals("v1", ConversionUtils.getSourceVersion(hubConfig));
+        assertEquals("1.5", ConversionUtils.getSourceVersion(hubConfig));
 
         when(hubConfig.getVhost()).thenReturn("15-15_v2.0");
-        assertEquals("v2", ConversionUtils.getSourceVersion(hubConfig));
+        assertEquals("2.0", ConversionUtils.getSourceVersion(hubConfig));
 
         when(hubConfig.getVhost()).thenReturn("15-15_v3.0");
-        assertEquals("v3", ConversionUtils.getSourceVersion(hubConfig));
+        assertEquals("3.0", ConversionUtils.getSourceVersion(hubConfig));
 
         when(hubConfig.getVhost()).thenReturn("15-nexsis_v1.5");
-        assertEquals("v1", ConversionUtils.getSourceVersion(hubConfig));
+        assertEquals("1.5", ConversionUtils.getSourceVersion(hubConfig));
     }
 
     @Test
     void testGetTargetVersion(){
         try (MockedStatic<MessageUtils> mockedMessageUtils = mockStatic(MessageUtils.class)) {
             mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage)).thenReturn("fr.health.samuA");
-            assertArrayEquals(new String[]{"v1", "v2","v3"}, ConversionUtils.getTargetVersions(hubConfig, edxlMessage));
+            assertArrayEquals(new String[]{"1.5", "2.0","2.1"}, ConversionUtils.getTargetVersions(hubConfig, edxlMessage));
 
             mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage)).thenReturn("fr.health.samuV1");
-            assertArrayEquals(new String[]{"v1"}, ConversionUtils.getTargetVersions(hubConfig, edxlMessage));
+            assertArrayEquals(new String[]{"1.5"}, ConversionUtils.getTargetVersions(hubConfig, edxlMessage));
 
             mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage)).thenReturn("fr.health.samuNull");
             assertNull(ConversionUtils.getTargetVersions(hubConfig, edxlMessage));
@@ -272,8 +272,8 @@ public class ConversionUtilsTest {
 
     @Test
     void testBuildExchange(){
-        assertEquals("transferV1toV2", ConversionUtils.buildExchangeDestination("v1", "v2"));
-        assertEquals("transferTOTOtoTITI", ConversionUtils.buildExchangeDestination("toto", "titi"));
+        assertEquals("transferV1.5toV2.0", ConversionUtils.buildExchangeDestination("1.5", "2.0"));
+        assertEquals("transferVTOTOtoVTITI", ConversionUtils.buildExchangeDestination("toto", "titi"));
     }
 
     @Test

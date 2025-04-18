@@ -82,7 +82,7 @@ public class HubConfiguration {
                     useXmlPreferences.put(items[0], Boolean.parseBoolean(items[1]));
                     directCisuPreferences.put(items[0], Boolean.parseBoolean(items[2]));
                     clientsEditorMap.put(items[0], items[3]);
-                    lrmPerimeterVersions.put(items[0], formatLrmPerimeterVersions(items[4]));
+                    lrmPerimeterVersions.put(items[0], splitString(items[4]));
                 }
             };
             CsvParserSettings parserSettings = new CsvParserSettings();
@@ -134,29 +134,6 @@ public class HubConfiguration {
     @Bean
     public TimedAspect timedAspect(MeterRegistry registry) {
         return new TimedAspect(registry);
-    }
-
-    public static String[] formatLrmPerimeterVersions(String hubConfigVersions){
-        String[] nonFormattedVersions = splitString(hubConfigVersions);
-        String VERSION_TAG_PREFIX = "v";
-
-        if (nonFormattedVersions == null){
-            return null;
-        }
-
-        List<String> formattedVersions = new ArrayList<>();
-
-        for (String value : nonFormattedVersions) {
-            try {
-                double number = Double.parseDouble(value);  // ex -> 2.0
-                int intPart = (int) number; // ex -> 2
-                formattedVersions.add(VERSION_TAG_PREFIX + intPart);    // ex -> "v2"
-            } catch (NumberFormatException e) {
-                log.error("Wrong input format - it should be a number");
-            }
-        }
-
-        return formattedVersions.toArray(new String[0]);
     }
 
     public static String[] splitString(String input) {
