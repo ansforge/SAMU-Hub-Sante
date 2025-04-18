@@ -3,7 +3,7 @@ package com.hubsante.hub.utils;
 import com.hubsante.hub.service.MessageHandler;
 import com.hubsante.model.edxl.EdxlMessage;
 
-public class ApplyConversionRulesCommand {
+public class ConversionRulesCommand {
     MessageHandler messageHandler;
     EdxlMessage edxlMessage;
     String sourceVersion;
@@ -11,7 +11,7 @@ public class ApplyConversionRulesCommand {
     Boolean isCisuConversion;
 
 
-    public ApplyConversionRulesCommand(EdxlMessage edxlMessage, MessageHandler messageHandler) {
+    public ConversionRulesCommand(EdxlMessage edxlMessage, MessageHandler messageHandler) {
         this.messageHandler = messageHandler;
         this.edxlMessage = edxlMessage;
         this.sourceVersion = ConversionUtils.getSourceVersion(messageHandler.getHubConfig());

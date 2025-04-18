@@ -22,6 +22,7 @@ import com.hubsante.hub.HubApplication;
 import com.hubsante.hub.config.HubConfiguration;
 import com.hubsante.hub.exception.ConversionException;
 import com.hubsante.hub.service.utils.MessageTestUtils;
+import com.hubsante.hub.utils.ConversionRulesCommand;
 import com.hubsante.hub.utils.ConversionUtils;
 import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.Validator;
@@ -451,7 +452,8 @@ public class DispatcherTest {
             mockedConversionUtils.when(() -> ConversionUtils.getSourceVersion(hubConfig))
                     .thenReturn("v1");
 
-            dispatcher.sendToTransferExchange(message.toString(), message, edxlMessage);
+            ConversionRulesCommand conversionRulesCommand = new ConversionRulesCommand(edxlMessage,messageHandler);
+            dispatcher.sendToTransferExchange(message.toString(), message, conversionRulesCommand);
 
             verify(rabbitTemplate).send(eq(exchangeName), eq(queueName), any(Message.class));
         }

@@ -20,7 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.hubsante.hub.config.Constants;
 import com.hubsante.hub.exception.*;
-import com.hubsante.hub.utils.ApplyConversionRulesCommand;
+import com.hubsante.hub.utils.ConversionRulesCommand;
 import com.hubsante.hub.utils.ConversionUtils;
 import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.edxl.EdxlMessage;
@@ -139,11 +139,11 @@ public class Dispatcher {
 
             boolean isConversionRequired = ConversionUtils.requiresConversion(messageHandler.getHubConfig(), edxlMessage);
             if (isConversionRequired) {
-                ApplyConversionRulesCommand applyConversionRulesCommand = new ApplyConversionRulesCommand(edxlMessage, messageHandler);
-                String convertedMessage = conversionHandler.applyConversionRules(applyConversionRulesCommand);
+                ConversionRulesCommand conversionRulesCommand = new ConversionRulesCommand(edxlMessage, messageHandler);
+                String convertedMessage = conversionHandler.applyConversionRules(conversionRulesCommand);
 
                 if(ConversionUtils.isTransferredToOtherVhost(messageHandler.getHubConfig(), edxlMessage)) {
-                    sendToTransferExchange(convertedMessage, message, edxlMessage);
+                    sendToTransferExchange(convertedMessage, message, conversionRulesCommand);
                 }
                 else {
                     edxlMessage = messageHandler.deserializeJsonEDXL(convertedMessage);
@@ -167,12 +167,10 @@ public class Dispatcher {
         }
     }
 
-    public void sendToTransferExchange(String convertedMessage, Message message, EdxlMessage edxlMessage){
+    public void sendToTransferExchange(String convertedMessage, Message message, ConversionRulesCommand conversionRulesCommand){
         Message forwardedMsg = messageHandler.forwardedStringMessage(convertedMessage, message);
 
-        String sourceVersion = ConversionUtils.getSourceVersion(messageHandler.getHubConfig());
-        String targetVersion = ConversionUtils.getTargetVersions(messageHandler.getHubConfig(), edxlMessage)[0]; // todo - choix arbitraire à revoir
-        String transferExchangeName = ConversionUtils.buildExchangeDestination(sourceVersion, targetVersion);
+        String transferExchangeName = ConversionUtils.buildExchangeDestination(conversionRulesCommand.getSourceVersion(), conversionRulesCommand.getTargetVersion());
 
         String routingKey = message.getMessageProperties().getReceivedRoutingKey();
 
