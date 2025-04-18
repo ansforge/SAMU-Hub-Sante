@@ -130,7 +130,7 @@ public class MessageUtils {
 
     public static boolean isXML(ReturnedMessage returned) {
         return MessageProperties.CONTENT_TYPE_XML.equals(returned.getMessage().getMessageProperties().getContentType()) ||
-                        returned.getRoutingKey().startsWith(HEALTH_PREFIX);
+                        !returned.getRoutingKey().startsWith(HEALTH_PREFIX);
     }
 
     public static void overrideExpirationIfNeeded(EdxlMessage edxlMessage, MessageProperties properties, long defaultTTL) {
