@@ -152,8 +152,8 @@ public class ConversionUtilsTest {
         when(hubConfig.getVhost()).thenReturn("15-15_v2.0");
         assertEquals("2.0", ConversionUtils.getSourceVersion(hubConfig));
 
-        when(hubConfig.getVhost()).thenReturn("15-15_v3.0");
-        assertEquals("3.0", ConversionUtils.getSourceVersion(hubConfig));
+        when(hubConfig.getVhost()).thenReturn("15-15_v2.1");
+        assertEquals("2.1", ConversionUtils.getSourceVersion(hubConfig));
 
         when(hubConfig.getVhost()).thenReturn("15-nexsis_v1.5");
         assertEquals("1.5", ConversionUtils.getSourceVersion(hubConfig));
@@ -273,7 +273,7 @@ public class ConversionUtilsTest {
     @Test
     void testBuildExchange(){
         assertEquals("transferV1.5toV2.0", ConversionUtils.buildExchangeDestination("1.5", "2.0"));
-        assertEquals("transferVTOTOtoVTITI", ConversionUtils.buildExchangeDestination("toto", "titi"));
+        assertEquals("transferVtototoVtiti", ConversionUtils.buildExchangeDestination("toto", "titi"));
     }
 
     @Test
