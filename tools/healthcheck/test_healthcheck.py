@@ -4,8 +4,16 @@ from parameterized import parameterized
 import json
 import requests
 from healthcheck import app, remove_error_keys
+import logging
 
 class HealthCheckTestCase(unittest.TestCase):
+    def setUp(self):
+        # Prevent logging errors when the mocks throw exceptions.
+        logging.disable(logging.CRITICAL)
+
+    def tearDown(self):
+        logging.disable(logging.NOTSET)
+
     @parameterized.expand([
         ([{ "status": "ok" }, { "status": "UP", "components": {} }], "UP", "UP", "UP"),
         ([{ "status": "down" }, { "status": "UP", "components": {} }], "DOWN", "DOWN", "UP"),
