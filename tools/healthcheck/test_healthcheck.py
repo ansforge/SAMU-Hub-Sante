@@ -26,6 +26,20 @@ class HealthCheckTestCase(unittest.TestCase):
                 self.assertEqual(data["status"], global_status)
                 self.assertEqual(data["components"]["rabbitmq_server"]["status"], rabbitmq_status)
                 self.assertEqual(data["components"]["dispatcher1"]["status"], dispatcher_status)
+
+    @patch("requests.get")
+    def test_rabbitmq_healthcheck_error(self, mock_get):
+        # Simulate an error while trying to access RabbitMQ
+        mock_get.side_effect = requests.exceptions.RequestException("Error")
+        
+        # Call the route and test the response
+        with app.test_client() as client:
+            response = client.get("/health")
+            self.assertEqual(response.status_code, 200)
+            data = json.loads(response.data)
+            self.assertEqual(data["status"], "DOWN")
+            self.assertIn("rabbitmq_server", data["components"])
+            self.assertEqual(data["components"]["rabbitmq_server"]["status"], "DOWN")
     
 if __name__ == '__main__':
     unittest.main()
