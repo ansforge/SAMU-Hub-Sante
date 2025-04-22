@@ -2,7 +2,8 @@ import unittest
 from unittest.mock import patch
 from parameterized import parameterized
 import json
-from healthcheck import app
+import requests
+from healthcheck import app, remove_error_keys
 
 class HealthCheckTestCase(unittest.TestCase):
     @parameterized.expand([
@@ -40,6 +41,25 @@ class HealthCheckTestCase(unittest.TestCase):
             self.assertEqual(data["status"], "DOWN")
             self.assertIn("rabbitmq_server", data["components"])
             self.assertEqual(data["components"]["rabbitmq_server"]["status"], "DOWN")
+    
+    
+    def test_remove_error_keys(self):
+        # Test if error keys are properly removed
+        data = {
+            "status": "UP",
+            "components": {
+                "rabbitmq_server": {
+                    "status": "UP"
+                },
+                "dispatcher1": {
+                    "status": "DOWN",
+                    "error": "Dispatcher failed"
+                }
+            }
+        }
+        result = remove_error_keys(data)
+        self.assertNotIn("error", result["components"]["dispatcher1"])
+        self.assertEqual(result["status"], "UP")
     
 if __name__ == '__main__':
     unittest.main()
