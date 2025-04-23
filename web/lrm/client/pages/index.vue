@@ -92,8 +92,8 @@ export default {
           ? new Map()
           : new Map(this.$config.public.clientMap),
       form: {
-        clientId: 'fr.health.samuA',
-        targetId: 'fr.health.samuC',
+        clientId: 'fr.health.test.samuA',
+        targetId: 'fr.health.test.samuC',
         tester: false,
       },
       rules: {

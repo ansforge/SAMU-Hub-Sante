@@ -3,8 +3,9 @@ export const DIRECTIONS = {
   OUT: '→',
 };
 export const EDXL_ENVELOPE = {
-  distributionID: '{{ fr.health.samuA_2608323d-507d-4cbf-bf74-52007f8124ea }}',
-  senderID: '{{ fr.health.samuA }}',
+  distributionID:
+    '{{ fr.health.test.samuA_2608323d-507d-4cbf-bf74-52007f8124ea }}',
+  senderID: '{{ fr.health.test.samuA }}',
   dateTimeSent: '{{ 2022-09-27T08:23:34+02:00 }}',
   dateTimeExpires: '2072-09-27T08:23:34+02:00',
   distributionStatus: 'Actual',
@@ -13,7 +14,7 @@ export const EDXL_ENVELOPE = {
     language: 'fr-FR',
     explicitAddress: {
       explicitAddressScheme: 'hubex',
-      explicitAddressValue: '{{ fr.health.samuB }}',
+      explicitAddressValue: '{{ fr.health.test.samuB }}',
     },
     keyword: [
       {
@@ -30,7 +31,7 @@ export const EDXL_ENVELOPE = {
             messageId: '{{ 2608323d-507d-4cbf-bf74-52007f8124ea }}',
             sender: {
               name: '{{ samuA }}',
-              URI: '{{ hubsante:fr.health.samuA }}',
+              URI: '{{ hubsante:fr.health.test.samuA }}',
             },
             sentAt: '{{ 2022-09-27T08:23:34+02:00 }}',
             status: 'Actual',
@@ -38,7 +39,7 @@ export const EDXL_ENVELOPE = {
             recipient: [
               {
                 name: '{{ samuB }}',
-                URI: '{{ hubsante:fr.health.samuB }}',
+                URI: '{{ hubsante:fr.health.test.samuB }}',
               },
             ],
           },
