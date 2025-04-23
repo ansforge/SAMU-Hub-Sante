@@ -18,7 +18,9 @@ package com.hubsante.hub.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import com.hubsante.hub.config.Constants;
 import com.hubsante.hub.exception.*;
+import com.hubsante.hub.utils.ConversionRulesCommand;
 import com.hubsante.hub.utils.ConversionUtils;
 import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.edxl.EdxlMessage;
@@ -124,20 +126,30 @@ public class Dispatcher {
             EdxlMessage edxlMessage = messageHandler.extractMessage(message);
             // reject the message if no health actor is involved (as sender or recipient)
             checkHealthActorIsInvolved(edxlMessage);
-            // Before running the validation checks, we convert the message if required to make sure the forwarded message is valid
             // ToDo: see how hubConfig should be made available to the Dispatcher (and remove getter in MessageHandler)
             // ToDo: check this only on specific vhosts (like 15-NexSIS)?
-            if (ConversionUtils.requiresCisuConversion(messageHandler.getHubConfig(), edxlMessage)) {
-                edxlMessage = conversionHandler.convertIncomingCisu(messageHandler, edxlMessage);
-            }
             // Reject the message if the sender is not consistent with the routing key
             checkSenderConsistency(message, edxlMessage);
             // Reject the message if the delivery mode is not PERSISTENT
             checkDeliveryModeIsPersistent(message, edxlMessage.getDistributionID());
             // Reject the message if distributionID does not respect the format (senderID_internalID)
-            if (message.getMessageProperties().getReceivedRoutingKey().startsWith("fr.health")) {
+            if (message.getMessageProperties().getReceivedRoutingKey().startsWith(Constants.FR_HEALTH_PREFIX)) {
                 checkDistributionIDFormat(edxlMessage);
             }
+
+            boolean isConversionRequired = ConversionUtils.requiresConversion(messageHandler.getHubConfig(), edxlMessage);
+            if (isConversionRequired) {
+                ConversionRulesCommand conversionRulesCommand = new ConversionRulesCommand(edxlMessage, messageHandler);
+                String convertedMessage = conversionHandler.applyConversionRules(conversionRulesCommand);
+
+                if(ConversionUtils.isTransferredToOtherVhost(messageHandler.getHubConfig(), edxlMessage)) {
+                    sendToTransferExchange(convertedMessage, message, conversionRulesCommand);
+                }
+                else {
+                    edxlMessage = messageHandler.deserializeJsonEDXL(convertedMessage);
+                }
+            }
+
             // Forward the message according to the recipient preferences. Conversion JSON <-> XML can happen here
             Message forwardedMsg = messageHandler.forwardedMessage(edxlMessage, message);
             // Extract recipient queue name from the message (explicit address and distribution kind)
@@ -153,6 +165,16 @@ public class Dispatcher {
             log.error("Unexpected error occurred while dispatching message from " + message.getMessageProperties().getReceivedRoutingKey(), e);
             throw new AmqpRejectAndDontRequeueException(e);
         }
+    }
+
+    public void sendToTransferExchange(String convertedMessage, Message message, ConversionRulesCommand conversionRulesCommand){
+        Message forwardedMsg = messageHandler.forwardedStringMessage(convertedMessage, message);
+
+        String transferExchangeName = ConversionUtils.buildExchangeDestination(conversionRulesCommand.getSourceVersion(), conversionRulesCommand.getTargetVersion());
+
+        String routingKey = message.getMessageProperties().getReceivedRoutingKey();
+
+        rabbitTemplate.send(transferExchangeName, routingKey, forwardedMsg);
     }
 
     @RabbitListener(queues = DISPATCH_DLQ_NAME)

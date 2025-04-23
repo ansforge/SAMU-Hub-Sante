@@ -28,4 +28,5 @@ public class Constants {
     public static final String DISPATCHED_MESSAGE = "dispatch.message";
     public static final String USE_CASE_TAG = "use_case";
     public static final String UNKNOWN = "unknown";
+    public static final String FR_HEALTH_PREFIX = "fr.health";
 }
