@@ -94,11 +94,6 @@ class ExpressServer {
                 logger.debug(`Sent to ${clientCounts} clients: ${data} of content ${data}`);
               }, {
                 noAck: true, // Ref.: https://amqp-node.github.io/amqplib/channel_api.html#channelconsume
-              },
-              (err, ok) => {
-                if (err) {
-                  logger.error(`Error from consume() on queue '${queue}' in vhost '${vhost}': ${err}`);
-                }
               });
             } catch (err) {
               logger.error(`Error while consuming from queue '${queue}' in vhost '${vhost}': ${err}`);
