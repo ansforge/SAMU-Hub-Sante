@@ -42,39 +42,67 @@ class ExpressServer {
     const vhostsArray = Object.keys(VHOSTS);
     for (const vhost of vhostsArray) {
       connect(vhost, (connection, channel) => {
+        connection.on('error', (err) => {
+          logger.error(`Connection error for vhost '${vhost}': ${err}`);
+        });
+
         this.connection = connection;
         this.connections[vhost] = connection;
+
+        // Add error handler to channel
+        channel.on('error', (err) => {
+          // If it's a NOT-FOUND error for a queue, log it but allow execution to continue
+          if (err.code === 404 && err.message && err.message.includes('NOT_FOUND - no queue')) {
+            if (err.message.includes('fr.health.test.samuv')) {
+              logger.info(`Test SAMU with specific version has no queue (likely to be expected): '${vhost}': ${err}`);
+            } else {
+              logger.error(`Missing queue for vhost '${vhost}': ${err}`);
+            }
+          } else {
+            logger.error(`Channel error for vhost '${vhost}': ${err}`);
+          }
+        });
+
         for (const clientKeyValue of DEMO_CLIENT_IDS) {
           const clientId = clientKeyValue[0];
           for (const type of ['message', 'ack', 'info']) {
             const queue = `${clientId}.${type}`;
             logger.info(` [*] Waiting for ${clientId} messages in ${queue} (${vhost}). To exit press CTRL+C`);
-            channel.consume(queue, (msg) => {
-              const body = JSON.parse(msg.content);
-              logger.info(` [x] Received for ${clientId} (${vhost}): ${body.distributionID}`);
-              logger.debug(` [x] Received for ${clientId} (${vhost}): ${body.distributionID} of content ${msg.content}`);
-              const d = new Date();
-              const data = {
-                vhost,
-                direction: '←',
-                routingKey: queue,
-                // Ref.: https://stackoverflow.com/a/9849524
-                time: `${d.toLocaleTimeString('fr', { timeZone: 'Europe/Paris' }).replace(':', 'h')}.${String(new Date().getMilliseconds()).padStart(3, '0')}`,
-                body,
-              };
-              // Send the message to all connected WebSocket clients
-              let clientCounts = 0;
-              this.wss.clients.forEach((client) => {
-                if (client.readyState === WebSocket.OPEN) {
-                  client.send(JSON.stringify(data));
-                  clientCounts += 1;
+            try {
+              channel.consume(queue, (msg) => {
+                const body = JSON.parse(msg.content);
+                logger.info(` [x] Received for ${clientId} (${vhost}): ${body.distributionID}`);
+                logger.debug(` [x] Received for ${clientId} (${vhost}): ${body.distributionID} of content ${msg.content}`);
+                const d = new Date();
+                const data = {
+                  vhost,
+                  direction: '←',
+                  routingKey: queue,
+                  // Ref.: https://stackoverflow.com/a/9849524
+                  time: `${d.toLocaleTimeString('fr', { timeZone: 'Europe/Paris' }).replace(':', 'h')}.${String(new Date().getMilliseconds()).padStart(3, '0')}`,
+                  body,
+                };
+                // Send the message to all connected WebSocket clients
+                let clientCounts = 0;
+                this.wss.clients.forEach((client) => {
+                  if (client.readyState === WebSocket.OPEN) {
+                    client.send(JSON.stringify(data));
+                    clientCounts += 1;
+                  }
+                });
+                logger.info(`Sent to ${clientCounts} clients: ${data.body.distributionID}`);
+                logger.debug(`Sent to ${clientCounts} clients: ${data} of content ${data}`);
+              }, {
+                noAck: true, // Ref.: https://amqp-node.github.io/amqplib/channel_api.html#channelconsume
+              },
+              (err, ok) => {
+                if (err) {
+                  logger.error(`Error from consume() on queue '${queue}' in vhost '${vhost}': ${err}`);
                 }
               });
-              logger.info(`Sent to ${clientCounts} clients: ${data.body.distributionID}`);
-              logger.debug(`Sent to ${clientCounts} clients: ${data} of content ${data}`);
-            }, {
-              noAck: true, // Ref.: https://amqp-node.github.io/amqplib/channel_api.html#channelconsume
-            });
+            } catch (err) {
+              logger.error(`Error while consuming from queue '${queue}' in vhost '${vhost}': ${err}`);
+            }
           }
         }
       });
