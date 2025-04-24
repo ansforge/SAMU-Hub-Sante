@@ -139,26 +139,27 @@ public class Dispatcher {
 
             boolean isConversionRequired = ConversionUtils.requiresConversion(messageHandler.getHubConfig(), edxlMessage);
             if (isConversionRequired) {
-                ConversionRulesCommand conversionRulesCommand = new ConversionRulesCommand(edxlMessage, messageHandler);
-                String convertedMessage = conversionHandler.applyConversionRules(conversionRulesCommand);
-
                 String sourceVersion = ConversionUtils.getSourceVersion(messageHandler.getHubConfig());
                 String senderID = edxlMessage.getSenderID();
                 Boolean isToCisu = senderID.startsWith("fr.health");
 
                 if(isToCisu && sourceVersion=="0.9") {
+                    ConversionRulesCommand conversionRulesCommand = new ConversionRulesCommand(edxlMessage, messageHandler);
+                    String convertedMessage = conversionHandler.applyConversionRules(conversionRulesCommand);
                     Message forwardedMsg = messageHandler.forwardedStringMessage(convertedMessage, message);
                     String routingKey = message.getMessageProperties().getReceivedRoutingKey();
                     rabbitTemplate.send("transferV0.9to1.9", routingKey, forwardedMsg);
                 }
                 else if(!isToCisu && sourceVersion=="1.9"){
+                    ConversionRulesCommand conversionRulesCommand = new ConversionRulesCommand(edxlMessage, messageHandler);
+                    String convertedMessage = conversionHandler.applyConversionRules(conversionRulesCommand);
                     Message forwardedMsg = messageHandler.forwardedStringMessage(convertedMessage, message);
                     String routingKey = message.getMessageProperties().getReceivedRoutingKey();
                     rabbitTemplate.send("transferV1.9to0.9", routingKey, forwardedMsg);
                 }
-                else {
-                    edxlMessage = messageHandler.deserializeJsonEDXL(convertedMessage);
-                }
+                // else {
+                //     edxlMessage = messageHandler.deserializeJsonEDXL(convertedMessage);
+                // }
             }
 
             // Forward the message according to the recipient preferences. Conversion JSON <-> XML can happen here
