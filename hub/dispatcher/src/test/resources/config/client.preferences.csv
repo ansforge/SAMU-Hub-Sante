@@ -1,6 +1,6 @@
-client_id;useXML;directCISU;editor;P: 15-15;extraColumn
-fr.health.samuA;false;false;default-editor;1.5,2.0,3.0;extraValue
-fr.health.samuB;true;true;default-editor;1.5,2.0,3.0;extraValue
-fr.health.samuV1;false;false;default-editor;1.5;extraValue
-fr.health.samuV2;false;false;default-editor;2.0;extraValue
-fr.health.samuV3;false;false;default-editor;3.0;extraValue
+client_id;useXML;directCISU;editor;lrm_test;P: 15-15;extraColumn
+fr.health.samuA;false;false;default-editor;true;1.5,2.0,3.0;extraValue
+fr.health.samuB;true;true;default-editor;true;1.5,2.0,3.0;extraValue
+fr.health.samuV1;false;false;default-editor;true;1.5;extraValue
+fr.health.samuV2;false;false;default-editor;true;2.0;extraValue
+fr.health.samuV3;false;false;default-editor;true;3.0;extraValue
