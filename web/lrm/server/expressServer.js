@@ -41,7 +41,7 @@ class ExpressServer {
     // Get list of keys (corresponding to vhosts) from the VHOSTS map
     const vhostsArray = Object.keys(VHOSTS);
     for (const vhost of vhostsArray) {
-      connect(vhost, (connection, channel) => {
+      connect(vhost, async (connection, channel) => {
         connection.on('error', (err) => {
           logger.error(`Connection error for vhost '${vhost}': ${err}`);
         });
@@ -69,6 +69,9 @@ class ExpressServer {
             const queue = `${clientId}.${type}`;
             logger.info(` [*] Waiting for ${clientId} messages in ${queue} (${vhost}). To exit press CTRL+C`);
             try {
+              // Check if the queue exists
+              await channel.checkQueue(queue);
+
               channel.consume(queue, (msg) => {
                 const body = JSON.parse(msg.content);
                 logger.info(` [x] Received for ${clientId} (${vhost}): ${body.distributionID}`);
