@@ -3,6 +3,8 @@ package com.hubsante.hub.utils;
 import com.hubsante.hub.service.MessageHandler;
 import com.hubsante.model.edxl.EdxlMessage;
 
+import java.util.Objects;
+
 public class ConversionRulesCommand {
     MessageHandler messageHandler;
     EdxlMessage edxlMessage;
@@ -52,11 +54,10 @@ public class ConversionRulesCommand {
     }
 
     public String getMatchingModelVersion(String perimeterVersion){
-        // todo - temp implementation (cf requiresVersionConversion commentary)
-        int dotIndex = perimeterVersion.indexOf(".");   // ex: perimeterVersion: 1.5
-        if (dotIndex != -1) {
-            return "v" + perimeterVersion.substring(0, dotIndex); // ex: "v1"
-        }
-        return perimeterVersion;
+        // todo - revoir implementation pour utiliser un map commune
+        if(Objects.equals(perimeterVersion, "1.5")) return "v1";
+        if(Objects.equals(perimeterVersion, "2.0")) return "v2";
+        if(Objects.equals(perimeterVersion, "2.1")) return "v3";
+        else return "v1";
     }
 }
