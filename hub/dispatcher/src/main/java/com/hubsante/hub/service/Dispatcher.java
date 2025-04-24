@@ -142,8 +142,19 @@ public class Dispatcher {
                 ConversionRulesCommand conversionRulesCommand = new ConversionRulesCommand(edxlMessage, messageHandler);
                 String convertedMessage = conversionHandler.applyConversionRules(conversionRulesCommand);
 
-                if(ConversionUtils.isTransferredToOtherVhost(messageHandler.getHubConfig(), edxlMessage)) {
-                    sendToTransferExchange(convertedMessage, message, conversionRulesCommand);
+                String sourceVersion = ConversionUtils.getSourceVersion(messageHandler.getHubConfig());
+                String senderID = edxlMessage.getSenderID();
+                Boolean isToCisu = senderID.startsWith("fr.health");
+
+                if(isToCisu && sourceVersion=="0.9") {
+                    Message forwardedMsg = messageHandler.forwardedStringMessage(convertedMessage, message);
+                    String routingKey = message.getMessageProperties().getReceivedRoutingKey();
+                    rabbitTemplate.send("transferV0.9to1.9", routingKey, forwardedMsg);
+                }
+                else if(!isToCisu && sourceVersion=="1.9"){
+                    Message forwardedMsg = messageHandler.forwardedStringMessage(convertedMessage, message);
+                    String routingKey = message.getMessageProperties().getReceivedRoutingKey();
+                    rabbitTemplate.send("transferV1.9to0.9", routingKey, forwardedMsg);
                 }
                 else {
                     edxlMessage = messageHandler.deserializeJsonEDXL(convertedMessage);

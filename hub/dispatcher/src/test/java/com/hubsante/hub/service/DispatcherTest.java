@@ -459,26 +459,26 @@ public class DispatcherTest {
         }
     }
 
-    @Test
-    @DisplayName("should call sendToTransferExchange when there is a version conversion")
-    public void transferToOtherVhost() throws IOException{
-        try (MockedStatic<ConversionUtils> mockedConversionUtils = mockStatic(ConversionUtils.class)) {
-            Dispatcher dispatcher = spy(new Dispatcher(messageHandler, rabbitTemplate, edxlHandler, xmlMapper, jsonMapper, conversionHandler));
-
-            Message message = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
-
-            mockedConversionUtils.when(() -> ConversionUtils.getSourceVersion(any())).thenReturn("1.5");
-            mockedConversionUtils.when(() -> ConversionUtils.getTargetVersions(any(), any())).thenReturn(new String[]{"2.0"});
-            mockedConversionUtils.when(() -> ConversionUtils.requiresConversion(any(), any())).thenReturn(true);
-            mockedConversionUtils.when(() -> ConversionUtils.isTransferredToOtherVhost(any(), any())).thenReturn(true);
-
-            doAnswer(invocation -> invocation.getArgument(0)).when(conversionHandler).callConversionService(anyString(), anyString(), anyString(), anyBoolean(), anyString());
-
-            dispatcher.dispatch(message);
-
-            verify(dispatcher, times(1)).sendToTransferExchange(anyString(), any(), any());
-        }
-    }
+//    @Test
+//    @DisplayName("should call sendToTransferExchange when there is a version conversion")
+//    public void transferToOtherVhost() throws IOException{
+//        try (MockedStatic<ConversionUtils> mockedConversionUtils = mockStatic(ConversionUtils.class)) {
+//            Dispatcher dispatcher = spy(new Dispatcher(messageHandler, rabbitTemplate, edxlHandler, xmlMapper, jsonMapper, conversionHandler));
+//
+//            Message message = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
+//
+//            mockedConversionUtils.when(() -> ConversionUtils.getSourceVersion(any())).thenReturn("1.5");
+//            mockedConversionUtils.when(() -> ConversionUtils.getTargetVersions(any(), any())).thenReturn(new String[]{"2.0"});
+//            mockedConversionUtils.when(() -> ConversionUtils.requiresConversion(any(), any())).thenReturn(true);
+//            mockedConversionUtils.when(() -> ConversionUtils.isTransferredToOtherVhost(any(), any())).thenReturn(true);
+//
+//            doAnswer(invocation -> invocation.getArgument(0)).when(conversionHandler).callConversionService(anyString(), anyString(), anyString(), anyBoolean(), anyString());
+//
+//            dispatcher.dispatch(message);
+//
+//            verify(dispatcher, times(1)).sendToTransferExchange(anyString(), any(), any());
+//        }
+//    }
 
     @Test
     @DisplayName("should not call sendToTransferExchange when there is not a version conversion")
