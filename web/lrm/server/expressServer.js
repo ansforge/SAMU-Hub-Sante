@@ -80,6 +80,7 @@ class ExpressServer {
               continue;
             } else if (queue.includes('fr.health.test.samuv')) {
               logger.info(`Queue ${queue} not found in vhost ${vhost} (likely to be expected)`);
+              continue;
             }
             console.info(`Queue ${queue} found in vhost ${vhost}`);
             try {
