@@ -9,7 +9,7 @@ const WebSocket = require('ws');
 const logger = require('./logger');
 const {
   connect, connectAsync, close, computeVhostFromMessage,
-  HUB_SANTE_EXCHANGE, DEMO_CLIENT_IDS, VHOSTS, messageProperties,
+  HUB_SANTE_EXCHANGE, DEMO_CLIENT_IDS, VHOSTS, VHOST_CLIENT_MAP,messageProperties,
 } = require('./rabbit/utils');
 const { ModelesRouter } = require('./router/modelesRouter');
 
@@ -38,6 +38,8 @@ class ExpressServer {
 
     // Subscribe to Hub messages and send them to the client through web socket
     logger.info(`Demo client ids: ${DEMO_CLIENT_IDS}`);
+    logger.info(`VHOSTS: ${VHOSTS}`);
+    logger.info(`VHOST_CLIENT_MAP: ${VHOST_CLIENT_MAP}`);
     // Get list of keys (corresponding to vhosts) from the VHOSTS map
     const vhostsArray = Object.keys(VHOSTS);
     for (const vhost of vhostsArray) {
@@ -68,10 +70,12 @@ class ExpressServer {
           for (const type of ['message', 'ack', 'info']) {
             const queue = `${clientId}.${type}`;
             logger.info(` [*] Waiting for ${clientId} messages in ${queue} (${vhost}). To exit press CTRL+C`);
+            const checkQueue = VHOST_CLIENT_MAP[vhost].find((item) => item === queue);
+            if (!checkQueue) {
+              logger.error(`Queue ${queue} not found in vhost ${vhost}`);
+              continue;
+            }
             try {
-              // Check if the queue exists
-              await channel.checkQueue(queue);
-
               channel.consume(queue, (msg) => {
                 const body = JSON.parse(msg.content);
                 logger.info(` [x] Received for ${clientId} (${vhost}): ${body.distributionID}`);

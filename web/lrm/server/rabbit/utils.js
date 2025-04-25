@@ -12,6 +12,7 @@ console.log(`Connecting to RabbitMQ server: ${HUB_SANTE_URL}`);
 const HUB_SANTE_EXCHANGE = 'hubsante';
 const DEMO_CLIENT_IDS = JSON.parse(process.env.CLIENT_MAP);
 const VHOSTS = JSON.parse(process.env.VHOSTS);
+const VHOST_CLIENT_MAP = JSON.parse(process.env.VHOST_CLIENT_MAP);
 
 const opts = {
   // pfx with new encryption needed for Node 19 support
@@ -78,4 +79,5 @@ module.exports = {
   HUB_SANTE_EXCHANGE,
   DEMO_CLIENT_IDS,
   VHOSTS,
+  VHOST_CLIENT_MAP,
 };
