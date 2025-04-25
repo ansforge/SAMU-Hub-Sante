@@ -70,11 +70,18 @@ class ExpressServer {
           for (const type of ['message', 'ack', 'info']) {
             const queue = `${clientId}.${type}`;
             logger.info(` [*] Waiting for ${clientId} messages in ${queue} (${vhost}). To exit press CTRL+C`);
-            const checkQueue = VHOST_CLIENT_MAP[vhost].find((item) => item === queue);
-            if (!checkQueue) {
+            const checkQueue = VHOST_CLIENT_MAP[vhost].find((item) => 
+              item && 
+              queue.startsWith(item) && 
+              (queue.endsWith('.info') || queue.endsWith('.message') || queue.endsWith('.ack'))
+            );
+            if (!checkQueue && !queue.includes('fr.health.test.samuv')) {
               logger.error(`Queue ${queue} not found in vhost ${vhost}`);
               continue;
+            } else if (queue.includes('fr.health.test.samuv')) {
+              logger.info(`Queue ${queue} not found in vhost ${vhost} (likely to be expected)`);
             }
+            console.info(`Queue ${queue} found in vhost ${vhost}`);
             try {
               channel.consume(queue, (msg) => {
                 const body = JSON.parse(msg.content);
