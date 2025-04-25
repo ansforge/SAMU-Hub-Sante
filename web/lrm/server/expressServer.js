@@ -8,8 +8,8 @@ const bodyParser = require('body-parser');
 const WebSocket = require('ws');
 const logger = require('./logger');
 const {
-  connect, connectAsync, close, computeVhostFromMessage,
-  HUB_SANTE_EXCHANGE, DEMO_CLIENT_IDS, VHOSTS, VHOST_CLIENT_MAP,messageProperties,
+  connect, connectAsync, close,
+  HUB_SANTE_EXCHANGE, DEMO_CLIENT_IDS, VHOSTS, VHOST_CLIENT_MAP, messageProperties,
 } = require('./rabbit/utils');
 const { ModelesRouter } = require('./router/modelesRouter');
 
