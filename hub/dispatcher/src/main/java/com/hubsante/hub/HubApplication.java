@@ -18,6 +18,8 @@ package com.hubsante.hub;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+// Mock comment
+
 @SpringBootApplication
 public class HubApplication {
 
