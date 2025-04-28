@@ -33,3 +33,10 @@ jobs:
 
       - name: Run unit tests
         run: npm run test
+
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@v5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          projectBaseDir: web/lrm/server/

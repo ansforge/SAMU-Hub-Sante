@@ -72,3 +72,10 @@ jobs:
           build: npm run build:test
           start: npm run start
           browser: chrome
+      
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@v5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          projectBaseDir: web/lrm/client/
