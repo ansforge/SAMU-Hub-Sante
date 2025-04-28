@@ -67,3 +67,8 @@ jobs:
         with:
           reports: ${{ github.workspace }}/hub/dispatcher/build/reports/jacoco/test/jacocoTestReport.xml
           targetdir: coveragereport
+
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@v5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
