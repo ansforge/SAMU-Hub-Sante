@@ -79,3 +79,18 @@ More information about the usage of this directory in [the documentation](https:
 This directory contains your Vuex store files. Creating a file in this directory automatically activates Vuex.
 
 More information about the usage of this directory in [the documentation](https://nuxtjs.org/docs/2.x/directory-structure/store).
+
+## Standards
+
+### NPM cript naming
+
+We encourage to follow the [scriptlint standard](https://github.com/peerigon/scriptlint/wiki/The-scriptlint-%22standard%22-tl%3Bdr).
+
+When adding new scripts, make sure:
+
+- to use camelCase
+- to abstract script name from their implementation (ex: `lint:css` instead of `stylint`)
+- to use namespaces to categorize scripts (ex: `test:e2e`, and all the test related scripts under the `test` namespace)
+- to use `:` as a namespace separator (ex: `lint:js`)
+
+More details are available on the link above.
