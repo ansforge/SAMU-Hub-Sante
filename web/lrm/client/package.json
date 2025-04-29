@@ -10,12 +10,15 @@
     "dev": "nuxt dev",
     "vite": "vite",
     "build": "cross-env NODE_OPTIONS=--openssl-legacy-provider nuxi build --force",
+    "build:test": "INSTRUMENT_BUILD=true npm run build",
     "start": "nuxt start",
     "generate": "cross-env NODE_OPTIONS=--openssl-legacy-provider nuxt generate",
     "lint:js": "eslint --ext \".js,.ts,.vue\" --ignore-path .gitignore .",
     "lint:css": "stylelint \"**/*.{css,scss}\"",
     "lint": "npm run lint:js && npm run lint:css",
-    "lintfix": "npm run lint:js -- --fix && npm run lint:css -- --fix"
+    "lintfix": "npm run lint:js -- --fix && npm run lint:css -- --fix",
+    "test:e2e": "npx cypress run",
+    "test:e2e:report": "npx nyc report --reporter=text"
   },
   "dependencies": {
     "@babel/types": "^7.24.7",
@@ -48,6 +51,7 @@
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.24.7",
+    "@cypress/code-coverage": "^3.14.0",
     "@nuxtjs/eslint-config-typescript": "^12.1.0",
     "@typescript-eslint/eslint-plugin": "^5.62.0",
     "@typescript-eslint/parser": "^5.62.0",
@@ -72,6 +76,7 @@
     "stylelint-config-standard": "^37.0.0",
     "stylelint-scss": "^6.10.1",
     "typescript": "^5.5.3",
+    "vite-plugin-istanbul": "^7.0.0",
     "vuetify": "^3.6.10"
   },
   "lint-staged": {
@@ -82,6 +87,13 @@
     "*.{css,scss}": [
       "stylelint --fix",
       "prettier --write"
+    ]
+  },
+  "nyc": {
+    "extension": [
+      ".ts",
+      ".js",
+      ".vue"
     ]
   }
 }

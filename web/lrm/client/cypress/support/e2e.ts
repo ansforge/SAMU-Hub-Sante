@@ -1,3 +1,5 @@
+import '@cypress/code-coverage/support';
+
 Cypress.Commands.add('waitForResponse', (alias) => {
   cy.intercept('GET', `${alias}`)
     .as(`${alias}`)
