@@ -161,7 +161,6 @@ html {
   margin: auto;
   display: flex;
   justify-content: center;
-  display: flex;
   flex-direction: column;
   gap: 1rem;
 }
