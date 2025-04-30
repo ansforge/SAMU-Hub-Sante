@@ -9,7 +9,7 @@ const WebSocket = require('ws');
 const logger = require('./logger');
 const {
   connect, connectAsync, close,
-  HUB_SANTE_EXCHANGE, DEMO_CLIENT_IDS, VHOSTS, VHOST_CLIENT_MAP, messageProperties,
+  HUB_SANTE_EXCHANGE, VHOST_CLIENT_MAP, messageProperties,
 } = require('./rabbit/utils');
 const { ModelesRouter } = require('./router/modelesRouter');
 
@@ -36,12 +36,10 @@ class ExpressServer {
     // Serve distribution UI
     this.app.use('/', express.static(path.join(__dirname, 'ui')));
 
-    // Subscribe to Hub messages and send them to the client through web socket
-    logger.info(`Demo client ids: ${DEMO_CLIENT_IDS}`);
-    logger.info(`VHOSTS: ${VHOSTS}`);
     logger.info(`VHOST_CLIENT_MAP: ${VHOST_CLIENT_MAP}`);
+    // Subscribe to Hub messages and send them to the client through web socket
     // Get list of keys (corresponding to vhosts) from the VHOSTS map
-    const vhostsArray = Object.keys(VHOSTS);
+    const vhostsArray = Object.keys(VHOST_CLIENT_MAP);
     for (const vhost of vhostsArray) {
       connect(vhost, async (connection, channel) => {
         connection.on('error', (err) => {
@@ -65,24 +63,10 @@ class ExpressServer {
           }
         });
 
-        for (const clientKeyValue of DEMO_CLIENT_IDS) {
-          const clientId = clientKeyValue[0];
-          for (const type of ['message', 'ack', 'info']) {
+        for (const clientId of VHOST_CLIENT_MAP[vhost]) {
+          console.log(`Client ID: ${clientId}`);
+          for (const type of ["message", "ack", "info"]) {
             const queue = `${clientId}.${type}`;
-            logger.info(` [*] Waiting for ${clientId} messages in ${queue} (${vhost}). To exit press CTRL+C`);
-            const checkQueue = VHOST_CLIENT_MAP[vhost].find((item) => 
-              item && 
-              queue.startsWith(item) && 
-              (queue.endsWith('.info') || queue.endsWith('.message') || queue.endsWith('.ack'))
-            );
-            if (!checkQueue && !queue.includes('fr.health.test.samuv')) {
-              logger.error(`Queue ${queue} not found in vhost ${vhost}`);
-              continue;
-            } else if (queue.includes('fr.health.test.samuv')) {
-              logger.info(`Queue ${queue} not found in vhost ${vhost} (likely to be expected)`);
-              continue;
-            }
-            console.info(`Queue ${queue} found in vhost ${vhost}`);
             try {
               channel.consume(queue, (msg) => {
                 const body = JSON.parse(msg.content);
@@ -91,10 +75,10 @@ class ExpressServer {
                 const d = new Date();
                 const data = {
                   vhost,
-                  direction: '←',
+                  direction: "←",
                   routingKey: queue,
                   // Ref.: https://stackoverflow.com/a/9849524
-                  time: `${d.toLocaleTimeString('fr', { timeZone: 'Europe/Paris' }).replace(':', 'h')}.${String(new Date().getMilliseconds()).padStart(3, '0')}`,
+                  time: `${d.toLocaleTimeString("fr", { timeZone: "Europe/Paris" }).replace(":", "h")}.${String(new Date().getMilliseconds()).padStart(3, "0")}`,
                   body,
                 };
                 // Send the message to all connected WebSocket clients
@@ -107,9 +91,11 @@ class ExpressServer {
                 });
                 logger.info(`Sent to ${clientCounts} clients: ${data.body.distributionID}`);
                 logger.debug(`Sent to ${clientCounts} clients: ${data} of content ${data}`);
-              }, {
+              },
+              {
                 noAck: true, // Ref.: https://amqp-node.github.io/amqplib/channel_api.html#channelconsume
               });
+              logger.info(` [*] Waiting for ${clientId} messages in ${queue} (${vhost}). To exit press CTRL+C`);
             } catch (err) {
               logger.error(`Error while consuming from queue '${queue}' in vhost '${vhost}': ${err}`);
             }

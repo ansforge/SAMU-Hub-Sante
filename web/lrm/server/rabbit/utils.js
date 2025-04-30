@@ -4,14 +4,29 @@ const amqp = require('amqplib/callback_api');
 const logger = require('../logger');
 
 const moduleDir = __dirname;
-if (!process.env.HUB_URL) {
-  throw new Error('HUB_URL environment variable is not set. In kubernetes, this might be caused by a missing ConfigMap.');
+const missingEnvVars = [];
+
+const { HUB_URL, LRM_PASSPHRASE } = process.env;
+
+if (!HUB_URL) {
+  missingEnvVars.push('HUB_URL');
 }
-const HUB_SANTE_URL = process.env.HUB_URL;
-console.log(`Connecting to RabbitMQ server: ${HUB_SANTE_URL}`);
+
+if (!LRM_PASSPHRASE) {
+  missingEnvVars.push('LRM_PASSPHRASE');
+}
+
+if (!process.env.VHOST_CLIENT_MAP) {
+  missingEnvVars.push('VHOST_CLIENT_MAP');
+}
+
+// Check if the environment variables are set, if not, throw an error
+if (missingEnvVars.length > 0) {
+  throw new Error(`The following environment variables are missing: ${missingEnvVars.join(', ')}. In Kubernetes, this might be caused by a missing ConfigMap or Secret.`);
+}
+
+console.log(`Connecting to RabbitMQ server: ${HUB_URL}`);
 const HUB_SANTE_EXCHANGE = 'hubsante';
-const DEMO_CLIENT_IDS = JSON.parse(process.env.CLIENT_MAP);
-const VHOSTS = JSON.parse(process.env.VHOSTS);
 const VHOST_CLIENT_MAP = JSON.parse(process.env.VHOST_CLIENT_MAP);
 
 const opts = {
@@ -29,7 +44,7 @@ const opts = {
 
 module.exports = {
   connect(vhost, callback) {
-    amqp.connect(`${HUB_SANTE_URL}/${vhost}`, opts, (error0, connection) => {
+    amqp.connect(`${HUB_URL}/${vhost}`, opts, (error0, connection) => {
       if (error0) {
         logger.error(`Error during AMQP connection: ${error0}`);
         throw error0;
@@ -46,7 +61,7 @@ module.exports = {
   },
   async connectAsync(vhost) {
     return new Promise((resolve, reject) => {
-      amqp.connect(`${HUB_SANTE_URL}/${vhost}`, opts, (error0, connection) => {
+      amqp.connect(`${HUB_URL}/${vhost}`, opts, (error0, connection) => {
         if (error0) {
           reject(error0);
           return;
@@ -75,9 +90,7 @@ module.exports = {
     deliveryMode: 2,
     priority: 0,
   },
-  HUB_SANTE_URL,
+  HUB_URL,
   HUB_SANTE_EXCHANGE,
-  DEMO_CLIENT_IDS,
-  VHOSTS,
   VHOST_CLIENT_MAP,
 };
