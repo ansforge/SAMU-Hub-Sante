@@ -19,7 +19,7 @@ HUB_URL=amqps://messaging.integration.hub.esante.gouv.fr LRM_PASSPHRASE=... node
 
 ## Back-end run
 ```bash
-HUB_URL=amqps://messaging.integration.hub.esante.gouv.fr LRM_PASSPHRASE=... CLIENT_MAP='[["fr.health.samuA",["fr.health.samuC"]]]' VHOSTS='["15-15_v1.5","15-smur_v1.4"]' node index.js
+HUB_URL=amqps://messaging.integration.hub.esante.gouv.fr LRM_PASSPHRASE=... VHOST_CLIENT_MAP='{"15-15_v1.5":["fr.health.test.samuA","fr.health.test.samuC"],"15-smur_v1.6":["fr.health.test.samuA","fr.health.test.samuC"]}' node index.js
 ```
 
 ## LRM back implem
