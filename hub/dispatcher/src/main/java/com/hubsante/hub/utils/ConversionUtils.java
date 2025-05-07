@@ -50,21 +50,11 @@ public class ConversionUtils {
         String sourceVersion = getSourceVersion(hubConfig);
         String[] targetVersions = getTargetVersions(hubConfig, edxlMessage);
 
-        log.debug("[Conversion] Source version detected: {}", sourceVersion);
-        if (targetVersions != null) {
-            Arrays.asList(targetVersions).stream().forEach(version -> {
-                log.debug("[Conversion] Target version detected: {}", version);
-            });
-        }
-
         if (targetVersions == null || sourceVersion == null || targetVersions.length == 0) {
-            log.debug("[Conversion] Conversion is not required because of missing data");
             return false;
         }
         // todo - change to include model versions which may not be the same as these versions
-        boolean result = !Arrays.asList(targetVersions).contains(sourceVersion);
-        log.debug("[Conversion] Is required result : {}", result);
-        return result;
+        return !Arrays.asList(targetVersions).contains(sourceVersion);
     }
 
     public static String getSourceVersion(HubConfiguration hubConfig) {
@@ -74,13 +64,7 @@ public class ConversionUtils {
     public static String[] getTargetVersions(HubConfiguration hubConfig, EdxlMessage edxlMessage) {
         String recipientID = getRecipientID(edxlMessage);
 
-        String[] result = hubConfig.getLrmPerimeterVersions().get(recipientID);
-        if (result != null) {
-            Arrays.asList(result).stream().forEach(version -> {
-                log.debug("[Conversion] Lrm perimeter version detected: {}", version);
-            });
-        }
-        return result;
+        return hubConfig.getLrmPerimeterVersions().get(recipientID);
     }
 
     public static boolean requiresCisuConversion(HubConfiguration hubConfig, EdxlMessage edxlMessage) {

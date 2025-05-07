@@ -50,7 +50,7 @@ public class ConversionHandler {
         String jsonEdxlString = messageHandler.serializeJsonEDXL(edxlMessage);
 
         try {
-            log.debug("Starting conversion");
+            log.debug("Starting conversion for message {} from {} to {}, isCisu ? {}", edxlMessage.getDistributionID(), sourceModelVersion, targetModelVersion, isCisuConversion);
             String convertedJson = callConversionService(jsonEdxlString, sourceModelVersion, targetModelVersion, isCisuConversion, edxlMessage.getDistributionID());
             log.debug("Message converted successfully");
 
