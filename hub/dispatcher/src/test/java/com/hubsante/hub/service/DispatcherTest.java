@@ -114,7 +114,7 @@ public class DispatcherTest {
         propertiesRegistry.add("client.preferences.file",
                 () -> Objects.requireNonNull(classLoader.getResource("config/client.preferences.csv")));
         propertiesRegistry.add("hubsante.default.message.ttl", () -> 5);
-        propertiesRegistry.add("dispatcher.vhost", () -> "15-15_v3.0");
+        propertiesRegistry.add("spring.rabbitmq.virtual-host", () -> "15-15_v3.0");
     }
 
     @PostConstruct
