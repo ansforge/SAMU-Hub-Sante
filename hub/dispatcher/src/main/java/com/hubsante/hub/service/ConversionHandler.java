@@ -31,6 +31,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Component
 @Slf4j
 public class ConversionHandler {
+
     @Autowired
     private WebClient conversionWebClient;
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -49,6 +50,7 @@ public class ConversionHandler {
         String jsonEdxlString = messageHandler.serializeJsonEDXL(edxlMessage);
 
         try {
+            log.debug("Starting conversion");
             String convertedJson = callConversionService(jsonEdxlString, sourceModelVersion, targetModelVersion, isCisuConversion, edxlMessage.getDistributionID());
             log.debug("Message converted successfully");
 
@@ -63,8 +65,8 @@ public class ConversionHandler {
     protected String callConversionService(String jsonEdxlString, String sourceVersion, String targetVersion, boolean cisuConversion, String distributionID) {
         // Create request body with all required parameters
         String requestBody = String.format(
-            "{\"edxl\": %s, \"sourceVersion\": \"%s\", \"targetVersion\": \"%s\", \"cisuConversion\": %s}",
-            jsonEdxlString, sourceVersion, targetVersion, cisuConversion
+                "{\"edxl\": %s, \"sourceVersion\": \"%s\", \"targetVersion\": \"%s\", \"cisuConversion\": %s}",
+                jsonEdxlString, sourceVersion, targetVersion, cisuConversion
         );
 
         try {
