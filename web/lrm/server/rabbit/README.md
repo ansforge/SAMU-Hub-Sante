@@ -19,8 +19,22 @@ HUB_URL=amqps://messaging.integration.hub.esante.gouv.fr LRM_PASSPHRASE=... node
 
 ## Back-end run
 ```bash
-HUB_URL=amqps://messaging.integration.hub.esante.gouv.fr LRM_PASSPHRASE=... CLIENT_MAP='[["fr.health.samuA",["fr.health.samuC"]]]' VHOSTS='["15-15_v1.5","15-smur_v1.4"]' node index.js
+HUB_URL=amqps://messaging.integration.hub.esante.gouv.fr LRM_PASSPHRASE=... VHOST_CLIENT_MAP='{"15-15_v1.5":["fr.health.test.samuA","fr.health.test.samuC"],"15-smur_v1.6":["fr.health.test.samuA","fr.health.test.samuC"]}' node index.js
 ```
+
+## Back-end run with .env
+To run the back-end using the `.env` file, you have to create the file at the root of the project if it doesn't exist. Ensure that the required environment variables are defined in the `.env` file (e.g., `HUB_URL`, `LRM_PASSPHRASE`, `VHOST_CLIENT_MAP`).
+example: 
+```bash
+HUB_URL=amqps://messaging.integration.hub.esante.gouv.fr
+LRM_PASSPHRASE=...
+VHOST_CLIENT_MAP='{"15-15_v1.5":["fr.health.test.samuA","fr.health.test.samuC"],"15-smur_v1.6":["fr.health.test.samuA","fr.health.test.samuC"]}'
+```
+Run the following command:
+```bash
+npm run dev
+```
+The application will automatically load the environment variables from the `.env` file.
 
 ## LRM back implem
 The back-end of the LRM is not using `receive.js` or `send.js`!
