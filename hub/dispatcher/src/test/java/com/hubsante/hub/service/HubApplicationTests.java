@@ -47,7 +47,9 @@ class HubApplicationTests {
 							.getResource("config/certs/trustStore"),
 					"client.preferences.file=" + Thread.currentThread().getContextClassLoader()
 							.getResource("config/client.preferences.csv"),
-					"dispatcher.vhost=default-vhost"
+					// TODO: cleanup after migrating to spring.rabbitmq.virtual-host variable
+					"dispatcher.vhost=default-vhost",
+					"spring.rabbitmq.virtual-host=default-vhost"
 			);
 			values.applyTo(applicationContext);
 		}

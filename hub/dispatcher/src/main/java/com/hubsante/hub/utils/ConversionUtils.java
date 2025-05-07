@@ -51,9 +51,11 @@ public class ConversionUtils {
         String[] targetVersions = getTargetVersions(hubConfig, edxlMessage);
 
         log.debug("[Conversion] Source version detected: {}", sourceVersion);
-        Arrays.asList(targetVersions).stream().forEach(version -> {
-            log.debug("[Conversion] Target version detected: {}", version);
-        });
+        if (targetVersions != null) {
+            Arrays.asList(targetVersions).stream().forEach(version -> {
+                log.debug("[Conversion] Target version detected: {}", version);
+            });
+        }
 
         if (targetVersions == null || sourceVersion == null || targetVersions.length == 0) {
             log.debug("[Conversion] Conversion is not required because of missing data");
@@ -73,9 +75,11 @@ public class ConversionUtils {
         String recipientID = getRecipientID(edxlMessage);
 
         String[] result = hubConfig.getLrmPerimeterVersions().get(recipientID);
-        Arrays.asList(result).stream().forEach(version -> {
-            log.debug("[Conversion] Lrm perimeter version detected: {}", version);
-        });
+        if (result != null) {
+            Arrays.asList(result).stream().forEach(version -> {
+                log.debug("[Conversion] Lrm perimeter version detected: {}", version);
+            });
+        }
         return result;
     }
 
