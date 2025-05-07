@@ -43,7 +43,7 @@ import java.util.Map;
 @Configuration
 public class HubConfiguration {
 
-    private static final int TOGGLE_ROW_LENGTH = 5;
+    private static final int TOGGLE_ROW_LENGTH = 6;
     private static final String DATA_DIVIDER = ",";
 
     @Value("${client.preferences.file}")
@@ -82,7 +82,7 @@ public class HubConfiguration {
                     useXmlPreferences.put(items[0], Boolean.parseBoolean(items[1]));
                     directCisuPreferences.put(items[0], Boolean.parseBoolean(items[2]));
                     clientsEditorMap.put(items[0], items[3]);
-                    lrmPerimeterVersions.put(items[0], splitString(items[4]));
+                    lrmPerimeterVersions.put(items[0], splitString(items[5]));
                 }
             };
             CsvParserSettings parserSettings = new CsvParserSettings();
