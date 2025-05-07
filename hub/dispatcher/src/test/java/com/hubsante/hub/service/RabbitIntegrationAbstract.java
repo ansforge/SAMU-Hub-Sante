@@ -133,15 +133,13 @@ public class RabbitIntegrationAbstract {
                     "client.preferences.file=" + Thread.currentThread().getContextClassLoader()
                             .getResource("config/client.preferences.csv"),
                     "dispatcher.default.ttl=5",
-                    // TODO: cleanup after migrating to spring.rabbitmq.virtual-host variable
-                    "dispatcher.vhost=default-vhost",
 
                     // must be set to handle PublisherConfirms in other RabbitTemplates,
                     // even if we don't use it in Dispatcher
                     "spring.rabbitmq.publisher-confirm-type=correlated",
                     "spring.rabbitmq.publisher-returns=true",
                     "spring.rabbitmq.template.mandatory=true",
-                    "spring.rabbitmq.virtual-host=default-vhost"
+                    "spring.rabbitmq.virtual-host=/"
             );
             values.applyTo(applicationContext);
         }
