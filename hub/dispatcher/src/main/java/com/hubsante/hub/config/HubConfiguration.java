@@ -51,7 +51,7 @@ public class HubConfiguration {
     @Value("${dispatcher.default.ttl}")
     private String ttlProperty;
     private long defaultTTL;
-    @Value("${dispatcher.vhost}")
+    @Value("${spring.rabbitmq.virtual-host}")
     private String vhost;
 
     private HashMap<String, Boolean> useXmlPreferences = new HashMap<>();
