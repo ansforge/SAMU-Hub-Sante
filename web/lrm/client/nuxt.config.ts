@@ -67,8 +67,8 @@ export default defineNuxtConfig({
     public: {
       clientMap: !isEnvProd()
         ? [
-            ['fr.health.samuA', ['fr.health.samuC']],
-            ['fr.health.samuC', ['fr.health.samuA']],
+            ['fr.health.test.samuA', ['fr.health.test.samuC']],
+            ['fr.health.test.samuC', ['fr.health.test.samuA']],
           ]
         : {},
       vhostMap: !isEnvProd()
