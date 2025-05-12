@@ -5,8 +5,10 @@ import json
 import logging
 from flask import Flask, jsonify, Response
 from collections import OrderedDict
+from prometheus_flask_exporter import PrometheusMetrics
 
 app = Flask(__name__)
+metrics = PrometheusMetrics(app) 
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
