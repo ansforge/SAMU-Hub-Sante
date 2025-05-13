@@ -1,6 +1,9 @@
 import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
+import { autoTable } from 'jspdf-autotable';
 import { ValidationStatus } from '~/composables/messageUtils.js';
+import { applyPlugin } from 'jspdf-autotable';
+
+applyPlugin(jsPDF);
 
 const color = {
   black: [0, 0, 0], // Black
@@ -62,7 +65,9 @@ const addTable = (pdf, table, yOffset) => {
     columnStyles: table.columnStyles,
   });
 
-  return pdf.previousAutoTable.finalY + 10;
+  const finalY = pdf.lastAutoTable.finalY;
+
+  return finalY + 10; // Add padding after the table
 };
 
 const getStatusTextAndColor = (valid) => {
