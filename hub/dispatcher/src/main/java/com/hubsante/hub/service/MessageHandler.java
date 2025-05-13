@@ -27,9 +27,11 @@ import com.hubsante.model.edxl.EdxlMessage;
 import com.hubsante.model.exception.ValidationException;
 import com.hubsante.model.report.Error;
 import com.hubsante.model.report.ErrorWrapper;
+
 import io.micrometer.core.annotation.Timed;
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.amqp.AmqpRejectAndDontRequeueException;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageProperties;
@@ -46,6 +48,8 @@ import java.util.HashMap;
 import static com.hubsante.hub.config.AmqpConfiguration.DISTRIBUTION_EXCHANGE;
 import static com.hubsante.hub.config.AmqpConfiguration.DLQ_ORIGINAL_ROUTING_KEY;
 import static com.hubsante.hub.config.Constants.*;
+
+import static com.hubsante.hub.utils.ConfigUtils.sanitizeVhostForProm;
 import static com.hubsante.hub.utils.EdxlUtils.edxlMessageFromHub;
 import static com.hubsante.hub.utils.EdxlUtils.getUseCaseFromMessage;
 import static com.hubsante.hub.utils.MessageUtils.*;
@@ -307,7 +311,7 @@ public class MessageHandler {
 
     protected void publishErrorMetric(String error, String sender) {
         String editor = getEditorFromSender(sender);
-        registry.counter(DISPATCH_ERROR, REASON_TAG, error, CLIENT_ID_TAG, sender, VHOST_TAG, hubConfig.getVhost(), EDITOR_TAG, editor).increment();
+        registry.counter(DISPATCH_ERROR, REASON_TAG, error, CLIENT_ID_TAG, sender, VHOST_TAG, sanitizeVhostForProm(hubConfig.getVhost()), EDITOR_TAG, editor).increment();
     }
 
     protected void publishMetrics(EdxlMessage edxlMessage, Message amqpMessage) {
@@ -315,7 +319,7 @@ public class MessageHandler {
         String useCase = getUseCaseFromMessage(edxlMessage.getFirstContentMessage());
         String editor = getEditorFromSender(sender);
 
-        registry.counter(DISPATCHED_MESSAGE,CLIENT_ID_TAG, sender, VHOST_TAG, hubConfig.getVhost(),USE_CASE_TAG, useCase, EDITOR_TAG, editor).increment();
+        registry.counter(DISPATCHED_MESSAGE,CLIENT_ID_TAG, sender, VHOST_TAG, sanitizeVhostForProm(hubConfig.getVhost()),USE_CASE_TAG, useCase, EDITOR_TAG, editor).increment();
     }
 
     private String getEditorFromSender(String sender) {

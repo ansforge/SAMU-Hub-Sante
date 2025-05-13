@@ -15,6 +15,8 @@
  */
 package com.hubsante.hub.utils;
 
+import lombok.extern.slf4j.Slf4j;
+
 import com.hubsante.model.cisu.CreateCaseWrapper;
 import com.hubsante.model.health.CreateCaseHealthWrapper;
 import com.hubsante.model.edxl.EdxlMessage;
@@ -26,45 +28,49 @@ import static com.hubsante.hub.utils.MessageUtils.getRecipientID;
 
 import java.util.Arrays;
 
+import groovy.util.logging.Log;
+
+@Slf4j
 public class ConversionUtils {
+
     private final static boolean DEFAULT_DIRECT_CISU_PREFERENCE = false;
 
     public static String buildExchangeDestination(String sourceVersion, String targetVersion) {
         return TRANSFER_EXCHANGE_PREFIX + "V" + sourceVersion + "toV" + targetVersion;
     }
 
-    public static boolean requiresConversion(HubConfiguration hubConfig, EdxlMessage edxlMessage){
+    public static boolean requiresConversion(HubConfiguration hubConfig, EdxlMessage edxlMessage) {
         boolean isCisuConversion = requiresCisuConversion(hubConfig, edxlMessage);
         boolean isVersionConversion = requiresVersionConversion(hubConfig, edxlMessage);
 
         return isVersionConversion || isCisuConversion;
     }
 
-    public static boolean requiresVersionConversion(HubConfiguration hubConfig, EdxlMessage edxlMessage){
+    public static boolean requiresVersionConversion(HubConfiguration hubConfig, EdxlMessage edxlMessage) {
         String sourceVersion = getSourceVersion(hubConfig);
-        String[] targetVersions= getTargetVersions(hubConfig, edxlMessage);
+        String[] targetVersions = getTargetVersions(hubConfig, edxlMessage);
 
-        if (targetVersions == null || sourceVersion == null || targetVersions.length == 0){
+        if (targetVersions == null || sourceVersion == null || targetVersions.length == 0) {
             return false;
         }
         // todo - change to include model versions which may not be the same as these versions
         return !Arrays.asList(targetVersions).contains(sourceVersion);
     }
 
-    public static String getSourceVersion(HubConfiguration hubConfig){
+    public static String getSourceVersion(HubConfiguration hubConfig) {
         return extractVersionFromVhost(hubConfig.getVhost());
     }
 
-    public static String[] getTargetVersions(HubConfiguration hubConfig, EdxlMessage edxlMessage){
+    public static String[] getTargetVersions(HubConfiguration hubConfig, EdxlMessage edxlMessage) {
         String recipientID = getRecipientID(edxlMessage);
 
         return hubConfig.getLrmPerimeterVersions().get(recipientID);
     }
 
     public static boolean requiresCisuConversion(HubConfiguration hubConfig, EdxlMessage edxlMessage) {
-        return isCisuExchange(edxlMessage) &&
-               isConvertedModel(edxlMessage) &&
-               !isDirectCisuForHealthActor(hubConfig, edxlMessage);
+        return isCisuExchange(edxlMessage)
+                && isConvertedModel(edxlMessage)
+                && !isDirectCisuForHealthActor(hubConfig, edxlMessage);
     }
 
     public static boolean isCisuExchange(EdxlMessage edxlMessage) {
@@ -91,7 +97,7 @@ public class ConversionUtils {
         return directCisuPreference != null && directCisuPreference;
     }
 
-    public static boolean isTransferredToOtherVhost(HubConfiguration hubConfig, EdxlMessage edxlMessage){
+    public static boolean isTransferredToOtherVhost(HubConfiguration hubConfig, EdxlMessage edxlMessage) {
         return requiresVersionConversion(hubConfig, edxlMessage);
     }
 

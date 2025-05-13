@@ -114,7 +114,7 @@ public class DispatcherTest {
         propertiesRegistry.add("client.preferences.file",
                 () -> Objects.requireNonNull(classLoader.getResource("config/client.preferences.csv")));
         propertiesRegistry.add("hubsante.default.message.ttl", () -> 5);
-        propertiesRegistry.add("dispatcher.vhost", () -> "15-15_v3.0");
+        propertiesRegistry.add("spring.rabbitmq.virtual-host", () -> "15-15_v3.0");
     }
 
     @PostConstruct
@@ -477,6 +477,11 @@ public class DispatcherTest {
             dispatcher.dispatch(message);
 
             verify(dispatcher, times(1)).sendToTransferExchange(anyString(), any(), any());
+
+            // we must also check that the message has not been published on the source target
+            ArgumentCaptor<Message> argument = ArgumentCaptor.forClass(Message.class);
+            Mockito.verify(rabbitTemplate, times(0)).send(
+                    eq(DISTRIBUTION_EXCHANGE), eq(SAMU_B_MESSAGE_QUEUE), argument.capture());
         }
     }
 
@@ -502,6 +507,9 @@ public class DispatcherTest {
             dispatcher.dispatch(message);
 
             verify(dispatcher, times(0)).sendToTransferExchange(anyString(), any(), any());
+            ArgumentCaptor<Message> argument = ArgumentCaptor.forClass(Message.class);
+            Mockito.verify(rabbitTemplate, times(1)).send(
+                    eq(DISTRIBUTION_EXCHANGE), eq(SAMU_B_MESSAGE_QUEUE), argument.capture());
         }
     }
 

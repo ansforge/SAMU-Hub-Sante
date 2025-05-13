@@ -144,6 +144,8 @@ public class Dispatcher {
 
                 if(ConversionUtils.isTransferredToOtherVhost(messageHandler.getHubConfig(), edxlMessage)) {
                     sendToTransferExchange(convertedMessage, message, conversionRulesCommand);
+                    // We MUST return here to exit the dispatch() function, otherwise the message will be published on the source Exchange as well
+                    return;
                 }
                 else {
                     edxlMessage = messageHandler.deserializeJsonEDXL(convertedMessage);
