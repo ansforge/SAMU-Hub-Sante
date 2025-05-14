@@ -31,7 +31,6 @@
     "ajv-formats": "^2.1.1",
     "consola": "^3.2.3",
     "core-js": "^3.37.1",
-    "eslint-plugin-vuetify": "^2.4.0",
     "jsonpath": "^1.1.1",
     "jspdf": "^3.0.1",
     "jspdf-autotable": "^5.0.0",
@@ -44,7 +43,6 @@
     "vite-plugin-vuetify": "^2.0.3",
     "vue": "^3.4.30",
     "vue-json-viewer": "^3.0.4",
-    "vue-server-renderer": "^2.7.16",
     "vue3-toastify": "^0.2.3",
     "vuedraggable": "^2.24.3"
   },
