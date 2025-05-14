@@ -23,7 +23,7 @@
   "dependencies": {
     "@babel/types": "^7.24.7",
     "@koumoul/vjsf": "^3.15.1",
-    "@koumoul/vjsf-markdown": "^0.2.1",
+    "@koumoul/vjsf-markdown": "^0.3.2",
     "@mdi/font": "^7.4.47",
     "@nuxtjs/dotenv": "^1.4.2",
     "@pinia/nuxt": "^0.5.1",
