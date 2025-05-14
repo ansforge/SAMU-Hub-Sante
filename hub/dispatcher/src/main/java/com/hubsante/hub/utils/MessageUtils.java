@@ -69,9 +69,17 @@ public class MessageUtils {
     public static void checkHealthActorIsInvolved(EdxlMessage edxlMessage) {
         if(!edxlMessage.getSenderID().startsWith(HEALTH_PREFIX) &&
                 !edxlMessage.getDescriptor().getExplicitAddress().getExplicitAddressValue().startsWith(HEALTH_PREFIX)) {
-            String errorCause = "Unable to route message with id " + edxlMessage.getDistributionID() +", no health actor involved.";
+            String errorCause = "Unable to route message with id " + edxlMessage.getDistributionID() + ", no health actor involved.";
             throw new UnroutableMessageException(errorCause, edxlMessage.getDistributionID());
         }
+    }
+
+    public static boolean isExternalHubexInvolved(EdxlMessage edxlMessage) {
+        if (!edxlMessage.getSenderID().startsWith(HEALTH_PREFIX) ||
+                !edxlMessage.getDescriptor().getExplicitAddress().getExplicitAddressValue().startsWith(HEALTH_PREFIX)) {
+            return true;
+        }
+        return false;
     }
 
     public static void checkDeliveryModeIsPersistent(Message message, String messageId) {
