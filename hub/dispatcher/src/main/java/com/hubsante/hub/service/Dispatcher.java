@@ -22,6 +22,7 @@ import com.hubsante.hub.config.Constants;
 import com.hubsante.hub.exception.*;
 import com.hubsante.hub.utils.ConversionRulesCommand;
 import com.hubsante.hub.utils.ConversionUtils;
+import com.hubsante.hub.utils.MessageUtils;
 import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.edxl.EdxlMessage;
 import com.hubsante.model.report.ErrorCode;
@@ -141,15 +142,16 @@ public class Dispatcher {
             if (isConversionRequired) {
                 ConversionRulesCommand conversionRulesCommand = new ConversionRulesCommand(edxlMessage, messageHandler);
                 String convertedMessage = conversionHandler.applyConversionRules(conversionRulesCommand);
+                sendToTransferExchange(convertedMessage, message, conversionRulesCommand);
 
-                if(ConversionUtils.isTransferredToOtherVhost(messageHandler.getHubConfig(), edxlMessage)) {
-                    sendToTransferExchange(convertedMessage, message, conversionRulesCommand);
-                    // We MUST return here to exit the dispatch() function, otherwise the message will be published on the source Exchange as well
-                    return;
-                }
-                else {
-                    edxlMessage = messageHandler.deserializeJsonEDXL(convertedMessage);
-                }
+//                if(ConversionUtils.isTransferredToOtherVhost(messageHandler.getHubConfig(), edxlMessage)) {
+//                    sendToTransferExchange(convertedMessage, message, conversionRulesCommand);
+//                    // We MUST return here to exit the dispatch() function, otherwise the message will be published on the source Exchange as well
+//                    return;
+//                }
+//                else {
+//                    edxlMessage = messageHandler.deserializeJsonEDXL(convertedMessage);
+//                }
             }
 
             // Forward the message according to the recipient preferences. Conversion JSON <-> XML can happen here
@@ -172,7 +174,7 @@ public class Dispatcher {
     public void sendToTransferExchange(String convertedMessage, Message message, ConversionRulesCommand conversionRulesCommand){
         Message forwardedMsg = messageHandler.forwardedStringMessage(convertedMessage, message);
 
-        String transferExchangeName = ConversionUtils.buildExchangeDestination(conversionRulesCommand.getSourceVersion(), conversionRulesCommand.getTargetVersion());
+        String transferExchangeName = ConversionUtils.buildExchangeDestination(conversionRulesCommand.getSourceVHost(), conversionRulesCommand.getTargetVHost());
 
         String routingKey = message.getMessageProperties().getReceivedRoutingKey();
 

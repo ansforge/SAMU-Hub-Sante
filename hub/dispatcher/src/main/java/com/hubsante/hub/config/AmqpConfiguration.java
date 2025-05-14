@@ -28,7 +28,7 @@ import jakarta.annotation.PostConstruct;
 public class AmqpConfiguration {
     public static final String HUBSANTE_EXCHANGE = "hubsante";
     public static final String DISTRIBUTION_EXCHANGE = "distribution";
-    public static final String TRANSFER_EXCHANGE_PREFIX = "transfer";
+    public static final String TRANSFER_EXCHANGE_PREFIX = "transfer_";
     public static final String DISPATCH_QUEUE_NAME = "dispatch";
     public static final String DISPATCH_DLQ_NAME = "dispatch.dlq";
     public static final String DISTRIBUTION_DLX = "distribution.dlx";

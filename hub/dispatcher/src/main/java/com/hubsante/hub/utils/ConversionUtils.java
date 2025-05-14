@@ -23,20 +23,20 @@ import com.hubsante.model.edxl.EdxlMessage;
 import com.hubsante.hub.config.HubConfiguration;
 
 import static com.hubsante.hub.config.AmqpConfiguration.TRANSFER_EXCHANGE_PREFIX;
-import static com.hubsante.hub.utils.MessageUtils.HEALTH_PREFIX;
-import static com.hubsante.hub.utils.MessageUtils.getRecipientID;
+import static com.hubsante.hub.config.Constants.HUBEX_PERIMETER_PREFIXES;
+import static com.hubsante.hub.config.Constants.TRANSCODING_VHOSTS;
+import static com.hubsante.hub.utils.MessageUtils.*;
 
 import java.util.Arrays;
-
-import groovy.util.logging.Log;
+import java.util.Map;
 
 @Slf4j
 public class ConversionUtils {
 
     private final static boolean DEFAULT_DIRECT_CISU_PREFERENCE = false;
 
-    public static String buildExchangeDestination(String sourceVersion, String targetVersion) {
-        return TRANSFER_EXCHANGE_PREFIX + "V" + sourceVersion + "toV" + targetVersion;
+    public static String buildExchangeDestination(String sourceVHost, String targetVHost) {
+        return TRANSFER_EXCHANGE_PREFIX + sourceVHost + "_to_" + targetVHost;
     }
 
     public static boolean requiresConversion(HubConfiguration hubConfig, EdxlMessage edxlMessage) {
@@ -47,30 +47,54 @@ public class ConversionUtils {
     }
 
     public static boolean requiresVersionConversion(HubConfiguration hubConfig, EdxlMessage edxlMessage) {
-        String sourceVersion = getSourceVersion(hubConfig);
-        String[] targetVersions = getTargetVersions(hubConfig, edxlMessage);
+        String sourceVHost = hubConfig.getVhost();
+        String[] targetVHosts = getTargetVHosts(hubConfig, edxlMessage);
 
-        if (targetVersions == null || sourceVersion == null || targetVersions.length == 0) {
+        if (targetVHosts == null || sourceVHost == null || targetVHosts.length == 0) {
             return false;
         }
-        // todo - change to include model versions which may not be the same as these versions
-        return !Arrays.asList(targetVersions).contains(sourceVersion);
+        return !Arrays.asList(targetVHosts).contains(sourceVHost);
     }
 
-    public static String getSourceVersion(HubConfiguration hubConfig) {
-        return extractVersionFromVhost(hubConfig.getVhost());
+    public static String getSourceVHost(HubConfiguration hubConfig) {
+        return hubConfig.getVhost();
     }
 
-    public static String[] getTargetVersions(HubConfiguration hubConfig, EdxlMessage edxlMessage) {
+    public static String[] getTargetVHosts(HubConfiguration hubConfig, EdxlMessage edxlMessage) {
         String recipientID = getRecipientID(edxlMessage);
+        String[] targetVersions = hubConfig.getLrmPerimeterVersions().get(recipientID);
 
-        return hubConfig.getLrmPerimeterVersions().get(recipientID);
+        if (targetVersions == null && recipientID.startsWith("fr.fire")) {
+            targetVersions = new String[]{"15-nexsis_v1.9"};
+        }
+        else if (targetVersions != null) {
+            targetVersions = Arrays.stream(targetVersions).map(version -> "15-15_v" + version).toArray(String[]::new);
+        }
+
+        return targetVersions;
     }
 
     public static boolean requiresCisuConversion(HubConfiguration hubConfig, EdxlMessage edxlMessage) {
         return isCisuExchange(edxlMessage)
                 && isConvertedModel(edxlMessage)
+                && !isTargetPerimeter(hubConfig.getVhost(), edxlMessage.getDescriptor().getExplicitAddress().getExplicitAddressValue())
                 && !isDirectCisuForHealthActor(hubConfig, edxlMessage);
+    }
+
+    public static boolean isTranscodingVersion(String currentVHost) {
+        if (Arrays.asList(TRANSCODING_VHOSTS).contains(currentVHost)) {
+            return true;
+        }
+        return false;
+    }
+
+    public static boolean isTargetPerimeter(String currentVHost, String recipient) {
+        String perimeterPrefix = HUBEX_PERIMETER_PREFIXES.entrySet().stream()
+                .filter(entry -> currentVHost.startsWith(entry.getKey()))
+                .map(Map.Entry::getValue)
+                .findFirst().orElse(null);
+
+        return perimeterPrefix != null && recipient.startsWith(perimeterPrefix);
     }
 
     public static boolean isCisuExchange(EdxlMessage edxlMessage) {

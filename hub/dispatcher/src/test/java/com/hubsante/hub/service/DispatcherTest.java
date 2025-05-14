@@ -114,7 +114,7 @@ public class DispatcherTest {
         propertiesRegistry.add("client.preferences.file",
                 () -> Objects.requireNonNull(classLoader.getResource("config/client.preferences.csv")));
         propertiesRegistry.add("hubsante.default.message.ttl", () -> 5);
-        propertiesRegistry.add("spring.rabbitmq.virtual-host", () -> "15-15_v3.0");
+        propertiesRegistry.add("spring.rabbitmq.virtual-host", () -> "15-15_v2.1");
     }
 
     @PostConstruct
@@ -138,8 +138,8 @@ public class DispatcherTest {
         try (MockedStatic<ConversionUtils> mockedConversionUtils = mockStatic(ConversionUtils.class)) {
             mockedConversionUtils.when(() -> ConversionUtils.requiresVersionConversion(any(), any())).thenReturn(false);
             mockedConversionUtils.when(() -> ConversionUtils.requiresConversion(any(), any())).thenReturn(false);
-            mockedConversionUtils.when(() -> ConversionUtils.getSourceVersion(any())).thenReturn("1.5");
-            mockedConversionUtils.when(() -> ConversionUtils.getTargetVersions(any(), any())).thenReturn(new String[]{"1.5"});
+            mockedConversionUtils.when(() -> ConversionUtils.getSourceVHost(any())).thenReturn("15-15_v1.5");
+            mockedConversionUtils.when(() -> ConversionUtils.getTargetVHosts(any(), any())).thenReturn(new String[]{"1.5"});
 
             //generate input message and check that it has the expected content type
             Message receivedMessage = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
@@ -169,8 +169,8 @@ public class DispatcherTest {
         try (MockedStatic<ConversionUtils> mockedConversionUtils = mockStatic(ConversionUtils.class)) {
             mockedConversionUtils.when(() -> ConversionUtils.requiresVersionConversion(any(), any())).thenReturn(false);
             mockedConversionUtils.when(() -> ConversionUtils.requiresConversion(any(), any())).thenReturn(false);
-            mockedConversionUtils.when(() -> ConversionUtils.getSourceVersion(any())).thenReturn("1.5");
-            mockedConversionUtils.when(() -> ConversionUtils.getTargetVersions(any(), any())).thenReturn(new String[]{"1.5"});
+            mockedConversionUtils.when(() -> ConversionUtils.getSourceVHost(any())).thenReturn("1.5");
+            mockedConversionUtils.when(() -> ConversionUtils.getTargetVHosts(any(), any())).thenReturn(new String[]{"1.5"});
 
             // generate input message and check that it has the expected content type
             Message receivedMessage = createMessage("EDXL-DE", XML, SAMU_B_ROUTING_KEY);
@@ -200,8 +200,8 @@ public class DispatcherTest {
         try (MockedStatic<ConversionUtils> mockedConversionUtils = mockStatic(ConversionUtils.class)) {
             mockedConversionUtils.when(() -> ConversionUtils.requiresVersionConversion(any(), any())).thenReturn(false);
             mockedConversionUtils.when(() -> ConversionUtils.requiresConversion(any(), any())).thenReturn(false);
-            mockedConversionUtils.when(() -> ConversionUtils.getSourceVersion(any())).thenReturn("1.5");
-            mockedConversionUtils.when(() -> ConversionUtils.getTargetVersions(any(), any())).thenReturn(new String[]{"1.5"});
+            mockedConversionUtils.when(() -> ConversionUtils.getSourceVHost(any())).thenReturn("1.5");
+            mockedConversionUtils.when(() -> ConversionUtils.getTargetVHosts(any(), any())).thenReturn(new String[]{"1.5"});
 
             // JSON -> XML direction
             Message receivedJsonMessage = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
@@ -231,8 +231,8 @@ public class DispatcherTest {
     @DisplayName("should call conversion service for cisu messages")
     public void shouldCallConversionServiceForCisuMessages() throws IOException {
         try (MockedStatic<ConversionUtils> mockedConversionUtils = mockStatic(ConversionUtils.class)) {
-            mockedConversionUtils.when(() -> ConversionUtils.getSourceVersion(any())).thenReturn("1.5");
-            mockedConversionUtils.when(() -> ConversionUtils.getTargetVersions(any(), any())).thenReturn(new String[]{"1.5"});
+            mockedConversionUtils.when(() -> ConversionUtils.getSourceVHost(any())).thenReturn("1.5");
+            mockedConversionUtils.when(() -> ConversionUtils.getTargetVHosts(any(), any())).thenReturn(new String[]{"1.5"});
 
             // Create a message from SDIS
             Message baseFromSdis = createMessage("EDXL-DE", XML, SDIS_C_ROUTING_KEY);
@@ -260,8 +260,8 @@ public class DispatcherTest {
         try (MockedStatic<ConversionUtils> mockedConversionUtils = mockStatic(ConversionUtils.class)) {
             Message message = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
 
-            mockedConversionUtils.when(() -> ConversionUtils.getSourceVersion(any())).thenReturn("1.5");
-            mockedConversionUtils.when(() -> ConversionUtils.getTargetVersions(any(), any())).thenReturn(new String[]{"2.0"});
+            mockedConversionUtils.when(() -> ConversionUtils.getSourceVHost(any())).thenReturn("1.5");
+            mockedConversionUtils.when(() -> ConversionUtils.getTargetVHosts(any(), any())).thenReturn(new String[]{"2.0"});
             mockedConversionUtils.when(() -> ConversionUtils.requiresConversion(any(), any())).thenReturn(true);
             mockedConversionUtils.when(() -> ConversionUtils.requiresCisuConversion(any(), any())).thenReturn(false);
 
@@ -443,16 +443,18 @@ public class DispatcherTest {
             Message message = createMessage("EDXL-DE", XML, SAMU_A_ROUTING_KEY);
             EdxlMessage edxlMessage = edxlHandler.deserializeXmlEDXL(new String(message.getBody(), StandardCharsets.UTF_8));
             String queueName = "fr.health.samuA";
-            String exchangeName = "transferV1.5toV2.0";
+            String exchangeName = "transfer_15-15_v1.5_to_15-15_v2.0";
 
-            mockedConversionUtils.when(() -> ConversionUtils.buildExchangeDestination("1.5", "2.0"))
+            mockedConversionUtils.when(() -> ConversionUtils.buildExchangeDestination( "15-15_v1.5", "15-15_v2.0"))
                     .thenReturn(exchangeName);
-            mockedConversionUtils.when(() -> ConversionUtils.getTargetVersions(hubConfig,edxlMessage))
-                    .thenReturn(new String[]{"2.0"});
-            mockedConversionUtils.when(() -> ConversionUtils.getSourceVersion(hubConfig))
-                    .thenReturn("1.5");
+            mockedConversionUtils.when(() -> ConversionUtils.getTargetVHosts(hubConfig,edxlMessage))
+                    .thenReturn(new String[]{"15-15_v2.0"});
+            mockedConversionUtils.when(() -> ConversionUtils.getSourceVHost(hubConfig))
+                    .thenReturn("15-15_v1.5");
 
             ConversionRulesCommand conversionRulesCommand = new ConversionRulesCommand(edxlMessage,messageHandler);
+            mockedConversionUtils.when(() -> ConversionUtils.buildExchangeDestination( "15-15_v1.5", "15-15_v2.0"))
+                    .thenReturn(exchangeName);
             dispatcher.sendToTransferExchange(message.toString(), message, conversionRulesCommand);
 
             verify(rabbitTemplate).send(eq(exchangeName), eq(queueName), any(Message.class));
@@ -467,8 +469,8 @@ public class DispatcherTest {
 
             Message message = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
 
-            mockedConversionUtils.when(() -> ConversionUtils.getSourceVersion(any())).thenReturn("1.5");
-            mockedConversionUtils.when(() -> ConversionUtils.getTargetVersions(any(), any())).thenReturn(new String[]{"2.0"});
+            mockedConversionUtils.when(() -> ConversionUtils.getSourceVHost(any())).thenReturn("15-15_v1.5");
+            mockedConversionUtils.when(() -> ConversionUtils.getTargetVHosts(any(), any())).thenReturn(new String[]{"15-15_v2.0"});
             mockedConversionUtils.when(() -> ConversionUtils.requiresConversion(any(), any())).thenReturn(true);
             mockedConversionUtils.when(() -> ConversionUtils.isTransferredToOtherVhost(any(), any())).thenReturn(true);
 
@@ -493,11 +495,11 @@ public class DispatcherTest {
 
             Message message = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
 
-            String sourceVersion = "1.5";
-            String[] targetVersion = new String[]{"1.5"};
+            String sourceVHost = "15-15_v1.5";
+            String[] targetVersion = new String[]{"15-15_v1.5"};
 
-            mockedConversionUtils.when(() -> ConversionUtils.getSourceVersion(any())).thenReturn(sourceVersion);
-            mockedConversionUtils.when(() -> ConversionUtils.getTargetVersions(any(), any())).thenReturn(targetVersion);
+            mockedConversionUtils.when(() -> ConversionUtils.getSourceVHost(any())).thenReturn(sourceVHost);
+            mockedConversionUtils.when(() -> ConversionUtils.getTargetVHosts(any(), any())).thenReturn(targetVersion);
             mockedConversionUtils.when(() -> ConversionUtils.requiresConversion(any(), any())).thenReturn(true);
             mockedConversionUtils.when(() -> ConversionUtils.requiresCisuConversion(any(), any())).thenReturn(true);
             mockedConversionUtils.when(() -> ConversionUtils.isTransferredToOtherVhost(any(), any())).thenReturn(false);
@@ -603,8 +605,8 @@ public class DispatcherTest {
             EdxlMessage edxlMessage = edxlHandler.deserializeJsonEDXL(new String(receivedMessage.getBody(), StandardCharsets.UTF_8));
 
             // Mock ConversionUtils to require CISU conversion
-            mockedConversionUtils.when(() -> ConversionUtils.getSourceVersion(any())).thenReturn("1.5");
-            mockedConversionUtils.when(() -> ConversionUtils.getTargetVersions(any(), any())).thenReturn(new String[]{"2.0"});
+            mockedConversionUtils.when(() -> ConversionUtils.getSourceVHost(any())).thenReturn("15-15_v1.5");
+            mockedConversionUtils.when(() -> ConversionUtils.getTargetVHosts(any(), any())).thenReturn(new String[]{"15-15_v2.0"});
             mockedConversionUtils.when(() -> ConversionUtils.requiresConversion(any(), any())).thenReturn(true);
             mockedConversionUtils.when(() -> ConversionUtils.requiresCisuConversion(any(), any())).thenReturn(true);
 
@@ -639,6 +641,30 @@ public class DispatcherTest {
         assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
         assertErrorHasBeenSent("fr.police.random.info", ErrorCode.UNROUTABLE_MESSAGE, "fr.police.random_2608323d-507d-4cbf-bf74-52007f8124ea",
                 "Unable to route message with id fr.police.random_2608323d-507d-4cbf-bf74-52007f8124ea, no health actor involved.");
+    }
+
+    @Test
+    @DisplayName("should convert message from hubex to health in same version")
+    public void shouldConvertMessageFromHubexToHealthInSameVersion() throws IOException {
+
+    }
+
+    @Test
+    @DisplayName("should convert message from health to hubex in same version")
+    public void shouldConvertMessageFromHealthToHubexInSameVersion() throws IOException {
+
+    }
+
+    @Test
+    @DisplayName("should upgrade version from health to hubex and transfer on higher health vhost")
+    public void shouldUpgradeVersionFromHealthToHubexAndTransferOnUpperHealthVhost() throws IOException {
+
+    }
+
+    @Test
+    @DisplayName("should downgrade version from hubex to health and transfer on lower health vhost")
+    public void shouldDowngradeVersionFromHealthAndTransferOnLowerHealthVhost() throws IOException {
+
     }
 
     private void assertErrorHasBeenSent(String infoQueueName, ErrorCode errorCode, String referencedDistributionId, String... errorCause) throws JsonProcessingException {
