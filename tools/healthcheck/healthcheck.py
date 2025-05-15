@@ -5,14 +5,14 @@ import json
 import logging
 from flask import Flask, jsonify, Response
 from collections import OrderedDict
-from prometheus_flask_exporter import PrometheusMetrics
+from prometheus_client import Gauge
 
 app = Flask(__name__)
-metrics = PrometheusMetrics(app) 
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Variables d'environnement requises
 REQUIRED_ENV_VARS = [
     "RABBITMQ_URL",
     "RABBITMQ_MONITORING_USERNAME",
@@ -20,7 +20,7 @@ REQUIRED_ENV_VARS = [
     "DISPATCHER_INSTANCES"
 ]
 
-# Check all required environment variables
+# Vérification des variables d'environnement
 missing_vars = [var for var in REQUIRED_ENV_VARS if not os.getenv(var)]
 if missing_vars:
     sys.exit(f"Error: The following environment variables are not set: {', '.join(missing_vars)}")
@@ -33,31 +33,43 @@ RABBITMQ_CA_CERT_PATH = '/etc/ssl/certs/hubsante-rabbitmq-ca.crt'
 DISPATCHER_INSTANCES_ENV_VAR = os.getenv("DISPATCHER_INSTANCES")
 DISPATCHER_INSTANCES = DISPATCHER_INSTANCES_ENV_VAR.split(",") if DISPATCHER_INSTANCES_ENV_VAR else []
 
+HTTP_TIMEOUT = int(os.getenv("HTTP_TIMEOUT", 5))  # Timeout configurable via variable d'environnement
+
+# Définition des métriques Prometheus
+rabbitmq_status_metric = Gauge('rabbitmq_status', 'Statut de RabbitMQ (1=UP, 0=DOWN)')
+dispatcher_status_metric = Gauge('dispatcher_status', 'Statut des dispatchers (1=UP, 0=DOWN)', ['dispatcher'])
+
 def rabbitmq_healthcheck():
     try:
         response = requests.get(
             f"{RABBITMQ_URL}/rabbitmq/api/health/checks/alarms",
             auth=(RABBITMQ_MONITORING_USERNAME, RABBITMQ_MONITORING_PASSWORD),
             verify=RABBITMQ_CA_CERT_PATH,
-            timeout=5
+            timeout=HTTP_TIMEOUT
         )
         response.raise_for_status()
-        return {"status": "UP"} if response.json().get("status") == "ok" else {"status": "DOWN"}
+        status = response.json().get("status", "unknown")
+        rabbitmq_status_metric.set(1 if status == "ok" else 0)
+        return {"status": "UP"} if status == "ok" else {"status": "DOWN"}
     except requests.RequestException as e:
-        logger.error("error occurred on RabbitMQ server's healthcheck: ", exc_info=True)
+        logger.error("Error occurred on RabbitMQ server's healthcheck: ", exc_info=True)
+        rabbitmq_status_metric.set(0)
         return {"status": "DOWN"}
 
 def dispatcher_healthcheck(app_name):
     try:
-        response = requests.get(f"http://{app_name}.app.svc.cluster.local:8080/actuator/health", timeout=5)
+        response = requests.get(f"http://{app_name}.app.svc.cluster.local:8080/actuator/health", timeout=HTTP_TIMEOUT)
         response.raise_for_status()
         data = response.json()
+        status = data.get("status", "UNKNOWN")
+        dispatcher_status_metric.labels(dispatcher=app_name).set(1 if status == "UP" else 0)
         return OrderedDict([
-            ("status", data.get("status", "UNKNOWN")),
+            ("status", status),
             ("components", data.get("components", {}))
         ])
     except requests.RequestException as e:
-        logger.error("error occurred on dispatcher %s healthcheck: ", app_name, exc_info=True)
+        logger.error("Error occurred on dispatcher %s healthcheck: ", app_name, exc_info=True)
+        dispatcher_status_metric.labels(dispatcher=app_name).set(0)
         return {"status": "DOWN"}
 
 @app.route('/health', methods=['GET'])
@@ -65,20 +77,20 @@ def health():
     global_status = "UP"
     components = OrderedDict()
 
-    # Fetch RabbitMQ health
+    # Vérification de RabbitMQ
     rabbitmq_health = rabbitmq_healthcheck()
     components["rabbitmq_server"] = rabbitmq_health
     if rabbitmq_health["status"] == "DOWN":
         global_status = "DOWN"
 
-    # Fetch health from Spring apps
+    # Vérification des dispatchers
     for dispatcher_instance in DISPATCHER_INSTANCES:
         spring_health = dispatcher_healthcheck(dispatcher_instance)
         components[dispatcher_instance] = spring_health
         if spring_health["status"] == "DOWN":
             global_status = "DOWN"
 
-    # Aggregate and return the result
+    # Agrégation des résultats
     result = OrderedDict([
         ("status", global_status),
         ("components", components)
