@@ -31,7 +31,6 @@ public class Constants {
     public static final String USE_CASE_TAG = "use_case";
     public static final String UNKNOWN = "unknown";
     public static final String FR_HEALTH_PREFIX = "fr.health";
-    public static final String[] TRANSCODING_VHOSTS = new String[]{"15-15_v2.1", "15-nexsis_v1.9"};
     public static final Map<String, String> HUBEX_PERIMETER_PREFIXES = Map.of(
             "15-15", "fr.health",
             "15-nexsis", "fr.fire"

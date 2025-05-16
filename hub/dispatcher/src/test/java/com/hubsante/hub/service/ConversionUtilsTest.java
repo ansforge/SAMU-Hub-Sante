@@ -35,7 +35,6 @@ import java.util.HashMap;
 import java.util.List;
 
 import static com.hubsante.hub.utils.ConversionUtils.isTargetPerimeter;
-import static com.hubsante.hub.utils.ConversionUtils.isTranscodingVersion;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
@@ -298,19 +297,6 @@ public class ConversionUtilsTest {
 
             assertFalse(ConversionUtils.isTransferredToOtherVhost(hubConfig, edxlMessage));
         }
-    }
-
-    @Test
-    public void isHubexVersionTest() {
-        String latestSamuVHost = "15-15_v2.1";
-        String previousSamuVHost = "15-15_v2.0";
-        String previousHubexVHost = "15-nexsis_v1.8";
-        String latestHubexVHost = "15-nexsis_v1.9";
-
-        assertTrue(isTranscodingVersion(latestSamuVHost));
-        assertFalse(isTranscodingVersion(previousSamuVHost));
-        assertFalse(isTranscodingVersion(previousHubexVHost));
-        assertTrue(isTranscodingVersion(latestHubexVHost));
     }
 
     @Test

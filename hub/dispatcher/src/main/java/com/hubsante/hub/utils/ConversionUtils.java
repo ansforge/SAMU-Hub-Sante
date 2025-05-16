@@ -24,7 +24,6 @@ import com.hubsante.hub.config.HubConfiguration;
 
 import static com.hubsante.hub.config.AmqpConfiguration.TRANSFER_EXCHANGE_PREFIX;
 import static com.hubsante.hub.config.Constants.HUBEX_PERIMETER_PREFIXES;
-import static com.hubsante.hub.config.Constants.TRANSCODING_VHOSTS;
 import static com.hubsante.hub.utils.MessageUtils.*;
 
 import java.util.Arrays;
@@ -79,13 +78,6 @@ public class ConversionUtils {
                 && isConvertedModel(edxlMessage)
                 && !isTargetPerimeter(hubConfig.getVhost(), edxlMessage.getDescriptor().getExplicitAddress().getExplicitAddressValue())
                 && !isDirectCisuForHealthActor(hubConfig, edxlMessage);
-    }
-
-    public static boolean isTranscodingVersion(String currentVHost) {
-        if (Arrays.asList(TRANSCODING_VHOSTS).contains(currentVHost)) {
-            return true;
-        }
-        return false;
     }
 
     public static boolean isTargetPerimeter(String currentVHost, String recipient) {

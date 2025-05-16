@@ -4,8 +4,6 @@ import com.hubsante.model.builders.EDXL_DE_Builder;
 import com.hubsante.model.edxl.EdxlMessage;
 import org.junit.jupiter.api.Test;
 
-import static com.hubsante.hub.utils.ConversionUtils.isTargetPerimeter;
-import static com.hubsante.hub.utils.ConversionUtils.isTranscodingVersion;
 import static com.hubsante.hub.utils.MessageUtils.*;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
