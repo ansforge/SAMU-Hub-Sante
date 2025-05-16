@@ -143,6 +143,7 @@ public class Dispatcher {
                 ConversionRulesCommand conversionRulesCommand = new ConversionRulesCommand(edxlMessage, messageHandler);
                 String convertedMessage = conversionHandler.applyConversionRules(conversionRulesCommand);
                 sendToTransferExchange(convertedMessage, message, conversionRulesCommand);
+                log.info("Message has been sent !");
                 return;
 
 //                if(ConversionUtils.isTransferredToOtherVhost(messageHandler.getHubConfig(), edxlMessage)) {
@@ -178,6 +179,8 @@ public class Dispatcher {
         String transferExchangeName = ConversionUtils.buildExchangeDestination(conversionRulesCommand.getSourceVHost(), conversionRulesCommand.getTargetVHost());
 
         String routingKey = message.getMessageProperties().getReceivedRoutingKey();
+
+        log.info("Message transferred to exchange: {} with routing key: {}", transferExchangeName, routingKey);
 
         rabbitTemplate.send(transferExchangeName, routingKey, forwardedMsg);
     }

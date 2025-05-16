@@ -52,7 +52,7 @@ public class ConversionHandler {
         try {
             log.debug("Starting conversion for message {} from {} to {}, isCisu ? {}", edxlMessage.getDistributionID(), sourceModelVersion, targetModelVersion, isCisuConversion);
             String convertedJson = callConversionService(jsonEdxlString, sourceModelVersion, targetModelVersion, isCisuConversion, edxlMessage.getDistributionID());
-            log.debug("Message converted successfully");
+            log.debug("Message converted successfully: " + convertedJson);
 
             return convertedJson; // returns a string (deserialization is not possible because of version change)
         } catch (RuntimeException e) {
