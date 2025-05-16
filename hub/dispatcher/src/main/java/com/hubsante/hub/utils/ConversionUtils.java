@@ -63,16 +63,15 @@ public class ConversionUtils {
     public static String[] getTargetVHosts(HubConfiguration hubConfig, EdxlMessage edxlMessage) {
         String recipientID = getRecipientID(edxlMessage);
         String[] targetVersions = hubConfig.getLrmPerimeterVersions().get(recipientID);
-        String[] targetVHosts = new String[]{};
 
         if (targetVersions == null && (recipientID.startsWith("fr.fire") || recipientID.startsWith("fr.cisu"))) {
-            targetVHosts = new String[]{"15-nexsis_v1.9"};
+            targetVersions = new String[]{"15-nexsis_v1.9"};
         }
         else if (targetVersions != null) {
-            targetVHosts = Arrays.stream(targetVersions).map(version -> "15-15_v" + version).toArray(String[]::new);
+            targetVersions = Arrays.stream(targetVersions).map(version -> "15-15_v" + version).toArray(String[]::new);
         }
 
-        return targetVHosts;
+        return targetVersions;
     }
 
     public static boolean requiresCisuConversion(HubConfiguration hubConfig, EdxlMessage edxlMessage) {
