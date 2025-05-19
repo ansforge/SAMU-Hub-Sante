@@ -475,7 +475,6 @@ public class DispatcherTest {
             mockedConversionUtils.when(() -> ConversionUtils.getSourceVHost(any())).thenReturn("15-15_v1.5");
             mockedConversionUtils.when(() -> ConversionUtils.getTargetVHosts(any(), any())).thenReturn(new String[]{"15-15_v2.0"});
             mockedConversionUtils.when(() -> ConversionUtils.requiresConversion(any(), any())).thenReturn(true);
-            mockedConversionUtils.when(() -> ConversionUtils.isTransferredToOtherVhost(any(), any())).thenReturn(true);
 
             doAnswer(invocation -> invocation.getArgument(0)).when(conversionHandler).callConversionService(anyString(), anyString(), anyString(), anyBoolean(), anyString());
 

@@ -112,8 +112,4 @@ public class ConversionUtils {
         Boolean directCisuPreference = hubConfig.getDirectCisuPreferences().getOrDefault(healthActor, DEFAULT_DIRECT_CISU_PREFERENCE);
         return directCisuPreference != null && directCisuPreference;
     }
-
-    public static boolean isTransferredToOtherVhost(HubConfiguration hubConfig, EdxlMessage edxlMessage) {
-        return requiresVersionConversion(hubConfig, edxlMessage);
-    }
 }

@@ -283,23 +283,6 @@ public class ConversionUtilsTest {
     }
 
     @Test
-    void testIsTransferredToOtherVhost(){
-        try (MockedStatic<ConversionUtils> mockedConversionUtils = mockStatic(ConversionUtils.class)) {
-            mockedConversionUtils.when(() -> ConversionUtils.isTransferredToOtherVhost(hubConfig, edxlMessage))
-                    .thenCallRealMethod();
-            mockedConversionUtils.when(() -> ConversionUtils.requiresVersionConversion(hubConfig, edxlMessage))
-                    .thenReturn(true);
-
-            assertTrue(ConversionUtils.isTransferredToOtherVhost(hubConfig, edxlMessage));
-
-            mockedConversionUtils.when(() -> ConversionUtils.requiresVersionConversion(hubConfig, edxlMessage))
-                    .thenReturn(false);
-
-            assertFalse(ConversionUtils.isTransferredToOtherVhost(hubConfig, edxlMessage));
-        }
-    }
-
-    @Test
     public void isTargetPerimeterTest() {
         assertTrue(isTargetPerimeter("15-15_v1.5", "fr.health.something"));
         assertFalse(isTargetPerimeter("15-15_v1.5", "fr.fire.something-else"));
