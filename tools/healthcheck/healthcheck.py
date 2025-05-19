@@ -3,7 +3,7 @@ import sys
 import requests
 import json
 import logging
-from flask import Flask, jsonify, Response
+from flask import Flask, jsonify, Response, request
 from collections import OrderedDict
 from prometheus_flask_exporter import PrometheusMetrics
 from prometheus_client import Gauge
@@ -41,6 +41,10 @@ HTTP_TIMEOUT = int(os.getenv("HTTP_TIMEOUT", 5))  # Timeout configurable via var
 rabbitmq_status_metric = Gauge('rabbitmq_status', 'Statut de RabbitMQ (1=UP, 0=DOWN)')
 dispatcher_status_metric = Gauge('dispatcher_status', 'Statut des dispatchers (1=UP, 0=DOWN)', ['dispatcher'])
 
+# Initialiser la métrique pour chaque dispatcher à DOWN par défaut
+for dispatcher in DISPATCHER_INSTANCES:
+    dispatcher_status_metric.labels(dispatcher=dispatcher).set(0)
+
 def rabbitmq_healthcheck():
     try:
         response = requests.get(
@@ -74,6 +78,13 @@ def dispatcher_healthcheck(app_name):
         dispatcher_status_metric.labels(dispatcher=app_name).set(0)
         return {"status": "DOWN"}
 
+@app.before_request
+def update_metrics_before_metrics():
+    if request.path == '/metrics':
+        rabbitmq_healthcheck()
+        for dispatcher_instance in DISPATCHER_INSTANCES:
+            dispatcher_healthcheck(dispatcher_instance)
+
 @app.route('/health', methods=['GET'])
 def health():
     global_status = "UP"
@@ -86,6 +97,7 @@ def health():
         global_status = "DOWN"
 
     # Vérification des dispatchers
+    logger.info(f"Checking health of dispatcher instances: {DISPATCHER_INSTANCES}")
     for dispatcher_instance in DISPATCHER_INSTANCES:
         spring_health = dispatcher_healthcheck(dispatcher_instance)
         components[dispatcher_instance] = spring_health
