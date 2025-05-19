@@ -6,21 +6,19 @@ jest.mock('./rabbit/utils', () => ({
   connect: jest.fn((_, callback) => {
     const channel = {
       consume: mockConsumme,
+      on: jest.fn(),
     };
     const connection = {
       close: jest.fn(),
+      on: jest.fn(),
     };
     callback(connection, channel);
   }),
   close: jest.fn(() => {}),
-  VHOSTS: {
-    '15-15_v1.5': '1.0.0',
-    '15-15_v2.0': '2.0.0',
+  VHOST_CLIENT_MAP: {
+    '15-15_v1.5': ['fr.health.samuA', 'fr.health.samuB'],
+    '15-15_v2.0': ['fr.health.samuA', 'fr.health.samuB'],
   },
-  DEMO_CLIENT_IDS: [
-    ['fr.health.samuA', ['fr.health.samuB']],
-    ['fr.health.samuB', ['fr.health.samuA']],
-  ],
 }));
 
 afterEach(async () => {
@@ -35,7 +33,7 @@ describe('Test Connection', () => {
 
     try {
       const expectedLogs = [
-        'Demo client ids: fr.health.samuA,fr.health.samuB,fr.health.samuB,fr.health.samuA',
+        'VHOST_CLIENT_MAP: [object Object]',
         ' [*] Waiting for fr.health.samuA messages in fr.health.samuA.message (15-15_v1.5). To exit press CTRL+C',
         ' [*] Waiting for fr.health.samuA messages in fr.health.samuA.info (15-15_v1.5). To exit press CTRL+C',
         ' [*] Waiting for fr.health.samuA messages in fr.health.samuA.ack (15-15_v1.5). To exit press CTRL+C',
