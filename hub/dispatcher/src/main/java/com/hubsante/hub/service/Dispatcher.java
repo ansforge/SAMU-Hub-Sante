@@ -144,16 +144,8 @@ public class Dispatcher {
                 String convertedMessage = conversionHandler.applyConversionRules(conversionRulesCommand);
                 sendToTransferExchange(convertedMessage, message, conversionRulesCommand);
                 log.info("Message has been sent !");
+                // We MUST return here to exit the dispatch() function, otherwise the message will be published on the source Exchange as well
                 return;
-
-//                if(ConversionUtils.isTransferredToOtherVhost(messageHandler.getHubConfig(), edxlMessage)) {
-//                    sendToTransferExchange(convertedMessage, message, conversionRulesCommand);
-//                    // We MUST return here to exit the dispatch() function, otherwise the message will be published on the source Exchange as well
-//                    return;
-//                }
-//                else {
-//                    edxlMessage = messageHandler.deserializeJsonEDXL(convertedMessage);
-//                }
             }
 
             // Forward the message according to the recipient preferences. Conversion JSON <-> XML can happen here

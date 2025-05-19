@@ -23,7 +23,7 @@ import com.hubsante.model.edxl.EdxlMessage;
 import com.hubsante.hub.config.HubConfiguration;
 
 import static com.hubsante.hub.config.AmqpConfiguration.TRANSFER_EXCHANGE_PREFIX;
-import static com.hubsante.hub.config.Constants.HUBEX_PERIMETER_PREFIXES;
+import static com.hubsante.hub.config.Constants.*;
 import static com.hubsante.hub.utils.MessageUtils.*;
 
 import java.util.Arrays;
@@ -46,7 +46,7 @@ public class ConversionUtils {
     }
 
     public static boolean requiresVersionConversion(HubConfiguration hubConfig, EdxlMessage edxlMessage) {
-        String sourceVHost = hubConfig.getVhost();
+        String sourceVHost = getSourceVHost(hubConfig);
         String[] targetVHosts = getTargetVHosts(hubConfig, edxlMessage);
 
         if (targetVHosts == null || sourceVHost == null || targetVHosts.length == 0) {
@@ -61,16 +61,16 @@ public class ConversionUtils {
 
     public static String[] getTargetVHosts(HubConfiguration hubConfig, EdxlMessage edxlMessage) {
         String recipientID = getRecipientID(edxlMessage);
-        String[] targetVersions = hubConfig.getLrmPerimeterVersions().get(recipientID);
+        String[] targetVHosts = hubConfig.getLrmPerimeterVersions().get(recipientID);
 
-        if (targetVersions == null && (recipientID.startsWith("fr.fire") || recipientID.startsWith("fr.cisu"))) {
-            targetVersions = new String[]{"15-nexsis_v1.9"};
+        if (targetVHosts == null && (recipientID.startsWith(FR_FIRE_PREFIX) || recipientID.startsWith(FR_CISU_PREFIX))) {
+            targetVHosts = new String[]{NEXSIS_VHOST};
         }
-        else if (targetVersions != null) {
-            targetVersions = Arrays.stream(targetVersions).map(version -> "15-15_v" + version).toArray(String[]::new);
+        else if (targetVHosts != null) {
+            targetVHosts = Arrays.stream(targetVHosts).map(version -> HEALTH_VHOST_PREFIX + version).toArray(String[]::new);
         }
 
-        return targetVersions;
+        return targetVHosts;
     }
 
     public static boolean requiresCisuConversion(HubConfiguration hubConfig, EdxlMessage edxlMessage) {
@@ -115,16 +115,5 @@ public class ConversionUtils {
 
     public static boolean isTransferredToOtherVhost(HubConfiguration hubConfig, EdxlMessage edxlMessage) {
         return requiresVersionConversion(hubConfig, edxlMessage);
-    }
-
-    public static String extractVersionFromVhost(String vhost) {
-        String VHOST_DIVIDER = "_";
-        String sanitizedVhost = vhost.replace("\"", "");
-        String[] parts = sanitizedVhost.split(VHOST_DIVIDER);    // ex: ["15-15","v1.5"]
-        if (parts.length == 2) {
-            String versionPart = parts[1];  // ex: "v1.5"
-            return versionPart.replace("v", ""); // ex: "1.5"
-        }
-        return null;
     }
 }

@@ -58,13 +58,5 @@ public class ConversionRulesCommand {
             throw new IllegalArgumentException("There is no model version associated with the host " + vHost);
         }
         return VHOST_MODEL_VERSION.get(vHost);
-//         todo - temp implementation (cf requiresVersionConversion commentary)
-//        int dotIndex = perimeterVersion.indexOf(".");   // ex: perimeterVersion: 1.5
-//        if (dotIndex != -1) {
-//            return "v" + perimeterVersion.substring(0, dotIndex); // ex: "v1"
-//        }
-//
-//
-//        return perimeterVersion;
     }
 }
