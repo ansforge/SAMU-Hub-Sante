@@ -16,8 +16,8 @@ jest.mock('./rabbit/utils', () => ({
   }),
   close: jest.fn(() => {}),
   VHOST_CLIENT_MAP: {
-    '15-15_v1.5': ['fr.health.samuA', 'fr.health.samuB'],
-    '15-15_v2.0': ['fr.health.samuA', 'fr.health.samuB'],
+    '15-15_v1.5': ['fr.health.test.samuA', 'fr.health.test.samuB'],
+    '15-15_v2.0': ['fr.health.test.samuA', 'fr.health.test.samuB'],
   },
 }));
 
@@ -33,19 +33,19 @@ describe('Test Connection', () => {
 
     try {
       const expectedLogs = [
-        'VHOST_CLIENT_MAP: [object Object]',
-        ' [*] Waiting for fr.health.samuA messages in fr.health.samuA.message (15-15_v1.5). To exit press CTRL+C',
-        ' [*] Waiting for fr.health.samuA messages in fr.health.samuA.info (15-15_v1.5). To exit press CTRL+C',
-        ' [*] Waiting for fr.health.samuA messages in fr.health.samuA.ack (15-15_v1.5). To exit press CTRL+C',
-        ' [*] Waiting for fr.health.samuB messages in fr.health.samuB.message (15-15_v1.5). To exit press CTRL+C',
-        ' [*] Waiting for fr.health.samuB messages in fr.health.samuB.info (15-15_v1.5). To exit press CTRL+C',
-        ' [*] Waiting for fr.health.samuB messages in fr.health.samuB.ack (15-15_v1.5). To exit press CTRL+C',
-        ' [*] Waiting for fr.health.samuA messages in fr.health.samuA.message (15-15_v2.0). To exit press CTRL+C',
-        ' [*] Waiting for fr.health.samuA messages in fr.health.samuA.info (15-15_v2.0). To exit press CTRL+C',
-        ' [*] Waiting for fr.health.samuA messages in fr.health.samuA.ack (15-15_v2.0). To exit press CTRL+C',
-        ' [*] Waiting for fr.health.samuB messages in fr.health.samuB.message (15-15_v2.0). To exit press CTRL+C',
-        ' [*] Waiting for fr.health.samuB messages in fr.health.samuB.info (15-15_v2.0). To exit press CTRL+C',
-        ' [*] Waiting for fr.health.samuB messages in fr.health.samuB.ack (15-15_v2.0). To exit press CTRL+C',
+        'VHOST_CLIENT_MAP: {"15-15_v1.5":["fr.health.test.samuA","fr.health.test.samuB"],"15-15_v2.0":["fr.health.test.samuA","fr.health.test.samuB"]}',
+        ' [*] Waiting for fr.health.test.samuA messages in fr.health.test.samuA.message (15-15_v1.5). To exit press CTRL+C',
+        ' [*] Waiting for fr.health.test.samuA messages in fr.health.test.samuA.info (15-15_v1.5). To exit press CTRL+C',
+        ' [*] Waiting for fr.health.test.samuA messages in fr.health.test.samuA.ack (15-15_v1.5). To exit press CTRL+C',
+        ' [*] Waiting for fr.health.test.samuB messages in fr.health.test.samuB.message (15-15_v1.5). To exit press CTRL+C',
+        ' [*] Waiting for fr.health.test.samuB messages in fr.health.test.samuB.info (15-15_v1.5). To exit press CTRL+C',
+        ' [*] Waiting for fr.health.test.samuB messages in fr.health.test.samuB.ack (15-15_v1.5). To exit press CTRL+C',
+        ' [*] Waiting for fr.health.test.samuA messages in fr.health.test.samuA.message (15-15_v2.0). To exit press CTRL+C',
+        ' [*] Waiting for fr.health.test.samuA messages in fr.health.test.samuA.info (15-15_v2.0). To exit press CTRL+C',
+        ' [*] Waiting for fr.health.test.samuA messages in fr.health.test.samuA.ack (15-15_v2.0). To exit press CTRL+C',
+        ' [*] Waiting for fr.health.test.samuB messages in fr.health.test.samuB.message (15-15_v2.0). To exit press CTRL+C',
+        ' [*] Waiting for fr.health.test.samuB messages in fr.health.test.samuB.info (15-15_v2.0). To exit press CTRL+C',
+        ' [*] Waiting for fr.health.test.samuB messages in fr.health.test.samuB.ack (15-15_v2.0). To exit press CTRL+C',
       ];
       expectedLogs.forEach((message) => {
         expect(mockLogInfo).toHaveBeenCalledWith(message);

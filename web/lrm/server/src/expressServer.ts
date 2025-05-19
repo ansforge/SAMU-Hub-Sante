@@ -35,7 +35,7 @@ export class ExpressServer {
     this.app.use('/modeles', ModelesRouter);
 
     // Subscribe to Hub messages and send them to the client through web socket
-    logger.info(`VHOST_CLIENT_MAP: ${VHOST_CLIENT_MAP}`);
+    logger.info(`VHOST_CLIENT_MAP: ${JSON.stringify(VHOST_CLIENT_MAP)}`);
     // Get list of keys (corresponding to vhosts) from the VHOSTS map
     const vhostsArray = Object.keys(VHOST_CLIENT_MAP);
     for (const vhost of vhostsArray) {
