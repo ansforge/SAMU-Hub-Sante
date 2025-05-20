@@ -31,8 +31,6 @@ const config = {
     "/node_modules/",
     ".*config.js",
     "coverage/*",
-    // TODO: implement tests in rabbit package and remove this line
-    "rabbit/*",
   ],
 
   // Indicates which provider should be used to instrument code for coverage
