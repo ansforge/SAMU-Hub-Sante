@@ -9,7 +9,7 @@ import { connect, connectAsync, close, HUB_SANTE_EXCHANGE, VHOST_CLIENT_MAP, mes
 import { ModelesRouter } from './router/modelesRouter';
 
 import { Express } from 'express';
-import { Channel, Connection } from 'amqplib';
+import { Channel, Connection } from 'amqplib/callback_api';
 
 export class ExpressServer {
   private port: number;
