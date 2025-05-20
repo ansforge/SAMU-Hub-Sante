@@ -253,6 +253,7 @@ public class MessageHandler {
         String recipientID = getRecipientID(edxlMessage);
         String senderID = getSenderFromRoutingKey(receivedAmqpMessage);
         String edxlString;
+        String distributionKind = edxlMessage.getDistributionKind().getValue();
 
         try {
             if (convertToXML(recipientID, hubConfig.getUseXmlPreferences().getOrDefault(recipientID, DEFAULT_USE_XML_PREFERENCE))) {
@@ -262,8 +263,8 @@ public class MessageHandler {
                 edxlString = edxlHandler.serializeJsonEDXL(edxlMessage);
                 fwdAmqpProperties.setContentType(MessageProperties.CONTENT_TYPE_JSON);
             }
-            log.info("  ↳ [x] Forwarding to '{}': message with distributionID {} and hashed value {}",
-            recipientID, edxlMessage.getDistributionID(), hashBody(receivedAmqpMessage));
+            log.info("  ↳ [x] Forwarding {} to '{}': message with distributionID {} and hashed value {}",
+            distributionKind, recipientID, edxlMessage.getDistributionID(), hashBody(receivedAmqpMessage));
             log.debug(edxlString);
 
             fwdAmqpProperties.setHeader(DLQ_ORIGINAL_ROUTING_KEY, senderID);
@@ -277,7 +278,9 @@ public class MessageHandler {
     }
 
     private void logMessage(Message message, EdxlMessage edxlMessage, String receivedEdxl) {
-        log.info(" [x] Received from '{}': message with distributionID {} and hashed value {}",
+        String distributionKind = edxlMessage.getDistributionKind().getValue();
+        log.info(" [x] Received {} from '{}': message with distributionID {} and hashed value {}",
+                distributionKind,
                 message.getMessageProperties().getReceivedRoutingKey(),
                 edxlMessage.getDistributionID(),
                 hashBody(message));
