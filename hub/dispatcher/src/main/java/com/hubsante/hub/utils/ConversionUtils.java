@@ -52,6 +52,9 @@ public class ConversionUtils {
         if (targetVHosts == null || sourceVHost == null || targetVHosts.length == 0) {
             return false;
         }
+        if (VHOST_MODEL_VERSION.get(sourceVHost) == null) {
+            return false;
+        }
         return !Arrays.asList(targetVHosts).contains(sourceVHost);
     }
 
