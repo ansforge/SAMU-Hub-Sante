@@ -1,11 +1,11 @@
 import { ExpressServer } from './expressServer';
-import { logger } from './logger';
+import * as utils from './rabbit/utils';
 
-const mockConsumme = jest.fn();
+const mockConsume = jest.fn();
 jest.mock('./rabbit/utils', () => ({
   connect: jest.fn((_, callback) => {
     const channel = {
-      consume: mockConsumme,
+      consume: mockConsume,
       on: jest.fn(),
     };
     const connection = {
@@ -20,6 +20,21 @@ jest.mock('./rabbit/utils', () => ({
     '15-15_v2.0': ['fr.health.test.samuA', 'fr.health.test.samuB'],
   },
 }));
+const mockedUtils = utils as jest.Mocked<typeof utils>;
+
+const checkConnectionToVhost = (vhost: string) => {
+  expect(mockedUtils.connect).toHaveBeenCalledWith(vhost, expect.any(Function));
+};
+
+const checkConsumerListenOnQueue = (queue: string) => {
+  expect(mockConsume).toHaveBeenCalledWith(queue, expect.any(Function), expect.any(Object));
+};
+
+const checkConsumerListenOnClientQueues = (clientId: string) => {
+  ['message', 'info', 'ack'].forEach((queueSuffix) => {
+    checkConsumerListenOnQueue(`${clientId}.${queueSuffix}`);
+  });
+};
 
 afterEach(async () => {
   jest.restoreAllMocks();
@@ -27,34 +42,16 @@ afterEach(async () => {
 
 describe('Test Connection', () => {
   it('should connect and display logs', async () => {
-    const mockLogInfo = jest.spyOn(logger, 'info');
-
     const server = new ExpressServer(8081);
 
     try {
-      const expectedLogs = [
-        'VHOST_CLIENT_MAP: {"15-15_v1.5":["fr.health.test.samuA","fr.health.test.samuB"],"15-15_v2.0":["fr.health.test.samuA","fr.health.test.samuB"]}',
-        ' [*] Waiting for fr.health.test.samuA messages in fr.health.test.samuA.message (15-15_v1.5). To exit press CTRL+C',
-        ' [*] Waiting for fr.health.test.samuA messages in fr.health.test.samuA.info (15-15_v1.5). To exit press CTRL+C',
-        ' [*] Waiting for fr.health.test.samuA messages in fr.health.test.samuA.ack (15-15_v1.5). To exit press CTRL+C',
-        ' [*] Waiting for fr.health.test.samuB messages in fr.health.test.samuB.message (15-15_v1.5). To exit press CTRL+C',
-        ' [*] Waiting for fr.health.test.samuB messages in fr.health.test.samuB.info (15-15_v1.5). To exit press CTRL+C',
-        ' [*] Waiting for fr.health.test.samuB messages in fr.health.test.samuB.ack (15-15_v1.5). To exit press CTRL+C',
-        ' [*] Waiting for fr.health.test.samuA messages in fr.health.test.samuA.message (15-15_v2.0). To exit press CTRL+C',
-        ' [*] Waiting for fr.health.test.samuA messages in fr.health.test.samuA.info (15-15_v2.0). To exit press CTRL+C',
-        ' [*] Waiting for fr.health.test.samuA messages in fr.health.test.samuA.ack (15-15_v2.0). To exit press CTRL+C',
-        ' [*] Waiting for fr.health.test.samuB messages in fr.health.test.samuB.message (15-15_v2.0). To exit press CTRL+C',
-        ' [*] Waiting for fr.health.test.samuB messages in fr.health.test.samuB.info (15-15_v2.0). To exit press CTRL+C',
-        ' [*] Waiting for fr.health.test.samuB messages in fr.health.test.samuB.ack (15-15_v2.0). To exit press CTRL+C',
-      ];
-      expectedLogs.forEach((message) => {
-        expect(mockLogInfo).toHaveBeenCalledWith(message);
-      });
+      checkConnectionToVhost('15-15_v1.5');
+      checkConsumerListenOnClientQueues('fr.health.test.samuA');
+      checkConsumerListenOnClientQueues('fr.health.test.samuB');
 
-      const expectedLogInfoCount = expectedLogs.length;
-      expect(mockLogInfo).toHaveBeenCalledTimes(expectedLogInfoCount);
-    } catch (err) {
-      throw err;
+      checkConnectionToVhost('15-15_v2.0');
+      checkConsumerListenOnClientQueues('fr.health.test.samuA');
+      checkConsumerListenOnClientQueues('fr.health.test.samuB');
     } finally {
       // Teardown
       await server.close();
