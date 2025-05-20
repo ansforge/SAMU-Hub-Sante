@@ -3,7 +3,7 @@ import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import bodyParser from 'body-parser';
-import { Server as WssServer } from 'ws';
+import { Server as WssServer, OPEN } from 'ws';
 import { logger } from './logger';
 import { connect, connectAsync, close, HUB_SANTE_EXCHANGE, VHOST_CLIENT_MAP, messageProperties } from './rabbit/utils';
 import { ModelesRouter } from './router/modelesRouter';
@@ -93,7 +93,7 @@ export class ExpressServer {
                   // TODO: init wss in constructor and remove condition
                   if (this.wss) {
                     this.wss.clients.forEach((client) => {
-                      if (client.readyState === WebSocket.OPEN) {
+                      if (client.readyState === OPEN) {
                         client.send(JSON.stringify(data));
                         clientCounts += 1;
                       }
