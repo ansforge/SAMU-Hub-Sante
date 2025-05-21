@@ -7,20 +7,20 @@ import { Server as WssServer, OPEN } from 'ws';
 import { logger } from './logger';
 import { connect, connectAsync, close, messageProperties } from './rabbit/utils';
 import { ModelesRouter } from './router/modelesRouter';
-import { config } from './config';
+import { Config } from './config';
 
 import { Express } from 'express';
 import { Channel, Connection } from 'amqplib/callback_api';
 
 export class ExpressServer {
-  private port: number;
+  private config: Config;
   private app: Express;
   private connections: Record<string, Connection>;
   private wss: WssServer | undefined;
   private server: HttpServer | undefined;
 
-  constructor(port: number) {
-    this.port = port;
+  constructor(config: Config) {
+    this.config = config;
     this.app = express();
     this.connections = {};
     this.setupMiddleware();
@@ -35,7 +35,7 @@ export class ExpressServer {
 
     this.app.use('/modeles', ModelesRouter);
 
-    const VHOST_CLIENT_MAP = config.getVhostClientMap();
+    const VHOST_CLIENT_MAP = this.config.getVhostClientMap();
     // Subscribe to Hub messages and send them to the client through web socket
     logger.info(`VHOST_CLIENT_MAP: ${JSON.stringify(VHOST_CLIENT_MAP)}`);
     // Get list of keys (corresponding to vhosts) from the VHOSTS map
@@ -131,7 +131,7 @@ export class ExpressServer {
       });
     });
 
-    this.server = createServer(this.app).listen(this.port);
+    this.server = createServer(this.app).listen(this.config.getPort());
     this.wss = new WssServer({ server: this.server });
     // WebSocket server
     this.wss.on('connection', (ws) => {
@@ -148,7 +148,7 @@ export class ExpressServer {
         logger.info(` [x] Sending msg ${msg.distributionID} to key ${key} (vhost: ${vhost})`);
         try {
           const { connection, channel } = await connectAsync(vhost);
-          channel.publish(config.getHubSanteExchange(), key, Buffer.from(JSON.stringify(msg)), messageProperties);
+          channel.publish(this.config.getHubSanteExchange(), key, Buffer.from(JSON.stringify(msg)), messageProperties);
           close(connection);
           logger.info(`Publish call done and connection closed for ${msg.distributionID} (vhost: ${vhost})`);
         } catch (error) {
@@ -160,7 +160,7 @@ export class ExpressServer {
         logger.info('WebSocket client disconnected');
       });
     });
-    logger.info(`Listening on port ${this.port}`);
+    logger.info(`Listening on port ${this.config.getPort()}`);
   }
 
   async close() {
@@ -172,7 +172,7 @@ export class ExpressServer {
     }
     if (this.server !== undefined) {
       await this.server.close();
-      logger.info(`Server on port ${this.port} shut down`);
+      logger.info(`Server on port ${this.config.getPort()} shut down`);
     }
   }
 }

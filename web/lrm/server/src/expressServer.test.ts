@@ -1,3 +1,4 @@
+import { Config } from './config';
 import { ExpressServer } from './expressServer';
 import * as utils from './rabbit/utils';
 
@@ -32,13 +33,30 @@ const checkConsumerListenOnClientQueues = (clientId: string) => {
   });
 };
 
+const originalEnv = process.env;
+
+beforeEach(() => {
+  jest.resetModules();
+  process.env = {
+    ...originalEnv,
+    ADMIN_PASSWORD: 'foo',
+    HUB_URL: 'foo',
+    LRM_PASSPHRASE: 'foo',
+    VHOST_CLIENT_MAP: JSON.stringify({
+      '15-15_v1.5': ['fr.health.test.samuA', 'fr.health.test.samuB'],
+      '15-15_v2.0': ['fr.health.test.samuA', 'fr.health.test.samuB'],
+    }),
+  };
+});
+
 afterEach(async () => {
   jest.restoreAllMocks();
+  process.env = originalEnv;
 });
 
 describe('Test Connection', () => {
   it('should connect and display logs', async () => {
-    const server = new ExpressServer(8081);
+    const server = new ExpressServer(new Config());
 
     try {
       checkConnectionToVhost('15-15_v1.5');

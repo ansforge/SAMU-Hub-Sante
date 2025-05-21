@@ -1,12 +1,12 @@
-import { config } from './config';
 import { logger } from './logger';
 import { ExpressServer } from './expressServer';
+import { Config } from './config';
 
 class App {
   private expressServer: ExpressServer | undefined;
   public launchServer = async () => {
     try {
-      this.expressServer = new ExpressServer(config.getPort());
+      this.expressServer = new ExpressServer(new Config());
       this.expressServer.launch();
       logger.info('Express server running');
     } catch (error) {

@@ -1,6 +1,6 @@
 type VhostClientMap = Record<string, string[]>;
 
-class Config {
+export class Config {
   private port: number;
   private adminPassword: string;
   private hubUrl: string;
@@ -65,5 +65,3 @@ class Config {
     return `Configuration:\n  - urlPort: ${this.getPort()}\n  - hubUrl: ${this.getHubUrl()}\n  - hubSanteExchange: ${this.getHubSanteExchange()}`;
   }
 }
-
-export const config = new Config();
