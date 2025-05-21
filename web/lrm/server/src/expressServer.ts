@@ -5,8 +5,9 @@ import cookieParser from 'cookie-parser';
 import bodyParser from 'body-parser';
 import { Server as WssServer, OPEN } from 'ws';
 import { logger } from './logger';
-import { connect, connectAsync, close, HUB_SANTE_EXCHANGE, VHOST_CLIENT_MAP, messageProperties } from './rabbit/utils';
+import { connect, connectAsync, close, messageProperties } from './rabbit/utils';
 import { ModelesRouter } from './router/modelesRouter';
+import { config } from './config';
 
 import { Express } from 'express';
 import { Channel, Connection } from 'amqplib/callback_api';
@@ -34,6 +35,7 @@ export class ExpressServer {
 
     this.app.use('/modeles', ModelesRouter);
 
+    const VHOST_CLIENT_MAP = config.getVhostClientMap();
     // Subscribe to Hub messages and send them to the client through web socket
     logger.info(`VHOST_CLIENT_MAP: ${JSON.stringify(VHOST_CLIENT_MAP)}`);
     // Get list of keys (corresponding to vhosts) from the VHOSTS map
@@ -146,7 +148,7 @@ export class ExpressServer {
         logger.info(` [x] Sending msg ${msg.distributionID} to key ${key} (vhost: ${vhost})`);
         try {
           const { connection, channel } = await connectAsync(vhost);
-          channel.publish(HUB_SANTE_EXCHANGE, key, Buffer.from(JSON.stringify(msg)), messageProperties);
+          channel.publish(config.getHubSanteExchange(), key, Buffer.from(JSON.stringify(msg)), messageProperties);
           close(connection);
           logger.info(`Publish call done and connection closed for ${msg.distributionID} (vhost: ${vhost})`);
         } catch (error) {

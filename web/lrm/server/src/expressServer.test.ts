@@ -15,10 +15,6 @@ jest.mock('./rabbit/utils', () => ({
     callback(connection, channel);
   }),
   close: jest.fn(() => {}),
-  VHOST_CLIENT_MAP: {
-    '15-15_v1.5': ['fr.health.test.samuA', 'fr.health.test.samuB'],
-    '15-15_v2.0': ['fr.health.test.samuA', 'fr.health.test.samuB'],
-  },
 }));
 const mockedUtils = utils as jest.Mocked<typeof utils>;
 

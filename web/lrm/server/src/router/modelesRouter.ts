@@ -78,7 +78,7 @@ const commitModelesChanges = async (
 ) => {
   const { fileName, content, branchConfig, password } = req.body;
 
-  if (password !== config.ADMIN_PASSWORD) {
+  if (password !== config.getAdminPassword()) {
     res.status(401).json({ message: 'Unauthorized' });
     return;
   }

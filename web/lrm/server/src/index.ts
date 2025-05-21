@@ -6,7 +6,7 @@ class App {
   private expressServer: ExpressServer | undefined;
   public launchServer = async () => {
     try {
-      this.expressServer = new ExpressServer(config.URL_PORT);
+      this.expressServer = new ExpressServer(config.getPort());
       this.expressServer.launch();
       logger.info('Express server running');
     } catch (error) {

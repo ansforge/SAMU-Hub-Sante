@@ -2,35 +2,11 @@ import { join } from 'path';
 import { readFileSync } from 'fs';
 import amqp, { credentials, Channel, Connection } from 'amqplib/callback_api';
 import { logger } from '../logger';
+import { config } from '../config';
 
 const moduleDir = __dirname;
-const missingEnvVars = [];
 
-const { HUB_URL, LRM_PASSPHRASE } = process.env;
-
-if (!HUB_URL) {
-  missingEnvVars.push('HUB_URL');
-}
-
-if (!LRM_PASSPHRASE) {
-  missingEnvVars.push('LRM_PASSPHRASE');
-}
-
-if (!process.env.VHOST_CLIENT_MAP) {
-  missingEnvVars.push('VHOST_CLIENT_MAP');
-}
-
-// Check if the environment variables are set, if not, throw an error
-if (missingEnvVars.length > 0) {
-  throw new Error(
-    `The following environment variables are missing: ${missingEnvVars.join(', ')}. In Kubernetes, this might be caused by a missing ConfigMap or Secret.`,
-  );
-}
-
-console.log(`Connecting to RabbitMQ server: ${HUB_URL}`);
-export const HUB_SANTE_EXCHANGE = 'hubsante';
-// TODO: handle properly the VHOST_CLIENT_MAP definition check
-export const VHOST_CLIENT_MAP = process.env.VHOST_CLIENT_MAP ? JSON.parse(process.env.VHOST_CLIENT_MAP) : {};
+console.log(`Connecting to RabbitMQ server: ${config.getHubUrl()}`);
 
 const opts = {
   // pfx with new encryption needed for Node 19 support
@@ -38,7 +14,7 @@ const opts = {
   pfx: readFileSync(join(moduleDir, 'certs/lrm_test.pfx')),
   // cert: fs.readFileSync(path.join(moduleDir, 'certs/local_test.crt')), // client cert
   // key: fs.readFileSync(path.join(moduleDir, 'certs/local_test.key')), // client key
-  passphrase: process.env.LRM_PASSPHRASE,
+  passphrase: config.getLrmCertPassphrase(),
   ca: [readFileSync(join(moduleDir, 'certs/rootCA.crt'))], // array of trusted CA certs
   // Ref.: https://github.com/amqp-node/amqplib/issues/105
   credentials: credentials.external(),
@@ -46,7 +22,7 @@ const opts = {
 };
 
 export function connect(vhost: string, callback: (connection: Connection, channel: Channel) => void) {
-  amqp.connect(`${HUB_URL}/${vhost}`, opts, (error0, connection) => {
+  amqp.connect(`${config.getHubUrl()}/${vhost}`, opts, (error0, connection) => {
     if (error0) {
       logger.error(`Error during AMQP connection: ${error0}`);
       throw error0;
@@ -64,7 +40,7 @@ export function connect(vhost: string, callback: (connection: Connection, channe
 
 export async function connectAsync(vhost: string): Promise<{ connection: Connection; channel: Channel }> {
   return new Promise((resolve, reject) => {
-    amqp.connect(`${HUB_URL}/${vhost}`, opts, (error0, connection) => {
+    amqp.connect(`${config.getHubUrl()}/${vhost}`, opts, (error0, connection) => {
       if (error0) {
         reject(error0);
         return;
