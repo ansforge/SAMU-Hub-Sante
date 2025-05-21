@@ -112,7 +112,7 @@ public class Dispatcher {
                 log.error("Could not read message body", e);
             }
             error.setReferencedDistributionID(returnedEdxlMessage != null ? returnedEdxlMessage.getDistributionID() : DISTRIBUTION_ID_UNAVAILABLE);
-            String senderRoutingKey = returned.getMessage().getMessageProperties().getHeader(DLQ_ORIGINAL_ROUTING_KEY);
+            String senderRoutingKey = returned.getMessage().getMessageProperties().getHeader(ORIGINAL_ROUTING_KEY);
             messageHandler.logErrorAndSendReport(error, senderRoutingKey);
             messageHandler.publishErrorMetric(ErrorCode.UNROUTABLE_MESSAGE.getStatusString(), senderRoutingKey);
         });
@@ -122,6 +122,7 @@ public class Dispatcher {
     @Timed(value = DISPATCH_TIMED_METRIC, description = "Time taken to fully dispatch a message")
     public void dispatch(Message message) {
         try {
+            setOriginalRoutingKeyHeader(message);
             // Deserialize the message according to its content type
             EdxlMessage edxlMessage = messageHandler.extractMessage(message);
             // reject the message if no health actor is involved (as sender or recipient)
@@ -183,10 +184,9 @@ public class Dispatcher {
     @Timed(value = DLQ_TIMED_METRIC, description = "Time taken to fully dispatch a dead letter queued message")
     public void dispatchDLQ(Message message) {
         try {
-            // TODO bbo
             //  Simple fix to avoid infinite loop if info expires with no header original routing key set
             //  The real fix will be to have two DLQ policies and a specific infoDLQ listener
-            String deadFromQueue = message.getMessageProperties().getHeader(DLQ_ORIGINAL_ROUTING_KEY);
+            String deadFromQueue = message.getMessageProperties().getHeader(ORIGINAL_ROUTING_KEY);
             if (deadFromQueue.endsWith(".info")) {
                 return;
             }
@@ -200,8 +200,8 @@ public class Dispatcher {
             // We don't want to log again the error if it has been thrown by handleError
             // We just log the unexpected errors
             if (!(e instanceof AmqpRejectAndDontRequeueException)) {
-                String originalRoutingKey = message.getMessageProperties().getHeader(DLQ_ORIGINAL_ROUTING_KEY) != null ?
-                        message.getMessageProperties().getHeader(DLQ_ORIGINAL_ROUTING_KEY) : "Unknown routing key";
+                String originalRoutingKey = message.getMessageProperties().getHeader(ORIGINAL_ROUTING_KEY) != null ?
+                        message.getMessageProperties().getHeader(ORIGINAL_ROUTING_KEY) : "Unknown routing key";
                 log.warn("Unexpected error occurred while DLQ-dispatching message from " + originalRoutingKey, e);
             }
             throw new AmqpRejectAndDontRequeueException(e);

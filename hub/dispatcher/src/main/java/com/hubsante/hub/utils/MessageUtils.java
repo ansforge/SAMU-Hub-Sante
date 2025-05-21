@@ -38,15 +38,24 @@ import java.util.Base64;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.hubsante.hub.config.AmqpConfiguration.ORIGINAL_ROUTING_KEY;
 import static com.hubsante.hub.config.Constants.DISTRIBUTION_ID_UNAVAILABLE;
 
 @Slf4j
 public class MessageUtils {
     static final String HEALTH_PREFIX = "fr.health";
     private static final String CISU_LRM_USER = "fr.cisu.sdisY";
+
     public static String getSenderFromRoutingKey(Message message) {
         return message.getMessageProperties().getReceivedRoutingKey();
     }
+
+    public static void setOriginalRoutingKeyHeader(Message message) {
+        if (message.getMessageProperties().getHeader(ORIGINAL_ROUTING_KEY) == null) {
+            message.getMessageProperties().setHeader(ORIGINAL_ROUTING_KEY, getSenderFromRoutingKey(message));
+        }
+    }
+
     public static void checkSenderConsistency(Message message, EdxlMessage edxlMessage) {
         String receivedRoutingKey = getSenderFromRoutingKey(message);
         if (!receivedRoutingKey.equals(edxlMessage.getSenderID())) {

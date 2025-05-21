@@ -46,7 +46,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 
 import static com.hubsante.hub.config.AmqpConfiguration.DISTRIBUTION_EXCHANGE;
-import static com.hubsante.hub.config.AmqpConfiguration.DLQ_ORIGINAL_ROUTING_KEY;
+import static com.hubsante.hub.config.AmqpConfiguration.ORIGINAL_ROUTING_KEY;
 import static com.hubsante.hub.config.Constants.*;
 
 import static com.hubsante.hub.utils.ConfigUtils.sanitizeVhostForProm;
@@ -103,15 +103,7 @@ public class MessageHandler {
         error.setReferencedDistributionID(exception.getReferencedDistributionID());
 
         // send Error to sender
-        // if the message has been dead-lettered, we retrieve the original sender from the x-death-original-routing-key header
-        String senderClientID = exception instanceof DeadLetteredMessageException ?
-                message.getMessageProperties().getHeader(DLQ_ORIGINAL_ROUTING_KEY) :
-                message.getMessageProperties().getReceivedRoutingKey();
-
-        // TODO: do better than that ! temp fix to test routing of info messages for NexSIS
-        if (senderClientID.equals("partage-affaire")) {
-            senderClientID = "fr.health.fire";
-        }
+        String senderClientID = message.getMessageProperties().getHeader(ORIGINAL_ROUTING_KEY);
 
         logErrorAndSendReport(error, senderClientID);
         // increment metric like dispatch_error{reason="INVALID_MESSAGE",sender="fr.health.samuXXX"}
@@ -279,7 +271,6 @@ public class MessageHandler {
             recipientID, edxlMessage.getDistributionID(), hashBody(receivedAmqpMessage));
             log.debug(edxlString);
 
-            fwdAmqpProperties.setHeader(DLQ_ORIGINAL_ROUTING_KEY, senderID);
             return new Message(edxlString.getBytes(StandardCharsets.UTF_8), fwdAmqpProperties);
 
         } catch (JsonProcessingException e) {
@@ -297,7 +288,6 @@ public class MessageHandler {
 
         log.info("  ↳ [x] Forwarding converted message from {} with hashed value {}", senderID, hashBody(receivedAmqpMessage));
 
-        fwdAmqpProperties.setHeader(DLQ_ORIGINAL_ROUTING_KEY, senderID);
         return new Message(message.getBytes(StandardCharsets.UTF_8), fwdAmqpProperties);
     }
 

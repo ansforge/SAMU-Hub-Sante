@@ -17,7 +17,6 @@ package com.hubsante.hub.service.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.hubsante.model.EdxlHandler;
-import com.hubsante.model.TestMessagesHelper;
 import com.hubsante.model.edxl.EdxlMessage;
 import com.hubsante.model.report.Error;
 import com.hubsante.model.report.ErrorWrapper;
@@ -104,7 +103,7 @@ public class MessageTestUtils {
 
     public static Message applyRabbitmqDLQHeaders(Message originalMessage, String dlqReason) {
         originalMessage.getMessageProperties().setHeader(DLQ_REASON, dlqReason);
-        originalMessage.getMessageProperties().setHeader(DLQ_ORIGINAL_ROUTING_KEY,
+        originalMessage.getMessageProperties().setHeader(ORIGINAL_ROUTING_KEY,
                 originalMessage.getMessageProperties().getReceivedRoutingKey());
 
         return originalMessage;
