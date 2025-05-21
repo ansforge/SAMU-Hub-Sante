@@ -27,7 +27,6 @@ import static com.hubsante.hub.config.Constants.*;
 import static com.hubsante.hub.utils.MessageUtils.*;
 
 import java.util.Arrays;
-import java.util.Map;
 
 @Slf4j
 public class ConversionUtils {
@@ -79,17 +78,16 @@ public class ConversionUtils {
     public static boolean requiresCisuConversion(HubConfiguration hubConfig, EdxlMessage edxlMessage) {
         return isCisuExchange(edxlMessage)
                 && isConvertedModel(edxlMessage)
-                && !isTargetPerimeter(hubConfig.getVhost(), edxlMessage.getDescriptor().getExplicitAddress().getExplicitAddressValue())
+                && !isAlreadyCisuConverted(hubConfig.getVhost(), edxlMessage.getDescriptor().getExplicitAddress().getExplicitAddressValue())
                 && !isDirectCisuForHealthActor(hubConfig, edxlMessage);
     }
 
-    public static boolean isTargetPerimeter(String currentVHost, String recipient) {
-        String perimeterPrefix = HUBEX_PERIMETER_PREFIXES.entrySet().stream()
-                .filter(entry -> currentVHost.startsWith(entry.getKey()))
-                .map(Map.Entry::getValue)
-                .findFirst().orElse(null);
-
-        return perimeterPrefix != null && recipient.startsWith(perimeterPrefix);
+    public static boolean isAlreadyCisuConverted(String currentVHost, String recipient) {
+        if (recipient.startsWith(FR_HEALTH_PREFIX)) {
+            return currentVHost.startsWith(HEALTH_VHOST_PREFIX);
+        } else {
+            return currentVHost.startsWith(NEXSIS_VHOST);
+        }
     }
 
     public static boolean isCisuExchange(EdxlMessage edxlMessage) {

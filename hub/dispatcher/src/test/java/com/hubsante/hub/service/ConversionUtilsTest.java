@@ -34,7 +34,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
-import static com.hubsante.hub.utils.ConversionUtils.isTargetPerimeter;
+import static com.hubsante.hub.utils.ConversionUtils.isAlreadyCisuConverted;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
@@ -263,7 +263,7 @@ public class ConversionUtilsTest {
                 // Mock the helper methods
                 mockedConversionUtils.when(() -> ConversionUtils.isCisuExchange(edxlMessage)).thenReturn(testCase[0]);
                 mockedConversionUtils.when(() -> ConversionUtils.isConvertedModel(edxlMessage)).thenReturn(testCase[1]);
-                mockedConversionUtils.when(() -> ConversionUtils.isTargetPerimeter(hubConfig.getVhost(), MessageUtils.getRecipientID(edxlMessage))).thenReturn(false);
+                mockedConversionUtils.when(() -> ConversionUtils.isAlreadyCisuConverted(hubConfig.getVhost(), MessageUtils.getRecipientID(edxlMessage))).thenReturn(false);
                 mockedConversionUtils.when(() -> ConversionUtils.isDirectCisuForHealthActor(hubConfig, edxlMessage)).thenReturn(testCase[2]);
 
                 // Assert with descriptive message
@@ -283,11 +283,11 @@ public class ConversionUtilsTest {
     }
 
     @Test
-    public void isTargetPerimeterTest() {
-        assertTrue(isTargetPerimeter("15-15_v1.5", "fr.health.something"));
-        assertFalse(isTargetPerimeter("15-15_v1.5", "fr.fire.something-else"));
+    public void isAlreadyCisuConvertedTest() {
+        assertTrue(isAlreadyCisuConverted("15-15_v1.5", "fr.health.something"));
+        assertFalse(isAlreadyCisuConverted("15-15_v1.5", "fr.fire.something-else"));
 
-        assertTrue(isTargetPerimeter("15-nexsis_v1.9", "fr.fire.something-else"));
-        assertFalse(isTargetPerimeter("15-smur_v1.7", "fr.health.something"));
+        assertTrue(isAlreadyCisuConverted("15-nexsis_v1.9", "fr.fire.something-else"));
+        assertFalse(isAlreadyCisuConverted("15-smur_v1.7", "fr.health.something"));
     }
 }

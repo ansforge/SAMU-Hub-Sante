@@ -143,7 +143,7 @@ public class Dispatcher {
                 ConversionRulesCommand conversionRulesCommand = new ConversionRulesCommand(edxlMessage, messageHandler);
                 String convertedMessage = conversionHandler.applyConversionRules(conversionRulesCommand);
                 sendToTransferExchange(convertedMessage, message, conversionRulesCommand);
-                log.info("Message has been sent !");
+                log.debug("Message has been sent !");
                 // We MUST return here to exit the dispatch() function, otherwise the message will be published on the source Exchange as well
                 return;
             }

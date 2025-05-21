@@ -29,9 +29,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
 import java.util.Base64;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -70,14 +68,6 @@ public class MessageUtils {
             String errorCause = "Unable to route message with id " + edxlMessage.getDistributionID() + ", no health actor involved.";
             throw new UnroutableMessageException(errorCause, edxlMessage.getDistributionID());
         }
-    }
-
-    public static boolean isExternalHubexInvolved(EdxlMessage edxlMessage) {
-        if (!edxlMessage.getSenderID().startsWith(HEALTH_PREFIX) ||
-                !edxlMessage.getDescriptor().getExplicitAddress().getExplicitAddressValue().startsWith(HEALTH_PREFIX)) {
-            return true;
-        }
-        return false;
     }
 
     public static void checkDeliveryModeIsPersistent(Message message, String messageId) {
