@@ -14,7 +14,7 @@ metrics = PrometheusMetrics(app)
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Variables d'environnement requises
+# Required environment variables
 REQUIRED_ENV_VARS = [
     "RABBITMQ_URL",
     "RABBITMQ_MONITORING_USERNAME",
@@ -22,7 +22,7 @@ REQUIRED_ENV_VARS = [
     "DISPATCHER_INSTANCES"
 ]
 
-# Vérification des variables d'environnement
+# Check all required environment variables
 missing_vars = [var for var in REQUIRED_ENV_VARS if not os.getenv(var)]
 if missing_vars:
     sys.exit(f"Error: The following environment variables are not set: {', '.join(missing_vars)}")
@@ -35,13 +35,13 @@ RABBITMQ_CA_CERT_PATH = '/etc/ssl/certs/hubsante-rabbitmq-ca.crt'
 DISPATCHER_INSTANCES_ENV_VAR = os.getenv("DISPATCHER_INSTANCES")
 DISPATCHER_INSTANCES = DISPATCHER_INSTANCES_ENV_VAR.split(",") if DISPATCHER_INSTANCES_ENV_VAR else []
 
-HTTP_TIMEOUT = int(os.getenv("HTTP_TIMEOUT", 5))  # Timeout configurable via variable d'environnement
+HTTP_TIMEOUT = int(os.getenv("HTTP_TIMEOUT", 5))  # Timeout in seconds, configurable via environment variable
 
-# Définition des métriques Prometheus
+# Definition of Prometheus metrics
 rabbitmq_status_metric = Gauge('rabbitmq_status', 'Statut de RabbitMQ (1=UP, 0=DOWN)')
 dispatcher_status_metric = Gauge('dispatcher_status', 'Statut des dispatchers (1=UP, 0=DOWN)', ['dispatcher'])
 
-# Initialiser la métrique pour chaque dispatcher à DOWN par défaut
+# Initialize the metric for each dispatcher to DOWN by default
 for dispatcher in DISPATCHER_INSTANCES:
     dispatcher_status_metric.labels(dispatcher=dispatcher).set(0)
 
@@ -90,13 +90,13 @@ def health():
     global_status = "UP"
     components = OrderedDict()
 
-    # Vérification de RabbitMQ
+    # Fetch RabbitMQ health
     rabbitmq_health = rabbitmq_healthcheck()
     components["rabbitmq_server"] = rabbitmq_health
     if rabbitmq_health["status"] == "DOWN":
         global_status = "DOWN"
 
-    # Vérification des dispatchers
+    # Fetch health from Spring apps
     logger.info(f"Checking health of dispatcher instances: {DISPATCHER_INSTANCES}")
     for dispatcher_instance in DISPATCHER_INSTANCES:
         spring_health = dispatcher_healthcheck(dispatcher_instance)
@@ -104,7 +104,7 @@ def health():
         if spring_health["status"] == "DOWN":
             global_status = "DOWN"
 
-    # Agrégation des résultats
+    # Aggregate and return the result
     result = OrderedDict([
         ("status", global_status),
         ("components", components)
