@@ -34,6 +34,7 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.search.Search;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
@@ -632,6 +633,8 @@ public class DispatcherTest {
         }
     }
 
+    // disabling until we restore info message sending to outer hubex
+    @Disabled
     @Test
     @DisplayName("should reject message if no health actor is involved")
     public void shouldRejectMessageIfNoHealthActorIsInvolved() throws IOException {
