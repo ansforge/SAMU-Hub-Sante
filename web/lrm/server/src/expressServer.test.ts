@@ -1,26 +1,32 @@
 import { Config } from './config';
 import { ExpressServer } from './expressServer';
-import * as utils from './rabbit/utils';
+import { RabbitMQConnector } from './rabbit/utils';
 
 const mockConsume = jest.fn();
-jest.mock('./rabbit/utils', () => ({
-  connect: jest.fn((_, callback) => {
-    const channel = {
-      consume: mockConsume,
-      on: jest.fn(),
-    };
-    const connection = {
-      close: jest.fn(),
-      on: jest.fn(),
-    };
-    callback(connection, channel);
-  }),
-  close: jest.fn(() => {}),
-}));
-const mockedUtils = utils as jest.Mocked<typeof utils>;
+const mockConnect = jest.fn((_, callback) => {
+  const channel = {
+    consume: mockConsume,
+    on: jest.fn(),
+  };
+  const connection = {
+    close: jest.fn(),
+    on: jest.fn(),
+  };
+  callback(connection, channel);
+});
+jest.mock('./rabbit/utils', () => {
+  return {
+    RabbitMQConnector: jest.fn().mockImplementation(() => {
+      return {
+        connect: mockConnect,
+        close: jest.fn(),
+      };
+    }),
+  };
+});
 
 const checkConnectionToVhost = (vhost: string) => {
-  expect(mockedUtils.connect).toHaveBeenCalledWith(vhost, expect.any(Function));
+  expect(mockConnect).toHaveBeenCalledWith(vhost, expect.any(Function));
 };
 
 const checkConsumerListenOnQueue = (queue: string) => {
@@ -56,7 +62,8 @@ afterEach(async () => {
 
 describe('Test Connection', () => {
   it('should connect and display logs', async () => {
-    const server = new ExpressServer(new Config());
+    const config = new Config();
+    const server = new ExpressServer(config, new RabbitMQConnector(config));
 
     try {
       checkConnectionToVhost('15-15_v1.5');

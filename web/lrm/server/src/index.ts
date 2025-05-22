@@ -1,12 +1,14 @@
 import { logger } from './logger';
 import { ExpressServer } from './expressServer';
 import { Config } from './config';
+import { RabbitMQConnector } from './rabbit/utils';
 
 class App {
   private expressServer: ExpressServer | undefined;
   public launchServer = async () => {
     try {
-      this.expressServer = new ExpressServer(new Config());
+      const config = new Config();
+      this.expressServer = new ExpressServer(config, new RabbitMQConnector(config));
       this.expressServer.launch();
       logger.info('Express server running');
     } catch (error) {

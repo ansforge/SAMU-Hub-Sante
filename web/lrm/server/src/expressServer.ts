@@ -5,7 +5,7 @@ import cookieParser from 'cookie-parser';
 import bodyParser from 'body-parser';
 import { Server as WssServer, OPEN } from 'ws';
 import { logger } from './logger';
-import { connect, connectAsync, close, messageProperties } from './rabbit/utils';
+import { RabbitMQConnector } from './rabbit/utils';
 import { ModelesRouter } from './router/modelesRouter';
 import { Config } from './config';
 
@@ -14,13 +14,15 @@ import { Channel, Connection } from 'amqplib/callback_api';
 
 export class ExpressServer {
   private config: Config;
+  private rabbitMQConnector: RabbitMQConnector;
   private app: Express;
   private connections: Record<string, Connection>;
   private wss: WssServer | undefined;
   private server: HttpServer | undefined;
 
-  constructor(config: Config) {
+  constructor(config: Config, connector: RabbitMQConnector) {
     this.config = config;
+    this.rabbitMQConnector = connector;
     this.app = express();
     this.connections = {};
     this.setupMiddleware();
@@ -41,7 +43,7 @@ export class ExpressServer {
     // Get list of keys (corresponding to vhosts) from the VHOSTS map
     const vhostsArray = Object.keys(VHOST_CLIENT_MAP);
     for (const vhost of vhostsArray) {
-      connect(vhost, async (connection: Connection, channel: Channel) => {
+      this.rabbitMQConnector.connect(vhost, async (connection: Connection, channel: Channel) => {
         connection.on('error', (err) => {
           logger.error(`Connection error for vhost '${vhost}': ${err}`);
         });
@@ -147,9 +149,14 @@ export class ExpressServer {
         logger.debug(`Received message from WebSocket client: ${msg.distributionID} of content ${body}`);
         logger.info(` [x] Sending msg ${msg.distributionID} to key ${key} (vhost: ${vhost})`);
         try {
-          const { connection, channel } = await connectAsync(vhost);
-          channel.publish(this.config.getHubSanteExchange(), key, Buffer.from(JSON.stringify(msg)), messageProperties);
-          close(connection);
+          const { connection, channel } = await this.rabbitMQConnector.connectAsync(vhost);
+          channel.publish(this.config.getHubSanteExchange(), key, Buffer.from(JSON.stringify(msg)), {
+            // Ref.: https://github.com/amqp-node/amqplib/blob/4791f2dfbe8f3bfbd02bb0907e3c35129ae71c13/lib/api_args.js#L231
+            contentType: 'application/json',
+            deliveryMode: 2,
+            priority: 0,
+          });
+          this.rabbitMQConnector.close(connection);
           logger.info(`Publish call done and connection closed for ${msg.distributionID} (vhost: ${vhost})`);
         } catch (error) {
           logger.error(`Error publishing message to RabbitMQ (vhost: ${vhost}): ${error}`);
@@ -166,7 +173,7 @@ export class ExpressServer {
   async close() {
     for (const [vhost, connection] of Object.entries(this.connections)) {
       if (connection !== undefined) {
-        close(connection);
+        this.rabbitMQConnector.close(connection);
         logger.info(`RabbitMQ connection ${vhost} shut down`);
       }
     }
