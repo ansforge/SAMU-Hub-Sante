@@ -105,7 +105,10 @@ public class MessageHandler {
         // send Error to sender
         String senderClientID = message.getMessageProperties().getHeader(ORIGINAL_ROUTING_KEY);
 
-        logErrorAndSendReport(error, senderClientID);
+        // currently, we do not handle error messages on other hubex
+        if (senderClientID.startsWith(FR_HEALTH_PREFIX)) {
+            logErrorAndSendReport(error, senderClientID);
+        }
         // increment metric like dispatch_error{reason="INVALID_MESSAGE",sender="fr.health.samuXXX"}
         publishErrorMetric(exception.getErrorCode().getStatusString(), senderClientID);
         // throw exception to reject the message

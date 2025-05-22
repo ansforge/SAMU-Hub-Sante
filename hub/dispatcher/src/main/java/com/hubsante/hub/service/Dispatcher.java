@@ -113,7 +113,10 @@ public class Dispatcher {
             }
             error.setReferencedDistributionID(returnedEdxlMessage != null ? returnedEdxlMessage.getDistributionID() : DISTRIBUTION_ID_UNAVAILABLE);
             String senderRoutingKey = returned.getMessage().getMessageProperties().getHeader(ORIGINAL_ROUTING_KEY);
-            messageHandler.logErrorAndSendReport(error, senderRoutingKey);
+            // currently, we do not handle error messages on other hubex
+            if (senderRoutingKey.startsWith(FR_HEALTH_PREFIX)) {
+                messageHandler.logErrorAndSendReport(error, senderRoutingKey);
+            }
             messageHandler.publishErrorMetric(ErrorCode.UNROUTABLE_MESSAGE.getStatusString(), senderRoutingKey);
         });
     }
@@ -184,8 +187,7 @@ public class Dispatcher {
     @Timed(value = DLQ_TIMED_METRIC, description = "Time taken to fully dispatch a dead letter queued message")
     public void dispatchDLQ(Message message) {
         try {
-            //  Simple fix to avoid infinite loop if info expires with no header original routing key set
-            //  The real fix will be to have two DLQ policies and a specific infoDLQ listener
+            //  If an info message sent by the Hub has not been read, we do not want to loop and sent the Hub an info message back
             String deadFromQueue = message.getMessageProperties().getHeader(ORIGINAL_ROUTING_KEY);
             if (deadFromQueue.endsWith(".info")) {
                 return;

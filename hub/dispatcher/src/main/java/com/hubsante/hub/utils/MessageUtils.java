@@ -51,9 +51,8 @@ public class MessageUtils {
     }
 
     public static void setOriginalRoutingKeyHeader(Message message) {
-        if (message.getMessageProperties().getHeader(ORIGINAL_ROUTING_KEY) == null) {
-            message.getMessageProperties().setHeader(ORIGINAL_ROUTING_KEY, getSenderFromRoutingKey(message));
-        }
+        // we need to store the original routing key to keep track of the original sender, even after generating a new routing key based on recipient & distributionKind
+        message.getMessageProperties().setHeader(ORIGINAL_ROUTING_KEY, getSenderFromRoutingKey(message));
     }
 
     public static void checkSenderConsistency(Message message, EdxlMessage edxlMessage) {
