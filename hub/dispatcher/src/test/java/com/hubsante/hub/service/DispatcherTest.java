@@ -139,7 +139,7 @@ public class DispatcherTest {
             mockedConversionUtils.when(() -> ConversionUtils.requiresVersionConversion(any(), any())).thenReturn(false);
             mockedConversionUtils.when(() -> ConversionUtils.requiresConversion(any(), any())).thenReturn(false);
             mockedConversionUtils.when(() -> ConversionUtils.getSourceVHost(any())).thenReturn("15-15_v1.5");
-            mockedConversionUtils.when(() -> ConversionUtils.getTargetVHosts(any(), any())).thenReturn(new String[]{"1.5"});
+            mockedConversionUtils.when(() -> ConversionUtils.getTargetVHosts(any(), any())).thenReturn(new String[]{"15-15_v1.5"});
 
             //generate input message and check that it has the expected content type
             Message receivedMessage = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
@@ -169,8 +169,8 @@ public class DispatcherTest {
         try (MockedStatic<ConversionUtils> mockedConversionUtils = mockStatic(ConversionUtils.class)) {
             mockedConversionUtils.when(() -> ConversionUtils.requiresVersionConversion(any(), any())).thenReturn(false);
             mockedConversionUtils.when(() -> ConversionUtils.requiresConversion(any(), any())).thenReturn(false);
-            mockedConversionUtils.when(() -> ConversionUtils.getSourceVHost(any())).thenReturn("1.5");
-            mockedConversionUtils.when(() -> ConversionUtils.getTargetVHosts(any(), any())).thenReturn(new String[]{"1.5"});
+            mockedConversionUtils.when(() -> ConversionUtils.getSourceVHost(any())).thenReturn("15-15_v1.5");
+            mockedConversionUtils.when(() -> ConversionUtils.getTargetVHosts(any(), any())).thenReturn(new String[]{"15-15_v1.5"});
 
             // generate input message and check that it has the expected content type
             Message receivedMessage = createMessage("EDXL-DE", XML, SAMU_B_ROUTING_KEY);
@@ -200,8 +200,8 @@ public class DispatcherTest {
         try (MockedStatic<ConversionUtils> mockedConversionUtils = mockStatic(ConversionUtils.class)) {
             mockedConversionUtils.when(() -> ConversionUtils.requiresVersionConversion(any(), any())).thenReturn(false);
             mockedConversionUtils.when(() -> ConversionUtils.requiresConversion(any(), any())).thenReturn(false);
-            mockedConversionUtils.when(() -> ConversionUtils.getSourceVHost(any())).thenReturn("1.5");
-            mockedConversionUtils.when(() -> ConversionUtils.getTargetVHosts(any(), any())).thenReturn(new String[]{"1.5"});
+            mockedConversionUtils.when(() -> ConversionUtils.getSourceVHost(any())).thenReturn("15-15_v1.5");
+            mockedConversionUtils.when(() -> ConversionUtils.getTargetVHosts(any(), any())).thenReturn(new String[]{"15-15_v1.5"});
 
             // JSON -> XML direction
             Message receivedJsonMessage = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
@@ -615,30 +615,6 @@ public class DispatcherTest {
         assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
         assertErrorHasBeenSent("fr.police.random.info", ErrorCode.UNROUTABLE_MESSAGE, "fr.police.random_2608323d-507d-4cbf-bf74-52007f8124ea",
                 "Unable to route message with id fr.police.random_2608323d-507d-4cbf-bf74-52007f8124ea, no health actor involved.");
-    }
-
-    @Test
-    @DisplayName("should convert message from hubex to health in same version")
-    public void shouldConvertMessageFromHubexToHealthInSameVersion() throws IOException {
-
-    }
-
-    @Test
-    @DisplayName("should convert message from health to hubex in same version")
-    public void shouldConvertMessageFromHealthToHubexInSameVersion() throws IOException {
-
-    }
-
-    @Test
-    @DisplayName("should upgrade version from health to hubex and transfer on higher health vhost")
-    public void shouldUpgradeVersionFromHealthToHubexAndTransferOnUpperHealthVhost() throws IOException {
-
-    }
-
-    @Test
-    @DisplayName("should downgrade version from hubex to health and transfer on lower health vhost")
-    public void shouldDowngradeVersionFromHealthAndTransferOnLowerHealthVhost() throws IOException {
-
     }
 
     private void assertErrorHasBeenSent(String infoQueueName, ErrorCode errorCode, String referencedDistributionId, String... errorCause) throws JsonProcessingException {
