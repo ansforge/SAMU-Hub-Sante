@@ -12,7 +12,6 @@ class App {
       this.expressServer.launch();
       logger.info('Express server running');
     } catch (error) {
-      console.error(error);
       // @ts-expect-error Will fix this soon
       logger.error(`Express Server failure: ${error.message}`);
       await this.expressServer?.close();

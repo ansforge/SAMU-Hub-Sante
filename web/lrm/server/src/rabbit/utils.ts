@@ -15,6 +15,8 @@ export class RabbitMQConnector {
       credentials: credentials.external(),
       clientProperties: { connection_name: 'lrm-interface' },
     };
+    // TODO: remove this misleading log
+    logger.info(`Connecting to RabbitMQ server: ${this.config.getHubUrl()}`);
   }
 
   private readCerts(): { pfx: Buffer<ArrayBufferLike>; ca: Buffer<ArrayBufferLike>[] } {
