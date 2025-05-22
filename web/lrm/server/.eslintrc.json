@@ -2,8 +2,7 @@
 // Copy this file, and add rule overrides as needed.
 {
   "extends": ["plugin:@typescript-eslint/recommended"],
-  // TODO: fix errors in expressServer.js and remove it from ignoredFiles
-  "ignorePatterns": ["jest.config.js", "src/expressServer.js"],
+  "ignorePatterns": ["jest.config.ts"],
   "parser": "@typescript-eslint/parser",
   "parserOptions": { "ecmaVersion": 2016, "sourceType": "module" },
   "rules": {
@@ -11,7 +10,7 @@
   },
   "overrides": [
     {
-      "files": ["*/**/*.test.js", "*/**/*.test.ts"],
+      "files": ["*/**/*.test.ts"],
       "env": {
         "jest": true
       }
