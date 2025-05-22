@@ -46,7 +46,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 
 import static com.hubsante.hub.config.AmqpConfiguration.DISTRIBUTION_EXCHANGE;
-import static com.hubsante.hub.config.AmqpConfiguration.DLQ_ORIGINAL_ROUTING_KEY;
+import static com.hubsante.hub.config.AmqpConfiguration.ORIGINAL_ROUTING_KEY;
 import static com.hubsante.hub.config.Constants.*;
 
 import static com.hubsante.hub.utils.ConfigUtils.sanitizeVhostForProm;
@@ -103,17 +103,12 @@ public class MessageHandler {
         error.setReferencedDistributionID(exception.getReferencedDistributionID());
 
         // send Error to sender
-        // if the message has been dead-lettered, we retrieve the original sender from the x-death-original-routing-key header
-        String senderClientID = exception instanceof DeadLetteredMessageException ?
-                message.getMessageProperties().getHeader(DLQ_ORIGINAL_ROUTING_KEY) :
-                message.getMessageProperties().getReceivedRoutingKey();
+        String senderClientID = message.getMessageProperties().getHeader(ORIGINAL_ROUTING_KEY);
 
-        // TODO: do better than that ! temp fix to test routing of info messages for NexSIS
-        if (senderClientID.equals("partage-affaire")) {
-            senderClientID = "fr.health.fire";
+        // currently, we do not handle error messages on other hubex
+        if (senderClientID.startsWith(FR_HEALTH_PREFIX)) {
+            logErrorAndSendReport(error, senderClientID);
         }
-
-        logErrorAndSendReport(error, senderClientID);
         // increment metric like dispatch_error{reason="INVALID_MESSAGE",sender="fr.health.samuXXX"}
         publishErrorMetric(exception.getErrorCode().getStatusString(), senderClientID);
         // throw exception to reject the message
@@ -266,6 +261,7 @@ public class MessageHandler {
         String recipientID = getRecipientID(edxlMessage);
         String senderID = getSenderFromRoutingKey(receivedAmqpMessage);
         String edxlString;
+        String distributionKind = edxlMessage.getDistributionKind().getValue();
 
         try {
             if (convertToXML(recipientID, hubConfig.getUseXmlPreferences().getOrDefault(recipientID, DEFAULT_USE_XML_PREFERENCE))) {
@@ -275,11 +271,10 @@ public class MessageHandler {
                 edxlString = edxlHandler.serializeJsonEDXL(edxlMessage);
                 fwdAmqpProperties.setContentType(MessageProperties.CONTENT_TYPE_JSON);
             }
-            log.info("  ↳ [x] Forwarding to '{}': message with distributionID {} and hashed value {}",
-            recipientID, edxlMessage.getDistributionID(), hashBody(receivedAmqpMessage));
+            log.info("  ↳ [x] Forwarding {} to '{}': message with distributionID {} and hashed value {}",
+            distributionKind, recipientID, edxlMessage.getDistributionID(), hashBody(receivedAmqpMessage));
             log.debug(edxlString);
 
-            fwdAmqpProperties.setHeader(DLQ_ORIGINAL_ROUTING_KEY, senderID);
             return new Message(edxlString.getBytes(StandardCharsets.UTF_8), fwdAmqpProperties);
 
         } catch (JsonProcessingException e) {
@@ -297,12 +292,13 @@ public class MessageHandler {
 
         log.info("  ↳ [x] Forwarding converted message from {} with hashed value {}", senderID, hashBody(receivedAmqpMessage));
 
-        fwdAmqpProperties.setHeader(DLQ_ORIGINAL_ROUTING_KEY, senderID);
         return new Message(message.getBytes(StandardCharsets.UTF_8), fwdAmqpProperties);
     }
 
     private void logMessage(Message message, EdxlMessage edxlMessage, String receivedEdxl) {
-        log.info(" [x] Received from '{}': message with distributionID {} and hashed value {}",
+        String distributionKind = edxlMessage.getDistributionKind().getValue();
+        log.info(" [x] Received {} from '{}': message with distributionID {} and hashed value {}",
+                distributionKind,
                 message.getMessageProperties().getReceivedRoutingKey(),
                 edxlMessage.getDistributionID(),
                 hashBody(message));
