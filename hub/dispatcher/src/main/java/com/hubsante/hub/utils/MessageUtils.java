@@ -23,12 +23,7 @@ import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageDeliveryMode;
 import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.core.ReturnedMessage;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -46,6 +41,7 @@ public class MessageUtils {
     static final String HEALTH_PREFIX = "fr.health";
     private static final String CISU_LRM_USER = "fr.cisu.sdisY";
 
+    private static final String SDISZ_LRM_USER = "fr.fire.nexsis.sdisZ";
     public static String getSenderFromRoutingKey(Message message) {
         return message.getMessageProperties().getReceivedRoutingKey();
     }
@@ -77,7 +73,7 @@ public class MessageUtils {
     public static void checkHealthActorIsInvolved(EdxlMessage edxlMessage) {
         if(!edxlMessage.getSenderID().startsWith(HEALTH_PREFIX) &&
                 !edxlMessage.getDescriptor().getExplicitAddress().getExplicitAddressValue().startsWith(HEALTH_PREFIX)) {
-            String errorCause = "Unable to route message with id " + edxlMessage.getDistributionID() +", no health actor involved.";
+            String errorCause = "Unable to route message with id " + edxlMessage.getDistributionID() + ", no health actor involved.";
             throw new UnroutableMessageException(errorCause, edxlMessage.getDistributionID());
         }
     }
@@ -118,7 +114,7 @@ public class MessageUtils {
 
     public static boolean convertToXML(String recipientID, Boolean useXML) {
         // sending message to outer hubex is always XML
-        if (!(recipientID.startsWith(HEALTH_PREFIX) || recipientID.equals(CISU_LRM_USER))) {
+        if (!(recipientID.startsWith(HEALTH_PREFIX) || recipientID.equals(CISU_LRM_USER) || recipientID.equals(SDISZ_LRM_USER))) {
             return true;
         }
         // sending message to health clients is based on client preference (default to JSON)

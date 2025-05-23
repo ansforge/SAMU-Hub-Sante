@@ -25,6 +25,7 @@ import com.hubsante.model.health.CreateCaseHealthWrapper;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.MockitoAnnotations;
@@ -33,16 +34,17 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
+import static com.hubsante.hub.utils.ConversionUtils.isAlreadyCisuConverted;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
 public class ConversionUtilsTest {
 
-    @Mock
+    @Mock (answer = Answers.RETURNS_DEEP_STUBS)
     private HubConfiguration hubConfig;
 
-    @Mock
+    @Mock (answer = Answers.RETURNS_DEEP_STUBS)
     private EdxlMessage edxlMessage;
 
     @Mock
@@ -147,32 +149,32 @@ public class ConversionUtilsTest {
     @Test
     void testGetSourceVersion(){
         when(hubConfig.getVhost()).thenReturn("15-15_v1.5");
-        assertEquals("1.5", ConversionUtils.getSourceVersion(hubConfig));
+        assertEquals("15-15_v1.5", ConversionUtils.getSourceVHost(hubConfig));
 
         when(hubConfig.getVhost()).thenReturn("15-15_v2.0");
-        assertEquals("2.0", ConversionUtils.getSourceVersion(hubConfig));
+        assertEquals("15-15_v2.0", ConversionUtils.getSourceVHost(hubConfig));
 
         when(hubConfig.getVhost()).thenReturn("15-15_v2.1");
-        assertEquals("2.1", ConversionUtils.getSourceVersion(hubConfig));
+        assertEquals("15-15_v2.1", ConversionUtils.getSourceVHost(hubConfig));
 
-        when(hubConfig.getVhost()).thenReturn("15-nexsis_v1.5");
-        assertEquals("1.5", ConversionUtils.getSourceVersion(hubConfig));
+        when(hubConfig.getVhost()).thenReturn("15-nexsis_v1.9");
+        assertEquals("15-nexsis_v1.9", ConversionUtils.getSourceVHost(hubConfig));
     }
 
     @Test
     void testGetTargetVersion(){
         try (MockedStatic<MessageUtils> mockedMessageUtils = mockStatic(MessageUtils.class)) {
             mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage)).thenReturn("fr.health.samuA");
-            assertArrayEquals(new String[]{"1.5", "2.0","2.1"}, ConversionUtils.getTargetVersions(hubConfig, edxlMessage));
+            assertArrayEquals(new String[]{"15-15_v1.5", "15-15_v2.0","15-15_v2.1"}, ConversionUtils.getTargetVHosts(hubConfig, edxlMessage));
 
             mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage)).thenReturn("fr.health.samuV1");
-            assertArrayEquals(new String[]{"1.5"}, ConversionUtils.getTargetVersions(hubConfig, edxlMessage));
+            assertArrayEquals(new String[]{"15-15_v1.5"}, ConversionUtils.getTargetVHosts(hubConfig, edxlMessage));
 
             mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage)).thenReturn("fr.health.samuNull");
-            assertNull(ConversionUtils.getTargetVersions(hubConfig, edxlMessage));
+            assertNull(ConversionUtils.getTargetVHosts(hubConfig, edxlMessage));
 
             mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage)).thenReturn("fr.health.samuEmpty");
-            assertArrayEquals(new String[]{},ConversionUtils.getTargetVersions(hubConfig, edxlMessage));
+            assertArrayEquals(new String[]{},ConversionUtils.getTargetVHosts(hubConfig, edxlMessage));
         }
     }
 
@@ -248,6 +250,9 @@ public class ConversionUtilsTest {
                 new Boolean[]{false, false, true,  false}
             );
 
+            when(edxlMessage.getDescriptor().getExplicitAddress().getExplicitAddressValue()).thenReturn("fr.fire.something");
+            when(hubConfig.getVhost()).thenReturn("15-15_v2.1");
+
             // Call the real method for requiresCisuConversion
             mockedConversionUtils.when(() -> ConversionUtils.requiresCisuConversion(hubConfig, edxlMessage))
                     .thenCallRealMethod();
@@ -258,6 +263,7 @@ public class ConversionUtilsTest {
                 // Mock the helper methods
                 mockedConversionUtils.when(() -> ConversionUtils.isCisuExchange(edxlMessage)).thenReturn(testCase[0]);
                 mockedConversionUtils.when(() -> ConversionUtils.isConvertedModel(edxlMessage)).thenReturn(testCase[1]);
+                mockedConversionUtils.when(() -> ConversionUtils.isAlreadyCisuConverted(hubConfig.getVhost(), MessageUtils.getRecipientID(edxlMessage))).thenReturn(false);
                 mockedConversionUtils.when(() -> ConversionUtils.isDirectCisuForHealthActor(hubConfig, edxlMessage)).thenReturn(testCase[2]);
 
                 // Assert with descriptive message
@@ -272,24 +278,16 @@ public class ConversionUtilsTest {
 
     @Test
     void testBuildExchange(){
-        assertEquals("transferV1.5toV2.0", ConversionUtils.buildExchangeDestination("1.5", "2.0"));
-        assertEquals("transferVtototoVtiti", ConversionUtils.buildExchangeDestination("toto", "titi"));
+        assertEquals("transfer_15-15_v1.5_to_15-15_v2.0", ConversionUtils.buildExchangeDestination( "15-15_v1.5", "15-15_v2.0"));
+        assertEquals("transfer_toto_to_titi", ConversionUtils.buildExchangeDestination("toto", "titi"));
     }
 
     @Test
-    void testIsTransferredToOtherVhost(){
-        try (MockedStatic<ConversionUtils> mockedConversionUtils = mockStatic(ConversionUtils.class)) {
-            mockedConversionUtils.when(() -> ConversionUtils.isTransferredToOtherVhost(hubConfig, edxlMessage))
-                    .thenCallRealMethod();
-            mockedConversionUtils.when(() -> ConversionUtils.requiresVersionConversion(hubConfig, edxlMessage))
-                    .thenReturn(true);
+    public void isAlreadyCisuConvertedTest() {
+        assertTrue(isAlreadyCisuConverted("15-15_v1.5", "fr.health.something"));
+        assertFalse(isAlreadyCisuConverted("15-15_v1.5", "fr.fire.something-else"));
 
-            assertTrue(ConversionUtils.isTransferredToOtherVhost(hubConfig, edxlMessage));
-
-            mockedConversionUtils.when(() -> ConversionUtils.requiresVersionConversion(hubConfig, edxlMessage))
-                    .thenReturn(false);
-
-            assertFalse(ConversionUtils.isTransferredToOtherVhost(hubConfig, edxlMessage));
-        }
+        assertTrue(isAlreadyCisuConverted("15-nexsis_v1.9", "fr.fire.something-else"));
+        assertFalse(isAlreadyCisuConverted("15-smur_v1.7", "fr.health.something"));
     }
 }

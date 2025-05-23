@@ -1,13 +1,13 @@
 {
   "vhosts": [
     {
-      "name": "/"
+      "name": "15-15_v2.1"
     }
   ],
   "exchanges": [
     {
       "name": "hubsante",
-      "vhost": "/",
+      "vhost": "15-15_v2.1",
       "type": "topic",
       "durable": true,
       "auto_delete": false,
@@ -16,7 +16,7 @@
     },
     {
       "name": "distribution",
-      "vhost": "/",
+      "vhost": "15-15_v2.1",
       "type": "direct",
       "durable": true,
       "auto_delete": false,
@@ -25,7 +25,7 @@
     },
     {
       "name": "distribution.dlx",
-      "vhost": "/",
+      "vhost": "15-15_v2.1",
       "type": "fanout",
       "durable": true,
       "auto_delete": false,
@@ -36,77 +36,77 @@
   "queues": [
     {
       "name": "dispatch",
-      "vhost": "/",
+      "vhost": "15-15_v2.1",
       "durable": true,
       "auto_delete": false,
       "arguments": {}
     },
     {
       "name": "fr.health.samuA.message",
-      "vhost": "/",
+      "vhost": "15-15_v2.1",
       "durable": true,
       "auto_delete": false,
       "arguments": {}
     },
     {
       "name": "fr.health.samuA.info",
-      "vhost": "/",
+      "vhost": "15-15_v2.1",
       "durable": true,
       "auto_delete": false,
       "arguments": {}
     },
     {
       "name": "fr.health.samuA.ack",
-      "vhost": "/",
+      "vhost": "15-15_v2.1",
       "durable": true,
       "auto_delete": false,
       "arguments": {}
     },
     {
       "name": "fr.health.samuB.message",
-      "vhost": "/",
+      "vhost": "15-15_v2.1",
       "durable": true,
       "auto_delete": false,
       "arguments": {}
     },
     {
       "name": "fr.health.samuB.info",
-      "vhost": "/",
+      "vhost": "15-15_v2.1",
       "durable": true,
       "auto_delete": false,
       "arguments": {}
     },
     {
       "name": "fr.health.samuB.ack",
-      "vhost": "/",
+      "vhost": "15-15_v2.1",
       "durable": true,
       "auto_delete": false,
       "arguments": {}
     },
     {
       "name": "fr.fire.nexsis.sdisZ.message",
-      "vhost": "/",
+      "vhost": "15-15_v2.1",
       "durable": true,
       "auto_delete": false,
       "arguments": {}
     },
     {
       "name": "fr.fire.nexsis.sdisZ.info",
-      "vhost": "/",
+      "vhost": "15-15_v2.1",
       "durable": true,
       "auto_delete": false,
       "arguments": {}
     },
     {
       "name": "fr.fire.nexsis.sdisZ.ack",
-      "vhost": "/",
+      "vhost": "15-15_v2.1",
       "durable": true,
       "auto_delete": false,
       "arguments": {}
     },
     {
       "name": "dispatch.dlq",
-      "vhost": "/",
+      "vhost": "15-15_v2.1",
       "durable": true,
       "auto_delete": false,
       "arguments": {}
@@ -114,7 +114,7 @@
   ],
   "policies": [
     {
-      "vhost": "/",
+      "vhost": "15-15_v2.1",
       "name": "dead-lettering",
       "pattern": "^.*\\.(?:ack|message)$",
       "apply-to": "queues",
@@ -125,7 +125,7 @@
       "priority": 0
     },
     {
-      "vhost": "/",
+      "vhost": "15-15_v2.1",
       "name": "dead-lettering-info",
       "pattern": "^.*\\.info",
       "apply-to": "queues",
@@ -139,7 +139,7 @@
   "bindings": [
     {
       "source": "hubsante",
-      "vhost": "/",
+      "vhost": "15-15_v2.1",
       "destination": "dispatch",
       "destination_type": "queue",
       "routing_key": "#",
@@ -147,7 +147,7 @@
     },
     {
       "source": "distribution",
-      "vhost": "/",
+      "vhost": "15-15_v2.1",
       "destination": "fr.health.samuA.message",
       "destination_type": "queue",
       "routing_key": "fr.health.samuA.message",
@@ -155,7 +155,7 @@
     },
     {
       "source": "distribution",
-      "vhost": "/",
+      "vhost": "15-15_v2.1",
       "destination": "fr.health.samuA.ack",
       "destination_type": "queue",
       "routing_key": "fr.health.samuA.ack",
@@ -163,7 +163,7 @@
     },
     {
       "source": "distribution",
-      "vhost": "/",
+      "vhost": "15-15_v2.1",
       "destination": "fr.health.samuA.info",
       "destination_type": "queue",
       "routing_key": "fr.health.samuA.info",
@@ -171,7 +171,7 @@
     },
     {
       "source": "distribution",
-      "vhost": "/",
+      "vhost": "15-15_v2.1",
       "destination": "fr.health.samuB.message",
       "destination_type": "queue",
       "routing_key": "fr.health.samuB.message",
@@ -179,7 +179,7 @@
     },
     {
       "source": "distribution",
-      "vhost": "/",
+      "vhost": "15-15_v2.1",
       "destination": "fr.health.samuB.ack",
       "destination_type": "queue",
       "routing_key": "fr.health.samuB.ack",
@@ -187,7 +187,7 @@
     },
     {
       "source": "distribution",
-      "vhost": "/",
+      "vhost": "15-15_v2.1",
       "destination": "fr.health.samuB.info",
       "destination_type": "queue",
       "routing_key": "fr.health.samuB.info",
@@ -195,7 +195,7 @@
     },
     {
       "source": "distribution",
-      "vhost": "/",
+      "vhost": "15-15_v2.1",
       "destination": "fr.fire.nexsis.sdisZ.message",
       "destination_type": "queue",
       "routing_key": "fr.fire.nexsis.sdisZ.message",
@@ -203,7 +203,7 @@
     },
     {
       "source": "distribution",
-      "vhost": "/",
+      "vhost": "15-15_v2.1",
       "destination": "fr.fire.nexsis.sdisZ.ack",
       "destination_type": "queue",
       "routing_key": "fr.fire.nexsis.sdisZ.ack",
@@ -211,7 +211,7 @@
     },
     {
       "source": "distribution",
-      "vhost": "/",
+      "vhost": "15-15_v2.1",
       "destination": "fr.fire.nexsis.sdisZ.info",
       "destination_type": "queue",
       "routing_key": "fr.fire.nexsis.sdisZ.info",
@@ -219,7 +219,7 @@
     },
     {
       "source": "distribution.dlx",
-      "vhost": "/",
+      "vhost": "15-15_v2.1",
       "destination": "dispatch.dlq",
       "destination_type": "queue",
       "routing_key": "",
@@ -254,35 +254,35 @@
   "permissions": [
     {
       "user": "admin",
-      "vhost": "/",
+      "vhost": "15-15_v2.1",
       "configure": ".*",
       "read": ".*",
       "write": ".*"
     },
     {
       "user": "dispatcher",
-      "vhost": "/",
+      "vhost": "15-15_v2.1",
       "configure": "",
       "read": "(dispatch|dispatch.dlq)",
       "write": "distribution"
     },
     {
       "user": "fr.health.samuA",
-      "vhost": "/",
+      "vhost": "15-15_v2.1",
       "configure": "fr.health.samuA.*",
       "write": "hubsante",
       "read": "fr.health.samuA.*"
     },
     {
       "user": "fr.health.samuB",
-      "vhost": "/",
+      "vhost": "15-15_v2.1",
       "configure": "fr.health.samuB.*",
       "write": "hubsante",
       "read": "fr.health.samuB.*"
     },
     {
       "user": "fr.fire.nexsis.sdisZ",
-      "vhost": "/",
+      "vhost": "15-15_v2.1",
       "configure": "fr.fire.nexsis.sdisZ.*",
       "write": "hubsante",
       "read": "fr.fire.nexsis.sdisZ.*"
@@ -291,21 +291,21 @@
   "topic_permissions": [
     {
       "exchange": "hubsante",
-      "vhost": "/",
+      "vhost": "15-15_v2.1",
       "user": "fr.health.samuA",
       "write": "^fr.health.samuA$",
       "read": ""
     },
     {
       "exchange": "hubsante",
-      "vhost": "/",
+      "vhost": "15-15_v2.1",
       "user": "fr.health.samuB",
       "write": "^fr.health.samuB$",
       "read": ""
     },
     {
       "exchange": "hubsante",
-      "vhost": "/",
+      "vhost": "15-15_v2.1",
       "user": "fr.fire.nexsis.sdisZ",
       "write": "^fr.fire.nexsis.sdisZ$",
       "read": ""

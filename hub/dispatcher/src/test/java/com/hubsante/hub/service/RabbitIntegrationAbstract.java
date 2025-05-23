@@ -102,7 +102,7 @@ public class RabbitIntegrationAbstract {
         com.rabbitmq.client.ConnectionFactory cf = new com.rabbitmq.client.ConnectionFactory();
         cf.setHost(rabbitMQContainer.getHost());
         cf.setPort(rabbitMQContainer.getAmqpsPort());
-        cf.setVirtualHost("/");
+        cf.setVirtualHost("15-15_v2.1");
 
         SSLContext sslContext = SSLTestUtils.getSSlContext(p12Path, p12Passphrase);
         cf.useSslProtocol(sslContext);
@@ -139,7 +139,7 @@ public class RabbitIntegrationAbstract {
                     "spring.rabbitmq.publisher-confirm-type=correlated",
                     "spring.rabbitmq.publisher-returns=true",
                     "spring.rabbitmq.template.mandatory=true",
-                    "spring.rabbitmq.virtual-host=/"
+                    "spring.rabbitmq.virtual-host=15-15_v2.1"
             );
             values.applyTo(applicationContext);
         }
