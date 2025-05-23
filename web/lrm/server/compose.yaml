@@ -1,0 +1,11 @@
+services:
+  lrm-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    ports:
+      - "8081:80"
+    volumes:
+      - "./src/rabbit/certs:/app/dist/rabbit/certs"

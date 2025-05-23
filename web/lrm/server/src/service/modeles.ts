@@ -1,17 +1,23 @@
-const octokit = require('octokit');
+import { Octokit } from 'octokit';
 
-const client = new octokit.Octokit({ auth: process.env.GITHUB_TOKEN });
+const client = new Octokit({ auth: process.env.GITHUB_TOKEN });
 
 const GITHUB_OWNER = 'ansforge';
 const GITHUB_REPO = 'SAMU-Hub-Modeles';
 const EXAMPLE_FILES_PATH = 'src/main/resources/sample/examples';
 const DEFAULT_PR_TITLE = '[AUTO] JSON Creator Examples Update';
-const DEFAULT_PR_DESCRIPTION = 'This PR has been opened automatically using the JSON Creator UI.\n\nIt contains update to the json samples displayed in the JSON Creator.\n\nPlease ask for a reviewer from the development team.';
+const DEFAULT_PR_DESCRIPTION =
+  'This PR has been opened automatically using the JSON Creator UI.\n\nIt contains update to the json samples displayed in the JSON Creator.\n\nPlease ask for a reviewer from the development team.';
 const GITHUB_TOKEN_USER = 'ansforge';
 
-const generateCommitMessage = (fileName) => `Update of the json example ${fileName}`;
+const generateCommitMessage = (fileName: string) => `Update of the json example ${fileName}`;
 
-const createNewBranch = async ({ baseBranch, newBranch }) => {
+type CreateNewBranchParams = {
+  baseBranch: string;
+  newBranch: string;
+};
+
+const createNewBranch = async ({ baseBranch, newBranch }: CreateNewBranchParams) => {
   const baseBranchCommit = await client.rest.repos.getCommit({
     owner: GITHUB_OWNER,
     repo: GITHUB_REPO,
@@ -28,11 +34,17 @@ const createNewBranch = async ({ baseBranch, newBranch }) => {
   });
 };
 
+type CommitModelesChangesToExistingBranchParams = {
+  branch: string;
+  fileName: string;
+  content: string;
+};
+
 const commitModelesChangesToExistingBranch = async ({
   branch,
   fileName,
   content,
-}) => {
+}: CommitModelesChangesToExistingBranchParams) => {
   const filePath = `${EXAMPLE_FILES_PATH}/${fileName}`;
 
   const fileShaResponse = await client.rest.repos.getContent({
@@ -41,6 +53,9 @@ const commitModelesChangesToExistingBranch = async ({
     path: filePath,
     ref: branch,
   });
+  // TODO: manage octokit response typing
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-expect-error
   const fileSha = fileShaResponse.data.sha;
 
   const encodedContent = Buffer.from(content).toString('base64');
@@ -66,7 +81,12 @@ const getModelesBranchNames = async () => {
   return response.data.map(({ name }) => name);
 };
 
-const createPullRequest = async ({ baseBranch, headBranch }) => {
+type CreatePullRequestParams = {
+  baseBranch: string;
+  headBranch: string;
+};
+
+const createPullRequest = async ({ baseBranch, headBranch }: CreatePullRequestParams) => {
   const response = await client.rest.pulls.create({
     owner: GITHUB_OWNER,
     repo: GITHUB_REPO,
@@ -78,7 +98,12 @@ const createPullRequest = async ({ baseBranch, headBranch }) => {
   return response.data;
 };
 
-const findExistingPullRequest = async ({ baseBranch, headBranch }) => {
+type FindingPullRequestParams = {
+  baseBranch: string;
+  headBranch: string;
+};
+
+const findExistingPullRequest = async ({ baseBranch, headBranch }: FindingPullRequestParams) => {
   const response = await client.rest.pulls.list({
     owner: GITHUB_OWNER,
     repo: GITHUB_REPO,
@@ -89,7 +114,7 @@ const findExistingPullRequest = async ({ baseBranch, headBranch }) => {
   return response.data;
 };
 
-module.exports = {
+export {
   createNewBranch,
   commitModelesChangesToExistingBranch,
   getModelesBranchNames,

@@ -1,6 +1,6 @@
-const { validatePayload } = require('./modelesRouter');
+import { validatePayload, CommitModelesChangesBody } from './modelesRouter';
 
-const generateValidInput = () => ({
+const generateValidInput = (): CommitModelesChangesBody => ({
   password: 'mockPassword',
   fileName: 'mockFilePath.txt',
   content: 'mockFileContent',
@@ -49,6 +49,9 @@ describe('modelesRouter - validatePayload', () => {
 
   it('throws when isNewBranch is true and no newBranchName is provided', () => {
     const input = generateValidInputWithNewBranch();
+    // TODO: manage test of error case already handled by ts
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-errorTODO
     delete input.branchConfig.branch;
 
     expect(() => validatePayload(input)).toThrow();

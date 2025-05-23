@@ -1,33 +1,29 @@
-const express = require('express');
-const config = require('../config');
-const {
+import { Router, Request, Response } from 'express';
+import { config } from '../config';
+import {
   getModelesBranchNames,
   createNewBranch,
   commitModelesChangesToExistingBranch,
   createPullRequest,
   findExistingPullRequest,
-} = require('../service/modeles');
+} from '../service/modeles';
 
 const VALIDATION_ERROR_MESSAGE = 'Missing mandatory attribute in payload';
 
 const AUTHORIZED_BRANCH_PATTERN = /^auto-json-creator\/.*/;
 const AUTHORIZED_BRANCH_ERROR_MESSAGE = 'Invalid branch name';
 
-const getModelesBranchesHandler = async (_, res) => {
+const getModelesBranchesHandler = async (_: Request, res: Response<string[]>) => {
   const branchNames = await getModelesBranchNames();
   res.status(200).json(branchNames);
 };
 
-const validatePayload = (body) => {
+const validatePayload = (body: CommitModelesChangesBody) => {
   if (!body.fileName) {
-    throw new Error(
-      `${VALIDATION_ERROR_MESSAGE}: fileName (name of the file to update)`,
-    );
+    throw new Error(`${VALIDATION_ERROR_MESSAGE}: fileName (name of the file to update)`);
   }
   if (!body.content) {
-    throw new Error(
-      `${VALIDATION_ERROR_MESSAGE}: content (content of the file to update)`,
-    );
+    throw new Error(`${VALIDATION_ERROR_MESSAGE}: content (content of the file to update)`);
   }
   if (!body.branchConfig) {
     throw new Error(`${VALIDATION_ERROR_MESSAGE}: branchConfig`);
@@ -38,16 +34,12 @@ const validatePayload = (body) => {
     );
   }
   if (!body.branchConfig.branch) {
-    throw new Error(
-      `${VALIDATION_ERROR_MESSAGE}: branchConfig.branch (branch to update)`,
-    );
+    throw new Error(`${VALIDATION_ERROR_MESSAGE}: branchConfig.branch (branch to update)`);
   }
   // Check the branchConfig.branch name matching the authorized pattern
   // only if there is no new branch in branchConfig (to avoid direct
   // commit on unauthorized branch)
-  if (
-    !body.branchConfig.branch.match(AUTHORIZED_BRANCH_PATTERN)
-  ) {
+  if (!body.branchConfig.branch.match(AUTHORIZED_BRANCH_PATTERN)) {
     throw new Error(
       `${AUTHORIZED_BRANCH_ERROR_MESSAGE}: branchConfig.branch must match "${AUTHORIZED_BRANCH_PATTERN}"`,
     );
@@ -59,10 +51,32 @@ const validatePayload = (body) => {
   }
 };
 
-const commitModelesChanges = async (req, res) => {
-  const {
-    fileName, content, branchConfig, password,
-  } = req.body;
+type BranchConfig =
+  | {
+      isNewBranch: false;
+      branch: string;
+    }
+  | {
+      isNewBranch: true;
+      branch: string;
+      baseBranch: string;
+    };
+
+type CommitModelesChangesBody = { fileName: string; content: string; branchConfig: BranchConfig; password: string };
+
+type CommiModelesChangesResponse = {
+  message: string;
+  data?: {
+    pull_request_url: string;
+    commit_sha: string | undefined;
+  };
+};
+
+const commitModelesChanges = async (
+  req: Request<CommitModelesChangesBody>,
+  res: Response<CommiModelesChangesResponse>,
+) => {
+  const { fileName, content, branchConfig, password } = req.body;
 
   if (password !== config.ADMIN_PASSWORD) {
     res.status(401).json({ message: 'Unauthorized' });
@@ -72,6 +86,9 @@ const commitModelesChanges = async (req, res) => {
   try {
     validatePayload(req.body);
   } catch (err) {
+    // TODO: manage error handling globaly
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-error
     res.status(400).json({ message: err.message });
     return;
   }
@@ -115,17 +132,18 @@ const commitModelesChanges = async (req, res) => {
     });
   } catch (err) {
     res.status(500).json({
-      message: `An unexpected error happend: ${
-        err.message || 'Internal Server Error'
-      }`,
+      // TODO: manage error handling globaly
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-expect-error
+      message: `An unexpected error happend: ${err.message || 'Internal Server Error'}`,
     });
   }
 };
 
-const ModelesRouter = express.Router();
+const ModelesRouter = Router();
 
 ModelesRouter.get('/branches', getModelesBranchesHandler);
 
 ModelesRouter.post('/', commitModelesChanges);
 
-module.exports = { ModelesRouter, validatePayload };
+export { ModelesRouter, validatePayload, CommitModelesChangesBody };
