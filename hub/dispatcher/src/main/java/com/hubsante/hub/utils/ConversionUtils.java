@@ -48,9 +48,6 @@ public class ConversionUtils {
         String sourceVHost = getSourceVHost(hubConfig);
         String[] targetVHosts = getTargetVHosts(hubConfig, edxlMessage);
 
-        if (hubConfig.getDirectCisuPreferences().get(edxlMessage.getSenderID()) != null && hubConfig.getDirectCisuPreferences().get(edxlMessage.getSenderID())) {
-            return false;
-        }
         if (targetVHosts == null || sourceVHost == null || targetVHosts.length == 0) {
             return false;
         }
@@ -68,14 +65,23 @@ public class ConversionUtils {
         String recipientID = getRecipientID(edxlMessage);
         String[] targetVHosts = hubConfig.getLrmPerimeterVersions().get(recipientID);
 
-        if (targetVHosts == null && (recipientID.startsWith(FR_FIRE_PREFIX) || recipientID.startsWith(FR_CISU_PREFIX))) {
+        if (targetVHosts == null && shouldTargetBeNexsis(hubConfig, edxlMessage)) {
             targetVHosts = new String[]{NEXSIS_VHOST};
         }
         else if (targetVHosts != null) {
             targetVHosts = Arrays.stream(targetVHosts).map(version -> HEALTH_VHOST_PREFIX + version).toArray(String[]::new);
         }
-
         return targetVHosts;
+    }
+
+    public static boolean shouldTargetBeNexsis(HubConfiguration hubConfig, EdxlMessage edxlMessage) {
+        boolean isRecipientNexsis = getRecipientID(edxlMessage).startsWith(FR_FIRE_PREFIX) || getRecipientID(edxlMessage).startsWith(FR_CISU_PREFIX);
+        boolean isSenderDirectCisu = false;
+        if (hubConfig.getDirectCisuPreferences().get(edxlMessage.getSenderID()) != null) {
+            isSenderDirectCisu = hubConfig.getDirectCisuPreferences().get(edxlMessage.getSenderID()) && hubConfig.getVhost().equals(NEXSIS_VHOST);
+        }
+
+        return isRecipientNexsis || isSenderDirectCisu;
     }
 
     public static boolean requiresCisuConversion(HubConfiguration hubConfig, EdxlMessage edxlMessage) {
