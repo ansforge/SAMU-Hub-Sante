@@ -48,7 +48,7 @@ public class ConversionUtils {
         String sourceVHost = getSourceVHost(hubConfig);
         String[] targetVHosts = getTargetVHosts(hubConfig, edxlMessage);
 
-        if (hubConfig.getDirectCisuPreferences().get(edxlMessage.getSenderID())) {
+        if (hubConfig.getDirectCisuPreferences().get(edxlMessage.getSenderID()) != null && hubConfig.getDirectCisuPreferences().get(edxlMessage.getSenderID())) {
             return false;
         }
         if (targetVHosts == null || sourceVHost == null || targetVHosts.length == 0) {
