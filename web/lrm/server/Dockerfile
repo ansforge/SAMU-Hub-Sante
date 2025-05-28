@@ -14,7 +14,7 @@ RUN npm install
 COPY . .
 
 # Install dependencies via NPM
-RUN npm run build
+RUN npm run build && npm run postbuild
 
 # Stage 2 : run
 FROM node:20.19-alpine AS production
