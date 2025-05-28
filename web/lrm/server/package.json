@@ -10,6 +10,7 @@
     "setup": "cd ../client && npm ci && npm run setup && npm run generate && cp -R dist/. ../server/ui",
     "test": "jest src/**",
     "build": "tsc",
+    "postbuild": "copyfiles -u 2 src/rabbit/certs/**/* dist/rabbit/certs",
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix"
   },
@@ -42,6 +43,7 @@
     "@typescript-eslint/eslint-plugin": "^8.19.0",
     "@typescript-eslint/parser": "^8.19.0",
     "babel-jest": "^29.7.0",
+    "copyfiles": "^2.4.1",
     "eslint": "^9.27.0",
     "eslint-plugin-import": "^2.29.1",
     "jest": "^29.7.0",
