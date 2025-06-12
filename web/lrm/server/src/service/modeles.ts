@@ -73,10 +73,13 @@ const commitModelesChangesToExistingBranch = async ({
   return response.data;
 };
 
+const BRANCHES_PER_PAGE = 100;
+
 const getModelesBranchNames = async () => {
   const response = await client.rest.repos.listBranches({
     owner: GITHUB_OWNER,
     repo: GITHUB_REPO,
+    per_page: BRANCHES_PER_PAGE,
   });
   return response.data.map(({ name }) => name);
 };
