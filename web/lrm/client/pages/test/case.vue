@@ -528,7 +528,10 @@ function validateMessage(index, ack) {
           getMessageType(message) !== 'ack' &&
           message.routingKey.startsWith(authStore.user.clientId)
         ) {
-          const msg = buildAck(message.body.distributionID);
+          const msg = buildAck({
+            distributionID: message.body.distributionID,
+            senderID: message.body.senderID,
+          });
           sendMessage(msg);
         }
       }

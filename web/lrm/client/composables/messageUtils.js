@@ -124,11 +124,20 @@ export function setCaseId(message, caseId, localCaseId) {
   }
 }
 
-export function buildAck(distributionID) {
-  return buildMessage({ reference: { distributionID } }, 'Ack');
+export function buildAck({ distributionID, senderID }) {
+  return buildMessage(
+    { reference: { distributionID } },
+    { distributionKind: 'Ack', recipientId: senderID }
+  );
 }
 
-export function buildMessage(innerMessage, distributionKind = 'Report') {
+export function buildMessage(
+  innerMessage,
+  { distributionKind, recipientId } = {
+    distributionKind: 'Report',
+    recipientId: null,
+  }
+) {
   // InnerMessage should only have one key, as we do not support multiple use cases in the same message.
   const useCase = Object.keys(innerMessage)[0];
   if (Object.keys(innerMessage).length > 1) {
@@ -149,7 +158,7 @@ export function buildMessage(innerMessage, distributionKind = 'Report') {
     ...formattedInnerMessage,
   };
   const name = clientInfos().name;
-  const targetId = authStore.user.targetId;
+  const targetId = recipientId ?? authStore.user.targetId;
   const sentAt = moment().format();
   message.distributionID = `${authStore.user.clientId}_${uuidv4()}`;
   message.distributionKind = distributionKind;
@@ -167,7 +176,7 @@ export function buildMessage(innerMessage, distributionKind = 'Report') {
   message.content[0].jsonContent.embeddedJsonContent.message.sentAt = sentAt;
   message.content[0].jsonContent.embeddedJsonContent.message.recipient = [
     {
-      name: clientInfos(authStore.user.targetId).name,
+      name: clientInfos(targetId).name,
       URI: `hubex:${targetId}`,
     },
   ];
