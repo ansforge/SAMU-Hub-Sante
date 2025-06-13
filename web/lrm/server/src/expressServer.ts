@@ -37,6 +37,18 @@ export class ExpressServer {
 
     this.app.use('/modeles', ModelesRouter);
 
+    // TODO: handle error handling middleware typing properly
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-error
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    this.app.use((err, req, res, next) => {
+      // format errors
+      res.status(err.status ?? 500).json({
+        message: err.message ?? err,
+        errors: err.errors ?? '',
+      });
+    });
+
     const VHOST_CLIENT_MAP = this.config.getVhostClientMap();
     // Subscribe to Hub messages and send them to the client through web socket
     logger.info(`VHOST_CLIENT_MAP: ${JSON.stringify(VHOST_CLIENT_MAP)}`);
@@ -120,22 +132,11 @@ export class ExpressServer {
   }
 
   launch() {
-    // TODO: handle error handling middleware typing properly
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-expect-error
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    this.app.use((err, req, res, next) => {
-      // format errors
-      res.status(err.status || 500).json({
-        message: err.message || err,
-        errors: err.errors || '',
-      });
-    });
-
     this.server = createServer(this.app).listen(this.config.getPort());
+
     this.wss = new WssServer({ server: this.server });
-    // WebSocket server
     this.wss.on('connection', (ws) => new WebSocketHandler(ws, this.config, this.rabbitMQConnector));
+
     logger.info(`Listening on port ${this.config.getPort()}`);
   }
 
