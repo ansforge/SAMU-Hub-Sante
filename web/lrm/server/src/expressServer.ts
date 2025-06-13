@@ -1,16 +1,16 @@
 import { Server as HttpServer, createServer } from 'http';
-import express from 'express';
 import cors from 'cors';
+import express, { Express } from 'express';
+import { Channel, Connection } from 'amqplib/callback_api';
 import cookieParser from 'cookie-parser';
 import bodyParser from 'body-parser';
 import { Server as WssServer, OPEN } from 'ws';
+
 import { logger } from './logger';
 import { RabbitMQConnector } from './rabbit/utils';
 import { ModelesRouter } from './router/modelesRouter';
 import { Config } from './config';
-
-import { Express } from 'express';
-import { Channel, Connection } from 'amqplib/callback_api';
+import { WebSocketHandler } from './WebSocketHandler';
 
 export class ExpressServer {
   private config: Config;
@@ -135,37 +135,7 @@ export class ExpressServer {
     this.server = createServer(this.app).listen(this.config.getPort());
     this.wss = new WssServer({ server: this.server });
     // WebSocket server
-    this.wss.on('connection', (ws) => {
-      logger.info('WebSocket client connected');
-
-      ws.on('message', async (body) => {
-        // Publish the message to RabbitMQ
-        // TODO: handle body properly
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-expect-error
-        const { key, msg, vhost } = JSON.parse(body);
-        logger.info(`Received message from WebSocket client: ${msg.distributionID}`);
-        logger.debug(`Received message from WebSocket client: ${msg.distributionID} of content ${body}`);
-        logger.info(` [x] Sending msg ${msg.distributionID} to key ${key} (vhost: ${vhost})`);
-        try {
-          const { connection, channel } = await this.rabbitMQConnector.connectAsync(vhost);
-          channel.publish(this.config.getHubSanteExchange(), key, Buffer.from(JSON.stringify(msg)), {
-            // Ref.: https://github.com/amqp-node/amqplib/blob/4791f2dfbe8f3bfbd02bb0907e3c35129ae71c13/lib/api_args.js#L231
-            contentType: 'application/json',
-            deliveryMode: 2,
-            priority: 0,
-          });
-          this.rabbitMQConnector.close(connection);
-          logger.info(`Publish call done and connection closed for ${msg.distributionID} (vhost: ${vhost})`);
-        } catch (error) {
-          logger.error(`Error publishing message to RabbitMQ (vhost: ${vhost}): ${error}`);
-        }
-      });
-
-      ws.on('close', () => {
-        logger.info('WebSocket client disconnected');
-      });
-    });
+    this.wss.on('connection', (ws) => new WebSocketHandler(ws, this.config, this.rabbitMQConnector));
     logger.info(`Listening on port ${this.config.getPort()}`);
   }
 
