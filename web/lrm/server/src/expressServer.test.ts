@@ -62,10 +62,12 @@ afterEach(async () => {
   process.env = originalEnv;
 });
 
-describe('Test Connection', () => {
-  it('should connect and display logs', async () => {
+describe('ExpressServer launch', () => {
+  it('should start the server and connect to client queues', async () => {
     const config = new Config();
     const server = new ExpressServer(config, new RabbitMQConnector(config));
+
+    server.launch();
 
     try {
       checkConnectionToVhost('15-15_v1.5');
