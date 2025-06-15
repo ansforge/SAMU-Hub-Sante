@@ -54,7 +54,10 @@ export class ExpressServer {
     this.server = createServer(this.app).listen(this.config.getPort());
 
     this.wss = new WssServer({ server: this.server });
-    this.wss.on('connection', (ws) => new WebSocketHandler(ws, this.config, this.rabbitMQConnector));
+    this.wss.on('connection', (ws) => {
+      const wsHandler = new WebSocketHandler(ws, this.config, this.rabbitMQConnector);
+      wsHandler.listen();
+    });
 
     logger.info(`Listening on port ${this.config.getPort()}`);
 

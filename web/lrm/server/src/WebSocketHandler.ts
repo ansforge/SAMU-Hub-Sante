@@ -18,7 +18,9 @@ export class WebSocketHandler {
     this.ws = ws;
     this.config = config;
     this.rabbitMQConnector = rabbitMQConnector;
+  }
 
+  listen() {
     this.ws.on(WS_EVENT.MESSAGE, this.sendMessage);
     this.ws.on(WS_EVENT.CLOSE, this.close);
   }
