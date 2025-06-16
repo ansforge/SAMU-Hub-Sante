@@ -49,8 +49,8 @@ beforeEach(() => {
     HUB_URL: 'foo',
     LRM_PASSPHRASE: 'foo',
     VHOST_CLIENT_MAP: JSON.stringify({
-      '15-15_v1.5': ['fr.health.test.samuA', 'fr.health.test.samuB'],
-      '15-15_v2.0': ['fr.health.test.samuA', 'fr.health.test.samuB'],
+      '15-15_v1.5': ['fr.health.test.samuV1', 'fr.health.test.samuV2'],
+      '15-15_v2.0': ['fr.health.test.samuV1', 'fr.health.test.samuV2'],
     }),
   };
 });
@@ -67,12 +67,12 @@ describe('Test Connection', () => {
 
     try {
       checkConnectionToVhost('15-15_v1.5');
-      checkConsumerListenOnClientQueues('fr.health.test.samuA');
-      checkConsumerListenOnClientQueues('fr.health.test.samuB');
+      checkConsumerListenOnClientQueues('fr.health.test.samuV1');
+      checkConsumerListenOnClientQueues('fr.health.test.samuV2');
 
       checkConnectionToVhost('15-15_v2.0');
-      checkConsumerListenOnClientQueues('fr.health.test.samuA');
-      checkConsumerListenOnClientQueues('fr.health.test.samuB');
+      checkConsumerListenOnClientQueues('fr.health.test.samuV1');
+      checkConsumerListenOnClientQueues('fr.health.test.samuV2');
     } finally {
       // Teardown
       await server.close();

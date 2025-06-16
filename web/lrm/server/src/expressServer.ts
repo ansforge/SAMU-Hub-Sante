@@ -65,7 +65,6 @@ export class ExpressServer {
         });
 
         for (const clientId of VHOST_CLIENT_MAP[vhost]) {
-          logger.info(`Client ID: ${clientId}`);
           for (const type of ['message', 'ack', 'info']) {
             const queue = `${clientId}.${type}`;
             try {

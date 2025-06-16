@@ -1,3 +1,5 @@
+import { logger } from './logger';
+
 type VhostClientMap = Record<string, string[]>;
 
 export class Config {
@@ -15,6 +17,8 @@ export class Config {
     this.lrmCertPassphrase = this.extractEnvVar('LRM_PASSPHRASE');
     this.hubSanteExchange = 'hubsante';
     this.vhostClientMap = JSON.parse(this.extractEnvVar('VHOST_CLIENT_MAP'));
+
+    logger.info(this);
   }
 
   private extractNumericEnvVar(key: string, defaultValue?: number) {
@@ -62,6 +66,11 @@ export class Config {
   }
 
   public toString() {
-    return `Configuration:\n  - urlPort: ${this.getPort()}\n  - hubUrl: ${this.getHubUrl()}\n  - hubSanteExchange: ${this.getHubSanteExchange()}`;
+    return `Configuration:
+  - urlPort: ${this.getPort()}
+  - hubUrl: ${this.getHubUrl()}
+  - hubSanteExchange: ${this.getHubSanteExchange()}
+  - vhostClientMap: ${JSON.stringify(this.getVhostClientMap())}
+`;
   }
 }
