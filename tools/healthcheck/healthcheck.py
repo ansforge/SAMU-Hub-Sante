@@ -92,7 +92,7 @@ def dispatcher_healthcheck(app_name):
         return {"status": Status.DOWN.value}
 
 @app.before_request
-def update_metrics_before_metrics():
+def update_metrics_before_scrapping():
     if request.path == METRICS_ENDPOINT:
         rabbitmq_healthcheck()
         for dispatcher_instance in DISPATCHER_INSTANCES:
