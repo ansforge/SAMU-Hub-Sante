@@ -5,21 +5,24 @@ import cookieParser from 'cookie-parser';
 import bodyParser from 'body-parser';
 import { Server as WssServer, OPEN } from 'ws';
 import { logger } from './logger';
-import { connect, connectAsync, close, HUB_SANTE_EXCHANGE, VHOST_CLIENT_MAP, messageProperties } from './rabbit/utils';
+import { RabbitMQConnector } from './rabbit/utils';
 import { ModelesRouter } from './router/modelesRouter';
+import { Config } from './config';
 
 import { Express } from 'express';
 import { Channel, Connection } from 'amqplib/callback_api';
 
 export class ExpressServer {
-  private port: number;
+  private config: Config;
+  private rabbitMQConnector: RabbitMQConnector;
   private app: Express;
   private connections: Record<string, Connection>;
   private wss: WssServer | undefined;
   private server: HttpServer | undefined;
 
-  constructor(port: number) {
-    this.port = port;
+  constructor(config: Config, connector: RabbitMQConnector) {
+    this.config = config;
+    this.rabbitMQConnector = connector;
     this.app = express();
     this.connections = {};
     this.setupMiddleware();
@@ -34,12 +37,13 @@ export class ExpressServer {
 
     this.app.use('/modeles', ModelesRouter);
 
+    const VHOST_CLIENT_MAP = this.config.getVhostClientMap();
     // Subscribe to Hub messages and send them to the client through web socket
     logger.info(`VHOST_CLIENT_MAP: ${JSON.stringify(VHOST_CLIENT_MAP)}`);
     // Get list of keys (corresponding to vhosts) from the VHOSTS map
     const vhostsArray = Object.keys(VHOST_CLIENT_MAP);
     for (const vhost of vhostsArray) {
-      connect(vhost, async (connection: Connection, channel: Channel) => {
+      this.rabbitMQConnector.connect(vhost, async (connection: Connection, channel: Channel) => {
         connection.on('error', (err) => {
           logger.error(`Connection error for vhost '${vhost}': ${err}`);
         });
@@ -61,7 +65,6 @@ export class ExpressServer {
         });
 
         for (const clientId of VHOST_CLIENT_MAP[vhost]) {
-          console.log(`Client ID: ${clientId}`);
           for (const type of ['message', 'ack', 'info']) {
             const queue = `${clientId}.${type}`;
             try {
@@ -129,7 +132,7 @@ export class ExpressServer {
       });
     });
 
-    this.server = createServer(this.app).listen(this.port);
+    this.server = createServer(this.app).listen(this.config.getPort());
     this.wss = new WssServer({ server: this.server });
     // WebSocket server
     this.wss.on('connection', (ws) => {
@@ -145,9 +148,14 @@ export class ExpressServer {
         logger.debug(`Received message from WebSocket client: ${msg.distributionID} of content ${body}`);
         logger.info(` [x] Sending msg ${msg.distributionID} to key ${key} (vhost: ${vhost})`);
         try {
-          const { connection, channel } = await connectAsync(vhost);
-          channel.publish(HUB_SANTE_EXCHANGE, key, Buffer.from(JSON.stringify(msg)), messageProperties);
-          close(connection);
+          const { connection, channel } = await this.rabbitMQConnector.connectAsync(vhost);
+          channel.publish(this.config.getHubSanteExchange(), key, Buffer.from(JSON.stringify(msg)), {
+            // Ref.: https://github.com/amqp-node/amqplib/blob/4791f2dfbe8f3bfbd02bb0907e3c35129ae71c13/lib/api_args.js#L231
+            contentType: 'application/json',
+            deliveryMode: 2,
+            priority: 0,
+          });
+          this.rabbitMQConnector.close(connection);
           logger.info(`Publish call done and connection closed for ${msg.distributionID} (vhost: ${vhost})`);
         } catch (error) {
           logger.error(`Error publishing message to RabbitMQ (vhost: ${vhost}): ${error}`);
@@ -158,19 +166,19 @@ export class ExpressServer {
         logger.info('WebSocket client disconnected');
       });
     });
-    logger.info(`Listening on port ${this.port}`);
+    logger.info(`Listening on port ${this.config.getPort()}`);
   }
 
   async close() {
     for (const [vhost, connection] of Object.entries(this.connections)) {
       if (connection !== undefined) {
-        close(connection);
+        this.rabbitMQConnector.close(connection);
         logger.info(`RabbitMQ connection ${vhost} shut down`);
       }
     }
     if (this.server !== undefined) {
       await this.server.close();
-      logger.info(`Server on port ${this.port} shut down`);
+      logger.info(`Server on port ${this.config.getPort()} shut down`);
     }
   }
 }

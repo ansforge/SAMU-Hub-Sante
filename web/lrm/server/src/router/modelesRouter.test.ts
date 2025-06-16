@@ -51,7 +51,7 @@ describe('modelesRouter - validatePayload', () => {
     const input = generateValidInputWithNewBranch();
     // TODO: manage test of error case already handled by ts
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-expect-errorTODO
+    // @ts-expect-error
     delete input.branchConfig.branch;
 
     expect(() => validatePayload(input)).toThrow();

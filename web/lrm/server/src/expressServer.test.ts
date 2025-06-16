@@ -1,29 +1,32 @@
+import { Config } from './config';
 import { ExpressServer } from './expressServer';
-import * as utils from './rabbit/utils';
+import { RabbitMQConnector } from './rabbit/utils';
 
 const mockConsume = jest.fn();
-jest.mock('./rabbit/utils', () => ({
-  connect: jest.fn((_, callback) => {
-    const channel = {
-      consume: mockConsume,
-      on: jest.fn(),
-    };
-    const connection = {
-      close: jest.fn(),
-      on: jest.fn(),
-    };
-    callback(connection, channel);
-  }),
-  close: jest.fn(() => {}),
-  VHOST_CLIENT_MAP: {
-    '15-15_v1.5': ['fr.health.test.samuA', 'fr.health.test.samuB'],
-    '15-15_v2.0': ['fr.health.test.samuA', 'fr.health.test.samuB'],
-  },
-}));
-const mockedUtils = utils as jest.Mocked<typeof utils>;
+const mockConnect = jest.fn((_, callback) => {
+  const channel = {
+    consume: mockConsume,
+    on: jest.fn(),
+  };
+  const connection = {
+    close: jest.fn(),
+    on: jest.fn(),
+  };
+  callback(connection, channel);
+});
+jest.mock('./rabbit/utils', () => {
+  return {
+    RabbitMQConnector: jest.fn().mockImplementation(() => {
+      return {
+        connect: mockConnect,
+        close: jest.fn(),
+      };
+    }),
+  };
+});
 
 const checkConnectionToVhost = (vhost: string) => {
-  expect(mockedUtils.connect).toHaveBeenCalledWith(vhost, expect.any(Function));
+  expect(mockConnect).toHaveBeenCalledWith(vhost, expect.any(Function));
 };
 
 const checkConsumerListenOnQueue = (queue: string) => {
@@ -36,22 +39,40 @@ const checkConsumerListenOnClientQueues = (clientId: string) => {
   });
 };
 
+const originalEnv = process.env;
+
+beforeEach(() => {
+  jest.resetModules();
+  process.env = {
+    ...originalEnv,
+    ADMIN_PASSWORD: 'foo',
+    HUB_URL: 'foo',
+    LRM_PASSPHRASE: 'foo',
+    VHOST_CLIENT_MAP: JSON.stringify({
+      '15-15_v1.5': ['fr.health.test.samuV1', 'fr.health.test.samuV2'],
+      '15-15_v2.0': ['fr.health.test.samuV1', 'fr.health.test.samuV2'],
+    }),
+  };
+});
+
 afterEach(async () => {
   jest.restoreAllMocks();
+  process.env = originalEnv;
 });
 
 describe('Test Connection', () => {
   it('should connect and display logs', async () => {
-    const server = new ExpressServer(8081);
+    const config = new Config();
+    const server = new ExpressServer(config, new RabbitMQConnector(config));
 
     try {
       checkConnectionToVhost('15-15_v1.5');
-      checkConsumerListenOnClientQueues('fr.health.test.samuA');
-      checkConsumerListenOnClientQueues('fr.health.test.samuB');
+      checkConsumerListenOnClientQueues('fr.health.test.samuV1');
+      checkConsumerListenOnClientQueues('fr.health.test.samuV2');
 
       checkConnectionToVhost('15-15_v2.0');
-      checkConsumerListenOnClientQueues('fr.health.test.samuA');
-      checkConsumerListenOnClientQueues('fr.health.test.samuB');
+      checkConsumerListenOnClientQueues('fr.health.test.samuV1');
+      checkConsumerListenOnClientQueues('fr.health.test.samuV2');
     } finally {
       // Teardown
       await server.close();
