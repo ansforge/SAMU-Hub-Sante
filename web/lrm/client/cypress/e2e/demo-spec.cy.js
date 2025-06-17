@@ -7,7 +7,7 @@ describe('Demo page spec', () => {
       // returning false here prevents Cypress from failing the test
       return false;
     });
-    cy.visit('http://localhost:3000/lrm');
+    cy.visit('http://localhost:3000');
     // Arbitrary wait to avoid chrome's reloading behavior breaking the tests
     cy.wait(5000);
     // Wait for the event listeners to get hooked up
