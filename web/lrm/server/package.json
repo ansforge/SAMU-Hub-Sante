@@ -8,7 +8,7 @@
     "prestart": "npm install",
     "start": "node index.js",
     "setup": "cd ../client && npm ci && npm run setup && npm run generate && cp -R dist/. ../server/ui",
-    "test": "jest src/**",
+    "test": "vitest run",
     "build": "tsc",
     "lint": "eslint 'src/**/*.ts'",
     "lint:fix": "eslint 'src/**/*.ts' --fix"
@@ -48,7 +48,8 @@
     "nodemon": "^3.0.2",
     "prettier": "^3.4.2",
     "ts-node": "^10.9.2",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "vitest": "^3.2.3"
   },
   "eslintConfig": {
     "env": {
