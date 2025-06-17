@@ -1,5 +1,4 @@
 import { Router, Request, Response } from 'express';
-import { config } from '../config';
 import {
   getModelesBranchNames,
   createNewBranch,
@@ -78,7 +77,8 @@ const commitModelesChanges = async (
 ) => {
   const { fileName, content, branchConfig, password } = req.body;
 
-  if (password !== config.ADMIN_PASSWORD) {
+  // TODO: inject config in service
+  if (password !== process.env.ADMIN_PASSWORD) {
     res.status(401).json({ message: 'Unauthorized' });
     return;
   }
