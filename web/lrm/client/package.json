@@ -43,7 +43,7 @@
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.24.7",
-    "@cypress/code-coverage": "^3.14.0",
+    "@cypress/code-coverage": "^3.14.4",
     "@nuxtjs/eslint-config-typescript": "^12.1.0",
     "@typescript-eslint/eslint-plugin": "^5.62.0",
     "@typescript-eslint/parser": "^5.62.0",
