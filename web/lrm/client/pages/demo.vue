@@ -151,6 +151,8 @@ function submit(form) {
   }
 }
 
+// Mock debug comment
+
 // eslint-disable-next-line no-undef
 useHead({
   titleTemplate: toRef(useMainStore(), 'demoHeadTitle'),
