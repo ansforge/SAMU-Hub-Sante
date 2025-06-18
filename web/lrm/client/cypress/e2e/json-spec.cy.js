@@ -8,6 +8,7 @@ describe('Json creator page spec', () => {
       return false;
     });
     cy.visit('http://localhost:3000/lrm');
+    cy.wait(10000);
     // Wait for the event listeners to get hooked up
     cy.hasEventListeners('[data-cy="json-creator-button"]', { type: 'click' });
     // Go to demo page

@@ -72,3 +72,11 @@ jobs:
           build: npm run build:test
           start: npm run start
           browser: chrome
+
+      - name: Upload Cypress screenshots
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: cypress-screenshots
+          path: web/lrm/client/cypress/screenshots
+          if-no-files-found: ignore

@@ -9,7 +9,7 @@ describe('Demo page spec', () => {
     });
     cy.visit('http://localhost:3000/lrm');
     // Arbitrary wait to avoid chrome's reloading behavior breaking the tests
-    cy.wait(5000);
+    cy.wait(10000);
     // Wait for the event listeners to get hooked up
     cy.hasEventListeners('[data-cy="demo-login-button"]', { type: 'click' });
     // Go to demo page
