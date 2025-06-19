@@ -52,6 +52,7 @@ export default defineNuxtConfig({
 
   app: {
     baseURL: isEnvProd() ? '/lrm/' : '/',
+    buildAssetsDir: '_nuxt/',
     head: {
       link: [
         {
@@ -62,7 +63,14 @@ export default defineNuxtConfig({
       ],
     },
   },
-
+  nitro: {
+    runtimeConfig: {
+      app: {
+        // Ensure Nitro serves from the default assets dir internally
+        buildAssetsDir: '_nuxt',
+      },
+    },
+  },
   runtimeConfig: {
     public: {
       clientMap: !isEnvProd()

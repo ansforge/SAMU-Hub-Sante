@@ -68,33 +68,16 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Print environment variables
-        run: printenv
-
-      - name: Prune npm modules
-        working-directory: ./web/lrm/client
-        run: npm prune
-
-      - name: Install dependencies
-        working-directory: ./web/lrm/client
-        run: npm ci
-
-      - name: Build app
-        working-directory: ./web/lrm/client
-        run: npm run build:test
-
-      - name: Start app in background
-        working-directory: ./web/lrm/client
-        run: |
-          npm run start &
-          npx wait-on http://localhost:3000/lrm/ --timeout 30000
-
       - name: Cypress run
         uses: cypress-io/github-action@v6
         with:
           working-directory: ./web/lrm/client
-          install: false
-          browser: chrome
+          install-command: npm ci --cache /tmp/empty-cache
+          build: npm run build:test
+          start: npm run start
+          wait-on: 'http://localhost:3000/lrm'
+          wait-on-timeout: 120
+          browser: electron
 
       - name: Upload Cypress screenshots on failure
         uses: actions/upload-artifact@v4
