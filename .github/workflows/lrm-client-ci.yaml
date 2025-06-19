@@ -68,6 +68,9 @@ jobs:
         with:
           node-version: '22'
 
+      - name: Print environment variables
+        run: printenv
+
       - name: Cypress run
         uses: cypress-io/github-action@v6
         with:
