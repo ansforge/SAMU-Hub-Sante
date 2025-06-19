@@ -1,0 +1,103 @@
+BEGIN:VCALENDAR
+METHOD:REQUEST
+PRODID:Microsoft Exchange Server 2010
+VERSION:2.0
+BEGIN:VTIMEZONE
+TZID:Romance Standard Time
+BEGIN:STANDARD
+DTSTART:16010101T030000
+TZOFFSETFROM:+0200
+TZOFFSETTO:+0100
+RRULE:FREQ=YEARLY;INTERVAL=1;BYDAY=-1SU;BYMONTH=10
+END:STANDARD
+BEGIN:DAYLIGHT
+DTSTART:16010101T020000
+TZOFFSETFROM:+0100
+TZOFFSETTO:+0200
+RRULE:FREQ=YEARLY;INTERVAL=1;BYDAY=-1SU;BYMONTH=3
+END:DAYLIGHT
+END:VTIMEZONE
+BEGIN:VEVENT
+ORGANIZER;CN=hubsante.contact:mailto:hubsante.contact@esante.gouv.fr
+DESCRIPTION;LANGUAGE=fr-FR:\n________________________________\nDe : hubsant
+ e.contact <hubsante.contact@esante.gouv.fr>\nEnvoyé : vendredi 13 juin 20
+ 25 11:32:28 (UTC+01:00) Brussels\, Copenhagen\, Madrid\, Paris\nÀ : hubsa
+ nte.contact <hubsante.contact@esante.gouv.fr>\nCc : Elodie FALCIONI (EXT) 
+ <Elodie.FALCIONI.EXT@esante.gouv.fr>\nSujet : [Hub Santé] Point d'informa
+ tion éditeurs\nQuand : Se produit le lundi\, toutes les 8 semaines de 09:
+ 30 à 10:00 à compter du 30/06/2025.\nOù : Réunion Microsoft Teams\n\nB
+ onjour\,\n\nLe format des Projectathons a laissé place à un point d'info
+ rmation éditeurs -  toutes les 8 semaines.\nL'invitation du lundi pour la
+  réunion de lancement est renommée en conséquence 🙂\n\nBonne journé
+ e à tous.\n\n------------------------------------------------------------
+ -------------------------------------------------\n\n\nBonjour\,\nComme pa
+ rtagé dans l'invitation précédente\, la réunion de lancement de chaque
+  Projectathon se tiendra toujours de 9h30 à 10h le lundi du Projectathon.
+ \nCette réunion sera l'occasion de faire un point de situation des travau
+ x\, présentation de l'organisation\, des ressources disponibles et diffé
+ rents jalons et paliers fonctionnels validables.\nAfin de faciliter le dé
+ roulement du Projectathon\, la présence des personnes impliquées dans le
+ s travaux et le Projectathon est recommandée.\nBien cordialement\,\nL'éq
+ uipe Hub Santé\n\n_______________________________________________________
+ _________________________\nMicrosoft Teams Besoin d'aide ?<https://aka.ms/
+ JoinTeamsMeeting?omkt=fr-FR>\nRejoignez la réunion maintenant<https://tea
+ ms.microsoft.com/l/meetup-join/19%3ameeting_NjI4ODdlMTgtMDNkOC00Yjk2LWEwYW
+ YtNThhZGFhZTE4NGJi%40thread.v2/0?context=%7b%22Tid%22%3a%22508449d3-d632-4
+ 29b-97ce-f8ad22b3a7e7%22%2c%22Oid%22%3a%22c212dda6-a35c-4e9b-85f3-f0c44342
+ 0336%22%7d>\nID de réunion : 388 641 172 900\nCode secret : 52wscu\n_____
+ ___________________________\nPour les organisateurs : Options de réunion<
+ https://teams.microsoft.com/meetingOptions/?organizerId=c212dda6-a35c-4e9b
+ -85f3-f0c443420336&tenantId=508449d3-d632-429b-97ce-f8ad22b3a7e7&threadId=
+ 19_meeting_NjI4ODdlMTgtMDNkOC00Yjk2LWEwYWYtNThhZGFhZTE4NGJi@thread.v2&mess
+ ageId=0&language=fr-FR>\n_________________________________________________
+ _______________________________\n
+RRULE:FREQ=WEEKLY;INTERVAL=8;BYDAY=MO;WKST=MO
+UID:040000008200E00074C5B7101A82E0080000000065FB9B0F46DCDB01000000000000000
+ 010000000520478A7597F27439642439A7D7E767E
+SUMMARY;LANGUAGE=fr-FR:[Hub Santé] Point d'information éditeurs
+DTSTART;TZID=Romance Standard Time:20250630T093000
+DTEND;TZID=Romance Standard Time:20250630T100000
+CLASS:PUBLIC
+PRIORITY:5
+DTSTAMP:20250613T093226Z
+TRANSP:OPAQUE
+STATUS:CONFIRMED
+SEQUENCE:0
+LOCATION;LANGUAGE=fr-FR:Réunion Microsoft Teams
+X-MICROSOFT-CDO-APPT-SEQUENCE:0
+X-MICROSOFT-CDO-OWNERAPPTID:2123786341
+X-MICROSOFT-CDO-BUSYSTATUS:TENTATIVE
+X-MICROSOFT-CDO-INTENDEDSTATUS:BUSY
+X-MICROSOFT-CDO-ALLDAYEVENT:FALSE
+X-MICROSOFT-CDO-IMPORTANCE:1
+X-MICROSOFT-CDO-INSTTYPE:1
+X-MICROSOFT-ONLINEMEETINGINFORMATION:{"OnlineMeetingChannelId":null\,"Onlin
+ eMeetingProvider":3}
+X-MICROSOFT-SKYPETEAMSMEETINGURL:https://teams.microsoft.com/l/meetup-join/
+ 19%3ameeting_NjI4ODdlMTgtMDNkOC00Yjk2LWEwYWYtNThhZGFhZTE4NGJi%40thread.v2/
+ 0?context=%7b%22Tid%22%3a%22508449d3-d632-429b-97ce-f8ad22b3a7e7%22%2c%22O
+ id%22%3a%22c212dda6-a35c-4e9b-85f3-f0c443420336%22%7d
+X-MICROSOFT-SCHEDULINGSERVICEUPDATEURL:https://api.scheduler.teams.microsof
+ t.com/teams/508449d3-d632-429b-97ce-f8ad22b3a7e7/c212dda6-a35c-4e9b-85f3-f
+ 0c443420336/19_meeting_NjI4ODdlMTgtMDNkOC00Yjk2LWEwYWYtNThhZGFhZTE4NGJi@th
+ read.v2/0
+X-MICROSOFT-SKYPETEAMSPROPERTIES:{"cid":"19:meeting_NjI4ODdlMTgtMDNkOC00Yjk
+ 2LWEwYWYtNThhZGFhZTE4NGJi@thread.v2"\,"rid":0\,"mid":0\,"uid":null\,"priva
+ te":true\,"type":0}
+X-MICROSOFT-DONOTFORWARDMEETING:FALSE
+X-MICROSOFT-DISALLOW-COUNTER:FALSE
+X-MICROSOFT-REQUESTEDATTENDANCEMODE:DEFAULT
+X-MICROSOFT-ISRESPONSEREQUESTED:TRUE
+X-MICROSOFT-LOCATIONDISPLAYNAME:Réunion Microsoft Teams
+X-MICROSOFT-LOCATIONSOURCE:None
+X-MICROSOFT-LOCATIONS:[{"DisplayName":"Réunion Microsoft Teams"\,"Location
+ Annotation":""\,"LocationUri":""\,"LocationStreet":""\,"LocationCity":""\,
+ "LocationState":""\,"LocationCountry":""\,"LocationPostalCode":""\,"Locati
+ onFullAddress":""}]
+BEGIN:VALARM
+DESCRIPTION:REMINDER
+TRIGGER;RELATED=START:-PT15M
+ACTION:DISPLAY
+END:VALARM
+END:VEVENT
+END:VCALENDAR

@@ -1,9 +1,5 @@
 # Node base image
-# --platform to avoid Mac M1 build issues when deploying
-# Ref.: https://stackoverflow.com/questions/65612411/forcing-docker-to-use-linux-amd64-platform-by-default-on-macos/69636473#69636473
-# Not enough -> use buildx to build image
-# Ref.: https://stackoverflow.com/questions/73285601/docker-exec-usr-bin-sh-exec-format-error
-FROM --platform=linux/amd64 node:19
+FROM node:20.19-alpine AS build
 
 # Set working directory
 WORKDIR /app
@@ -12,10 +8,28 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies via NPM
-RUN npm ci --omit=dev
+RUN npm install
 
 # Copy the project files to the container
 COPY . .
+
+# Install dependencies via NPM
+RUN npm run build
+
+# Stage 2 : run
+FROM node:20.19-alpine AS production
+
+# Set working directory
+WORKDIR /app
+
+# Copy the npm project files needed for install to the container
+COPY package*.json ./
+
+# Install production dependencies via NPM
+RUN npm ci --omit=dev
+
+# Copy build directory from stage 1
+COPY --from=build /app/dist ./dist
 
 # Setup ENV variable
 ENV NODE_ENV=production
@@ -25,4 +39,4 @@ ENV PORT=80
 EXPOSE 80
 
 # Start the Node web server
-CMD ["node", "index.js"]
+CMD ["node", "dist/index.js"]

@@ -2,16 +2,25 @@
 
 ## Build Setup
 
+- Create a custom a `.env` file with the following content: 
 ```bash
-# install dependencies
-$ npm install
+NUXT_PUBLIC_BACKEND_LRM_SERVER=integration.hub.esante.gouv.fr
+```
 
-# serve with hot reload at localhost:3000
-# N.B: in order to test message sending/reception (without deploying the app in a complete local environment such as minikube) and/or test case interface, it is necessary to define the following environment variables:
-# NUXT_PUBLIC_MODEL_BRANCH: model repository branch with the up-to-date test_cases.json (e.g. "feature/lrm/test-interface-rework")
-# NUXT_PUBLIC_BACKEND_LRM_SERVER: remove backend server (e.g. integration.hub.esante.gouv.fr)
-$ npm run dev
+- Install dependencies
+```bash
+npm install
+```
 
+- Serve with hot reload at [localhost:3000](http://localhost:3000)
+
+```bash
+npm run dev
+```
+
+## Production
+
+```bash
 # build for production and launch server
 $ npm run build
 $ npm run start
@@ -70,3 +79,18 @@ More information about the usage of this directory in [the documentation](https:
 This directory contains your Vuex store files. Creating a file in this directory automatically activates Vuex.
 
 More information about the usage of this directory in [the documentation](https://nuxtjs.org/docs/2.x/directory-structure/store).
+
+## Standards
+
+### NPM cript naming
+
+We encourage to follow the [scriptlint standard](https://github.com/peerigon/scriptlint/wiki/The-scriptlint-%22standard%22-tl%3Bdr).
+
+When adding new scripts, make sure:
+
+- to use camelCase
+- to abstract script name from their implementation (ex: `lint:css` instead of `stylint`)
+- to use namespaces to categorize scripts (ex: `test:e2e`, and all the test related scripts under the `test` namespace)
+- to use `:` as a namespace separator (ex: `lint:js`)
+
+More details are available on the link above.

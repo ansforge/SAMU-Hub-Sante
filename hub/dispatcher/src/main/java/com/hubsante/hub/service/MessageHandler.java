@@ -27,9 +27,11 @@ import com.hubsante.model.edxl.EdxlMessage;
 import com.hubsante.model.exception.ValidationException;
 import com.hubsante.model.report.Error;
 import com.hubsante.model.report.ErrorWrapper;
+
 import io.micrometer.core.annotation.Timed;
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.amqp.AmqpRejectAndDontRequeueException;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageProperties;
@@ -44,8 +46,10 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 
 import static com.hubsante.hub.config.AmqpConfiguration.DISTRIBUTION_EXCHANGE;
-import static com.hubsante.hub.config.AmqpConfiguration.DLQ_ORIGINAL_ROUTING_KEY;
+import static com.hubsante.hub.config.AmqpConfiguration.ORIGINAL_ROUTING_KEY;
 import static com.hubsante.hub.config.Constants.*;
+
+import static com.hubsante.hub.utils.ConfigUtils.sanitizeVhostForProm;
 import static com.hubsante.hub.utils.EdxlUtils.edxlMessageFromHub;
 import static com.hubsante.hub.utils.EdxlUtils.getUseCaseFromMessage;
 import static com.hubsante.hub.utils.MessageUtils.*;
@@ -99,17 +103,12 @@ public class MessageHandler {
         error.setReferencedDistributionID(exception.getReferencedDistributionID());
 
         // send Error to sender
-        // if the message has been dead-lettered, we retrieve the original sender from the x-death-original-routing-key header
-        String senderClientID = exception instanceof DeadLetteredMessageException ?
-                message.getMessageProperties().getHeader(DLQ_ORIGINAL_ROUTING_KEY) :
-                message.getMessageProperties().getReceivedRoutingKey();
+        String senderClientID = message.getMessageProperties().getHeader(ORIGINAL_ROUTING_KEY);
 
-        // TODO: do better than that ! temp fix to test routing of info messages for NexSIS
-        if (senderClientID.equals("partage-affaire")) {
-            senderClientID = "fr.health.fire";
+        // currently, we do not handle error messages on other hubex
+        if (senderClientID.startsWith(FR_HEALTH_PREFIX)) {
+            logErrorAndSendReport(error, senderClientID);
         }
-
-        logErrorAndSendReport(error, senderClientID);
         // increment metric like dispatch_error{reason="INVALID_MESSAGE",sender="fr.health.samuXXX"}
         publishErrorMetric(exception.getErrorCode().getStatusString(), senderClientID);
         // throw exception to reject the message
@@ -158,6 +157,15 @@ public class MessageHandler {
         overrideExpirationIfNeeded(edxlMessage, forwardedMessageProperties, hubConfig.getDefaultTTL());
         // we serialize the message according to the recipient preferences
         return getFwdMessageBody(edxlMessage, receivedAmqpMessage, forwardedMessageProperties);
+    }
+
+    protected Message forwardedStringMessage(String stringMessage, Message receivedAmqpMessage) {
+        MessageProperties receivedAmqpProperties = receivedAmqpMessage.getMessageProperties();
+        MessageProperties forwardedMessageProperties =
+                MessagePropertiesBuilder.fromClonedProperties(receivedAmqpProperties).build();
+
+        // we serialize the message according to the recipient preferences
+        return getFwdStringMessageBody(stringMessage, receivedAmqpMessage, forwardedMessageProperties);
     }
 
     /*
@@ -253,6 +261,7 @@ public class MessageHandler {
         String recipientID = getRecipientID(edxlMessage);
         String senderID = getSenderFromRoutingKey(receivedAmqpMessage);
         String edxlString;
+        String distributionKind = edxlMessage.getDistributionKind().getValue();
 
         try {
             if (convertToXML(recipientID, hubConfig.getUseXmlPreferences().getOrDefault(recipientID, DEFAULT_USE_XML_PREFERENCE))) {
@@ -262,11 +271,10 @@ public class MessageHandler {
                 edxlString = edxlHandler.serializeJsonEDXL(edxlMessage);
                 fwdAmqpProperties.setContentType(MessageProperties.CONTENT_TYPE_JSON);
             }
-            log.info("  ↳ [x] Forwarding to '{}': message with distributionID {} and hashed value {}",
-            recipientID, edxlMessage.getDistributionID(), hashBody(receivedAmqpMessage));
+            log.info("  ↳ [x] Forwarding {} to '{}': message with distributionID {} and hashed value {}",
+            distributionKind, recipientID, edxlMessage.getDistributionID(), hashBody(receivedAmqpMessage));
             log.debug(edxlString);
 
-            fwdAmqpProperties.setHeader(DLQ_ORIGINAL_ROUTING_KEY, senderID);
             return new Message(edxlString.getBytes(StandardCharsets.UTF_8), fwdAmqpProperties);
 
         } catch (JsonProcessingException e) {
@@ -276,8 +284,21 @@ public class MessageHandler {
         }
     }
 
+    @Timed(value = "serialize.forwarded.message", description = "Serialize forwarded string message and return new AMQP message")
+    private Message getFwdStringMessageBody(String message, Message receivedAmqpMessage, MessageProperties fwdAmqpProperties) {
+        String senderID = getSenderFromRoutingKey(receivedAmqpMessage);
+
+        fwdAmqpProperties.setContentType(MessageProperties.CONTENT_TYPE_JSON);
+
+        log.info("  ↳ [x] Forwarding converted message from {} with hashed value {}", senderID, hashBody(receivedAmqpMessage));
+
+        return new Message(message.getBytes(StandardCharsets.UTF_8), fwdAmqpProperties);
+    }
+
     private void logMessage(Message message, EdxlMessage edxlMessage, String receivedEdxl) {
-        log.info(" [x] Received from '{}': message with distributionID {} and hashed value {}",
+        String distributionKind = edxlMessage.getDistributionKind().getValue();
+        log.info(" [x] Received {} from '{}': message with distributionID {} and hashed value {}",
+                distributionKind,
                 message.getMessageProperties().getReceivedRoutingKey(),
                 edxlMessage.getDistributionID(),
                 hashBody(message));
@@ -286,7 +307,7 @@ public class MessageHandler {
 
     protected void publishErrorMetric(String error, String sender) {
         String editor = getEditorFromSender(sender);
-        registry.counter(DISPATCH_ERROR, REASON_TAG, error, CLIENT_ID_TAG, sender, VHOST_TAG, hubConfig.getVhost(), EDITOR_TAG, editor).increment();
+        registry.counter(DISPATCH_ERROR, REASON_TAG, error, CLIENT_ID_TAG, sender, VHOST_TAG, sanitizeVhostForProm(hubConfig.getVhost()), EDITOR_TAG, editor).increment();
     }
 
     protected void publishMetrics(EdxlMessage edxlMessage, Message amqpMessage) {
@@ -294,7 +315,7 @@ public class MessageHandler {
         String useCase = getUseCaseFromMessage(edxlMessage.getFirstContentMessage());
         String editor = getEditorFromSender(sender);
 
-        registry.counter(DISPATCHED_MESSAGE,CLIENT_ID_TAG, sender, VHOST_TAG, hubConfig.getVhost(),USE_CASE_TAG, useCase, EDITOR_TAG, editor).increment();
+        registry.counter(DISPATCHED_MESSAGE,CLIENT_ID_TAG, sender, VHOST_TAG, sanitizeVhostForProm(hubConfig.getVhost()),USE_CASE_TAG, useCase, EDITOR_TAG, editor).increment();
     }
 
     private String getEditorFromSender(String sender) {

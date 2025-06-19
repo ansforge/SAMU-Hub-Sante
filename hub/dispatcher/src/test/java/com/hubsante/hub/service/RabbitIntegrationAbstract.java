@@ -102,7 +102,7 @@ public class RabbitIntegrationAbstract {
         com.rabbitmq.client.ConnectionFactory cf = new com.rabbitmq.client.ConnectionFactory();
         cf.setHost(rabbitMQContainer.getHost());
         cf.setPort(rabbitMQContainer.getAmqpsPort());
-        cf.setVirtualHost("/");
+        cf.setVirtualHost("15-15_v2.1");
 
         SSLContext sslContext = SSLTestUtils.getSSlContext(p12Path, p12Passphrase);
         cf.useSslProtocol(sslContext);
@@ -133,13 +133,13 @@ public class RabbitIntegrationAbstract {
                     "client.preferences.file=" + Thread.currentThread().getContextClassLoader()
                             .getResource("config/client.preferences.csv"),
                     "dispatcher.default.ttl=5",
-                    "dispatcher.vhost=default-vhost",
 
                     // must be set to handle PublisherConfirms in other RabbitTemplates,
                     // even if we don't use it in Dispatcher
                     "spring.rabbitmq.publisher-confirm-type=correlated",
                     "spring.rabbitmq.publisher-returns=true",
-                    "spring.rabbitmq.template.mandatory=true"
+                    "spring.rabbitmq.template.mandatory=true",
+                    "spring.rabbitmq.virtual-host=15-15_v2.1"
             );
             values.applyTo(applicationContext);
         }

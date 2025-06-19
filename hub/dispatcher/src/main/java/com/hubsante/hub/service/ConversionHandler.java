@@ -17,6 +17,7 @@ package com.hubsante.hub.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.hubsante.hub.exception.ConversionException;
+import com.hubsante.hub.utils.ConversionRulesCommand;
 import com.hubsante.model.edxl.EdxlMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +31,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Component
 @Slf4j
 public class ConversionHandler {
+
     @Autowired
     private WebClient conversionWebClient;
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -38,17 +40,24 @@ public class ConversionHandler {
         this.conversionWebClient = conversionWebClient;
     }
 
-    protected EdxlMessage convertIncomingCisu(MessageHandler messageHandler, EdxlMessage edxlMessage) throws JsonProcessingException {
-        String jsonEdxlString = messageHandler.serializeJsonEDXL(edxlMessage);
-        
-        try {
-            // ToDo: handle the version logic
-            String convertedJson = callConversionService(jsonEdxlString, "v3", "v3", true, edxlMessage.getDistributionID());
+    protected String applyConversionRules(ConversionRulesCommand applyConversionRulesCommand) throws JsonProcessingException {
+        String sourceModelVersion = applyConversionRulesCommand.getSourceModelVersion();
+        String targetModelVersion = applyConversionRulesCommand.getTargetModelVersion();
+        Boolean isCisuConversion = applyConversionRulesCommand.getCisuConversion();
+        EdxlMessage edxlMessage = applyConversionRulesCommand.getEdxlMessage();
+        MessageHandler messageHandler = applyConversionRulesCommand.getMessageHandler();
 
-            log.debug("Successfully converted CISU message");
-            return messageHandler.deserializeJsonEDXL(convertedJson);
-        } catch (JsonProcessingException e) {
-            log.error("Error during CISU message conversion", e);
+        String jsonEdxlString = messageHandler.serializeJsonEDXL(edxlMessage);
+
+        try {
+            log.debug("Starting conversion for message {} from {} to {}, isCisu ? {}", edxlMessage.getDistributionID(), sourceModelVersion, targetModelVersion, isCisuConversion);
+            String convertedJson = callConversionService(jsonEdxlString, sourceModelVersion, targetModelVersion, isCisuConversion, edxlMessage.getDistributionID());
+            log.debug("Message converted successfully: " + convertedJson);
+
+            return convertedJson; // returns a string (deserialization is not possible because of version change)
+        } catch (RuntimeException e) {
+            // Error raised by the conversion service or its call
+            log.error("Error during internal call to Hub Santé conversion service", e);
             throw new ConversionException(e.getMessage(), edxlMessage.getDistributionID());
         }
     }
@@ -56,8 +65,8 @@ public class ConversionHandler {
     protected String callConversionService(String jsonEdxlString, String sourceVersion, String targetVersion, boolean cisuConversion, String distributionID) {
         // Create request body with all required parameters
         String requestBody = String.format(
-            "{\"edxl\": %s, \"sourceVersion\": \"%s\", \"targetVersion\": \"%s\", \"cisuConversion\": %s}",
-            jsonEdxlString, sourceVersion, targetVersion, cisuConversion
+                "{\"edxl\": %s, \"sourceVersion\": \"%s\", \"targetVersion\": \"%s\", \"cisuConversion\": %s}",
+                jsonEdxlString, sourceVersion, targetVersion, cisuConversion
         );
 
         try {

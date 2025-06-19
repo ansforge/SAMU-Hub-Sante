@@ -42,8 +42,11 @@ jobs:
           elif [[ "$RELEASE_NAME" == healthcheck-* ]]; then
             PROJECT="healthcheck"
             VERSION=${RELEASE_NAME#healthcheck-}
+          elif [[ "$RELEASE_NAME" == chatbot-* ]]; then
+            PROJECT="chatbot"
+            VERSION=${RELEASE_NAME#chatbot-}
           else
-            echo "Invalid release name prefix. Must be 'dispatcher', 'lrm', 'landing' or 'healthcheck'."
+            echo "Invalid release name prefix. Must be 'dispatcher', 'lrm', 'landing', 'healthcheck' or 'chatbot'."
             exit 1
           fi
           
@@ -71,7 +74,7 @@ jobs:
           TAG: ${{ steps.extract_info.outputs.version }}
         run: |
           # Build for each model version
-          for MODEL_VERSION in "1.0" "2.0" "3.0-RC-5"; do
+          for MODEL_VERSION in "1.1" "2.2" "3.0"; do
             IMAGE_TAG="${TAG}-model-${MODEL_VERSION}"
             echo "Building image for $IMAGE_TAG"
             ./gradlew jib \
@@ -115,3 +118,12 @@ jobs:
           platforms: linux/amd64
           tags: ghcr.io/${{ github.repository_owner }}/hub-healthcheck:${{ steps.extract_info.outputs.version }}
           context: ./tools/healthcheck
+
+      - name: Build and push chatbot Docker image
+        if: steps.extract_info.outputs.project == 'chatbot'
+        uses: docker/build-push-action@v5
+        with:
+          push: true
+          platforms: linux/amd64
+          tags: ghcr.io/${{ github.repository_owner }}/hub-chatbot:${{ steps.extract_info.outputs.version }}
+          context: ./tools/chatbot

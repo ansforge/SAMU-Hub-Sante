@@ -25,6 +25,7 @@ import com.hubsante.model.health.CreateCaseHealthWrapper;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.MockitoAnnotations;
@@ -33,23 +34,22 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static com.hubsante.hub.utils.ConversionUtils.isAlreadyCisuConverted;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
 public class ConversionUtilsTest {
 
-    @Mock
+    @Mock (answer = Answers.RETURNS_DEEP_STUBS)
     private HubConfiguration hubConfig;
 
-    @Mock
+    @Mock (answer = Answers.RETURNS_DEEP_STUBS)
     private EdxlMessage edxlMessage;
 
     @Mock
     private CreateCaseWrapper createCaseWrapper;
-    
+
     @Mock
     private CreateCaseHealthWrapper createCaseHealthWrapper;
 
@@ -58,11 +58,124 @@ public class ConversionUtilsTest {
 
     private HashMap<String, Boolean> directCisuPreferences;
 
+    private HashMap<String, String[]> lrmPerimeterVersions;
+
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+
         directCisuPreferences = new HashMap<>();
         when(hubConfig.getDirectCisuPreferences()).thenReturn(directCisuPreferences);
+
+        lrmPerimeterVersions = new HashMap<>();
+        lrmPerimeterVersions.put("fr.health.samuA", new String[]{"1.5", "2.0", "2.1"});
+        lrmPerimeterVersions.put("fr.health.samuV1", new String[]{"1.5"});
+        lrmPerimeterVersions.put("fr.health.samuV2", new String[]{"2.0"});
+        lrmPerimeterVersions.put("fr.health.samuEmpty", new String[]{});
+        lrmPerimeterVersions.put("fr.health.samuNull", null);
+        when(hubConfig.getLrmPerimeterVersions()).thenReturn(lrmPerimeterVersions);
+    }
+
+    @Test
+    void testRequiresConversion(){
+        try (MockedStatic<ConversionUtils> mockedConversionUtils = mockStatic(ConversionUtils.class)) {
+            // List of test cases: requiresCisuConversion, requiresVersionConversion, (expected) requiresConversion values
+            List<Boolean[]> testCases = Arrays.asList(
+                    new Boolean[]{true,  true,  true},
+                    new Boolean[]{true,  false,  true},
+                    new Boolean[]{false,  true, true},
+                    new Boolean[]{false,  false, false}
+            );
+
+            mockedConversionUtils.when(() -> ConversionUtils.requiresConversion(hubConfig, edxlMessage))
+                    .thenCallRealMethod();
+
+            for (int i = 0; i < testCases.size(); i++) {
+                Boolean[] testCase = testCases.get(i);
+
+                mockedConversionUtils.when(() -> ConversionUtils.requiresCisuConversion(hubConfig, edxlMessage)).thenReturn(testCase[0]);
+                mockedConversionUtils.when(() -> ConversionUtils.requiresVersionConversion(hubConfig, edxlMessage)).thenReturn(testCase[1]);
+
+                String failMessage = String.format(
+                        "Test case %d failed: requiresCisuConversion=%b, requiresVersionConversion=%b, expected requiresConversion=%b",
+                        i, testCase[0], testCase[1], testCase[2]
+                );
+                assertEquals(testCase[2], ConversionUtils.requiresConversion(hubConfig, edxlMessage), failMessage);
+            }
+        }
+    }
+
+    @Test
+    void testRequiresVersionConversion(){
+        try (MockedStatic<MessageUtils> mockedMessageUtils = mockStatic(MessageUtils.class)) {
+            when(hubConfig.getVhost()).thenReturn("15-15_v2.0");
+            mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage)).thenReturn("fr.health.samuV1");
+            assertTrue(ConversionUtils.requiresVersionConversion(hubConfig, edxlMessage));
+
+            when(hubConfig.getVhost()).thenReturn("15-15_v1.5");
+            mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage)).thenReturn("fr.health.samuV1");
+            assertFalse(ConversionUtils.requiresVersionConversion(hubConfig, edxlMessage));
+
+            when(hubConfig.getVhost()).thenReturn("15-15_v2.0");
+            mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage)).thenReturn("fr.health.samuV2");
+            assertFalse(ConversionUtils.requiresVersionConversion(hubConfig, edxlMessage));
+
+            when(hubConfig.getVhost()).thenReturn("15-15_v1.5");
+            mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage)).thenReturn("fr.health.samuV2");
+            assertTrue(ConversionUtils.requiresVersionConversion(hubConfig, edxlMessage));
+
+            when(hubConfig.getVhost()).thenReturn("15-15_v2.0");
+            mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage)).thenReturn("fr.health.samuA");
+            assertFalse(ConversionUtils.requiresVersionConversion(hubConfig, edxlMessage));
+
+            when(hubConfig.getVhost()).thenReturn("15-15_v1.5");
+            mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage)).thenReturn("fr.health.samuA");
+            assertFalse(ConversionUtils.requiresVersionConversion(hubConfig, edxlMessage));
+
+            when(hubConfig.getVhost()).thenReturn("15-15_v2.1");
+            mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage)).thenReturn("fr.health.samuA");
+            assertFalse(ConversionUtils.requiresVersionConversion(hubConfig, edxlMessage));
+
+            when(hubConfig.getVhost()).thenReturn("15-15_v1.5");
+            mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage)).thenReturn("fr.health.samuNull");
+            assertFalse(ConversionUtils.requiresVersionConversion(hubConfig, edxlMessage));
+
+            when(hubConfig.getVhost()).thenReturn("15-15_v1.5");
+            mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage)).thenReturn("fr.health.samuEmpty");
+            assertFalse(ConversionUtils.requiresVersionConversion(hubConfig, edxlMessage));
+        }
+    }
+
+    @Test
+    void testGetSourceVersion(){
+        when(hubConfig.getVhost()).thenReturn("15-15_v1.5");
+        assertEquals("15-15_v1.5", ConversionUtils.getSourceVHost(hubConfig));
+
+        when(hubConfig.getVhost()).thenReturn("15-15_v2.0");
+        assertEquals("15-15_v2.0", ConversionUtils.getSourceVHost(hubConfig));
+
+        when(hubConfig.getVhost()).thenReturn("15-15_v2.1");
+        assertEquals("15-15_v2.1", ConversionUtils.getSourceVHost(hubConfig));
+
+        when(hubConfig.getVhost()).thenReturn("15-nexsis_v1.9");
+        assertEquals("15-nexsis_v1.9", ConversionUtils.getSourceVHost(hubConfig));
+    }
+
+    @Test
+    void testGetTargetVersion(){
+        try (MockedStatic<MessageUtils> mockedMessageUtils = mockStatic(MessageUtils.class)) {
+            mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage)).thenReturn("fr.health.samuA");
+            assertArrayEquals(new String[]{"15-15_v1.5", "15-15_v2.0","15-15_v2.1"}, ConversionUtils.getTargetVHosts(hubConfig, edxlMessage));
+
+            mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage)).thenReturn("fr.health.samuV1");
+            assertArrayEquals(new String[]{"15-15_v1.5"}, ConversionUtils.getTargetVHosts(hubConfig, edxlMessage));
+
+            mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage)).thenReturn("fr.health.samuNull");
+            assertNull(ConversionUtils.getTargetVHosts(hubConfig, edxlMessage));
+
+            mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage)).thenReturn("fr.health.samuEmpty");
+            assertArrayEquals(new String[]{},ConversionUtils.getTargetVHosts(hubConfig, edxlMessage));
+        }
     }
 
     @Test
@@ -127,15 +240,18 @@ public class ConversionUtilsTest {
             // EDA is a converted model
             // SNH = Should Not Happen
             List<Boolean[]> testCases = Arrays.asList(
-                new Boolean[]{true,  true,  false, true},    // samuA -[RS-EDA]-> sdis => true  | sdis -[RC-EDA]-> samuA => true
-                new Boolean[]{true,  true,  true,  false},   // samuB -[RC-EDA]-> sdis => false | sdis -[RC-EDA]-> samuB => false
-                new Boolean[]{true,  false, false, false},    // Not CISU message => false
-                new Boolean[]{true,  false, true,  false},   // Not CISU message => false
-                new Boolean[]{false, true,  false, false},   // Not CISU exchange => false
-                new Boolean[]{false, true,  true,  false},   // Not CISU exchange => false
-                new Boolean[]{false, false, false, false},   // Not CISU exchange => false
-                new Boolean[]{false, false, true,  false}    // Not CISU exchange => false
+                new Boolean[]{true,  true,  false, true},
+                new Boolean[]{true,  true,  true,  false},
+                new Boolean[]{true,  false, false, false},
+                new Boolean[]{true,  false, true,  false},
+                new Boolean[]{false, true,  false, false},
+                new Boolean[]{false, true,  true,  false},
+                new Boolean[]{false, false, false, false},
+                new Boolean[]{false, false, true,  false}
             );
+
+            when(edxlMessage.getDescriptor().getExplicitAddress().getExplicitAddressValue()).thenReturn("fr.fire.something");
+            when(hubConfig.getVhost()).thenReturn("15-15_v2.1");
 
             // Call the real method for requiresCisuConversion
             mockedConversionUtils.when(() -> ConversionUtils.requiresCisuConversion(hubConfig, edxlMessage))
@@ -143,10 +259,11 @@ public class ConversionUtilsTest {
 
             for (int i = 0; i < testCases.size(); i++) {
                 Boolean[] testCase = testCases.get(i);
-                
+
                 // Mock the helper methods
                 mockedConversionUtils.when(() -> ConversionUtils.isCisuExchange(edxlMessage)).thenReturn(testCase[0]);
                 mockedConversionUtils.when(() -> ConversionUtils.isConvertedModel(edxlMessage)).thenReturn(testCase[1]);
+                mockedConversionUtils.when(() -> ConversionUtils.isAlreadyCisuConverted(hubConfig.getVhost(), MessageUtils.getRecipientID(edxlMessage))).thenReturn(false);
                 mockedConversionUtils.when(() -> ConversionUtils.isDirectCisuForHealthActor(hubConfig, edxlMessage)).thenReturn(testCase[2]);
 
                 // Assert with descriptive message
@@ -157,5 +274,20 @@ public class ConversionUtilsTest {
                 assertEquals(testCase[3], ConversionUtils.requiresCisuConversion(hubConfig, edxlMessage), testDescription);
             }
         }
+    }
+
+    @Test
+    void testBuildExchange(){
+        assertEquals("transfer_15-15_v1.5_to_15-15_v2.0", ConversionUtils.buildExchangeDestination( "15-15_v1.5", "15-15_v2.0"));
+        assertEquals("transfer_toto_to_titi", ConversionUtils.buildExchangeDestination("toto", "titi"));
+    }
+
+    @Test
+    public void isAlreadyCisuConvertedTest() {
+        assertTrue(isAlreadyCisuConverted("15-15_v1.5", "fr.health.something"));
+        assertFalse(isAlreadyCisuConverted("15-15_v1.5", "fr.fire.something-else"));
+
+        assertTrue(isAlreadyCisuConverted("15-nexsis_v1.9", "fr.fire.something-else"));
+        assertFalse(isAlreadyCisuConverted("15-smur_v1.7", "fr.health.something"));
     }
 }

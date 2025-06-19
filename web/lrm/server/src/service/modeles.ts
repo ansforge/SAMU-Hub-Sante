@@ -1,0 +1,126 @@
+import { Octokit } from 'octokit';
+
+const client = new Octokit({ auth: process.env.GITHUB_TOKEN });
+
+const GITHUB_OWNER = 'ansforge';
+const GITHUB_REPO = 'SAMU-Hub-Modeles';
+const EXAMPLE_FILES_PATH = 'src/main/resources/sample/examples';
+const DEFAULT_PR_TITLE = '[AUTO] JSON Creator Examples Update';
+const DEFAULT_PR_DESCRIPTION =
+  'This PR has been opened automatically using the JSON Creator UI.\n\nIt contains update to the json samples displayed in the JSON Creator.\n\nPlease ask for a reviewer from the development team.';
+const GITHUB_TOKEN_USER = 'ansforge';
+
+const generateCommitMessage = (fileName: string) => `Update of the json example ${fileName}`;
+
+type CreateNewBranchParams = {
+  baseBranch: string;
+  newBranch: string;
+};
+
+const createNewBranch = async ({ baseBranch, newBranch }: CreateNewBranchParams) => {
+  const baseBranchCommit = await client.rest.repos.getCommit({
+    owner: GITHUB_OWNER,
+    repo: GITHUB_REPO,
+    ref: baseBranch,
+  });
+
+  const baseCommitSha = baseBranchCommit.data.sha;
+
+  await client.rest.git.createRef({
+    owner: GITHUB_OWNER,
+    repo: GITHUB_REPO,
+    ref: `refs/heads/${newBranch}`,
+    sha: baseCommitSha,
+  });
+};
+
+type CommitModelesChangesToExistingBranchParams = {
+  branch: string;
+  fileName: string;
+  content: string;
+};
+
+const commitModelesChangesToExistingBranch = async ({
+  branch,
+  fileName,
+  content,
+}: CommitModelesChangesToExistingBranchParams) => {
+  const filePath = `${EXAMPLE_FILES_PATH}/${fileName}`;
+
+  const fileShaResponse = await client.rest.repos.getContent({
+    owner: GITHUB_OWNER,
+    repo: GITHUB_REPO,
+    path: filePath,
+    ref: branch,
+  });
+  // TODO: manage octokit response typing
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-expect-error
+  const fileSha = fileShaResponse.data.sha;
+
+  const encodedContent = Buffer.from(content).toString('base64');
+
+  const response = await client.rest.repos.createOrUpdateFileContents({
+    owner: GITHUB_OWNER,
+    repo: GITHUB_REPO,
+    path: filePath,
+    message: generateCommitMessage(fileName),
+    content: encodedContent,
+    sha: fileSha,
+    branch,
+  });
+
+  return response.data;
+};
+
+const BRANCHES_PER_PAGE = 100;
+
+const getModelesBranchNames = async () => {
+  const response = await client.rest.repos.listBranches({
+    owner: GITHUB_OWNER,
+    repo: GITHUB_REPO,
+    per_page: BRANCHES_PER_PAGE,
+  });
+  return response.data.map(({ name }) => name);
+};
+
+type CreatePullRequestParams = {
+  baseBranch: string;
+  headBranch: string;
+};
+
+const createPullRequest = async ({ baseBranch, headBranch }: CreatePullRequestParams) => {
+  const response = await client.rest.pulls.create({
+    owner: GITHUB_OWNER,
+    repo: GITHUB_REPO,
+    base: baseBranch,
+    head: headBranch,
+    title: DEFAULT_PR_TITLE,
+    body: DEFAULT_PR_DESCRIPTION,
+  });
+  return response.data;
+};
+
+type FindingPullRequestParams = {
+  baseBranch: string;
+  headBranch: string;
+};
+
+const findExistingPullRequest = async ({ baseBranch, headBranch }: FindingPullRequestParams) => {
+  const response = await client.rest.pulls.list({
+    owner: GITHUB_OWNER,
+    repo: GITHUB_REPO,
+    state: 'open',
+    head: `${GITHUB_TOKEN_USER}:${headBranch}`,
+    base: baseBranch,
+  });
+  return response.data;
+};
+
+export {
+  createNewBranch,
+  commitModelesChangesToExistingBranch,
+  getModelesBranchNames,
+  createPullRequest,
+  findExistingPullRequest,
+};

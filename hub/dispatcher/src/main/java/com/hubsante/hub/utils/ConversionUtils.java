@@ -15,22 +15,79 @@
  */
 package com.hubsante.hub.utils;
 
+import lombok.extern.slf4j.Slf4j;
+
 import com.hubsante.model.cisu.CreateCaseWrapper;
 import com.hubsante.model.health.CreateCaseHealthWrapper;
 import com.hubsante.model.edxl.EdxlMessage;
 import com.hubsante.hub.config.HubConfiguration;
 
-import static com.hubsante.hub.utils.MessageUtils.HEALTH_PREFIX;
-import static com.hubsante.hub.utils.MessageUtils.getRecipientID;
+import static com.hubsante.hub.config.AmqpConfiguration.TRANSFER_EXCHANGE_PREFIX;
+import static com.hubsante.hub.config.Constants.*;
+import static com.hubsante.hub.utils.MessageUtils.*;
 
+import java.util.Arrays;
+
+@Slf4j
 public class ConversionUtils {
 
     private final static boolean DEFAULT_DIRECT_CISU_PREFERENCE = false;
 
+    public static String buildExchangeDestination(String sourceVHost, String targetVHost) {
+        return TRANSFER_EXCHANGE_PREFIX + sourceVHost + "_to_" + targetVHost;
+    }
+
+    public static boolean requiresConversion(HubConfiguration hubConfig, EdxlMessage edxlMessage) {
+        boolean isCisuConversion = requiresCisuConversion(hubConfig, edxlMessage);
+        boolean isVersionConversion = requiresVersionConversion(hubConfig, edxlMessage);
+
+        return isVersionConversion || isCisuConversion;
+    }
+
+    public static boolean requiresVersionConversion(HubConfiguration hubConfig, EdxlMessage edxlMessage) {
+        String sourceVHost = getSourceVHost(hubConfig);
+        String[] targetVHosts = getTargetVHosts(hubConfig, edxlMessage);
+
+        if (targetVHosts == null || sourceVHost == null || targetVHosts.length == 0) {
+            return false;
+        }
+        if (VHOST_MODEL_VERSION.get(sourceVHost) == null) {
+            return false;
+        }
+        return !Arrays.asList(targetVHosts).contains(sourceVHost);
+    }
+
+    public static String getSourceVHost(HubConfiguration hubConfig) {
+        return hubConfig.getVhost();
+    }
+
+    public static String[] getTargetVHosts(HubConfiguration hubConfig, EdxlMessage edxlMessage) {
+        String recipientID = getRecipientID(edxlMessage);
+        String[] targetVHosts = hubConfig.getLrmPerimeterVersions().get(recipientID);
+
+        if (targetVHosts == null && (recipientID.startsWith(FR_FIRE_PREFIX) || recipientID.startsWith(FR_CISU_PREFIX))) {
+            targetVHosts = new String[]{NEXSIS_VHOST};
+        }
+        else if (targetVHosts != null) {
+            targetVHosts = Arrays.stream(targetVHosts).map(version -> HEALTH_VHOST_PREFIX + version).toArray(String[]::new);
+        }
+
+        return targetVHosts;
+    }
+
     public static boolean requiresCisuConversion(HubConfiguration hubConfig, EdxlMessage edxlMessage) {
-        return isCisuExchange(edxlMessage) && 
-               isConvertedModel(edxlMessage) &&
-               !isDirectCisuForHealthActor(hubConfig, edxlMessage);
+        return isCisuExchange(edxlMessage)
+                && isConvertedModel(edxlMessage)
+                && !isAlreadyCisuConverted(hubConfig.getVhost(), edxlMessage.getDescriptor().getExplicitAddress().getExplicitAddressValue())
+                && !isDirectCisuForHealthActor(hubConfig, edxlMessage);
+    }
+
+    public static boolean isAlreadyCisuConverted(String currentVHost, String recipient) {
+        if (recipient.startsWith(FR_HEALTH_PREFIX)) {
+            return currentVHost.startsWith(HEALTH_VHOST_PREFIX);
+        } else {
+            return currentVHost.startsWith(NEXSIS_VHOST);
+        }
     }
 
     public static boolean isCisuExchange(EdxlMessage edxlMessage) {

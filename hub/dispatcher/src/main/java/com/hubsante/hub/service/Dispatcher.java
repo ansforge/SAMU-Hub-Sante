@@ -18,8 +18,11 @@ package com.hubsante.hub.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import com.hubsante.hub.config.Constants;
 import com.hubsante.hub.exception.*;
+import com.hubsante.hub.utils.ConversionRulesCommand;
 import com.hubsante.hub.utils.ConversionUtils;
+import com.hubsante.hub.utils.MessageUtils;
 import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.edxl.EdxlMessage;
 import com.hubsante.model.report.ErrorCode;
@@ -110,8 +113,11 @@ public class Dispatcher {
                 log.error("Could not read message body", e);
             }
             error.setReferencedDistributionID(returnedEdxlMessage != null ? returnedEdxlMessage.getDistributionID() : DISTRIBUTION_ID_UNAVAILABLE);
-            String senderRoutingKey = returned.getMessage().getMessageProperties().getHeader(DLQ_ORIGINAL_ROUTING_KEY);
-            messageHandler.logErrorAndSendReport(error, senderRoutingKey);
+            String senderRoutingKey = returned.getMessage().getMessageProperties().getHeader(ORIGINAL_ROUTING_KEY);
+            // currently, we do not handle error messages on other hubex
+            if (senderRoutingKey.startsWith(FR_HEALTH_PREFIX)) {
+                messageHandler.logErrorAndSendReport(error, senderRoutingKey);
+            }
             messageHandler.publishErrorMetric(ErrorCode.UNROUTABLE_MESSAGE.getStatusString(), senderRoutingKey);
         });
     }
@@ -120,24 +126,32 @@ public class Dispatcher {
     @Timed(value = DISPATCH_TIMED_METRIC, description = "Time taken to fully dispatch a message")
     public void dispatch(Message message) {
         try {
+            setOriginalRoutingKeyHeader(message);
             // Deserialize the message according to its content type
             EdxlMessage edxlMessage = messageHandler.extractMessage(message);
             // reject the message if no health actor is involved (as sender or recipient)
             checkHealthActorIsInvolved(edxlMessage);
-            // Before running the validation checks, we convert the message if required to make sure the forwarded message is valid
             // ToDo: see how hubConfig should be made available to the Dispatcher (and remove getter in MessageHandler)
             // ToDo: check this only on specific vhosts (like 15-NexSIS)?
-            if (ConversionUtils.requiresCisuConversion(messageHandler.getHubConfig(), edxlMessage)) {
-                edxlMessage = conversionHandler.convertIncomingCisu(messageHandler, edxlMessage);
-            }
             // Reject the message if the sender is not consistent with the routing key
             checkSenderConsistency(message, edxlMessage);
             // Reject the message if the delivery mode is not PERSISTENT
             checkDeliveryModeIsPersistent(message, edxlMessage.getDistributionID());
             // Reject the message if distributionID does not respect the format (senderID_internalID)
-            if (message.getMessageProperties().getReceivedRoutingKey().startsWith("fr.health")) {
+            if (message.getMessageProperties().getReceivedRoutingKey().startsWith(Constants.FR_HEALTH_PREFIX)) {
                 checkDistributionIDFormat(edxlMessage);
             }
+
+            boolean isConversionRequired = ConversionUtils.requiresConversion(messageHandler.getHubConfig(), edxlMessage);
+            if (isConversionRequired) {
+                ConversionRulesCommand conversionRulesCommand = new ConversionRulesCommand(edxlMessage, messageHandler);
+                String convertedMessage = conversionHandler.applyConversionRules(conversionRulesCommand);
+                sendToTransferExchange(convertedMessage, message, conversionRulesCommand);
+                log.debug("Message has been sent !");
+                // We MUST return here to exit the dispatch() function, otherwise the message will be published on the source Exchange as well
+                return;
+            }
+
             // Forward the message according to the recipient preferences. Conversion JSON <-> XML can happen here
             Message forwardedMsg = messageHandler.forwardedMessage(edxlMessage, message);
             // Extract recipient queue name from the message (explicit address and distribution kind)
@@ -155,14 +169,24 @@ public class Dispatcher {
         }
     }
 
+    public void sendToTransferExchange(String convertedMessage, Message message, ConversionRulesCommand conversionRulesCommand){
+        Message forwardedMsg = messageHandler.forwardedStringMessage(convertedMessage, message);
+
+        String transferExchangeName = ConversionUtils.buildExchangeDestination(conversionRulesCommand.getSourceVHost(), conversionRulesCommand.getTargetVHost());
+
+        String routingKey = message.getMessageProperties().getReceivedRoutingKey();
+
+        log.info("Message transferred to exchange: {} with routing key: {}", transferExchangeName, routingKey);
+
+        rabbitTemplate.send(transferExchangeName, routingKey, forwardedMsg);
+    }
+
     @RabbitListener(queues = DISPATCH_DLQ_NAME)
     @Timed(value = DLQ_TIMED_METRIC, description = "Time taken to fully dispatch a dead letter queued message")
     public void dispatchDLQ(Message message) {
         try {
-            // TODO bbo
-            //  Simple fix to avoid infinite loop if info expires with no header original routing key set
-            //  The real fix will be to have two DLQ policies and a specific infoDLQ listener
-            String deadFromQueue = message.getMessageProperties().getHeader(DLQ_ORIGINAL_ROUTING_KEY);
+            //  If an info message sent by the Hub has not been read, we do not want to loop and sent the Hub an info message back
+            String deadFromQueue = message.getMessageProperties().getHeader(ORIGINAL_ROUTING_KEY);
             if (deadFromQueue.endsWith(".info")) {
                 return;
             }
@@ -176,8 +200,8 @@ public class Dispatcher {
             // We don't want to log again the error if it has been thrown by handleError
             // We just log the unexpected errors
             if (!(e instanceof AmqpRejectAndDontRequeueException)) {
-                String originalRoutingKey = message.getMessageProperties().getHeader(DLQ_ORIGINAL_ROUTING_KEY) != null ?
-                        message.getMessageProperties().getHeader(DLQ_ORIGINAL_ROUTING_KEY) : "Unknown routing key";
+                String originalRoutingKey = message.getMessageProperties().getHeader(ORIGINAL_ROUTING_KEY) != null ?
+                        message.getMessageProperties().getHeader(ORIGINAL_ROUTING_KEY) : "Unknown routing key";
                 log.warn("Unexpected error occurred while DLQ-dispatching message from " + originalRoutingKey, e);
             }
             throw new AmqpRejectAndDontRequeueException(e);

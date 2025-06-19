@@ -91,3 +91,6 @@ sw.*
 
 # Nitro server output
 .output
+
+# Cypress screenshots
+cypress/screenshots/

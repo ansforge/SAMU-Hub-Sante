@@ -15,6 +15,8 @@
  */
 package com.hubsante.hub.config;
 
+import java.util.Map;
+
 public class Constants {
 
     public static final String DISPATCH_ERROR = "dispatch.error";
@@ -28,4 +30,19 @@ public class Constants {
     public static final String DISPATCHED_MESSAGE = "dispatch.message";
     public static final String USE_CASE_TAG = "use_case";
     public static final String UNKNOWN = "unknown";
+    public static final String FR_HEALTH_PREFIX = "fr.health";
+    public static final String FR_FIRE_PREFIX = "fr.fire";
+    public static final String FR_CISU_PREFIX = "fr.cisu";
+    public static final String NEXSIS_VHOST = "15-nexsis_v1.9";
+    public static final String HEALTH_VHOST_PREFIX = "15-15_v";
+    public static final Map<String, String> HUBEX_PERIMETER_PREFIXES = Map.of(
+            "15-15", "fr.health",
+            "15-nexsis", "fr.fire"
+    );
+    public static final Map<String, String> VHOST_MODEL_VERSION = Map.of(
+            "15-15_v1.5", "v1",
+            "15-15_v2.0","v2",
+            "15-15_v2.1", "v3",
+            "15-nexsis_v1.9", "v3"
+    );
 }

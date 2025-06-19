@@ -32,27 +32,32 @@ import org.springframework.web.reactive.function.client.WebClient;
 import jakarta.annotation.PostConstruct;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 @Slf4j
 @Configuration
 public class HubConfiguration {
 
-    private static final int TOGGLE_ROW_LENGTH = 4;
+    private static final int TOGGLE_ROW_LENGTH = 6;
+    private static final String DATA_DIVIDER = ",";
 
     @Value("${client.preferences.file}")
     private File configFile;
     @Value("${dispatcher.default.ttl}")
     private String ttlProperty;
     private long defaultTTL;
-    @Value("${dispatcher.vhost}")
+    @Value("${spring.rabbitmq.virtual-host}")
     private String vhost;
 
     private HashMap<String, Boolean> useXmlPreferences = new HashMap<>();
     private HashMap<String, Boolean> directCisuPreferences = new HashMap<>();
     private HashMap<String, String> clientsEditorMap = new HashMap<>();
+    private HashMap<String, String[]> lrmPerimeterVersions = new HashMap<>();
 
     @PostConstruct
     public void init() throws Exception {
@@ -77,6 +82,7 @@ public class HubConfiguration {
                     useXmlPreferences.put(items[0], Boolean.parseBoolean(items[1]));
                     directCisuPreferences.put(items[0], Boolean.parseBoolean(items[2]));
                     clientsEditorMap.put(items[0], items[3]);
+                    lrmPerimeterVersions.put(items[0], splitString(items[5]));
                 }
             };
             CsvParserSettings parserSettings = new CsvParserSettings();
@@ -105,6 +111,10 @@ public class HubConfiguration {
         return clientsEditorMap;
     }
 
+    public HashMap<String, String[]> getLrmPerimeterVersions() {
+        return lrmPerimeterVersions;
+    }
+
     public long getDefaultTTL() {
         return defaultTTL;
     }
@@ -124,6 +134,13 @@ public class HubConfiguration {
     @Bean
     public TimedAspect timedAspect(MeterRegistry registry) {
         return new TimedAspect(registry);
+    }
+
+    public static String[] splitString(String input) {
+        if (input == null || input.isEmpty()) {
+            return null;
+        }
+        return input.split(DATA_DIVIDER);
     }
 
     @Bean
