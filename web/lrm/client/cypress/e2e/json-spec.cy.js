@@ -1,5 +1,4 @@
 /* eslint-disable no-undef */
-import 'cypress-cdp';
 
 describe('Json creator page spec', () => {
   it('Accesses the json creator, successfully download all the schemas and example messages from the branches available in the source elector, verify presence of all required visual elements', () => {
@@ -7,17 +6,25 @@ describe('Json creator page spec', () => {
       // returning false here prevents Cypress from failing the test
       return false;
     });
+
+    // Intercept schema and example requests before visiting the page
+    cy.intercept('GET', '**/messagesList.json').as('messagesList');
+    cy.intercept('GET', '**/src/main/resources/json-schema/**').as(
+      'jsonSchema'
+    );
+    cy.intercept('GET', '**/resources/sample/examples/**').as('examples');
+
     cy.visit('http://localhost:3000/lrm');
-    cy.wait(10000);
-    // Wait for the event listeners to get hooked up
-    cy.hasEventListeners('[data-cy="json-creator-button"]', { type: 'click' });
+    cy.wait(1000); // Wait for initial page load
+
     // Go to demo page
     cy.get('[data-cy="json-creator-button"]').as('jsonBtn');
     cy.get('@jsonBtn').click();
+
     // Wait for all schema-related fetches to complete with 200 status
-    cy.waitForResponse('**messagesList.json');
-    cy.waitForResponse('**/src/main/resources/json-schema/**');
-    cy.waitForResponse('**/resources/sample/examples/**');
+    cy.wait('@messagesList').its('response.statusCode').should('eq', 200);
+    cy.wait('@jsonSchema').its('response.statusCode').should('eq', 200);
+    cy.wait('@examples').its('response.statusCode').should('eq', 200);
 
     // Verify visual presence of required elements
     cy.get('[data-cy="source-selector"]').parent().should('be.visible');
@@ -31,8 +38,7 @@ describe('Json creator page spec', () => {
       .children('.v-list-item:not(:last-child)')
       .each(($source) => {
         // Click on each source
-        // TODO: Find a way to properly test source selection by running .iterableOverSchemasAndMessages() for each source
-        cy.get($source).trigger('mousedown');
+        cy.wrap($source).trigger('mousedown');
       });
 
     cy.iterateOverSchemasAndMessages();
