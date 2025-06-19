@@ -68,6 +68,10 @@ jobs:
         with:
           node-version: '22'
 
+      - name: Prune npm cache
+        run: npm prune
+        working-directory: ./web/lrm/client
+
       - name: Clean npm cache
         run: npm cache clean --force
         working-directory: ./web/lrm/client
