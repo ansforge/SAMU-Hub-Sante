@@ -75,9 +75,9 @@ jobs:
           install-command: npm ci --cache /tmp/empty-cache
           build: npm run build:test
           start: npm run start
-          wait-on: 'http://localhost:3000/lrm'
-          wait-on-timeout: 120
-          browser: electron
+          wait-on: 'http://localhost:3000/lrm/'
+          wait-on-timeout: 30000
+          browser: chrome
 
       - name: Upload Cypress screenshots on failure
         uses: actions/upload-artifact@v4
