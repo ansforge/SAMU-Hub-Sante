@@ -21,10 +21,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '22'
 
@@ -41,53 +41,48 @@ jobs:
         run: npx prettier --check "**/*.{js,ts,vue,css,scss}"
 
   cypress-run:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     env:
-      NUXT_PUBLIC_VHOST_MAP: |
+      NUXT_PUBLIC_VHOST_MAP: >
         {
           "15-15_v1.5": "1.0",
           "15-nexsis_v1.8": "1.0",
           "15-smur_v1.4": "1.0",
           "15-gps_v1.0": "1.0"
         }
-      NUXT_PUBLIC_CLIENT_MAP: |
+      NUXT_PUBLIC_CLIENT_MAP: >
         [
-          ["fr.health.samuA",["fr.health.samuC"]],
-          ["fr.health.samuC",["fr.health.samuA"]]
+          ["fr.health.samuA", ["fr.health.samuC"]],
+          ["fr.health.samuC", ["fr.health.samuA"]]
         ]
       NUXT_PUBLIC_MODEL_BRANCH: develop
       NUXT_PUBLIC_BACKEND_LRM_SERVER: integration.hub.esante.gouv.fr
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '22'
 
-      - name: Prune npm cache
-        run: npm prune
-        working-directory: ./web/lrm/client
-
-      - name: Clean npm cache
-        run: npm cache clean --force
-        working-directory: ./web/lrm/client
+      - name: Install Xvfb
+        run: sudo apt-get update && sudo apt-get install -y xvfb
 
       - name: Cypress run
         uses: cypress-io/github-action@v6
         with:
-          wait-on: 'http://localhost:3000/lrm'
-          wait-on-timeout: 120
           working-directory: ./web/lrm/client
+          install-command: npm ci --cache /tmp/empty-cache
           build: npm run build:test
           start: npm run start
+          wait-on: 'http://localhost:3000/lrm'
+          wait-on-timeout: 120
           browser: chrome
-          install-command: npm ci --cache /tmp/empty-cache
 
-      - name: Upload Cypress screenshots
+      - name: Upload Cypress screenshots on failure
         uses: actions/upload-artifact@v4
         if: failure()
         with:
