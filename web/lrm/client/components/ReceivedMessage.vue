@@ -198,7 +198,8 @@ const acked = computed(() => {
 const sendAck = () => {
   try {
     const distributionID = props.body.distributionID;
-    const msg = buildAck(distributionID);
+    const senderID = props.body.senderID;
+    const msg = buildAck({ distributionID, senderID });
     sendMessage(msg, props.vhost);
     isAcked.value = true;
   } catch (error) {

@@ -70,7 +70,10 @@ export default {
               getMessageType(message) !== 'ack' &&
               message.routingKey.startsWith(this.store.user.clientId)
             ) {
-              const msg = buildAck(message.body.distributionID);
+              const msg = buildAck({
+                distributionID: message.body.distributionID,
+                senderID: message.body.senderID,
+              });
               sendMessage(msg);
             }
           }
