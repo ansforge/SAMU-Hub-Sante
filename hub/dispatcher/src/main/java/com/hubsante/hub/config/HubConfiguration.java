@@ -72,7 +72,7 @@ public class HubConfiguration {
             // We define a custom row processor to read the config file
             // we override the rowProcessed method on the fly to store the config in a HashMap
             // then we define the parser settings and parse the file
-            ObjectRowProcessor rowProcessor = new ObjectRowProcessor() {
+            ObjectRowProcessor clientPreferencesRowProcessor = new ObjectRowProcessor() {
                 @Override
                 public void rowProcessed(Object[] objects, ParsingContext parsingContext) {
                     if (objects.length != TOGGLE_ROW_LENGTH) {
@@ -88,9 +88,9 @@ public class HubConfiguration {
             CsvParserSettings parserSettings = new CsvParserSettings();
             parserSettings.getFormat().setLineSeparator("\n");
             parserSettings.getFormat().setDelimiter(';');
-            parserSettings.setProcessor(rowProcessor);
             parserSettings.setHeaderExtractionEnabled(true);
             parserSettings.setNullValue("");
+            parserSettings.setProcessor(clientPreferencesRowProcessor);
 
             CsvParser parser = new CsvParser(parserSettings);
             parser.parse(new BufferedReader(new FileReader(configFile, StandardCharsets.UTF_8)));
