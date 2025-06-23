@@ -103,21 +103,21 @@ public class HubConfigurationTest {
 
         Map<String, String> samuV1Map = new HashMap<>();
         samuV1Map.put("15-smur", "1.7");
-        samuV1Map.put("extraColumn", "extraValue");
+        samuV1Map.put("15-15", "1.5");
         samuV1Map.put("15-nexsis", "1.9");
         samuV1Map.put("15-gps", "2.0");
         expectedMap.put("fr.health.samuV1", samuV1Map);
 
         Map<String, String> samuV2Map = new HashMap<>();
         samuV2Map.put("15-smur", "1.7");
-        samuV2Map.put("extraColumn", "extraValue");
+        samuV2Map.put("15-15", "2.0");
         samuV2Map.put("15-nexsis", "1.9");
         samuV2Map.put("15-gps", "2.0");
         expectedMap.put("fr.health.samuV2", samuV2Map);
 
         Map<String, String> samuAMap = new HashMap<>();
         samuAMap.put("15-smur", "1.7");
-        samuAMap.put("extraColumn", "extraValue");
+        samuAMap.put("15-15", "1.5,2.0,2.1");
         samuAMap.put("15-nexsis", "1.9");
         samuAMap.put("15-gps", "2.0");
         expectedMap.put("fr.health.samuA", samuAMap);
