@@ -39,7 +39,7 @@ public class Constants {
             "15-15", "fr.health",
             "15-nexsis", "fr.fire"
     );
-    public static final Map<String, String> VHOST_MODEL_VERSION = Map.of(
+    public static final Map<String, String> CONVERSION_VHOST_MODEL = Map.of(
             "15-15_v1.5", "v1",
             "15-15_v2.0","v2",
             "15-15_v2.1", "v3",
