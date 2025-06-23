@@ -293,7 +293,7 @@ export default {
       try {
         this.ajv.validate(this.currentMessageType.schema.title, json);
         return this.ajv.errors;
-      } catch (error) {
+      } catch {
         return [
           {
             instancePath: '',
