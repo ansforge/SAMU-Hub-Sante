@@ -112,6 +112,8 @@ public class DispatcherTest {
 
     @DynamicPropertySource
     static void registerPgProperties(DynamicPropertyRegistry propertiesRegistry) {
+        propertiesRegistry.add("supported.messages.file",
+                () -> Objects.requireNonNull(classLoader.getResource("config/supported.messages.csv")));
         propertiesRegistry.add("client.preferences.file",
                 () -> Objects.requireNonNull(classLoader.getResource("config/client.preferences.csv")));
         propertiesRegistry.add("hubsante.default.message.ttl", () -> 5);

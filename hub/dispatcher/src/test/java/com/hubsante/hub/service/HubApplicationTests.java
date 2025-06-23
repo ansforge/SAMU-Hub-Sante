@@ -47,6 +47,8 @@ class HubApplicationTests {
 							.getResource("config/certs/trustStore"),
 					"client.preferences.file=" + Thread.currentThread().getContextClassLoader()
 							.getResource("config/client.preferences.csv"),
+					"supported.messages.file=" + Thread.currentThread().getContextClassLoader()
+							.getResource("config/supported.messages.csv"),
 					"spring.rabbitmq.virtual-host=default-vhost"
 			);
 			values.applyTo(applicationContext);
