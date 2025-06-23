@@ -1,5 +1,4 @@
 /* eslint-disable no-undef */
-import 'cypress-cdp';
 
 describe('Demo page spec', () => {
   it('Accesses the demo page, successfully download all the schemas and example messages from the branch indicated in the config, verify presence of all required visual elements', () => {
@@ -7,18 +6,28 @@ describe('Demo page spec', () => {
       // returning false here prevents Cypress from failing the test
       return false;
     });
+
+    // Intercept network requests for messages list, schemas, and examples
+    cy.intercept('GET', '**/messagesList.json').as('messagesList');
+    cy.intercept('GET', '**/src/main/resources/json-schema/**').as('schemas');
+    cy.intercept('GET', '**/resources/sample/examples/**').as('examples');
+
+    // Visit the LRM demo page
     cy.visit('http://localhost:3000/lrm');
     // Arbitrary wait to avoid chrome's reloading behavior breaking the tests
     cy.wait(5000);
-    // Wait for the event listeners to get hooked up
-    cy.hasEventListeners('[data-cy="demo-login-button"]', { type: 'click' });
-    // Go to demo page
-    cy.get('[data-cy="demo-login-button"]').as('loginBtn');
+
+    // Wait for the login button to be present and clickable
+    cy.get('[data-cy="demo-login-button"]')
+      .as('loginBtn')
+      .should('be.visible')
+      .and('not.be.disabled');
     cy.get('@loginBtn').click();
-    cy.waitForResponse('**messagesList.json');
-    // Wait for all schema-related fetches to complete with 200 status
-    cy.waitForResponse('**/src/main/resources/json-schema/**');
-    cy.waitForResponse('**/resources/sample/examples/**');
+
+    // Wait for network requests to finish
+    cy.wait('@messagesList');
+    cy.wait('@schemas');
+    cy.wait('@examples');
     cy.wait(5000);
 
     // Verify visual presence of required elements
