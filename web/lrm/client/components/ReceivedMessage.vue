@@ -42,8 +42,8 @@
                 validatedValuesCount === requiredValuesCount
                   ? 'green'
                   : validatedValuesCount === 0
-                  ? 'red'
-                  : 'orange'
+                    ? 'red'
+                    : 'orange'
               "
             >
               {{
@@ -326,7 +326,8 @@ export default {
 }
 
 .selected > *.elevation-4:last-child {
-  box-shadow: 0px 2px 4px -1px rgba(6, 123, 202, 0.6),
+  box-shadow:
+    0px 2px 4px -1px rgba(6, 123, 202, 0.6),
     0px 4px 5px 0px rgba(6, 123, 202, 0.5),
     0px 1px 10px 0px rgba(6, 123, 202, 0.12) !important;
 }
