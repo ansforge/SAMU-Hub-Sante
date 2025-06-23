@@ -96,10 +96,9 @@ public class ConversionUtils {
     }
 
     public static boolean isCisuExchange(EdxlMessage edxlMessage) {
-        // Checks if the message is from or to CISU (not health)
         String recipientID = getRecipientID(edxlMessage);
         String senderID = edxlMessage.getSenderID();
-        return !(recipientID.startsWith(HEALTH_PREFIX) && senderID.startsWith(HEALTH_PREFIX));
+        return recipientID.startsWith(FR_FIRE_PREFIX) || recipientID.startsWith(FR_CISU_PREFIX) || senderID.startsWith(FR_CISU_PREFIX) || senderID.startsWith(FR_FIRE_PREFIX);
     }
 
     public static boolean isConvertedModel(EdxlMessage edxlMessage) {
