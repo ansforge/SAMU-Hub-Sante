@@ -5,7 +5,7 @@
     "useDefineForClassFields": true,
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "isolatedModules": true,        // ✅ Add this to avoid issues with ESLint and TypeScript
+    "isolatedModules": true, // avoid issues with ESLint and TypeScript
     "strict": true,
     "jsx": "preserve",
     "resolveJsonModule": true,
@@ -16,11 +16,10 @@
     "noEmit": true,
     "allowJs": true,
     "paths": {
-      "~/*": ["./*"],  // ✅ Alias for project root
-      "@/*": ["./*"]   // ✅ Alternative alias
+      "~/*": ["./*"],  // Alias for project root
+      "@/*": ["./*"]   // Alternative alias
     }
   },
   "include": ["**/*.ts", "**/*.d.ts", "**/*.tsx", "**/*.vue"],
-  "exclude": ["node_modules","./cypress/support/*"],
-  "extends": "./.nuxt/tsconfig.json"
+  "exclude": ["node_modules","./cypress/support/*"]
 }
