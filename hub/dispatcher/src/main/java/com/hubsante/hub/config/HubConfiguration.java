@@ -32,12 +32,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import jakarta.annotation.PostConstruct;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 @Configuration
@@ -108,13 +103,21 @@ public class HubConfiguration {
     }
 
     public Map<String, Map<String, String>> loadClientsPerimetersAndVersions() throws IOException {
-        int NUMBER_OF_PERIMETERS = 4;
         Map<String, Map<String, String>> clientsPerimeterAndVersions = new HashMap<>();
         BufferedReader reader = new BufferedReader(new FileReader(configFile, StandardCharsets.UTF_8));
         String line;
         String headerLine = reader.readLine();
         String[] headers = headerLine.split(COLUMN_DIVIDER);
         int numberOfColumns = headers.length;
+
+        Set<String> perimeterNames = Set.of("15-15", "15-nexsis", "15-gps", "15-smur");
+
+        Map<String, Integer> perimeterColumnIndexes = new HashMap<>();
+        for (int i = 0; i < numberOfColumns; i++) {
+            if (perimeterNames.contains(headers[i])) {
+                perimeterColumnIndexes.put(headers[i], i);
+            }
+        }
 
         while ((line = reader.readLine()) != null) {
             String[] values = line.split(COLUMN_DIVIDER);
@@ -124,8 +127,10 @@ public class HubConfiguration {
             String clientId = values[0];
             Map<String, String> allPerimetersVersions = new HashMap<>();
 
-            for (int i = numberOfColumns - NUMBER_OF_PERIMETERS; i < numberOfColumns; i++) {
-                allPerimetersVersions.put(headers[i], values[i]);
+            for (Map.Entry<String, Integer> perimeterMatch : perimeterColumnIndexes.entrySet()) {
+                String perimeterName = perimeterMatch.getKey();
+                int columnIndex = perimeterMatch.getValue();
+                allPerimetersVersions.put(perimeterName, values[columnIndex]);
             }
 
             clientsPerimeterAndVersions.put(clientId, allPerimetersVersions);
