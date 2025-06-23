@@ -40,7 +40,7 @@
     "nuxt": "^3.12.2",
     "pinia": "^2.1.7",
     "rollup-plugin-polyfill-node": "^0.13.0",
-    "uuid": "^9.0.0",
+    "uuid": "^11.1.0",
     "vite-plugin-vuetify": "^2.0.3",
     "vue": "^3.4.30",
     "vue-json-viewer": "^3.0.4",
