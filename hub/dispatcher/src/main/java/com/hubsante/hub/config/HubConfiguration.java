@@ -40,6 +40,8 @@ public class HubConfiguration {
 
     private static final int TOGGLE_ROW_LENGTH = 9;
     private static final String DATA_DIVIDER = ",";
+    private static final String COLUMN_DIVIDER = ";";
+
 
     @Value("${client.preferences.file}")
     private File configFile;
@@ -101,7 +103,6 @@ public class HubConfiguration {
     }
 
     public Map<String, Map<String, String>> loadClientsPerimetersAndVersions() throws IOException {
-        String COLUMN_DIVIDER = ";";
         Map<String, Map<String, String>> clientsPerimeterAndVersions = new HashMap<>();
         BufferedReader reader = new BufferedReader(new FileReader(configFile, StandardCharsets.UTF_8));
         String line;
@@ -150,10 +151,10 @@ public class HubConfiguration {
         try (BufferedReader reader = new BufferedReader(new FileReader(supportedMessagesFile, StandardCharsets.UTF_8))) {
             String line;
             while ((line = reader.readLine()) != null) {
-                if (line.startsWith("common" + DATA_DIVIDER) || line.startsWith(vhost + DATA_DIVIDER)) {
-                    String[] rowParts = line.split(DATA_DIVIDER);
+                if (line.startsWith("common" + COLUMN_DIVIDER) || line.startsWith(vhost + COLUMN_DIVIDER)) {
+                    String[] rowParts = line.split(COLUMN_DIVIDER);
                     if (rowParts.length > 1) {
-                        String[] messages = rowParts[1].split(";");
+                        String[] messages = rowParts[1].split(DATA_DIVIDER);
                         for (String messageClassName : messages) {
                             String messageClassNameTrimmed = messageClassName.trim();
                             if (!messageClassNameTrimmed.isEmpty() && !supportedMessages.contains(messageClassNameTrimmed)) {
