@@ -51,10 +51,15 @@ public class ConversionUtils {
         if (targetVHosts == null || sourceVHost == null || targetVHosts.length == 0) {
             return false;
         }
-        if (VHOST_MODEL_VERSION.get(sourceVHost) == null) {
+        if (!isConversionAvailable(sourceVHost)) {
             return false;
         }
+
         return !Arrays.asList(targetVHosts).contains(sourceVHost);
+    }
+
+    public static boolean isConversionAvailable(String vhost){
+        return CONVERSION_VHOST_MODEL.get(vhost) != null;
     }
 
     public static String getSourceVHost(HubConfiguration hubConfig) {
