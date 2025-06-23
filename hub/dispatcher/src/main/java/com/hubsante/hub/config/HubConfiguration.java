@@ -63,7 +63,7 @@ public class HubConfiguration {
     private HashMap<String, Boolean> useXmlPreferences = new HashMap<>();
     private HashMap<String, Boolean> directCisuPreferences = new HashMap<>();
     private HashMap<String, String> clientsEditorMap = new HashMap<>();
-    private HashMap<String, String[]> lrmPerimeterVersions = new HashMap<>();
+    private Map<String, Map<String, String>> clientsPerimeterAndVersions = new HashMap<>();
 
     @PostConstruct
     public void init() throws Exception {
@@ -99,11 +99,47 @@ public class HubConfiguration {
 
             CsvParser parser = new CsvParser(parserSettings);
             parser.parse(new BufferedReader(new FileReader(configFile, StandardCharsets.UTF_8)));
+            clientsPerimeterAndVersions = loadClientsPerimetersAndVersions();
         } catch (Exception e) {
             throw new Exception("Could not read config file " + configFile.getAbsolutePath(), e);
         }
     }
-    
+
+    public Map<String, Map<String, String>> loadClientsPerimetersAndVersions() throws IOException {
+        String COLUMN_DIVIDER = ";";
+        int NUMBER_OF_PERIMETERS = 4;
+        Map<String, Map<String, String>> clientsPerimeterAndVersions = new HashMap<>();
+        BufferedReader reader = new BufferedReader(new FileReader(configFile, StandardCharsets.UTF_8));
+        String line;
+        String headerLine = reader.readLine();
+        String[] headers = headerLine.split(COLUMN_DIVIDER);
+        int numberOfColumns = headers.length;
+
+        while ((line = reader.readLine()) != null) {
+            String[] values = line.split(COLUMN_DIVIDER);
+
+            if (values.length < numberOfColumns) continue;
+
+            String clientId = values[0];
+            Map<String, String> allPerimetersVersions = new HashMap<>();
+
+            for (int i = numberOfColumns - NUMBER_OF_PERIMETERS; i < numberOfColumns; i++) {
+                allPerimetersVersions.put(headers[i], values[i]);
+            }
+
+            clientsPerimeterAndVersions.put(clientId, allPerimetersVersions);
+        }
+
+        reader.close();
+        return clientsPerimeterAndVersions;
+    }
+
+    public String[] getClientVersionsForPerimeter(String clientId, String perimeterName) {
+        Map<String, String> clientPerimeterDefinition = clientsPerimeterAndVersions.getOrDefault(clientId, null);
+        String versions = clientPerimeterDefinition.getOrDefault(perimeterName, null);
+        return splitString(versions);
+    }
+
     public List<String> getSupportedMessages(String vhost) throws Exception{
         List<String> supportedMessages = new ArrayList<>();
         try (BufferedReader reader = new BufferedReader(new FileReader(supportedMessagesFile, StandardCharsets.UTF_8))) {
@@ -138,10 +174,6 @@ public class HubConfiguration {
 
     public HashMap<String, String> getClientsEditorMap() {
         return clientsEditorMap;
-    }
-
-    public HashMap<String, String[]> getLrmPerimeterVersions() {
-        return lrmPerimeterVersions;
     }
 
     public long getDefaultTTL() {
