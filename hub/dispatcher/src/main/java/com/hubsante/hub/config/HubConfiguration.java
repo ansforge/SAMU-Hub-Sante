@@ -43,14 +43,20 @@ import java.util.Map;
 @Configuration
 public class HubConfiguration {
 
-    private static final int TOGGLE_ROW_LENGTH = 6;
+    private static final int TOGGLE_ROW_LENGTH = 9;
     private static final String DATA_DIVIDER = ",";
 
     @Value("${client.preferences.file}")
     private File configFile;
+
+    @Value("${supported.messages.file}")
+    private File supportedMessagesFile;
+
     @Value("${dispatcher.default.ttl}")
     private String ttlProperty;
+
     private long defaultTTL;
+
     @Value("${spring.rabbitmq.virtual-host}")
     private String vhost;
 
@@ -82,7 +88,6 @@ public class HubConfiguration {
                     useXmlPreferences.put(items[0], Boolean.parseBoolean(items[1]));
                     directCisuPreferences.put(items[0], Boolean.parseBoolean(items[2]));
                     clientsEditorMap.put(items[0], items[3]);
-                    lrmPerimeterVersions.put(items[0], splitString(items[5]));
                 }
             };
             CsvParserSettings parserSettings = new CsvParserSettings();
@@ -97,6 +102,30 @@ public class HubConfiguration {
         } catch (Exception e) {
             throw new Exception("Could not read config file " + configFile.getAbsolutePath(), e);
         }
+    }
+    
+    public List<String> getSupportedMessages(String vhost) throws Exception{
+        List<String> supportedMessages = new ArrayList<>();
+        try (BufferedReader reader = new BufferedReader(new FileReader(supportedMessagesFile, StandardCharsets.UTF_8))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (line.startsWith("common" + DATA_DIVIDER) || line.startsWith(vhost + DATA_DIVIDER)) {
+                    String[] rowParts = line.split(DATA_DIVIDER);
+                    if (rowParts.length > 1) {
+                        String[] messages = rowParts[1].split(";");
+                        for (String messageClassName : messages) {
+                            String messageClassNameTrimmed = messageClassName.trim();
+                            if (!messageClassNameTrimmed.isEmpty() && !supportedMessages.contains(messageClassNameTrimmed)) {
+                                supportedMessages.add(messageClassNameTrimmed);
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (IOException e) {
+            throw new Exception("Error reading supported messages file: {}", e);
+        }
+        return supportedMessages;
     }
 
     public HashMap<String, Boolean> getUseXmlPreferences() {
