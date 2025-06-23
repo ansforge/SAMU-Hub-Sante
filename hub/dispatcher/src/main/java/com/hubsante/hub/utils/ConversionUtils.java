@@ -68,16 +68,21 @@ public class ConversionUtils {
 
     public static String[] getTargetVHosts(HubConfiguration hubConfig, EdxlMessage edxlMessage) {
         String recipientID = getRecipientID(edxlMessage);
-        String[] targetVHosts = hubConfig.getLrmPerimeterVersions().get(recipientID);
+        String sourceVhost = hubConfig.getVhost(); // ex '15-15_v1.5'
+        String sourcePerimeter = trimVersionSuffix(sourceVhost);  // ex '15-15'`
+        String[] targetVhosts = new String[]{};
 
-        if (targetVHosts == null && (recipientID.startsWith(FR_FIRE_PREFIX) || recipientID.startsWith(FR_CISU_PREFIX))) {
-            targetVHosts = new String[]{NEXSIS_VHOST};
-        }
-        else if (targetVHosts != null) {
-            targetVHosts = Arrays.stream(targetVHosts).map(version -> HEALTH_VHOST_PREFIX + version).toArray(String[]::new);
-        }
+        String[] targetVersionsOnSourcePerimeter = hubConfig.getClientVersionsForPerimeter(recipientID, sourcePerimeter); // ex ['1.5, 2.0']
 
-        return targetVHosts;
+        // CISU conversion case - recipient and sender are on different vhosts
+        boolean isCisuRecipient = recipientID.startsWith(FR_FIRE_PREFIX) || recipientID.startsWith(FR_CISU_PREFIX);
+        if (isCisuRecipient) {
+            targetVhosts = new String[]{NEXSIS_VHOST}; // ["15-nexsis_v1.9"]
+        }
+        else if (targetVersionsOnSourcePerimeter != null) {
+            targetVhosts = Arrays.stream(targetVersionsOnSourcePerimeter).map(version -> sourcePerimeter + "_v" +  version).toArray(String[]::new); // ex ["15-15_v1.5", "15-15_v2.0"]
+        }
+        return targetVhosts;
     }
 
     public static boolean requiresCisuConversion(HubConfiguration hubConfig, EdxlMessage edxlMessage) {
@@ -85,6 +90,13 @@ public class ConversionUtils {
                 && isConvertedModel(edxlMessage)
                 && !isAlreadyCisuConverted(hubConfig.getVhost(), edxlMessage.getDescriptor().getExplicitAddress().getExplicitAddressValue())
                 && !isDirectCisuForHealthActor(hubConfig, edxlMessage);
+    }
+
+    public static String trimVersionSuffix(String input) {
+        String VERSION_SUFFIX_REGEX = "_v[\\d\\.]+$";
+
+        if (input == null) return null;
+        return input.replaceFirst(VERSION_SUFFIX_REGEX, "");
     }
 
     public static boolean isAlreadyCisuConverted(String currentVHost, String recipient) {
