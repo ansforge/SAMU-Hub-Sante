@@ -24,10 +24,10 @@ public class HubConfigurationTest {
 
         File tempFile = File.createTempFile("supported-messages", ".csv");
         try (FileWriter writer = new FileWriter(tempFile, StandardCharsets.UTF_8)) {
-            writer.write("vhost,supported_messages\n");
-            writer.write("common,ReferenceWrapper;ErrorWrapper\n");
-            writer.write("host_1,type1;type2\n");
-            writer.write("host_2,type1;type3\n");
+            writer.write("vhost;supported_messages\n");
+            writer.write("common;ReferenceWrapper,ErrorWrapper\n");
+            writer.write("host_1;type1,type2\n");
+            writer.write("host_2;type1,type3\n");
         }
 
         ReflectionTestUtils.setField(hubConfig, "supportedMessagesFile", tempFile);
