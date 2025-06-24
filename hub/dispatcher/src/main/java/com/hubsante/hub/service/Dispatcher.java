@@ -181,8 +181,7 @@ public class Dispatcher {
 
         boolean isMessageClassNameSupported = supportedMessages.contains(messageClassName);
         if(!isMessageClassNameSupported){
-            log.info("The received message classname is not supported on this vhost");
-            //todo - add error code (UnsupportedMessageException)
+            throw new UnroutableMessageException("The received message classname is not supported on this vhost", edxlMessage.getDistributionID());
         }
     }
 
