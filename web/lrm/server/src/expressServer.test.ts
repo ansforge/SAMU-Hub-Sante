@@ -1,4 +1,3 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { Config } from './config';
 import { ExpressServer } from './expressServer';
 import { RabbitMQConnector } from './rabbit/utils';
