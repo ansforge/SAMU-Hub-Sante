@@ -29,7 +29,7 @@ COPY package*.json ./
 RUN npm ci --omit=dev
 
 # Copy build directory from stage 1
-COPY --from=build /app/dist ./dist
+COPY --from=build /app/dist .
 
 # Setup ENV variable
 ENV NODE_ENV=production
@@ -39,4 +39,4 @@ ENV PORT=80
 EXPOSE 80
 
 # Start the Node web server
-CMD ["node", "dist/index.js"]
+CMD ["node", "index.js"]

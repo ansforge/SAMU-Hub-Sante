@@ -2,24 +2,26 @@ import { Config } from './config';
 import { ExpressServer } from './expressServer';
 import { RabbitMQConnector } from './rabbit/utils';
 
-const mockConsume = jest.fn();
-const mockConnect = jest.fn((_, callback) => {
+const mockConsume = vi.fn();
+const mockConnect = vi.fn((_: any, callback: any) => {
   const channel = {
     consume: mockConsume,
-    on: jest.fn(),
+    on: vi.fn(),
   };
   const connection = {
-    close: jest.fn(),
-    on: jest.fn(),
+    close: vi.fn(),
+    on: vi.fn(),
   };
   callback(connection, channel);
 });
-jest.mock('./rabbit/utils', () => {
+
+// Mock RabbitMQConnector
+vi.mock('./rabbit/utils', () => {
   return {
-    RabbitMQConnector: jest.fn().mockImplementation(() => {
+    RabbitMQConnector: vi.fn().mockImplementation(() => {
       return {
         connect: mockConnect,
-        close: jest.fn(),
+        close: vi.fn(),
       };
     }),
   };
@@ -42,7 +44,7 @@ const checkConsumerListenOnClientQueues = (clientId: string) => {
 const originalEnv = process.env;
 
 beforeEach(() => {
-  jest.resetModules();
+  vi.resetModules();
   process.env = {
     ...originalEnv,
     ADMIN_PASSWORD: 'foo',
@@ -56,7 +58,7 @@ beforeEach(() => {
 });
 
 afterEach(async () => {
-  jest.restoreAllMocks();
+  vi.restoreAllMocks();
   process.env = originalEnv;
 });
 
