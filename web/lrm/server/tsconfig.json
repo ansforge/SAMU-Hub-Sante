@@ -8,6 +8,6 @@
     "outDir": "./dist"
   },
   "$schema": "https://json.schemastore.org/tsconfig",
-  "include": ["src/**/*", "vitest.config.ts"],
+  "include": ["src/**/*"],
   "exclude": ["node_modules", "./dist/**/*"]
 }
