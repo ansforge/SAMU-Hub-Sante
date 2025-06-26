@@ -83,7 +83,7 @@ jobs:
           wait-on-timeout: 120
           working-directory: web/lrm/client
           build: yarn build:test
-          start: yarn start
+          start: node .output/server/index.mjs
           browser: chrome
 
       - name: Upload Cypress screenshots

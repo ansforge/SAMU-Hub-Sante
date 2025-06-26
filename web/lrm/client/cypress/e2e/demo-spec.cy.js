@@ -15,7 +15,7 @@ describe('Demo page spec', () => {
     // Visit the LRM demo page
     cy.visit('http://localhost:3000/lrm');
     // Arbitrary wait to avoid chrome's reloading behavior breaking the tests
-    cy.wait(5000);
+    cy.wait(10000);
 
     // Wait for the login button to be present and clickable
     cy.get('[data-cy="demo-login-button"]')
