@@ -21,28 +21,30 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '22'
 
       - name: Install dependencies
-        run: npm ci
+        run: yarn install --frozen-lockfile --non-interactive
 
       - name: Run ESLint
-        run: npm run lint:js
+        run: yarn lint:js
 
       - name: Run Stylelint
-        run: npm run lint:css
+        run: yarn lint:css
 
       - name: Run Prettier check
         run: npx prettier --check "**/*.{js,ts,vue,css,scss}"
 
   cypress-run:
-    runs-on: ubuntu-22.04
-
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web/lrm/client
     env:
       NUXT_PUBLIC_VHOST_MAP: |
         {
@@ -61,16 +63,33 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install required system packages
+        run: sudo apt-get update && sudo apt-get install -y build-essential python3
+
+      - name: Clean install dependencies
+        run: yarn install --frozen-lockfile --non-interactive
 
       - name: Cypress run
         uses: cypress-io/github-action@v6
         with:
           wait-on: 'http://localhost:3000/lrm'
-          wait-on-timeout: 60
-          working-directory: ./web/lrm/client
-          build: npm run build:test
-          start: npm run start
+          wait-on-timeout: 120
+          working-directory: web/lrm/client
+          build: yarn build:test
+          start: yarn start
           browser: chrome
 
-          
+      - name: Upload Cypress screenshots
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: cypress-screenshots
+          path: web/lrm/client/cypress/screenshots
+          if-no-files-found: ignore
