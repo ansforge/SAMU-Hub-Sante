@@ -18,15 +18,30 @@ export class MessagingService {
     this.wss = wss;
   }
 
-  handleConnectionError(err: unknown) {
+  handleConnectionError = (err: unknown) => {
     logger.error(`Connection error for vhost '${this.vhost}': ${err}`);
-  }
+  };
+
+  handleChannelError = (err: any) => {
+    // If it's a NOT-FOUND error for a queue, log it but allow execution to continue
+    if (err.code === 404 && err.message?.includes('NOT_FOUND - no queue')) {
+      if (err.message.includes('fr.health.test.samuv')) {
+        logger.info(`Test SAMU with specific version has no queue (likely to be expected): '${this.vhost}': ${err}`);
+      } else {
+        logger.error(`Missing queue for vhost '${this.vhost}': ${err}`);
+      }
+    } else {
+      logger.error(`Channel error for vhost '${this.vhost}': ${err}`);
+    }
+  };
 
   connectToVhost() {
     this.rabbitMQConnector.connect(this.vhost, (connection: Connection, channel: Channel) => {
       this.connection = connection;
 
       this.connection.on('error', this.handleConnectionError);
+
+      channel.on('error', this.handleChannelError);
 
       this.config.getVhostClientMap()[this.vhost].forEach((clientId) => {
         const service = new ClientListenerService(this.vhost, clientId, this.wss, channel);
@@ -54,23 +69,6 @@ class ClientListenerService {
     this.clientId = clientId;
     this.wss = wss;
     this.channel = channel;
-
-    // Add error handler to channel
-    this.channel.on('error', this.handleChannelError);
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  handleChannelError(err: any) {
-    // If it's a NOT-FOUND error for a queue, log it but allow execution to continue
-    if (err.code === 404 && err.message?.includes('NOT_FOUND - no queue')) {
-      if (err.message.includes('fr.health.test.samuv')) {
-        logger.info(`Test SAMU with specific version has no queue (likely to be expected): '${this.vhost}': ${err}`);
-      } else {
-        logger.error(`Missing queue for vhost '${this.vhost}': ${err}`);
-      }
-    } else {
-      logger.error(`Channel error for vhost '${this.vhost}': ${err}`);
-    }
   }
 
   listenClientQueues() {
@@ -87,7 +85,7 @@ class ClientListenerService {
     }
   }
 
-  handleConsumeMessage(queue: string) {
+  handleConsumeMessage = (queue: string) => {
     return (msg: Message | null) => {
       // TODO: handle msg content properly
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -120,5 +118,5 @@ class ClientListenerService {
       logger.info(`Sent to ${clientCounts} clients: ${data.body.distributionID}`);
       logger.debug(`Sent to ${clientCounts} clients: ${data} of content ${data}`);
     };
-  }
+  };
 }
