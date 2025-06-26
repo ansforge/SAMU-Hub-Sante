@@ -68,21 +68,33 @@ public class ConversionUtils {
 
     public static String[] getTargetVHosts(HubConfiguration hubConfig, EdxlMessage edxlMessage) {
         String recipientID = getRecipientID(edxlMessage);
+        String senderID = edxlMessage.getSenderID();
         String sourceVhost = hubConfig.getVhost(); // ex '15-15_v1.5'
-        String sourcePerimeter = trimVersionSuffix(sourceVhost);  // ex '15-15'`
-        String[] targetVhosts = new String[]{};
-
-        String[] targetVersionsOnSourcePerimeter = hubConfig.getClientVersionsForPerimeter(recipientID, sourcePerimeter); // ex ['1.5, 2.0']
+        String sourcePerimeter = trimVersionSuffix(sourceVhost);  // ex '15-15'
+        String[] targetVersionsOnSourcePerimeter = new String[]{};
 
         // CISU conversion case - recipient and sender are on different vhosts
         boolean isCisuRecipient = recipientID.startsWith(FR_FIRE_PREFIX) || recipientID.startsWith(FR_CISU_PREFIX);
         if (isCisuRecipient) {
-            targetVhosts = new String[]{NEXSIS_VHOST}; // ["15-nexsis_v1.9"]
+            return new String[]{NEXSIS_VHOST}; // ["15-nexsis_v1.9"]
         }
-        else if (targetVersionsOnSourcePerimeter != null) {
-            targetVhosts = Arrays.stream(targetVersionsOnSourcePerimeter).map(version -> sourcePerimeter + "_v" +  version).toArray(String[]::new); // ex ["15-15_v1.5", "15-15_v2.0"]
+        boolean isCisuSender = senderID.startsWith(FR_FIRE_PREFIX) || senderID.startsWith(FR_CISU_PREFIX);
+        if(isCisuSender){
+            String perimeter15_15 = "15-15";
+            targetVersionsOnSourcePerimeter = hubConfig.getClientVersionsForPerimeter(recipientID, perimeter15_15); // ex ['1.5, 2.0']
+            return formatVersionToVhosts(targetVersionsOnSourcePerimeter, perimeter15_15);
         }
-        return targetVhosts;
+
+        targetVersionsOnSourcePerimeter = hubConfig.getClientVersionsForPerimeter(recipientID, sourcePerimeter); // ex ['1.5, 2.0']
+        return formatVersionToVhosts(targetVersionsOnSourcePerimeter, sourcePerimeter); // ex ["15-15_v1.5", "15-15_v2.0"]
+
+    }
+
+    public static String[] formatVersionToVhosts(String[] versions, String sourcePerimeter){
+        if(versions != null){
+            return Arrays.stream(versions).map(version -> sourcePerimeter + "_v" +  version).toArray(String[]::new);
+        }
+        return null;
     }
 
     public static boolean requiresCisuConversion(HubConfiguration hubConfig, EdxlMessage edxlMessage) {

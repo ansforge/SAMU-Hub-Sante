@@ -101,45 +101,54 @@ public class ConversionUtilsTest {
         try (MockedStatic<MessageUtils> mockedMessageUtils = mockStatic(MessageUtils.class)) {
             when(hubConfig.getVhost()).thenReturn("15-15_v2.0");
             mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage)).thenReturn("fr.health.samuV1");
+            when(edxlMessage.getSenderID()).thenReturn("fr.health.samuV2");
             when(hubConfig.getClientVersionsForPerimeter("fr.health.samuV1", "15-15")).thenReturn(new String[]{"1.5"});
             assertTrue(ConversionUtils.requiresVersionConversion(hubConfig, edxlMessage));
 
             when(hubConfig.getVhost()).thenReturn("15-15_v1.5");
             mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage)).thenReturn("fr.health.samuV1");
+            when(edxlMessage.getSenderID()).thenReturn("fr.health.samuX");
             when(hubConfig.getClientVersionsForPerimeter("fr.health.samuV1", "15-15")).thenReturn(new String[]{"1.5"});
             assertFalse(ConversionUtils.requiresVersionConversion(hubConfig, edxlMessage));
 
             when(hubConfig.getVhost()).thenReturn("15-15_v2.0");
             mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage)).thenReturn("fr.health.samuV2");
+            when(edxlMessage.getSenderID()).thenReturn("fr.health.samuVX");
             when(hubConfig.getClientVersionsForPerimeter("fr.health.samuV2", "15-15")).thenReturn(new String[]{"2.0"});
             assertFalse(ConversionUtils.requiresVersionConversion(hubConfig, edxlMessage));
 
             when(hubConfig.getVhost()).thenReturn("15-15_v1.5");
+            when(edxlMessage.getSenderID()).thenReturn("fr.health.samuV1");
             mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage)).thenReturn("fr.health.samuV2");
             when(hubConfig.getClientVersionsForPerimeter("fr.health.samuV2", "15-15")).thenReturn(new String[]{"2.0"});
             assertTrue(ConversionUtils.requiresVersionConversion(hubConfig, edxlMessage));
 
             when(hubConfig.getVhost()).thenReturn("15-15_v2.0");
+            when(edxlMessage.getSenderID()).thenReturn("fr.health.samuVX");
             mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage)).thenReturn("fr.health.samuA");
             when(hubConfig.getClientVersionsForPerimeter("fr.health.samuA", "15-15")).thenReturn(new String[]{"1.5","2.0", "2.1"});
             assertFalse(ConversionUtils.requiresVersionConversion(hubConfig, edxlMessage));
 
             when(hubConfig.getVhost()).thenReturn("15-15_v1.5");
             mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage)).thenReturn("fr.health.samuA");
+            when(edxlMessage.getSenderID()).thenReturn("fr.health.samuVX");
             when(hubConfig.getClientVersionsForPerimeter("fr.health.samuA", "15-15")).thenReturn(new String[]{"1.5","2.0", "2.1"});
             assertFalse(ConversionUtils.requiresVersionConversion(hubConfig, edxlMessage));
 
             when(hubConfig.getVhost()).thenReturn("15-15_v2.1");
+            when(edxlMessage.getSenderID()).thenReturn("fr.health.samuVX");
             mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage)).thenReturn("fr.health.samuA");
             when(hubConfig.getClientVersionsForPerimeter("fr.health.samuA", "15-15")).thenReturn(new String[]{"1.5","2.0", "2.1"});
             assertFalse(ConversionUtils.requiresVersionConversion(hubConfig, edxlMessage));
 
             when(hubConfig.getVhost()).thenReturn("15-15_v1.5");
+            when(edxlMessage.getSenderID()).thenReturn("fr.health.samuVX");
             mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage)).thenReturn("fr.health.samuNull");
             when(hubConfig.getClientVersionsForPerimeter("fr.health.samuNull", "15-15")).thenReturn(null);
             assertFalse(ConversionUtils.requiresVersionConversion(hubConfig, edxlMessage));
 
             when(hubConfig.getVhost()).thenReturn("15-15_v1.5");
+            when(edxlMessage.getSenderID()).thenReturn("fr.health.samuVX");
             mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage)).thenReturn("fr.health.samuEmpty");
             when(hubConfig.getClientVersionsForPerimeter("fr.health.samuEmpty", "15-15")).thenReturn(new String[]{});
             assertFalse(ConversionUtils.requiresVersionConversion(hubConfig, edxlMessage));
@@ -166,6 +175,8 @@ public class ConversionUtilsTest {
         try (MockedStatic<MessageUtils> mockedMessageUtils = mockStatic(MessageUtils.class)) {
             when(hubConfig.getVhost()).thenReturn("15-15_v2.1");
 
+            when(edxlMessage.getSenderID()).thenReturn("fr.health.samuVX");
+
             when(hubConfig.getClientVersionsForPerimeter("fr.health.samuA", "15-15")).thenReturn(new String[]{"1.5", "2.0", "2.1"});
             mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage)).thenReturn("fr.health.samuA");
             assertArrayEquals(new String[]{"15-15_v1.5", "15-15_v2.0","15-15_v2.1"}, ConversionUtils.getTargetVHosts(hubConfig, edxlMessage));
@@ -176,11 +187,30 @@ public class ConversionUtilsTest {
 
             when(hubConfig.getClientVersionsForPerimeter("fr.health.samuNull", "15-15")).thenReturn(null);
             mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage)).thenReturn("fr.health.samuNull");
-            assertArrayEquals(new String[]{},ConversionUtils.getTargetVHosts(hubConfig, edxlMessage));
+            assertArrayEquals(null,ConversionUtils.getTargetVHosts(hubConfig, edxlMessage));
 
             when(hubConfig.getClientVersionsForPerimeter("fr.health.samuEmpty", "15-15")).thenReturn(new String[]{});
             mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage)).thenReturn("fr.health.samuEmpty");
             assertArrayEquals(new String[]{},ConversionUtils.getTargetVHosts(hubConfig, edxlMessage));
+
+            // CISU exchange cases
+            when(hubConfig.getVhost()).thenReturn("15-nexsis_v1.9");
+
+            when(edxlMessage.getSenderID()).thenReturn("fr.fire.test");
+            mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage)).thenReturn("fr.health.samuV1");
+            when(hubConfig.getClientVersionsForPerimeter("fr.health.samuV1", "15-15")).thenReturn(new String[]{"1.5"});
+            assertArrayEquals(new String[]{"15-15_v1.5"}, ConversionUtils.getTargetVHosts(hubConfig, edxlMessage));
+
+            when(edxlMessage.getSenderID()).thenReturn("fr.cisu.test");
+            assertArrayEquals(new String[]{"15-15_v1.5"}, ConversionUtils.getTargetVHosts(hubConfig, edxlMessage));
+
+            when(hubConfig.getVhost()).thenReturn("15-15_v1.5");
+            when(edxlMessage.getSenderID()).thenReturn("fr.health.samuV1");
+            mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage)).thenReturn("fr.fire.test");
+            assertArrayEquals(new String[]{"15-nexsis_v1.9"}, ConversionUtils.getTargetVHosts(hubConfig, edxlMessage));
+
+            mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage)).thenReturn("fr.cisu.test");
+            assertArrayEquals(new String[]{"15-nexsis_v1.9"}, ConversionUtils.getTargetVHosts(hubConfig, edxlMessage));
         }
     }
 
