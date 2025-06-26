@@ -45,6 +45,7 @@ public class MessageUtils {
     static final String HEALTH_PREFIX = "fr.health";
     private static final String CISU_LRM_USER = "fr.cisu.sdisY";
     private static final String CISU_SDISZ_LRM_USER = "fr.cisu.sdisz";
+    private static final String SDISZ_LRM_USER = "fr.fire.nexsis.sdisZ";
 
     public static String getSenderFromRoutingKey(Message message) {
         return message.getMessageProperties().getReceivedRoutingKey();
@@ -112,7 +113,7 @@ public class MessageUtils {
 
     public static boolean convertToXML(String recipientID, Boolean useXML) {
         // sending message to outer hubex is always XML
-        if (!(recipientID.startsWith(HEALTH_PREFIX) || recipientID.equals(CISU_LRM_USER) || recipientID.equals(CISU_SDISZ_LRM_USER) )) {
+        if (!(recipientID.startsWith(HEALTH_PREFIX) || recipientID.equals(CISU_LRM_USER) || recipientID.equals(SDISZ_LRM_USER) || recipientID.equals(CISU_SDISZ_LRM_USER) )) {
             return true;
         }
         // sending message to health clients is based on client preference (default to JSON)
