@@ -5,7 +5,9 @@ import { logger } from '../logger';
 import { RabbitMQConnector } from '../rabbit/utils';
 import { Config } from '../config';
 
-const NOT_FOUND_QUEUE_ERROR_MESSAGE_PATTERN = 'NOT_FOUND - no queue'
+const NOT_FOUND_QUEUE_ERROR_MESSAGE_PATTERN = 'NOT_FOUND - no queue';
+const MAX_RECONNEXION_ATTEMPT = 3;
+const RECONNEXION_ATTEMPT_DELAI = 5000;
 
 export class MessagingService {
   private readonly vhost: string;
@@ -13,51 +15,74 @@ export class MessagingService {
   private readonly wss: WebSocketServer;
   private readonly config: Config;
   private connection: Connection | undefined;
+  private reconnectionAttemptCount: number;
+
   constructor(vhost: string, config: Config, rabbitMQConnector: RabbitMQConnector, wss: WebSocketServer) {
     this.config = config;
     this.vhost = vhost;
     this.rabbitMQConnector = rabbitMQConnector;
     this.wss = wss;
+    this.reconnectionAttemptCount = 0;
   }
 
   handleConnectionError = (err: unknown) => {
     logger.error(`Connection error for vhost '${this.vhost}': ${err}`);
+    // Crash the app
+    process.exit();
   };
 
   handleChannelError = (err: any) => {
-    // If it's a NOT-FOUND error for a queue, log it but allow execution to continue
-    if (err.code === 404 && err.message?.includes(NOT_FOUND_QUEUE_ERROR_MESSAGE_PATTERN)) {
-      if (err.message.includes('fr.health.test.samuv')) {
-        logger.info(`Test SAMU with specific version has no queue (likely to be expected): '${this.vhost}': ${err}`);
-      } else {
-        logger.error(`Missing queue for vhost '${this.vhost}': ${err}`);
-      }
+    if (this.isMissingQueueError(err)) {
+      logger.error(`Missing queue for vhost '${this.vhost}': ${err}`);
+      throw err;
     } else {
       logger.error(`Channel error for vhost '${this.vhost}': ${err}`);
+      if (this.reconnectionAttemptCount < MAX_RECONNEXION_ATTEMPT) {
+        this.reconnect();
+      } else {
+        throw err;
+      }
     }
+  };
+
+  reconnect = () => {
+    this.reconnectionAttemptCount++;
+    logger.info(`trying to reconnect (attempt n°${this.reconnectionAttemptCount})`);
+    setTimeout(() => {
+      if (this.connection !== undefined) {
+        this.connection.createChannel((_, channel) => {
+          this.startClientsConsumers(channel);
+        });
+      }
+    }, RECONNEXION_ATTEMPT_DELAI);
+  };
+
+  isMissingQueueError = (err: any) => {
+    return err.code === 404 && err.message?.includes(NOT_FOUND_QUEUE_ERROR_MESSAGE_PATTERN);
   };
 
   connectToVhost() {
     this.rabbitMQConnector.connect(this.vhost, (connection: Connection, channel: Channel) => {
       this.connection = connection;
-
       this.connection.on('error', this.handleConnectionError);
-
-      channel.on('error', this.handleChannelError);
-
-      this.config.getVhostClientMap()[this.vhost].forEach((clientId) => {
-        const service = new ClientListenerService(this.vhost, clientId, this.wss, channel);
-        service.listenClientQueues();
-      });
+      this.startClientsConsumers(channel);
     });
   }
 
-  handleCloseConnection() {
+  startClientsConsumers = (channel: Channel) => {
+    channel.on('error', this.handleChannelError);
+    this.config.getVhostClientMap()[this.vhost].forEach((clientId) => {
+      const service = new ClientListenerService(this.vhost, clientId, this.wss, channel);
+      service.listenClientQueues();
+    });
+  };
+
+  handleCloseConnection = () => {
     if (this.connection) {
       this.rabbitMQConnector.close(this.connection);
       logger.info(`RabbitMQ connection ${this.vhost} shut down`);
     }
-  }
+  };
 }
 
 class ClientListenerService {
@@ -73,7 +98,7 @@ class ClientListenerService {
     this.channel = channel;
   }
 
-  listenClientQueues() {
+  listenClientQueues = () => {
     for (const type of ['message', 'ack', 'info']) {
       const queue = `${this.clientId}.${type}`;
       try {
@@ -85,7 +110,7 @@ class ClientListenerService {
         logger.error(`Error while consuming from queue '${queue}' in vhost '${this.vhost}': ${err}`);
       }
     }
-  }
+  };
 
   handleConsumeMessage = (queue: string) => {
     return (msg: Message | null) => {
