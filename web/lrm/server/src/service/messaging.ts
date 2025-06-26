@@ -1,5 +1,5 @@
 import { Channel, Connection, Message } from 'amqplib/callback_api';
-import { Server as WssServer, OPEN } from 'ws';
+import { WebSocketServer, OPEN } from 'ws';
 
 import { logger } from '../logger';
 import { RabbitMQConnector } from '../rabbit/utils';
@@ -8,10 +8,10 @@ import { Config } from '../config';
 export class MessagingService {
   private readonly vhost: string;
   private readonly rabbitMQConnector: RabbitMQConnector;
-  private readonly wss: WssServer;
+  private readonly wss: WebSocketServer;
   private readonly config: Config;
   private connection: Connection | undefined;
-  constructor(vhost: string, config: Config, rabbitMQConnector: RabbitMQConnector, wss: WssServer) {
+  constructor(vhost: string, config: Config, rabbitMQConnector: RabbitMQConnector, wss: WebSocketServer) {
     this.config = config;
     this.vhost = vhost;
     this.rabbitMQConnector = rabbitMQConnector;
@@ -46,10 +46,10 @@ export class MessagingService {
 class ClientListenerService {
   private readonly vhost: string;
   private readonly clientId: string;
-  private readonly wss: WssServer;
+  private readonly wss: WebSocketServer;
   private readonly channel: Channel;
 
-  constructor(vhost: string, clientId: string, wss: WssServer, channel: Channel) {
+  constructor(vhost: string, clientId: string, wss: WebSocketServer, channel: Channel) {
     this.vhost = vhost;
     this.clientId = clientId;
     this.wss = wss;

@@ -1,9 +1,9 @@
-import { Server as HttpServer, createServer } from 'http';
+import { Server, createServer } from 'http';
 import cors from 'cors';
 import express, { Express } from 'express';
 import cookieParser from 'cookie-parser';
 import bodyParser from 'body-parser';
-import { Server as WssServer } from 'ws';
+import { WebSocketServer } from 'ws';
 
 import { logger } from './logger';
 import { RabbitMQConnector } from './rabbit/utils';
@@ -17,8 +17,8 @@ export class ExpressServer {
   private readonly rabbitMQConnector: RabbitMQConnector;
   private readonly app: Express;
   private readonly connections: MessagingService[];
-  private wss: WssServer | undefined;
-  private server: HttpServer | undefined;
+  private wss: WebSocketServer | undefined;
+  private server: Server | undefined;
 
   constructor(config: Config, connector: RabbitMQConnector) {
     this.config = config;
@@ -53,7 +53,7 @@ export class ExpressServer {
   launch() {
     this.server = createServer(this.app).listen(this.config.getPort());
 
-    this.wss = new WssServer({ server: this.server });
+    this.wss = new WebSocketServer({ server: this.server });
     this.wss.on('connection', (ws) => {
       const wsHandler = new WebSocketHandler(ws, this.config, this.rabbitMQConnector);
       wsHandler.listen();
