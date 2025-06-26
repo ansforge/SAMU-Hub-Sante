@@ -42,7 +42,6 @@
     "rollup-plugin-polyfill-node": "^0.13.0",
     "uuid": "^11.1.0",
     "vite-plugin-vuetify": "^2.0.3",
-    "vue-json-viewer": "^3.0.4",
     "vue3-toastify": "^0.2.3",
     "vuedraggable": "^2.24.3"
   },

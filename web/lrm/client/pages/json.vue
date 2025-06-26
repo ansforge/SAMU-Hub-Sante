@@ -126,23 +126,7 @@
             </v-card>
           </v-dialog>
         </v-card-title>
-        <v-card-text>
-          <json-viewer
-            v-if="store.currentMessage"
-            :value="
-              trimEmptyValues({
-                [currentMessageType?.schema?.title]: store.currentMessage,
-              })
-            "
-            :expand-depth="10"
-            :copyable="{
-              copyText: 'Copier',
-              copiedText: 'Copié !',
-              timeout: 1000,
-            }"
-            theme="json-theme"
-          />
-        </v-card-text>
+        <v-card-text> </v-card-text>
       </v-card>
     </v-col>
   </v-row>

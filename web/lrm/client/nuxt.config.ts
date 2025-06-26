@@ -51,13 +51,13 @@ export default defineNuxtConfig({
   },
 
   app: {
-    baseURL: isEnvProd() ? '/lrm/' : '/',
+    baseURL: isEnvProd() ? '/' : '/',
     head: {
       link: [
         {
           rel: 'icon',
           type: 'image/x-icon',
-          href: `${isEnvProd() ? '/lrm/' : '/'}favicon.ico`,
+          href: `${isEnvProd() ? '/' : '/'}favicon.ico`,
         },
       ],
     },

@@ -13,7 +13,7 @@ describe('Demo page spec', () => {
     cy.intercept('GET', '**/resources/sample/examples/**').as('examples');
 
     // Visit the LRM demo page
-    cy.visit('http://localhost:3000/lrm');
+    cy.visit('http://localhost:3000');
     // Arbitrary wait to avoid chrome's reloading behavior breaking the tests
     cy.wait(10000);
 

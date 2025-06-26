@@ -96,19 +96,6 @@
           </v-btn>
         </span>
       </v-row>
-
-      <json-viewer
-        v-if="!dense"
-        :value="
-          showFullMessage
-            ? body
-            : body.content[0].jsonContent.embeddedJsonContent.message
-        "
-        :expand-depth="jsonDepth"
-        :copyable="{ copyText: 'Copier', copiedText: 'Copié !', timeout: 1000 }"
-        expanded
-        theme="json-theme"
-      />
     </div>
   </div>
 </template>

@@ -8,7 +8,7 @@ describe('Json creator page spec', () => {
     });
 
     // Visit the LRM demo page
-    cy.visit('http://localhost:3000/lrm');
+    cy.visit('http://localhost:3000');
     cy.wait(10000);
 
     // Wait for the json creator button to be present and clickable
