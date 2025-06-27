@@ -142,6 +142,10 @@ public class HubConfiguration {
 
     public String[] getClientVersionsForPerimeter(String clientId, String perimeterName) {
         Map<String, String> clientPerimeterDefinition = clientsPerimeterAndVersions.getOrDefault(clientId, null);
+        if(clientPerimeterDefinition == null){
+            log.debug("ClientId was not found in clientsPerimeterAndVersions, or the variable is not initialized.");
+            return null;
+        }
         String versions = clientPerimeterDefinition.getOrDefault(perimeterName, null);
         return splitString(versions);
     }
