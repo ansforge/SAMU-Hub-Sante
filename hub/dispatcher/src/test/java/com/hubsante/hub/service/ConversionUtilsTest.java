@@ -337,4 +337,30 @@ public class ConversionUtilsTest {
         assertNull(trimVersionSuffix(null));
         assertEquals("",trimVersionSuffix(""));
     }
+
+    @Test
+    void testFormatVersionToVhosts() {
+        String[] versions = {"1.5", "2.0"};
+        String[] expected = {"15-15_v1.5", "15-15_v2.0"};
+        assertArrayEquals(expected, ConversionUtils.formatVersionToVhosts(versions, "15-15"));
+
+        versions = new String[]{"1.5", "2.0"};
+        expected = new String[]{"15-smur_v1.5", "15-smur_v2.0"};
+        assertArrayEquals(expected, ConversionUtils.formatVersionToVhosts(versions, "15-smur"));
+
+        String[] empty = {};
+        String[] expectedEmpty = {};
+        assertArrayEquals(expectedEmpty, ConversionUtils.formatVersionToVhosts(empty, "15-15"));
+
+        assertNull(ConversionUtils.formatVersionToVhosts(null, "15-15"));
+    }
+
+    @Test
+    public void testIsConversionAvailable() {
+        assertTrue(ConversionUtils.isConversionAvailable("15-15_v1.5"));
+        assertTrue(ConversionUtils.isConversionAvailable("15-15_v2.1"));
+        assertTrue(ConversionUtils.isConversionAvailable("15-15_v2.0"));
+        assertTrue(ConversionUtils.isConversionAvailable("15-nexsis_v1.9"));
+        assertFalse(ConversionUtils.isConversionAvailable("other_vhost"));
+    }
 }
