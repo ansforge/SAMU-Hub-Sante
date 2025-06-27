@@ -110,7 +110,7 @@ public class HubConfiguration {
         String[] headers = headerLine.split(COLUMN_DIVIDER);
         int numberOfColumns = headers.length;
 
-        Set<String> perimeterNames = Set.of("15-15", "15-nexsis", "15-gps", "15-smur");
+        Set<String> perimeterNames = Set.of(Constants.HEALTH_PERIMETER, Constants.CISU_PERIMETER, Constants.GPS_PERIMETER, Constants.SMUR_PERIMETER);
 
         Map<String, Integer> perimeterColumnIndexes = new HashMap<>();
         for (int i = 0; i < numberOfColumns; i++) {
