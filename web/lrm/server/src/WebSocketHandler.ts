@@ -23,7 +23,7 @@ export class WebSocketHandler {
   listen = () => {
     this.ws.on(WS_EVENT.MESSAGE, this.sendMessage);
     this.ws.on(WS_EVENT.CLOSE, this.close);
-  }
+  };
 
   sendMessage = async (body: RawData) => {
     // TODO: handle body properly
@@ -31,9 +31,8 @@ export class WebSocketHandler {
     // @ts-expect-error
     const { key, msg, vhost } = JSON.parse(body);
     logger.info(`Received message from WebSocket client: ${msg.distributionID}`);
-    logger.debug(`Received message from WebSocket client: ${msg.distributionID} of content ${body}`);
-    logger.info(` [x] Sending msg ${msg.distributionID} to key ${key} (vhost: ${vhost})`);
     try {
+      logger.info(` [x] Sending msg ${msg.distributionID} to key ${key} (vhost: ${vhost})`);
       const { connection, channel } = await this.rabbitMQConnector.connectAsync(vhost);
       channel.publish(this.config.getHubSanteExchange(), key, Buffer.from(JSON.stringify(msg)), {
         // Ref.: https://github.com/amqp-node/amqplib/blob/4791f2dfbe8f3bfbd02bb0907e3c35129ae71c13/lib/api_args.js#L231
@@ -46,9 +45,9 @@ export class WebSocketHandler {
     } catch (error) {
       logger.error(`Error publishing message to RabbitMQ (vhost: ${vhost}): ${error}`);
     }
-  }
+  };
 
   close = () => {
     logger.info('WebSocket client disconnected');
-  }
+  };
 }
