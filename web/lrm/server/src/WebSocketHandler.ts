@@ -20,13 +20,12 @@ export class WebSocketHandler {
     this.rabbitMQConnector = rabbitMQConnector;
   }
 
-  listen() {
+  listen = () => {
     this.ws.on(WS_EVENT.MESSAGE, this.sendMessage);
     this.ws.on(WS_EVENT.CLOSE, this.close);
   }
 
-  async sendMessage(body: RawData) {
-    // Publish the message to RabbitMQ
+  sendMessage = async (body: RawData) => {
     // TODO: handle body properly
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-expect-error
@@ -49,7 +48,7 @@ export class WebSocketHandler {
     }
   }
 
-  close() {
+  close = () => {
     logger.info('WebSocket client disconnected');
   }
 }
