@@ -14,8 +14,8 @@ beforeEach(() => {
     HUB_URL: 'foo',
     LRM_PASSPHRASE: 'foo',
     VHOST_CLIENT_MAP: JSON.stringify({
-      '15-15_v1.5': ['fr.health.test.samuV1', 'fr.health.test.samuV2'],
-      '15-15_v2.0': ['fr.health.test.samuV1', 'fr.health.test.samuV2'],
+      '15-15_v1.5': ['fr.health.test.samuV1', 'fr.health.test.samuA'],
+      '15-15_v2.0': ['fr.health.test.samuV2', 'fr.health.test.samuB'],
     }),
   };
 });
