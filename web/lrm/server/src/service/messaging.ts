@@ -5,6 +5,8 @@ import { logger } from '../logger';
 import { RabbitMQConnector } from '../rabbit/utils';
 import { Config } from '../config';
 
+const NOT_FOUND_QUEUE_ERROR_MESSAGE_PATTERN = 'NOT_FOUND - no queue'
+
 export class MessagingService {
   private readonly vhost: string;
   private readonly rabbitMQConnector: RabbitMQConnector;
@@ -24,7 +26,7 @@ export class MessagingService {
 
   handleChannelError = (err: any) => {
     // If it's a NOT-FOUND error for a queue, log it but allow execution to continue
-    if (err.code === 404 && err.message?.includes('NOT_FOUND - no queue')) {
+    if (err.code === 404 && err.message?.includes(NOT_FOUND_QUEUE_ERROR_MESSAGE_PATTERN)) {
       if (err.message.includes('fr.health.test.samuv')) {
         logger.info(`Test SAMU with specific version has no queue (likely to be expected): '${this.vhost}': ${err}`);
       } else {
