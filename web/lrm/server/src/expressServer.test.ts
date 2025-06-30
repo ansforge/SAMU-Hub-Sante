@@ -51,8 +51,8 @@ beforeEach(() => {
     HUB_URL: 'foo',
     LRM_PASSPHRASE: 'foo',
     VHOST_CLIENT_MAP: JSON.stringify({
-      '15-15_v1.5': ['fr.health.test.samuV1', 'fr.health.test.samuV2'],
-      '15-15_v2.0': ['fr.health.test.samuV1', 'fr.health.test.samuV2'],
+      '15-15_v1.5': ['fr.health.test.samuV1', 'fr.health.test.samuA'],
+      '15-15_v2.0': ['fr.health.test.samuV2', 'fr.health.test.samuB'],
     }),
   };
 });
@@ -62,19 +62,21 @@ afterEach(async () => {
   process.env = originalEnv;
 });
 
-describe('Test Connection', () => {
-  it('should connect and display logs', async () => {
+describe('ExpressServer launch', () => {
+  it('should start the server and connect to client queues', async () => {
     const config = new Config();
     const server = new ExpressServer(config, new RabbitMQConnector(config));
+
+    server.launch();
 
     try {
       checkConnectionToVhost('15-15_v1.5');
       checkConsumerListenOnClientQueues('fr.health.test.samuV1');
-      checkConsumerListenOnClientQueues('fr.health.test.samuV2');
+      checkConsumerListenOnClientQueues('fr.health.test.samuA');
 
       checkConnectionToVhost('15-15_v2.0');
-      checkConsumerListenOnClientQueues('fr.health.test.samuV1');
       checkConsumerListenOnClientQueues('fr.health.test.samuV2');
+      checkConsumerListenOnClientQueues('fr.health.test.samuB');
     } finally {
       // Teardown
       await server.close();
