@@ -62,7 +62,7 @@ public class HubConfiguration {
     private HashMap<String, Boolean> directCisuPreferences = new HashMap<>();
     private HashMap<String, String> clientsEditorMap = new HashMap<>();
     private Map<String, Map<String, String>> clientsPerimeterAndVersions = new HashMap<>();
-    private List<String> supportedMessages = List.of(new String[]{});
+    private List<String> supportedMessages;
 
     @PostConstruct
     public void init() throws Exception {
