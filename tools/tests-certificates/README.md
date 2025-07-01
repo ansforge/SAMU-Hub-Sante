@@ -10,15 +10,13 @@ EXT=root.ext DOMAIN=root ./generate.sh
 ## Generate client csr and private keys
 To generate a private key, a CSR (Certificate Signing Request) and a self-signed certificate, run
 ```bash
-DOMAIN=client ./generate.sh
+DOMAIN=<client_name> ./generate.sh
 ```
 for example
 ```bash
 DOMAIN=dispatcher ./generate.sh
 ```
-
-We need to generate rabbitmq, dispatcher, fr.health.samuA and fr.health.samuB to run Dispatcher tests.
-
+To run Dispatcher tests, we need the following client_names : rabbitmq, dispatcher, fr.health.samuA and fr.health.samuB.
 
 ## Sign
 Then we need to sign the generated CSRs to create the signed .crt files
@@ -26,7 +24,7 @@ Then we need to sign the generated CSRs to create the signed .crt files
 cd CA;
 # copy csr file only to CA/ folder
 # we can delete the self_signed generated cert file
-DOMAIN=client ./sign.sh
+DOMAIN=<client_name> ./sign.sh
 ```
 It will generate a $DOMAIN.crt file.
 Now we have a $DOMAIN.crt and a $DOMAIN.key file for each client
