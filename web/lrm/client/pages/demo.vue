@@ -124,7 +124,7 @@
 </template>
 
 <script setup>
-import { toRef } from 'vue';
+import { ref, toRef, toRefs, watch } from 'vue';
 import { toast } from 'vue3-toastify';
 import { consola } from 'consola';
 import mixinWebsocket from '~/mixins/mixinWebsocket';
@@ -138,7 +138,8 @@ import {
   getMessageType,
   getCaseId,
   generateTimestampId,
-  deepReplaceString,
+  findPathsWithSubstring,
+  replaceSubstringsAtPaths,
 } from '~/composables/messageUtils.js';
 import { loadSchemas } from '~/composables/schemaUtils';
 
@@ -156,6 +157,48 @@ function submit(form) {
 // eslint-disable-next-line no-undef
 useHead({
   titleTemplate: toRef(useMainStore(), 'demoHeadTitle'),
+});
+const store = useMainStore();
+const newId = ref(null);
+const { currentMessage } = toRefs(store);
+consola.log('New case ID generated:', newId);
+consola.info('Demo component initialized with store:', store);
+
+watch(
+  () => store.currentMessageLoaded,
+  (newValue) => {
+    if (newValue) {
+      newId.value = generateTimestampId();
+    } else {
+      consola.warn('Current message not loaded yet.');
+    }
+  },
+  { immediate: true }
+);
+
+watch(newId, (newVal) => {
+  if (!newVal) return;
+  // This will trigger a reactivity update in the form
+  consola.log('New case ID generated:', newVal);
+  const oldId = currentMessage?.value?.senderCaseId;
+  const newId = newVal;
+  consola.log('Old case ID:', oldId, 'New case ID:', newId);
+
+  if (!oldId || !newId || oldId === newId) {
+    consola.log('No change in case ID, skipping update.');
+    return;
+  }
+
+  const paths = findPathsWithSubstring(currentMessage.value, oldId);
+
+  const newObj = replaceSubstringsAtPaths(
+    currentMessage.value,
+    paths,
+    oldId,
+    newId
+  );
+
+  Object.assign(currentMessage.value, newObj);
 });
 </script>
 
@@ -195,6 +238,9 @@ export default {
     };
   },
   computed: {
+    currentMessage() {
+      return this.store.currentMessage;
+    },
     currentMessageType() {
       return this.store.messageTypes[this.messageTypeTabIndex];
     },
@@ -260,34 +306,6 @@ export default {
     selectedVhost() {
       this.source = this.store.selectedVhost.modelVersion;
     },
-    newCaseId(newVal) {
-      console.log('currentMessage', this.store.currentMessage);
-      // This will trigger a reactivity update in the form
-      consola.log('New case ID generated:', newVal);
-      const oldId = this.store.currentMessage?.senderCaseId;
-      const newId = newVal;
-
-      if (!oldId || !newId || oldId === newId) {
-        consola.log('No change in case ID, skipping update.');
-        return;
-      }
-
-      consola.warn(
-        `Case ID changed from ${oldId} to ${newId}. This may affect message tracking.`
-      );
-      const newCurrentMessage = deepReplaceString(
-        this.store.currentMessage,
-        oldId,
-        newId
-      );
-
-      this.store.currentMessage = {}; // Clear current message to trigger reactivity
-      this.store.currentMessage = newCurrentMessage;
-      consola.log(
-        'Updated currentMessage with new case ID:',
-        this.store.currentMessage
-      );
-    },
   },
   mounted() {
     this.source = this.store.selectedVhost.modelVersion;
@@ -317,7 +335,7 @@ export default {
       }
     },
     generateTimestampId() {
-      this.newCaseId = generateTimestampId();
+      this.store.newCaseId = generateTimestampId();
       consola.log('New case ID generated:', this.newCaseId);
     },
   },

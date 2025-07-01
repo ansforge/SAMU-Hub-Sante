@@ -100,6 +100,9 @@ export const useMainStore = defineStore('main', {
     messageTypes(state) {
       return state._messageTypes;
     },
+    currentMessageLoaded(state) {
+      return !!state.currentMessage?.senderCaseId;
+    },
   },
 
   actions: {

@@ -339,3 +339,27 @@ export function findPathsWithSubstring(obj, substring) {
   helper(obj, []);
   return result;
 }
+
+/**
+ * Replaces all occurrences of a substring with another substring at the specified paths in an object or array.
+ * @param {Object|Array} obj - The object or array to process.
+ * @param {Array<Array<string|number>>} paths - Array of paths (each path is an array of keys/indexes).
+ * @param {string} search - The substring to search for.
+ * @param {string} replacement - The substring to replace with.
+ * @returns {Object|Array} - A new object or array with replacements at the specified paths.
+ */
+export function replaceSubstringsAtPaths(obj, paths, search, replacement) {
+  const clone = JSON.parse(JSON.stringify(obj));
+  for (const path of paths) {
+    let ref = clone;
+    for (let i = 0; i < path.length - 1; i++) {
+      ref = ref?.[path[i]];
+      if (ref == null) break;
+    }
+    const lastKey = path[path.length - 1];
+    if (ref && typeof ref[lastKey] === 'string') {
+      ref[lastKey] = ref[lastKey].split(search).join(replacement);
+    }
+  }
+  return clone;
+}
