@@ -72,5 +72,3 @@ jobs:
           build: npm run build:test
           start: npm run start
           browser: chrome
-
-          
