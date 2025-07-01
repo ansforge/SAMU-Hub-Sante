@@ -38,7 +38,7 @@ import java.util.*;
 @Configuration
 public class HubConfiguration {
 
-    private static final int TOGGLE_ROW_LENGTH = 9;
+    private static final int ROW_LENGTH = 9;
     private static final String DATA_DIVIDER = ",";
     private static final String COLUMN_DIVIDER = ";";
 
@@ -78,8 +78,8 @@ public class HubConfiguration {
             ObjectRowProcessor clientPreferencesRowProcessor = new ObjectRowProcessor() {
                 @Override
                 public void rowProcessed(Object[] objects, ParsingContext parsingContext) {
-                    if (objects.length != TOGGLE_ROW_LENGTH) {
-                        log.warn("There were more than {} columns in the client preferences file, extra columns are being ignored", TOGGLE_ROW_LENGTH);
+                    if (objects.length != ROW_LENGTH) {
+                        log.warn("There were more than {} columns in the client preferences file, extra columns are being ignored", ROW_LENGTH);
                     }
                     String[] items = Arrays.asList(objects).toArray(new String[TOGGLE_ROW_LENGTH]);
                     useXmlPreferences.put(items[0], Boolean.parseBoolean(items[1]));
