@@ -220,16 +220,16 @@ public class ConversionUtilsTest {
             // Health to Health (false)
             when(edxlMessage.getSenderID()).thenReturn("fr.health.samuA");
             mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage)).thenReturn("fr.health.samuB");
-            assertFalse(ConversionUtils.isCisuExchange(edxlMessage));
+            assertFalse(ConversionUtils.isOneCisuHubexInvolved(edxlMessage));
 
             // Health to CISU (true)
             mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage)).thenReturn("fr.fire.sdisZ");
-            assertTrue(ConversionUtils.isCisuExchange(edxlMessage));
+            assertTrue(ConversionUtils.isOneCisuHubexInvolved(edxlMessage));
 
             // CISU to Health (true)
             when(edxlMessage.getSenderID()).thenReturn("fr.fire.sdisZ");
             mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage)).thenReturn("fr.health.samuA");
-            assertTrue(ConversionUtils.isCisuExchange(edxlMessage));
+            assertTrue(ConversionUtils.isOneCisuHubexInvolved(edxlMessage));
         }
     }
 
@@ -297,7 +297,7 @@ public class ConversionUtilsTest {
                 Boolean[] testCase = testCases.get(i);
 
                 // Mock the helper methods
-                mockedConversionUtils.when(() -> ConversionUtils.isCisuExchange(edxlMessage)).thenReturn(testCase[0]);
+                mockedConversionUtils.when(() -> ConversionUtils.isOneCisuHubexInvolved(edxlMessage)).thenReturn(testCase[0]);
                 mockedConversionUtils.when(() -> ConversionUtils.isConvertedModel(edxlMessage)).thenReturn(testCase[1]);
                 mockedConversionUtils.when(() -> ConversionUtils.isAlreadyCisuConverted(hubConfig.getVhost(), MessageUtils.getRecipientID(edxlMessage))).thenReturn(false);
                 mockedConversionUtils.when(() -> ConversionUtils.isDirectCisuForHealthActor(hubConfig, edxlMessage)).thenReturn(testCase[2]);

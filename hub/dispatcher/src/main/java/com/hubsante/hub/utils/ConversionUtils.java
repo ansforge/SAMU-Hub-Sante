@@ -74,11 +74,11 @@ public class ConversionUtils {
         String[] targetVersionsOnSourcePerimeter = new String[]{};
 
         // CISU conversion case - recipient and sender are on different vhosts
-        boolean isCisuRecipient = recipientID.startsWith(FR_FIRE_PREFIX) || recipientID.startsWith(FR_CISU_PREFIX);
-        if (isCisuRecipient) {
+        boolean isNexsisRecipient = recipientID.startsWith(FR_FIRE_PREFIX) || recipientID.startsWith(FR_CISU_PREFIX);
+        if (isNexsisRecipient) {
             return new String[]{NEXSIS_VHOST}; // ["15-nexsis_v1.9"]
         }
-        boolean isCisuSender = senderID.startsWith(FR_FIRE_PREFIX) || senderID.startsWith(FR_CISU_PREFIX);
+        boolean isCisuSender = !senderID.startsWith(FR_HEALTH_PREFIX);
         if(isCisuSender){
             String perimeter15_15 = "15-15";
             targetVersionsOnSourcePerimeter = hubConfig.getClientVersionsForPerimeter(recipientID, perimeter15_15); // ex ['1.5, 2.0']
@@ -98,7 +98,7 @@ public class ConversionUtils {
     }
 
     public static boolean requiresCisuConversion(HubConfiguration hubConfig, EdxlMessage edxlMessage) {
-        return isCisuExchange(edxlMessage)
+        return isOneCisuHubexInvolved(edxlMessage)
                 && isConvertedModel(edxlMessage)
                 && !isAlreadyCisuConverted(hubConfig.getVhost(), edxlMessage.getDescriptor().getExplicitAddress().getExplicitAddressValue())
                 && !isDirectCisuForHealthActor(hubConfig, edxlMessage);
@@ -119,10 +119,10 @@ public class ConversionUtils {
         }
     }
 
-    public static boolean isCisuExchange(EdxlMessage edxlMessage) {
+    public static boolean isOneCisuHubexInvolved(EdxlMessage edxlMessage) {
         String recipientID = getRecipientID(edxlMessage);
         String senderID = edxlMessage.getSenderID();
-        return recipientID.startsWith(FR_FIRE_PREFIX) || recipientID.startsWith(FR_CISU_PREFIX) || senderID.startsWith(FR_CISU_PREFIX) || senderID.startsWith(FR_FIRE_PREFIX);
+        return !(recipientID.startsWith(HEALTH_PREFIX) && senderID.startsWith(HEALTH_PREFIX));
     }
 
     public static boolean isConvertedModel(EdxlMessage edxlMessage) {
