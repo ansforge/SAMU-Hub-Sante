@@ -140,6 +140,8 @@ import {
   generateTimestampId,
   findPathsWithSubstring,
   replaceSubstringsAtPaths,
+  getChangedPaths,
+  getValueAtPath,
 } from '~/composables/messageUtils.js';
 import { loadSchemas } from '~/composables/schemaUtils';
 
@@ -160,6 +162,7 @@ useHead({
 });
 const store = useMainStore();
 const newId = ref(null);
+const paths = ref([]);
 const { currentMessage } = toRefs(store);
 consola.log('New case ID generated:', newId);
 consola.info('Demo component initialized with store:', store);
@@ -184,22 +187,44 @@ watch(newId, (newVal) => {
   const newId = newVal;
   consola.log('Old case ID:', oldId, 'New case ID:', newId);
 
-  if (!oldId || !newId || oldId === newId) {
-    consola.log('No change in case ID, skipping update.');
-    return;
-  }
+  if (!oldId || !newId || oldId === newId) return;
 
-  const paths = findPathsWithSubstring(currentMessage.value, oldId);
+  paths.value = findPathsWithSubstring(currentMessage.value, oldId);
 
   const newObj = replaceSubstringsAtPaths(
     currentMessage.value,
-    paths,
+    paths.value,
     oldId,
     newId
   );
 
-  Object.assign(currentMessage.value, newObj);
+  currentMessage.value = newObj;
 });
+
+watch(
+  () => currentMessage.value,
+  (newValue, oldValue) => {
+    const changedPaths = getChangedPaths(newValue, oldValue);
+    if (changedPaths.length !== 1) return;
+    const changedPath = changedPaths[0];
+    const changedValue = getValueAtPath(newValue, changedPath);
+    const originalValue = getValueAtPath(oldValue, changedPath);
+    const originalCaseId =
+      changedPath[0] === 'senderCaseId'
+        ? originalValue
+        : currentMessage.value?.senderCaseId;
+    // TODO: handle case where change are made in the form
+
+    console.log('chagedValue:', changedValue);
+    console.log('originalValue:', originalValue);
+    console.log('originalCaseId:', originalCaseId);
+    // i want paths.value excluding changedPath
+
+    //change id with the new one :
+    ///console.log('newId:', newId.value);
+  },
+  { immediate: true }
+);
 </script>
 
 <script>
