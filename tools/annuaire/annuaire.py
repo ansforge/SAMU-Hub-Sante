@@ -2,21 +2,11 @@ from flask import Flask, jsonify
 import csv
 
 app = Flask(__name__)
-CSV_DIR = "/config"
+CSV_DIR = "/config" #cf configmap
 
-@app.get("/<env>/annuaire")
-def getJson(env):
-    """ env peut être : 'bac-a-sable', 'pre-prod', 'prod'"""
-    mapping = {
-        "bac-a-sable": "bas.csv",
-        "pre-prod": "pprod.csv",
-        "prod": "prod.csv"
-    }
-
-    filename = mapping.get(env)
-    if not filename:
-        abort(404, description="Environnement inconnu")
-
+@app.get("/annuaire")
+def getJson():
+    filename = "rabbitmq.clients-configuration.csv"
     path = os.path.join(CSV_DIR, filename)
     if not os.path.exists(path):
         abort(500, description="Fichier CSV introuvable")
@@ -36,10 +26,10 @@ def cleanData(data):
     for row in dataUpdated:
         row['useXML'] = False if row['useXML'] == '' else True
         row['selected'] = False # pour les checkboxes de l'annuaire
-        row['P1515'] = getVhost('P: 15-15', '15-15', row['P: 15-15'].split(';') if row['P: 15-15'] else [])
-        row['P15gps'] = getVhost('P: 15-gps', '15-gps', row['P: 15-gps'].split(';') if row['P: 15-gps'] else [])
-        row['P15nexsis'] = getVhost('P: 15-nexsis', '15-nexsis', row['P: 15-nexsis'].split(';') if row['P: 15-nexsis'] else [])
-        row['P15smur'] = getVhost('P: 15-smur', '15-smur', row['P: 15-smur'].split(';') if row['P: 15-smur'] else [])
+        row['P1515'] = getVhost('15-15', row['P: 15-15'].split(';') if row['P: 15-15'] else [])
+        row['P15gps'] = getVhost('15-gps', row['P: 15-gps'].split(';') if row['P: 15-gps'] else [])
+        row['P15nexsis'] = getVhost('15-nexsis', row['P: 15-nexsis'].split(';') if row['P: 15-nexsis'] else [])
+        row['P15smur'] = getVhost('15-smur', row['P: 15-smur'].split(';') if row['P: 15-smur'] else [])
     columns_to_remove = ['CommonName', 'additionalPermissions', 'lrm_test', 'directCISU', 'P: 15-15', 'P: 15-gps', 'P: 15-nexsis', 'P: 15-smur'] # on supprime les colonnes non utilisées par l'annuaire
     for row in dataUpdated:
         for column in columns_to_remove:
@@ -49,16 +39,15 @@ def cleanData(data):
     
 
 
-def getVhost(perimeter, vhost_prefix, versions):
-    """ perimeter is one of : 'P: 15-15', 'P: 15-gps', 'P: 15-nexsis', 'P: 15-smur
-        vhost_prefix is one of : '15-15', '15-gps', '15-nexsis', '15-smur'
+def getVhost(vhost_prefix, versions):
+    """ vhost_prefix is one of : '15-15', '15-gps', '15-nexsis', '15-smur'
         versions : string[]
     --------------------------------------------------------------------------------
-        return : liste de listes [[vhost, mdd], [vhost, mdd], ...]"""
-    vhost=[]
+        return : [[vhost, mdd], [vhost, mdd], ...]"""
+    liste_vhost_mdd=[]
     for version in versions:
-        vhost.append([f"{vhost_prefix}_v{version}", getMDD(f"{vhost_prefix}_v{version}")])
-    return vhost
+        liste_vhost_mdd.append([f"{vhost_prefix}_v{version}", getMDD(f"{vhost_prefix}_v{version}")])
+    return liste_vhost_mdd
 
 def getMDD(vhost):
     for raw in dsf:
