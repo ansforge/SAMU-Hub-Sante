@@ -22,9 +22,12 @@
 </template>
 
 <script setup>
+import consola from 'consola';
 import { ref, computed, watch } from 'vue';
 import { useMainStore } from '~/store';
 const store = useMainStore();
+
+consola.info('SchemaForm component initialized with store:', store);
 
 const props = defineProps({
   currentMessageType: {

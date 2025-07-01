@@ -275,3 +275,67 @@ export function getReadableMessageType(messageType) {
       return 'Message';
   }
 }
+
+/**
+ * Generates an ID in the format AAMMJJHHMMSSmmm (year, month, day, hour, minute, second, millisecond)
+ * Example: 250630153012123 for 2025-06-30 15:30:12.123
+ */
+export function generateTimestampId() {
+  const now = new Date();
+  const year = String(now.getFullYear()).slice(-2); // AA
+  const month = String(now.getMonth() + 1).padStart(2, '0'); // MM
+  const day = String(now.getDate()).padStart(2, '0'); // JJ
+  const hour = String(now.getHours()).padStart(2, '0'); // HH
+  const minute = String(now.getMinutes()).padStart(2, '0'); // MM
+  const second = String(now.getSeconds()).padStart(2, '0'); // SS
+  const ms = String(now.getMilliseconds()).padStart(3, '0'); // mmm
+  return `${year}${month}${day}${hour}${minute}${second}${ms}`;
+}
+
+/**
+ * Deeply replaces all occurrences of a substring with another substring in all string values within an object or array.
+ * @param {Object|Array} obj - The object or array to process.
+ * @param {string} search - The substring to search for.
+ * @param {string} replacement - The substring to replace with.
+ * @returns {Object|Array} - The new object or array with replacements.
+ */
+export function deepReplaceString(obj, search, replacement) {
+  if (typeof obj === 'string') {
+    return obj.split(search).join(replacement);
+  } else if (Array.isArray(obj)) {
+    return obj.map((item) => deepReplaceString(item, search, replacement));
+  } else if (obj && typeof obj === 'object') {
+    return Object.fromEntries(
+      Object.entries(obj).map(([key, value]) => [
+        key,
+        deepReplaceString(value, search, replacement),
+      ])
+    );
+  }
+  return obj;
+}
+
+/**
+ * Recursively finds all paths in an object or array where a string value contains the given substring.
+ * @param {Object|Array} obj - The object or array to search.
+ * @param {string} substring - The substring to search for.
+ * @returns {Array<Array<string|number>>} - An array of paths (each path is an array of keys/indexes).
+ */
+export function findPathsWithSubstring(obj, substring) {
+  const result = [];
+  function helper(current, path) {
+    if (typeof current === 'string') {
+      if (current.includes(substring)) {
+        result.push([...path]);
+      }
+    } else if (Array.isArray(current)) {
+      current.forEach((item, idx) => helper(item, [...path, idx]));
+    } else if (current && typeof current === 'object') {
+      Object.entries(current).forEach(([key, value]) => {
+        helper(value, [...path, key]);
+      });
+    }
+  }
+  helper(obj, []);
+  return result;
+}

@@ -137,6 +137,8 @@ import {
   isOut,
   getMessageType,
   getCaseId,
+  generateTimestampId,
+  deepReplaceString,
 } from '~/composables/messageUtils.js';
 import { loadSchemas } from '~/composables/schemaUtils';
 
@@ -171,6 +173,7 @@ export default {
       selectedMessageType: 'message',
       selectedClientId: null,
       selectedCaseIds: [],
+      newCaseId: null,
       queueTypes: [
         {
           name: 'Message',
@@ -245,16 +248,45 @@ export default {
   },
   watch: {
     source() {
+      this.generateTimestampId();
       this.updateForm();
     },
     currentMessageType() {
       this.store.selectedSchema =
         this.store.messageTypes[this.messageTypeTabIndex];
       this.store.currentUseCase =
-        this.store.messageTypes[this.messageTypeTabIndex].schema.title;
+        this.store.messageTypes[this.messageTypeTabIndex].schema?.title;
     },
     selectedVhost() {
       this.source = this.store.selectedVhost.modelVersion;
+    },
+    newCaseId(newVal) {
+      console.log('currentMessage', this.store.currentMessage);
+      // This will trigger a reactivity update in the form
+      consola.log('New case ID generated:', newVal);
+      const oldId = this.store.currentMessage?.senderCaseId;
+      const newId = newVal;
+
+      if (!oldId || !newId || oldId === newId) {
+        consola.log('No change in case ID, skipping update.');
+        return;
+      }
+
+      consola.warn(
+        `Case ID changed from ${oldId} to ${newId}. This may affect message tracking.`
+      );
+      const newCurrentMessage = deepReplaceString(
+        this.store.currentMessage,
+        oldId,
+        newId
+      );
+
+      this.store.currentMessage = {}; // Clear current message to trigger reactivity
+      this.store.currentMessage = newCurrentMessage;
+      consola.log(
+        'Updated currentMessage with new case ID:',
+        this.store.currentMessage
+      );
     },
   },
   mounted() {
@@ -283,6 +315,10 @@ export default {
         // TODO: automatically switch to the corresponding schema?
         toast.error('Le message ne correspond pas au schéma sélectionné');
       }
+    },
+    generateTimestampId() {
+      this.newCaseId = generateTimestampId();
+      consola.log('New case ID generated:', this.newCaseId);
     },
   },
 };
