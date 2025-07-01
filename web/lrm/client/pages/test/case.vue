@@ -266,10 +266,10 @@
                               requiredValue.valid === 'valid'
                                 ? 'green'
                                 : requiredValue.valid === 'approximate'
-                                ? 'orange'
-                                : requiredValue.valid === 'invalid'
-                                ? 'red'
-                                : 'black',
+                                  ? 'orange'
+                                  : requiredValue.valid === 'invalid'
+                                    ? 'red'
+                                    : 'black',
                           }"
                         ><b>{{ requiredValue.label }}<br>{{ requiredValue.path.join('.') }}:</b> <br>{{ requiredValue.value }}</pre>
                       </span>
@@ -653,8 +653,8 @@ function getAwaitedReferenceDistributionObject(step) {
     lastCurrentStepAckedDistributionID === step?.awaitedReferenceDistributionID
       ? ValidationStatus.VALID
       : lastCurrentStepAckedDistributionID
-      ? ValidationStatus.APPROXIMATE
-      : ValidationStatus.INVALID;
+        ? ValidationStatus.APPROXIMATE
+        : ValidationStatus.INVALID;
 
   return {
     '$.reference.distributionID': {

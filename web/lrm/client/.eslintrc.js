@@ -5,7 +5,7 @@ module.exports = {
     node: true,
     es2021: true,
   },
-  parser: 'vue-eslint-parser', // ✅ Use Vue's ESLint parser
+  parser: 'vue-eslint-parser', // Use Vue's ESLint parser
   extends: [
     'eslint:recommended',
     'plugin:@typescript-eslint/recommended',
@@ -19,9 +19,8 @@ module.exports = {
     sourceType: 'module',
   },
   plugins: ['@typescript-eslint', 'vue', 'prettier'],
-  // add your custom rules here
   rules: {
-    'prettier/prettier': ['error', { singleQuote: true, semi: true }],
+    'prettier/prettier': ['error'],
     'vue/multi-word-component-names': 'off',
     '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
     'no-console': ['warn', { allow: ['error'] }],
