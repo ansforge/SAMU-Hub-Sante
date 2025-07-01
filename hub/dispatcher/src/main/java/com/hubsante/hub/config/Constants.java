@@ -46,8 +46,20 @@ public class Constants {
             "15-nexsis_v1.9", "v3"
     );
 
-    public static final String HEALTH_PERIMETER = "15-15";
-    public static final String CISU_PERIMETER = "15-nexsis";
-    public static final String GPS_PERIMETER = "15-gps";
-    public static final String SMUR_PERIMETER = "15-smur";
+    public enum Perimeter {
+        HEALTH("15-15"),
+        CISU("15-nexsis"),
+        GPS("15-gps"),
+        SMUR("15-smur");
+
+        private final String name;
+
+        Perimeter(String name) {
+            this.name = name;
+        }
+
+        public String getName() {
+            return name;
+        }
+    }
 }

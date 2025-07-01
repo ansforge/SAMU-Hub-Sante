@@ -33,6 +33,7 @@ import jakarta.annotation.PostConstruct;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Configuration
@@ -82,7 +83,7 @@ public class HubConfiguration {
                     if (objects.length != ROW_LENGTH) {
                         log.warn("There were more than {} columns in the client preferences file, extra columns are being ignored", ROW_LENGTH);
                     }
-                    String[] items = Arrays.asList(objects).toArray(new String[TOGGLE_ROW_LENGTH]);
+                    String[] items = Arrays.asList(objects).toArray(new String[ROW_LENGTH]);
                     useXmlPreferences.put(items[0], Boolean.parseBoolean(items[1]));
                     directCisuPreferences.put(items[0], Boolean.parseBoolean(items[2]));
                     clientsEditorMap.put(items[0], items[3]);
@@ -107,12 +108,13 @@ public class HubConfiguration {
     public Map<String, Map<String, String>> loadClientsPerimetersAndVersions() throws IOException {
         Map<String, Map<String, String>> clientsPerimeterAndVersions = new HashMap<>();
         BufferedReader reader = new BufferedReader(new FileReader(configFile, StandardCharsets.UTF_8));
-        String line;
         String headerLine = reader.readLine();
         String[] headers = headerLine.split(COLUMN_DIVIDER);
         int numberOfColumns = headers.length;
 
-        Set<String> perimeterNames = Set.of(Constants.HEALTH_PERIMETER, Constants.CISU_PERIMETER, Constants.GPS_PERIMETER, Constants.SMUR_PERIMETER);
+        Set<String> perimeterNames = Arrays.stream(Constants.Perimeter.values())
+                           .map(Constants.Perimeter::getName)
+                           .collect(Collectors.toSet());
 
         Map<String, Integer> perimeterColumnIndexes = new HashMap<>();
         for (int i = 0; i < numberOfColumns; i++) {
@@ -120,11 +122,12 @@ public class HubConfiguration {
                 perimeterColumnIndexes.put(headers[i], i);
             }
         }
-
-        while ((line = reader.readLine()) != null) {
+        reader.lines().forEach(line -> {
             String[] values = line.split(COLUMN_DIVIDER);
 
-            if (values.length < numberOfColumns) continue;
+            if (values.length < numberOfColumns){
+                log.debug("A line in clients perimeters file does not have a value for each column: ", line);
+            }
 
             String clientId = values[0];
             Map<String, String> allPerimetersVersions = new HashMap<>();
@@ -136,7 +139,7 @@ public class HubConfiguration {
             }
 
             clientsPerimeterAndVersions.put(clientId, allPerimetersVersions);
-        }
+        });
 
         reader.close();
         return clientsPerimeterAndVersions;
