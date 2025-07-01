@@ -61,6 +61,7 @@ public class HubConfiguration {
     private HashMap<String, Boolean> directCisuPreferences = new HashMap<>();
     private HashMap<String, String> clientsEditorMap = new HashMap<>();
     private Map<String, Map<String, String>> clientsPerimeterAndVersions = new HashMap<>();
+    private List<String> supportedMessages = List.of(new String[]{});
 
     @PostConstruct
     public void init() throws Exception {
@@ -97,6 +98,7 @@ public class HubConfiguration {
             CsvParser parser = new CsvParser(parserSettings);
             parser.parse(new BufferedReader(new FileReader(configFile, StandardCharsets.UTF_8)));
             clientsPerimeterAndVersions = loadClientsPerimetersAndVersions();
+            supportedMessages = loadSupportedMessages(vhost);
         } catch (Exception e) {
             throw new Exception("Could not read config file " + configFile.getAbsolutePath(), e);
         }
@@ -150,11 +152,10 @@ public class HubConfiguration {
         return splitString(versions);
     }
 
-    public List<String> getSupportedMessages(String vhost) throws Exception{
+    public List<String> loadSupportedMessages(String vhost) throws Exception{
         List<String> supportedMessages = new ArrayList<>();
         try (BufferedReader reader = new BufferedReader(new FileReader(supportedMessagesFile, StandardCharsets.UTF_8))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
+            reader.lines().forEach(line -> {
                 if (line.startsWith("common" + COLUMN_DIVIDER) || line.startsWith(vhost + COLUMN_DIVIDER)) {
                     String[] rowParts = line.split(COLUMN_DIVIDER);
                     if (rowParts.length > 1) {
@@ -167,10 +168,14 @@ public class HubConfiguration {
                         }
                     }
                 }
-            }
+            });
         } catch (IOException e) {
             throw new Exception("Error reading supported messages file: {}", e);
         }
+        return supportedMessages;
+    }
+
+    public List<String> getSupportedMessages(){
         return supportedMessages;
     }
 

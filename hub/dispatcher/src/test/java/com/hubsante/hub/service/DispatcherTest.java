@@ -26,9 +26,9 @@ import com.hubsante.hub.service.utils.MessageTestUtils;
 import com.hubsante.hub.utils.ConversionRulesCommand;
 import com.hubsante.hub.utils.ConversionUtils;
 import com.hubsante.hub.utils.EdxlUtils;
+import com.hubsante.hub.utils.MessageUtils;
 import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.Validator;
-import com.hubsante.model.edxl.ContentMessage;
 import com.hubsante.model.edxl.EdxlMessage;
 import com.hubsante.model.report.ErrorCode;
 import com.hubsante.model.report.Error;
@@ -646,17 +646,15 @@ public class DispatcherTest {
         EdxlMessage edxlMessage = edxlHandler.deserializeJsonEDXL(new String(message.getBody(), StandardCharsets.UTF_8));
 
         HubConfiguration hubConfig = mock(HubConfiguration.class);
-        String vhost = "test-vhost";
         String supportedClassName = "SUPPORTED_CLASS";
-        when(hubConfig.getVhost()).thenReturn(vhost);
-        when(hubConfig.getSupportedMessages(vhost)).thenReturn(List.of(supportedClassName));
+        when(hubConfig.getSupportedMessages()).thenReturn(List.of(supportedClassName));
         try (MockedStatic<EdxlUtils> mockedEdxlUtils = mockStatic(EdxlUtils.class)) {
             mockedEdxlUtils.when(() -> EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage()))
                 .thenReturn(supportedClassName);
 
-            Dispatcher dispatcher = new Dispatcher(messageHandler, rabbitTemplate, edxlHandler, xmlMapper, jsonMapper, conversionHandler);
+            new Dispatcher(messageHandler, rabbitTemplate, edxlHandler, xmlMapper, jsonMapper, conversionHandler);
 
-            assertDoesNotThrow(() -> dispatcher.checkMessageClassNameSupported(edxlMessage, hubConfig));
+            assertDoesNotThrow(() -> MessageUtils.checkMessageClassNameSupported(edxlMessage, hubConfig));
         }
     }
 
@@ -667,19 +665,17 @@ public class DispatcherTest {
         EdxlMessage edxlMessage = edxlHandler.deserializeJsonEDXL(new String(message.getBody(), StandardCharsets.UTF_8));
 
         HubConfiguration hubConfig = mock(HubConfiguration.class);
-        String vhost = "test-vhost";
         String unsupportedClassName = "UNSUPPORTED_CLASS";
-        when(hubConfig.getVhost()).thenReturn(vhost);
-        when(hubConfig.getSupportedMessages(vhost)).thenReturn(List.of("SUPPORTED_CLASS"));
+        when(hubConfig.getSupportedMessages()).thenReturn(List.of("SUPPORTED_CLASS"));
 
         try (MockedStatic<EdxlUtils> mockedEdxlUtils = mockStatic(EdxlUtils.class)) {
             mockedEdxlUtils.when(() -> EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage()))
                     .thenReturn(unsupportedClassName);
 
-            Dispatcher dispatcher = new Dispatcher(messageHandler, rabbitTemplate, edxlHandler, xmlMapper, jsonMapper, conversionHandler);
+            new Dispatcher(messageHandler, rabbitTemplate, edxlHandler, xmlMapper, jsonMapper, conversionHandler);
 
             UnroutableMessageException thrown = assertThrows(UnroutableMessageException.class, () -> {
-                dispatcher.checkMessageClassNameSupported(edxlMessage, hubConfig);
+                MessageUtils.checkMessageClassNameSupported(edxlMessage, hubConfig);
             });
             assertEquals("The received message classname is not supported on this vhost", thrown.getMessage());
         }

@@ -174,17 +174,6 @@ public class Dispatcher {
         }
     }
 
-    public void checkMessageClassNameSupported(EdxlMessage edxlMessage, HubConfiguration hubConfig) throws Exception {
-        String messageClassName = EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage());
-        String vhost = hubConfig.getVhost();
-        List<String> supportedMessages = hubConfig.getSupportedMessages(vhost);
-
-        boolean isMessageClassNameSupported = supportedMessages.contains(messageClassName);
-        if(!isMessageClassNameSupported){
-            throw new UnroutableMessageException("The received message classname is not supported on this vhost", edxlMessage.getDistributionID());
-        }
-    }
-
     public void sendToTransferExchange(String convertedMessage, Message message, ConversionRulesCommand conversionRulesCommand){
         Message forwardedMsg = messageHandler.forwardedStringMessage(convertedMessage, message);
 

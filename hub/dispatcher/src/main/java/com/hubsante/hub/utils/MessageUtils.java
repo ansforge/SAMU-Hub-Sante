@@ -15,6 +15,7 @@
  */
 package com.hubsante.hub.utils;
 
+import com.hubsante.hub.config.HubConfiguration;
 import com.hubsante.hub.exception.*;
 import com.hubsante.model.edxl.DistributionKind;
 import com.hubsante.model.edxl.EdxlMessage;
@@ -30,6 +31,7 @@ import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Base64;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -86,6 +88,17 @@ public class MessageUtils {
             }
             String errorCause = "Message " + messageId + " has been sent with non-persistent delivery mode";
             throw new DeliveryModeInconsistencyException(errorCause, messageId);
+        }
+    }
+
+
+    public static void checkMessageClassNameSupported(EdxlMessage edxlMessage, HubConfiguration hubConfig) throws Exception {
+        String messageClassName = EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage());
+        List<String> supportedMessages = hubConfig.getSupportedMessages();
+
+        boolean isMessageClassNameSupported = supportedMessages.contains(messageClassName);
+        if(!isMessageClassNameSupported){
+            throw new UnroutableMessageException("The received message classname is not supported on this vhost", edxlMessage.getDistributionID());
         }
     }
 

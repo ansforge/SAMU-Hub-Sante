@@ -67,7 +67,7 @@ public class HubConfigurationTest {
 
     @Test
     void testGetSupportedMessages_host1() throws Exception {
-        List<String> supportedMessages = hubConfig.getSupportedMessages("host_1");
+        List<String> supportedMessages = hubConfig.loadSupportedMessages("host_1");
 
         Assertions.assertEquals(4, supportedMessages.size());
         Assertions.assertTrue(supportedMessages.contains("ReferenceWrapper"));
@@ -78,7 +78,7 @@ public class HubConfigurationTest {
 
     @Test
     void testGetSupportedMessages_host2() throws Exception {
-        List<String> supportedMessages = hubConfig.getSupportedMessages("host_2");
+        List<String> supportedMessages = hubConfig.loadSupportedMessages("host_2");
 
         Assertions.assertEquals(4, supportedMessages.size());
         Assertions.assertTrue(supportedMessages.contains("ReferenceWrapper"));
@@ -89,7 +89,7 @@ public class HubConfigurationTest {
 
     @Test
     void testGetSupportedMessages_unknownHost() throws Exception {
-        List<String> supportedMessages = hubConfig.getSupportedMessages("unknown");
+        List<String> supportedMessages = hubConfig.loadSupportedMessages("unknown");
 
         Assertions.assertEquals(2, supportedMessages.size());
         Assertions.assertTrue(supportedMessages.contains("ReferenceWrapper"));
