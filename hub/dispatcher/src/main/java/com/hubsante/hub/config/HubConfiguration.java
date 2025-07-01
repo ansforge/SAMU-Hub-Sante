@@ -122,12 +122,11 @@ public class HubConfiguration {
                 perimeterColumnIndexes.put(headers[i], i);
             }
         }
-        reader.lines().forEach(line -> {
+        String line;
+        while ((line = reader.readLine()) != null) {
             String[] values = line.split(COLUMN_DIVIDER);
 
-            if (values.length < numberOfColumns){
-                log.debug("A line in clients perimeters file does not have a value for each column: ", line);
-            }
+            if (values.length < numberOfColumns) continue;
 
             String clientId = values[0];
             Map<String, String> allPerimetersVersions = new HashMap<>();
@@ -139,7 +138,7 @@ public class HubConfiguration {
             }
 
             clientsPerimeterAndVersions.put(clientId, allPerimetersVersions);
-        });
+        };
 
         reader.close();
         return clientsPerimeterAndVersions;
@@ -158,7 +157,8 @@ public class HubConfiguration {
     public List<String> loadSupportedMessages(String vhost) throws Exception{
         List<String> supportedMessages = new ArrayList<>();
         try (BufferedReader reader = new BufferedReader(new FileReader(supportedMessagesFile, StandardCharsets.UTF_8))) {
-            reader.lines().forEach(line -> {
+            String line;
+            while ((line = reader.readLine()) != null) {
                 if (line.startsWith("common" + COLUMN_DIVIDER) || line.startsWith(vhost + COLUMN_DIVIDER)) {
                     String[] rowParts = line.split(COLUMN_DIVIDER);
                     if (rowParts.length > 1) {
@@ -171,7 +171,7 @@ public class HubConfiguration {
                         }
                     }
                 }
-            });
+            };
         } catch (IOException e) {
             throw new Exception("Error reading supported messages file: {}", e);
         }
