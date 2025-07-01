@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "@babel/types": "^7.24.7",
-    "@koumoul/vjsf": "^3.0.0-beta.43",
+    "@koumoul/vjsf": "^3.15.6",
     "@koumoul/vjsf-markdown": "^0.3.2",
     "@mdi/font": "^7.4.47",
     "@nuxtjs/dotenv": "^1.4.2",
