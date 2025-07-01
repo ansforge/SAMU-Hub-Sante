@@ -16,10 +16,11 @@
     "noEmit": true,
     "allowJs": true,
     "paths": {
-      "~/*": ["./*"],  // Alias for project root
-      "@/*": ["./*"]   // Alternative alias
+      "~/*": ["./*"], // Alias for project root
+      "@/*": ["./*"] // Alternative alias
     }
   },
   "include": ["**/*.ts", "**/*.d.ts", "**/*.tsx", "**/*.vue"],
-  "exclude": ["node_modules","./cypress/support/*"]
+  "exclude": ["node_modules", "./cypress/support/*"],
+  "extends": "./.nuxt/tsconfig.json"
 }
