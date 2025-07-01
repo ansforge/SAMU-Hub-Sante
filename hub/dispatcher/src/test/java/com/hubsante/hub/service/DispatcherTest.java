@@ -642,7 +642,7 @@ public class DispatcherTest {
     @Test
     @DisplayName("should not throw when message class is supported")
     public void checkMessageClassNameSupportedDoesNotThrow() throws Exception {
-        Message message = createMessage("RS-EDA", JSON, SAMU_A_ROUTING_KEY);
+        Message message = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
         EdxlMessage edxlMessage = edxlHandler.deserializeJsonEDXL(new String(message.getBody(), StandardCharsets.UTF_8));
 
         HubConfiguration hubConfig = mock(HubConfiguration.class);
@@ -661,7 +661,7 @@ public class DispatcherTest {
     @Test
     @DisplayName("should throw UnroutableMessageException when message class is not supported")
     public void checkMessageClassNameSupportedThrowsException() throws Exception {
-        Message message = createMessage("RS-EDA", JSON, SAMU_A_ROUTING_KEY);
+        Message message = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
         EdxlMessage edxlMessage = edxlHandler.deserializeJsonEDXL(new String(message.getBody(), StandardCharsets.UTF_8));
 
         HubConfiguration hubConfig = mock(HubConfiguration.class);
