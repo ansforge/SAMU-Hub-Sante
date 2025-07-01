@@ -126,9 +126,7 @@ public class HubConfiguration {
         while ((line = reader.readLine()) != null) {
             String[] values = line.split(COLUMN_DIVIDER);
 
-            if (values.length < numberOfColumns){
-                log.debug("A line in clients perimeters file does not have a value for each column: ", line);
-            }
+            if (values.length < numberOfColumns) continue;
 
             String clientId = values[0];
             Map<String, String> allPerimetersVersions = new HashMap<>();
