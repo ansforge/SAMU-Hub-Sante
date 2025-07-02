@@ -1,4 +1,7 @@
 <template>
+  <v-btn :disabled="!valid" color="primary" @click="generateId">
+    Reset id
+  </v-btn>
   <v-form v-model="valid">
     <vjsf v-model="localMessage" :schema="processedSchema" :options="options" />
   </v-form>
@@ -83,6 +86,10 @@ const processedSchema = computed(() => {
   delete schemaCopy.$id;
   return schemaCopy;
 });
+
+const generateId = () => {
+  newId.value = generateTimestampId();
+};
 
 const newId = ref(null);
 const paths = ref([]);
