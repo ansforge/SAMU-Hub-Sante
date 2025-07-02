@@ -5,10 +5,18 @@
 </template>
 
 <script setup>
-import { ref, watch, computed } from 'vue';
+import { ref, watch, computed, toRefs } from 'vue';
 import Vjsf from '@koumoul/vjsf';
 import moment from 'moment';
 import { useMainStore } from '~/store';
+import {
+  findPathsWithSubstring,
+  generateTimestampId,
+  getChangedPaths,
+  getValueAtPath,
+  replaceSubstringsAtPaths,
+} from '~/composables/messageUtils';
+import consola from 'consola';
 
 const props = defineProps({
   value: {
@@ -75,6 +83,66 @@ const processedSchema = computed(() => {
   delete schemaCopy.$id;
   return schemaCopy;
 });
+
+const newId = ref(null);
+const paths = ref([]);
+const { currentMessage } = toRefs(store);
+
+watch(
+  () => store.currentMessageLoaded,
+  (newValue) => {
+    if (newValue) {
+      newId.value = generateTimestampId();
+    } else {
+      consola.warn('Current message not loaded yet.');
+    }
+  },
+  { immediate: true }
+);
+
+watch(newId, (newVal) => {
+  if (!newVal) return;
+  const oldId = currentMessage?.value?.senderCaseId;
+  const newId = newVal;
+  consola.log('Old case ID:', oldId, 'New case ID:', newId);
+  if (!oldId || !newId || oldId === newId) return;
+
+  paths.value = findPathsWithSubstring(currentMessage.value, oldId);
+  consola.log('Paths found:', paths.value);
+  const newObj = replaceSubstringsAtPaths(
+    currentMessage.value,
+    paths.value,
+    oldId,
+    newId
+  );
+
+  currentMessage.value = newObj;
+});
+
+watch(
+  () => currentMessage.value,
+  (newValue, oldValue) => {
+    const changedPaths = getChangedPaths(newValue, oldValue);
+    if (changedPaths.length !== 1) return;
+    const changedPath = changedPaths[0];
+    const changedValue = getValueAtPath(newValue, changedPath);
+    const originalValue = getValueAtPath(oldValue, changedPath);
+    const originalCaseId =
+      changedPath[0] === 'senderCaseId'
+        ? originalValue
+        : currentMessage.value?.senderCaseId;
+    // TODO: handle case where change are made in the form
+
+    console.log('chagedValue:', changedValue);
+    console.log('originalValue:', originalValue);
+    console.log('originalCaseId:', originalCaseId);
+    // i want paths.value excluding changedPath
+
+    //change id with the new one :
+    ///console.log('newId:', newId.value);
+  },
+  { immediate: true }
+);
 </script>
 
 <style>

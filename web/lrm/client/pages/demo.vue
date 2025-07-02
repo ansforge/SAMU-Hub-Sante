@@ -124,7 +124,7 @@
 </template>
 
 <script setup>
-import { ref, toRef, toRefs, watch } from 'vue';
+import { toRef } from 'vue';
 import { toast } from 'vue3-toastify';
 import { consola } from 'consola';
 import mixinWebsocket from '~/mixins/mixinWebsocket';
@@ -138,10 +138,6 @@ import {
   getMessageType,
   getCaseId,
   generateTimestampId,
-  findPathsWithSubstring,
-  replaceSubstringsAtPaths,
-  getChangedPaths,
-  getValueAtPath,
 } from '~/composables/messageUtils.js';
 import { loadSchemas } from '~/composables/schemaUtils';
 
@@ -160,71 +156,6 @@ function submit(form) {
 useHead({
   titleTemplate: toRef(useMainStore(), 'demoHeadTitle'),
 });
-const store = useMainStore();
-const newId = ref(null);
-const paths = ref([]);
-const { currentMessage } = toRefs(store);
-consola.log('New case ID generated:', newId);
-consola.info('Demo component initialized with store:', store);
-
-watch(
-  () => store.currentMessageLoaded,
-  (newValue) => {
-    if (newValue) {
-      newId.value = generateTimestampId();
-    } else {
-      consola.warn('Current message not loaded yet.');
-    }
-  },
-  { immediate: true }
-);
-
-watch(newId, (newVal) => {
-  if (!newVal) return;
-  // This will trigger a reactivity update in the form
-  consola.log('New case ID generated:', newVal);
-  const oldId = currentMessage?.value?.senderCaseId;
-  const newId = newVal;
-  consola.log('Old case ID:', oldId, 'New case ID:', newId);
-
-  if (!oldId || !newId || oldId === newId) return;
-
-  paths.value = findPathsWithSubstring(currentMessage.value, oldId);
-
-  const newObj = replaceSubstringsAtPaths(
-    currentMessage.value,
-    paths.value,
-    oldId,
-    newId
-  );
-
-  currentMessage.value = newObj;
-});
-
-watch(
-  () => currentMessage.value,
-  (newValue, oldValue) => {
-    const changedPaths = getChangedPaths(newValue, oldValue);
-    if (changedPaths.length !== 1) return;
-    const changedPath = changedPaths[0];
-    const changedValue = getValueAtPath(newValue, changedPath);
-    const originalValue = getValueAtPath(oldValue, changedPath);
-    const originalCaseId =
-      changedPath[0] === 'senderCaseId'
-        ? originalValue
-        : currentMessage.value?.senderCaseId;
-    // TODO: handle case where change are made in the form
-
-    console.log('chagedValue:', changedValue);
-    console.log('originalValue:', originalValue);
-    console.log('originalCaseId:', originalCaseId);
-    // i want paths.value excluding changedPath
-
-    //change id with the new one :
-    ///console.log('newId:', newId.value);
-  },
-  { immediate: true }
-);
 </script>
 
 <script>
