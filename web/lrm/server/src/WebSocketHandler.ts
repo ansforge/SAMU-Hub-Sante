@@ -18,14 +18,17 @@ export class WebSocketHandler {
     this.ws = ws;
     this.config = config;
     this.rabbitMQConnector = rabbitMQConnector;
+
+    this.sendMessage = this.sendMessage.bind(this);
+    this.close = this.close.bind(this);
   }
 
-  listen = () => {
+  listen() {
     this.ws.on(WS_EVENT.MESSAGE, this.sendMessage);
     this.ws.on(WS_EVENT.CLOSE, this.close);
-  };
+  }
 
-  sendMessage = async (body: RawData) => {
+  async sendMessage(body: RawData) {
     // TODO: handle body properly
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-expect-error
@@ -45,9 +48,9 @@ export class WebSocketHandler {
     } catch (error) {
       logger.error(`Error publishing message to RabbitMQ (vhost: ${vhost}): ${error}`);
     }
-  };
+  }
 
-  close = () => {
+  close() {
     logger.info('WebSocket client disconnected');
-  };
+  }
 }
