@@ -1,5 +1,5 @@
 <template>
-  <v-btn :disabled="!valid" color="primary" @click="generateId">
+  <v-btn color="primary" style="margin-bottom: 16px" @click="generateId">
     Reset id
   </v-btn>
   <v-form v-model="valid">
@@ -15,8 +15,6 @@ import { useMainStore } from '~/store';
 import {
   findPathsWithSubstring,
   generateTimestampId,
-  getChangedPaths,
-  getValueAtPath,
   replaceSubstringsAtPaths,
 } from '~/composables/messageUtils';
 import consola from 'consola';
@@ -87,19 +85,18 @@ const processedSchema = computed(() => {
   return schemaCopy;
 });
 
-const generateId = () => {
-  newId.value = generateTimestampId();
-};
-
-const newId = ref(null);
 const paths = ref([]);
-const { currentMessage } = toRefs(store);
+const { currentMessage, currentMessageSenderCaseId } = toRefs(store);
+
+const generateId = () => {
+  currentMessageSenderCaseId.value = generateTimestampId();
+};
 
 watch(
   () => store.currentMessageLoaded,
   (newValue) => {
     if (newValue) {
-      newId.value = generateTimestampId();
+      generateId();
     } else {
       consola.warn('Current message not loaded yet.');
     }
@@ -107,15 +104,18 @@ watch(
   { immediate: true }
 );
 
-watch(newId, (newVal) => {
+watch(currentMessageSenderCaseId, (newVal) => {
   if (!newVal) return;
-  const oldId = currentMessage?.value?.senderCaseId;
+
+  const oldId =
+    currentMessage?.value?.senderCaseId ??
+    currentMessage.value.caseId?.split('.').pop();
   const newId = newVal;
-  consola.log('Old case ID:', oldId, 'New case ID:', newId);
+
   if (!oldId || !newId || oldId === newId) return;
 
   paths.value = findPathsWithSubstring(currentMessage.value, oldId);
-  consola.log('Paths found:', paths.value);
+
   const newObj = replaceSubstringsAtPaths(
     currentMessage.value,
     paths.value,
@@ -125,31 +125,6 @@ watch(newId, (newVal) => {
 
   currentMessage.value = newObj;
 });
-
-watch(
-  () => currentMessage.value,
-  (newValue, oldValue) => {
-    const changedPaths = getChangedPaths(newValue, oldValue);
-    if (changedPaths.length !== 1) return;
-    const changedPath = changedPaths[0];
-    const changedValue = getValueAtPath(newValue, changedPath);
-    const originalValue = getValueAtPath(oldValue, changedPath);
-    const originalCaseId =
-      changedPath[0] === 'senderCaseId'
-        ? originalValue
-        : currentMessage.value?.senderCaseId;
-    // TODO: handle case where change are made in the form
-
-    console.log('chagedValue:', changedValue);
-    console.log('originalValue:', originalValue);
-    console.log('originalCaseId:', originalCaseId);
-    // i want paths.value excluding changedPath
-
-    //change id with the new one :
-    ///console.log('newId:', newId.value);
-  },
-  { immediate: true }
-);
 </script>
 
 <style>

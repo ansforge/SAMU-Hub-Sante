@@ -2,6 +2,7 @@ import { useRuntimeConfig } from 'nuxt/app';
 import { defineStore } from 'pinia';
 import { isEnvProd } from '~/composables/envUtils';
 import { useAuthStore } from './auth';
+import { ref } from 'vue';
 
 export const useMainStore = defineStore('main', {
   state: () => ({
@@ -18,6 +19,7 @@ export const useMainStore = defineStore('main', {
     socket: null,
     isWebsocketConnected: false,
     currentMessage: null,
+    currentMessageSenderCaseId: ref(null),
     currentMessageFilePath: null,
     currentUseCase: null,
     selectedSchema: 'RS-EDA',

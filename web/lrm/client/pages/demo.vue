@@ -258,6 +258,7 @@ export default {
         this.store.messageTypes[this.messageTypeTabIndex];
       this.store.currentUseCase =
         this.store.messageTypes[this.messageTypeTabIndex].schema?.title;
+      this.store.currentMessageSenderCaseId = generateTimestampId();
     },
     selectedVhost() {
       this.source = this.store.selectedVhost.modelVersion;
