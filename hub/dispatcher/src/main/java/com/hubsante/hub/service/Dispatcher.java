@@ -19,9 +19,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.hubsante.hub.config.Constants;
+import com.hubsante.hub.config.HubConfiguration;
 import com.hubsante.hub.exception.*;
 import com.hubsante.hub.utils.ConversionRulesCommand;
 import com.hubsante.hub.utils.ConversionUtils;
+import com.hubsante.hub.utils.EdxlUtils;
 import com.hubsante.hub.utils.MessageUtils;
 import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.edxl.EdxlMessage;
@@ -40,6 +42,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.List;
 
 import static com.hubsante.hub.config.AmqpConfiguration.*;
 import static com.hubsante.hub.utils.MessageUtils.*;
@@ -129,6 +132,8 @@ public class Dispatcher {
             setOriginalRoutingKeyHeader(message);
             // Deserialize the message according to its content type
             EdxlMessage edxlMessage = messageHandler.extractMessage(message);
+            // check message type is allowed on the current vhost
+            checkMessageClassNameSupported(edxlMessage, messageHandler.getHubConfig());
             // reject the message if no health actor is involved (as sender or recipient)
             checkHealthActorIsInvolved(edxlMessage);
             // ToDo: see how hubConfig should be made available to the Dispatcher (and remove getter in MessageHandler)
@@ -147,7 +152,7 @@ public class Dispatcher {
                 ConversionRulesCommand conversionRulesCommand = new ConversionRulesCommand(edxlMessage, messageHandler);
                 String convertedMessage = conversionHandler.applyConversionRules(conversionRulesCommand);
                 sendToTransferExchange(convertedMessage, message, conversionRulesCommand);
-                log.debug("Message has been sent !");
+                log.debug("The converted message has been sent to the exchange to reach the recipient's vhost.");
                 // We MUST return here to exit the dispatch() function, otherwise the message will be published on the source Exchange as well
                 return;
             }

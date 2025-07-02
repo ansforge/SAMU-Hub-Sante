@@ -32,32 +32,37 @@ import org.springframework.web.reactive.function.client.WebClient;
 import jakarta.annotation.PostConstruct;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Configuration
 public class HubConfiguration {
 
-    private static final int TOGGLE_ROW_LENGTH = 6;
+    private static final int ROW_LENGTH = 9;
     private static final String DATA_DIVIDER = ",";
+    private static final String COLUMN_DIVIDER = ";";
+
 
     @Value("${client.preferences.file}")
     private File configFile;
+
+    @Value("${supported.messages.file}")
+    private File supportedMessagesFile;
+
     @Value("${dispatcher.default.ttl}")
     private String ttlProperty;
+
     private long defaultTTL;
+
     @Value("${spring.rabbitmq.virtual-host}")
     private String vhost;
 
     private HashMap<String, Boolean> useXmlPreferences = new HashMap<>();
     private HashMap<String, Boolean> directCisuPreferences = new HashMap<>();
     private HashMap<String, String> clientsEditorMap = new HashMap<>();
-    private HashMap<String, String[]> lrmPerimeterVersions = new HashMap<>();
+    private Map<String, Map<String, String>> clientsPerimeterAndVersions = new HashMap<>();
+    private List<String> supportedMessages;
 
     @PostConstruct
     public void init() throws Exception {
@@ -72,31 +77,109 @@ public class HubConfiguration {
             // We define a custom row processor to read the config file
             // we override the rowProcessed method on the fly to store the config in a HashMap
             // then we define the parser settings and parse the file
-            ObjectRowProcessor rowProcessor = new ObjectRowProcessor() {
+            ObjectRowProcessor clientPreferencesRowProcessor = new ObjectRowProcessor() {
                 @Override
                 public void rowProcessed(Object[] objects, ParsingContext parsingContext) {
-                    if (objects.length != TOGGLE_ROW_LENGTH) {
-                        log.warn("There were more than {} columns in the client preferences file, extra columns are being ignored", TOGGLE_ROW_LENGTH);
+                    if (objects.length != ROW_LENGTH) {
+                        log.warn("There were more than {} columns in the client preferences file, extra columns are being ignored", ROW_LENGTH);
                     }
-                    String[] items = Arrays.asList(objects).toArray(new String[TOGGLE_ROW_LENGTH]);
+                    String[] items = Arrays.asList(objects).toArray(new String[ROW_LENGTH]);
                     useXmlPreferences.put(items[0], Boolean.parseBoolean(items[1]));
                     directCisuPreferences.put(items[0], Boolean.parseBoolean(items[2]));
                     clientsEditorMap.put(items[0], items[3]);
-                    lrmPerimeterVersions.put(items[0], splitString(items[5]));
                 }
             };
             CsvParserSettings parserSettings = new CsvParserSettings();
             parserSettings.getFormat().setLineSeparator("\n");
             parserSettings.getFormat().setDelimiter(';');
-            parserSettings.setProcessor(rowProcessor);
             parserSettings.setHeaderExtractionEnabled(true);
             parserSettings.setNullValue("");
+            parserSettings.setProcessor(clientPreferencesRowProcessor);
 
             CsvParser parser = new CsvParser(parserSettings);
             parser.parse(new BufferedReader(new FileReader(configFile, StandardCharsets.UTF_8)));
+            clientsPerimeterAndVersions = loadClientsPerimetersAndVersions();
+            supportedMessages = loadSupportedMessages(vhost);
         } catch (Exception e) {
             throw new Exception("Could not read config file " + configFile.getAbsolutePath(), e);
         }
+    }
+
+    public Map<String, Map<String, String>> loadClientsPerimetersAndVersions() throws IOException {
+        Map<String, Map<String, String>> clientsPerimeterAndVersions = new HashMap<>();
+        BufferedReader reader = new BufferedReader(new FileReader(configFile, StandardCharsets.UTF_8));
+        String headerLine = reader.readLine();
+        String[] headers = headerLine.split(COLUMN_DIVIDER);
+        int numberOfColumns = headers.length;
+
+        Set<String> perimeterNames = Arrays.stream(Constants.Perimeter.values())
+                           .map(Constants.Perimeter::getName)
+                           .collect(Collectors.toSet());
+
+        Map<String, Integer> perimeterColumnIndexes = new HashMap<>();
+        for (int i = 0; i < numberOfColumns; i++) {
+            if (perimeterNames.contains(headers[i])) {
+                perimeterColumnIndexes.put(headers[i], i);
+            }
+        }
+        String line;
+        while ((line = reader.readLine()) != null) {
+            String[] values = line.split(COLUMN_DIVIDER);
+
+            if (values.length < numberOfColumns) continue;
+
+            String clientId = values[0];
+            Map<String, String> allPerimetersVersions = new HashMap<>();
+
+            for (Map.Entry<String, Integer> perimeterMatch : perimeterColumnIndexes.entrySet()) {
+                String perimeterName = perimeterMatch.getKey();
+                int columnIndex = perimeterMatch.getValue();
+                allPerimetersVersions.put(perimeterName, values[columnIndex]);
+            }
+
+            clientsPerimeterAndVersions.put(clientId, allPerimetersVersions);
+        };
+
+        reader.close();
+        return clientsPerimeterAndVersions;
+    }
+
+    public String[] getClientVersionsForPerimeter(String clientId, String perimeterName) {
+        Map<String, String> clientPerimeterDefinition = clientsPerimeterAndVersions.getOrDefault(clientId, null);
+        if(clientPerimeterDefinition == null){
+            log.debug("ClientId was not found in clientsPerimeterAndVersions, or the variable is not initialized.");
+            return null;
+        }
+        String versions = clientPerimeterDefinition.getOrDefault(perimeterName, null);
+        return splitString(versions);
+    }
+
+    public List<String> loadSupportedMessages(String vhost) throws Exception{
+        List<String> supportedMessages = new ArrayList<>();
+        try (BufferedReader reader = new BufferedReader(new FileReader(supportedMessagesFile, StandardCharsets.UTF_8))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (line.startsWith("common" + COLUMN_DIVIDER) || line.startsWith(vhost + COLUMN_DIVIDER)) {
+                    String[] rowParts = line.split(COLUMN_DIVIDER);
+                    if (rowParts.length > 1) {
+                        String[] messages = rowParts[1].split(DATA_DIVIDER);
+                        for (String messageClassName : messages) {
+                            String messageClassNameTrimmed = messageClassName.trim();
+                            if (!messageClassNameTrimmed.isEmpty() && !supportedMessages.contains(messageClassNameTrimmed)) {
+                                supportedMessages.add(messageClassNameTrimmed);
+                            }
+                        }
+                    }
+                }
+            };
+        } catch (IOException e) {
+            throw new Exception("Error reading supported messages file: {}", e);
+        }
+        return supportedMessages;
+    }
+
+    public List<String> getSupportedMessages(){
+        return supportedMessages;
     }
 
     public HashMap<String, Boolean> getUseXmlPreferences() {
@@ -109,10 +192,6 @@ public class HubConfiguration {
 
     public HashMap<String, String> getClientsEditorMap() {
         return clientsEditorMap;
-    }
-
-    public HashMap<String, String[]> getLrmPerimeterVersions() {
-        return lrmPerimeterVersions;
     }
 
     public long getDefaultTTL() {

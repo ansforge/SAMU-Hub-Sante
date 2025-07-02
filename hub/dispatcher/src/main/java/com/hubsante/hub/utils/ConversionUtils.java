@@ -51,10 +51,15 @@ public class ConversionUtils {
         if (targetVHosts == null || sourceVHost == null || targetVHosts.length == 0) {
             return false;
         }
-        if (VHOST_MODEL_VERSION.get(sourceVHost) == null) {
+        if (!isConversionAvailable(sourceVHost)) {
             return false;
         }
+
         return !Arrays.asList(targetVHosts).contains(sourceVHost);
+    }
+
+    public static boolean isConversionAvailable(String vhost){
+        return CONVERSION_VHOST_MODEL.get(vhost) != null;
     }
 
     public static String getSourceVHost(HubConfiguration hubConfig) {
@@ -63,23 +68,47 @@ public class ConversionUtils {
 
     public static String[] getTargetVHosts(HubConfiguration hubConfig, EdxlMessage edxlMessage) {
         String recipientID = getRecipientID(edxlMessage);
-        String[] targetVHosts = hubConfig.getLrmPerimeterVersions().get(recipientID);
+        String senderID = edxlMessage.getSenderID();
+        String sourceVhost = hubConfig.getVhost(); // ex '15-15_v1.5'
+        String sourcePerimeter = trimVersionSuffix(sourceVhost);  // ex '15-15'
+        String[] targetVersionsOnSourcePerimeter = new String[]{};
 
-        if (targetVHosts == null && (recipientID.startsWith(FR_FIRE_PREFIX) || recipientID.startsWith(FR_CISU_PREFIX))) {
-            targetVHosts = new String[]{NEXSIS_VHOST};
+        // CISU conversion case - recipient and sender are on different vhosts
+        boolean isNexsisRecipient = recipientID.startsWith(FR_FIRE_PREFIX) || recipientID.startsWith(FR_CISU_PREFIX);
+        if (isNexsisRecipient) {
+            return new String[]{NEXSIS_VHOST}; // ["15-nexsis_v1.9"]
         }
-        else if (targetVHosts != null) {
-            targetVHosts = Arrays.stream(targetVHosts).map(version -> HEALTH_VHOST_PREFIX + version).toArray(String[]::new);
+        boolean isCisuSender = !senderID.startsWith(FR_HEALTH_PREFIX);
+        if(isCisuSender){
+            String perimeter15_15 = "15-15";
+            targetVersionsOnSourcePerimeter = hubConfig.getClientVersionsForPerimeter(recipientID, perimeter15_15); // ex ['1.5, 2.0']
+            return formatVersionToVhosts(targetVersionsOnSourcePerimeter, perimeter15_15);
         }
 
-        return targetVHosts;
+        targetVersionsOnSourcePerimeter = hubConfig.getClientVersionsForPerimeter(recipientID, sourcePerimeter); // ex ['1.5, 2.0']
+        return formatVersionToVhosts(targetVersionsOnSourcePerimeter, sourcePerimeter); // ex ["15-15_v1.5", "15-15_v2.0"]
+
+    }
+
+    public static String[] formatVersionToVhosts(String[] versions, String sourcePerimeter){
+        if(versions != null){
+            return Arrays.stream(versions).map(version -> sourcePerimeter + "_v" +  version).toArray(String[]::new);
+        }
+        return null;
     }
 
     public static boolean requiresCisuConversion(HubConfiguration hubConfig, EdxlMessage edxlMessage) {
-        return isCisuExchange(edxlMessage)
+        return isOneCisuHubexInvolved(edxlMessage)
                 && isConvertedModel(edxlMessage)
                 && !isAlreadyCisuConverted(hubConfig.getVhost(), edxlMessage.getDescriptor().getExplicitAddress().getExplicitAddressValue())
                 && !isDirectCisuForHealthActor(hubConfig, edxlMessage);
+    }
+
+    public static String trimVersionSuffix(String input) {
+        String VERSION_SUFFIX_REGEX = "_v[\\d\\.]+$";
+
+        if (input == null) return null;
+        return input.replaceFirst(VERSION_SUFFIX_REGEX, "");
     }
 
     public static boolean isAlreadyCisuConverted(String currentVHost, String recipient) {
@@ -90,8 +119,7 @@ public class ConversionUtils {
         }
     }
 
-    public static boolean isCisuExchange(EdxlMessage edxlMessage) {
-        // Checks if the message is from or to CISU (not health)
+    public static boolean isOneCisuHubexInvolved(EdxlMessage edxlMessage) {
         String recipientID = getRecipientID(edxlMessage);
         String senderID = edxlMessage.getSenderID();
         return !(recipientID.startsWith(HEALTH_PREFIX) && senderID.startsWith(HEALTH_PREFIX));

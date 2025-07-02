@@ -21,9 +21,12 @@ import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.hubsante.hub.HubApplication;
 import com.hubsante.hub.config.HubConfiguration;
 import com.hubsante.hub.exception.ConversionException;
+import com.hubsante.hub.exception.UnroutableMessageException;
 import com.hubsante.hub.service.utils.MessageTestUtils;
 import com.hubsante.hub.utils.ConversionRulesCommand;
 import com.hubsante.hub.utils.ConversionUtils;
+import com.hubsante.hub.utils.EdxlUtils;
+import com.hubsante.hub.utils.MessageUtils;
 import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.Validator;
 import com.hubsante.model.edxl.EdxlMessage;
@@ -62,10 +65,10 @@ import static com.hubsante.hub.service.utils.MessageTestUtils.*;
 import static com.hubsante.hub.service.utils.MetricsUtils.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.doThrow;
 
 @SpringBootTest
 @ContextConfiguration(classes = HubApplication.class)
@@ -112,6 +115,8 @@ public class DispatcherTest {
 
     @DynamicPropertySource
     static void registerPgProperties(DynamicPropertyRegistry propertiesRegistry) {
+        propertiesRegistry.add("supported.messages.file",
+                () -> Objects.requireNonNull(classLoader.getResource("config/supported.messages.csv")));
         propertiesRegistry.add("client.preferences.file",
                 () -> Objects.requireNonNull(classLoader.getResource("config/client.preferences.csv")));
         propertiesRegistry.add("hubsante.default.message.ttl", () -> 5);
@@ -631,6 +636,48 @@ public class DispatcherTest {
         assertEquals(referencedDistributionId, error.getReferencedDistributionID());
         if (errorCause != null) {
             Arrays.stream(errorCause).forEach(cause -> assertTrue(error.getErrorCause().contains(cause)));
+        }
+    }
+
+    @Test
+    @DisplayName("should not throw when message class is supported")
+    public void checkMessageClassNameSupportedDoesNotThrow() throws Exception {
+        Message message = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
+        EdxlMessage edxlMessage = edxlHandler.deserializeJsonEDXL(new String(message.getBody(), StandardCharsets.UTF_8));
+
+        HubConfiguration hubConfig = mock(HubConfiguration.class);
+        String supportedClassName = "SUPPORTED_CLASS";
+        when(hubConfig.getSupportedMessages()).thenReturn(List.of(supportedClassName));
+        try (MockedStatic<EdxlUtils> mockedEdxlUtils = mockStatic(EdxlUtils.class)) {
+            mockedEdxlUtils.when(() -> EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage()))
+                .thenReturn(supportedClassName);
+
+            new Dispatcher(messageHandler, rabbitTemplate, edxlHandler, xmlMapper, jsonMapper, conversionHandler);
+
+            assertDoesNotThrow(() -> MessageUtils.checkMessageClassNameSupported(edxlMessage, hubConfig));
+        }
+    }
+
+    @Test
+    @DisplayName("should throw UnroutableMessageException when message class is not supported")
+    public void checkMessageClassNameSupportedThrowsException() throws Exception {
+        Message message = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
+        EdxlMessage edxlMessage = edxlHandler.deserializeJsonEDXL(new String(message.getBody(), StandardCharsets.UTF_8));
+
+        HubConfiguration hubConfig = mock(HubConfiguration.class);
+        String unsupportedClassName = "UNSUPPORTED_CLASS";
+        when(hubConfig.getSupportedMessages()).thenReturn(List.of("SUPPORTED_CLASS"));
+
+        try (MockedStatic<EdxlUtils> mockedEdxlUtils = mockStatic(EdxlUtils.class)) {
+            mockedEdxlUtils.when(() -> EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage()))
+                    .thenReturn(unsupportedClassName);
+
+            new Dispatcher(messageHandler, rabbitTemplate, edxlHandler, xmlMapper, jsonMapper, conversionHandler);
+
+            UnroutableMessageException thrown = assertThrows(UnroutableMessageException.class, () -> {
+                MessageUtils.checkMessageClassNameSupported(edxlMessage, hubConfig);
+            });
+            assertEquals("The received message classname is not supported on this vhost", thrown.getMessage());
         }
     }
 }

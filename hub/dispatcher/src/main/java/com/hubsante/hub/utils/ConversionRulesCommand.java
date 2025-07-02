@@ -3,7 +3,7 @@ package com.hubsante.hub.utils;
 import com.hubsante.hub.service.MessageHandler;
 import com.hubsante.model.edxl.EdxlMessage;
 
-import static com.hubsante.hub.config.Constants.VHOST_MODEL_VERSION;
+import static com.hubsante.hub.config.Constants.CONVERSION_VHOST_MODEL;
 
 public class ConversionRulesCommand {
     MessageHandler messageHandler;
@@ -54,9 +54,9 @@ public class ConversionRulesCommand {
     }
 
     public String getVHostMatchingModelVersion(String vHost){
-        if (VHOST_MODEL_VERSION.get(vHost) == null) {
+        if (CONVERSION_VHOST_MODEL.get(vHost) == null) {
             throw new IllegalArgumentException("There is no model version associated with the host " + vHost);
         }
-        return VHOST_MODEL_VERSION.get(vHost);
+        return CONVERSION_VHOST_MODEL.get(vHost);
     }
 }
