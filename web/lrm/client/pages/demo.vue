@@ -137,7 +137,6 @@ import {
   isOut,
   getMessageType,
   getCaseId,
-  generateTimestampId,
 } from '~/composables/messageUtils.js';
 import { loadSchemas } from '~/composables/schemaUtils';
 
@@ -172,7 +171,6 @@ export default {
       selectedMessageType: 'message',
       selectedClientId: null,
       selectedCaseIds: [],
-      newCaseId: null,
       queueTypes: [
         {
           name: 'Message',
@@ -194,9 +192,6 @@ export default {
     };
   },
   computed: {
-    currentMessage() {
-      return this.store.currentMessage;
-    },
     currentMessageType() {
       return this.store.messageTypes[this.messageTypeTabIndex];
     },
@@ -250,15 +245,13 @@ export default {
   },
   watch: {
     source() {
-      this.generateTimestampId();
       this.updateForm();
     },
     currentMessageType() {
       this.store.selectedSchema =
         this.store.messageTypes[this.messageTypeTabIndex];
       this.store.currentUseCase =
-        this.store.messageTypes[this.messageTypeTabIndex].schema?.title;
-      this.store.currentMessageSenderCaseId = generateTimestampId();
+        this.store.messageTypes[this.messageTypeTabIndex].schema.title;
     },
     selectedVhost() {
       this.source = this.store.selectedVhost.modelVersion;
@@ -290,10 +283,6 @@ export default {
         // TODO: automatically switch to the corresponding schema?
         toast.error('Le message ne correspond pas au schéma sélectionné');
       }
-    },
-    generateTimestampId() {
-      this.store.newCaseId = generateTimestampId();
-      consola.log('New case ID generated:', this.newCaseId);
     },
   },
 };
