@@ -1,6 +1,6 @@
 <template>
   <v-btn color="primary" style="margin-bottom: 16px" @click="generateId">
-    Réinitialiser l'ID
+    Régénérer l'ID
   </v-btn>
   <v-form v-model="valid">
     <vjsf v-model="localMessage" :schema="processedSchema" :options="options" />
