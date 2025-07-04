@@ -109,6 +109,10 @@ public class MessageHandler {
         if (senderClientID.startsWith(FR_HEALTH_PREFIX)) {
             logErrorAndSendReport(error, senderClientID);
         }
+        else {
+            log.info("Error message not sent to {} as it is not a health perimeter", senderClientID);
+        }
+
         // increment metric like dispatch_error{reason="INVALID_MESSAGE",sender="fr.health.samuXXX"}
         publishErrorMetric(exception.getErrorCode().getStatusString(), senderClientID);
         // throw exception to reject the message
