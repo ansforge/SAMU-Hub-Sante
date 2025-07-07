@@ -38,7 +38,6 @@ const store = useMainStore();
 const valid = ref(false);
 const localMessage = ref(JSON.parse(JSON.stringify(store.currentMessage)));
 
-// Sync changes back to store
 watch(
   localMessage,
   (newValue) => {
