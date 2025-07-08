@@ -64,9 +64,9 @@ const options = ref({
   editMode: 'inline',
   expansionPanelsProps: { mandatory: false },
   density: 'compact',
-  debounceInputMs: 500,
-  updateOn: 'input',
-  validateOn: 'input',
+  debounceInputMs: 50000,
+  updateOn: 'blur',
+  validateOn: 'blur',
   ajvOptions: {
     allErrors: true,
     strict: false,

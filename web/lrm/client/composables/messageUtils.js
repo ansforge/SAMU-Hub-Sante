@@ -292,35 +292,24 @@ export function generateTimestampId() {
   return `${year}${month}${day}${hour}${minute}${second}${ms}`;
 }
 
-/**
- * Deeply replaces all occurrences of a substring with another substring in all string values within an object or array.
- * @param {Object|Array} obj - The object or array to process.
- * @param {string} search - The substring to search for.
- * @param {string} replacement - The substring to replace with.
- * @returns {Object|Array} - The new object or array with replacements.
- */
-export function deepReplaceString(obj, search, replacement) {
+export function deepReplaceString(obj, searchSubString, replacementSubString) {
   if (typeof obj === 'string') {
-    return obj.split(search).join(replacement);
+    return obj.split(searchSubString).join(replacementSubString);
   } else if (Array.isArray(obj)) {
-    return obj.map((item) => deepReplaceString(item, search, replacement));
+    return obj.map((item) =>
+      deepReplaceString(item, searchSubString, replacementSubString)
+    );
   } else if (obj && typeof obj === 'object') {
     return Object.fromEntries(
       Object.entries(obj).map(([key, value]) => [
         key,
-        deepReplaceString(value, search, replacement),
+        deepReplaceString(value, searchSubString, replacementSubString),
       ])
     );
   }
   return obj;
 }
 
-/**
- * Recursively finds all paths in an object or array where a string value contains the given substring.
- * @param {Object|Array} obj - The object or array to search.
- * @param {string} substring - The substring to search for.
- * @returns {Array<Array<string|number>>} - An array of paths (each path is an array of keys/indexes).
- */
 export function findPathsWithSubstring(obj, substring) {
   const result = [];
   function helper(current, path) {
@@ -340,17 +329,14 @@ export function findPathsWithSubstring(obj, substring) {
   return result;
 }
 
-/**
- * Replaces all occurrences of a substring with another substring at the specified paths in an object or array.
- * @param {Object|Array} obj - The object or array to process.
- * @param {Array<Array<string|number>>} paths - Array of paths (each path is an array of keys/indexes).
- * @param {string} search - The substring to search for.
- * @param {string} replacement - The substring to replace with.
- * @returns {Object|Array} - A new object or array with replacements at the specified paths.
- */
-export function replaceSubstringsAtPaths(obj, paths, search, replacement) {
+export function replaceSubstringsAtPaths(
+  obj,
+  pathsToCheck,
+  searchSubstring,
+  replacementSubString
+) {
   const clone = JSON.parse(JSON.stringify(obj));
-  for (const path of paths) {
+  for (const path of pathsToCheck) {
     let ref = clone;
     for (let i = 0; i < path.length - 1; i++) {
       ref = ref?.[path[i]];
@@ -358,53 +344,14 @@ export function replaceSubstringsAtPaths(obj, paths, search, replacement) {
     }
     const lastKey = path[path.length - 1];
     if (ref && typeof ref[lastKey] === 'string') {
-      ref[lastKey] = ref[lastKey].split(search).join(replacement);
+      ref[lastKey] = ref[lastKey]
+        .split(searchSubstring)
+        .join(replacementSubString);
     }
   }
   return clone;
 }
 
-/**
- * Recursively finds all paths where primitive values differ between two identically structured objects/arrays.
- * Only checks for value differences, not for missing/extra keys or indices.
- * @param {Object|Array} obj1 - The first object or array.
- * @param {Object|Array} obj2 - The second object or array.
- * @param {Array<string|number>} [basePath=[]] - The current path (used internally).
- * @returns {Array<Array<string|number>>} - Array of paths (each path is an array of keys/indexes) where values differ.
- */
-export function getChangedPaths(obj1, obj2, basePath = []) {
-  const paths = [];
-  if (Array.isArray(obj1) && Array.isArray(obj2)) {
-    const len = Math.min(obj1.length, obj2.length);
-    for (let i = 0; i < len; i++) {
-      paths.push(...getChangedPaths(obj1[i], obj2[i], [...basePath, i]));
-    }
-  } else if (
-    obj1 &&
-    typeof obj1 === 'object' &&
-    obj2 &&
-    typeof obj2 === 'object'
-  ) {
-    const keys = Object.keys(obj1);
-    for (const key of keys) {
-      if (key in obj2) {
-        paths.push(
-          ...getChangedPaths(obj1[key], obj2[key], [...basePath, key])
-        );
-      }
-    }
-  } else if (obj1 !== obj2 && basePath.length > 0) {
-    paths.push(basePath);
-  }
-  return paths;
-}
-
-/**
- * Accesses the value of an object via a path (array of keys/indexes).
- * @param {Object|Array} obj - The object or array to access.
- * @param {Array<string|number>} path - The path as an array of keys or indexes.
- * @returns {*} - The value at the specified path, or undefined if not found.
- */
 export function getValueAtPath(obj, path) {
   return path.reduce((acc, key) => (acc != null ? acc[key] : undefined), obj);
 }
