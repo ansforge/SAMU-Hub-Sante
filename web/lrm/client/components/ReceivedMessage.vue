@@ -42,8 +42,8 @@
                 validatedValuesCount === requiredValuesCount
                   ? 'green'
                   : validatedValuesCount === 0
-                  ? 'red'
-                  : 'orange'
+                    ? 'red'
+                    : 'orange'
               "
             >
               {{
