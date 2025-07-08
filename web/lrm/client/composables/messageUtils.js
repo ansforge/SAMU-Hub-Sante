@@ -310,22 +310,25 @@ export function deepReplaceString(obj, searchSubString, replacementSubString) {
   return obj;
 }
 
+function findPathsWithSubstringHelper(current, path, substring, result) {
+  if (typeof current === 'string') {
+    if (current.includes(substring)) {
+      result.push([...path]);
+    }
+  } else if (Array.isArray(current)) {
+    current.forEach((item, idx) =>
+      findPathsWithSubstringHelper(item, [...path, idx], substring, result)
+    );
+  } else if (current && typeof current === 'object') {
+    Object.entries(current).forEach(([key, value]) => {
+      findPathsWithSubstringHelper(value, [...path, key], substring, result);
+    });
+  }
+}
+
 export function findPathsWithSubstring(obj, substring) {
   const result = [];
-  function helper(current, path) {
-    if (typeof current === 'string') {
-      if (current.includes(substring)) {
-        result.push([...path]);
-      }
-    } else if (Array.isArray(current)) {
-      current.forEach((item, idx) => helper(item, [...path, idx]));
-    } else if (current && typeof current === 'object') {
-      Object.entries(current).forEach(([key, value]) => {
-        helper(value, [...path, key]);
-      });
-    }
-  }
-  helper(obj, []);
+  findPathsWithSubstringHelper(obj, [], substring, result);
   return result;
 }
 
