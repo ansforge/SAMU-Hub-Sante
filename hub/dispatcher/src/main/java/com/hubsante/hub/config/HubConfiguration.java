@@ -124,7 +124,7 @@ public class HubConfiguration {
         }
         String line;
         while ((line = reader.readLine()) != null) {
-            String[] values = line.split(COLUMN_DIVIDER);
+            String[] values = line.split(COLUMN_DIVIDER, -1); // -1 allows trailing empty strings
 
             if (values.length < numberOfColumns) continue;
 
