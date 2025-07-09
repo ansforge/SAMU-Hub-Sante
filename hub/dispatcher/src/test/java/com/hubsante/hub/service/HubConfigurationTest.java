@@ -34,10 +34,10 @@ public class HubConfigurationTest {
 
         File tempConfigFile = File.createTempFile("client.preferences", ".csv");
         try (FileWriter writer = new FileWriter(tempConfigFile, StandardCharsets.UTF_8)) {
-            writer.write("client_id;useXML;directCISU;editor;lrm_test;15-15;15-nexsis;15-smur;15-gps;extraColumn\n");
-            writer.write("fr.health.samuA;false;false;default-editor;false;1.5,2.0,2.1;1.9;1.7;2.0;extraValue\n");
-            writer.write("fr.health.samuV2;false;false;default-editor;false;2.0;1.9;1.7;2.0;extraValue\n");
-            writer.write("fr.health.samuV1;false;false;default-editor;false;1.5;1.9;1.7;2.0;extraValue\n");
+            writer.write("client_id;useXML;directCISU;editor;lrm_test;15-15;15-nexsis;15-smur;15-gps\n");
+            writer.write("fr.health.samuA;false;false;default-editor;false;1.5,2.0,2.1;1.9;1.7;2.0\n");
+            writer.write("fr.health.samuV2;false;false;default-editor;false;2.0;1.9;1.7;2.0\n");
+            writer.write("fr.health.samuV1;false;false;default-editor;false;1.5;;;\n");
         }
 
         ReflectionTestUtils.setField(hubConfig, "configFile", tempConfigFile);
@@ -102,10 +102,10 @@ public class HubConfigurationTest {
         Map<String, Map<String, String>> expectedMap = new HashMap<>();
 
         Map<String, String> samuV1Map = new HashMap<>();
-        samuV1Map.put("15-smur", "1.7");
+        samuV1Map.put("15-smur", "");
         samuV1Map.put("15-15", "1.5");
-        samuV1Map.put("15-nexsis", "1.9");
-        samuV1Map.put("15-gps", "2.0");
+        samuV1Map.put("15-nexsis", "");
+        samuV1Map.put("15-gps", "");
         expectedMap.put("fr.health.samuV1", samuV1Map);
 
         Map<String, String> samuV2Map = new HashMap<>();
@@ -123,6 +123,6 @@ public class HubConfigurationTest {
         expectedMap.put("fr.health.samuA", samuAMap);
         System.out.println(clientsPerimetersAndVersions);
 
-        Assertions.assertEquals(clientsPerimetersAndVersions, expectedMap);
+        Assertions.assertEquals(expectedMap, clientsPerimetersAndVersions);
     }
 }
