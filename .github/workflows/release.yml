@@ -137,5 +137,5 @@ jobs:
         with:
           push: true
           platforms: linux/amd64
-          tags: ghcr.io/${{ github.repository_owner }}/hub-specs:${{ steps.extract_info.outputs.version }}
+          tags: ghcr.io/${{ github.repository_owner }}/hub-web-specs:${{ steps.extract_info.outputs.version }}
           context: ./web/specs
