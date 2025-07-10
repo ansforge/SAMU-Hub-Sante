@@ -4,11 +4,14 @@ FROM nginx:alpine
 # Copy the static files to the nginx default document root
 COPY . /usr/share/nginx/html
 
-# Fix permissions for nginx cache directory when running with non-root user
-RUN mkdir -p /var/cache/nginx && chown -R nginx:nginx /var/cache/nginx
+# Copy custom server config to use port 8080
+COPY conf.d/default.conf /etc/nginx/conf.d/default.conf
 
-# Expose port 80 to allow incoming traffic
-EXPOSE 80
+# Fix permissions for nginx cache directory when running with non-root user
+RUN mkdir -p /var/cache/nginx && chown -R nginx:nginx /var/cache/nginx /usr/share/nginx/html
+
+# Expose port 8080 to allow incoming traffic
+EXPOSE 8080
 
 # Start the nginx web server
 CMD ["nginx", "-g", "daemon off;"]
