@@ -13,8 +13,8 @@ RUN mkdir -p /var/cache/nginx && chown -R nginx:nginx /var/cache/nginx /usr/shar
 # Expose port 8080 to allow incoming traffic
 EXPOSE 8080
 
-# Start the nginx web server
-CMD ["nginx", "-g", "daemon off;"]
+# Start the nginx web server with custom config and pid path
+CMD ["nginx", "-g", "pid /var/cache/nginx/nginx.pid; daemon off;"]
 
 # Run as non-root user for better security
 USER nginx
