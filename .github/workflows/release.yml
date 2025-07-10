@@ -45,8 +45,11 @@ jobs:
           elif [[ "$RELEASE_NAME" == chatbot-* ]]; then
             PROJECT="chatbot"
             VERSION=${RELEASE_NAME#chatbot-}
+          elif [[ "$RELEASE_NAME" == specs-* ]]; then
+            PROJECT="specs"
+            VERSION=${RELEASE_NAME#specs-}
           else
-            echo "Invalid release name prefix. Must be 'dispatcher', 'lrm', 'landing', 'healthcheck' or 'chatbot'."
+            echo "Invalid release name prefix. Must be 'dispatcher', 'lrm', 'landing', 'healthcheck', 'chatbot' or 'specs'."
             exit 1
           fi
           
@@ -127,3 +130,12 @@ jobs:
           platforms: linux/amd64
           tags: ghcr.io/${{ github.repository_owner }}/hub-chatbot:${{ steps.extract_info.outputs.version }}
           context: ./tools/chatbot
+
+      - name: Build and push specs Docker image
+        if: steps.extract_info.outputs.project == 'specs'
+        uses: docker/build-push-action@v5
+        with:
+          push: true
+          platforms: linux/amd64
+          tags: ghcr.io/${{ github.repository_owner }}/hub-specs:${{ steps.extract_info.outputs.version }}
+          context: ./web/specs
