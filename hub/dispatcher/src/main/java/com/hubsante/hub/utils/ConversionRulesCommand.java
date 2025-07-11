@@ -19,7 +19,10 @@ public class ConversionRulesCommand {
         this.messageHandler = messageHandler;
         this.edxlMessage = edxlMessage;
         this.sourceVHost = messageHandler.getHubConfig().getVhost();
-        this.targetVHost = ConversionUtils.getTargetVHosts(messageHandler.getHubConfig(), edxlMessage)[0]; // todo - choix arbitraire à revoir
+
+        String[] targetVhosts = ConversionUtils.getTargetVHosts(messageHandler.getHubConfig(), edxlMessage);
+        this.targetVHost = targetVhosts[targetVhosts.length-1];
+
         this.isCisuConversion = ConversionUtils.requiresCisuConversion(messageHandler.getHubConfig(), edxlMessage);
         this.sourceModelVersion = getVHostMatchingModelVersion(sourceVHost);
         this.targetModelVersion = getVHostMatchingModelVersion(targetVHost);
