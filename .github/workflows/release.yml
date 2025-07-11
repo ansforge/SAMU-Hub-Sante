@@ -48,6 +48,9 @@ jobs:
           elif [[ "$RELEASE_NAME" == specs-* ]]; then
             PROJECT="specs"
             VERSION=${RELEASE_NAME#specs-}
+          elif [[ "$RELEASE_NAME" == openssl-* ]]; then
+            PROJECT="openssl"
+            VERSION=${RELEASE_NAME#openssl-}
           else
             echo "Invalid release name prefix. Must be 'dispatcher', 'lrm', 'landing', 'healthcheck', 'chatbot' or 'specs'."
             exit 1
@@ -130,6 +133,15 @@ jobs:
           platforms: linux/amd64
           tags: ghcr.io/${{ github.repository_owner }}/hub-chatbot:${{ steps.extract_info.outputs.version }}
           context: ./tools/chatbot
+
+      - name: Build and push openssl Docker image
+        if: steps.extract_info.outputs.project == 'openssl'
+        uses: docker/build-push-action@v5
+        with:
+          push: true
+          platforms: linux/amd64
+          tags: ghcr.io/${{ github.repository_owner }}/openssl:${{ steps.extract_info.outputs.version }}
+          context: ./tools/openssl
 
       - name: Build and push specs Docker image
         if: steps.extract_info.outputs.project == 'specs'
