@@ -3,7 +3,7 @@ import csv
 import os
 
 app = Flask(__name__)
-CSV_DIR = "/config"
+CSV_DIR = "/config" # Le fichier CSV sera monté dans ce répertoire via une ConfigMap
 
 @app.get("/api/annuaire")
 def get_json():
