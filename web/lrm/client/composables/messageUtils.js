@@ -292,24 +292,6 @@ export function generateTimestampId() {
   return `${year}${month}${day}${hour}${minute}${second}${ms}`;
 }
 
-export function deepReplaceString(obj, searchSubString, replacementSubString) {
-  if (typeof obj === 'string') {
-    return obj.split(searchSubString).join(replacementSubString);
-  } else if (Array.isArray(obj)) {
-    return obj.map((item) =>
-      deepReplaceString(item, searchSubString, replacementSubString)
-    );
-  } else if (obj && typeof obj === 'object') {
-    return Object.fromEntries(
-      Object.entries(obj).map(([key, value]) => [
-        key,
-        deepReplaceString(value, searchSubString, replacementSubString),
-      ])
-    );
-  }
-  return obj;
-}
-
 function findPathsWithSubstringHelper(current, path, substring, result) {
   if (typeof current === 'string') {
     if (current.includes(substring)) {
@@ -353,8 +335,4 @@ export function replaceSubstringsAtPaths(
     }
   }
   return clone;
-}
-
-export function getValueAtPath(obj, path) {
-  return path.reduce((acc, key) => (acc != null ? acc[key] : undefined), obj);
 }
