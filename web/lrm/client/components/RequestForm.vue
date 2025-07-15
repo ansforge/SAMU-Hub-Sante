@@ -1,18 +1,23 @@
 <template>
+  <v-btn color="primary" style="margin-bottom: 16px" @click="generateId">
+    Régénérer l'ID
+  </v-btn>
   <v-form v-model="valid">
-    <vjsf
-      v-model="currentMessage"
-      :schema="formatSchema(schemaCopy)"
-      :options="options"
-    />
+    <vjsf v-model="localMessage" :schema="processedSchema" :options="options" />
   </v-form>
 </template>
 
 <script setup>
-import { ref, toRefs, computed } from 'vue';
+import { ref, watch, computed, toRefs } from 'vue';
 import Vjsf from '@koumoul/vjsf';
 import moment from 'moment';
 import { useMainStore } from '~/store';
+import {
+  findPathsWithSubstring,
+  generateTimestampId,
+  replaceSubstringsAtPaths,
+} from '~/composables/messageUtils';
+import consola from 'consola';
 
 const props = defineProps({
   value: {
@@ -29,11 +34,29 @@ const props = defineProps({
   },
 });
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const emit = defineEmits(['submit']);
-
 const store = useMainStore();
 const valid = ref(false);
+const localMessage = ref(JSON.parse(JSON.stringify(store.currentMessage)));
+
+watch(
+  localMessage,
+  (newValue) => {
+    store.currentMessage = newValue;
+  },
+  { deep: true }
+);
+
+// Handle initial value changes
+watch(
+  () => store.currentMessage,
+  (newValue) => {
+    if (JSON.stringify(newValue) !== JSON.stringify(localMessage.value)) {
+      localMessage.value = JSON.parse(JSON.stringify(newValue));
+    }
+  },
+  { immediate: true }
+);
+
 const options = ref({
   locale: 'fr',
   defaultLocale: 'fr',
@@ -54,23 +77,53 @@ const options = ref({
   },
 });
 
-const { currentMessage } = toRefs(store);
+const processedSchema = computed(() => {
+  const schemaCopy = JSON.parse(JSON.stringify(props.schema));
+  delete schemaCopy.$schema;
+  delete schemaCopy.$id;
+  return schemaCopy;
+});
 
-const schemaCopy = computed(() => JSON.parse(JSON.stringify(props.schema)));
+const paths = ref([]);
+const { currentMessage, currentMessageSenderCaseId } = toRefs(store);
 
-const formatSchema = (schema) => {
-  let newSchema = { ...schema };
-  // Remove $ props from schema
-  newSchema = remove$PropsFromSchema(schema);
-  return newSchema;
+const generateId = () => {
+  currentMessageSenderCaseId.value = generateTimestampId();
 };
 
-const remove$PropsFromSchema = (schema) => {
-  const newSchema = { ...schema };
-  delete newSchema.$schema;
-  delete newSchema.$id;
-  return newSchema;
-};
+watch(
+  () => store.currentMessageLoaded,
+  (newValue) => {
+    if (newValue) {
+      generateId();
+    } else {
+      consola.warn('Current message not loaded yet.');
+    }
+  },
+  { immediate: true }
+);
+
+watch(currentMessageSenderCaseId, (newVal) => {
+  if (!newVal) return;
+
+  const oldId =
+    currentMessage?.value?.senderCaseId ??
+    currentMessage.value.caseId?.split('.').pop();
+  const newId = newVal;
+
+  if (!oldId || !newId || oldId === newId) return;
+
+  paths.value = findPathsWithSubstring(currentMessage.value, oldId);
+
+  const newObj = replaceSubstringsAtPaths(
+    currentMessage.value,
+    paths.value,
+    oldId,
+    newId
+  );
+
+  currentMessage.value = newObj;
+});
 </script>
 
 <style>

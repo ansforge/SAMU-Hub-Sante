@@ -275,3 +275,64 @@ export function getReadableMessageType(messageType) {
       return 'Message';
   }
 }
+
+/**
+ * Generates an ID in the format AAMMJJHHMMSSmmm (year, month, day, hour, minute, second, millisecond)
+ * Example: 250630153012123 for 2025-06-30 15:30:12.123
+ */
+export function generateTimestampId() {
+  const now = new Date();
+  const year = String(now.getFullYear()).slice(-2); // AA
+  const month = String(now.getMonth() + 1).padStart(2, '0'); // MM
+  const day = String(now.getDate()).padStart(2, '0'); // JJ
+  const hour = String(now.getHours()).padStart(2, '0'); // HH
+  const minute = String(now.getMinutes()).padStart(2, '0'); // MM
+  const second = String(now.getSeconds()).padStart(2, '0'); // SS
+  const ms = String(now.getMilliseconds()).padStart(3, '0'); // mmm
+  return `${year}${month}${day}${hour}${minute}${second}${ms}`;
+}
+
+function findPathsWithSubstringHelper(current, path, substring, result) {
+  if (typeof current === 'string') {
+    if (current.includes(substring)) {
+      result.push([...path]);
+    }
+  } else if (Array.isArray(current)) {
+    current.forEach((item, idx) =>
+      findPathsWithSubstringHelper(item, [...path, idx], substring, result)
+    );
+  } else if (current && typeof current === 'object') {
+    Object.entries(current).forEach(([key, value]) => {
+      findPathsWithSubstringHelper(value, [...path, key], substring, result);
+    });
+  }
+}
+
+export function findPathsWithSubstring(obj, substring) {
+  const result = [];
+  findPathsWithSubstringHelper(obj, [], substring, result);
+  return result;
+}
+
+export function replaceSubstringsAtPaths(
+  obj,
+  pathsToCheck,
+  searchSubstring,
+  replacementSubString
+) {
+  const clone = JSON.parse(JSON.stringify(obj));
+  for (const path of pathsToCheck) {
+    let ref = clone;
+    for (let i = 0; i < path.length - 1; i++) {
+      ref = ref?.[path[i]];
+      if (ref == null) break;
+    }
+    const lastKey = path[path.length - 1];
+    if (ref && typeof ref[lastKey] === 'string') {
+      ref[lastKey] = ref[lastKey]
+        .split(searchSubstring)
+        .join(replacementSubString);
+    }
+  }
+  return clone;
+}
