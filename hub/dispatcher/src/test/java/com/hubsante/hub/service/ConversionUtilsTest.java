@@ -64,6 +64,8 @@ public class ConversionUtilsTest {
         MockitoAnnotations.openMocks(this);
 
         directCisuPreferences = new HashMap<>();
+        directCisuPreferences.put("fr.health.samuDirectCisu", true);
+
         when(hubConfig.getDirectCisuPreferences()).thenReturn(directCisuPreferences);
     }
 
@@ -210,6 +212,17 @@ public class ConversionUtilsTest {
             assertArrayEquals(new String[]{"15-nexsis_v1.9"}, ConversionUtils.getTargetVHosts(hubConfig, edxlMessage));
 
             mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage)).thenReturn("fr.cisu.test");
+            assertArrayEquals(new String[]{"15-nexsis_v1.9"}, ConversionUtils.getTargetVHosts(hubConfig, edxlMessage));
+
+            // Direct Cisu cases
+            when(hubConfig.getVhost()).thenReturn("15-nexsis_v1.9");
+            when(edxlMessage.getSenderID()).thenReturn("fr.health.samuDirectCisu");
+            mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage)).thenReturn("fr.fire.test");
+            assertArrayEquals(new String[]{"15-nexsis_v1.9"}, ConversionUtils.getTargetVHosts(hubConfig, edxlMessage));
+
+            when(edxlMessage.getSenderID()).thenReturn("fr.fire.test");
+            when(hubConfig.getClientVersionsForPerimeter("fr.health.samuDirectCisu", "15-nexsis")).thenReturn(new String[]{"1.9"});
+            mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage)).thenReturn("fr.health.samuDirectCisu");
             assertArrayEquals(new String[]{"15-nexsis_v1.9"}, ConversionUtils.getTargetVHosts(hubConfig, edxlMessage));
         }
     }
