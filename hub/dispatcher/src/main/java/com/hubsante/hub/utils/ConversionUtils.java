@@ -79,7 +79,8 @@ public class ConversionUtils {
             return new String[]{NEXSIS_VHOST}; // ["15-nexsis_v1.9"]
         }
         boolean isCisuSender = !senderID.startsWith(FR_HEALTH_PREFIX);
-        if(isCisuSender){
+        boolean isDirectCisu = isDirectCisuForHealthActor(hubConfig, edxlMessage);
+        if(isCisuSender && !isDirectCisu) {
             String perimeter15_15 = "15-15";
             targetVersionsOnSourcePerimeter = hubConfig.getClientVersionsForPerimeter(recipientID, perimeter15_15); // ex ['1.5, 2.0']
             return formatVersionToVhosts(targetVersionsOnSourcePerimeter, perimeter15_15);
