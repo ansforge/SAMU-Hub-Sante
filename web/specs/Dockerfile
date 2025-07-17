@@ -1,8 +1,5 @@
 # Use a lightweight web server as the base image
-FROM nginx:alpine
-
-# Copy the files to the nginx default document root
-COPY . /usr/share/nginx/html
+FROM ghcr.io/ansforge/hub-web-specs:1.0.1-test
 
 # Copy the nginx configuration file to the container
 COPY nginx.conf /usr/share/nginx/html/nginx.conf
