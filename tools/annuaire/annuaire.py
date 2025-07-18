@@ -2,23 +2,37 @@ from flask import Flask, jsonify, abort
 import csv
 import os
 
-app = Flask(__name__)
 CSV_DIR = "/config"
 
-@app.get("/api/annuaire")
-def get_json():
+def create_app() :    
+    app = Flask(__name__)
     filename = "rabbitmq.clients-configuration.csv"
+    csv_data = parse_csv(filename)
+    if csv_data is None:
+        raise RuntimeError("Erreur : impossible de charger le fichier CSV au démarrage.")
+    app.config['CSV_DATA'] = select_columns(csv_data)
+
+    @app.get("/api/annuaire")
+    def get_json():
+        return jsonify(app.config['CSV_DATA'])
+
+    return app
+
+def parse_csv(filename):
     path = os.path.join(CSV_DIR, filename)
     if not os.path.exists(path):
         abort(500, description="Fichier CSV introuvable")
+        return None
     try:
         with open(path, newline='', encoding='utf-8') as csvfile:
             reader = csv.DictReader(csvfile)
-            data = list(reader)
+            return list(reader)
     except Exception as e:
         abort(500, description=f"Erreur lors de la lecture du CSV: {e}")
+        return None
+
     data = select_columns(data)
-    return jsonify(data)
+
 
 def select_columns(data: list[dict]) -> list[dict]:
     headers_columns_to_keep = ['client_id', 'editor', 'P: 15-15', 'P: 15-smur', 'P: 15-nexsis', 'P: 15-gps', 'directCISU']
