@@ -1,6 +1,7 @@
 name: build image on release
 
 on:
+  workflow_dispatch:
   release:
     types: [published]
 
@@ -27,7 +28,7 @@ jobs:
       - name: Extract release information
         id: extract_info
         run: |
-          RELEASE_NAME=${{ github.event.release.name }}
+          RELEASE_NAME=${{ github.event.release.name || github.ref_name }}
           echo $RELEASE_NAME
           
           if [[ "$RELEASE_NAME" == dispatcher-* ]]; then
