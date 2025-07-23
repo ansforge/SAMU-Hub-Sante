@@ -1,3 +1,4 @@
+import logging
 from flask import Flask, jsonify, abort
 import csv
 import os
@@ -21,17 +22,15 @@ def create_app() :
 def parse_csv(filename):
     path = os.path.join(CSV_DIR, filename)
     if not os.path.exists(path):
-        abort(500, description="Fichier CSV introuvable")
-        return None
+        logging.error(f"Fichier CSV introuvable : {path}")
+        raise FileNotFoundError(f"Fichier CSV introuvable : {filename}")
     try:
         with open(path, newline='', encoding='utf-8') as csvfile:
             reader = csv.DictReader(csvfile)
             return list(reader)
     except Exception as e:
-        abort(500, description=f"Erreur lors de la lecture du CSV: {e}")
-        return None
-
-    data = select_columns(data)
+        logging.error(f"Erreur lors de la lecture du fichier CSV '{filename}': {e}")
+        raise RuntimeError(f"Erreur lors de la lecture du CSV: {e}")
 
 
 def select_columns(data: list[dict]) -> list[dict]:
