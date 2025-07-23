@@ -17,7 +17,6 @@ import {
   generateTimestampId,
   replaceSubstringsAtPaths,
 } from '~/composables/messageUtils';
-import consola from 'consola';
 
 const props = defineProps({
   value: {
@@ -90,18 +89,6 @@ const { currentMessage, currentMessageSenderCaseId } = toRefs(store);
 const generateId = () => {
   currentMessageSenderCaseId.value = generateTimestampId();
 };
-
-watch(
-  () => store.currentMessageLoaded,
-  (newValue) => {
-    if (newValue) {
-      generateId();
-    } else {
-      consola.warn('Current message not loaded yet.');
-    }
-  },
-  { immediate: true }
-);
 
 watch(currentMessageSenderCaseId, (newVal) => {
   if (!newVal) return;
