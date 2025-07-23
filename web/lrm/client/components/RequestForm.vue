@@ -35,26 +35,11 @@ const props = defineProps({
 
 const store = useMainStore();
 const valid = ref(false);
-const localMessage = ref(JSON.parse(JSON.stringify(store.currentMessage)));
 
-watch(
-  localMessage,
-  (newValue) => {
-    store.currentMessage = newValue;
-  },
-  { deep: true }
-);
-
-// Handle initial value changes
-watch(
-  () => store.currentMessage,
-  (newValue) => {
-    if (JSON.stringify(newValue) !== JSON.stringify(localMessage.value)) {
-      localMessage.value = JSON.parse(JSON.stringify(newValue));
-    }
-  },
-  { immediate: true }
-);
+const localMessage = computed({
+  get: () => store.currentMessage,
+  set: (value) => (store.currentMessage = value),
+});
 
 const options = ref({
   locale: 'fr',
