@@ -30,4 +30,4 @@ USER annuaire
 EXPOSE 8080
 
 # Use Gunicorn to serve the Flask app
-CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:8080", "annuaire:create_app", "--timeout", "180", "--log-level=debug"]
+CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:8080", "annuaire:app", "--timeout", "180", "--log-level=debug"]
