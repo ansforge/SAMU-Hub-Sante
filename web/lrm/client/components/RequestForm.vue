@@ -1,11 +1,17 @@
 <template>
   <v-form v-model="valid">
-    <vjsf v-model="localMessage" :schema="processedSchema" :options="options" />
+    <template v-if="displayForm">
+      <vjsf
+        v-model="localMessage"
+        :schema="processedSchema"
+        :options="options"
+      />
+    </template>
   </v-form>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, toRefs, watch } from 'vue';
 import Vjsf from '@koumoul/vjsf';
 import moment from 'moment';
 import { useMainStore } from '~/store';
@@ -23,11 +29,27 @@ const props = defineProps({
 
 const store = useMainStore();
 const valid = ref(false);
+const displayForm = ref(false);
+
+const { currentMessageFilePath } = toRefs(store);
+
+watch(currentMessageFilePath, (newFilePath) => {
+  if (newFilePath) {
+    resetForm();
+  }
+});
 
 const localMessage = computed({
   get: () => store.currentMessage,
   set: (value) => (store.currentMessage = value),
 });
+
+const resetForm = () => {
+  displayForm.value = false;
+  setTimeout(() => {
+    displayForm.value = true;
+  }, 1000);
+};
 
 const options = ref({
   locale: 'fr',
