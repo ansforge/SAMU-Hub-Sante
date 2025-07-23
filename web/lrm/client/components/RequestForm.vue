@@ -1,14 +1,19 @@
 <template>
-  <v-btn color="primary" style="margin-bottom: 16px" @click="generateId">
-    Régénérer l'ID
-  </v-btn>
+  <div style="display: flex; align-items: center; gap: 16px">
+    <v-text-field
+      v-model="currentMessageSenderCaseId"
+      label="ID du dossier"
+    ></v-text-field>
+    <v-btn color="secondary" @click="generateId"> Régénérer l'ID </v-btn>
+    <v-btn color="primary" @click="replaceId"> Appliquer l'ID</v-btn>
+  </div>
   <v-form v-model="valid">
     <vjsf v-model="localMessage" :schema="processedSchema" :options="options" />
   </v-form>
 </template>
 
 <script setup>
-import { ref, watch, computed, toRefs } from 'vue';
+import { ref, computed, toRefs } from 'vue';
 import Vjsf from '@koumoul/vjsf';
 import moment from 'moment';
 import { useMainStore } from '~/store';
@@ -75,15 +80,15 @@ const generateId = () => {
   currentMessageSenderCaseId.value = generateTimestampId();
 };
 
-watch(currentMessageSenderCaseId, (newVal) => {
-  if (!newVal) return;
+const replaceId = () => {
+  if (!currentMessageSenderCaseId.value) return;
 
   const oldId =
-    currentMessage?.value?.senderCaseId ??
+    currentMessage.value?.senderCaseId ??
     currentMessage.value.caseId?.split('.').pop();
-  const newId = newVal;
+  const newId = currentMessageSenderCaseId.value;
 
-  if (!oldId || !newId || oldId === newId) return;
+  if (!oldId || !newId) return;
 
   paths.value = findPathsWithSubstring(currentMessage.value, oldId);
 
@@ -95,7 +100,7 @@ watch(currentMessageSenderCaseId, (newVal) => {
   );
 
   currentMessage.value = newObj;
-});
+};
 </script>
 
 <style>
