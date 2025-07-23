@@ -11,6 +11,11 @@
         :examples="messageTypeDetails.examples"
       />
     </v-window-item>
+
+    <IdManager />
+
+    <v-divider class="my-4" />
+
     <RequestForm
       v-if="schema"
       ref="requestFormRef"
@@ -24,6 +29,7 @@
 <script setup>
 import { ref, computed, watch } from 'vue';
 import { useMainStore } from '~/store';
+import IdManager from './IdManager.vue';
 const store = useMainStore();
 
 const props = defineProps({

@@ -1,27 +1,14 @@
 <template>
-  <div style="display: flex; align-items: center; gap: 16px">
-    <v-text-field
-      v-model="currentMessageSenderCaseId"
-      label="ID du dossier"
-    ></v-text-field>
-    <v-btn color="secondary" @click="generateId"> Régénérer l'ID </v-btn>
-    <v-btn color="primary" @click="replaceId"> Appliquer l'ID</v-btn>
-  </div>
   <v-form v-model="valid">
     <vjsf v-model="localMessage" :schema="processedSchema" :options="options" />
   </v-form>
 </template>
 
 <script setup>
-import { ref, computed, toRefs } from 'vue';
+import { ref, computed } from 'vue';
 import Vjsf from '@koumoul/vjsf';
 import moment from 'moment';
 import { useMainStore } from '~/store';
-import {
-  findPathsWithSubstring,
-  generateTimestampId,
-  replaceSubstringsAtPaths,
-} from '~/composables/messageUtils';
 
 const props = defineProps({
   value: {
@@ -72,35 +59,6 @@ const processedSchema = computed(() => {
   delete schemaCopy.$id;
   return schemaCopy;
 });
-
-const paths = ref([]);
-const { currentMessage, currentMessageSenderCaseId } = toRefs(store);
-
-const generateId = () => {
-  currentMessageSenderCaseId.value = generateTimestampId();
-};
-
-const replaceId = () => {
-  if (!currentMessageSenderCaseId.value) return;
-
-  const oldId =
-    currentMessage.value?.senderCaseId ??
-    currentMessage.value.caseId?.split('.').pop();
-  const newId = currentMessageSenderCaseId.value;
-
-  if (!oldId || !newId) return;
-
-  paths.value = findPathsWithSubstring(currentMessage.value, oldId);
-
-  const newObj = replaceSubstringsAtPaths(
-    currentMessage.value,
-    paths.value,
-    oldId,
-    newId
-  );
-
-  currentMessage.value = newObj;
-};
 </script>
 
 <style>
