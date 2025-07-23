@@ -11,10 +11,6 @@ import moment from 'moment';
 import { useMainStore } from '~/store';
 
 const props = defineProps({
-  value: {
-    type: Object,
-    default: () => ({}),
-  },
   schema: {
     type: Object,
     required: true,
