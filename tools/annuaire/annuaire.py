@@ -4,18 +4,19 @@ import csv
 import os
 
 CSV_DIR = "/config"
+CSV_DATA_KEY = 'CSV_DATA'
+CSV_FILENAME = "rabbitmq.clients-configuration.csv"
 
 def create_app() :    
     app = Flask(__name__)
-    filename = "rabbitmq.clients-configuration.csv"
-    csv_data = parse_csv(filename)
+    csv_data = parse_csv(CSV_FILENAME)
     if csv_data is None:
         raise RuntimeError("Erreur : impossible de charger le fichier CSV au démarrage.")
-    app.config['CSV_DATA'] = select_columns(csv_data)
+    app.config[CSV_DATA_KEY] = select_columns(csv_data)
 
     @app.get("/api/annuaire")
     def get_json():
-        return jsonify(app.config['CSV_DATA'])
+        return jsonify(app.config[CSV_DATA_KEY])
 
     return app
 
