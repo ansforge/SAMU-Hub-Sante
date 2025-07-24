@@ -11,11 +11,7 @@
         :examples="messageTypeDetails.examples"
       />
     </v-window-item>
-
-    <IdManager />
-
-    <v-divider class="my-4" />
-
+    <id-manager />
     <RequestForm
       v-if="schema"
       ref="requestFormRef"
@@ -29,7 +25,7 @@
 <script setup>
 import { ref, computed, watch } from 'vue';
 import { useMainStore } from '~/store';
-import IdManager from './IdManager.vue';
+
 const store = useMainStore();
 
 const props = defineProps({
@@ -79,5 +75,12 @@ defineExpose({
 
 .v-application div.vjsf-array {
   margin-bottom: 12px !important;
+}
+
+.id-manager::after {
+  content: '';
+  width: 100%;
+  border-bottom: 1px solid #e0e0e0;
+  margin: 1rem 0;
 }
 </style>

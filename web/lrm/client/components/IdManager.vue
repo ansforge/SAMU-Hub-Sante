@@ -1,12 +1,12 @@
 <template>
-  <v-expansion-panels v-if="oldId">
+  <v-expansion-panels v-if="oldId" class="id-manager">
     <v-expansion-panel>
       <v-expansion-panel-title>
         🔧 Modification de l'identifiant local du dossier/affaire dans le
         formulaire
       </v-expansion-panel-title>
       <v-expansion-panel-text>
-        <div class="id-manager">
+        <div class="id-manager__content">
           <v-alert
             border="start"
             color="info"
@@ -90,7 +90,7 @@ const replaceId = () => {
 </script>
 
 <style scoped>
-.id-manager {
+.id-manager__content {
   display: flex;
   flex-direction: column;
   gap: 16px;
