@@ -18,7 +18,7 @@
           </v-alert>
           <v-text-field
             v-model="newId"
-            label="ID du dossier"
+            label="ID local du dossier"
             density="compact"
             :rules="[
               (value) =>
