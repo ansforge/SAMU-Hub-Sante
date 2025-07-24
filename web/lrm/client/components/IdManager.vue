@@ -1,5 +1,5 @@
 <template>
-  <v-expansion-panels>
+  <v-expansion-panels v-if="oldId">
     <v-expansion-panel>
       <v-expansion-panel-title>
         🔧 Gestion de l'identifiant du formulaire
@@ -16,7 +16,7 @@
             Modifiez-le ici pour le mettre à jour partout en une seule fois.
           </v-alert>
           <v-text-field
-            v-model="currentMessageSenderCaseId"
+            v-model="newId"
             label="ID du dossier"
             density="compact"
             :rules="[
@@ -44,7 +44,7 @@
 </template>
 
 <script setup>
-import { ref, toRefs, watch } from 'vue';
+import { computed, ref, toRefs } from 'vue';
 import { useMainStore } from '~/store';
 import {
   findPathsWithSubstring,
@@ -55,39 +55,37 @@ import {
 const store = useMainStore();
 const { currentMessage, currentMessageSenderCaseId } = toRefs(store);
 const paths = ref([]);
+const oldId = computed(() => {
+  return (
+    currentMessage.value?.senderCaseId ??
+    currentMessage.value?.caseId?.split('.').pop()
+  );
+});
+
+const newId = computed({
+  get: () => currentMessageSenderCaseId.value ?? oldId.value,
+  set: (value) => {
+    currentMessageSenderCaseId.value = value;
+  },
+});
 
 const generateId = () => {
   currentMessageSenderCaseId.value = generateTimestampId();
 };
 
 const replaceId = () => {
-  if (!currentMessageSenderCaseId.value) return;
+  if (!oldId.value || !newId.value) return;
 
-  const oldId =
-    currentMessage.value?.senderCaseId ??
-    currentMessage.value.caseId?.split('.').pop();
-  const newId = currentMessageSenderCaseId.value;
-
-  if (!oldId || !newId) return;
-
-  paths.value = findPathsWithSubstring(currentMessage.value, oldId);
+  paths.value = findPathsWithSubstring(currentMessage.value, oldId.value);
 
   const newObj = replaceSubstringsAtPaths(
     currentMessage.value,
     paths.value,
-    oldId,
-    newId
+    oldId.value,
+    newId.value
   );
-
   currentMessage.value = newObj;
 };
-
-watch(currentMessage, (newMessage) => {
-  if (!currentMessageSenderCaseId.value) {
-    currentMessageSenderCaseId.value =
-      newMessage?.senderCaseId ?? newMessage?.caseId?.split('.').pop();
-  }
-});
 </script>
 
 <style scoped>
