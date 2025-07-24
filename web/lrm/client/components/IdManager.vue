@@ -44,7 +44,7 @@
 </template>
 
 <script setup>
-import { ref, toRefs } from 'vue';
+import { ref, toRefs, watch } from 'vue';
 import { useMainStore } from '~/store';
 import {
   findPathsWithSubstring,
@@ -81,6 +81,13 @@ const replaceId = () => {
 
   currentMessage.value = newObj;
 };
+
+watch(currentMessage, (newMessage) => {
+  if (!currentMessageSenderCaseId.value) {
+    currentMessageSenderCaseId.value =
+      newMessage?.senderCaseId ?? newMessage?.caseId?.split('.').pop();
+  }
+});
 </script>
 
 <style scoped>
@@ -88,7 +95,6 @@ const replaceId = () => {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  margin-bottom: 2rem;
 }
 
 .id-manager__btns {
