@@ -311,4 +311,8 @@ export default {
   opacity: 1;
   transition: all 0.5s;
 }
+
+.v-window {
+  padding: 0 5px;
+}
 </style>

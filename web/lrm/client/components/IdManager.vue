@@ -1,26 +1,46 @@
 <template>
-  <div class="id-manager">
-    <v-text-field
-      v-model="currentMessageSenderCaseId"
-      label="ID du dossier"
-      density="compact"
-      :rules="[
-        (value) =>
-          /^[a-zA-Z0-9]*$/.test(value) ||
-          'Seuls les caractères alphanumériques sont autorisés',
-      ]"
-    ></v-text-field>
-    <v-btn color="primary" variant="outlined" @click="generateId">
-      Régénérer l'ID
-    </v-btn>
-    <v-btn
-      color="primary"
-      :disabled="!currentMessageSenderCaseId"
-      @click="replaceId"
-    >
-      Appliquer l'ID
-    </v-btn>
-  </div>
+  <v-expansion-panels>
+    <v-expansion-panel>
+      <v-expansion-panel-title>
+        🔧 Gestion de l'identifiant du formulaire
+      </v-expansion-panel-title>
+      <v-expansion-panel-text>
+        <div class="id-manager">
+          <v-alert
+            border="start"
+            color="info"
+            density="compact"
+            variant="tonal"
+          >
+            Cet identifiant est utilisé dans plusieurs champs du formulaire.
+            Modifiez-le ici pour le mettre à jour partout en une seule fois.
+          </v-alert>
+          <v-text-field
+            v-model="currentMessageSenderCaseId"
+            label="ID du dossier"
+            density="compact"
+            :rules="[
+              (value) =>
+                /^[a-zA-Z0-9]*$/.test(value) ||
+                'Seuls les caractères alphanumériques sont autorisés',
+            ]"
+          ></v-text-field>
+          <div class="id-manager__btns">
+            <v-btn color="primary" variant="outlined" @click="generateId">
+              🎲 Générer un nouvel ID
+            </v-btn>
+            <v-btn
+              color="primary"
+              :disabled="!currentMessageSenderCaseId"
+              @click="replaceId"
+            >
+              Appliquer l’ID au formulaire
+            </v-btn>
+          </div>
+        </div>
+      </v-expansion-panel-text>
+    </v-expansion-panel>
+  </v-expansion-panels>
 </template>
 
 <script setup>
@@ -66,12 +86,13 @@ const replaceId = () => {
 <style scoped>
 .id-manager {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 16px;
   margin-bottom: 2rem;
 }
 
-.v-text-field >>> .v-input__details {
-  position: absolute;
+.id-manager__btns {
+  display: flex;
+  gap: 8px;
 }
 </style>
