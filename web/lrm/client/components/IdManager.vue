@@ -2,7 +2,8 @@
   <v-expansion-panels v-if="oldId">
     <v-expansion-panel>
       <v-expansion-panel-title>
-        🔧 Gestion de l'identifiant du formulaire
+        🔧 Modification de l'identifiant local du dossier/affaire dans le
+        formulaire
       </v-expansion-panel-title>
       <v-expansion-panel-text>
         <div class="id-manager">
