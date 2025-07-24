@@ -1,9 +1,14 @@
 <template>
-  <div style="display: flex; align-items: center; gap: 16px">
+  <div class="id-manager">
     <v-text-field
       v-model="currentMessageSenderCaseId"
       label="ID du dossier"
       density="compact"
+      :rules="[
+        (value) =>
+          /^[a-zA-Z0-9]*$/.test(value) ||
+          'Seuls les caractères alphanumériques sont autorisés',
+      ]"
     ></v-text-field>
     <v-btn color="primary" variant="outlined" @click="generateId">
       Régénérer l'ID
@@ -59,7 +64,14 @@ const replaceId = () => {
 </script>
 
 <style scoped>
+.id-manager {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 2rem;
+}
+
 .v-text-field >>> .v-input__details {
-  display: none;
+  position: absolute;
 }
 </style>
