@@ -46,9 +46,7 @@ const localMessage = computed({
 
 const resetForm = () => {
   displayForm.value = false;
-  setTimeout(() => {
-    displayForm.value = true;
-  }, 1000);
+  setTimeout(() => (displayForm.value = true), 10);
 };
 
 const options = ref({
