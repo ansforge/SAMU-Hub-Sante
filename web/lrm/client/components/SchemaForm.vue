@@ -12,6 +12,7 @@
       />
     </v-window-item>
     <id-manager />
+    <v-divider class="my-4" />
     <RequestForm
       v-if="schema"
       ref="requestFormRef"
@@ -75,12 +76,5 @@ defineExpose({
 
 .v-application div.vjsf-array {
   margin-bottom: 12px !important;
-}
-
-.id-manager::after {
-  content: '';
-  width: 100%;
-  border-bottom: 1px solid #e0e0e0;
-  margin: 1rem 0;
 }
 </style>
