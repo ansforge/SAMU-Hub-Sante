@@ -50,6 +50,10 @@ import static com.hubsante.hub.config.AmqpConfiguration.ORIGINAL_ROUTING_KEY;
 import static com.hubsante.hub.config.Constants.*;
 
 import static com.hubsante.hub.utils.ConfigUtils.sanitizeVhostForProm;
+import com.hubsante.hub.utils.ConversionRulesCommand;
+import com.hubsante.hub.utils.ConversionUtils;
+
+import static com.hubsante.hub.utils.EdxlUtils.HUB_ID;
 import static com.hubsante.hub.utils.EdxlUtils.edxlMessageFromHub;
 import static com.hubsante.hub.utils.EdxlUtils.getUseCaseFromMessage;
 import static com.hubsante.hub.utils.MessageUtils.*;
@@ -69,10 +73,11 @@ public class MessageHandler {
     @Autowired
     @Qualifier("jsonMapper")
     private ObjectMapper jsonMapper;
+    private final ConversionHandler conversionHandler;
 
-    private final static boolean DEFAULT_USE_XML_PREFERENCE = false;
+    private static final boolean DEFAULT_USE_XML_PREFERENCE = false;
 
-    public MessageHandler(RabbitTemplate rabbitTemplate, EdxlHandler edxlHandler, HubConfiguration hubConfig, Validator validator, MeterRegistry registry, XmlMapper xmlMapper, ObjectMapper jsonMapper) {
+    public MessageHandler(RabbitTemplate rabbitTemplate, EdxlHandler edxlHandler, HubConfiguration hubConfig, Validator validator, MeterRegistry registry, XmlMapper xmlMapper, ObjectMapper jsonMapper, ConversionHandler conversionHandler) {
         this.rabbitTemplate = rabbitTemplate;
         this.edxlHandler = edxlHandler;
         this.hubConfig = hubConfig;
@@ -80,6 +85,7 @@ public class MessageHandler {
         this.registry = registry;
         this.xmlMapper = xmlMapper;
         this.jsonMapper = jsonMapper;
+        this.conversionHandler = conversionHandler;
     }
 
     public HubConfiguration getHubConfig() {
@@ -134,6 +140,9 @@ public class MessageHandler {
 
         try {
             EdxlMessage errorEdxlMessage = edxlMessageFromHub(sender, wrapper);
+            String destinationExchange = DISTRIBUTION_EXCHANGE;
+            String routingKey = infoQueueName;
+
             Message errorAmqpMessage;
             if (convertToXML(sender, hubConfig.getUseXmlPreferences().getOrDefault(sender, DEFAULT_USE_XML_PREFERENCE))) {
                 errorAmqpMessage = new Message(edxlHandler.serializeXmlEDXL(errorEdxlMessage).getBytes(),
@@ -141,9 +150,20 @@ public class MessageHandler {
             } else {
                 errorAmqpMessage = new Message(edxlHandler.serializeJsonEDXL(errorEdxlMessage).getBytes(),
                         MessagePropertiesBuilder.newInstance().setContentType(MessageProperties.CONTENT_TYPE_JSON).build());
+
+                boolean isVersionConversion = ConversionUtils.requiresVersionConversion(hubConfig, errorEdxlMessage);
+
+                if (isVersionConversion) {
+                    ConversionRulesCommand conversionRulesCommand = new ConversionRulesCommand(errorEdxlMessage, this);
+                    String convertedMessage = conversionHandler.applyConversionRules(conversionRulesCommand);
+                    errorAmqpMessage = forwardedStringMessage(convertedMessage, errorAmqpMessage);
+                    destinationExchange = ConversionUtils.buildExchangeDestination(conversionRulesCommand.getSourceVHost(), conversionRulesCommand.getTargetVHost());
+                    routingKey = HUB_ID;
+                    log.info("Message transferred to exchange: {} with routing key: {}", destinationExchange, routingKey);
+                }
             }
 
-            rabbitTemplate.send(DISTRIBUTION_EXCHANGE, infoQueueName, errorAmqpMessage);
+            rabbitTemplate.send(destinationExchange, routingKey, errorAmqpMessage);
         } catch (JsonProcessingException e) {
             // This should never happen : we are serializing a POJO with 2 String attributes and a single enum
             log.error("Could not serialize Error for message " + error.getReferencedDistributionID(), e);
