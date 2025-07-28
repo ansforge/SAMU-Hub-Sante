@@ -1,29 +1,22 @@
 <template>
-  <v-btn color="primary" style="margin-bottom: 16px" @click="generateId">
-    Régénérer l'ID
-  </v-btn>
   <v-form v-model="valid">
-    <vjsf v-model="localMessage" :schema="processedSchema" :options="options" />
+    <template v-if="displayForm">
+      <vjsf
+        v-model="localMessage"
+        :schema="processedSchema"
+        :options="options"
+      />
+    </template>
   </v-form>
 </template>
 
 <script setup>
-import { ref, watch, computed, toRefs } from 'vue';
+import { ref, computed, toRefs, watch } from 'vue';
 import Vjsf from '@koumoul/vjsf';
 import moment from 'moment';
 import { useMainStore } from '~/store';
-import {
-  findPathsWithSubstring,
-  generateTimestampId,
-  replaceSubstringsAtPaths,
-} from '~/composables/messageUtils';
-import consola from 'consola';
 
 const props = defineProps({
-  value: {
-    type: Object,
-    default: () => ({}),
-  },
   schema: {
     type: Object,
     required: true,
@@ -36,26 +29,25 @@ const props = defineProps({
 
 const store = useMainStore();
 const valid = ref(false);
-const localMessage = ref(JSON.parse(JSON.stringify(store.currentMessage)));
+const displayForm = ref(false);
 
-watch(
-  localMessage,
-  (newValue) => {
-    store.currentMessage = newValue;
-  },
-  { deep: true }
-);
+const { currentMessageFilePath } = toRefs(store);
 
-// Handle initial value changes
-watch(
-  () => store.currentMessage,
-  (newValue) => {
-    if (JSON.stringify(newValue) !== JSON.stringify(localMessage.value)) {
-      localMessage.value = JSON.parse(JSON.stringify(newValue));
-    }
-  },
-  { immediate: true }
-);
+watch(currentMessageFilePath, (newFilePath) => {
+  if (newFilePath) {
+    resetForm();
+  }
+});
+
+const localMessage = computed({
+  get: () => store.currentMessage,
+  set: (value) => (store.currentMessage = value),
+});
+
+const resetForm = () => {
+  displayForm.value = false;
+  setTimeout(() => (displayForm.value = true), 10);
+};
 
 const options = ref({
   locale: 'fr',
@@ -82,47 +74,6 @@ const processedSchema = computed(() => {
   delete schemaCopy.$schema;
   delete schemaCopy.$id;
   return schemaCopy;
-});
-
-const paths = ref([]);
-const { currentMessage, currentMessageSenderCaseId } = toRefs(store);
-
-const generateId = () => {
-  currentMessageSenderCaseId.value = generateTimestampId();
-};
-
-watch(
-  () => store.currentMessageLoaded,
-  (newValue) => {
-    if (newValue) {
-      generateId();
-    } else {
-      consola.warn('Current message not loaded yet.');
-    }
-  },
-  { immediate: true }
-);
-
-watch(currentMessageSenderCaseId, (newVal) => {
-  if (!newVal) return;
-
-  const oldId =
-    currentMessage?.value?.senderCaseId ??
-    currentMessage.value.caseId?.split('.').pop();
-  const newId = newVal;
-
-  if (!oldId || !newId || oldId === newId) return;
-
-  paths.value = findPathsWithSubstring(currentMessage.value, oldId);
-
-  const newObj = replaceSubstringsAtPaths(
-    currentMessage.value,
-    paths.value,
-    oldId,
-    newId
-  );
-
-  currentMessage.value = newObj;
 });
 </script>
 
