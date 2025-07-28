@@ -11,7 +11,8 @@ SECRETS_PATH = (
 )
 CONNECTORS_DIR = os.path.join(SECRETS_PATH, "connectors")
 CLIENTS_DIR = os.path.join(SECRETS_PATH, "static-clients")
-OUTPUT_FILE = "dex.config.yaml"
+OUTPUT_DIR = os.environ.get("DEX_CONFIG_OUTPUT_DIR", "/etc/dex")
+OUTPUT_FILE = os.path.join(OUTPUT_DIR, "dex.config.yaml")
 
 
 def parse_flat_files(secret_dir):
@@ -120,9 +121,12 @@ if __name__ == "__main__":
         print(f"Error: Missing directory {CLIENTS_DIR}")
         exit(1)
 
+    # Create output directory if it doesn't exist
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
+
     config = build_dex_config()
     write_yaml(config, OUTPUT_FILE)
 
-    print(f"✅ dex.config.yaml generated successfully:\n")
+    print(f"✅ dex.config.yaml generated successfully at {OUTPUT_FILE}:\n")
     with open(OUTPUT_FILE, encoding="utf-8") as f:
         print(f.read())
