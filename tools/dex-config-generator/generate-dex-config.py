@@ -10,7 +10,7 @@ SECRETS_PATH = (
     else os.environ.get("SECRETS_PATH", "/etc/secrets")
 )
 CONNECTORS_DIR = os.path.join(SECRETS_PATH, "connectors")
-CLIENTS_DIR = os.path.join(SECRETS_PATH, "staticClients")
+CLIENTS_DIR = os.path.join(SECRETS_PATH, "static-clients")
 OUTPUT_FILE = "dex.config.yaml"
 
 
