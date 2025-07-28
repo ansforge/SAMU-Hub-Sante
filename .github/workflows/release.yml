@@ -48,8 +48,11 @@ jobs:
           elif [[ "$RELEASE_NAME" == annuaire-* ]]; then
             PROJECT="annuaire"
             VERSION=${RELEASE_NAME#annuaire-}
+          elif [[ "$RELEASE_NAME" == dex-* ]]; then
+            PROJECT="dex-config-generator"
+            VERSION=${RELEASE_NAME#dex-}
           else
-            echo "Invalid release name prefix. Must be 'dispatcher', 'lrm', 'landing', 'healthcheck', 'chatbot', 'specs' or 'annuaire'."
+            echo "Invalid release name prefix. Must be 'dispatcher', 'lrm', 'landing', 'healthcheck', 'chatbot', 'specs', 'annuaire', 'openssl' or 'dex'."
             exit 1
           fi
           
@@ -150,3 +153,12 @@ jobs:
           platforms: linux/amd64
           tags: ghcr.io/${{ github.repository_owner }}/hub-annuaire:${{ steps.extract_info.outputs.version }}
           context: ./tools/annuaire
+
+      - name: Build and push dex-config-generator Docker image
+        if: steps.extract_info.outputs.project == 'dex-config-generator'
+        uses: docker/build-push-action@v5
+        with:
+          push: true
+          platforms: linux/amd64
+          tags: ghcr.io/${{ github.repository_owner }}/hub-dex-config-generator:${{ steps.extract_info.outputs.version }}
+          context: ./tools/dex-config-generator
