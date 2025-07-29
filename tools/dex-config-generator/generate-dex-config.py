@@ -14,7 +14,7 @@ OUTPUT_FILE = os.path.join(OUTPUT_DIR, "dex.config.yaml")
 def parse_flat_files(secret_dir):
     data = {}
     for filename in os.listdir(secret_dir):
-        # Skip files containing '_raw' in their name
+        # Skip files containing '_raw' which are VaultStaticSecret metadata
         if "_raw" in filename:
             continue
         path = os.path.join(secret_dir, filename)
