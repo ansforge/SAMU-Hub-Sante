@@ -33,9 +33,11 @@ import com.hubsante.model.edxl.EdxlMessage;
 import com.hubsante.model.report.ErrorCode;
 import com.hubsante.model.report.Error;
 import com.hubsante.model.technical.noreq.TechnicalNoreqWrapper;
+
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.search.Search;
 import lombok.extern.slf4j.Slf4j;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
@@ -55,6 +57,7 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import jakarta.annotation.PostConstruct;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -63,6 +66,7 @@ import static com.hubsante.hub.config.AmqpConfiguration.*;
 import static com.hubsante.hub.config.Constants.*;
 import static com.hubsante.hub.service.utils.MessageTestUtils.*;
 import static com.hubsante.hub.service.utils.MetricsUtils.*;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
@@ -125,7 +129,7 @@ public class DispatcherTest {
 
     @PostConstruct
     public void init() {
-        messageHandler = new MessageHandler(rabbitTemplate, edxlHandler, hubConfig, validator, registry, xmlMapper, jsonMapper);
+        messageHandler = new MessageHandler(rabbitTemplate, edxlHandler, hubConfig, validator, registry, xmlMapper, jsonMapper, conversionHandler);
         conversionHandler = Mockito.spy(new ConversionHandler(conversionWebClient));
         dispatcher = new Dispatcher(messageHandler, rabbitTemplate, edxlHandler, xmlMapper, jsonMapper, conversionHandler);
     }
@@ -138,6 +142,7 @@ public class DispatcherTest {
             }
         });
     }
+
     @Test
     @DisplayName("should send json message to the right exchange and routing key")
     public void shouldDispatchJsonToRightExchange() throws IOException {
@@ -155,7 +160,7 @@ public class DispatcherTest {
             ArgumentCaptor<Message> argCaptor = ArgumentCaptor.forClass(Message.class);
             // assert that the message was sent to the right exchange with the right routing key exactly 1 time
             Mockito.verify(rabbitTemplate, times(1)).send(
-                     eq(DISTRIBUTION_EXCHANGE), eq(SAMU_B_MESSAGE_QUEUE), argCaptor.capture());
+                    eq(DISTRIBUTION_EXCHANGE), eq(SAMU_B_MESSAGE_QUEUE), argCaptor.capture());
             // assert that the message has been converted according to the recipient preferences
             Message sentMessage = argCaptor.getValue();
             assertEquals(XML, sentMessage.getMessageProperties().getContentType());
@@ -352,7 +357,7 @@ public class DispatcherTest {
     public void malformedMessagefailed() throws IOException {
 
         // we test that the message has been rejected if we can't parse it
-        Message receivedMessage = createInvalidMessage("EDXL-DE/unparsable-content.json",  SAMU_A_ROUTING_KEY);
+        Message receivedMessage = createInvalidMessage("EDXL-DE/unparsable-content.json", SAMU_A_ROUTING_KEY);
         assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
 
         assertErrorHasBeenSent(SAMU_A_INFO_QUEUE, ErrorCode.UNRECOGNIZED_MESSAGE_FORMAT, SAMU_A_DISTRIBUTION_ID,
@@ -432,7 +437,7 @@ public class DispatcherTest {
     @DisplayName("should reject message with invalid json EDXL envelope")
     public void invalidJsonEDXLFails() throws IOException {
         try (MockedStatic<ConversionUtils> mockedConversionUtils = mockStatic(ConversionUtils.class)) {
-            mockedConversionUtils.when(() -> ConversionUtils.requiresVersionConversion(any(),any())).thenReturn(false);
+            mockedConversionUtils.when(() -> ConversionUtils.requiresVersionConversion(any(), any())).thenReturn(false);
             Message receivedMessage = createInvalidMessage("EDXL-DE/missing-EDXL-required-field.json", SAMU_A_ROUTING_KEY);
             assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(receivedMessage));
 
@@ -444,21 +449,21 @@ public class DispatcherTest {
 
     @Test
     @DisplayName("should send version converted message to transfer exchange")
-    public void sendToTransferExchange() throws IOException{
+    public void sendToTransferExchange() throws IOException {
         try (MockedStatic<ConversionUtils> mockedConversionUtils = mockStatic(ConversionUtils.class)) {
             Message message = createMessage("EDXL-DE", XML, SAMU_A_ROUTING_KEY);
             EdxlMessage edxlMessage = edxlHandler.deserializeXmlEDXL(new String(message.getBody(), StandardCharsets.UTF_8));
             String queueName = "fr.health.samuA";
             String exchangeName = "transfer_15-15_v1.5_to_15-15_v2.0";
 
-            mockedConversionUtils.when(() -> ConversionUtils.buildExchangeDestination( any(), any()))
+            mockedConversionUtils.when(() -> ConversionUtils.buildExchangeDestination(any(), any()))
                     .thenReturn(exchangeName);
-            mockedConversionUtils.when(() -> ConversionUtils.getTargetVHosts(hubConfig,edxlMessage))
+            mockedConversionUtils.when(() -> ConversionUtils.getTargetVHosts(hubConfig, edxlMessage))
                     .thenReturn(new String[]{"15-15_v2.0"});
             mockedConversionUtils.when(() -> ConversionUtils.getSourceVHost(hubConfig))
                     .thenReturn("15-15_v1.5");
 
-            ConversionRulesCommand conversionRulesCommand = new ConversionRulesCommand(edxlMessage,messageHandler);
+            ConversionRulesCommand conversionRulesCommand = new ConversionRulesCommand(edxlMessage, messageHandler);
 
             dispatcher.sendToTransferExchange(message.toString(), message, conversionRulesCommand);
 
@@ -468,7 +473,7 @@ public class DispatcherTest {
 
     @Test
     @DisplayName("should call sendToTransferExchange when there is a version conversion")
-    public void transferToOtherVhost() throws IOException{
+    public void transferToOtherVhost() throws IOException {
         try (MockedStatic<ConversionUtils> mockedConversionUtils = mockStatic(ConversionUtils.class)) {
             Dispatcher dispatcher = spy(new Dispatcher(messageHandler, rabbitTemplate, edxlHandler, xmlMapper, jsonMapper, conversionHandler));
 
@@ -476,7 +481,7 @@ public class DispatcherTest {
 
             String exchangeName = "transfer_15-15_v1.5_to_15-15_v2.0";
 
-            mockedConversionUtils.when(() -> ConversionUtils.buildExchangeDestination( any(), any()))
+            mockedConversionUtils.when(() -> ConversionUtils.buildExchangeDestination(any(), any()))
                     .thenReturn(exchangeName);
             mockedConversionUtils.when(() -> ConversionUtils.getSourceVHost(any())).thenReturn("15-15_v1.5");
             mockedConversionUtils.when(() -> ConversionUtils.getTargetVHosts(any(), any())).thenReturn(new String[]{"15-15_v2.0"});
@@ -505,6 +510,7 @@ public class DispatcherTest {
         assertErrorHasBeenSent(SAMU_A_INFO_QUEUE, ErrorCode.INVALID_MESSAGE, SAMU_A_DISTRIBUTION_ID,
                 "reference.invalid_key: is not defined in the schema and the schema does not allow additional properties");
     }
+
     @Test
     @DisplayName("should reject message with invalid xml content")
     public void invalidXmlContentFails() throws IOException {
@@ -593,11 +599,11 @@ public class DispatcherTest {
             // Mock conversion service to throw exception with error message from conversion service
             String conversionErrorMessage = "Conversion service error message";
             doThrow(new ConversionException(conversionErrorMessage, edxlMessage.getDistributionID()))
-                .when(conversionHandler).callConversionService(anyString(), anyString(), anyString(), anyBoolean(), anyString());
+                    .when(conversionHandler).callConversionService(anyString(), anyString(), anyString(), anyBoolean(), anyString());
 
             // Test that dispatching throws AmqpRejectAndDontRequeueException
             assertThrows(AmqpRejectAndDontRequeueException.class,
-                () -> testDispatcher.dispatch(receivedMessage));
+                    () -> testDispatcher.dispatch(receivedMessage));
 
             // Verify handleError was called with correct ConversionException
             ArgumentCaptor<ConversionException> exceptionCaptor = ArgumentCaptor.forClass(ConversionException.class);
@@ -650,7 +656,7 @@ public class DispatcherTest {
         when(hubConfig.getSupportedMessages()).thenReturn(List.of(supportedClassName));
         try (MockedStatic<EdxlUtils> mockedEdxlUtils = mockStatic(EdxlUtils.class)) {
             mockedEdxlUtils.when(() -> EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage()))
-                .thenReturn(supportedClassName);
+                    .thenReturn(supportedClassName);
 
             new Dispatcher(messageHandler, rabbitTemplate, edxlHandler, xmlMapper, jsonMapper, conversionHandler);
 
