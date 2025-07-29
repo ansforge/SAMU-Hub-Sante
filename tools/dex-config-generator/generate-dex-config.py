@@ -4,11 +4,7 @@ import yaml
 import re
 import sys
 
-SECRETS_PATH = (
-    sys.argv[1]
-    if len(sys.argv) > 1
-    else os.environ.get("SECRETS_PATH", "/etc/secrets")
-)
+SECRETS_PATH = sys.argv[1] if len(sys.argv) > 1 else os.environ.get("SECRETS_PATH", "/etc/secrets")
 CONNECTORS_DIR = os.path.join(SECRETS_PATH, "connectors")
 CLIENTS_DIR = os.path.join(SECRETS_PATH, "static-clients")
 OUTPUT_DIR = os.environ.get("DEX_CONFIG_OUTPUT_DIR", "/etc/dex")
@@ -25,7 +21,6 @@ def parse_flat_files(secret_dir):
         if os.path.isfile(path):
             with open(path, "r", encoding="utf-8") as f:
                 value = f.read().strip()
-                # Convert string boolean values to actual booleans
                 if value.lower() == "true":
                     value = True
                 elif value.lower() == "false":
@@ -37,8 +32,8 @@ def parse_flat_files(secret_dir):
 def build_nested_dict(flat_dict):
     nested = {}
     for flat_key, value in flat_dict.items():
-        # Split keys on dot, but keep numbers and words as parts
-        parts = re.split(r"\.(?=\d+|\w)", flat_key)
+        SPLIT_KEYS_ON_DOTS_REGEX = r"\.(?=\d+|\w)"
+        parts = re.split(SPLIT_KEYS_ON_DOTS_REGEX, flat_key)
         d = nested
         for i, part in enumerate(parts):
             # Convert numeric keys to int to distinguish from strings
@@ -74,7 +69,7 @@ def build_dex_config():
     connectors_clean = {}
     for key, value in connectors_flat.items():
         if key.startswith("connectors."):
-            clean_key = key[11:]  # Remove "connectors." prefix
+            clean_key = key[len("connectors."):]
             connectors_clean[clean_key] = value
         else:
             connectors_clean[key] = value
@@ -83,7 +78,7 @@ def build_dex_config():
     clients_clean = {}
     for key, value in clients_flat.items():
         if key.startswith("clients."):
-            clean_key = key[8:]  # Remove "clients." prefix
+            clean_key = key[len("clients."):]
             clients_clean[clean_key] = value
         else:
             clients_clean[key] = value
