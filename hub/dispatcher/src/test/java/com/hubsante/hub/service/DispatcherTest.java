@@ -30,6 +30,7 @@ import com.hubsante.hub.utils.MessageUtils;
 import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.Validator;
 import com.hubsante.model.edxl.EdxlMessage;
+import com.hubsante.model.exception.ValidationException;
 import com.hubsante.model.report.ErrorCode;
 import com.hubsante.model.report.Error;
 import com.hubsante.model.technical.noreq.TechnicalNoreqWrapper;
@@ -73,6 +74,8 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
+
+import com.hubsante.hub.exception.SchemaValidationException;
 
 @SpringBootTest
 @ContextConfiguration(classes = HubApplication.class)
@@ -685,5 +688,38 @@ public class DispatcherTest {
             });
             assertEquals("The received message classname is not supported on this vhost", thrown.getMessage());
         }
+    }
+
+    @Test
+    @DisplayName("should transfer to another vhost when an error is raised after message transfer")
+    public void transferErrorToOtherVhost() throws IOException, ValidationException {
+        HubConfiguration hubConfigSpy = Mockito.spy(hubConfig);
+        doReturn("15-15_v2.0").when(hubConfigSpy).getVhost();
+        doReturn(new HashMap<>(Map.of(SAMU_A_ROUTING_KEY, false))).when(hubConfigSpy).getUseXmlPreferences();
+        doReturn(new String[] {"1.5"}).when(hubConfigSpy).getClientVersionsForPerimeter(SAMU_A_ROUTING_KEY, "15-15");
+
+        Validator validatorMock = Mockito.mock(Validator.class);
+        Mockito.doThrow(new SchemaValidationException("Mock schema validation error", "mock_distribution_id"))
+                .when(validatorMock).validateJSON(anyString(), any());
+
+        MessageHandler messageHandlerSpy = new MessageHandler(rabbitTemplate, edxlHandler, hubConfigSpy, validatorMock, registry, xmlMapper, jsonMapper, conversionHandler);
+        Dispatcher dispatcherSpy = new Dispatcher(messageHandlerSpy, rabbitTemplate, edxlHandler, xmlMapper, jsonMapper, conversionHandler);
+
+        Message message = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
+
+        String exchangeName = "transfer_15-15_v2.0_to_15-15_v1.5";
+
+        // Mock call to converter (return same payload for error message)
+        doAnswer(invocation -> invocation.getArgument(0)).when(conversionHandler).callConversionService(anyString(), anyString(), anyString(), anyBoolean(), anyString());
+
+        AmqpRejectAndDontRequeueException errorThrown = assertThrows(AmqpRejectAndDontRequeueException.class, () -> {
+            dispatcherSpy.dispatch(message);
+        });
+
+        assertEquals("Mock schema validation error", errorThrown.getCause().getMessage());
+
+        ArgumentCaptor<Message> argument = ArgumentCaptor.forClass(Message.class);
+        Mockito.verify(rabbitTemplate, times(1)).send(
+                eq(exchangeName), eq("fr.health.hub"), argument.capture());
     }
 }
