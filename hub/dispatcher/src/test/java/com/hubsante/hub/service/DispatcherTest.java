@@ -722,4 +722,24 @@ public class DispatcherTest {
         Mockito.verify(rabbitTemplate, times(1)).send(
                 eq(exchangeName), eq("fr.health.hub"), argument.capture());
     }
+
+    @Test
+    @DisplayName("should forward error message directly when error is received after conversion")
+    public void sendErrorMessageToSameVhost() throws IOException, ValidationException {
+        HubConfiguration hubConfigSpy = Mockito.spy(hubConfig);
+        doReturn("15-15_v1.5").when(hubConfigSpy).getVhost();
+        doReturn(new HashMap<>(Map.of(SAMU_A_ROUTING_KEY, false))).when(hubConfigSpy).getUseXmlPreferences();
+        doReturn(new String[] {"1.5"}).when(hubConfigSpy).getClientVersionsForPerimeter(SAMU_A_ROUTING_KEY, "15-15");
+
+        MessageHandler messageHandlerSpy = new MessageHandler(rabbitTemplate, edxlHandler, hubConfigSpy, validator, registry, xmlMapper, jsonMapper, conversionHandler);
+        Dispatcher dispatcherSpy = new Dispatcher(messageHandlerSpy, rabbitTemplate, edxlHandler, xmlMapper, jsonMapper, conversionHandler);
+
+        Message errorMessage = createMessage("hub-error-to-samuA", JSON, "fr.health.hub");
+
+        dispatcherSpy.dispatch(errorMessage);
+
+        ArgumentCaptor<Message> argument = ArgumentCaptor.forClass(Message.class);
+        Mockito.verify(rabbitTemplate, times(1)).send(
+                eq(DISTRIBUTION_EXCHANGE), eq(SAMU_A_INFO_QUEUE), argument.capture());
+    }
 }
