@@ -38,6 +38,6 @@ def select_columns(data: list[dict]) -> list[dict]:
 
 app = create_app()
 
-@app.get("/api/annuaire")
+@app.get("/annuaire/api")
 def get_json():
     return jsonify(app.config[CSV_DATA_KEY])
