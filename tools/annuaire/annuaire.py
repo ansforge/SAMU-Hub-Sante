@@ -22,7 +22,7 @@ def parse_csv(filename):
         raise FileNotFoundError(f"Fichier CSV introuvable : {filename}")
     try:
         with open(path, newline='', encoding='utf-8') as csvfile:
-            reader = csv.DictReader(csvfile)
+            reader = csv.DictReader(csvfile, delimiter=';')
             return list(reader)
     except Exception as e:
         logging.error(f"Erreur lors de la lecture du fichier CSV '{filename}': {e}")
