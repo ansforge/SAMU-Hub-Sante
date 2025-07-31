@@ -725,7 +725,7 @@ public class DispatcherTest {
 
     @Test
     @DisplayName("should forward error message directly when error is received after conversion")
-    public void sendErrorMessageToSameVhost() throws IOException, ValidationException {
+    public void sendErrorMessageToSameVhost() throws IOException {
         HubConfiguration hubConfigSpy = Mockito.spy(hubConfig);
         doReturn("15-15_v1.5").when(hubConfigSpy).getVhost();
         doReturn(new HashMap<>(Map.of(SAMU_A_ROUTING_KEY, false))).when(hubConfigSpy).getUseXmlPreferences();
@@ -737,6 +737,34 @@ public class DispatcherTest {
         Message errorMessage = createMessage("hub-error-to-samuA", JSON, "fr.health.hub");
 
         dispatcherSpy.dispatch(errorMessage);
+
+        ArgumentCaptor<Message> argument = ArgumentCaptor.forClass(Message.class);
+        Mockito.verify(rabbitTemplate, times(1)).send(
+                eq(DISTRIBUTION_EXCHANGE), eq(SAMU_A_INFO_QUEUE), argument.capture());
+    }
+
+    @Test
+    @DisplayName("should send error message to sender info queue when error is raised")
+    public void sendErrorMessageWhenErrorIsRaised() throws IOException, ValidationException {
+        HubConfiguration hubConfigSpy = Mockito.spy(hubConfig);
+        doReturn("15-15_v1.5").when(hubConfigSpy).getVhost();
+        doReturn(new HashMap<>(Map.of(SAMU_A_ROUTING_KEY, false))).when(hubConfigSpy).getUseXmlPreferences();
+        doReturn(new String[] {"1.5"}).when(hubConfigSpy).getClientVersionsForPerimeter(SAMU_A_ROUTING_KEY, "15-15");
+
+        Validator validatorMock = Mockito.mock(Validator.class);
+        Mockito.doThrow(new SchemaValidationException("Mock schema validation error", "mock_distribution_id"))
+                .when(validatorMock).validateJSON(anyString(), any());
+
+        MessageHandler messageHandlerSpy = new MessageHandler(rabbitTemplate, edxlHandler, hubConfigSpy, validatorMock, registry, xmlMapper, jsonMapper, conversionHandler);
+        Dispatcher dispatcherSpy = new Dispatcher(messageHandlerSpy, rabbitTemplate, edxlHandler, xmlMapper, jsonMapper, conversionHandler);
+
+        Message message = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
+
+        AmqpRejectAndDontRequeueException errorThrown = assertThrows(AmqpRejectAndDontRequeueException.class, () -> {
+            dispatcherSpy.dispatch(message);
+        });
+
+        assertEquals("Mock schema validation error", errorThrown.getCause().getMessage());
 
         ArgumentCaptor<Message> argument = ArgumentCaptor.forClass(Message.class);
         Mockito.verify(rabbitTemplate, times(1)).send(
