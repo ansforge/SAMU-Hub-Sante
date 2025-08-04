@@ -148,15 +148,14 @@ public class Dispatcher {
             }
 
             // VERRUE POUR SAMU-070
-            if (message.getMessageProperties().getReceivedRoutingKey().equals(SAMU_070_CLIENT_ID) || edxlMessage.getSenderID().equals(SAMU_070_CLIENT_ID)) {
-                boolean isConversionRequired = ConversionUtils.requiresConversion(messageHandler.getHubConfig(), edxlMessage);
-                // Forward the message according to the recipient preferences. Conversion JSON <-> XML can happen here
-                Message forwardedMsg = messageHandler.forwardedMessage(edxlMessage, message);
-                if (isConversionRequired) {
-                    ConversionRulesCommand conversionRulesCommand = new ConversionRulesCommand(edxlMessage, messageHandler);
-                    String convertedMessage = conversionHandler.applyConversionRules(conversionRulesCommand);
-                    forwardedMsg = messageHandler.forwardedStringMessage(convertedMessage, message);
+            if (message.getMessageProperties().getReceivedRoutingKey().equals(SAMU_070_CLIENT_ID) || getRecipientID(edxlMessage).equals(SAMU_070_CLIENT_ID)) {
+                ConversionRulesCommand conversionRulesCommand = new ConversionRulesCommand(edxlMessage, messageHandler);
+                // Manually override the conversion command if sending or receiving RS-EDA/RC-EDA
+                if (ConversionUtils.isConvertedModel(edxlMessage)) {
+                    conversionRulesCommand.setCisuConversion(true);
                 }
+                String convertedMessage = conversionHandler.applyConversionRules(conversionRulesCommand);
+                Message forwardedMsg = messageHandler.forwardedStringMessage(convertedMessage, message);
                 // Extract recipient queue name from the message (explicit address and distribution kind)
                 String queueName = getRecipientQueueName(edxlMessage);
                 // publish the message to the recipient queue
