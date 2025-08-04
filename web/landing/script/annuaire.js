@@ -138,9 +138,9 @@ function renderTable(data) {
     const checkbox = document.createElement("input");
     checkbox.type = "checkbox";
     checkbox.dataset.index = index;
-    checkbox.checked = !!item.isSelected; 
+    checkbox.checked = !!item.isSelected;
     checkbox.onclick = function () {
-    selection(this);
+      selection(this);
     };
     tdCheckbox.appendChild(checkbox);
     tr.appendChild(tdCheckbox);
@@ -198,7 +198,14 @@ function getEditors() {
   ];
 }
 function getSamu() {
-  return [];
+  return [
+    ...new Set(
+      clientsConfigurations[selectedEnv]
+        .map((item) => item.client_id)
+        .filter((item) => item.startsWith("fr.health.samu"))
+        .map((item) => item.replace("fr.health.", "")),
+    ),
+  ];
 }
 function getVhost() {
   return [];
@@ -251,7 +258,7 @@ function create_data_test() {
       "P: 15-gps": "1.3",
       "P: 15-nexsis": "1.6,1.7",
       "P: 15-smur": "1.9",
-      client_id: "fr.health.test.samuRB",
+      client_id: "fr.health.samu180",
       editor: "LRM",
     },
     {
@@ -259,7 +266,7 @@ function create_data_test() {
       "P: 15-gps": "1.3",
       "P: 15-nexsis": "1.6,1.7",
       "P: 15-smur": "1.9",
-      client_id: "fr.health.test.samuRC",
+      client_id: "fr.health.samu950",
       editor: "LRM",
     },
     {
@@ -320,25 +327,24 @@ function create_data_test() {
     },
   ];
   clientsConfigurations[Environment.BAS] = data.map((item) => {
-      const renamedData = renameKeys(item, keyMap);
-      return {
-        ...renamedData,
-        isSelected: false,
-      };
-    });
+    const renamedData = renameKeys(item, keyMap);
+    return {
+      ...renamedData,
+      isSelected: false,
+    };
+  });
   clientsConfigurations[Environment.PREPROD] = data.map((item) => {
-      const renamedData = renameKeys(item, keyMap);
-      return {
-        ...renamedData,
-        isSelected: false,
-      };
-    });
+    const renamedData = renameKeys(item, keyMap);
+    return {
+      ...renamedData,
+      isSelected: false,
+    };
+  });
   clientsConfigurations[Environment.PROD] = data.map((item) => {
-      const renamedData = renameKeys(item, keyMap);
-      return {
-        ...renamedData,
-        isSelected: true,
-      };
-    });
-
+    const renamedData = renameKeys(item, keyMap);
+    return {
+      ...renamedData,
+      isSelected: true,
+    };
+  });
 }
