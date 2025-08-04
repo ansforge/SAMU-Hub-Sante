@@ -24,6 +24,29 @@ const rabbitmqUrls = {
   [Environment.PROD]: `https://messaging.${BASE_RABBITMQ_URL}`,
 };
 
+const FILTERS_CONFIG = {
+  samu: {
+    id: "filter-samu",
+    getValue: (item, value) => item.client_id === `fr.health.${value}`,
+    getOptions: getSamu,
+  },
+  editor: {
+    id: "filter-editor",
+    getValue: (item, value) => item.editor === value,
+    getOptions: getEditors,
+  },
+  vhost: {
+    id: "filter-vhost",
+    getValue: (item, value) => item.vhostList.includes(value),
+    getOptions: getVhost,
+  },
+  perimeter: {
+    id: "filter-perimeter",
+    getValue: (item, value) => item[value] !== "",
+    getOptions: getPerimeter,
+  },
+};
+
 const perimeter = ["15-15", "15-smur", "15-nexsis", "15-gps"];
 const colors = {
   P1515: "#9accdb",
@@ -81,9 +104,9 @@ window.addEventListener("load", async () => {
   //   });
   // }
   create_data_test();
-  updateFilters();
+  updateFiltersSelectOptions();
   renderUrl();
-  renderTable(clientsConfigurations[Environment.BAS]);
+  renderTable(clientsConfigurations[selectedEnv]);
 });
 
 document.getElementById("env-buttons").addEventListener("click", (e) => {
@@ -91,9 +114,15 @@ document.getElementById("env-buttons").addEventListener("click", (e) => {
   if (!btn) return;
   selectedEnv = btn.dataset.env;
   updateEnvButtonStyles();
-  updateFilters();
+  updateFiltersSelectOptions();
   renderUrl();
   renderTable(clientsConfigurations[selectedEnv]);
+});
+
+document.querySelectorAll("#div-filtres select").forEach((select) => {
+  select.addEventListener("change", () => {
+    renderTable(getFilteredData());
+  });
 });
 
 async function fetchData(url) {
@@ -126,7 +155,6 @@ function renderTable(data) {
   data.forEach((item, index) => {
     const tr = document.createElement("tr");
 
-    // Checkbox
     const tdCheckbox = document.createElement("td");
     tdCheckbox.style.textAlign = "center";
     const checkbox = document.createElement("input");
@@ -166,24 +194,27 @@ function updateEnvButtonStyles() {
   });
 }
 
-function updateFilters() {
-  updateSelectOptions("filter-editor", getEditors());
-  updateSelectOptions("filter-samu", getSamu());
-  updateSelectOptions("filter-vhost", getVhost());
-  updateSelectOptions("filter-perimeter", perimeter);
+function updateFiltersSelectOptions() {
+  for (const filter of Object.values(FILTERS_CONFIG)) {
+    const select = document.getElementById(filter.id);
+    select.length = 1; // garde seulement "Tous..."
+    const options = filter.getOptions();
+    options.sort().forEach((value) => {
+      const option = document.createElement("option");
+      option.value = value;
+      option.textContent = value;
+      select.appendChild(option);
+    });
+  }
 }
 
-function updateSelectOptions(selectId, options) {
-  const select = document.getElementById(selectId);
-  // Supprime les anciennes options sauf la première (le "Tous...")
-  select.length = 1;
-
-  options.sort().forEach((value) => {
-    const option = document.createElement("option");
-    option.value = value;
-    option.textContent = value;
-    select.appendChild(option);
-  });
+function getFilteredData() {
+  return clientsConfigurations[selectedEnv].filter((item) =>
+    Object.values(FILTERS_CONFIG).every((filter) => {
+      const value = document.getElementById(filter.id).value;
+      return value === "" || filter.getValue(item, value);
+    }),
+  );
 }
 
 function getEditors() {
@@ -201,12 +232,17 @@ function getSamu() {
     ),
   ];
 }
+
 function getVhost() {
   return [
     ...new Set(
       clientsConfigurations[selectedEnv].flatMap((item) => item.vhostList),
     ),
   ];
+}
+
+function getPerimeter() {
+  return perimeter;
 }
 
 function constituteVhostList(data) {
@@ -274,7 +310,7 @@ function create_data_test() {
       "P: 15-15": "1.5,2.0,2.1",
       "P: 15-gps": "1.3",
       "P: 15-nexsis": "1.6,1.7",
-      "P: 15-smur": "1.9",
+      "P: 15-smur": "",
       client_id: "fr.health.samu950",
       editor: "LRM",
     },
