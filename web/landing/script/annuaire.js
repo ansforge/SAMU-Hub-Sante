@@ -210,7 +210,11 @@ function getSamu() {
   ];
 }
 function getVhost() {
-  return [];
+  return [
+    ...new Set(
+      clientsConfigurations[selectedEnv].flatMap((item) => item.vhostList),
+    ),
+  ];
 }
 
 function constituteVhostList(data) {
