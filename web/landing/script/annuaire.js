@@ -24,7 +24,7 @@ const rabbitmqUrls = {
   [Environment.PROD]: `https://messaging.${BASE_RABBITMQ_URL}`,
 };
 
-const perimeter = ["P1515", "P15smur", "P15nexsis", "P15gps"];
+const perimeter = ["15-15", "15-smur", "15-nexsis", "15-gps"];
 const colors = {
   P1515: "#9accdb",
   P15smur: "#dbd19a",
@@ -80,8 +80,10 @@ window.addEventListener("load", async () => {
   //   const data = await fetchData(apiUrls[env]);
   //   clientsConfigurations[env] = data.map((item) => {
   //     const renamedData = renameKeys(item, keyMap);
+  //     const vhostList = constituteVhostList(renamedData);
   //     return {
   //       ...renamedData,
+  //       vhostList: vhostList,
   //       isSelected: false,
   //     };
   //   });
@@ -211,6 +213,17 @@ function getVhost() {
   return [];
 }
 
+function constituteVhostList(data) {
+  let vhostList = [];
+  perimeter.forEach((p) => {
+    let versions = data[p].split(",");
+    versions.forEach((version) => {
+      if (version !== "") vhostList.push(`${p}_v${version}`);
+    });
+  });
+  return vhostList;
+}
+
 function create_data_test() {
   const data = [
     {
@@ -328,23 +341,29 @@ function create_data_test() {
   ];
   clientsConfigurations[Environment.BAS] = data.map((item) => {
     const renamedData = renameKeys(item, keyMap);
+    const vhostList = constituteVhostList(renamedData);
     return {
       ...renamedData,
+      vhostList: vhostList,
       isSelected: false,
     };
   });
   clientsConfigurations[Environment.PREPROD] = data.map((item) => {
     const renamedData = renameKeys(item, keyMap);
+    const vhostList = constituteVhostList(renamedData);
     return {
       ...renamedData,
+      vhostList: vhostList,
       isSelected: false,
     };
   });
   clientsConfigurations[Environment.PROD] = data.map((item) => {
     const renamedData = renameKeys(item, keyMap);
+    const vhostList = constituteVhostList(renamedData);
     return {
       ...renamedData,
-      isSelected: true,
+      vhostList: vhostList,
+      isSelected: false,
     };
   });
 }
