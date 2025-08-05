@@ -148,8 +148,8 @@ public class Dispatcher {
             }
 
             // VERRUE POUR SAMU-070
-            if (message.getMessageProperties().getReceivedRoutingKey().equals(SAMU_070_CLIENT_ID) || getRecipientID(edxlMessage).equals(SAMU_070_CLIENT_ID)) {
-                ConversionRulesCommand conversionRulesCommand = new ConversionRulesCommand(edxlMessage, messageHandler);
+            boolean isSamu070Involved = message.getMessageProperties().getReceivedRoutingKey().equals(SAMU_070_CLIENT_ID) || getRecipientID(edxlMessage).equals(SAMU_070_CLIENT_ID);
+            if (isSamu070Involved) {
                 // Manually override the conversion command if sending or receiving RS-EDA/RC-EDA
                 if (ConversionUtils.isConvertedModel(edxlMessage)) {
                     conversionRulesCommand.setCisuConversion(true);
