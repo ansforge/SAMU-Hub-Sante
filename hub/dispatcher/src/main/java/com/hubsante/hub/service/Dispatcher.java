@@ -150,12 +150,16 @@ public class Dispatcher {
             // VERRUE POUR SAMU-070
             boolean isSamu070Involved = message.getMessageProperties().getReceivedRoutingKey().equals(SAMU_070_CLIENT_ID) || getRecipientID(edxlMessage).equals(SAMU_070_CLIENT_ID);
             if (isSamu070Involved) {
-                // Manually override the conversion command if sending or receiving RS-EDA/RC-EDA
+                Message forwardedMsg;
                 if (ConversionUtils.isConvertedModel(edxlMessage)) {
+                    ConversionRulesCommand conversionRulesCommand = new ConversionRulesCommand(edxlMessage, messageHandler);
+                    // Manually override the conversion command if sending or receiving RS-EDA/RC-EDA
                     conversionRulesCommand.setCisuConversion(true);
+                    String convertedMessage = conversionHandler.applyConversionRules(conversionRulesCommand);
+                    forwardedMsg = messageHandler.forwardedStringMessage(convertedMessage, message);
+                } else {
+                    forwardedMsg = messageHandler.forwardedMessage(edxlMessage, message);
                 }
-                String convertedMessage = conversionHandler.applyConversionRules(conversionRulesCommand);
-                Message forwardedMsg = messageHandler.forwardedStringMessage(convertedMessage, message);
                 // Extract recipient queue name from the message (explicit address and distribution kind)
                 String queueName = getRecipientQueueName(edxlMessage);
                 // publish the message to the recipient queue
