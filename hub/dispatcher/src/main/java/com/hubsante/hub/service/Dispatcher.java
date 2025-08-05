@@ -78,8 +78,6 @@ public class Dispatcher {
     private ObjectMapper jsonMapper;
     private final ConversionHandler conversionHandler;
 
-    private final String SAMU_070_CLIENT_ID = "fr.health.samu070";
-
     public Dispatcher(MessageHandler messageHandler, RabbitTemplate rabbitTemplate, EdxlHandler edxlHandler, XmlMapper xmlMapper, ObjectMapper jsonMapper, ConversionHandler conversionHandler) {
         this.messageHandler = messageHandler;
         this.rabbitTemplate = rabbitTemplate;

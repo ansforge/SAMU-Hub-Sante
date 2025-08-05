@@ -32,7 +32,6 @@ import java.util.Arrays;
 public class ConversionUtils {
 
     private final static boolean DEFAULT_DIRECT_CISU_PREFERENCE = false;
-    private final static String SAMU_070_CLIENT_ID = "fr.health.samu070";
 
     public static String buildExchangeDestination(String sourceVHost, String targetVHost) {
         return TRANSFER_EXCHANGE_PREFIX + sourceVHost + "_to_" + targetVHost;
