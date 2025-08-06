@@ -4,6 +4,9 @@ const Environment = {
   PROD: "prod",
 };
 
+const CLIENTS_CONFIG_TABLE_ID = "table-annuaire-content";
+const URL_RABBITMQ_ID = "url-rabbitmq";
+
 const clientsConfigurations = {
   [Environment.BAS]: null,
   [Environment.PREPROD]: null,
@@ -92,8 +95,8 @@ function renameKeys(obj, keyMap) {
 
 window.addEventListener("load", async () => {
   // for (const env of Object.values(Environment)) {
-  //   const data = await fetchData(apiUrls[env]);
-  //   clientsConfigurations[env] = data.map((item) => {
+  //   const clientsConfig = await fetchData(apiUrls[env]);
+  //   clientsConfigurations[env] = clientsConfig.map((item) => {
   //     const renamedData = renameKeys(item, keyMap);
   //     const vhostList = constituteVhostList(renamedData);
   //     return {
@@ -106,7 +109,7 @@ window.addEventListener("load", async () => {
   create_data_test();
   updateFiltersSelectOptions();
   renderUrl();
-  renderTable(clientsConfigurations[selectedEnv]);
+  renderClientsConfigTable(clientsConfigurations[selectedEnv]);
 });
 
 document.getElementById("env-buttons").addEventListener("click", (e) => {
@@ -116,12 +119,12 @@ document.getElementById("env-buttons").addEventListener("click", (e) => {
   updateEnvButtonStyles();
   updateFiltersSelectOptions();
   renderUrl();
-  renderTable(clientsConfigurations[selectedEnv]);
+  renderClientsConfigTable(clientsConfigurations[selectedEnv]);
 });
 
 document.querySelectorAll("#div-filtres select").forEach((select) => {
   select.addEventListener("change", () => {
-    renderTable(getFilteredData());
+    renderClientsConfigTable(getCurrentFilteredClientsConfig());
   });
 });
 
@@ -142,17 +145,15 @@ async function fetchData(url) {
 }
 
 function renderUrl() {
-  const urlElement = document.getElementById("url-rabbitmq");
+  const urlElement = document.getElementById(URL_RABBITMQ_ID);
   urlElement.innerHTML = rabbitmqUrls[selectedEnv];
 }
 
-function renderTable(data) {
-  const tableAnnuaireContent = document.getElementById(
-    "table-annuaire-content",
-  );
+function renderClientsConfigTable(clientsConfig) {
+  const tableAnnuaireContent = document.getElementById(CLIENTS_CONFIG_TABLE_ID);
   tableAnnuaireContent.innerHTML = "";
 
-  data.forEach((item, index) => {
+  clientsConfig.forEach((item, index) => {
     const tr = document.createElement("tr");
 
     const tdCheckbox = document.createElement("td");
@@ -180,7 +181,7 @@ function renderTable(data) {
     tdVhost.style.flexWrap = "wrap";
     tdVhost.style.gap = "5px";
     item.vhostList.forEach((vhost) => {
-      const vhostCard = createVhostCard(vhost);
+      const vhostCard = createVhostCardElement(vhost);
       tdVhost.appendChild(vhostCard);
     });
     tr.appendChild(tdVhost);
@@ -188,11 +189,11 @@ function renderTable(data) {
   });
 }
 
-function createVhostCard(vhost) {
+function createVhostCardElement(vhost) {
   const vhostDiv = document.createElement("div");
   vhostDiv.style.border = "2px solid rgba(104, 105, 103, 0.2)";
   vhostDiv.style.borderRadius = "10px";
-  vhostDiv.style.backgroundColor = colors[vhost.split("_v")[0]] || "#f0f0f0";
+  vhostDiv.style.backgroundColor = colors[getPerimeterFromVhost(vhost)];
   vhostDiv.style.margin = "3px";
   vhostDiv.style.width = "30%";
   vhostDiv.style.textAlign = "center";
@@ -207,6 +208,10 @@ function createVhostCard(vhost) {
   vhostDiv.appendChild(mdd);
 
   return vhostDiv;
+}
+
+function getPerimeterFromVhost(vhost) {
+  return vhost.split("_v")[0];
 }
 
 function updateEnvButtonStyles() {
@@ -235,7 +240,7 @@ function updateFiltersSelectOptions() {
   }
 }
 
-function getFilteredData() {
+function getCurrentFilteredClientsConfig() {
   return clientsConfigurations[selectedEnv].filter((item) =>
     Object.values(FILTERS_CONFIG).every((filter) => {
       const value = document.getElementById(filter.id).value;
