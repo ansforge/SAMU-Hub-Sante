@@ -49,27 +49,27 @@ const FILTERS_CONFIG = {
 
 const perimeter = ["15-15", "15-smur", "15-nexsis", "15-gps"];
 const colors = {
-  P1515: "#9accdb",
-  P15smur: "#dbd19a",
-  P15nexsis: "#db9a9a",
-  P15gps: "#9adbb3",
+  [perimeter[0]]: "#9accdb",
+  [perimeter[1]]: "#dbd19a",
+  [perimeter[2]]: "#db9a9a",
+  [perimeter[3]]: "#9adbb3",
 };
 
 const mddMap = {
-  "15-15_v1.5": "1",
-  "15-15_v2.0": "2",
-  "15-15_v2.1": "3",
-  "15-smur_v1.4": "1",
-  "15-smur_v1.5": "1",
-  "15-smur_v1.6": "2",
-  "15-smur_v1.7": "3",
-  "15-nexsis_v1.8": "1",
-  "15-nexsis_v1.9": "2",
-  "15-nexsis_v1.9.1": "3",
-  "15-gps_v1.0": "1",
-  "15-gps_v1.1": "1",
-  "15-gps_v1.2": "2",
-  "15-gps_v1.3": "3",
+  "15-15_v1.5": "1.0",
+  "15-15_v2.0": "2.0",
+  "15-15_v2.1": "3.0",
+  "15-smur_v1.4": "1.0",
+  "15-smur_v1.5": "1.0",
+  "15-smur_v1.6": "2.0",
+  "15-smur_v1.7": "3.0",
+  "15-nexsis_v1.8": "1.0",
+  "15-nexsis_v1.9": "2.0",
+  "15-nexsis_v1.9.1": "3.0",
+  "15-gps_v1.0": "1.0",
+  "15-gps_v1.1": "1.0",
+  "15-gps_v1.2": "2.0",
+  "15-gps_v1.3": "3.0",
 };
 
 const keyMap = {
@@ -175,11 +175,38 @@ function renderTable(data) {
     tdEditeur.textContent = item.editor;
     tr.appendChild(tdEditeur);
 
-    const tdPerimetre = document.createElement("td");
-
-    tr.appendChild(tdPerimetre);
+    const tdVhost = document.createElement("td");
+    tdVhost.style.display = "flex";
+    tdVhost.style.flexWrap = "wrap";
+    tdVhost.style.gap = "5px";
+    item.vhostList.forEach((vhost) => {
+      const vhostCard = createVhostCard(vhost);
+      tdVhost.appendChild(vhostCard);
+    });
+    tr.appendChild(tdVhost);
     tableAnnuaireContent.appendChild(tr);
   });
+}
+
+function createVhostCard(vhost) {
+  const vhostDiv = document.createElement("div");
+  vhostDiv.style.border = "2px solid rgba(104, 105, 103, 0.2)";
+  vhostDiv.style.borderRadius = "10px";
+  vhostDiv.style.backgroundColor = colors[vhost.split("_v")[0]] || "#f0f0f0";
+  vhostDiv.style.margin = "3px";
+  vhostDiv.style.width = "30%";
+  vhostDiv.style.textAlign = "center";
+  vhostDiv.style.padding = "5px";
+
+  const strong = document.createElement("strong");
+  strong.textContent = vhost;
+  vhostDiv.appendChild(strong);
+  vhostDiv.appendChild(document.createElement("br"));
+  const mdd = document.createElement("div");
+  mdd.textContent = mddMap[vhost];
+  vhostDiv.appendChild(mdd);
+
+  return vhostDiv;
 }
 
 function updateEnvButtonStyles() {
@@ -261,55 +288,55 @@ function create_data_test() {
     {
       "P: 15-15": "1.5,2.0,2.1",
       "P: 15-gps": "1.3",
-      "P: 15-nexsis": "1.6,1.7",
-      "P: 15-smur": "1.9",
+      "P: 15-nexsis": "1.9",
+      "P: 15-smur": "1.6,1.7",
       client_id: "fr.health.lrm",
       editor: "LRM",
     },
     {
       "P: 15-15": "1.5,2.0,2.1",
       "P: 15-gps": "1.3",
-      "P: 15-nexsis": "1.6,1.7",
-      "P: 15-smur": "1.9",
+      "P: 15-nexsis": "1.9",
+      "P: 15-smur": "1.6,1.7",
       client_id: "fr.health.test.samuA",
       editor: "LRM",
     },
     {
       "P: 15-15": "1.5,2.0,2.1",
       "P: 15-gps": "1.3",
-      "P: 15-nexsis": "1.6,1.7",
-      "P: 15-smur": "1.9",
+      "P: 15-nexsis": "1.9",
+      "P: 15-smur": "1.6,1.7",
       client_id: "fr.health.test.samuB",
       editor: "LRM",
     },
     {
       "P: 15-15": "1.5,2.0,2.1",
       "P: 15-gps": "1.3",
-      "P: 15-nexsis": "1.6,1.7",
-      "P: 15-smur": "1.9",
+      "P: 15-nexsis": "1.9",
+      "P: 15-smur": "1.6,1.7",
       client_id: "fr.health.test.samuC",
       editor: "LRM",
     },
     {
       "P: 15-15": "1.5,2.0,2.1",
       "P: 15-gps": "1.3",
-      "P: 15-nexsis": "1.6,1.7",
-      "P: 15-smur": "1.9",
+      "P: 15-nexsis": "1.9",
+      "P: 15-smur": "1.6,1.7",
       client_id: "fr.health.test.samuRA",
       editor: "LRM",
     },
     {
       "P: 15-15": "1.5,2.0,2.1",
       "P: 15-gps": "1.3",
-      "P: 15-nexsis": "1.6,1.7",
-      "P: 15-smur": "1.9",
+      "P: 15-nexsis": "1.9",
+      "P: 15-smur": "1.6,1.7",
       client_id: "fr.health.samu180",
       editor: "LRM",
     },
     {
       "P: 15-15": "1.5,2.0,2.1",
       "P: 15-gps": "1.3",
-      "P: 15-nexsis": "1.6,1.7",
+      "P: 15-nexsis": "1.9",
       "P: 15-smur": "",
       client_id: "fr.health.samu950",
       editor: "LRM",
@@ -334,7 +361,7 @@ function create_data_test() {
       "P: 15-15": "2.1",
       "P: 15-gps": "1.3",
       "P: 15-nexsis": "1.7",
-      "P: 15-smur": "1.9",
+      "P: 15-smur": "1.6,1.7",
       client_id: "fr.health.test.samuv3",
       editor: "LRM",
     },
@@ -342,7 +369,7 @@ function create_data_test() {
       "P: 15-15": "",
       "P: 15-gps": "",
       "P: 15-nexsis": "",
-      "P: 15-smur": "1.9",
+      "P: 15-smur": "1.6,1.7",
       client_id: "fr.cisu.sdisY",
       editor: "LRM",
     },
@@ -350,7 +377,7 @@ function create_data_test() {
       "P: 15-15": "",
       "P: 15-gps": "",
       "P: 15-nexsis": "",
-      "P: 15-smur": "1.9",
+      "P: 15-smur": "1.6,1.7",
       client_id: "fr.fire.nexsis.sdisZ",
       editor: "LRM",
     },
@@ -366,7 +393,7 @@ function create_data_test() {
       "P: 15-15": "",
       "P: 15-gps": "",
       "P: 15-nexsis": "",
-      "P: 15-smur": "1.9",
+      "P: 15-smur": "1.6,1.7",
       client_id: "fr.health.test.samuv3-direct-cisu",
       editor: "LRM",
     },
