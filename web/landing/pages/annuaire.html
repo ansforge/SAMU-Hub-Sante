@@ -379,56 +379,81 @@
         </div>
 
         <!-- Tableau des informations/configurations-->
-            <div class="container bg-white" style="margin-left: 0px; margin-right: 0px; max-width: 100%;">               
-                <div class="row" style="width: 96%; margin-left: 2%;">
-                    <div class="col-md-4 mb-3" id="env-buttons">
-                        <button class="btn btn--plain btn--primary btn-sm btn-env" data-env="bac-a-sable">Bac à sable</button>
-                        <button class="btn btn--ghost btn--primary btn-sm btn-env" data-env="pre-prod">Pré-prod</button>
-                        <button class="btn btn--ghost btn--primary btn-sm btn-env" data-env="prod">Prod</button>
-                    </div>
-                    <div class="col-md-7 mb-3">
-                        <p id="url-rabbitmq"></p>
-                    </div>
-                </div>
-                <div class="row" id="div-filtres" style="width: 96%; margin-left: 2%; margin-bottom: 30px;">
-                    <div class="col-md-3 mb-3">
-                        <select class="form-control" id="filter-editor"> 
-                            <option value=""> Filtre par éditeur </option>
-                        </select>
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        <select class="form-control" id="filter-samu"> 
-                            <option value=""> Filtre par SAMU </option>
-                        </select>
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        <select class="form-control" id="filter-vhost"> 
-                            <option value=""> Filtre par vhost </option>
-                        </select>
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        <select class="form-control" id="filter-perimeter"> 
-                            <option value=""> Filtre par périmètre </option>
-                        </select>
-                    </div>                    
-                </div>
-                <div class="row" style="width: 96%; margin-left: 2%;">    
-                    <div class="col-md">
-                        <table class="table table-striped table-bordered table-hover" id="table-annuaire" style="width: 100%; table-layout: auto;">
-                            <thead>
-                                <tr>
-                                    <th></th>
-                                    <th scope="col">Identifiant client</th>
-                                    <th scope="col">Editeur</th>
-                                    <th scope="col" style="min-width: 400px;">Périmètre(s) / Version du modèle</th>
-                                </tr>
-                            </thead>
-                            <tbody id="table-annuaire-content" >
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+        <div
+          class="container bg-white"
+          style="margin-left: 0px; margin-right: 0px; max-width: 100%"
+        >
+          <div class="row" style="width: 96%; margin-left: 2%">
+            <div class="col-md-4 mb-3" id="env-buttons">
+              <button
+                class="btn btn--plain btn--primary btn-sm btn-env"
+                data-env="bac-a-sable"
+              >
+                Bac à sable
+              </button>
+              <button
+                class="btn btn--ghost btn--primary btn-sm btn-env"
+                data-env="pre-prod"
+              >
+                Pré-prod
+              </button>
+              <button
+                class="btn btn--ghost btn--primary btn-sm btn-env"
+                data-env="prod"
+              >
+                Prod
+              </button>
             </div>
+            <div class="col-md-7 mb-3">
+              <p id="url-rabbitmq"></p>
+            </div>
+          </div>
+          <div
+            class="row"
+            id="div-filtres"
+            style="width: 96%; margin-left: 2%; margin-bottom: 30px"
+          >
+            <div class="col-md-3 mb-3">
+              <select class="form-control" id="filter-editor">
+                <option value="">Filtre par éditeur</option>
+              </select>
+            </div>
+            <div class="col-md-3 mb-3">
+              <select class="form-control" id="filter-samu">
+                <option value="">Filtre par SAMU</option>
+              </select>
+            </div>
+            <div class="col-md-3 mb-3">
+              <select class="form-control" id="filter-vhost">
+                <option value="">Filtre par vhost</option>
+              </select>
+            </div>
+            <div class="col-md-3 mb-3">
+              <select class="form-control" id="filter-perimeter">
+                <option value="">Filtre par périmètre</option>
+              </select>
+            </div>
+          </div>
+          <div class="row" style="width: 96%; margin-left: 2%">
+            <div class="col-md">
+              <table
+                class="table table-striped table-bordered table-hover"
+                id="table-annuaire"
+                style="width: 100%; table-layout: auto"
+              >
+                <thead>
+                  <tr>
+                    <th></th>
+                    <th scope="col">Identifiant client</th>
+                    <th scope="col">Editeur</th>
+                    <th scope="col">Périmètre(s) / Version du modèle</th>
+                  </tr>
+                </thead>
+                <tbody id="table-annuaire-content"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
       </div>
     </main>
 
