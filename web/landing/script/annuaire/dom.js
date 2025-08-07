@@ -12,42 +12,53 @@ export function renderClientsConfigTable(clientsConfig) {
   tableAnnuaireContent.innerHTML = "";
 
   clientsConfig.forEach((item, index) => {
-    const tr = document.createElement("tr");
-
-    const tdCheckbox = document.createElement("td");
-    tdCheckbox.style.textAlign = "center";
-    const checkbox = document.createElement("input");
-    checkbox.type = "checkbox";
-    checkbox.dataset.index = index;
-    checkbox.checked = !!item.isSelected;
-    checkbox.onclick = function () {
-      selection(this);
-    };
-    tdCheckbox.appendChild(checkbox);
-    tr.appendChild(tdCheckbox);
-
-    const tdClientID = document.createElement("td");
-    tdClientID.textContent = item.client_id;
-    tr.appendChild(tdClientID);
-
-    const tdEditeur = document.createElement("td");
-    tdEditeur.textContent = item.editor;
-    tr.appendChild(tdEditeur);
-
-    const tdVhost = document.createElement("td");
-    tdVhost.style.display = "flex";
-    tdVhost.style.flexWrap = "wrap";
-    tdVhost.style.gap = "5px";
-    item.vhostList.forEach((vhost) => {
-      const vhostCard = createVhostCardElement(vhost);
-      tdVhost.appendChild(vhostCard);
-    });
-    tr.appendChild(tdVhost);
-    tableAnnuaireContent.appendChild(tr);
+    const row = createClientConfigRow(item, index);
+    tableAnnuaireContent.appendChild(row);
   });
 }
 
-export function createVhostCardElement(vhost) {
+function createClientConfigRow(item, index) {
+    const row = document.createElement("tr");
+    row.appendChild(createCheckboxCell(index, item.selected));
+    row.appendChild(createTextCell(item.client_id));
+    row.appendChild(createTextCell(item.editor));
+    row.appendChild(createVhostCell(item.vhostList));
+    return row;
+}
+
+function createCheckboxCell(index, isSelected) {
+    const td = document.createElement("td");
+    td.style.textAlign = "center";
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.dataset.index = index;
+    checkbox.checked = !!isSelected;
+    checkbox.onclick = function () {
+      selection(this);
+    };
+    td.appendChild(checkbox);
+    return td;
+}
+
+function createTextCell(text){
+    const td = document.createElement("td");
+    td.textContent = text;
+    return td;
+}
+
+function createVhostCell(vhostList) {
+    const td = document.createElement("td");
+    td.style.display = "flex";
+    td.style.flexWrap = "wrap";
+    td.style.gap = "5px";
+    vhostList.forEach((vhost) => {
+      const vhostCard = createVhostCardElement(vhost);
+      td.appendChild(vhostCard);
+    });
+    return td;
+}
+
+function createVhostCardElement(vhost) {
   const vhostDiv = document.createElement("div");
   vhostDiv.style.border = "2px solid rgba(104, 105, 103, 0.2)";
   vhostDiv.style.borderRadius = "10px";
