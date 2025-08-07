@@ -1,6 +1,6 @@
 import { fetchData, renameKeys, constituteVhostList, resetSelectedClientsConfig, create_data_test } from "./data.js";
-import { renderClientsConfigTable, renderUrl, updateEnvButtonStyles, updateFiltersSelectOptions } from "./dom.js";
-import { clientsConfigurations, Environment, apiUrls } from "./constants.js";
+import { renderClientsConfigTable, renderUrl, updateEnvButtonStyles, updateFiltersSelectOptions, openRecap, closeRecap } from "./dom.js";
+import { clientsConfigurations, Environment, apiUrls, RECAP_OPEN_BTN_ID, RECAP_CLOSE_BTN_ID } from "./constants.js";
 import { getCurrentFilteredClientsConfig } from "./filters.js";
 import { getSelectedEnv, setSelectedEnv } from "./env.js";
 
@@ -41,5 +41,13 @@ document.querySelectorAll("#div-filtres select").forEach((select) => {
   select.addEventListener("change", () => {
     renderClientsConfigTable(getCurrentFilteredClientsConfig());
   });
+});
+
+document.getElementById(RECAP_OPEN_BTN_ID).addEventListener("click", () => {
+  openRecap();
+});
+
+document.getElementById(RECAP_CLOSE_BTN_ID).addEventListener("click", () => {
+  closeRecap();
 });
 

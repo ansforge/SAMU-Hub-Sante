@@ -48,6 +48,7 @@
       media="print"
     />
     <link rel="stylesheet" href="/style.css" type="text/css" />
+    <link rel="stylesheet" href="/style/annuaire.css" type="text/css" />
   </head>
 
   <body>
@@ -378,7 +379,6 @@
           </div>
         </div>
 
-        <!-- Tableau des informations/configurations-->
         <div
           class="container bg-white"
           style="margin-left: 0px; margin-right: 0px; max-width: 100%"
@@ -406,6 +406,14 @@
             </div>
             <div class="col-md-7 mb-3">
               <p id="url-rabbitmq"></p>
+            </div>
+            <div class="col-md-1 mb-3">
+              <button type="button" title="Sélectionnez 2 lignes pour pouvoir activer l'aperçu" id="btn-open-recap" disabled>
+                <svg class="svg-icon svg-eye" aria-hidden="true" focusable="false" id="btn-open-recap-icon">
+                  <use xlink:href="/svg-icons/icon-sprite.svg#eye"></use>
+                </svg>
+                Aperçu
+              </button>
             </div>
           </div>
           <div
@@ -452,6 +460,14 @@
                 <tbody id="table-annuaire-content"></tbody>
               </table>
             </div>
+          </div>
+        </div>
+      </div>
+      <div id="recap-container" class="modal-overlay" style="display: none">
+        <div class="modal-content">
+          <span class="close-button" id="btn-close-recap">&times;</span>
+          <h2>Récapitulatif</h2>
+          <div id="recap-content">
           </div>
         </div>
       </div>
@@ -670,7 +686,6 @@
                   Mentions légales
                 </a>
               </li>
-
               <li class="footer-list__item">
                 <a href="/pages-footer/declaration_accessibilite.html">
                   Accessibilité : non conforme
