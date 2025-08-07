@@ -1,4 +1,4 @@
-import { URL_RABBITMQ_ID, CLIENTS_CONFIG_TABLE_ID, mddMap, rabbitmqUrls, colors } from "./constants.js";
+import { URL_RABBITMQ_ID, CLIENTS_CONFIG_TABLE_ID, RECAP_CONTENT_ID, mddMap, rabbitmqUrls, colors, RECAP_CONTAINER_ID, RECAP_OPEN_BTN_ID } from "./constants.js";
 import { FILTERS_CONFIG, getCurrentFilteredClientsConfig } from "./filters.js";
 import { getSelectedClientsConfig } from "./data.js";
 
@@ -6,7 +6,6 @@ export function renderUrl(selectedEnv) {
   const urlElement = document.getElementById(URL_RABBITMQ_ID);
   urlElement.innerHTML = rabbitmqUrls[selectedEnv];
 }
-
 
 export function renderClientsConfigTable(clientsConfig) {
   const tableAnnuaireContent = document.getElementById(CLIENTS_CONFIG_TABLE_ID);
@@ -36,6 +35,7 @@ function createCheckboxCell(index, isSelected) {
     checkbox.checked = !!isSelected;
     checkbox.addEventListener("change", function () {
         getCurrentFilteredClientsConfig()[index].isSelected = this.checked;
+				updateRecapButtonState();
     });
     td.appendChild(checkbox);
     return td;
@@ -78,6 +78,39 @@ function createVhostCardElement(vhost) {
   vhostDiv.appendChild(mdd);
 
   return vhostDiv;
+}
+
+export function openRecap() {
+  const selectedClientsConfig = getSelectedClientsConfig();
+	renderRecap(selectedClientsConfig);
+}
+
+function renderRecap(selectedClientsConfig) {
+	const recapContainer = document.getElementById(RECAP_CONTAINER_ID);
+	const recapContent = document.getElementById(RECAP_CONTENT_ID);
+	recapContent.innerHTML = "";
+	selectedClientsConfig.forEach(clientConfig => {
+    const div = document.createElement("div");
+    div.innerHTML = `
+      <p><strong>${clientConfig.client_id}</strong> - ${clientConfig.editor}</p>
+    `;
+    recapContent.appendChild(div);
+  });
+  recapContainer.style.display = "flex";
+}
+
+export function closeRecap() {
+	const recapContainer = document.getElementById(RECAP_CONTAINER_ID);
+	recapContainer.style.display = "none";
+}
+
+function updateRecapButtonState() {
+	const recapButton = document.getElementById(RECAP_OPEN_BTN_ID);
+	if(getSelectedClientsConfig().length == 2) {
+		recapButton.disabled = false;
+	} else {
+		recapButton.disabled = true;
+	}
 }
 
 export function updateEnvButtonStyles(selectedEnv) {

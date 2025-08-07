@@ -1,3 +1,10 @@
+export const CLIENTS_CONFIG_TABLE_ID = "table-annuaire-content";
+export const URL_RABBITMQ_ID = "url-rabbitmq";
+export const RECAP_OPEN_BTN_ID = "btn-open-recap";
+export const RECAP_CONTAINER_ID = "recap-container";
+export const RECAP_CONTENT_ID = "recap-content";
+export const RECAP_CLOSE_BTN_ID = "btn-close-recap";
+
 export const Environment = {
   BAS: "bac-a-sable",
   PREPROD: "pre-prod",
@@ -55,6 +62,3 @@ export const keyMap = {
   "P: 15-nexsis": perimeter[2],
   "P: 15-gps": perimeter[3],
 };
-
-export const CLIENTS_CONFIG_TABLE_ID = "table-annuaire-content";
-export const URL_RABBITMQ_ID = "url-rabbitmq";
