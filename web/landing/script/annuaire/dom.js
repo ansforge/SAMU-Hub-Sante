@@ -1,6 +1,7 @@
 import { URL_RABBITMQ_ID, CLIENTS_CONFIG_TABLE_ID, RECAP_CONTENT_ID, mddMap, rabbitmqUrls, colors, RECAP_CONTAINER_ID, RECAP_OPEN_BTN_ID } from "./constants.js";
 import { FILTERS_CONFIG, getCurrentFilteredClientsConfig } from "./filters.js";
 import { getSelectedClientsConfig } from "./data.js";
+import { getSelectedEnv } from "./env.js";
 
 export function renderUrl(selectedEnv) {
   const urlElement = document.getElementById(URL_RABBITMQ_ID);
@@ -61,13 +62,8 @@ function createVhostCell(vhostList) {
 
 function createVhostCardElement(vhost) {
   const vhostDiv = document.createElement("div");
-  vhostDiv.style.border = "2px solid rgba(104, 105, 103, 0.2)";
-  vhostDiv.style.borderRadius = "10px";
+  vhostDiv.classList.add("vhost-card");
   vhostDiv.style.backgroundColor = colors[getPerimeterFromVhost(vhost)];
-  vhostDiv.style.margin = "3px";
-  vhostDiv.style.width = "30%";
-  vhostDiv.style.textAlign = "center";
-  vhostDiv.style.padding = "5px";
 
   const strong = document.createElement("strong");
   strong.textContent = vhost;
@@ -89,14 +85,43 @@ function renderRecap(selectedClientsConfig) {
 	const recapContainer = document.getElementById(RECAP_CONTAINER_ID);
 	const recapContent = document.getElementById(RECAP_CONTENT_ID);
 	recapContent.innerHTML = "";
+
+  const url = document.createElement("p");
+  url.classList.add("recap-url");
+  url.textContent = `URL : ${rabbitmqUrls[getSelectedEnv()]}`;
+  recapContent.appendChild(url);
+
 	selectedClientsConfig.forEach(clientConfig => {
-    const div = document.createElement("div");
-    div.innerHTML = `
-      <p><strong>${clientConfig.client_id}</strong> - ${clientConfig.editor}</p>
-    `;
-    recapContent.appendChild(div);
+    const clientConfigCard = createClientConfigCard(clientConfig);
+    recapContent.appendChild(clientConfigCard);
   });
   recapContainer.style.display = "flex";
+}
+
+function createClientConfigCard(clientConfig){
+  const clientConfigCard = document.createElement("div");
+  clientConfigCard.classList.add("client-config-card");
+
+  const clientID = document.createElement("h3");
+  clientID.textContent = `Client ID: ${clientConfig.client_id}`;
+  clientConfigCard.appendChild(clientID);
+
+  const editor = document.createElement("p");
+  editor.textContent = "Editor: ";
+  const strong = document.createElement("strong");
+  strong.textContent = clientConfig.editor;
+  editor.appendChild(strong);
+  clientConfigCard.appendChild(editor);
+
+  const vhostDiv = document.createElement("div");
+  vhostDiv.classList.add("recap-div-vhost");
+  clientConfig.vhostList.forEach((vhost) => {
+    const vhostCard = createVhostCardElement(vhost);
+    vhostDiv.appendChild(vhostCard);
+  });
+  clientConfigCard.appendChild(vhostDiv);
+
+  return clientConfigCard;
 }
 
 export function closeRecap() {
