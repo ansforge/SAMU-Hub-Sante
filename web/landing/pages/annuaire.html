@@ -383,7 +383,7 @@
           class="container bg-white"
           style="margin-left: 0px; margin-right: 0px; max-width: 100%"
         >
-          <div class="row" style="width: 96%; margin-left: 2%">
+          <div class="row" style="width: 96%; margin-left: 2%;">
             <div class="col-md-4 mb-3" id="env-buttons">
               <button
                 class="btn btn--plain btn--primary btn-sm btn-env"
@@ -419,7 +419,7 @@
           <div
             class="row"
             id="div-filtres"
-            style="width: 96%; margin-left: 2%; margin-bottom: 30px"
+            style="width: 96%; margin-left: 2%;"
           >
             <div class="col-md-3 mb-3">
               <select class="form-control" id="filter-editor">
@@ -463,10 +463,32 @@
           </div>
         </div>
       </div>
+      <!-- Recap -->
       <div id="recap-container" class="modal-overlay" style="display: none">
         <div class="modal-content">
-          <span class="close-button" id="btn-close-recap">&times;</span>
-          <h2>Récapitulatif</h2>
+          <div class="recap-header">
+            <h2>Récapitulatif</h2>
+            <div class="recap-header-btn">
+              <span
+                class="span-recap"
+                id="btn-copy-recap"
+                title="Copier dans le presse-papier"
+              >
+                <svg class="svg-icon svg-duplicate" aria-hidden="true" style="height: 20px; width: 20px;">
+                  <use xlink:href="/svg-icons/icon-sprite.svg#duplicate"></use>
+                </svg>
+              </span>
+              <span
+                class="span-recap"
+                id="btn-close-recap"
+                title="Fermer"
+              >
+                <svg class="svg-icon svg-close" aria-hidden="true" style="height: 15px; width: 15px;">
+                  <use xlink:href="/svg-icons/icon-sprite.svg#close"></use>
+                </svg>
+              </span>
+            </div>
+          </div>
           <div id="recap-content">
           </div>
         </div>
