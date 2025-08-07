@@ -20,8 +20,9 @@ window.addEventListener("load", async () => {
   setSelectedEnv(Environment.BAS);
   create_data_test();
   updateFiltersSelectOptions();
-  renderUrl();
-  renderClientsConfigTable(clientsConfigurations[getSelectedEnv()]);
+  const selectedEnv = getSelectedEnv();
+  renderUrl(selectedEnv);
+  renderClientsConfigTable(clientsConfigurations[selectedEnv]);
 });
 
 document.getElementById("env-buttons").addEventListener("click", (e) => {
