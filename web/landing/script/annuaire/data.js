@@ -1,4 +1,5 @@
 import { keyMap, perimeter, clientsConfigurations, Environment } from "./constants.js";
+import { getSelectedEnv } from "./env.js";
 
 export async function fetchData(url) {
   try {
@@ -34,6 +35,16 @@ export function constituteVhostList(data) {
     });
   });
   return vhostList;
+}
+
+export function getSelectedClientsConfig() {
+    return clientsConfigurations[getSelectedEnv()].filter((item) => item.isSelected);
+}
+
+export function resetSelectedClientsConfig() {
+    clientsConfigurations[getSelectedEnv()].forEach((item) => {
+        item.isSelected = false;
+    });
 }
 
 
@@ -176,7 +187,7 @@ export function create_data_test() {
     return {
       ...renamedData,
       vhostList: vhostList,
-      isSelected: false,
+      isSelected: true,
     };
   });
 }
