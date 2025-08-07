@@ -1,5 +1,6 @@
 import { URL_RABBITMQ_ID, CLIENTS_CONFIG_TABLE_ID, mddMap, rabbitmqUrls, colors } from "./constants.js";
-import { FILTERS_CONFIG } from "./filters.js";
+import { FILTERS_CONFIG, getCurrentFilteredClientsConfig } from "./filters.js";
+import { getSelectedClientsConfig } from "./data.js";
 
 export function renderUrl(selectedEnv) {
   const urlElement = document.getElementById(URL_RABBITMQ_ID);
@@ -19,7 +20,7 @@ export function renderClientsConfigTable(clientsConfig) {
 
 function createClientConfigRow(item, index) {
     const row = document.createElement("tr");
-    row.appendChild(createCheckboxCell(index, item.selected));
+    row.appendChild(createCheckboxCell(index, item.isSelected));
     row.appendChild(createTextCell(item.client_id));
     row.appendChild(createTextCell(item.editor));
     row.appendChild(createVhostCell(item.vhostList));
@@ -33,9 +34,9 @@ function createCheckboxCell(index, isSelected) {
     checkbox.type = "checkbox";
     checkbox.dataset.index = index;
     checkbox.checked = !!isSelected;
-    checkbox.onclick = function () {
-      selection(this);
-    };
+    checkbox.addEventListener("change", function () {
+        getCurrentFilteredClientsConfig()[index].isSelected = this.checked;
+    });
     td.appendChild(checkbox);
     return td;
 }

@@ -1,4 +1,4 @@
-import { fetchData, renameKeys, constituteVhostList, create_data_test } from "./data.js";
+import { fetchData, renameKeys, constituteVhostList, resetSelectedClientsConfig, create_data_test } from "./data.js";
 import { renderClientsConfigTable, renderUrl, updateEnvButtonStyles, updateFiltersSelectOptions } from "./dom.js";
 import { clientsConfigurations, Environment, apiUrls } from "./constants.js";
 import { getCurrentFilteredClientsConfig } from "./filters.js";
@@ -29,7 +29,8 @@ document.getElementById("env-buttons").addEventListener("click", (e) => {
   const btn = e.target.closest("button[data-env]");
   if (!btn) return;
   setSelectedEnv(btn.dataset.env);
-  const selectedEnv = getSelectedEnv(); 
+  resetSelectedClientsConfig();
+  const selectedEnv = getSelectedEnv();
   updateEnvButtonStyles(selectedEnv);
   updateFiltersSelectOptions(selectedEnv);
   renderUrl(selectedEnv);
