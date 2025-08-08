@@ -113,7 +113,14 @@ body{
 }
 
 /* Carte */
+#info-selected-department{
+	left: 0%;
+  width: 50%;
+	position: relative;
+}
+
 #div-map{
+  padding-top: 5%;
 	left: 55%;
 	right: 1%;
 	top: 5%;
