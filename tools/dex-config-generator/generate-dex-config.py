@@ -34,10 +34,16 @@ def parse_flat_files(secret_dir):
 def parse_flat_files_with_placeholders(secret_dir, prefix=""):
     """
     Parse flat files and return both the actual values and placeholders.
-    Returns a tuple: (placeholder_data, actual_values_map)
+    Only sensitive fields use placeholders, others use direct values.
+    Returns a tuple: (data_with_placeholders, actual_values_map)
     """
-    placeholder_data = {}
+    data_with_placeholders = {}
     actual_values_map = {}
+    
+    # Define critical/sensitive field patterns that should use placeholders
+    critical_fields = [
+        'secret', 'clientsecret', 'password', 'token', 'key', 'clientid'
+    ]
     
     for filename in os.listdir(secret_dir):
         # Skip files containing '_raw' which are VaultStaticSecret metadata
@@ -52,12 +58,19 @@ def parse_flat_files_with_placeholders(secret_dir, prefix=""):
                 elif value.lower() == "false":
                     value = False
                 
-                # Create placeholder key
-                placeholder_key = f"$dex.{prefix}{filename}" if prefix else f"$dex.{filename}"
-                placeholder_data[filename] = placeholder_key
-                actual_values_map[placeholder_key] = value
+                # Check if this field is critical/sensitive
+                is_critical = any(critical_field in filename.lower() for critical_field in critical_fields)
+                
+                if is_critical:
+                    # Create placeholder key for sensitive values
+                    placeholder_key = f"$dex.{prefix}{filename}" if prefix else f"$dex.{filename}"
+                    data_with_placeholders[filename] = placeholder_key
+                    actual_values_map[placeholder_key] = value
+                else:
+                    # Use actual value directly for non-critical fields
+                    data_with_placeholders[filename] = value
     
-    return placeholder_data, actual_values_map
+    return data_with_placeholders, actual_values_map
 
 
 def build_nested_dict(flat_dict):
@@ -93,16 +106,16 @@ def flatten_indexed_dict(d):
 
 
 def build_dex_config():
-    # Parse files with placeholders and collect actual values
-    connectors_placeholders, connectors_values = parse_flat_files_with_placeholders(CONNECTORS_DIR)
-    clients_placeholders, clients_values = parse_flat_files_with_placeholders(CLIENTS_DIR)
+    # Parse files with selective placeholders (only for sensitive values) and collect actual values
+    connectors_data, connectors_values = parse_flat_files_with_placeholders(CONNECTORS_DIR)
+    clients_data, clients_values = parse_flat_files_with_placeholders(CLIENTS_DIR)
     
-    # Combine all actual values for the mapping file
+    # Combine all actual values for the mapping file (only contains sensitive values now)
     all_values_map = {**connectors_values, **clients_values}
 
     # Remove the "connectors." prefix from connector keys to avoid double nesting
     connectors_clean = {}
-    for key, value in connectors_placeholders.items():
+    for key, value in connectors_data.items():
         if key.startswith("connectors."):
             clean_key = key[len("connectors."):]
             connectors_clean[clean_key] = value
@@ -111,7 +124,7 @@ def build_dex_config():
 
     # Remove the "static-clients." prefix from client keys to avoid double nesting
     clients_clean = {}
-    for key, value in clients_placeholders.items():
+    for key, value in clients_data.items():
         if key.startswith("static-clients."):
             clean_key = key[len("static-clients."):]
             clients_clean[clean_key] = value
@@ -144,7 +157,7 @@ def write_yaml(config, path):
 
 
 def write_mapping(values_map, path):
-    """Write the actual values mapping to a YAML file"""
+    """Write the sensitive values mapping to a YAML file"""
     with open(path, "w", encoding="utf-8") as f:
         yaml.safe_dump(
             values_map,
@@ -172,11 +185,11 @@ if __name__ == "__main__":
     write_mapping(values_map, MAPPING_OUTPUT_FILE)
 
     print(f"✅ dex.config.yaml generated successfully at {OUTPUT_FILE}")
-    print(f"✅ Values mapping generated successfully at {MAPPING_OUTPUT_FILE}")
-    print(f"\nGenerated config with placeholders:\n")
+    print(f"✅ Sensitive values mapping generated successfully at {MAPPING_OUTPUT_FILE}")
+    print(f"\nGenerated config (with direct values for non-sensitive fields):\n")
     with open(OUTPUT_FILE, encoding="utf-8") as f:
         print(f.read())
     
-    print(f"\nActual values mapping:\n")
+    print(f"\nSensitive values mapping:\n")
     with open(MAPPING_OUTPUT_FILE, encoding="utf-8") as f:
         print(f.read())
