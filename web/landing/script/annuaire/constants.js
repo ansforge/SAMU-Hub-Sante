@@ -1,5 +1,4 @@
 export const CLIENTS_CONFIG_TABLE_ID = "table-annuaire-content";
-export const URL_RABBITMQ_ID = "url-rabbitmq";
 export const RECAP_OPEN_BTN_ID = "btn-open-recap";
 export const RECAP_CONTAINER_ID = "recap-container";
 export const RECAP_CONTENT_ID = "recap-content";
