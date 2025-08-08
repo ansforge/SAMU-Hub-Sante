@@ -94,32 +94,14 @@ def flatten_indexed_dict(d):
 
 def build_dex_config():
     # Parse files with placeholders and collect actual values
-    connectors_placeholders, connectors_values = parse_flat_files_with_placeholders(CONNECTORS_DIR, "connectors.")
-    clients_placeholders, clients_values = parse_flat_files_with_placeholders(CLIENTS_DIR, "clients.")
+    connectors_placeholders, connectors_values = parse_flat_files_with_placeholders(CONNECTORS_DIR)
+    clients_placeholders, clients_values = parse_flat_files_with_placeholders(CLIENTS_DIR)
     
     # Combine all actual values for the mapping file
     all_values_map = {**connectors_values, **clients_values}
 
-    # Remove the "connectors." prefix from connector keys
-    connectors_clean = {}
-    for key, value in connectors_placeholders.items():
-        if key.startswith("connectors."):
-            clean_key = key[len("connectors."):]
-            connectors_clean[clean_key] = value
-        else:
-            connectors_clean[key] = value
-
-    # Remove the "clients." prefix from client keys  
-    clients_clean = {}
-    for key, value in clients_placeholders.items():
-        if key.startswith("clients."):
-            clean_key = key[len("clients."):]
-            clients_clean[clean_key] = value
-        else:
-            clients_clean[key] = value
-
-    connectors_nested = flatten_indexed_dict(build_nested_dict(connectors_clean))
-    clients_nested = flatten_indexed_dict(build_nested_dict(clients_clean))
+    connectors_nested = flatten_indexed_dict(build_nested_dict(connectors_placeholders))
+    clients_nested = flatten_indexed_dict(build_nested_dict(clients_placeholders))
 
     config = {
         "connectors": connectors_nested,
