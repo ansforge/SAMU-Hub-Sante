@@ -21,7 +21,9 @@ import {
   apiUrls,
   RECAP_OPEN_BTN_ID,
   RECAP_CLOSE_BTN_ID,
-  DIV_MAP_ID
+  DIV_MAP_ID,
+  TOOLTIP_INFO_VHOST_ID,
+  TOOLTIP_IMAGE_VHOST_ID,
 } from "./constants.js";
 import { getCurrentFilteredClientsConfig } from "./filters.js";
 import { getSelectedEnv, setSelectedEnv } from "./env.js";
@@ -76,4 +78,18 @@ document.getElementById(DIV_MAP_ID).addEventListener("click", (e) => {
   const dep = e.target.closest(".department");
   if (!dep) return;
   handleClickOnDepartment(dep);
+});
+
+const tooltipInfoVhost = document.getElementById(TOOLTIP_INFO_VHOST_ID);
+const tooltipImgVhost = document.getElementById(TOOLTIP_IMAGE_VHOST_ID);
+tooltipInfoVhost.addEventListener("click", (e) => {
+  tooltipImgVhost.classList.toggle("hidden");
+});
+document.addEventListener("click", (e) => {
+  if (
+    !tooltipInfoVhost.contains(e.target) &&
+    !tooltipImgVhost.contains(e.target)
+  ) {
+    tooltipImgVhost.classList.add("hidden");
+  }
 });
