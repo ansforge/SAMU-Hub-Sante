@@ -1,3 +1,7 @@
+body{
+  background-color: #FFFFFF;
+}
+
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -12,7 +16,6 @@
 }
 
 .modal-content {
-  background: white;
   padding: 20px 30px;
   border-radius: 10px;
   width: 70%;
@@ -124,6 +127,10 @@
     stroke-width: 0.6;
     cursor: pointer;
     pointer-events: auto;
+}
+.department.selected {
+	fill: rgb(167, 167, 8);
+  transition: fill 0.3s ease;
 }
 
 #map_visualization {
