@@ -108,3 +108,31 @@
   text-align: center;
   padding: 5px;
 }
+
+/* Carte */
+#div-map{
+	left: 55%;
+	right: 1%;
+	top: 5%;
+	position: absolute;
+	height: 100%;
+}
+
+.department{
+    fill: rgb(87, 155, 87);
+    stroke: #FFFFFF;
+    stroke-width: 0.6;
+    cursor: pointer;
+    pointer-events: auto;
+}
+
+#map_visualization {
+    width: 50%;
+    height: 50%;
+}
+
+.prod{
+    fill: blue;
+    stroke: #FFFFFF;
+    stroke-width: 0.6;
+}
