@@ -100,8 +100,26 @@ def build_dex_config():
     # Combine all actual values for the mapping file
     all_values_map = {**connectors_values, **clients_values}
 
-    connectors_nested = flatten_indexed_dict(build_nested_dict(connectors_placeholders))
-    clients_nested = flatten_indexed_dict(build_nested_dict(clients_placeholders))
+    # Remove the "connectors." prefix from connector keys to avoid double nesting
+    connectors_clean = {}
+    for key, value in connectors_placeholders.items():
+        if key.startswith("connectors."):
+            clean_key = key[len("connectors."):]
+            connectors_clean[clean_key] = value
+        else:
+            connectors_clean[key] = value
+
+    # Remove the "static-clients." prefix from client keys to avoid double nesting
+    clients_clean = {}
+    for key, value in clients_placeholders.items():
+        if key.startswith("static-clients."):
+            clean_key = key[len("static-clients."):]
+            clients_clean[clean_key] = value
+        else:
+            clients_clean[key] = value
+
+    connectors_nested = flatten_indexed_dict(build_nested_dict(connectors_clean))
+    clients_nested = flatten_indexed_dict(build_nested_dict(clients_clean))
 
     config = {
         "connectors": connectors_nested,
