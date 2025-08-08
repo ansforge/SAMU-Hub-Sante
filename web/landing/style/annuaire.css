@@ -40,17 +40,15 @@
 }
 
 #btn-open-recap {
+	display: block;
   transition: all 0.2s ease;
-  display: flex;
   border-radius: 10px;
-  padding: 5px;
   color: var(--primary);
   border: 2px solid var(--primary);
   background-color: transparent;
-	position: sticky;
-	top: 20px;
-	right: 20px;
 	z-index: 1000;
+  width: 100%;
+  padding: 0.375rem 0.75rem;
 }
 
 #btn-open-recap:disabled {

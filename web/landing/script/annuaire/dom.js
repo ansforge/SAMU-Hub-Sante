@@ -5,7 +5,7 @@ import { getSelectedEnv } from "./env.js";
 
 export function renderUrl(selectedEnv) {
   const urlElement = document.getElementById(URL_RABBITMQ_ID);
-  urlElement.innerHTML = rabbitmqUrls[selectedEnv];
+  urlElement.innerHTML = `URL: ${rabbitmqUrls[selectedEnv]}`;
 }
 
 export function renderClientsConfigTable(clientsConfig) {
@@ -103,11 +103,11 @@ function createClientConfigCard(clientConfig){
   clientConfigCard.classList.add("client-config-card");
 
   const clientID = document.createElement("h3");
-  clientID.textContent = `Client ID: ${clientConfig.client_id}`;
+  clientID.textContent = `Identifiant client : ${clientConfig.client_id}`;
   clientConfigCard.appendChild(clientID);
 
   const editor = document.createElement("p");
-  editor.textContent = "Editor: ";
+  editor.textContent = "Editeur : ";
   const strong = document.createElement("strong");
   strong.textContent = clientConfig.editor;
   editor.appendChild(strong);
