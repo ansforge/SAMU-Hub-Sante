@@ -1,4 +1,9 @@
-import { keyMap, perimeter, clientsConfigurations, Environment } from "./constants.js";
+import {
+  keyMap,
+  perimeter,
+  clientsConfigurations,
+  Environment,
+} from "./constants.js";
 import { getSelectedEnv } from "./env.js";
 
 export async function fetchData(url) {
@@ -38,19 +43,41 @@ export function constituteVhostList(data) {
 }
 
 export function getClientConfigByDepartment(numDep) {
-  return clientsConfigurations[Environment.PROD].find((item) => item.client_id === `fr.health.samu${numDep}0` || item.client_id === `fr.health.samu${numDep}`);
+  return clientsConfigurations[Environment.PROD].find(
+    (item) =>
+      item.client_id === `fr.health.samu${numDep}0` ||
+      item.client_id === `fr.health.samu${numDep}`,
+  );
 }
 
 export function getSelectedClientsConfig() {
-    return clientsConfigurations[getSelectedEnv()].filter((item) => item.isSelected);
+  return clientsConfigurations[getSelectedEnv()].filter(
+    (item) => item.isSelected,
+  );
 }
 
 export function resetSelectedClientsConfig() {
-    clientsConfigurations[getSelectedEnv()].forEach((item) => {
-        item.isSelected = false;
-    });
+  clientsConfigurations[getSelectedEnv()].forEach((item) => {
+    item.isSelected = false;
+  });
 }
 
+export function getDepartmentInProd() {
+  return [
+    ...new Set(
+      clientsConfigurations[Environment.PROD]
+        .map((item) => item.client_id)
+        .filter((client_id) => client_id.startsWith("fr.health.samu"))
+        .map((client_id) => {
+          let dep = client_id.replace("fr.health.samu", "");
+          if (dep.length === 3 && dep.endsWith("0")) {
+            dep = dep.slice(0, -1);
+          }
+          return dep;
+        }),
+    ),
+  ];
+}
 
 export function create_data_test() {
   const data = [
