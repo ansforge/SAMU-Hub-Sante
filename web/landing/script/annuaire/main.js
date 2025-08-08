@@ -51,3 +51,14 @@ document.getElementById(RECAP_CLOSE_BTN_ID).addEventListener("click", () => {
   closeRecap();
 });
 
+document.querySelectorAll('.department').forEach(dep => {
+  dep.addEventListener('click', () => {
+    if( dep.classList.contains('selected')) {
+      dep.classList.remove('selected');
+      return;
+    } else {
+      document.querySelectorAll('.department.selected').forEach(d => d.classList.remove('selected'));
+      dep.classList.toggle('selected');
+    }
+  });
+});
