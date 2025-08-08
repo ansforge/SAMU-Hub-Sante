@@ -1,5 +1,4 @@
 import {
-  URL_RABBITMQ_ID,
   CLIENTS_CONFIG_TABLE_ID,
   RECAP_CONTENT_ID,
   mddMap,
@@ -16,11 +15,6 @@ import {
   getClientConfigByDepartment,
 } from "./data.js";
 import { getSelectedEnv } from "./env.js";
-
-export function renderUrl(selectedEnv) {
-  const urlElement = document.getElementById(URL_RABBITMQ_ID);
-  urlElement.innerHTML = `URL: ${rabbitmqUrls[selectedEnv]}`;
-}
 
 export function renderClientsConfigTable(clientsConfig) {
   const tableAnnuaireContent = document.getElementById(CLIENTS_CONFIG_TABLE_ID);

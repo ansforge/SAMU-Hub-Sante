@@ -7,7 +7,6 @@ import {
 } from "./data.js";
 import {
   renderClientsConfigTable,
-  renderUrl,
   updateEnvButtonStyles,
   updateFiltersSelectOptions,
   openRecap,
@@ -45,7 +44,6 @@ window.addEventListener("load", async () => {
   updateDepartmentInProdColor();
   updateFiltersSelectOptions();
   const selectedEnv = getSelectedEnv();
-  renderUrl(selectedEnv);
   renderClientsConfigTable(clientsConfigurations[selectedEnv]);
 });
 
@@ -57,7 +55,6 @@ document.getElementById("env-buttons").addEventListener("click", (e) => {
   const selectedEnv = getSelectedEnv();
   updateEnvButtonStyles(selectedEnv);
   updateFiltersSelectOptions(selectedEnv);
-  renderUrl(selectedEnv);
   renderClientsConfigTable(clientsConfigurations[selectedEnv]);
 });
 
