@@ -133,16 +133,24 @@ body{
   stroke: #FFFFFF;
   stroke-width: 0.6;
   pointer-events: auto;
+	transition: transform 0.2s ease-in-out;
 }
+
 .department.prod{
-    fill: rgb(68, 130, 68);
+    fill: rgb(32, 84, 32);
     stroke: #FFFFFF;
     cursor: pointer;
     stroke-width: 0.6;
 }
+
 .department.selected {
 	fill: var(--brand-2);
   transition: fill 0.3s ease;
+}
+
+.department:hover {
+	transform: scale(1.005);
+  filter: brightness(0.95);
 }
 
 #map_visualization {
