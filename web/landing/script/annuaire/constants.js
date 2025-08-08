@@ -3,8 +3,10 @@ export const RECAP_OPEN_BTN_ID = "btn-open-recap";
 export const RECAP_CONTAINER_ID = "recap-container";
 export const RECAP_CONTENT_ID = "recap-content";
 export const RECAP_CLOSE_BTN_ID = "btn-close-recap";
-export const DIV_MAP_ID = "div-map"
+export const DIV_MAP_ID = "div-map";
 export const DIV_INFO_DEPARTMENT_ID = "info-selected-department";
+export const TOOLTIP_INFO_VHOST_ID = "tooltip-info-vhost";
+export const TOOLTIP_IMAGE_VHOST_ID = "tooltip-image-vhost";
 
 export const Environment = {
   BAS: "bac-a-sable",
