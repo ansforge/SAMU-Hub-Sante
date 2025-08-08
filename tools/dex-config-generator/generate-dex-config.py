@@ -45,6 +45,9 @@ def parse_flat_files_with_placeholders(secret_dir, prefix=""):
         'secret', 'clientsecret', 'password', 'token', 'key', 'clientid'
     ]
     
+    # Define fields that are critical only for static-clients
+    static_clients_critical_fields = ['id']
+    
     for filename in os.listdir(secret_dir):
         # Skip files containing '_raw' which are VaultStaticSecret metadata
         if "_raw" in filename:
@@ -61,9 +64,17 @@ def parse_flat_files_with_placeholders(secret_dir, prefix=""):
                 # Check if this field is critical/sensitive
                 is_critical = any(critical_field in filename.lower() for critical_field in critical_fields)
                 
+                # For static-clients, also check static-clients specific critical fields
+                if prefix == "static-clients.":
+                    is_critical = is_critical or any(sc_field in filename.lower() for sc_field in static_clients_critical_fields)
+                
                 if is_critical:
                     # Create placeholder key for sensitive values
-                    placeholder_key = f"$dex.{prefix}{filename}" if prefix else f"$dex.{filename}"
+                    # Remove the prefix from filename if it exists to avoid duplication
+                    clean_filename = filename
+                    if prefix and filename.startswith(prefix):
+                        clean_filename = filename[len(prefix):]
+                    placeholder_key = f"$dex.{prefix}{clean_filename}" if prefix else f"$dex.{filename}"
                     data_with_placeholders[filename] = placeholder_key
                     actual_values_map[placeholder_key] = value
                 else:
@@ -107,8 +118,8 @@ def flatten_indexed_dict(d):
 
 def build_dex_config():
     # Parse files with selective placeholders (only for sensitive values) and collect actual values
-    connectors_data, connectors_values = parse_flat_files_with_placeholders(CONNECTORS_DIR)
-    clients_data, clients_values = parse_flat_files_with_placeholders(CLIENTS_DIR)
+    connectors_data, connectors_values = parse_flat_files_with_placeholders(CONNECTORS_DIR, "connectors.")
+    clients_data, clients_values = parse_flat_files_with_placeholders(CLIENTS_DIR, "static-clients.")
     
     # Combine all actual values for the mapping file (only contains sensitive values now)
     all_values_map = {**connectors_values, **clients_values}
