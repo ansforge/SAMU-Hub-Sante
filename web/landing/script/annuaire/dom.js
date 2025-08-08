@@ -1,4 +1,4 @@
-import { URL_RABBITMQ_ID, CLIENTS_CONFIG_TABLE_ID, RECAP_CONTENT_ID, mddMap, rabbitmqUrls, colors, RECAP_CONTAINER_ID, RECAP_OPEN_BTN_ID } from "./constants.js";
+import { URL_RABBITMQ_ID, CLIENTS_CONFIG_TABLE_ID, RECAP_CONTENT_ID, mddMap, rabbitmqUrls, colors, RECAP_CONTAINER_ID, RECAP_OPEN_BTN_ID, INFO_DEPARTMENT_ID } from "./constants.js";
 import { FILTERS_CONFIG, getCurrentFilteredClientsConfig } from "./filters.js";
 import { getSelectedClientsConfig } from "./data.js";
 import { getSelectedEnv } from "./env.js";
@@ -96,6 +96,15 @@ function renderRecap(selectedClientsConfig) {
     recapContent.appendChild(clientConfigCard);
   });
   recapContainer.style.display = "flex";
+}
+
+export function renderDepartmentInfo(clientConfig) {
+  const infoSelectedDepartment = document.getElementById(INFO_DEPARTMENT_ID);
+  infoSelectedDepartment.innerHTML = "";
+  if(clientConfig) {
+    const clientConfigCard = createClientConfigCard(clientConfig);
+    infoSelectedDepartment.appendChild(clientConfigCard);
+  }
 }
 
 function createClientConfigCard(clientConfig){

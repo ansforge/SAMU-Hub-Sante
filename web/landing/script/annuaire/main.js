@@ -1,5 +1,5 @@
-import { fetchData, renameKeys, constituteVhostList, resetSelectedClientsConfig, create_data_test } from "./data.js";
-import { renderClientsConfigTable, renderUrl, updateEnvButtonStyles, updateFiltersSelectOptions, openRecap, closeRecap } from "./dom.js";
+import { fetchData, renameKeys, constituteVhostList, resetSelectedClientsConfig, create_data_test, getClientConfigByDepartment } from "./data.js";
+import { renderClientsConfigTable, renderUrl, updateEnvButtonStyles, updateFiltersSelectOptions, openRecap, closeRecap, renderDepartmentInfo } from "./dom.js";
 import { clientsConfigurations, Environment, apiUrls, RECAP_OPEN_BTN_ID, RECAP_CLOSE_BTN_ID } from "./constants.js";
 import { getCurrentFilteredClientsConfig } from "./filters.js";
 import { getSelectedEnv, setSelectedEnv } from "./env.js";
@@ -53,12 +53,14 @@ document.getElementById(RECAP_CLOSE_BTN_ID).addEventListener("click", () => {
 
 document.querySelectorAll('.department').forEach(dep => {
   dep.addEventListener('click', () => {
-    if( dep.classList.contains('selected')) {
+    let selectedClientsConfig;
+    if(dep.classList.contains('selected')) {
       dep.classList.remove('selected');
-      return;
     } else {
       document.querySelectorAll('.department.selected').forEach(d => d.classList.remove('selected'));
-      dep.classList.toggle('selected');
-    }
+      dep.classList.add('selected');
+      selectedClientsConfig = getClientConfigByDepartment(dep.dataset.numDep);
+    }    
+    renderDepartmentInfo(selectedClientsConfig);
   });
 });

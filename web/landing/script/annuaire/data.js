@@ -37,6 +37,10 @@ export function constituteVhostList(data) {
   return vhostList;
 }
 
+export function getClientConfigByDepartment(numDep) {
+  return clientsConfigurations[Environment.PROD].find((item) => item.client_id === `fr.health.samu${numDep}0` || item.client_id === `fr.health.samu${numDep}`);
+}
+
 export function getSelectedClientsConfig() {
     return clientsConfigurations[getSelectedEnv()].filter((item) => item.isSelected);
 }
