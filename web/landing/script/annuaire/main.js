@@ -1,6 +1,29 @@
-import { fetchData, renameKeys, constituteVhostList, resetSelectedClientsConfig, create_data_test, getClientConfigByDepartment } from "./data.js";
-import { renderClientsConfigTable, renderUrl, updateEnvButtonStyles, updateFiltersSelectOptions, openRecap, closeRecap, renderDepartmentInfo } from "./dom.js";
-import { clientsConfigurations, Environment, apiUrls, RECAP_OPEN_BTN_ID, RECAP_CLOSE_BTN_ID } from "./constants.js";
+import {
+  fetchData,
+  renameKeys,
+  constituteVhostList,
+  resetSelectedClientsConfig,
+  create_data_test,
+} from "./data.js";
+import {
+  renderClientsConfigTable,
+  renderUrl,
+  updateEnvButtonStyles,
+  updateFiltersSelectOptions,
+  openRecap,
+  closeRecap,
+  renderDepartmentInfo,
+  updateDepartmentInProdColor,
+  handleClickOnDepartment,
+} from "./dom.js";
+import {
+  clientsConfigurations,
+  Environment,
+  apiUrls,
+  RECAP_OPEN_BTN_ID,
+  RECAP_CLOSE_BTN_ID,
+  DIV_MAP_ID
+} from "./constants.js";
 import { getCurrentFilteredClientsConfig } from "./filters.js";
 import { getSelectedEnv, setSelectedEnv } from "./env.js";
 
@@ -19,6 +42,7 @@ window.addEventListener("load", async () => {
   // }
   setSelectedEnv(Environment.BAS);
   create_data_test();
+  updateDepartmentInProdColor();
   updateFiltersSelectOptions();
   const selectedEnv = getSelectedEnv();
   renderUrl(selectedEnv);
@@ -51,16 +75,8 @@ document.getElementById(RECAP_CLOSE_BTN_ID).addEventListener("click", () => {
   closeRecap();
 });
 
-document.querySelectorAll('.department').forEach(dep => {
-  dep.addEventListener('click', () => {
-    let selectedClientsConfig;
-    if(dep.classList.contains('selected')) {
-      dep.classList.remove('selected');
-    } else {
-      document.querySelectorAll('.department.selected').forEach(d => d.classList.remove('selected'));
-      dep.classList.add('selected');
-      selectedClientsConfig = getClientConfigByDepartment(dep.dataset.numDep);
-    }    
-    renderDepartmentInfo(selectedClientsConfig);
-  });
+document.getElementById(DIV_MAP_ID).addEventListener("click", (e) => {
+  const dep = e.target.closest(".department");
+  if (!dep) return;
+  handleClickOnDepartment(dep);
 });

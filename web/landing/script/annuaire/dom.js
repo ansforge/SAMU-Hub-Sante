@@ -1,6 +1,20 @@
-import { URL_RABBITMQ_ID, CLIENTS_CONFIG_TABLE_ID, RECAP_CONTENT_ID, mddMap, rabbitmqUrls, colors, RECAP_CONTAINER_ID, RECAP_OPEN_BTN_ID, INFO_DEPARTMENT_ID } from "./constants.js";
+import {
+  URL_RABBITMQ_ID,
+  CLIENTS_CONFIG_TABLE_ID,
+  RECAP_CONTENT_ID,
+  mddMap,
+  rabbitmqUrls,
+  colors,
+  RECAP_CONTAINER_ID,
+  RECAP_OPEN_BTN_ID,
+  DIV_INFO_DEPARTMENT_ID,
+} from "./constants.js";
 import { FILTERS_CONFIG, getCurrentFilteredClientsConfig } from "./filters.js";
-import { getSelectedClientsConfig } from "./data.js";
+import {
+  getDepartmentInProd,
+  getSelectedClientsConfig,
+  getClientConfigByDepartment,
+} from "./data.js";
 import { getSelectedEnv } from "./env.js";
 
 export function renderUrl(selectedEnv) {
@@ -19,45 +33,45 @@ export function renderClientsConfigTable(clientsConfig) {
 }
 
 function createClientConfigRow(item, index) {
-    const row = document.createElement("tr");
-    row.appendChild(createCheckboxCell(index, item.isSelected));
-    row.appendChild(createTextCell(item.client_id));
-    row.appendChild(createTextCell(item.editor));
-    row.appendChild(createVhostCell(item.vhostList));
-    return row;
+  const row = document.createElement("tr");
+  row.appendChild(createCheckboxCell(index, item.isSelected));
+  row.appendChild(createTextCell(item.client_id));
+  row.appendChild(createTextCell(item.editor));
+  row.appendChild(createVhostCell(item.vhostList));
+  return row;
 }
 
 function createCheckboxCell(index, isSelected) {
-    const td = document.createElement("td");
-    td.style.textAlign = "center";
-    const checkbox = document.createElement("input");
-    checkbox.type = "checkbox";
-    checkbox.dataset.index = index;
-    checkbox.checked = !!isSelected;
-    checkbox.addEventListener("change", function () {
-        getCurrentFilteredClientsConfig()[index].isSelected = this.checked;
-				updateRecapButtonState();
-    });
-    td.appendChild(checkbox);
-    return td;
+  const td = document.createElement("td");
+  td.style.textAlign = "center";
+  const checkbox = document.createElement("input");
+  checkbox.type = "checkbox";
+  checkbox.dataset.index = index;
+  checkbox.checked = !!isSelected;
+  checkbox.addEventListener("change", function () {
+    getCurrentFilteredClientsConfig()[index].isSelected = this.checked;
+    updateRecapButtonState();
+  });
+  td.appendChild(checkbox);
+  return td;
 }
 
-function createTextCell(text){
-    const td = document.createElement("td");
-    td.textContent = text;
-    return td;
+function createTextCell(text) {
+  const td = document.createElement("td");
+  td.textContent = text;
+  return td;
 }
 
 function createVhostCell(vhostList) {
-    const td = document.createElement("td");
-    td.style.display = "flex";
-    td.style.flexWrap = "wrap";
-    td.style.gap = "5px";
-    vhostList.forEach((vhost) => {
-      const vhostCard = createVhostCardElement(vhost);
-      td.appendChild(vhostCard);
-    });
-    return td;
+  const td = document.createElement("td");
+  td.style.display = "flex";
+  td.style.flexWrap = "wrap";
+  td.style.gap = "5px";
+  vhostList.forEach((vhost) => {
+    const vhostCard = createVhostCardElement(vhost);
+    td.appendChild(vhostCard);
+  });
+  return td;
 }
 
 function createVhostCardElement(vhost) {
@@ -78,36 +92,53 @@ function createVhostCardElement(vhost) {
 
 export function openRecap() {
   const selectedClientsConfig = getSelectedClientsConfig();
-	renderRecap(selectedClientsConfig);
+  renderRecap(selectedClientsConfig);
 }
 
 function renderRecap(selectedClientsConfig) {
-	const recapContainer = document.getElementById(RECAP_CONTAINER_ID);
-	const recapContent = document.getElementById(RECAP_CONTENT_ID);
-	recapContent.innerHTML = "";
+  const recapContainer = document.getElementById(RECAP_CONTAINER_ID);
+  const recapContent = document.getElementById(RECAP_CONTENT_ID);
+  recapContent.innerHTML = "";
 
   const url = document.createElement("p");
   url.classList.add("recap-url");
   url.textContent = `URL : ${rabbitmqUrls[getSelectedEnv()]}`;
   recapContent.appendChild(url);
 
-	selectedClientsConfig.forEach(clientConfig => {
+  selectedClientsConfig.forEach((clientConfig) => {
     const clientConfigCard = createClientConfigCard(clientConfig);
     recapContent.appendChild(clientConfigCard);
   });
   recapContainer.style.display = "flex";
 }
 
+export function handleClickOnDepartment(dep) {
+  if (!dep.classList.contains("prod")) return;
+  let selectedClientsConfig;
+  if (dep.classList.contains("selected")) {
+    dep.classList.remove("selected");
+  } else {
+    document
+      .querySelectorAll(".department.selected")
+      .forEach((d) => d.classList.remove("selected"));
+    dep.classList.add("selected");
+    selectedClientsConfig = getClientConfigByDepartment(dep.dataset.numDep);
+  }
+  renderDepartmentInfo(selectedClientsConfig);
+}
+
 export function renderDepartmentInfo(clientConfig) {
-  const infoSelectedDepartment = document.getElementById(INFO_DEPARTMENT_ID);
+  const infoSelectedDepartment = document.getElementById(
+    DIV_INFO_DEPARTMENT_ID,
+  );
   infoSelectedDepartment.innerHTML = "";
-  if(clientConfig) {
+  if (clientConfig) {
     const clientConfigCard = createClientConfigCard(clientConfig);
     infoSelectedDepartment.appendChild(clientConfigCard);
   }
 }
 
-function createClientConfigCard(clientConfig){
+function createClientConfigCard(clientConfig) {
   const clientConfigCard = document.createElement("div");
   clientConfigCard.classList.add("client-config-card");
 
@@ -134,17 +165,17 @@ function createClientConfigCard(clientConfig){
 }
 
 export function closeRecap() {
-	const recapContainer = document.getElementById(RECAP_CONTAINER_ID);
-	recapContainer.style.display = "none";
+  const recapContainer = document.getElementById(RECAP_CONTAINER_ID);
+  recapContainer.style.display = "none";
 }
 
 function updateRecapButtonState() {
-	const recapButton = document.getElementById(RECAP_OPEN_BTN_ID);
-	if(getSelectedClientsConfig().length == 2) {
-		recapButton.disabled = false;
-	} else {
-		recapButton.disabled = true;
-	}
+  const recapButton = document.getElementById(RECAP_OPEN_BTN_ID);
+  if (getSelectedClientsConfig().length == 2) {
+    recapButton.disabled = false;
+  } else {
+    recapButton.disabled = true;
+  }
 }
 
 export function updateEnvButtonStyles(selectedEnv) {
@@ -156,6 +187,14 @@ export function updateEnvButtonStyles(selectedEnv) {
       btn.classList.remove("btn--plain");
       btn.classList.add("btn--ghost");
     }
+  });
+}
+
+export function updateDepartmentInProdColor() {
+  const departments = getDepartmentInProd();
+  departments.forEach((dep) => {
+    const elements = document.querySelectorAll(`[data-num-dep="${dep}"]`);
+    elements.forEach((elem) => elem.classList.add("prod"));
   });
 }
 

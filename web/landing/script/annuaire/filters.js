@@ -24,7 +24,6 @@ export const FILTERS_CONFIG = {
   },
 };
 
-
 export function getSamu() {
   return [
     ...new Set(
@@ -38,7 +37,9 @@ export function getSamu() {
 
 export function getEditors() {
   return [
-    ...new Set(clientsConfigurations[getSelectedEnv()].map((item) => item.editor)),
+    ...new Set(
+      clientsConfigurations[getSelectedEnv()].map((item) => item.editor),
+    ),
   ];
 }
 
