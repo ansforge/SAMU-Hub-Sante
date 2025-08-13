@@ -45,3 +45,6 @@ kubeconfig.yml
 models/csv_parser/docx-styles/
 
 client/bin/
+
+# HubSanté applications certificates
+certs/
