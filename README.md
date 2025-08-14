@@ -14,23 +14,24 @@
 
 Vous êtes un éditeur et vous souhaitez vous raccorder au Hub Santé -> rendez-vous sur [votre page dédiée](https://hub.esante.gouv.fr/pages/accompagnement.html)
 
-Vous êtes un développeur et vous voulez contribuez ou reproduire le Hub Santé -> rendez-vous sur la page développeur [`hub/`](hub/README.md) 
+Vous êtes un développeur et vous voulez contribuez ou reproduire le Hub Santé -> rendez-vous sur la page développeur [`hub/`](hub/README.md)
 
 ## 📚 Architecture
 - [`clients/`](clients) contient l'implémentation de clients en Java, en consommation et en publication.
     - Ce client Java nous permet de tester notre infrastructure et peut vous servir de base ou d'exemple pour votre implémentation
 - [`hub/`](hub) contient l'implémentation du composant de routage du Hub Santé (Dispatcher)
-- 
+- [`web/`](web) contient le client et le serveur formant le [LRM de test](https://bac-a-sable.hub.esante.gouv.fr/lrm/)
+
 ## Auteur
 
 👤 **ANS > Equipe Hub Santé**
 
-* Site web : https://esante.gouv.fr/si-samu
+* Site web : https://hub.esante.gouv.fr
 
 ## 🤝 Contribuer
 
 Les contributions, *issues* & *pull requests* sont les bienvenues !
-<br />N'hésitez pas à utiliser notre [page d'*issues*](https://github.com/ansforge/SAMU-interface-LRM/issues).
+<br />N'hésitez pas à utiliser notre [page d'*issues*](https://github.com/ansforge/SAMU-Hub-Sante/issue).
 
 ## Montrez votre support
 
