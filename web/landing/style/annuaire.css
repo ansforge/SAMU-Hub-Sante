@@ -2,23 +2,45 @@ body {
   background-color: #ffffff;
 }
 
-#tooltip-info-vhost {
-  position: relative;
-  cursor: pointer;
-  margin-left: 5px;
-}
-#tooltip-image-vhost.hidden {
-  display: none;
-}
-#tooltip-image-vhost {
-  position: absolute;
-  width: 400px;
-  height: auto;
-  background: white;
-  border-radius: 10px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+#first-section {
+  height: calc(100vh - var(--header-min-height));
+  display: flex;
+  flex-direction: column;
 }
 
+#second-section {
+  padding-top: 3rem;
+}
+
+/* vhost card style */
+.vhost-card {
+  border: 2px solid rgba(104, 105, 103, 0.2);
+  border-radius: 10px;
+  margin: 3px;
+  min-width: fit-content;
+  width: 20%;
+  text-align: center;
+  padding: 5px;
+}
+
+/* Config card style */
+.client-config-card {
+  flex: 1;
+  border: 2px solid var(--gray-500);
+  padding: 1%;
+  height: 100%;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease-in-out;
+}
+
+.client-config-card:hover {
+  transform: scale(1.02);
+}
+
+/* Recap style */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -76,7 +98,7 @@ body {
   color: var(--gray-500);
   border-color: var(--gray-400);
   cursor: not-allowed;
-  pointer-events: none; /* évite tout clic ou effet */
+  pointer-events: none;
 }
 
 #btn-open-recap-icon {
@@ -97,52 +119,44 @@ body {
   width: 100%;
 }
 
-.client-config-card {
-  flex: 1;
-  border: 2px solid var(--gray-500);
-  padding: 1%;
-  aspect-ratio: 1.5;
-  border-radius: 8px;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s ease-in-out;
-}
-
-.client-config-card:hover {
-  transform: scale(1.02);
-}
-
 .recap-div-vhost {
   display: flex;
   flex-wrap: wrap;
   gap: 5px;
 }
 
-.vhost-card {
-  border: 2px solid rgba(104, 105, 103, 0.2);
-  border-radius: 10px;
-  margin: 3px;
-  min-width: fit-content;
-  width: 20%;
-  text-align: center;
-  padding: 5px;
-}
-
-/* Carte */
-#info-selected-department {
-  left: 0%;
-  width: 50%;
+/* Tooltip explanation vhost style */
+#tooltip-info-vhost {
   position: relative;
+  cursor: pointer;
+  margin-left: 5px;
+}
+#tooltip-image-vhost.hidden {
+  display: none;
+}
+#tooltip-image-vhost {
+  position: absolute;
+  width: 400px;
+  height: auto;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
 }
 
+/* Map */
 #div-map {
-  padding-top: 5%;
-  left: 55%;
-  right: 1%;
-  top: 5%;
   position: absolute;
+  right: 0%;
+  top: 0%;
+  padding-top: 2%;
+  padding-bottom: 2%;
+  left: 55%;
   height: 100%;
+}
+
+#map-title {
+  width: 92%;
+  text-align: center;
 }
 
 .department {
@@ -170,7 +184,7 @@ body {
   filter: brightness(0.95);
 }
 
-#map_visualization {
-  width: 50%;
-  height: 50%;
+#info-selected-department {
+  flex-grow: 1;
+  padding: 10px;
 }

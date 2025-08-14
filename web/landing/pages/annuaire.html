@@ -303,12 +303,11 @@
     </header>
 
     <main>
-      <div class="body-wrapper">
-        <!-- Emplacement du Header -->
+      <section id="first-section">
         <div
           class="main bg-drop bg-drop--reverse bg-white"
           tabindex="-1"
-          style="border-bottom: 1px solid #ccc; margin-bottom: 30px"
+          style="border-bottom: 1px solid #ccc; height: 100%"
         >
           <!-- SVG pour les formes/pétales. A ajouter seulement une fois dans la page -->
           <svg
@@ -330,9 +329,9 @@
           <!-- Bannière page interne -->
           <div
             class="o-banner o-banner--has-image o-banner--has-breadcrumb"
-            style="height: 80vh"
+            style="height: 100%"
           >
-            <div class="container">
+            <div class="container" style="height: 100%">
               <nav
                 class="breadcrumb-wrapper"
                 role="navigation"
@@ -358,7 +357,14 @@
                   </li>
                 </ol>
               </nav>
-              <div class="o-banner__content">
+              <div
+                class="o-banner__content"
+                style="
+                  height: calc(100% - 10rem);
+                  display: flex;
+                  flex-direction: column;
+                "
+              >
                 <h1>Annuaire</h1>
                 <p class="lead">
                   Informations et configurations actuelles des raccordements au
@@ -371,8 +377,8 @@
                 <div class="o-banner__share-links d-none d-lg-inline-flex">
                   <ul class="list-unstyled d-lg-inline-flex"></ul>
                 </div>
+                <div id="info-selected-department"></div>
               </div>
-              <div id="info-selected-department"></div>
             </div>
             <div id="div-map">
               <svg
@@ -1596,10 +1602,12 @@
                   </a>
                 </g>
               </svg>
+              <p id="map-title">Carte des SAMU raccordés au Hub Santé (PROD)</p>
             </div>
           </div>
         </div>
-
+      </section>
+      <section id="second-section">
         <div
           class="container bg-white"
           style="margin-left: 0px; margin-right: 0px; max-width: 100%"
@@ -1704,7 +1712,7 @@
             </div>
           </div>
         </div>
-      </div>
+      </section>
       <!-- Recap -->
       <div id="recap-container" class="modal-overlay" style="display: none">
         <div class="modal-content">
