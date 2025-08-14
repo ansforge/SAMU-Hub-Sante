@@ -1,29 +1,10 @@
 # Hub Santé - LRM
 _LRM basique afin de pouvoir tester l'envoi / réception de messages_
 
-TODO : check if this is not obsolete
 
 ## Deploy
-```bash
-# Build UI
-export BACKEND_LRM_SERVER=hub.esante.gouv.fr # or another domain depending on environment (must be explicit in the image tag), as we must pass it at nuxt build time
-cd server && npm run setup && cd ..
-# Build & push docker image
-docker buildx build --platform linux/amd64 -t romainfd/hub-lrm:latest .
-docker push romainfd/hub-lrm:latest
-
-# Redo it for the preprod environment (quick and dirty way to ensure preprod and prod are built on the same codebase, even if we have to pass
-# env variable at build time - we should handle it differently later)
-# Build UI
-export BACKEND_LRM_SERVER=pre-prod.hub.esante.gouv.fr # or another domain depending on environment (must be explicit in the image tag), as we must pass it at nuxt build time
-cd server && npm run setup && cd ..
-# Build & push docker image
-docker buildx build --platform linux/amd64 -t romainfd/hub-lrm:preprod .
-docker push romainfd/hub-lrm:preprod
-
-# Make sure you are on correct Kubernetes context
-kubectl replace --force -f ../../hub/infra/web/lrm.yaml
-```
+Create a release using Github UI named "lrm-<version_tag>". This will trigger both client and server images build.
+Reference the new tag in the root kustomization file of the Config repository, in the corresponding overlay.
 
 ## Local development
 ### Client
