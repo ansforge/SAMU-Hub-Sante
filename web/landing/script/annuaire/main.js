@@ -41,7 +41,7 @@ window.addEventListener("load", async () => {
   //     };
   //   });
   // }
-  setSelectedEnv(Environment.BAS);
+  setSelectedEnv(Environment.PROD);
   create_data_test();
   updateDepartmentInProdColor();
   updateFiltersSelectOptions();
