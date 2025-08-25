@@ -6,25 +6,6 @@ _LRM basique afin de pouvoir tester l'envoi / réception de messages_
 Create a release using Github UI named "lrm-<version_tag>". This will trigger both client and server images build.
 Reference the new tag in the root kustomization file of the Config repository, in the corresponding overlay.
 
-## Local development
-### Client
-```bash
-# Using local server
-BACKEND_LRM_SERVER=localhost npm run dev
-
-# Using prod remote server
-BACKEND_LRM_SERVER=hub.esante.gouv.fr npm run dev
-```
-
-### Server
-```bash
-# Using local RabbitMQ (within Kubernetes)
-HUB_URL=amqps://rabbitmq.default.svc npm run dev
-
-# Using prod remote RabbitMQ
-HUB_URL=amqps://messaging.hub.esante.gouv.fr npm run dev
-```
-
 ## ToDo
 ### Client
 - [x] Make message sending work
