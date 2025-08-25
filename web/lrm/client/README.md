@@ -1,13 +1,20 @@
-# dashboard
+# LRM Client UI
 
-## Build Setup
+## Development Setup
 
-- Create a custom a `.env` file with the following content: 
+- Copy the `.env.template` and rename it `.env`:
+
 ```bash
-NUXT_PUBLIC_BACKEND_LRM_SERVER=integration.hub.esante.gouv.fr
+cp .env.template .env
 ```
 
+- *Optional:* Update the content of the `.env` file:
+  - `NUXT_PUBLIC_BACKEND_LRM_SERVER` controls the backend instance the app will connect to. Use `<environment>.hub.esante.gouv.fr` to connect to a specific environment (or `hub.esante.gouv.fr` for production).
+  - `NUXT_PUBLIC_MODEL_BRANCH` sets the base ref in the dropdown when fetching the model examples.
+  - `NUXT_PUBLIC_VHOST_MAP` controls the available vhost and their model version. Format is vhost as key and model version as value.
+  - `NUXT_PUBLIC_CLIENT_MAP` controls what's available in the landing page dropdown (which clients can connect to one another). Format is array of arrays with first a given clientId and in second an array with the associated clientIds => [[samuA, [samuB, samuC]], ...]
 - Install dependencies
+
 ```bash
 npm install
 ```
@@ -17,6 +24,21 @@ npm install
 ```bash
 npm run dev
 ```
+
+### Tests
+
+TODO: implement functional tests at the component level and unit tests for basic logic
+
+Application tests are implemented using Cypress (cf [cypress/e2e](./cypress/e2e/) directory).
+
+To run the tests locally:
+
+- Build the Vue app: `npm run build:test`. *Note: the build:test variant script is used to instrument the app in order to generate coverage report.*
+- Start the app: `npm run start`
+- Run the tests: `npm run test:e2e`
+- Display coverage report: `npm run test:e2e:report`
+
+Optional: To run the test in debug mode within the Cypress UI, use `npx cypress open`.
 
 ## Production
 
