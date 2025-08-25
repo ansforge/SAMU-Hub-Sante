@@ -45,7 +45,6 @@ public class Constants {
             "15-15_v2.1", "v3",
             "15-nexsis_v1.9", "v3"
     );
-    public static final String SAMU_070_CLIENT_ID = "fr.health.samu070";
 
     public enum Perimeter {
         HEALTH("15-15"),
