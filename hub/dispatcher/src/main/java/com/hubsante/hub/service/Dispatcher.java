@@ -132,6 +132,8 @@ public class Dispatcher {
             setOriginalRoutingKeyHeader(message);
             // Deserialize the message according to its content type
             EdxlMessage edxlMessage = messageHandler.extractMessage(message);
+            // check message type is allowed on the current vhost
+            checkMessageClassNameSupported(edxlMessage, messageHandler.getHubConfig());
             // reject the message if no health actor is involved (as sender or recipient)
             checkHealthActorIsInvolved(edxlMessage);
             // ToDo: see how hubConfig should be made available to the Dispatcher (and remove getter in MessageHandler)
@@ -144,30 +146,6 @@ public class Dispatcher {
             if (message.getMessageProperties().getReceivedRoutingKey().startsWith(Constants.FR_HEALTH_PREFIX)) {
                 checkDistributionIDFormat(edxlMessage);
             }
-
-            // VERRUE POUR SAMU-070
-            boolean isSamu070Involved = message.getMessageProperties().getReceivedRoutingKey().equals(SAMU_070_CLIENT_ID) || getRecipientID(edxlMessage).equals(SAMU_070_CLIENT_ID);
-            if (isSamu070Involved) {
-                Message forwardedMsg;
-                if (ConversionUtils.isConvertedModel(edxlMessage)) {
-                    ConversionRulesCommand conversionRulesCommand = new ConversionRulesCommand(edxlMessage, messageHandler);
-                    // Manually override the conversion command if sending or receiving RS-EDA/RC-EDA
-                    conversionRulesCommand.setCisuConversion(true);
-                    String convertedMessage = conversionHandler.applyConversionRules(conversionRulesCommand);
-                    forwardedMsg = messageHandler.forwardedStringMessage(convertedMessage, message);
-                } else {
-                    forwardedMsg = messageHandler.forwardedMessage(edxlMessage, message);
-                }
-                // Extract recipient queue name from the message (explicit address and distribution kind)
-                String queueName = getRecipientQueueName(edxlMessage);
-                // publish the message to the recipient queue
-                rabbitTemplate.send(DISTRIBUTION_EXCHANGE, queueName, forwardedMsg);
-                messageHandler.publishMetrics(edxlMessage, forwardedMsg);
-                return;
-            }
-
-            // check message type is allowed on the current vhost
-            checkMessageClassNameSupported(edxlMessage, messageHandler.getHubConfig());
 
             boolean isConversionRequired = ConversionUtils.requiresConversion(messageHandler.getHubConfig(), edxlMessage);
             if (isConversionRequired) {

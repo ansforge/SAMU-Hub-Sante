@@ -36,8 +36,6 @@ public class ConversionRulesCommand {
         return isCisuConversion;
     }
 
-    public void setCisuConversion(Boolean value) { this.isCisuConversion = value; }
-
     public String getSourceVHost() {
         return sourceVHost;
     }

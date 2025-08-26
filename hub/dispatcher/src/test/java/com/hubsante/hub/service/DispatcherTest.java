@@ -109,7 +109,6 @@ public class DispatcherTest {
     private final String SAMU_A_ERROR_QUEUE = SAMU_A_ROUTING_KEY + ".error";
     private final String SAMU_A_DISTRIBUTION_ID = "fr.health.samuA_2608323d-507d-4cbf-bf74-52007f8124ea";
     private final String SDIS_C_ROUTING_KEY = "fr.fire.sdisC";
-    private final String SAMU_070_ROUTING_KEY = "fr.health.samu070";
 
     private final String TEST_VHOST = "default-vhost";
     private final String TEST_EDITOR = "default-editor";
@@ -770,53 +769,5 @@ public class DispatcherTest {
         ArgumentCaptor<Message> argument = ArgumentCaptor.forClass(Message.class);
         Mockito.verify(rabbitTemplate, times(1)).send(
                 eq(DISTRIBUTION_EXCHANGE), eq(SAMU_A_INFO_QUEUE), argument.capture());
-    }
-
-    @Test
-    @DisplayName("should forward converted message from samu070 on same vhost")
-    public void transferConvertedMessageFromSamu070() throws IOException {
-        HubConfiguration hubConfigSpy = Mockito.spy(hubConfig);
-        doReturn("15-nexsis_v1.9").when(hubConfigSpy).getVhost();
-
-        MessageHandler messageHandlerSpy = new MessageHandler(rabbitTemplate, edxlHandler, hubConfigSpy, validator, registry, xmlMapper, jsonMapper, conversionHandler);
-        Dispatcher dispatcherSpy = new Dispatcher(messageHandlerSpy, rabbitTemplate, edxlHandler, xmlMapper, jsonMapper, conversionHandler);
-
-        // Mock call to converter (return same payload as we don't test the conversion here)
-        doAnswer(invocation -> invocation.getArgument(0)).when(conversionHandler).callConversionService(anyString(), anyString(), anyString(), anyBoolean(), anyString());
-        Message message = createMessage("create-case-health-from-samu070", JSON, SAMU_070_ROUTING_KEY);
-
-        dispatcherSpy.dispatch(message);
-
-        ArgumentCaptor<String> edxlMessageArgument = ArgumentCaptor.forClass(String.class);
-        Mockito.verify(conversionHandler, times(1)).callConversionService(edxlMessageArgument.capture(), eq("v3"), eq("v3"), eq(true), eq("fr.health.samu070_d0afe353-3500-409a-b2e4-beb14212b0b1"));
-
-        ArgumentCaptor<Message> argument = ArgumentCaptor.forClass(Message.class);
-        Mockito.verify(rabbitTemplate, times(1)).send(
-                eq(DISTRIBUTION_EXCHANGE), eq("fr.fire.cisu.message"), argument.capture());
-    }
-
-    @Test
-    @DisplayName("should forward converted message to samu070 on same vhost")
-    public void transferConvertedMessageToSamu070() throws IOException {
-        HubConfiguration hubConfigSpy = Mockito.spy(hubConfig);
-        doReturn("15-nexsis_v1.9").when(hubConfigSpy).getVhost();
-        doReturn(new HashMap<>(Map.of(SAMU_070_ROUTING_KEY, false))).when(hubConfigSpy).getUseXmlPreferences();
-        doReturn(new String[] {"1.9"}).when(hubConfigSpy).getClientVersionsForPerimeter(SAMU_070_ROUTING_KEY, "15-nexsis");
-
-        MessageHandler messageHandlerSpy = new MessageHandler(rabbitTemplate, edxlHandler, hubConfigSpy, validator, registry, xmlMapper, jsonMapper, conversionHandler);
-        Dispatcher dispatcherSpy = new Dispatcher(messageHandlerSpy, rabbitTemplate, edxlHandler, xmlMapper, jsonMapper, conversionHandler);
-
-        // Mock call to converter (return same payload as we don't test the conversion here)
-        doAnswer(invocation -> invocation.getArgument(0)).when(conversionHandler).callConversionService(anyString(), anyString(), anyString(), anyBoolean(), anyString());
-        Message message = createMessage("create-case-to-samu070", JSON, "fr.fire.cisu");
-
-        dispatcherSpy.dispatch(message);
-
-        ArgumentCaptor<String> edxlMessageArgument = ArgumentCaptor.forClass(String.class);
-        Mockito.verify(conversionHandler, times(1)).callConversionService(edxlMessageArgument.capture(), eq("v3"), eq("v3"), eq(true), eq("fr.fire.cisu_dceb61f6-47ca-4e13-ac28-075ea76d4340"));
-
-        ArgumentCaptor<Message> argument = ArgumentCaptor.forClass(Message.class);
-        Mockito.verify(rabbitTemplate, times(1)).send(
-                eq(DISTRIBUTION_EXCHANGE), eq("fr.health.samu070.message"), argument.capture());
     }
 }
