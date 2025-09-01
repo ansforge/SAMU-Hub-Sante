@@ -1,5 +1,5 @@
 body {
-  background-color: #ffffff;
+  background-color: var(--white);
 }
 
 #first-section {
@@ -138,7 +138,7 @@ body {
   position: absolute;
   width: 400px;
   height: auto;
-  background: white;
+  background: var(--white);
   border-radius: 10px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
 }
@@ -160,28 +160,32 @@ body {
 }
 
 .department {
-  fill: rgb(147, 174, 147);
-  stroke: #ffffff;
+  fill: var(--gray-400);
+  stroke: var(--white);
   stroke-width: 0.6;
   pointer-events: auto;
   transition: transform 0.2s ease-in-out;
 }
 
+.department:hover {
+  fill: var(--gray-500);
+  cursor: "pointer";
+}
+
 .department.prod {
-  fill: rgb(32, 84, 32);
-  stroke: #ffffff;
+  fill: var(--primary);
+  stroke: var(--white);
   cursor: pointer;
   stroke-width: 0.6;
 }
 
-.department.selected {
-  fill: var(--brand-2);
-  transition: fill 0.3s ease;
+.department.prod:hover {
+  fill: var(--primary-dark);
 }
 
-.department:hover {
-  transform: scale(1.005);
-  filter: brightness(0.95);
+.department.selected {
+  fill: var(--primary-dark);
+  transition: fill 0.3s ease;
 }
 
 #info-selected-department {
