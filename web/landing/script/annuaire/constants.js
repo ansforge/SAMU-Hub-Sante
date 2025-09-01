@@ -37,12 +37,12 @@ export const rabbitmqUrls = {
   [Environment.PROD]: `https://messaging.${BASE_RABBITMQ_URL}`,
 };
 
-export const perimeter = ["15-15", "15-smur", "15-nexsis", "15-gps"];
+export const perimeter = ["15-15", "15-SMUR/RPIS", "15-NexSIS", "15-GPS"];
 export const colors = {
-  [perimeter[0]]: "#9accdb",
-  [perimeter[1]]: "#dbd19a",
-  [perimeter[2]]: "#db9a9a",
-  [perimeter[3]]: "#9adbb3",
+  [perimeter[0]]: "#369AEE", //(var(--information))
+  [perimeter[1]]: "#FAE832", //(var(--yellow))
+  [perimeter[2]]: "#E11414", //(var(--red))
+  [perimeter[3]]: "#9AB938", //(var(--success))
 };
 
 export const mddMap = {
