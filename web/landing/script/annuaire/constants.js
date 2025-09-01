@@ -22,9 +22,12 @@ export const clientsConfigurations = {
 
 export const BASE_API_URL = "hub.esante.gouv.fr/annuaire/api";
 export const apiUrls = {
-  [Environment.BAS]: `https://bac-a-sable.${BASE_API_URL}`,
-  [Environment.PREPROD]: `https://pre-prod.${BASE_API_URL}`,
-  [Environment.PROD]: `https://${BASE_API_URL}`,
+  // [Environment.BAS]: `https://bac-a-sable.${BASE_API_URL}`,
+  // [Environment.PREPROD]: `https://pre-prod.${BASE_API_URL}`,
+  // [Environment.PROD]: `https://${BASE_API_URL}`,
+  [Environment.BAS]: "http://localhost:5000/hub/bas",
+  [Environment.PREPROD]: `http://localhost:5000/hub/pprod`,
+  [Environment.PROD]: `http://localhost:5000/hub/pprod`,
 };
 
 export const BASE_RABBITMQ_URL = "hub.esante.gouv.fr/rabbitmq";
