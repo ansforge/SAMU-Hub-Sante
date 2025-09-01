@@ -66,9 +66,9 @@ document.querySelectorAll("#div-filtres select").forEach((select) => {
   });
 });
 
-document.getElementById(RECAP_OPEN_BTN_ID).addEventListener("click", () => {
-  openRecap();
-});
+// document.getElementById(RECAP_OPEN_BTN_ID).addEventListener("click", () => {
+//   openRecap();
+// });
 
 document.getElementById(RECAP_CLOSE_BTN_ID).addEventListener("click", () => {
   closeRecap();
