@@ -1,12 +1,14 @@
 import {
   CLIENTS_CONFIG_TABLE_ID,
   RECAP_CONTENT_ID,
+  perimeterInVhost,
   mddMap,
   rabbitmqUrls,
   colors,
   RECAP_CONTAINER_ID,
   RECAP_OPEN_BTN_ID,
   DIV_INFO_DEPARTMENT_ID,
+  perimeter,
 } from "./constants.js";
 import { FILTERS_CONFIG, getCurrentFilteredClientsConfig } from "./filters.js";
 import {
@@ -31,7 +33,7 @@ function createClientConfigRow(item, index) {
   row.appendChild(createCheckboxCell(index, item.isSelected));
   row.appendChild(createTextCell(item.client_id));
   row.appendChild(createTextCell(item.editor));
-  row.appendChild(createVhostCell(item.vhostList));
+  row.appendChild(createAuthorizedPerimetersCell(item));
   return row;
 }
 
@@ -56,32 +58,30 @@ function createTextCell(text) {
   return td;
 }
 
-function createVhostCell(vhostList) {
+function createAuthorizedPerimetersCell(item) {
   const td = document.createElement("td");
   td.style.display = "flex";
   td.style.flexWrap = "wrap";
   td.style.gap = "5px";
-  vhostList.forEach((vhost) => {
-    const vhostCard = createVhostCardElement(vhost);
-    td.appendChild(vhostCard);
+  perimeter.forEach((perimeter) => {
+    item[perimeter].split(",").forEach((version) => {
+      if(version){
+        const vhost = `${perimeterInVhost[perimeter]}_v${version}`;
+        const mdd = mddMap[vhost];
+        const perimeterElement = createAuthorizedPerimetersElement(perimeter, mdd);
+        td.appendChild(perimeterElement);
+      }
+    })
   });
   return td;
 }
 
-function createVhostCardElement(vhost) {
-  const vhostDiv = document.createElement("div");
-  vhostDiv.classList.add("vhost-card");
-  vhostDiv.style.backgroundColor = colors[getPerimeterFromVhost(vhost)];
-
-  const strong = document.createElement("strong");
-  strong.textContent = vhost;
-  vhostDiv.appendChild(strong);
-  vhostDiv.appendChild(document.createElement("br"));
-  const mdd = document.createElement("div");
-  mdd.textContent = mddMap[vhost];
-  vhostDiv.appendChild(mdd);
-
-  return vhostDiv;
+function createAuthorizedPerimetersElement(perimeter, mdd) {
+  const element = document.createElement("a");
+  element.classList.add("btn", "btn--ghost", "btn--default", "btn-sm");
+  element.style.borderColor = colors[perimeter];
+  element.textContent = `${perimeter} (${mdd})`;
+  return element;
 }
 
 export function openRecap() {

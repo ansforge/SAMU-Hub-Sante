@@ -125,24 +125,6 @@ body {
   gap: 5px;
 }
 
-/* Tooltip explanation vhost style */
-#tooltip-info-vhost {
-  position: relative;
-  cursor: pointer;
-  margin-left: 5px;
-}
-#tooltip-image-vhost.hidden {
-  display: none;
-}
-#tooltip-image-vhost {
-  position: absolute;
-  width: 400px;
-  height: auto;
-  background: var(--white);
-  border-radius: 10px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-}
-
 /* Map */
 #div-map {
   position: absolute;

@@ -3,6 +3,7 @@ import {
   perimeter,
   clientsConfigurations,
   Environment,
+  perimeterInVhost,
 } from "./constants.js";
 import { getSelectedEnv } from "./env.js";
 
@@ -36,7 +37,7 @@ export function constituteVhostList(data) {
   perimeter.forEach((p) => {
     let versions = data[p].split(",");
     versions.forEach((version) => {
-      if (version !== "") vhostList.push(`${p}_v${version}`);
+      if (version !== "") vhostList.push(`${perimeterInVhost[p]}_v${version}`);
     });
   });
   return vhostList;
