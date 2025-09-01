@@ -83,11 +83,11 @@ body {
 }
 
 .department.prod:hover {
-  fill: var(--primary-dark);
+  fill: var(--primary-darker);
 }
 
 .department.selected {
-  fill: var(--primary-dark);
+  fill: var(--primary-darker);
   transition: fill 0.3s ease;
 }
 

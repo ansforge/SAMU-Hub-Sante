@@ -43,7 +43,7 @@ export const perimeterInVhost = {
   [perimeter[1]]: "15-smur",
   [perimeter[2]]: "15-nexsis",
   [perimeter[3]]: "15-gps",
-}
+};
 
 export const mddMap = {
   "15-15_v1.5": "1.0",
