@@ -3,7 +3,6 @@ import {
   renameKeys,
   constituteVhostList,
   resetSelectedClientsConfig,
-  create_data_test,
 } from "./data.js";
 import {
   renderClientsConfigTable,
@@ -16,6 +15,7 @@ import {
   handleClickOnDepartment,
 } from "./dom.js";
 import {
+  keyMap,
   clientsConfigurations,
   Environment,
   apiUrls,
@@ -29,20 +29,19 @@ import { getCurrentFilteredClientsConfig } from "./filters.js";
 import { getSelectedEnv, setSelectedEnv } from "./env.js";
 
 window.addEventListener("load", async () => {
-  // for (const env of Object.values(Environment)) {
-  //   const clientsConfig = await fetchData(apiUrls[env]);
-  //   clientsConfigurations[env] = clientsConfig.map((item) => {
-  //     const renamedData = renameKeys(item, keyMap);
-  //     const vhostList = constituteVhostList(renamedData);
-  //     return {
-  //       ...renamedData,
-  //       vhostList: vhostList,
-  //       isSelected: false,
-  //     };
-  //   });
-  // }
+  for (const env of Object.values(Environment)) {
+    const clientsConfig = await fetchData(apiUrls[env]);
+    clientsConfigurations[env] = clientsConfig.map((item) => {
+      const renamedData = renameKeys(item, keyMap);
+      const vhostList = constituteVhostList(renamedData);
+      return {
+        ...renamedData,
+        vhostList: vhostList,
+        isSelected: false,
+      };
+    });
+  }
   setSelectedEnv(Environment.PROD);
-  create_data_test();
   updateDepartmentInProdColor();
   updateFiltersSelectOptions();
   const selectedEnv = getSelectedEnv();
@@ -85,6 +84,7 @@ const tooltipImgVhost = document.getElementById(TOOLTIP_IMAGE_VHOST_ID);
 tooltipInfoVhost.addEventListener("click", (e) => {
   tooltipImgVhost.classList.toggle("hidden");
 });
+
 document.addEventListener("click", (e) => {
   if (
     !tooltipInfoVhost.contains(e.target) &&
