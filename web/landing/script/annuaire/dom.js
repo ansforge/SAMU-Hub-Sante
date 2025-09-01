@@ -1,12 +1,9 @@
 import {
   CLIENTS_CONFIG_TABLE_ID,
-  RECAP_CONTENT_ID,
   perimeterInVhost,
   mddMap,
   rabbitmqUrls,
   colors,
-  RECAP_CONTAINER_ID,
-  RECAP_OPEN_BTN_ID,
   DIV_INFO_DEPARTMENT_ID,
   perimeter,
 } from "./constants.js";
@@ -46,7 +43,6 @@ function createCheckboxCell(index, isSelected) {
   checkbox.checked = !!isSelected;
   checkbox.addEventListener("change", function () {
     getCurrentFilteredClientsConfig()[index].isSelected = this.checked;
-    updateRecapButtonState();
   });
   td.appendChild(checkbox);
   return td;
@@ -68,7 +64,7 @@ function createAuthorizedPerimetersCell(item) {
       if(version){
         const vhost = `${perimeterInVhost[perimeter]}_v${version}`;
         const mdd = mddMap[vhost];
-        const perimeterElement = createAuthorizedPerimetersElement(perimeter, mdd);
+        const perimeterElement = createAuthorizedPerimetersElement(perimeter, mdd, item, vhost);
         td.appendChild(perimeterElement);
       }
     })
@@ -76,34 +72,31 @@ function createAuthorizedPerimetersCell(item) {
   return td;
 }
 
-function createAuthorizedPerimetersElement(perimeter, mdd) {
+function createAuthorizedPerimetersElement(perimeter, mdd, item, vhost) {
   const element = document.createElement("a");
   element.classList.add("btn", "btn--ghost", "btn--default", "btn-sm");
+  element.dataset.toggle="modal";
+  element.dataset.target="#modal1";
   element.style.borderColor = colors[perimeter];
   element.textContent = `${perimeter} (${mdd})`;
+  element.addEventListener("click", (e) => {
+      e.preventDefault();
+      fillModaleInfo(vhost, perimeter, mdd, item);
+    });
   return element;
 }
 
-export function openRecap() {
-  const selectedClientsConfig = getSelectedClientsConfig();
-  renderRecap(selectedClientsConfig);
-}
-
-function renderRecap(selectedClientsConfig) {
-  const recapContainer = document.getElementById(RECAP_CONTAINER_ID);
-  const recapContent = document.getElementById(RECAP_CONTENT_ID);
-  recapContent.innerHTML = "";
-
-  const url = document.createElement("p");
-  url.classList.add("recap-url");
-  url.textContent = `URL : ${rabbitmqUrls[getSelectedEnv()]}`;
-  recapContent.appendChild(url);
-
-  selectedClientsConfig.forEach((clientConfig) => {
-    const clientConfigCard = createClientConfigCard(clientConfig);
-    recapContent.appendChild(clientConfigCard);
-  });
-  recapContainer.style.display = "flex";
+function fillModaleInfo(vhost,perimeter, mdd, item){
+  const env = getSelectedEnv();
+  const rabbitmqUrl = rabbitmqUrls[env];
+  document.getElementById("modal-clientID").innerHTML = item.client_id;
+  document.getElementById("modal-env").innerHTML = env;
+  const url_element = document.getElementById("modal-env-url");
+  url_element.innerHTML = rabbitmqUrl;
+  url_element.href = rabbitmqUrl;
+  document.getElementById("modal-perimeter").innerHTML = perimeter;
+  document.getElementById("modal-mdd").innerHTML = mdd;
+  document.getElementById("modal-vhost").innerHTML = vhost;
 }
 
 export function handleClickOnDepartment(dep) {
@@ -132,45 +125,6 @@ export function renderDepartmentInfo(clientConfig) {
   }
 }
 
-function createClientConfigCard(clientConfig) {
-  const clientConfigCard = document.createElement("div");
-  clientConfigCard.classList.add("client-config-card");
-
-  const clientID = document.createElement("h3");
-  clientID.textContent = `Identifiant client : ${clientConfig.client_id}`;
-  clientConfigCard.appendChild(clientID);
-
-  const editor = document.createElement("p");
-  editor.textContent = "Editeur : ";
-  const strong = document.createElement("strong");
-  strong.textContent = clientConfig.editor;
-  editor.appendChild(strong);
-  clientConfigCard.appendChild(editor);
-
-  const vhostDiv = document.createElement("div");
-  vhostDiv.classList.add("recap-div-vhost");
-  clientConfig.vhostList.forEach((vhost) => {
-    const vhostCard = createVhostCardElement(vhost);
-    vhostDiv.appendChild(vhostCard);
-  });
-  clientConfigCard.appendChild(vhostDiv);
-
-  return clientConfigCard;
-}
-
-export function closeRecap() {
-  const recapContainer = document.getElementById(RECAP_CONTAINER_ID);
-  recapContainer.style.display = "none";
-}
-
-function updateRecapButtonState() {
-  const recapButton = document.getElementById(RECAP_OPEN_BTN_ID);
-  if (getSelectedClientsConfig().length == 2) {
-    recapButton.disabled = false;
-  } else {
-    recapButton.disabled = true;
-  }
-}
 
 export function updateEnvButtonStyles(selectedEnv) {
   document.querySelectorAll(".btn-env").forEach((btn) => {
