@@ -1,11 +1,9 @@
 import {
-  keyMap,
   perimeter,
   clientsConfigurations,
   Environment,
   perimeterInVhost,
 } from "./constants.js";
-import { getSelectedEnv } from "./env.js";
 
 export async function fetchData(url) {
   try {
@@ -49,18 +47,6 @@ export function getClientConfigByDepartment(numDep) {
       item.client_id === `fr.health.samu${numDep}0` ||
       item.client_id === `fr.health.samu${numDep}`,
   );
-}
-
-export function getSelectedClientsConfig() {
-  return clientsConfigurations[getSelectedEnv()].filter(
-    (item) => item.isSelected,
-  );
-}
-
-export function resetSelectedClientsConfig() {
-  clientsConfigurations[getSelectedEnv()].forEach((item) => {
-    item.isSelected = false;
-  });
 }
 
 export function getDepartmentInProd() {

@@ -4,13 +4,11 @@ import {
   mddMap,
   rabbitmqUrls,
   colors,
-  DIV_INFO_DEPARTMENT_ID,
   perimeter,
 } from "./constants.js";
-import { FILTERS_CONFIG, getCurrentFilteredClientsConfig } from "./filters.js";
+import { FILTERS_CONFIG } from "./filters.js";
 import {
   getDepartmentInProd,
-  getSelectedClientsConfig,
   getClientConfigByDepartment,
 } from "./data.js";
 import { getSelectedEnv } from "./env.js";
@@ -25,27 +23,12 @@ export function renderClientsConfigTable(clientsConfig) {
   });
 }
 
-function createClientConfigRow(item, index) {
+function createClientConfigRow(item) {
   const row = document.createElement("tr");
-  row.appendChild(createCheckboxCell(index, item.isSelected));
   row.appendChild(createTextCell(item.client_id));
   row.appendChild(createTextCell(item.editor));
   row.appendChild(createAuthorizedPerimetersCell(item));
   return row;
-}
-
-function createCheckboxCell(index, isSelected) {
-  const td = document.createElement("td");
-  td.style.textAlign = "center";
-  const checkbox = document.createElement("input");
-  checkbox.type = "checkbox";
-  checkbox.dataset.index = index;
-  checkbox.checked = !!isSelected;
-  checkbox.addEventListener("change", function () {
-    getCurrentFilteredClientsConfig()[index].isSelected = this.checked;
-  });
-  td.appendChild(checkbox);
-  return td;
 }
 
 function createTextCell(text) {
@@ -75,9 +58,9 @@ function createAuthorizedPerimetersCell(item) {
 function createAuthorizedPerimetersElement(perimeter, mdd, item, vhost) {
   const element = document.createElement("a");
   element.classList.add("btn", "btn--ghost", "btn--default", "btn-sm");
+  element.style.borderColor = colors[perimeter];
   element.dataset.toggle="modal";
   element.dataset.target="#modal1";
-  element.style.borderColor = colors[perimeter];
   element.textContent = `${perimeter} (${mdd})`;
   element.addEventListener("click", (e) => {
       e.preventDefault();
@@ -115,14 +98,7 @@ export function handleClickOnDepartment(dep) {
 }
 
 export function renderDepartmentInfo(clientConfig) {
-  const infoSelectedDepartment = document.getElementById(
-    DIV_INFO_DEPARTMENT_ID,
-  );
-  infoSelectedDepartment.innerHTML = "";
-  if (clientConfig) {
-    const clientConfigCard = createClientConfigCard(clientConfig);
-    infoSelectedDepartment.appendChild(clientConfigCard);
-  }
+  // A VOIR PLUS TARD
 }
 
 

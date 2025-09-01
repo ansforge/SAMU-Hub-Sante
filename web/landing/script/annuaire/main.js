@@ -2,13 +2,11 @@ import {
   fetchData,
   renameKeys,
   constituteVhostList,
-  resetSelectedClientsConfig,
 } from "./data.js";
 import {
   renderClientsConfigTable,
   updateEnvButtonStyles,
   updateFiltersSelectOptions,
-  renderDepartmentInfo,
   updateDepartmentInProdColor,
   handleClickOnDepartment,
 } from "./dom.js";
@@ -31,7 +29,6 @@ window.addEventListener("load", async () => {
       return {
         ...renamedData,
         vhostList: vhostList,
-        isSelected: false,
       };
     });
   }
@@ -46,7 +43,6 @@ document.getElementById("env-buttons").addEventListener("click", (e) => {
   const btn = e.target.closest("button[data-env]");
   if (!btn) return;
   setSelectedEnv(btn.dataset.env);
-  resetSelectedClientsConfig();
   const selectedEnv = getSelectedEnv();
   updateEnvButtonStyles(selectedEnv);
   updateFiltersSelectOptions(selectedEnv);
