@@ -8,8 +8,6 @@ import {
   renderClientsConfigTable,
   updateEnvButtonStyles,
   updateFiltersSelectOptions,
-  openRecap,
-  closeRecap,
   renderDepartmentInfo,
   updateDepartmentInProdColor,
   handleClickOnDepartment,
@@ -19,8 +17,6 @@ import {
   clientsConfigurations,
   Environment,
   apiUrls,
-  RECAP_OPEN_BTN_ID,
-  RECAP_CLOSE_BTN_ID,
   DIV_MAP_ID,
 } from "./constants.js";
 import { getCurrentFilteredClientsConfig } from "./filters.js";
@@ -63,13 +59,6 @@ document.querySelectorAll("#div-filtres select").forEach((select) => {
   });
 });
 
-// document.getElementById(RECAP_OPEN_BTN_ID).addEventListener("click", () => {
-//   openRecap();
-// });
-
-document.getElementById(RECAP_CLOSE_BTN_ID).addEventListener("click", () => {
-  closeRecap();
-});
 
 document.getElementById(DIV_MAP_ID).addEventListener("click", (e) => {
   const dep = e.target.closest(".department");

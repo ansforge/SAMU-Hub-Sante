@@ -1681,7 +1681,9 @@
                   <th scope="col" style="width: 5%"></th>
                   <th scope="col" style="width: 25%">Identifiant client</th>
                   <th scope="col" style="width: 15%">Editeur</th>
-                  <th scope="col" style="width: 55%">Périmètre autorisé (format d'échanges)</th>
+                  <th scope="col" style="width: 55%">
+                    Périmètre autorisé (format d'échanges)
+                  </th>
                 </tr>
               </thead>
               <tbody id="table-annuaire-content"></tbody>
@@ -1689,37 +1691,107 @@
           </div>
         </div>
       </section>
-      <!-- Recap -->
-      <div id="recap-container" class="modal-overlay" style="display: none">
-        <div class="modal-content">
-          <div class="recap-header">
-            <h2>Récapitulatif</h2>
-            <div class="recap-header-btn">
-              <span
-                class="span-recap"
-                id="btn-copy-recap"
-                title="Copier dans le presse-papier"
+
+      <!-- Modal pour afficher les infos de l'entité et périmètre selctionnés -->
+      <div
+        class="modal fade"
+        id="modal1"
+        tabindex="-1"
+        role="dialog"
+        aria-hidden="true"
+        aria-labelledby="modal1Label"
+      >
+        <div
+          class="modal-dialog modal-xl modal-dialog-centered"
+          role="document"
+          style="display: flex; justify-content: center"
+        >
+          <div class="modal-content">
+            <div class="modal-header">
+              <button
+                type="button"
+                data-dismiss="modal"
+                class="btn btn--close btn--icon-only"
+                style="z-index: 10000"
               >
-                <svg
-                  class="svg-icon svg-duplicate"
-                  aria-hidden="true"
-                  style="height: 20px; width: 20px"
-                >
-                  <use xlink:href="/svg-icons/icon-sprite.svg#duplicate"></use>
-                </svg>
-              </span>
-              <span class="span-recap" id="btn-close-recap" title="Fermer">
                 <svg
                   class="svg-icon svg-close"
                   aria-hidden="true"
-                  style="height: 15px; width: 15px"
+                  focusable="false"
                 >
-                  <use xlink:href="/svg-icons/icon-sprite.svg#close"></use>
-                </svg>
-              </span>
+                  <use xlink:href="/svg-icons/icon-sprite.svg#close"></use></svg
+                ><span class="sr-only">Fermer</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <div class="form-box m-2">
+                <h2 class="form-box__title">
+                  Récapitulatif de la configuration
+                </h2>
+
+                <div class="form-recap">
+                  <div class="form-recap-content">
+                    <p>
+                      <span class="entitled">Identifiant client : </span>
+                      <span id="modal-clientID"></span>
+                    </p>
+                    <p>
+                      <span class="entitled">Environnement : </span>
+                      <span id="modal-env"></span>
+                    </p>
+                    <p>
+                      <span class="entitled">Url : </span>
+                      <a
+                        id="modal-env-url"
+                        href="amqps://messaging.pre-prod.hub.esante.gouv.fr:5671"
+                      ></a>
+                    </p>
+                    <p>
+                      <span class="entitled">Périmètre : </span>
+                      <span id="modal-perimeter"></span>
+                    </p>
+                    <p>
+                      <span class="entitled">Format d'échanges : </span>
+                      <span id="modal-mdd"></span>
+                    </p>
+                    <p>
+                      <span class="entitled"
+                        >Hôte virtuel
+                        <span style="font-style: italic">(nom du vhost)</span>
+                        :
+                      </span>
+                      <span id="modal-vhost"></span>
+                    </p>
+                  </div>
+                </div>
+                <hr />
+                <h3 class="title--icon">
+                  <svg
+                    class="svg-icon svg-circle-info"
+                    aria-hidden="true"
+                    focusable="false"
+                  >
+                    <use
+                      xlink:href="/svg-icons/icon-sprite.svg#circle-info"
+                    ></use>
+                  </svg>
+                  En cas d'information inexacte
+                </h3>
+                <p>
+                  Nous vous invitons à nous contacter via votre canal Slack
+                  dédié ou par mail à notre adresse générique
+                  hubsante.contact@esante.gouv.fr
+                </p>
+                <div class="text-center">
+                  <a
+                    href="mailto:hubsante.contact@esante.gouv.fr"
+                    class="btn btn--style1 mailto-link btn--white"
+                    >Email</a
+                  >
+                </div>
+              </div>
             </div>
           </div>
-          <div id="recap-content"></div>
         </div>
       </div>
     </main>
