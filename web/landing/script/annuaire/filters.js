@@ -3,19 +3,14 @@ import { getSelectedEnv } from "./env.js";
 
 export const FILTERS_CONFIG = {
   samu: {
-    id: "filter-samu",
+    id: "filter-actor",
     getValue: (item, value) => item.client_id === `fr.health.${value}`,
-    getOptions: getSamu,
+    getOptions: getActors,
   },
   editor: {
     id: "filter-editor",
     getValue: (item, value) => item.editor === value,
     getOptions: getEditors,
-  },
-  vhost: {
-    id: "filter-vhost",
-    getValue: (item, value) => item.vhostList.includes(value),
-    getOptions: getVhost,
   },
   perimeter: {
     id: "filter-perimeter",
@@ -23,6 +18,10 @@ export const FILTERS_CONFIG = {
     getOptions: getPerimeter,
   },
 };
+
+export function getActors(){
+  return [...getSamu()  ]
+}
 
 export function getSamu() {
   return [
