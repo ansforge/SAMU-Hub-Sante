@@ -1607,109 +1607,100 @@
           </div>
         </div>
       </section>
-      <section id="second-section">
+
+      <!-- Bandeau gris, choix env -->
+      <div class="bg-gray-400 pt-2 pb-2">
+        <div class="container paragraph-title-text text-center text-default">
+          <h2>Les utilisateurs du Hub Santé</h2>
+          <div class="wysiwyg text-center mt-2 mb-2">
+            <p>
+              Retrouvez ici la liste de tous les acteurs raccordés au Hub Santé
+              sur nos différents environnements.
+            </p>
+          </div>
+        </div>
         <div
-          class="container bg-white"
-          style="margin-left: 0px; margin-right: 0px; max-width: 100%"
+          class="container text-center"
+          style="display: flex; justify-content: space-around; flex-wrap: wrap"
         >
-          <div class="row" style="width: 96%; margin-left: 2%">
-            <div class="col-md-11 mb-3" id="env-buttons">
-              <button
-                class="btn btn--plain btn--primary btn-sm btn-env"
-                data-env="prod"
-              >
-                Prod
-              </button>
-              <button
-                class="btn btn--ghost btn--primary btn-sm btn-env"
-                data-env="pre-prod"
-              >
-                Pré-prod
-              </button>
-              <button
-                class="btn btn--ghost btn--primary btn-sm btn-env"
-                data-env="bac-a-sable"
-              >
-                Bac à sable
-              </button>
-            </div>
-            <div class="col-md-1 mb-3">
-              <button
-                type="button"
-                title="Sélectionnez 2 lignes pour pouvoir activer l'aperçu"
-                id="btn-open-recap"
-                disabled
-              >
-                <svg
-                  class="svg-icon svg-eye"
-                  aria-hidden="true"
-                  focusable="false"
-                  id="btn-open-recap-icon"
-                >
-                  <use xlink:href="/svg-icons/icon-sprite.svg#eye"></use>
-                </svg>
-                Aperçu
-              </button>
-            </div>
+          <div class="col-md-11 mb-3" id="env-buttons">
+            <button
+              class="btn btn--plain btn--primary btn-sm btn-env"
+              data-env="prod"
+            >
+              Prod
+            </button>
+            <button
+              class="btn btn--ghost btn--primary btn-sm btn-env"
+              data-env="pre-prod"
+            >
+              Pré-prod
+            </button>
+            <button
+              class="btn btn--ghost btn--primary btn-sm btn-env"
+              data-env="bac-a-sable"
+            >
+              Bac à sable
+            </button>
           </div>
-          <div class="row" id="div-filtres" style="width: 96%; margin-left: 2%">
-            <div class="col-md-3 mb-3">
-              <select class="form-control" id="filter-editor">
-                <option value="">Filtre par éditeur</option>
-              </select>
-            </div>
-            <div class="col-md-3 mb-3">
-              <select class="form-control" id="filter-samu">
-                <option value="">Filtre par SAMU</option>
-              </select>
-            </div>
-            <div class="col-md-3 mb-3">
-              <select class="form-control" id="filter-vhost">
-                <option value="">Filtre par vhost</option>
-              </select>
-            </div>
-            <div class="col-md-3 mb-3">
-              <select class="form-control" id="filter-perimeter">
-                <option value="">Filtre par périmètre</option>
-              </select>
-            </div>
+        </div>
+      </div>
+
+      <section id="second-section">
+        <div class="row" id="div-filtres" style="width: 96%; margin-left: 2%">
+          <div class="col-md-3 mb-3">
+            <select class="form-control" id="filter-editor">
+              <option value="">Filtre par éditeur</option>
+            </select>
           </div>
-          <div class="row" style="width: 96%; margin-left: 2%">
-            <div class="col-md">
-              <table
-                class="table table-striped table-bordered table-hover"
-                id="table-annuaire"
-                style="width: 100%; table-layout: fixed"
-              >
-                <thead>
-                  <tr>
-                    <th scope="col" style="width: 5%"></th>
-                    <th scope="col" style="width: 25%">Identifiant client</th>
-                    <th scope="col" style="width: 15%">Editeur</th>
-                    <th scope="col" style="width: 55%">
-                      Périmètre(s) / Version du modèle
-                      <span id="tooltip-info-vhost">
-                        <svg
-                          class="svg-icon svg-circle-info"
-                          aria-hidden="true"
-                        >
-                          <use
-                            xlink:href="/svg-icons/icon-sprite.svg#circle-info"
-                          ></use>
-                        </svg>
-                      </span>
-                      <img
-                        id="tooltip-image-vhost"
-                        class="hidden"
-                        src="../img/annuaire/vhost_explications.png"
-                        alt="Légende (vhost)"
-                      />
-                    </th>
-                  </tr>
-                </thead>
-                <tbody id="table-annuaire-content"></tbody>
-              </table>
-            </div>
+          <div class="col-md-3 mb-3">
+            <select class="form-control" id="filter-samu">
+              <option value="">Filtre par SAMU</option>
+            </select>
+          </div>
+          <div class="col-md-3 mb-3">
+            <select class="form-control" id="filter-vhost">
+              <option value="">Filtre par vhost</option>
+            </select>
+          </div>
+          <div class="col-md-3 mb-3">
+            <select class="form-control" id="filter-perimeter">
+              <option value="">Filtre par périmètre</option>
+            </select>
+          </div>
+        </div>
+        <div class="row" style="width: 96%; margin-left: 2%">
+          <div class="col-md">
+            <table
+              class="table table-striped table-bordered table-hover"
+              id="table-annuaire"
+              style="width: 100%; table-layout: fixed"
+            >
+              <thead>
+                <tr>
+                  <th scope="col" style="width: 5%"></th>
+                  <th scope="col" style="width: 25%">Identifiant client</th>
+                  <th scope="col" style="width: 15%">Editeur</th>
+                  <th scope="col" style="width: 55%">
+                    Périmètre(s) / Version du modèle
+                    <span id="tooltip-info-vhost">
+                      <svg class="svg-icon svg-circle-info" aria-hidden="true">
+                        <use
+                          xlink:href="/svg-icons/icon-sprite.svg#circle-info"
+                        ></use>
+                      </svg>
+                    </span>
+                    <img
+                      id="tooltip-image-vhost"
+                      class="hidden"
+                      src="../img/annuaire/vhost_explications.png"
+                      alt="Légende (vhost)"
+                    />
+                  </th>
+                </tr>
+              </thead>
+              <tbody id="table-annuaire-content"></tbody>
+            </table>
           </div>
         </div>
       </section>
