@@ -1,5 +1,5 @@
 export const CLIENTS_CONFIG_TABLE_ID = "table-annuaire-content";
-export const DIV_MAP_ID = "div-map";
+export const DIV_MAP_ID = "map";
 export const DIV_INFO_DEPARTMENT_ID = "info-selected-department";
 
 export const Environment = {

@@ -12,34 +12,6 @@ body {
   padding-top: 3rem;
 }
 
-/* vhost card style */
-.vhost-card {
-  border: 2px solid rgba(104, 105, 103, 0.2);
-  border-radius: 10px;
-  margin: 3px;
-  min-width: fit-content;
-  width: 20%;
-  text-align: center;
-  padding: 5px;
-}
-
-/* Config card style */
-.client-config-card {
-  flex: 1;
-  border: 2px solid var(--gray-500);
-  padding: 1%;
-  height: 100%;
-  border-radius: 8px;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s ease-in-out;
-}
-
-.client-config-card:hover {
-  transform: scale(1.02);
-}
-
 /* Modale */
 .modal-content {
   padding: 20px 30px;
@@ -47,27 +19,11 @@ body {
 }
 
 /* Map */
-#div-map {
-  position: absolute;
-  right: 0%;
-  top: 0%;
-  padding-top: 2%;
-  padding-bottom: 2%;
-  left: 55%;
-  height: 100%;
-}
-
-#map-title {
-  width: 92%;
-  text-align: center;
-}
-
 .department {
   fill: var(--gray-400);
   stroke: var(--white);
+  cursor: pointer;
   stroke-width: 0.6;
-  pointer-events: auto;
-  transition: transform 0.2s ease-in-out;
 }
 
 .department:hover {
@@ -75,23 +31,20 @@ body {
   cursor: "pointer";
 }
 
+.department.selected {
+  fill: var(--gray-500);
+  transition: fill 0.3s ease;
+}
+
 .department.prod {
   fill: var(--primary);
-  stroke: var(--white);
-  cursor: pointer;
-  stroke-width: 0.6;
 }
 
 .department.prod:hover {
   fill: var(--primary-darker);
 }
 
-.department.selected {
+.department.prod.selected {
   fill: var(--primary-darker);
   transition: fill 0.3s ease;
-}
-
-#info-selected-department {
-  flex-grow: 1;
-  padding: 10px;
 }

@@ -8,7 +8,7 @@ import {
   updateEnvButtonStyles,
   updateFiltersSelectOptions,
   updateDepartmentInProdColor,
-  handleClickOnDepartment,
+  onDepartmentSelected,
 } from "./dom.js";
 import {
   keyMap,
@@ -56,9 +56,16 @@ document.querySelectorAll("#div-filtres select").forEach((select) => {
 });
 
 
-document.getElementById(DIV_MAP_ID).addEventListener("click", (e) => {
+document.getElementById("div-map").addEventListener("click", (e) => {
   const dep = e.target.closest(".department");
   if (!dep) return;
-  handleClickOnDepartment(dep);
+  document.getElementById("departements-list").value = dep.dataset.numDep;
+  onDepartmentSelected(dep);
+});
+
+document.getElementById("dep-sel-btn").addEventListener("click", () => {
+  const selectedDepValue = document.getElementById("departements-list").value;
+  const dep = document.querySelector(`[data-num-dep="${selectedDepValue}"]`);
+  onDepartmentSelected(dep);
 });
 
