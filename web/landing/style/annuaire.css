@@ -3,7 +3,7 @@ body {
 }
 
 #first-section {
-  height: calc(100vh - var(--header-min-height));
+  /* height: calc(100vh - var(--header-min-height)); */
   display: flex;
   flex-direction: column;
 }
