@@ -19,8 +19,8 @@ export const FILTERS_CONFIG = {
   },
 };
 
-export function getActors(){
-  return [...getSamu()]
+export function getActors() {
+  return [...getSamu()];
 }
 
 export function getSamu() {
