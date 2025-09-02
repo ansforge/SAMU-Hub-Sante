@@ -20,7 +20,7 @@ export const FILTERS_CONFIG = {
 };
 
 export function getActors(){
-  return [...getSamu()  ]
+  return [...getSamu()]
 }
 
 export function getSamu() {
@@ -51,7 +51,7 @@ export function getVhost() {
 }
 
 export function getPerimeter() {
-  return perimeter;
+  return [...perimeter];
 }
 
 export function getCurrentFilteredClientsConfig() {
