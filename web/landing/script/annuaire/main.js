@@ -1,14 +1,12 @@
-import {
-  fetchData,
-  renameKeys,
-  constituteVhostList,
-} from "./data.js";
+import { fetchData, renameKeys, constituteVhostList } from "./data.js";
 import {
   renderClientsConfigTable,
   updateEnvButtonStyles,
   updateFiltersSelectOptions,
   updateDepartmentInProdColor,
   onDepartmentSelected,
+  hideInfoSelectedDepartment,
+  unselectDepartment,
 } from "./dom.js";
 import {
   keyMap,
@@ -55,7 +53,6 @@ document.querySelectorAll("#div-filtres select").forEach((select) => {
   });
 });
 
-
 document.getElementById("div-map").addEventListener("click", (e) => {
   const dep = e.target.closest(".department");
   if (!dep) return;
@@ -65,7 +62,11 @@ document.getElementById("div-map").addEventListener("click", (e) => {
 
 document.getElementById("dep-sel-btn").addEventListener("click", () => {
   const selectedDepValue = document.getElementById("departements-list").value;
-  const dep = document.querySelector(`[data-num-dep="${selectedDepValue}"]`);
-  onDepartmentSelected(dep);
+  if (selectedDepValue === "") {
+    unselectDepartment();
+    hideInfoSelectedDepartment();
+  } else {
+    const dep = document.querySelector(`[data-num-dep="${selectedDepValue}"]`);
+    onDepartmentSelected(dep);
+  }
 });
-

@@ -85,13 +85,24 @@ function fillModaleInfo(vhost, perimeter, mdd, item) {
 }
 
 export function onDepartmentSelected(dep) {
-  document
-    .querySelectorAll(".department.selected")
-    .forEach((d) => d.classList.remove("selected"));
+  unselectDepartment();
   document
     .querySelectorAll(`.department[data-num-dep='${dep.dataset.numDep}']`)
     .forEach((d) => d.classList.add("selected"));
   renderDepartmentInfo(dep);
+}
+
+export function unselectDepartment() {
+  document
+    .querySelectorAll(".department.selected")
+    .forEach((d) => d.classList.remove("selected"));
+}
+
+export function hideInfoSelectedDepartment() {
+  const divInfo = document.getElementById("department-infos");
+  if (divInfo.classList.contains("d-block")) {
+    divInfo.classList.replace("d-block", "d-none");
+  }
 }
 
 function renderDepartmentInfo(dep) {
