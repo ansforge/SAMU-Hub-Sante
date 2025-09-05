@@ -20,7 +20,7 @@ export const FILTERS_CONFIG = {
 };
 
 export function getActors() {
-  return [...getSamu()];
+  return [...getSamu(), ...getSnp()];
 }
 
 export function getSamu() {
@@ -29,6 +29,17 @@ export function getSamu() {
       clientsConfigurations[getSelectedEnv()]
         .map((item) => item.client_id)
         .filter((item) => item.startsWith("fr.health.samu"))
+        .map((item) => item.replace("fr.health.", "")),
+    ),
+  ];
+}
+
+export function getSnp() {
+  return [
+    ...new Set(
+      clientsConfigurations[getSelectedEnv()]
+        .map((item) => item.client_id)
+        .filter((item) => item.startsWith("fr.health.snp"))
         .map((item) => item.replace("fr.health.", "")),
     ),
   ];
