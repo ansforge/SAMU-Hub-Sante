@@ -251,7 +251,7 @@ export default {
       this.store.selectedSchema =
         this.store.messageTypes[this.messageTypeTabIndex];
       this.store.currentUseCase =
-        this.store.messageTypes[this.messageTypeTabIndex].schema.title;
+        this.store.messageTypes[this.messageTypeTabIndex]?.schema?.title;
     },
     selectedVhost() {
       this.source = this.store.selectedVhost.modelVersion;
