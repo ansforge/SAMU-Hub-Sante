@@ -51,14 +51,33 @@ export function getDepartmentInProd() {
     ...new Set(
       state.clientsConfigurations
         .map((item) => item.client_id)
-        .filter((client_id) => client_id.startsWith("fr.health.samu"))
+        .filter(
+          (client_id) =>
+            client_id.startsWith("fr.health.samu") ||
+            client_id.startsWith("fr.health.snp"),
+        )
         .map((client_id) => {
           let dep = client_id.replace("fr.health.samu", "");
+          dep = dep.replace("fr.health.snp", "");
           if (dep.length === 3 && dep.endsWith("0")) {
             dep = dep.slice(0, -1);
           }
           return dep;
         }),
+    ),
+  ];
+}
+
+export function getActorsFromDepartment(numDep) {
+  return [
+    ...new Set(
+      state.clientsConfigurations.filter(
+        (item) =>
+          item.client_id === `fr.health.samu${numDep}0` ||
+          item.client_id === `fr.health.samu${numDep}` ||
+          item.client_id === `fr.health.snp${numDep}0` ||
+          item.client_id === `fr.health.snp${numDep}`,
+      ),
     ),
   ];
 }
