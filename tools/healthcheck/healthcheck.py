@@ -52,6 +52,7 @@ DEFAULT_FLASK_PORT = 8080
 # Definition of Prometheus metrics
 rabbitmq_status_metric = Gauge('rabbitmq_status', 'Statut de RabbitMQ (1=UP, 0=DOWN)')
 dispatcher_status_metric = Gauge('dispatcher_status', 'Statut des dispatchers (1=UP, 0=DOWN)', ['dispatcher'])
+converter_status_metric = Gauge('converter_status', 'Statut du converter (1=UP, 0=DOWN)')
 
 # Initialize the metric for each dispatcher to DOWN by default
 for dispatcher in DISPATCHER_INSTANCES:
@@ -91,12 +92,28 @@ def dispatcher_healthcheck(app_name):
         dispatcher_status_metric.labels(dispatcher=app_name).set(0)
         return {"status": Status.DOWN.value}
 
+def converter_healthcheck():
+    try:
+        converter_health_url = f"http://converter.app.svc.cluster.local:8080/health"
+        response = requests.get(converter_health_url, timeout=HTTP_TIMEOUT)
+        response.raise_for_status()
+        data = response.json()
+        status = data.get("status", Status.UNKNOWN.value)
+        converter_status_metric.set(1 if status == Status.UP.value else 0)
+        return {"status": Status.UP.value} if status == Status.UP.value else {"status": Status.DOWN.value}
+
+    except requests.RequestException as e:
+        logger.error("Error occurred on converter healthcheck: ", exc_info=True)
+        converter_status_metric.set(0)
+        return {"status": Status.DOWN.value}
+
 @app.before_request
 def update_metrics_before_scrapping():
     if request.path == METRICS_ENDPOINT:
         rabbitmq_healthcheck()
         for dispatcher_instance in DISPATCHER_INSTANCES:
             dispatcher_healthcheck(dispatcher_instance)
+        converter_healthcheck()
 
 @app.route('/health', methods=['GET'])
 def health():
@@ -116,6 +133,11 @@ def health():
         components[dispatcher_instance] = spring_health
         if spring_health["status"] == Status.DOWN.value:
             global_status = Status.DOWN.value
+
+    converter_health = converter_healthcheck()
+    components["converter"] = converter_health
+    if converter_health["status"] == Status.DOWN.value:
+        global_status = Status.DOWN.value
 
     # Aggregate and return the result
     result = OrderedDict([
