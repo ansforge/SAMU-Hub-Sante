@@ -38,6 +38,22 @@ export function constituteVhostList(data) {
   return vhostList;
 }
 
+export function constituteLabel(data) {
+  let label = "";
+  let departmentNumber = "";
+  if (data.client_id.startsWith("fr.health.samu")) {
+    label = "SAMU ";
+    departmentNumber = data.client_id.replace("fr.health.samu", "");
+  } else if (data.client_id.startsWith("fr.health.snp")) {
+    label = "SNP ";
+    departmentNumber = data.client_id.replace("fr.health.snp", "");
+  }
+  if (departmentNumber.length === 3 && departmentNumber.endsWith("0")) {
+    departmentNumber = departmentNumber.slice(0, -1);
+  }
+  return label.concat(departmentNumber);
+}
+
 export function getClientConfigByDepartment(numDep) {
   return state.clientsConfigurations.find(
     (item) =>
