@@ -401,8 +401,8 @@
           <h2>Les utilisateurs du Hub Santé</h2>
           <div class="wysiwyg text-center mt-2 mb-2">
             <p>
-              Retrouvez ici la liste de tous les acteurs raccordés au Hub Santé
-              sur nos différents environnements.
+              Retrouvez ici la carte des acteurs reliés en Prod ainsi que la
+              liste de tous les raccordements.
             </p>
           </div>
         </div>
@@ -413,13 +413,12 @@
         <ul class="js-tablist" data-hx="h2">
           <li class="js-tablist__item">
             <a href="#tabs-check-01" class="js-tablist__link">
-              Aperçu des raccordements en Prod
+              Carte
             </a>
           </li>
           <li class="js-tablist__item">
             <a href="#tabs-check-02" class="js-tablist__link">
-              Liste des acteurs raccordés au Hub Santé sur nos différents
-              environnements
+              Acteurs raccordés au Hub Santé
             </a>
           </li>
         </ul>
@@ -1808,30 +1807,6 @@
           </div>
           <div id="tabs-check-02" class="js-tabcontent">
             <!-- Contenu de l'onglet 02 -->
-            <div
-              class="col-md-11 mb-3"
-              id="env-buttons"
-              style="width: 96%; margin-left: 2%"
-            >
-              <button
-                class="btn btn--plain btn--primary btn-sm btn-env"
-                data-env="prod"
-              >
-                Prod
-              </button>
-              <button
-                class="btn btn--ghost btn--primary btn-sm btn-env"
-                data-env="pre-prod"
-              >
-                Pré-prod
-              </button>
-              <button
-                class="btn btn--ghost btn--primary btn-sm btn-env"
-                data-env="bac-a-sable"
-              >
-                Bac à sable
-              </button>
-            </div>
             <div
               class="row"
               id="div-filtres"
