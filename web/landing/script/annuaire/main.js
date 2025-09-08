@@ -1,10 +1,4 @@
-import {
-  fetchData,
-  renameKeys,
-  constituteVhostList,
-  constituteLabel,
-  state,
-} from "./data.js";
+import { fetchData, renameKeys, constituteLabel, state } from "./data.js";
 import {
   renderClientsConfigTable,
   updateFiltersSelectOptions,
@@ -13,22 +7,19 @@ import {
   hideInfoSelectedDepartment,
   unselectDepartment,
 } from "./dom.js";
-import { keyMap, API_URL, DIV_MAP_ID } from "./constants.js";
+import { keyMap, API_URL } from "./constants.js";
 import { getCurrentFilteredClientsConfig } from "./filters.js";
 
 window.addEventListener("load", async () => {
   const clientsConfig = await fetchData(API_URL);
   state.clientsConfigurations = clientsConfig.map((item) => {
     const renamedData = renameKeys(item, keyMap);
-    const vhostList = constituteVhostList(renamedData);
     const label = constituteLabel(renamedData);
     return {
       ...renamedData,
-      vhostList: vhostList,
       label: label,
     };
   });
-  console.log(state.clientsConfigurations);
   updateDepartmentInProdColor();
   updateFiltersSelectOptions();
   renderClientsConfigTable(state.clientsConfigurations);

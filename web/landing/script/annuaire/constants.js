@@ -5,7 +5,7 @@ export const DIV_INFO_DEPARTMENT_ID = "info-selected-department";
 export const BASE_API_URL = "hub.esante.gouv.fr/annuaire/api";
 export const API_URL = "http://localhost:5000/hub/pprod"; //"https://hub.esante.gouv.fr/annuaire/api";
 
-export const RABBITMQ_URL = "amqs://messaging.hub.esante.gouv.fr/rabbitmq";
+export const RABBITMQ_URL = "amqps://messaging.hub.esante.gouv.fr";
 
 export const perimeter = ["15-15", "15-NexSIS", "15-SMUR/RPIS", "15-GPS"];
 export const colors = {
