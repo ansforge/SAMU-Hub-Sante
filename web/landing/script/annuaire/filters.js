@@ -1,5 +1,5 @@
-import { perimeter, clientsConfigurations } from "./constants.js";
-import { getSelectedEnv } from "./env.js";
+import { perimeter } from "./constants.js";
+import { state } from "./data.js";
 
 export const FILTERS_CONFIG = {
   samu: {
@@ -26,7 +26,7 @@ export function getActors() {
 export function getSamu() {
   return [
     ...new Set(
-      clientsConfigurations[getSelectedEnv()]
+      state.clientsConfigurations
         .map((item) => item.client_id)
         .filter((item) => item.startsWith("fr.health.samu"))
         .map((item) => item.replace("fr.health.", "")),
@@ -37,7 +37,7 @@ export function getSamu() {
 export function getSnp() {
   return [
     ...new Set(
-      clientsConfigurations[getSelectedEnv()]
+      state.clientsConfigurations
         .map((item) => item.client_id)
         .filter((item) => item.startsWith("fr.health.snp"))
         .map((item) => item.replace("fr.health.", "")),
@@ -46,19 +46,7 @@ export function getSnp() {
 }
 
 export function getEditors() {
-  return [
-    ...new Set(
-      clientsConfigurations[getSelectedEnv()].map((item) => item.editor),
-    ),
-  ];
-}
-
-export function getVhost() {
-  return [
-    ...new Set(
-      clientsConfigurations[getSelectedEnv()].flatMap((item) => item.vhostList),
-    ),
-  ];
+  return [...new Set(state.clientsConfigurations.map((item) => item.editor))];
 }
 
 export function getPerimeter() {
@@ -66,7 +54,7 @@ export function getPerimeter() {
 }
 
 export function getCurrentFilteredClientsConfig() {
-  return clientsConfigurations[getSelectedEnv()].filter((item) =>
+  return state.clientsConfigurations.filter((item) =>
     Object.values(FILTERS_CONFIG).every((filter) => {
       const value = document.getElementById(filter.id).value;
       return value === "" || filter.getValue(item, value);

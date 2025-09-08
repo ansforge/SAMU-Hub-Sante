@@ -2,13 +2,12 @@ import {
   CLIENTS_CONFIG_TABLE_ID,
   perimeterInVhost,
   mddMap,
-  rabbitmqUrls,
+  RABBITMQ_URL,
   colors,
   perimeter,
 } from "./constants.js";
 import { FILTERS_CONFIG } from "./filters.js";
 import { getDepartmentInProd, getClientConfigByDepartment } from "./data.js";
-import { getSelectedEnv } from "./env.js";
 
 export function renderClientsConfigTable(clientsConfig) {
   const tableAnnuaireContent = document.getElementById(CLIENTS_CONFIG_TABLE_ID);
@@ -72,13 +71,11 @@ function createAuthorizedPerimetersElement(perimeter, mdd, item, vhost) {
 }
 
 function fillModaleInfo(vhost, perimeter, mdd, item) {
-  const env = getSelectedEnv();
-  const rabbitmqUrl = rabbitmqUrls[env];
   document.getElementById("modal-clientID").innerHTML = item.client_id;
-  document.getElementById("modal-env").innerHTML = env;
+  document.getElementById("modal-env").innerHTML = "prod";
   const url_element = document.getElementById("modal-env-url");
-  url_element.innerHTML = rabbitmqUrl;
-  url_element.href = rabbitmqUrl;
+  url_element.innerHTML = RABBITMQ_URL;
+  url_element.href = RABBITMQ_URL;
   document.getElementById("modal-perimeter").innerHTML = perimeter;
   document.getElementById("modal-mdd").innerHTML = mdd;
   document.getElementById("modal-vhost").innerHTML = vhost;
@@ -136,18 +133,6 @@ function renderDepartmentInfo(dep) {
       divInfo.appendChild(document.createElement("br"));
     });
   }
-}
-
-export function updateEnvButtonStyles(selectedEnv) {
-  document.querySelectorAll(".btn-env").forEach((btn) => {
-    if (btn.dataset.env === selectedEnv) {
-      btn.classList.remove("btn--ghost");
-      btn.classList.add("btn--plain");
-    } else {
-      btn.classList.remove("btn--plain");
-      btn.classList.add("btn--ghost");
-    }
-  });
 }
 
 export function updateDepartmentInProdColor() {

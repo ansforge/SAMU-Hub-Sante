@@ -1,9 +1,6 @@
-import {
-  perimeter,
-  clientsConfigurations,
-  Environment,
-  perimeterInVhost,
-} from "./constants.js";
+import { perimeter, perimeterInVhost } from "./constants.js";
+
+export const state = { clientsConfigurations: [] };
 
 export async function fetchData(url) {
   try {
@@ -42,7 +39,7 @@ export function constituteVhostList(data) {
 }
 
 export function getClientConfigByDepartment(numDep) {
-  return clientsConfigurations[Environment.PROD].find(
+  return state.clientsConfigurations.find(
     (item) =>
       item.client_id === `fr.health.samu${numDep}0` ||
       item.client_id === `fr.health.samu${numDep}`,
@@ -52,7 +49,7 @@ export function getClientConfigByDepartment(numDep) {
 export function getDepartmentInProd() {
   return [
     ...new Set(
-      clientsConfigurations[Environment.PROD]
+      state.clientsConfigurations
         .map((item) => item.client_id)
         .filter((client_id) => client_id.startsWith("fr.health.samu"))
         .map((client_id) => {

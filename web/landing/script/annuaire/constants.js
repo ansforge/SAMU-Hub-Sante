@@ -2,34 +2,10 @@ export const CLIENTS_CONFIG_TABLE_ID = "table-annuaire-content";
 export const DIV_MAP_ID = "map";
 export const DIV_INFO_DEPARTMENT_ID = "info-selected-department";
 
-export const Environment = {
-  BAS: "bac-a-sable",
-  PREPROD: "pre-prod",
-  PROD: "prod",
-};
-
-export const clientsConfigurations = {
-  [Environment.BAS]: null,
-  [Environment.PREPROD]: null,
-  [Environment.PROD]: null,
-};
-
 export const BASE_API_URL = "hub.esante.gouv.fr/annuaire/api";
-export const apiUrls = {
-  // [Environment.BAS]: `https://bac-a-sable.${BASE_API_URL}`,
-  // [Environment.PREPROD]: `https://pre-prod.${BASE_API_URL}`,
-  // [Environment.PROD]: `https://${BASE_API_URL}`,
-  [Environment.BAS]: "http://localhost:5000/hub/bas",
-  [Environment.PREPROD]: `http://localhost:5000/hub/pprod`,
-  [Environment.PROD]: `http://localhost:5000/hub/pprod`,
-};
+export const API_URL = "http://localhost:5000/hub/pprod"; //"https://hub.esante.gouv.fr/annuaire/api";
 
-export const BASE_RABBITMQ_URL = "hub.esante.gouv.fr/rabbitmq";
-export const rabbitmqUrls = {
-  [Environment.BAS]: `https://messaging.bac-a-sable.${BASE_RABBITMQ_URL}`,
-  [Environment.PREPROD]: `https://messaging.pre-prod.${BASE_RABBITMQ_URL}`,
-  [Environment.PROD]: `https://messaging.${BASE_RABBITMQ_URL}`,
-};
+export const RABBITMQ_URL = "amqs://messaging.hub.esante.gouv.fr/rabbitmq";
 
 export const perimeter = ["15-15", "15-NexSIS", "15-SMUR/RPIS", "15-GPS"];
 export const colors = {
