@@ -7,7 +7,7 @@ import {
   perimeter,
 } from "./constants.js";
 import { FILTERS_CONFIG } from "./filters.js";
-import { getDepartmentInProd, getClientConfigByDepartment } from "./data.js";
+import { getDepartmentInProd, getActorsFromDepartment } from "./data.js";
 
 export function renderClientsConfigTable(clientsConfig) {
   const tableAnnuaireContent = document.getElementById(CLIENTS_CONFIG_TABLE_ID);
@@ -119,15 +119,18 @@ function renderDepartmentInfo(dep) {
       "Aucune information disponible pour ce département en environnement de production.";
     divInfo.appendChild(p);
   } else {
+    const actors = getActorsFromDepartment(dep.dataset.numDep);
     divInfo.style.backgroundColor = "var(--primary)";
-    const test = ["SAMU", "SNP"];
     const p = document.createElement("p");
-    p.innerText = `${test.length} acteurs ont été trouvés :`;
+    if (actors.length === 1) {
+      p.innerText = "Un acteur a été trouvé :";
+    } else {
+      p.innerText = `${actors.length} acteurs ont été trouvés :`;
+    }
     divInfo.appendChild(p);
-    test.forEach((item) => {
+    actors.forEach((actor) => {
       const link = document.createElement("a");
-      link.innerHTML = item;
-      link.href = "#";
+      link.innerHTML = actor.label;
       link.style.color = "var(--white)";
       divInfo.appendChild(link);
       divInfo.appendChild(document.createElement("br"));

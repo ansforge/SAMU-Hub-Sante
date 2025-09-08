@@ -4,7 +4,7 @@ import { state } from "./data.js";
 export const FILTERS_CONFIG = {
   samu: {
     id: "filter-actor",
-    getValue: (item, value) => item.client_id === `fr.health.${value}`,
+    getValue: (item, value) => item.label === value,
     getOptions: getActors,
   },
   editor: {
@@ -20,27 +20,11 @@ export const FILTERS_CONFIG = {
 };
 
 export function getActors() {
-  return [...getSamu(), ...getSnp()];
-}
-
-export function getSamu() {
   return [
     ...new Set(
       state.clientsConfigurations
-        .map((item) => item.client_id)
-        .filter((item) => item.startsWith("fr.health.samu"))
-        .map((item) => item.replace("fr.health.", "")),
-    ),
-  ];
-}
-
-export function getSnp() {
-  return [
-    ...new Set(
-      state.clientsConfigurations
-        .map((item) => item.client_id)
-        .filter((item) => item.startsWith("fr.health.snp"))
-        .map((item) => item.replace("fr.health.", "")),
+        .map((item) => item.label)
+        .filter((label) => label !== ""),
     ),
   ];
 }

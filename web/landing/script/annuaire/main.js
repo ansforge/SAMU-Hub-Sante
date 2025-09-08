@@ -1,4 +1,10 @@
-import { fetchData, renameKeys, constituteVhostList, state } from "./data.js";
+import {
+  fetchData,
+  renameKeys,
+  constituteVhostList,
+  constituteLabel,
+  state,
+} from "./data.js";
 import {
   renderClientsConfigTable,
   updateFiltersSelectOptions,
@@ -15,11 +21,14 @@ window.addEventListener("load", async () => {
   state.clientsConfigurations = clientsConfig.map((item) => {
     const renamedData = renameKeys(item, keyMap);
     const vhostList = constituteVhostList(renamedData);
+    const label = constituteLabel(renamedData);
     return {
       ...renamedData,
       vhostList: vhostList,
+      label: label,
     };
   });
+  console.log(state.clientsConfigurations);
   updateDepartmentInProdColor();
   updateFiltersSelectOptions();
   renderClientsConfigTable(state.clientsConfigurations);
