@@ -27,17 +27,6 @@ export function renameKeys(obj, keyMap) {
   return renamed;
 }
 
-export function constituteVhostList(data) {
-  let vhostList = [];
-  perimeter.forEach((p) => {
-    let versions = data[p].split(",");
-    versions.forEach((version) => {
-      if (version !== "") vhostList.push(`${perimeterInVhost[p]}_v${version}`);
-    });
-  });
-  return vhostList;
-}
-
 export function constituteLabel(data) {
   let label = "";
   let departmentNumber = "";
