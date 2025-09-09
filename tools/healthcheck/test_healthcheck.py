@@ -15,18 +15,16 @@ class HealthCheckTestCase(unittest.TestCase):
         logging.disable(logging.NOTSET)
 
     @parameterized.expand([
-        ([{ "status": "ok" }, { "status": "UP", "components": {} }], "UP", "UP", "UP"),
-        ([{ "status": "down" }, { "status": "UP", "components": {} }], "DOWN", "DOWN", "UP"),
-        ([{ "status": "ok" }, { "status": "DOWN", "components": {} }], "DOWN", "UP", "DOWN"),
-        ([{ "status": "down" }, { "status": "DOWN", "components": {} }], "DOWN", "DOWN", "DOWN")
+        ([{ "status": "ok" }, { "status": "UP", "components": {} }, { "status": "UP" }], "UP", "UP", "UP", "UP"),
+        ([{ "status": "down" }, { "status": "UP", "components": {} }, { "status": "UP" }], "DOWN", "DOWN", "UP", "UP"),
+        ([{ "status": "ok" }, { "status": "DOWN", "components": {} }, { "status": "DOWN" }], "DOWN", "UP", "DOWN", "DOWN"),
+        ([{ "status": "down" }, { "status": "DOWN", "components": {} }, { "status": "DOWN" }], "DOWN", "DOWN", "DOWN", "DOWN")
     ])
     @patch("requests.get")
-    def test_health_check(self, side_effect, global_status, rabbitmq_status, dispatcher_status, mock_get):
-        # Simulate RabbitMQ & dispatcher returning healthy statuses
+    def test_health_check(self, side_effect, global_status, rabbitmq_status, dispatcher_status, converter_status, mock_get):
         mock_get.return_value.status_code = 200
         mock_get.return_value.json.side_effect = side_effect
-        
-        # Call the route and test the response
+
         with patch("healthcheck.DISPATCHER_INSTANCES", ["dispatcher1"]):
             with app.test_client() as client:
                 response = client.get(HEALTH_ENDPOINT)
@@ -35,6 +33,7 @@ class HealthCheckTestCase(unittest.TestCase):
                 self.assertEqual(data["status"], global_status)
                 self.assertEqual(data["components"]["rabbitmq_server"]["status"], rabbitmq_status)
                 self.assertEqual(data["components"]["dispatcher1"]["status"], dispatcher_status)
+                self.assertEqual(data["components"]["converter"]["status"], converter_status)
 
     @patch("requests.get")
     def test_rabbitmq_healthcheck_error(self, mock_get):
@@ -50,12 +49,11 @@ class HealthCheckTestCase(unittest.TestCase):
             self.assertIn("rabbitmq_server", data["components"])
             self.assertEqual(data["components"]["rabbitmq_server"]["status"], Status.DOWN.value)
     @parameterized.expand([
-        ([{ "status": "ok" }, { "status": "UP", "components": {} }, {"status": "UP", "components": {}}], "UP", "UP", "UP", "UP"),
-        ([{ "status": "ok" }, { "status": "UP", "components": {} }, {"status": "DOWN", "components": {}}], "DOWN", "UP", "UP", "DOWN"),
+        ([{ "status": "ok" }, { "status": "UP", "components": {} }, {"status": "UP", "components": {}}, { "status": "UP" }], "UP", "UP", "UP", "UP", "UP"),
+        ([{ "status": "ok" }, { "status": "UP", "components": {} }, {"status": "DOWN", "components": {}}, { "status": "DOWN" }], "DOWN", "UP", "UP", "DOWN", "DOWN"),
     ])
     @patch("requests.get")
-    def test_health_check_with_multiple_dispatchers(self, side_effect, global_status, rabbitmq_status, dispatcher1_status, dispatcher2_status, mock_get):
-        # Simulate multiple dispatcher instances
+    def test_health_check_with_multiple_dispatchers(self, side_effect, global_status, rabbitmq_status, dispatcher1_status, dispatcher2_status, converter_status, mock_get):
         mock_get.return_value.status_code = 200
         mock_get.return_value.json.side_effect = side_effect
 
@@ -68,7 +66,8 @@ class HealthCheckTestCase(unittest.TestCase):
                 self.assertEqual(data["components"]["rabbitmq_server"]["status"], rabbitmq_status)
                 self.assertEqual(data["components"]["dispatcher1"]["status"], dispatcher1_status)
                 self.assertEqual(data["components"]["dispatcher2"]["status"], dispatcher2_status)
-    
+                self.assertEqual(data["components"]["converter"]["status"], converter_status)
+
     def test_remove_error_keys(self):
         # Test if error keys are properly removed
         data = {
