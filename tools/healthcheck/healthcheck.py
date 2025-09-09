@@ -45,7 +45,9 @@ DISPATCHER_INSTANCES = DISPATCHER_INSTANCES_ENV_VAR.split(",") if DISPATCHER_INS
 HTTP_TIMEOUT = int(os.getenv("HTTP_TIMEOUT", 5))  # Timeout in seconds, configurable via environment variable
 
 RABBITMQ_HEALTH_URL = f"{RABBITMQ_URL}/rabbitmq/api/health/checks/alarms"
+CONVERTER_HEALTH_URL = "http://converter.app.svc.cluster.local:8080/health"
 METRICS_ENDPOINT = "/metrics"
+HEALTH_ENDPOINT = "/health"
 DEFAULT_FLASK_HOST = "0.0.0.0"
 DEFAULT_FLASK_PORT = 8080
 
@@ -94,8 +96,7 @@ def dispatcher_healthcheck(app_name):
 
 def converter_healthcheck():
     try:
-        converter_health_url = f"http://converter.app.svc.cluster.local:8080/health"
-        response = requests.get(converter_health_url, timeout=HTTP_TIMEOUT)
+        response = requests.get(CONVERTER_HEALTH_URL, timeout=HTTP_TIMEOUT)
         response.raise_for_status()
         data = response.json()
         status = data.get("status", Status.UNKNOWN.value)
@@ -115,7 +116,7 @@ def update_metrics_before_scrapping():
             dispatcher_healthcheck(dispatcher_instance)
         converter_healthcheck()
 
-@app.route('/health', methods=['GET'])
+@app.route(HEALTH_ENDPOINT, methods=['GET'])
 def health():
     global_status = Status.UP.value
     components = OrderedDict()
