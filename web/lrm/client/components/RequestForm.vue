@@ -29,7 +29,7 @@ const props = defineProps({
 
 const store = useMainStore();
 const valid = ref(false);
-const displayForm = ref(false);
+const displayForm = ref(true);
 
 const { currentMessageFilePath } = toRefs(store);
 
