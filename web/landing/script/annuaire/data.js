@@ -28,58 +28,52 @@ export function renameKeys(obj, keyMap) {
 export function constituteLabel(data) {
   let label = "";
   let departmentNumber = "";
-  if (data.client_id.startsWith("fr.health.samu")) {
+  const clientId = data.client_id;
+
+  if (clientId.startsWith("fr.health.samu")) {
     label = "SAMU ";
-    departmentNumber = data.client_id.replace("fr.health.samu", "");
-  } else if (data.client_id.startsWith("fr.health.snp")) {
+    departmentNumber = clientId.slice("fr.health.samu".length);
+  } else if (clientId.startsWith("fr.health.snp")) {
     label = "SNP ";
-    departmentNumber = data.client_id.replace("fr.health.snp", "");
+    departmentNumber = clientId.slice("fr.health.snp".length);
   }
+
   if (departmentNumber.length === 3 && departmentNumber.endsWith("0")) {
     departmentNumber = departmentNumber.slice(0, -1);
   }
-  return label.concat(departmentNumber);
-}
 
-export function getClientConfigByDepartment(numDep) {
-  return state.clientsConfigurations.find(
-    (item) =>
-      item.client_id === `fr.health.samu${numDep}0` ||
-      item.client_id === `fr.health.samu${numDep}`,
-  );
+  return label + departmentNumber;
 }
 
 export function getDepartmentInProd() {
-  return [
-    ...new Set(
-      state.clientsConfigurations
-        .map((item) => item.client_id)
-        .filter(
-          (client_id) =>
-            client_id.startsWith("fr.health.samu") ||
-            client_id.startsWith("fr.health.snp"),
-        )
-        .map((client_id) => {
-          let dep = client_id.replace("fr.health.samu", "");
-          dep = dep.replace("fr.health.snp", "");
-          if (dep.length === 3 && dep.endsWith("0")) {
-            dep = dep.slice(0, -1);
-          }
-          return dep;
-        }),
-    ),
-  ];
+  const clientIds = state.clientsConfigurations
+    .map((item) => item.client_id)
+    .filter(
+      (client_id) =>
+        client_id.startsWith("fr.health.samu") ||
+        client_id.startsWith("fr.health.snp"),
+    );
+
+  const departmentNumbers = clientIds.map((client_id) => {
+    let dep = client_id.replace("fr.health.samu", "");
+    dep = dep.replace("fr.health.snp", "");
+    if (dep.length === 3 && dep.endsWith("0")) {
+      dep = dep.slice(0, -1);
+    }
+    return dep;
+  });
+
+  return [...new Set(departmentNumbers)];
 }
 
 export function getActorsFromDepartment(numDep) {
+  const clientIdSamu = `fr.health.samu${numDep.length === 3 ? numDep : numDep + "0"}`;
+  const clientIdSnp = `fr.health.snp${numDep.length === 3 ? numDep : numDep + "0"}`;
   return [
     ...new Set(
       state.clientsConfigurations.filter(
         (item) =>
-          item.client_id === `fr.health.samu${numDep}0` ||
-          item.client_id === `fr.health.samu${numDep}` ||
-          item.client_id === `fr.health.snp${numDep}0` ||
-          item.client_id === `fr.health.snp${numDep}`,
+          item.client_id === clientIdSamu || item.client_id === clientIdSnp,
       ),
     ),
   ];
