@@ -1,3 +1,5 @@
+import { CLIENT_ID_PREFIX } from "./constants.js";
+
 export const state = { clientsConfigurations: [] };
 
 export async function fetchData(url) {
@@ -30,12 +32,12 @@ export function constituteLabel(data) {
   let departmentNumber = "";
   const clientId = data.client_id;
 
-  if (clientId.startsWith("fr.health.samu")) {
+  if (clientId.startsWith(CLIENT_ID_PREFIX.SAMU)) {
     label = "SAMU ";
-    departmentNumber = clientId.slice("fr.health.samu".length);
-  } else if (clientId.startsWith("fr.health.snp")) {
+    departmentNumber = clientId.slice(CLIENT_ID_PREFIX.SAMU.length);
+  } else if (clientId.startsWith(CLIENT_ID_PREFIX.SNP)) {
     label = "SNP ";
-    departmentNumber = clientId.slice("fr.health.snp".length);
+    departmentNumber = clientId.slice(CLIENT_ID_PREFIX.SNP.length);
   }
 
   if (departmentNumber.length === 3 && departmentNumber.endsWith("0")) {
@@ -50,13 +52,13 @@ export function getDepartmentInProd() {
     .map((item) => item.client_id)
     .filter(
       (client_id) =>
-        client_id.startsWith("fr.health.samu") ||
-        client_id.startsWith("fr.health.snp"),
+        client_id.startsWith(CLIENT_ID_PREFIX.SAMU) ||
+        client_id.startsWith(CLIENT_ID_PREFIX.SNP),
     );
 
   const departmentNumbers = clientIds.map((client_id) => {
-    let dep = client_id.replace("fr.health.samu", "");
-    dep = dep.replace("fr.health.snp", "");
+    let dep = client_id.replace(CLIENT_ID_PREFIX.SAMU, "");
+    dep = dep.replace(CLIENT_ID_PREFIX.SNP, "");
     if (dep.length === 3 && dep.endsWith("0")) {
       dep = dep.slice(0, -1);
     }
@@ -67,8 +69,8 @@ export function getDepartmentInProd() {
 }
 
 export function getActorsFromDepartment(numDep) {
-  const clientIdSamu = `fr.health.samu${numDep.length === 3 ? numDep : numDep + "0"}`;
-  const clientIdSnp = `fr.health.snp${numDep.length === 3 ? numDep : numDep + "0"}`;
+  const clientIdSamu = `${CLIENT_ID_PREFIX.SAMU}${numDep.length === 3 ? numDep : numDep + "0"}`;
+  const clientIdSnp = `${CLIENT_ID_PREFIX.SNP}${numDep.length === 3 ? numDep : numDep + "0"}`;
   return [
     ...new Set(
       state.clientsConfigurations.filter(
