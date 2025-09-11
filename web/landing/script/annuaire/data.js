@@ -1,5 +1,3 @@
-import { perimeter, perimeterInVhost } from "./constants.js";
-
 export const state = { clientsConfigurations: [] };
 
 export async function fetchData(url) {
