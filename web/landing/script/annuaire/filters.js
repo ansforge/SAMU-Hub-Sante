@@ -1,19 +1,19 @@
-import { perimeter } from "./constants.js";
+import { perimeter, FILTER_IDS } from "./constants.js";
 import { state } from "./data.js";
 
 export const FILTERS_CONFIG = {
   samu: {
-    id: "filter-actor",
+    id: FILTER_IDS.actor,
     getValue: (item, value) => item.label === value,
     getOptions: getActors,
   },
   editor: {
-    id: "filter-editor",
+    id: FILTER_IDS.editor,
     getValue: (item, value) => item.editor === value,
     getOptions: getEditors,
   },
   perimeter: {
-    id: "filter-perimeter",
+    id: FILTER_IDS.perimeter,
     getValue: (item, value) => item[value] !== "",
     getOptions: getPerimeter,
   },
