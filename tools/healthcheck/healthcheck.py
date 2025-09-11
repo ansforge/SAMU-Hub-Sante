@@ -26,7 +26,8 @@ REQUIRED_ENV_VARS = [
     "RABBITMQ_URL",
     "RABBITMQ_MONITORING_USERNAME",
     "RABBITMQ_MONITORING_PASSWORD",
-    "DISPATCHER_INSTANCES"
+    "DISPATCHER_INSTANCES",
+    "ANNUAIRE_URL"
 ]
 
 # Check all required environment variables
@@ -39,6 +40,8 @@ RABBITMQ_MONITORING_USERNAME = os.getenv("RABBITMQ_MONITORING_USERNAME")
 RABBITMQ_MONITORING_PASSWORD = os.getenv("RABBITMQ_MONITORING_PASSWORD")
 RABBITMQ_CA_CERT_PATH = '/etc/ssl/certs/hubsante-rabbitmq-ca.crt'
 
+ANNUAIRE_URL = os.getenv("ANNUAIRE_URL")
+
 DISPATCHER_INSTANCES_ENV_VAR = os.getenv("DISPATCHER_INSTANCES")
 DISPATCHER_INSTANCES = DISPATCHER_INSTANCES_ENV_VAR.split(",") if DISPATCHER_INSTANCES_ENV_VAR else []
 
@@ -46,6 +49,7 @@ HTTP_TIMEOUT = int(os.getenv("HTTP_TIMEOUT", 5))  # Timeout in seconds, configur
 
 RABBITMQ_HEALTH_URL = f"{RABBITMQ_URL}/rabbitmq/api/health/checks/alarms"
 CONVERTER_HEALTH_URL = "http://converter.app.svc.cluster.local:8080/health"
+ANNUAIRE_HEALTH_URL = f"{ANNUAIRE_URL}/annuaire/health"
 METRICS_ENDPOINT = "/metrics"
 HEALTH_ENDPOINT = "/health"
 DEFAULT_FLASK_HOST = "0.0.0.0"
@@ -55,6 +59,7 @@ DEFAULT_FLASK_PORT = 8080
 rabbitmq_status_metric = Gauge('rabbitmq_status', 'Statut de RabbitMQ (1=UP, 0=DOWN)')
 dispatcher_status_metric = Gauge('dispatcher_status', 'Statut des dispatchers (1=UP, 0=DOWN)', ['dispatcher'])
 converter_status_metric = Gauge('converter_status', 'Statut du converter (1=UP, 0=DOWN)')
+annuaire_status_metric = Gauge('annuaire_status', 'Statut de l\'annuaire (1=UP, 0=DOWN)')
 
 # Initialize the metric for each dispatcher to DOWN by default
 for dispatcher in DISPATCHER_INSTANCES:
@@ -107,6 +112,20 @@ def converter_healthcheck():
         logger.error("Error occurred on converter healthcheck: ", exc_info=True)
         converter_status_metric.set(0)
         return {"status": Status.DOWN.value}
+    
+def annuaire_healthcheck():
+    try:
+        response = requests.get(ANNUAIRE_HEALTH_URL, timeout=HTTP_TIMEOUT)
+        response.raise_for_status()
+        data = response.json()
+        status = data.get("status", Status.UNKNOWN.value)
+        annuaire_status_metric.set(1 if status == Status.UP.value else 0)
+        return {"status": Status.UP.value} if status == Status.UP.value else {"status": Status.DOWN.value}
+
+    except requests.RequestException as e:
+        logger.error("Error occurred on annuaire healthcheck: ", exc_info=True)
+        annuaire_status_metric.set(0)
+        return {"status": Status.DOWN.value}
 
 @app.before_request
 def update_metrics_before_scrapping():
@@ -115,6 +134,7 @@ def update_metrics_before_scrapping():
         for dispatcher_instance in DISPATCHER_INSTANCES:
             dispatcher_healthcheck(dispatcher_instance)
         converter_healthcheck()
+        annuaire_healthcheck()
 
 @app.route(HEALTH_ENDPOINT, methods=['GET'])
 def health():
@@ -138,6 +158,11 @@ def health():
     converter_health = converter_healthcheck()
     components["converter"] = converter_health
     if converter_health["status"] == Status.DOWN.value:
+        global_status = Status.DOWN.value
+
+    annuaire_health = annuaire_healthcheck()
+    components["annuaire"] = annuaire_health
+    if annuaire_health["status"] == Status.DOWN.value:
         global_status = Status.DOWN.value
 
     # Aggregate and return the result

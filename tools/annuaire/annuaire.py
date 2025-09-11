@@ -42,7 +42,7 @@ app = create_app()
 def get_json():
     return jsonify(app.config[CSV_DATA_KEY])
 
-@app.get('/health')
+@app.get('/annuaire/health')
 def health_check():
     return jsonify({
         "status": "UP",
