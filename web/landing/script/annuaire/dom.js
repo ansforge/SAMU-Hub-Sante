@@ -13,8 +13,8 @@ export function renderClientsConfigTable(clientsConfig) {
   const tableAnnuaireContent = document.getElementById(CLIENTS_CONFIG_TABLE_ID);
   tableAnnuaireContent.innerHTML = "";
 
-  clientsConfig.forEach((item, index) => {
-    const row = createClientConfigRow(item, index);
+  clientsConfig.forEach((item) => {
+    const row = createClientConfigRow(item);
     tableAnnuaireContent.appendChild(row);
   });
 }
@@ -108,34 +108,52 @@ function renderDepartmentInfo(dep) {
   if (divInfo.classList.contains("d-none")) {
     divInfo.classList.replace("d-none", "d-block");
   }
-  const departmentLabel = dep.querySelector("title").innerHTML;
-  const title = document.createElement("h2");
-  title.innerText = departmentLabel;
-  divInfo.appendChild(title);
+
+  // Title
+  divInfo.appendChild(createDepartmentTitle(dep));
+
+  // Content
   if (!dep.classList.contains("prod")) {
     divInfo.style.backgroundColor = "var(--gray-500)";
-    const p = document.createElement("p");
-    p.innerText =
-      "Aucune information disponible pour ce département en environnement de production.";
-    divInfo.appendChild(p);
+    divInfo.appendChild(
+      createDepartmentParagraph(
+        "Aucune information disponible pour ce département en environnement de production.",
+      ),
+    );
   } else {
     const actors = getActorsFromDepartment(dep.dataset.numDep);
     divInfo.style.backgroundColor = "var(--primary)";
-    const p = document.createElement("p");
-    if (actors.length === 1) {
-      p.innerText = "Un acteur a été trouvé :";
-    } else {
-      p.innerText = `${actors.length} acteurs ont été trouvés :`;
-    }
-    divInfo.appendChild(p);
-    actors.forEach((actor) => {
-      const link = document.createElement("a");
-      link.innerHTML = actor.label;
-      link.style.color = "var(--white)";
-      divInfo.appendChild(link);
-      divInfo.appendChild(document.createElement("br"));
-    });
+    const message =
+      actors.length === 1
+        ? "Un acteur a été trouvé :"
+        : `${actors.length} acteurs ont été trouvés :`;
+    divInfo.appendChild(createDepartmentParagraph(message));
+    divInfo.appendChild(createActorsLinks(actors));
   }
+}
+
+function createDepartmentTitle(dep) {
+  const title = document.createElement("h2");
+  title.innerText = dep.querySelector("title").innerHTML;
+  return title;
+}
+
+function createDepartmentParagraph(text) {
+  const p = document.createElement("p");
+  p.innerText = text;
+  return p;
+}
+
+function createActorsLinks(actors) {
+  const fragment = document.createDocumentFragment();
+  actors.forEach((actor) => {
+    const link = document.createElement("a");
+    link.innerHTML = actor.label;
+    link.style.color = "var(--white)";
+    fragment.appendChild(link);
+    fragment.appendChild(document.createElement("br"));
+  });
+  return fragment;
 }
 
 export function updateDepartmentInProdColor() {
@@ -158,8 +176,4 @@ export function updateFiltersSelectOptions() {
       select.appendChild(option);
     });
   }
-}
-
-export function getPerimeterFromVhost(vhost) {
-  return vhost.split("_v")[0];
 }
