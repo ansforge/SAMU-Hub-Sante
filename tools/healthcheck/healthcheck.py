@@ -112,7 +112,7 @@ def converter_healthcheck():
         logger.error("Error occurred on converter healthcheck: ", exc_info=True)
         converter_status_metric.set(0)
         return {"status": Status.DOWN.value}
-    
+      
 def annuaire_healthcheck():
     try:
         response = requests.get(ANNUAIRE_HEALTH_URL, timeout=HTTP_TIMEOUT)
