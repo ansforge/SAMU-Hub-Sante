@@ -3,7 +3,7 @@ from unittest.mock import patch
 from parameterized import parameterized
 import json
 import requests
-from healthcheck import CONVERTER_HEALTH_URL, HEALTH_ENDPOINT, RABBITMQ_HEALTH_URL, Status, app, remove_error_keys
+from healthcheck import CONVERTER_HEALTH_URL, HEALTH_ENDPOINT, RABBITMQ_HEALTH_URL, ANNUAIRE_HEALTH_URL, Status, app, remove_error_keys
 import logging
 
 class HealthCheckTestCase(unittest.TestCase):
@@ -14,8 +14,8 @@ class HealthCheckTestCase(unittest.TestCase):
     def tearDown(self):
         logging.disable(logging.NOTSET)
 
-    def create_mock_side_effect(self, rabbitmq_response=None, dispatcher_response=None, converter_response=None,
-                               rabbitmq_error=False, dispatcher_error=False, converter_error=False):
+    def create_mock_side_effect(self, rabbitmq_response=None, dispatcher_response=None, converter_response=None, annuaire_response=None,
+                               rabbitmq_error=False, dispatcher_error=False, converter_error=False, annuaire_error=False):
         def side_effect(url, **kwargs):
             if CONVERTER_HEALTH_URL in url:
                 if converter_error:
@@ -33,6 +33,14 @@ class HealthCheckTestCase(unittest.TestCase):
                 response_data = rabbitmq_response or {"status": Status.OK.value}
                 mock_response._content = json.dumps(response_data).encode()
                 return mock_response
+            elif ANNUAIRE_HEALTH_URL in url:
+                if annuaire_error:
+                    raise requests.exceptions.RequestException("Annuaire Error")
+                mock_response = requests.Response()
+                mock_response.status_code = 200
+                response_data = annuaire_response or {"status": Status.UP.value}
+                mock_response._content = json.dumps(response_data).encode()
+                return mock_response
             else:
                 if dispatcher_error:
                     raise requests.exceptions.RequestException("Dispatcher Error")
@@ -45,13 +53,13 @@ class HealthCheckTestCase(unittest.TestCase):
         return side_effect
 
     @parameterized.expand([
-        ([{ "status": "ok" }, { "status": "UP", "components": {} }, { "status": "UP" }], "UP", "UP", "UP", "UP"),
-        ([{ "status": "down" }, { "status": "UP", "components": {} }, { "status": "UP" }], "DOWN", "DOWN", "UP", "UP"),
-        ([{ "status": "ok" }, { "status": "DOWN", "components": {} }, { "status": "DOWN" }], "DOWN", "UP", "DOWN", "DOWN"),
-        ([{ "status": "down" }, { "status": "DOWN", "components": {} }, { "status": "DOWN" }], "DOWN", "DOWN", "DOWN", "DOWN")
+        ([{ "status": "ok" }, { "status": "UP", "components": {} }, { "status": "UP" }, { "status": "UP" }], "UP", "UP", "UP", "UP", "UP"),
+        ([{ "status": "down" }, { "status": "UP", "components": {} }, { "status": "UP" }, { "status": "UP" }], "DOWN", "DOWN", "UP", "UP", "UP"),
+        ([{ "status": "ok" }, { "status": "DOWN", "components": {} }, { "status": "DOWN" }, { "status": "DOWN" }], "DOWN", "UP", "DOWN", "DOWN", "DOWN"),
+        ([{ "status": "down" }, { "status": "DOWN", "components": {} }, { "status": "DOWN" }, { "status": "DOWN" }], "DOWN", "DOWN", "DOWN", "DOWN", "DOWN")
     ])
     @patch("requests.get")
-    def test_health_check(self, side_effect, global_status, rabbitmq_status, dispatcher_status, converter_status, mock_get):
+    def test_health_check(self, side_effect, global_status, rabbitmq_status, dispatcher_status, converter_status, annuaire_status, mock_get):
         mock_get.return_value.status_code = 200
         mock_get.return_value.json.side_effect = side_effect
 
@@ -64,6 +72,7 @@ class HealthCheckTestCase(unittest.TestCase):
                 self.assertEqual(data["components"]["rabbitmq_server"]["status"], rabbitmq_status)
                 self.assertEqual(data["components"]["dispatcher1"]["status"], dispatcher_status)
                 self.assertEqual(data["components"]["converter"]["status"], converter_status)
+                self.assertEqual(data["components"]["annuaire"]["status"], annuaire_status)
 
     @patch("requests.get")
     def test_rabbitmq_healthcheck_error(self, mock_get):
@@ -107,11 +116,11 @@ class HealthCheckTestCase(unittest.TestCase):
                 self.assertEqual(data["components"]["converter"]["status"], expected_converter_status)
 
     @parameterized.expand([
-        ([{ "status": "ok" }, { "status": "UP", "components": {} }, {"status": "UP", "components": {}}, { "status": "UP" }], "UP", "UP", "UP", "UP", "UP"),
-        ([{ "status": "ok" }, { "status": "UP", "components": {} }, {"status": "DOWN", "components": {}}, { "status": "DOWN" }], "DOWN", "UP", "UP", "DOWN", "DOWN"),
+        ([{ "status": "ok" }, { "status": "UP", "components": {} }, {"status": "UP", "components": {}}, { "status": "UP" }, { "status": "UP" }], "UP", "UP", "UP", "UP", "UP", "UP"),
+        ([{ "status": "ok" }, { "status": "UP", "components": {} }, {"status": "DOWN", "components": {}}, { "status": "DOWN" }, { "status": "DOWN" }], "DOWN", "UP", "UP", "DOWN", "DOWN", "DOWN"),
     ])
     @patch("requests.get")
-    def test_health_check_with_multiple_dispatchers(self, side_effect, global_status, rabbitmq_status, dispatcher1_status, dispatcher2_status, converter_status, mock_get):
+    def test_health_check_with_multiple_dispatchers(self, side_effect, global_status, rabbitmq_status, dispatcher1_status, dispatcher2_status, converter_status, annuaire_status, mock_get):
         mock_get.return_value.status_code = 200
         mock_get.return_value.json.side_effect = side_effect
 
@@ -125,6 +134,7 @@ class HealthCheckTestCase(unittest.TestCase):
                 self.assertEqual(data["components"]["dispatcher1"]["status"], dispatcher1_status)
                 self.assertEqual(data["components"]["dispatcher2"]["status"], dispatcher2_status)
                 self.assertEqual(data["components"]["converter"]["status"], converter_status)
+                self.assertEqual(data["components"]["annuaire"]["status"], annuaire_status)
 
     def test_remove_error_keys(self):
         # Test if error keys are properly removed
