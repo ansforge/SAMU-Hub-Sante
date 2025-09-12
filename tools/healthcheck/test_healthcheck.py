@@ -114,6 +114,35 @@ class HealthCheckTestCase(unittest.TestCase):
                 data = json.loads(response.data)
                 self.assertEqual(data["status"], expected_global_status)
                 self.assertEqual(data["components"]["converter"]["status"], expected_converter_status)
+    
+    @patch("requests.get")
+    def test_annuaire_healthcheck_error(self, mock_get):
+        mock_get.side_effect = self.create_mock_side_effect(annuaire_error=True)
+
+        with patch("healthcheck.DISPATCHER_INSTANCES", ["dispatcher_instance"]):
+            with app.test_client() as client:
+                response = client.get(HEALTH_ENDPOINT)
+                self.assertEqual(response.status_code, 200)
+                data = json.loads(response.data)
+                self.assertEqual(data["status"], Status.DOWN.value) # global status
+                self.assertEqual(data["components"]["annuaire"]["status"], Status.DOWN.value)
+                
+    @parameterized.expand([
+        (Status.UP.value, Status.UP.value, Status.UP.value),
+        (Status.DOWN.value, Status.DOWN.value, Status.DOWN.value),
+        (Status.UNKNOWN.value, Status.DOWN.value, Status.DOWN.value),
+    ])
+    @patch("requests.get")
+    def test_annuaire_healthcheck_status(self, annuaire_status, expected_annuaire_status, expected_global_status, mock_get):
+        mock_get.side_effect = self.create_mock_side_effect(annuaire_response={"status": annuaire_status})
+
+        with patch("healthcheck.DISPATCHER_INSTANCES", ["dispatcher_instance"]):
+            with app.test_client() as client:
+                response = client.get(HEALTH_ENDPOINT)
+                self.assertEqual(response.status_code, 200)
+                data = json.loads(response.data)
+                self.assertEqual(data["status"], expected_global_status)
+                self.assertEqual(data["components"]["annuaire"]["status"], expected_annuaire_status)
 
     @parameterized.expand([
         ([{ "status": "ok" }, { "status": "UP", "components": {} }, {"status": "UP", "components": {}}, { "status": "UP" }, { "status": "UP" }], "UP", "UP", "UP", "UP", "UP", "UP"),
