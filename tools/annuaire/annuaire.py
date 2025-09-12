@@ -36,8 +36,10 @@ def select_columns(data: list[dict]) -> list[dict]:
         data_updated.append(row_updated)
     return data_updated
 
-app = create_app()
+app = None
+if __name__ == "__main__":
+    app = create_app()
 
-@app.get("/annuaire/api")
-def get_json():
-    return jsonify(app.config[CSV_DATA_KEY])
+    @app.get("/annuaire/api")
+    def get_json():
+        return jsonify(app.config[CSV_DATA_KEY])
