@@ -78,6 +78,16 @@ class AnnuaireTestCase(unittest.TestCase):
             self.assertEqual(len(data), 1)
             self.assertEqual(data[0]["client_id"], "fr.health.lrm")
 
-
+    def test_select_columns(self):
+        data = [
+            {"client_id": "1", "editor": "A", "P: 15-15": "x", "other": "y"},
+            {"client_id": "2", "editor": "B", "P: 15-15": "z", "directCISU": "d"},
+        ]
+        result = select_columns(data)
+        for row in result:
+            self.assertIn("client_id", row)
+            self.assertIn("editor", row)
+            self.assertNotIn("other", row)
+            
 if __name__ == "__main__":
     unittest.main()
