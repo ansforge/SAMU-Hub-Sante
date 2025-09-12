@@ -6,6 +6,9 @@ import os
 CSV_DIR = "/config"
 CSV_DATA_KEY = 'CSV_DATA'
 CSV_FILENAME = "rabbitmq.clients-configuration.csv"
+API_ENDPOINT = "/annuaire/api"
+
+HEADERS_COLUMNS_TO_KEEP = ['client_id', 'editor', 'P: 15-15', 'P: 15-smur', 'P: 15-nexsis', 'P: 15-gps', 'directCISU']
 
 def create_app() :    
     app = Flask(__name__)
@@ -29,10 +32,9 @@ def parse_csv(filename):
         raise RuntimeError(f"Erreur lors de la lecture du CSV: {e}")
 
 def select_columns(data: list[dict]) -> list[dict]:
-    headers_columns_to_keep = ['client_id', 'editor', 'P: 15-15', 'P: 15-smur', 'P: 15-nexsis', 'P: 15-gps', 'directCISU']
     data_updated = []
     for row in data:
-        row_updated = {key: value for key, value in row.items() if key in headers_columns_to_keep}
+        row_updated = {key: value for key, value in row.items() if key in HEADERS_COLUMNS_TO_KEEP}
         data_updated.append(row_updated)
     return data_updated
 
@@ -40,6 +42,6 @@ app = None
 if __name__ == "__main__":
     app = create_app()
 
-    @app.get("/annuaire/api")
+    @app.get(API_ENDPOINT)
     def get_json():
         return jsonify(app.config[CSV_DATA_KEY])

@@ -3,16 +3,22 @@ import tempfile
 import os
 import annuaire
 from unittest import mock
-from annuaire import parse_csv, select_columns, CSV_DATA_KEY
+from annuaire import (
+    parse_csv,
+    select_columns,
+    CSV_DATA_KEY,
+    API_ENDPOINT,
+    CSV_FILENAME,
+    HEADERS_COLUMNS_TO_KEEP,
+)
 from flask import Flask
 
 
 class AnnuaireTestCase(unittest.TestCase):
-    CSV_FILENAME = "rabbitmq.clients-configuration.csv"
 
     def setUp(self):
         self.tempdir = tempfile.TemporaryDirectory()
-        self.csv_path = os.path.join(self.tempdir.name, self.CSV_FILENAME)
+        self.csv_path = os.path.join(self.tempdir.name, CSV_FILENAME)
         self._write_temp_csv(
             [
                 [
@@ -60,7 +66,7 @@ class AnnuaireTestCase(unittest.TestCase):
         with mock.patch("annuaire.CSV_DIR", self.tempdir.name):
             app = annuaire.create_app()
 
-            @app.get("/annuaire/api")
+            @app.get(API_ENDPOINT)
             def get_json():
                 return app.response_class(
                     app.json.dumps(app.config[CSV_DATA_KEY]),
@@ -68,26 +74,25 @@ class AnnuaireTestCase(unittest.TestCase):
                 )
 
             client = app.test_client()
-            response = client.get("/annuaire/api")
+            response = client.get(API_ENDPOINT)
             self.assertEqual(response.status_code, 200)
             self.assertIsInstance(response.json, list)
 
     def test_parse_csv_valid(self):
         with mock.patch("annuaire.CSV_DIR", self.tempdir.name):
-            data = parse_csv(self.CSV_FILENAME)
+            data = parse_csv(CSV_FILENAME)
             self.assertEqual(len(data), 1)
-            self.assertEqual(data[0]["client_id"], "fr.health.lrm")
+            self.assertEqual(data[0][HEADERS_COLUMNS_TO_KEEP[0]], "fr.health.lrm")
 
     def test_select_columns(self):
-        data = [
-            {"client_id": "1", "editor": "A", "P: 15-15": "x", "other": "y"},
-            {"client_id": "2", "editor": "B", "P: 15-15": "z", "directCISU": "d"},
-        ]
-        result = select_columns(data)
-        for row in result:
-            self.assertIn("client_id", row)
-            self.assertIn("editor", row)
-            self.assertNotIn("other", row)
-            
+        with mock.patch("annuaire.CSV_DIR", self.tempdir.name):
+            data = parse_csv(CSV_FILENAME)
+            result = select_columns(data)
+            for row in result:
+                self.assertIn(HEADERS_COLUMNS_TO_KEEP[0], row)
+                self.assertIn(HEADERS_COLUMNS_TO_KEEP[1], row)
+                self.assertNotIn("CommonName", row)
+
+
 if __name__ == "__main__":
     unittest.main()
