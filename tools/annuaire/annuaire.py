@@ -43,6 +43,13 @@ app = None
 if __name__ == "__main__":
     app = create_app()
 
-    @app.get(API_ENDPOINT)
-    def get_json():
-        return jsonify(app.config[CSV_DATA_KEY])
+@app.get("/annuaire/api")
+def get_json():
+    return jsonify(app.config[CSV_DATA_KEY])
+
+@app.get('annuaire/health')
+def health_check():
+    return jsonify({
+        "status": "UP",
+        "service": "SAMU Hub Annuaire"
+    }), 200
