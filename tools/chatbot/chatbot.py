@@ -21,17 +21,11 @@ from langchain_openai import ChatOpenAI
 llm = ChatOpenAI(model="gpt-4o", api_key=os.getenv("OPENAI_API_KEY"), temperature=0)
 
 load_dotenv()
-app_token =  os.getenv("SLACK_APP_TOKEN")
+app_token = os.getenv("SLACK_APP_TOKEN")
 bot_token = os.getenv("SLACK_BOT_TOKEN")
 
-
-DSF = (
-    "https://hub.esante.gouv.fr/resources/Accompagnement/DSF/24.10.23_Hub%20Sante_Dossier%20des%20Specifications.pdf"
-)
-DST = (
-    "https://hub.esante.gouv.fr/resources/Accompagnement/tech/23.09%20DST%20v1.2%20-%20Hub%20Sante%20&%20connecteurs.pdf"
-)
-
+DSF = os.getenv("DSF_URL")
+DST = os.getenv("DST_URL")
 
 loader1 = PyPDFLoader(DSF)
 doc1 = loader1.load()
