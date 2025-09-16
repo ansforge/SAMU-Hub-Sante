@@ -10,8 +10,11 @@ from annuaire import (
     API_ENDPOINT,
     CSV_FILENAME,
     HEADERS_COLUMNS_TO_KEEP,
+    CSV_NOT_FOUND_MSG,
 )
 from flask import Flask
+
+FOLDER_NAME_PATCH_PATH = "annuaire.CSV_DIR"
 
 
 class AnnuaireTestCase(unittest.TestCase):
@@ -38,10 +41,36 @@ class AnnuaireTestCase(unittest.TestCase):
                     "fr.health.lrm",
                     "lrm.messaging.bac-a-sable.hub.esante.gouv.fr",
                     "ANS",
-                    "1.5;2.0;2.1",
-                    "1.6;1.7",
+                    "1.5,2.0,2.1",
+                    "1.6,1.7",
                     "1.9",
                     "1.3",
+                    "",
+                    "",
+                    "",
+                    "true",
+                ],
+                [
+                    "fr.health.test.samuC",
+                    "fr.health.test.samuC",
+                    "ANS",
+                    "1.5,2.0,2.1",
+                    "1.6,1.7",
+                    "1.9",
+                    "1.3",
+                    "",
+                    "true",
+                    "",
+                    "true",
+                ],
+                [
+                    "fr.health.test.samuv1",
+                    "fr.health.test.samuv1",
+                    "ANS",
+                    "1.5",
+                    "",
+                    "",
+                    "",
                     "",
                     "",
                     "",
@@ -59,11 +88,13 @@ class AnnuaireTestCase(unittest.TestCase):
                 f.write(";".join(row) + "\n")
 
     def test_parse_csv_file_not_found(self):
-        with self.assertRaises(FileNotFoundError):
-            parse_csv("non_existent.csv")
+        with self.assertLogs(level="ERROR") as cm:
+            with self.assertRaises(FileNotFoundError):
+                parse_csv("non_existent.csv")
+        self.assertIn(CSV_NOT_FOUND_MSG, cm.output[0])
 
     def test_api(self):
-        with mock.patch("annuaire.CSV_DIR", self.tempdir.name):
+        with mock.patch(FOLDER_NAME_PATCH_PATH, self.tempdir.name):
             app = annuaire.create_app()
 
             @app.get(API_ENDPOINT)
@@ -79,19 +110,51 @@ class AnnuaireTestCase(unittest.TestCase):
             self.assertIsInstance(response.json, list)
 
     def test_parse_csv_valid(self):
-        with mock.patch("annuaire.CSV_DIR", self.tempdir.name):
+        with mock.patch(FOLDER_NAME_PATCH_PATH, self.tempdir.name):
             data = parse_csv(CSV_FILENAME)
-            self.assertEqual(len(data), 1)
-            self.assertEqual(data[0][HEADERS_COLUMNS_TO_KEEP[0]], "fr.health.lrm")
+
+            expected_rows = [
+                {
+                    "client_id": "fr.health.lrm",
+                    "editor": "ANS",
+                    "P: 15-15": "1.5,2.0,2.1",
+                    "P: 15-smur": "1.6,1.7",
+                    "P: 15-nexsis": "1.9",
+                    "P: 15-gps": "1.3",
+                },
+                {
+                    "client_id": "fr.health.test.samuC",
+                    "editor": "ANS",
+                    "P: 15-15": "1.5,2.0,2.1",
+                    "P: 15-smur": "1.6,1.7",
+                    "P: 15-nexsis": "1.9",
+                    "P: 15-gps": "1.3",
+                },
+                {
+                    "client_id": "fr.health.test.samuv1",
+                    "editor": "ANS",
+                    "P: 15-15": "1.5",
+                    "P: 15-smur": "",
+                    "P: 15-nexsis": "",
+                    "P: 15-gps": "",
+                },
+            ]
+
+        for i, expected_row in enumerate(expected_rows):
+            for key, expected_value in expected_row.items():
+                actual_value = data[i].get(key)
+                self.assertEqual(
+                    actual_value,
+                    expected_value,
+                    f"Erreur sur la ligne {i+1}, colonne '{key}': attendu '{expected_value}', obtenu '{actual_value}'",
+                )
 
     def test_select_columns(self):
-        with mock.patch("annuaire.CSV_DIR", self.tempdir.name):
+        with mock.patch(FOLDER_NAME_PATCH_PATH, self.tempdir.name):
             data = parse_csv(CSV_FILENAME)
             result = select_columns(data)
             for row in result:
-                self.assertIn(HEADERS_COLUMNS_TO_KEEP[0], row)
-                self.assertIn(HEADERS_COLUMNS_TO_KEEP[1], row)
-                self.assertNotIn("CommonName", row)
+                self.assertEqual(set(row.keys()), set(HEADERS_COLUMNS_TO_KEEP))
 
 
 if __name__ == "__main__":
