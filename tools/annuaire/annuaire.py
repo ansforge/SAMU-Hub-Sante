@@ -7,6 +7,7 @@ CSV_DIR = "/config"
 CSV_DATA_KEY = 'CSV_DATA'
 CSV_FILENAME = "rabbitmq.clients-configuration.csv"
 API_ENDPOINT = "/annuaire/api"
+CSV_NOT_FOUND_MSG = "Fichier CSV introuvable"
 
 HEADERS_COLUMNS_TO_KEEP = ['client_id', 'editor', 'P: 15-15', 'P: 15-smur', 'P: 15-nexsis', 'P: 15-gps', 'directCISU']
 
@@ -22,7 +23,7 @@ def parse_csv(filename):
     path = os.path.join(CSV_DIR, filename)
     if not os.path.exists(path):
         logging.error(f"Fichier CSV introuvable : {path}")
-        raise FileNotFoundError(f"Fichier CSV introuvable : {filename}")
+        raise FileNotFoundError(f"{CSV_NOT_FOUND_MSG} : {filename}")
     try:
         with open(path, newline='', encoding='utf-8') as csvfile:
             reader = csv.DictReader(csvfile, delimiter=';')
