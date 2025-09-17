@@ -8,6 +8,7 @@ from annuaire import (
     select_columns,
     CSV_DATA_KEY,
     API_ENDPOINT,
+    HEALTH_ENDPOINT,
     CSV_FILENAME,
     HEADERS_COLUMNS_TO_KEEP,
     CSV_NOT_FOUND_MSG,
@@ -96,14 +97,6 @@ class AnnuaireTestCase(unittest.TestCase):
     def test_api(self):
         with mock.patch(FOLDER_NAME_PATCH_PATH, self.tempdir.name):
             app = annuaire.create_app()
-
-            @app.get(API_ENDPOINT)
-            def get_json():
-                return app.response_class(
-                    app.json.dumps(app.config[CSV_DATA_KEY]),
-                    mimetype="application/json",
-                )
-
             client = app.test_client()
             response = client.get(API_ENDPOINT)
             self.assertEqual(response.status_code, 200)
@@ -155,6 +148,16 @@ class AnnuaireTestCase(unittest.TestCase):
             result = select_columns(data)
             for row in result:
                 self.assertEqual(set(row.keys()), set(HEADERS_COLUMNS_TO_KEEP))
+
+    def test_healthcheck(self):
+        with mock.patch(FOLDER_NAME_PATCH_PATH, self.tempdir.name):
+            app = annuaire.create_app()
+            client = app.test_client()
+            response = client.get(HEALTH_ENDPOINT)
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(
+                response.json, {"status": "UP", "service": "SAMU Hub Annuaire"}
+            )
 
 
 if __name__ == "__main__":
