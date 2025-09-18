@@ -67,5 +67,5 @@ def register_routes(app):
         return jsonify({"status": "UP", "service": "SAMU Hub Annuaire"}), 200
 
 
-if __name__ == "__main__":
+if os.environ.get("FLASK_PROD") == "1":
     app = create_app()
