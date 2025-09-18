@@ -20,11 +20,11 @@ HEADERS_COLUMNS_TO_KEEP = [
     "directCISU",
 ]
 
-app = Flask(__name__)
 
-
-def create_app():
-    csv_data = parse_csv(CSV_FILENAME)
+def create_app(csv_dir=CSV_DIR):
+    app = Flask(__name__)
+    register_routes(app)
+    csv_data = parse_csv(CSV_FILENAME, csv_dir)
     if csv_data is None:
         raise RuntimeError(
             "Erreur : impossible de charger le fichier CSV au démarrage."
@@ -33,8 +33,8 @@ def create_app():
     return app
 
 
-def parse_csv(filename):
-    path = os.path.join(CSV_DIR, filename)
+def parse_csv(filename, csv_dir=CSV_DIR):
+    path = os.path.join(csv_dir, filename)
     if not os.path.exists(path):
         logging.error(f"Fichier CSV introuvable : {path}")
         raise FileNotFoundError(f"{CSV_NOT_FOUND_MSG} : {filename}")
@@ -57,15 +57,15 @@ def select_columns(data: list[dict]) -> list[dict]:
     return data_updated
 
 
+def register_routes(app):
+    @app.get(API_ENDPOINT)
+    def get_json():
+        return jsonify(app.config[CSV_DATA_KEY])
+
+    @app.get(HEALTH_ENDPOINT)
+    def health_check():
+        return jsonify({"status": "UP", "service": "SAMU Hub Annuaire"}), 200
+
+
 if __name__ == "__main__":
     app = create_app()
-
-
-@app.get(API_ENDPOINT)
-def get_json():
-    return jsonify(app.config[CSV_DATA_KEY])
-
-
-@app.get(HEALTH_ENDPOINT)
-def health_check():
-    return jsonify({"status": "UP", "service": "SAMU Hub Annuaire"}), 200
