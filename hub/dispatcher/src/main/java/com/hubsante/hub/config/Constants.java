@@ -43,7 +43,9 @@ public class Constants {
             "15-15_v1.5", "v1",
             "15-15_v2.0","v2",
             "15-15_v2.1", "v3",
-            "15-nexsis_v1.9", "v3"
+            "15-nexsis_v1.9", "v3",
+            "15-smur_v1.6", "v2",
+            "15-smur_v1.7", "v3"
     );
 
     public enum Perimeter {
