@@ -25,6 +25,9 @@ import com.hubsante.model.health.CreateCaseHealthWrapper;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
@@ -33,6 +36,7 @@ import org.mockito.MockitoAnnotations;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Stream;
 
 import static com.hubsante.hub.utils.ConversionUtils.isAlreadyCisuConverted;
 import static com.hubsante.hub.utils.ConversionUtils.trimVersionSuffix;
@@ -98,63 +102,53 @@ public class ConversionUtilsTest {
         }
     }
 
-    @Test
-    void testRequiresVersionConversion(){
+    @ParameterizedTest
+    @MethodSource("provideVersionConversionCases")
+    void testRequiresVersionConversion(String vhost,
+                                       String senderId,
+                                       String recipientId,
+                                       String perimeter,
+                                       String[] versions,
+                                       boolean expected) {
         try (MockedStatic<MessageUtils> mockedMessageUtils = mockStatic(MessageUtils.class)) {
-            when(hubConfig.getVhost()).thenReturn("15-15_v2.0");
-            mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage)).thenReturn("fr.health.samuV1");
-            when(edxlMessage.getSenderID()).thenReturn("fr.health.samuV2");
-            when(hubConfig.getClientVersionsForPerimeter("fr.health.samuV1", "15-15")).thenReturn(new String[]{"1.5"});
-            assertTrue(ConversionUtils.requiresVersionConversion(hubConfig, edxlMessage));
+            when(hubConfig.getVhost()).thenReturn(vhost);
+            when(edxlMessage.getSenderID()).thenReturn(senderId);
+            mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage))
+                    .thenReturn(recipientId);
+            when(hubConfig.getClientVersionsForPerimeter(recipientId, perimeter))
+                    .thenReturn(versions);
 
-            when(hubConfig.getVhost()).thenReturn("15-15_v1.5");
-            mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage)).thenReturn("fr.health.samuV1");
-            when(edxlMessage.getSenderID()).thenReturn("fr.health.samuX");
-            when(hubConfig.getClientVersionsForPerimeter("fr.health.samuV1", "15-15")).thenReturn(new String[]{"1.5"});
-            assertFalse(ConversionUtils.requiresVersionConversion(hubConfig, edxlMessage));
-
-            when(hubConfig.getVhost()).thenReturn("15-15_v2.0");
-            mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage)).thenReturn("fr.health.samuV2");
-            when(edxlMessage.getSenderID()).thenReturn("fr.health.samuVX");
-            when(hubConfig.getClientVersionsForPerimeter("fr.health.samuV2", "15-15")).thenReturn(new String[]{"2.0"});
-            assertFalse(ConversionUtils.requiresVersionConversion(hubConfig, edxlMessage));
-
-            when(hubConfig.getVhost()).thenReturn("15-15_v1.5");
-            when(edxlMessage.getSenderID()).thenReturn("fr.health.samuV1");
-            mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage)).thenReturn("fr.health.samuV2");
-            when(hubConfig.getClientVersionsForPerimeter("fr.health.samuV2", "15-15")).thenReturn(new String[]{"2.0"});
-            assertTrue(ConversionUtils.requiresVersionConversion(hubConfig, edxlMessage));
-
-            when(hubConfig.getVhost()).thenReturn("15-15_v2.0");
-            when(edxlMessage.getSenderID()).thenReturn("fr.health.samuVX");
-            mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage)).thenReturn("fr.health.samuA");
-            when(hubConfig.getClientVersionsForPerimeter("fr.health.samuA", "15-15")).thenReturn(new String[]{"1.5","2.0", "2.1"});
-            assertFalse(ConversionUtils.requiresVersionConversion(hubConfig, edxlMessage));
-
-            when(hubConfig.getVhost()).thenReturn("15-15_v1.5");
-            mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage)).thenReturn("fr.health.samuA");
-            when(edxlMessage.getSenderID()).thenReturn("fr.health.samuVX");
-            when(hubConfig.getClientVersionsForPerimeter("fr.health.samuA", "15-15")).thenReturn(new String[]{"1.5","2.0", "2.1"});
-            assertFalse(ConversionUtils.requiresVersionConversion(hubConfig, edxlMessage));
-
-            when(hubConfig.getVhost()).thenReturn("15-15_v2.1");
-            when(edxlMessage.getSenderID()).thenReturn("fr.health.samuVX");
-            mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage)).thenReturn("fr.health.samuA");
-            when(hubConfig.getClientVersionsForPerimeter("fr.health.samuA", "15-15")).thenReturn(new String[]{"1.5","2.0", "2.1"});
-            assertFalse(ConversionUtils.requiresVersionConversion(hubConfig, edxlMessage));
-
-            when(hubConfig.getVhost()).thenReturn("15-15_v1.5");
-            when(edxlMessage.getSenderID()).thenReturn("fr.health.samuVX");
-            mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage)).thenReturn("fr.health.samuNull");
-            when(hubConfig.getClientVersionsForPerimeter("fr.health.samuNull", "15-15")).thenReturn(null);
-            assertFalse(ConversionUtils.requiresVersionConversion(hubConfig, edxlMessage));
-
-            when(hubConfig.getVhost()).thenReturn("15-15_v1.5");
-            when(edxlMessage.getSenderID()).thenReturn("fr.health.samuVX");
-            mockedMessageUtils.when(() -> MessageUtils.getRecipientID(edxlMessage)).thenReturn("fr.health.samuEmpty");
-            when(hubConfig.getClientVersionsForPerimeter("fr.health.samuEmpty", "15-15")).thenReturn(new String[]{});
-            assertFalse(ConversionUtils.requiresVersionConversion(hubConfig, edxlMessage));
+            assertEquals(expected, ConversionUtils.requiresVersionConversion(hubConfig, edxlMessage));
         }
+    }
+
+    private static Stream<Arguments> provideVersionConversionCases() {
+        return Stream.of(
+                // Case 1: conversion 15-15 2 -> 1
+                Arguments.of("15-15_v2.0", "fr.health.samuV2", "fr.health.samuV1", "15-15", new String[]{"1.5"}, true),
+                // Case 2: no conversion 15-15 1 -> 1
+                Arguments.of("15-15_v1.5", "fr.health.samuX", "fr.health.samuV1", "15-15", new String[]{"1.5"}, false),
+                // Case 3: no conversion 15-15 2 -> 2
+                Arguments.of("15-15_v2.0", "fr.health.samuX", "fr.health.samuV2", "15-15", new String[]{"2.0"}, false),
+                // Case 4: conversion 15-15 1 -> 2
+                Arguments.of("15-15_v1.5", "fr.health.samuV1", "fr.health.samuV2", "15-15", new String[]{"2.0"}, true),
+                // Case 5: no conversion 15-15 2 -> 1,2
+                Arguments.of("15-15_v2.0", "fr.health.samuVX", "fr.health.samuA", "15-15", new String[]{"1.5", "2.0", "2.1"}, false),
+                // Case 6: no conversion 15-15 1 -> 1,2
+                Arguments.of("15-15_v1.5", "fr.health.samuVX", "fr.health.samuA", "15-15", new String[]{"1.5", "2.0", "2.1"}, false),
+                // Case 7: no conversion 15-15 3 -> 1,2,3
+                Arguments.of("15-15_v2.1", "fr.health.samuVX", "fr.health.samuA", "15-15", new String[]{"1.5", "2.0", "2.1"}, false),
+                // Case 8: no conversion 15-15 2 -> null
+                Arguments.of("15-15_v1.5", "fr.health.samuVX", "fr.health.samuNull", "15-15", null, false),
+                // Case 9: no conversion 15-15 2 -> empty
+                Arguments.of("15-15_v1.5", "fr.health.samuVX", "fr.health.samuEmpty", "15-15", new String[]{}, false),
+                // Case 10: conversion 15-smur 2 -> 3
+                Arguments.of("15-smur_v1.6", "fr.health.samuV2", "fr.health.samuV3", "15-smur", new String[]{"1.7"}, true),
+                // Case 11: conversion 15-smur 3 -> 2
+                Arguments.of("15-smur_v1.7", "fr.health.samuV3", "fr.health.samuV2", "15-smur", new String[]{"1.6"}, true),
+                // Case 12: no conversion 15-smur 3 -> 3
+                Arguments.of("15-smur_v1.7", "fr.health.samuV3", "fr.health.samuV3bis", "15-smur", new String[]{"1.7"}, false)
+        );
     }
 
     @Test
@@ -374,6 +368,8 @@ public class ConversionUtilsTest {
         assertTrue(ConversionUtils.isConversionAvailable("15-15_v2.1"));
         assertTrue(ConversionUtils.isConversionAvailable("15-15_v2.0"));
         assertTrue(ConversionUtils.isConversionAvailable("15-nexsis_v1.9"));
+        assertTrue(ConversionUtils.isConversionAvailable("15-smur_v1.6"));
+        assertTrue(ConversionUtils.isConversionAvailable("15-smur_v1.7"));
         assertFalse(ConversionUtils.isConversionAvailable("other_vhost"));
     }
 }
