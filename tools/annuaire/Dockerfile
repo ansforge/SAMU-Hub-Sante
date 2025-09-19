@@ -6,7 +6,7 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
 # Set environment variable to indicate production mode
-ENV FLASK_PROD=1
+ENV ENVIRONMENT=production
 
 # Set the working directory in the container
 WORKDIR /app
