@@ -23,10 +23,10 @@ HEADERS_COLUMNS_TO_KEEP = [
 ]
 
 
-def create_app(csv_dir=CSV_DIR):
+def create_app():
     app = Flask(__name__)
     register_routes(app)
-    csv_data = parse_csv(CSV_FILENAME, csv_dir)
+    csv_data = parse_csv(CSV_FILENAME)
     if csv_data is None:
         raise RuntimeError(
             "Erreur : impossible de charger le fichier CSV au démarrage."
@@ -35,8 +35,8 @@ def create_app(csv_dir=CSV_DIR):
     return app
 
 
-def parse_csv(filename, csv_dir=CSV_DIR):
-    path = os.path.join(csv_dir, filename)
+def parse_csv(filename):
+    path = os.path.join(CSV_DIR, filename)
     if not os.path.exists(path):
         logging.error(f"Fichier CSV introuvable : {path}")
         raise FileNotFoundError(f"{CSV_NOT_FOUND_MSG} : {filename}")
