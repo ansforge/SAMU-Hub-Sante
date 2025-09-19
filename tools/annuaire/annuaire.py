@@ -3,6 +3,8 @@ from flask import Flask, jsonify, abort
 import csv
 import os
 
+ENVIRONMENT = os.environ.get("ENVIRONMENT")
+
 CSV_DIR = "/config"
 CSV_DATA_KEY = "CSV_DATA"
 CSV_FILENAME = "rabbitmq.clients-configuration.csv"
@@ -67,5 +69,5 @@ def register_routes(app):
         return jsonify({"status": "UP", "service": "SAMU Hub Annuaire"}), 200
 
 
-if os.environ.get("FLASK_PROD") == "1":
+if ENVIRONMENT == "production":
     app = create_app()
