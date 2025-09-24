@@ -1,3 +1,3 @@
 export default {
-  testEnvironment: "node",
+  testEnvironment: "jsdom",
 };
