@@ -80,3 +80,17 @@ export function getActorsFromDepartment(numDep) {
     ),
   ];
 }
+
+export function sortClientConfig(clientsConfig) {
+  return clientsConfig.sort((a, b) => {
+    const editorA = (a.editor || '').toLowerCase();
+    const editorB = (b.editor || '').toLowerCase();
+
+    const editorCompare = editorA.localeCompare(editorB);
+    if (editorCompare !== 0) return editorCompare;
+
+    const clientIdA = (a.client_id || '').toLowerCase();
+    const clientIdB = (b.client_id || '').toLowerCase();
+    return clientIdA.localeCompare(clientIdB);
+  });
+}

@@ -5,9 +5,10 @@ import {
   getDepartmentsInProd,
   getActorsFromDepartment,
   state,
+  sortClientConfig,
 } from "../../script/annuaire/data.js";
 import { keyMap, CLIENT_ID_PREFIX } from "../../script/annuaire/constants.js";
-import { jest } from "@jest/globals";
+import { expect, jest } from "@jest/globals";
 
 describe("Data utils", () => {
   test("should constitute label from CSV client raw", () => {
@@ -71,7 +72,15 @@ describe("Data utils", () => {
           "15-SMUR/RPIS": "1.6,1.7",
         },
         {
-          client_id: "fr.health.lrm",
+          client_id: "fr.health.lrm2",
+          editor: "ANS",
+          "15-15": "1.5,2.0,2.1",
+          "15-GPS": "1.3",
+          "15-NexSIS": "1.9",
+          "15-SMUR/RPIS": "1.6,1.7",
+        },
+        {
+          client_id: "fr.health.lrm1",
           editor: "ANS",
           "15-15": "1.5,2.0,2.1",
           "15-GPS": "1.3",
@@ -92,6 +101,20 @@ describe("Data utils", () => {
         state.clientsConfigurations[2],
       ];
       expect(actors).toEqual(expected_actors);
+    });
+
+    test("should sort client config by editor then by clien_id", () => {
+      const sortedClientConfig = sortClientConfig(state.clientsConfigurations);
+      const expected_client_id_suite = [
+        "fr.health.lrm1",
+        "fr.health.lrm2",
+        CLIENT_ID_PREFIX.SAMU + "750",
+        CLIENT_ID_PREFIX.SNP + "330",
+        CLIENT_ID_PREFIX.SNP + "750",
+      ];
+      sortedClientConfig.forEach((c, index) => {
+        expect(c.client_id).toEqual(expected_client_id_suite[index]);
+      });
     });
   });
 

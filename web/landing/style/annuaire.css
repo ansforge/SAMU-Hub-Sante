@@ -3,7 +3,6 @@ body {
 }
 
 #first-section {
-  /* height: calc(100vh - var(--header-min-height)); */
   display: flex;
   flex-direction: column;
 }
@@ -15,7 +14,8 @@ body {
 /* Modale */
 .modal-content {
   padding: 20px 30px;
-  width: 70%;
+  width: fit-content;
+  max-width: 70%;
 }
 
 /* Map */
