@@ -7,7 +7,7 @@ import {
   perimeter,
 } from "./constants.js";
 import { FILTERS_CONFIG } from "./filters.js";
-import { getDepartmentInProd, getActorsFromDepartment } from "./data.js";
+import { getDepartmentsInProd, getActorsFromDepartment } from "./data.js";
 
 export function renderClientsConfigTable(clientsConfig) {
   const tableAnnuaireContent = document.getElementById(CLIENTS_CONFIG_TABLE_ID);
@@ -157,7 +157,7 @@ function createActorsLinks(actors) {
 }
 
 export function updateDepartmentInProdColor() {
-  const departments = getDepartmentInProd();
+  const departments = getDepartmentsInProd();
   departments.forEach((dep) => {
     const elements = document.querySelectorAll(`[data-num-dep="${dep}"]`);
     elements.forEach((elem) => elem.classList.add("prod"));

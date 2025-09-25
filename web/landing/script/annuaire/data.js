@@ -47,7 +47,7 @@ export function constituteLabel(data) {
   return label + departmentNumber;
 }
 
-export function getDepartmentInProd() {
+export function getDepartmentsInProd() {
   const clientIds = state.clientsConfigurations
     .map((item) => item.client_id)
     .filter(
