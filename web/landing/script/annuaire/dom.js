@@ -7,7 +7,12 @@ import {
   perimeter,
 } from "./constants.js";
 import { FILTERS_CONFIG } from "./filters.js";
-import { getDepartmentsInProd, getActorsFromDepartment, sortClientConfig, getActorsInfo } from "./data.js";
+import {
+  getDepartmentsInProd,
+  getActorsFromDepartment,
+  sortClientConfig,
+  getActorsInfo,
+} from "./data.js";
 
 export function renderClientsConfigTable(clientsConfig) {
   const sortedClientConfig = sortClientConfig(clientsConfig);
@@ -22,7 +27,7 @@ export function renderClientsConfigTable(clientsConfig) {
 
 function createClientConfigRow(item) {
   const row = document.createElement("tr");
-  row.appendChild(createTextCell(item.label))
+  row.appendChild(createTextCell(item.label));
   row.appendChild(createTextCell(item.client_id));
   row.appendChild(createTextCell(item.editor));
   row.appendChild(createAuthorizedPerimetersCell(item));
@@ -123,7 +128,9 @@ function renderDepartmentInfo(dep) {
       ),
     );
   } else {
-    const actors_info = getActorsFromDepartment(dep.dataset.numDep).map(c => getActorsInfo(c));
+    const actors_info = getActorsFromDepartment(dep.dataset.numDep).map((c) =>
+      getActorsInfo(c),
+    );
     divInfo.style.backgroundColor = "var(--primary)";
     divInfo.appendChild(createUnorderedList(actors_info));
   }
@@ -143,7 +150,7 @@ function createParagraph(text) {
 
 function createUnorderedList(list) {
   const ul = document.createElement("ul");
-  list.forEach(item => {
+  list.forEach((item) => {
     const li = document.createElement("li");
     li.textContent = item;
     ul.appendChild(li);
