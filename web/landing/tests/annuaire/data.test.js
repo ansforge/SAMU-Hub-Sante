@@ -6,6 +6,7 @@ import {
   getActorsFromDepartment,
   state,
   sortClientConfig,
+  getActorsInfo,
 } from "../../script/annuaire/data.js";
 import { keyMap, CLIENT_ID_PREFIX } from "../../script/annuaire/constants.js";
 import { expect, jest } from "@jest/globals";
@@ -50,42 +51,47 @@ describe("Data utils", () => {
         {
           client_id: CLIENT_ID_PREFIX.SAMU + "750",
           editor: "Editeur A",
-          "15-15": "1.5,2.0,2.1",
-          "15-GPS": "1.3",
-          "15-NexSIS": "1.9",
-          "15-SMUR/RPIS": "1.6,1.7",
+          label: "SAMU 75",
+          "15-15": "1.5",
+          "15-GPS": "",
+          "15-NexSIS": "",
+          "15-SMUR/RPIS": "1.6",
         },
         {
           client_id: CLIENT_ID_PREFIX.SNP + "330",
           editor: "Editeur B",
-          "15-15": "1.5,2.0,2.1",
-          "15-GPS": "1.3",
+          label: "SNP 33",
+          "15-15": "",
+          "15-GPS": "",
           "15-NexSIS": "1.9",
-          "15-SMUR/RPIS": "1.6,1.7",
+          "15-SMUR/RPIS": "",
         },
         {
           client_id: CLIENT_ID_PREFIX.SNP + "750",
           editor: "Editeur C",
-          "15-15": "1.5,2.0,2.1",
+          label: "SNP 75",
+          "15-15": "2.1",
           "15-GPS": "1.3",
-          "15-NexSIS": "1.9",
-          "15-SMUR/RPIS": "1.6,1.7",
+          "15-NexSIS": "",
+          "15-SMUR/RPIS": "1.6",
         },
         {
           client_id: "fr.health.lrm2",
           editor: "ANS",
-          "15-15": "1.5,2.0,2.1",
-          "15-GPS": "1.3",
+          label: "",
+          "15-15": "",
+          "15-GPS": "",
           "15-NexSIS": "1.9",
-          "15-SMUR/RPIS": "1.6,1.7",
+          "15-SMUR/RPIS": "",
         },
         {
           client_id: "fr.health.lrm1",
           editor: "ANS",
-          "15-15": "1.5,2.0,2.1",
-          "15-GPS": "1.3",
-          "15-NexSIS": "1.9",
-          "15-SMUR/RPIS": "1.6,1.7",
+          label: "",
+          "15-15": "",
+          "15-GPS": "",
+          "15-NexSIS": "",
+          "15-SMUR/RPIS": "",
         },
       ];
     });
@@ -114,6 +120,19 @@ describe("Data utils", () => {
       ];
       sortedClientConfig.forEach((c, index) => {
         expect(c.client_id).toEqual(expected_client_id_suite[index]);
+      });
+    });
+
+    test("should return client actors info", () => {
+      const expectedInfo = [
+        "SAMU 75 (15-15, 15-SMUR/RPIS)",
+        "SNP 33 (15-NexSIS)",
+        "SNP 75 (15-15, 15-SMUR/RPIS, 15-GPS)",
+        "",
+        "",
+      ];
+      state.clientsConfigurations.forEach((c, index) => {
+        expect(getActorsInfo(c)).toEqual(expectedInfo[index]);
       });
     });
   });
