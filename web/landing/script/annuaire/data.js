@@ -1,4 +1,4 @@
-import { CLIENT_ID_PREFIX } from "./constants.js";
+import { CLIENT_ID_PREFIX, perimeter } from "./constants.js";
 
 export const state = { clientsConfigurations: [] };
 
@@ -83,14 +83,24 @@ export function getActorsFromDepartment(numDep) {
 
 export function sortClientConfig(clientsConfig) {
   return clientsConfig.sort((a, b) => {
-    const editorA = (a.editor || '').toLowerCase();
-    const editorB = (b.editor || '').toLowerCase();
+    const editorA = (a.editor || "").toLowerCase();
+    const editorB = (b.editor || "").toLowerCase();
 
     const editorCompare = editorA.localeCompare(editorB);
     if (editorCompare !== 0) return editorCompare;
 
-    const clientIdA = (a.client_id || '').toLowerCase();
-    const clientIdB = (b.client_id || '').toLowerCase();
+    const clientIdA = (a.client_id || "").toLowerCase();
+    const clientIdB = (b.client_id || "").toLowerCase();
     return clientIdA.localeCompare(clientIdB);
   });
+}
+
+export function getActorsInfo(clientConfig) {
+  // retourne label (perimètre) ex : SAMU 01 (15-15, 15-NexSIS)
+  const activePerimeters = perimeter.filter((p) => clientConfig[p]);
+  let info = clientConfig.label;
+  if (activePerimeters.length > 0) {
+    info += " (" + activePerimeters.join(", ") + ")";
+  }
+  return info;
 }
