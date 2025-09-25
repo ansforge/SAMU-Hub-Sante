@@ -22,6 +22,7 @@ export function renderClientsConfigTable(clientsConfig) {
 
 function createClientConfigRow(item) {
   const row = document.createElement("tr");
+  row.appendChild(createTextCell(item.label))
   row.appendChild(createTextCell(item.client_id));
   row.appendChild(createTextCell(item.editor));
   row.appendChild(createAuthorizedPerimetersCell(item));
