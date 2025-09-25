@@ -43,54 +43,56 @@ describe("Data utils", () => {
     expect(renameKeys(client_fetched, keyMap)).toEqual(client_expected);
   });
 
-  beforeEach(() => {
-    state.clientsConfigurations = [
-      {
-        client_id: CLIENT_ID_PREFIX.SAMU + "750",
-        editor: "Editeur A",
-        "15-15": "1.5,2.0,2.1",
-        "15-GPS": "1.3",
-        "15-NexSIS": "1.9",
-        "15-SMUR/RPIS": "1.6,1.7",
-      },
-      {
-        client_id: CLIENT_ID_PREFIX.SNP + "330",
-        editor: "Editeur B",
-        "15-15": "1.5,2.0,2.1",
-        "15-GPS": "1.3",
-        "15-NexSIS": "1.9",
-        "15-SMUR/RPIS": "1.6,1.7",
-      },
-      {
-        client_id: CLIENT_ID_PREFIX.SNP + "750",
-        editor: "Editeur C",
-        "15-15": "1.5,2.0,2.1",
-        "15-GPS": "1.3",
-        "15-NexSIS": "1.9",
-        "15-SMUR/RPIS": "1.6,1.7",
-      },
-      {
-        client_id: "fr.health.lrm",
-        editor: "ANS",
-        "15-15": "1.5,2.0,2.1",
-        "15-GPS": "1.3",
-        "15-NexSIS": "1.9",
-        "15-SMUR/RPIS": "1.6,1.7",
-      },
-    ];
-  });
+  describe("State-based data utils", () => {
+    beforeEach(() => {
+      state.clientsConfigurations = [
+        {
+          client_id: CLIENT_ID_PREFIX.SAMU + "750",
+          editor: "Editeur A",
+          "15-15": "1.5,2.0,2.1",
+          "15-GPS": "1.3",
+          "15-NexSIS": "1.9",
+          "15-SMUR/RPIS": "1.6,1.7",
+        },
+        {
+          client_id: CLIENT_ID_PREFIX.SNP + "330",
+          editor: "Editeur B",
+          "15-15": "1.5,2.0,2.1",
+          "15-GPS": "1.3",
+          "15-NexSIS": "1.9",
+          "15-SMUR/RPIS": "1.6,1.7",
+        },
+        {
+          client_id: CLIENT_ID_PREFIX.SNP + "750",
+          editor: "Editeur C",
+          "15-15": "1.5,2.0,2.1",
+          "15-GPS": "1.3",
+          "15-NexSIS": "1.9",
+          "15-SMUR/RPIS": "1.6,1.7",
+        },
+        {
+          client_id: "fr.health.lrm",
+          editor: "ANS",
+          "15-15": "1.5,2.0,2.1",
+          "15-GPS": "1.3",
+          "15-NexSIS": "1.9",
+          "15-SMUR/RPIS": "1.6,1.7",
+        },
+      ];
+    });
 
-  test("should return departments in prod from clients configurations", () => {
-    expect(getDepartmentsInProd().sort()).toEqual(["33", "75"]);
-  });
+    test("should return departments in prod from clients configurations", () => {
+      expect(getDepartmentsInProd().sort()).toEqual(["33", "75"]);
+    });
 
-  test("should get actors from department", () => {
-    const actors = getActorsFromDepartment("75");
-    const expected_actors = [
-      state.clientsConfigurations[0],
-      state.clientsConfigurations[2],
-    ];
-    expect(actors).toEqual(expected_actors);
+    test("should get actors from department", () => {
+      const actors = getActorsFromDepartment("75");
+      const expected_actors = [
+        state.clientsConfigurations[0],
+        state.clientsConfigurations[2],
+      ];
+      expect(actors).toEqual(expected_actors);
+    });
   });
 
   describe("fetchData", () => {
