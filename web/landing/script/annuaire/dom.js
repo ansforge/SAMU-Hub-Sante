@@ -7,7 +7,7 @@ import {
   perimeter,
 } from "./constants.js";
 import { FILTERS_CONFIG } from "./filters.js";
-import { getDepartmentsInProd, getActorsFromDepartment, sortClientConfig } from "./data.js";
+import { getDepartmentsInProd, getActorsFromDepartment, sortClientConfig, getActorsInfo } from "./data.js";
 
 export function renderClientsConfigTable(clientsConfig) {
   const sortedClientConfig = sortClientConfig(clientsConfig);
@@ -112,50 +112,43 @@ function renderDepartmentInfo(dep) {
   }
 
   // Title
-  divInfo.appendChild(createDepartmentTitle(dep));
+  divInfo.appendChild(createTitleH2(dep));
 
   // Content
   if (!dep.classList.contains("prod")) {
     divInfo.style.backgroundColor = "var(--gray-500)";
     divInfo.appendChild(
-      createDepartmentParagraph(
+      createParagraph(
         "Aucune information disponible pour ce département en environnement de production.",
       ),
     );
   } else {
-    const actors = getActorsFromDepartment(dep.dataset.numDep);
+    const actors_info = getActorsFromDepartment(dep.dataset.numDep).map(c => getActorsInfo(c));
     divInfo.style.backgroundColor = "var(--primary)";
-    const message =
-      actors.length === 1
-        ? "Un acteur a été trouvé :"
-        : `${actors.length} acteurs ont été trouvés :`;
-    divInfo.appendChild(createDepartmentParagraph(message));
-    divInfo.appendChild(createActorsLinks(actors));
+    divInfo.appendChild(createUnorderedList(actors_info));
   }
 }
 
-function createDepartmentTitle(dep) {
+function createTitleH2(dep) {
   const title = document.createElement("h2");
   title.innerText = dep.querySelector("title").innerHTML;
   return title;
 }
 
-function createDepartmentParagraph(text) {
+function createParagraph(text) {
   const p = document.createElement("p");
   p.innerText = text;
   return p;
 }
 
-function createActorsLinks(actors) {
-  const fragment = document.createDocumentFragment();
-  actors.forEach((actor) => {
-    const link = document.createElement("a");
-    link.innerHTML = actor.label;
-    link.style.color = "var(--white)";
-    fragment.appendChild(link);
-    fragment.appendChild(document.createElement("br"));
+function createUnorderedList(list) {
+  const ul = document.createElement("ul");
+  list.forEach(item => {
+    const li = document.createElement("li");
+    li.textContent = item;
+    ul.appendChild(li);
   });
-  return fragment;
+  return ul;
 }
 
 export function updateDepartmentInProdColor() {
