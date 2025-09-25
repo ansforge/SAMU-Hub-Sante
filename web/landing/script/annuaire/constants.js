@@ -10,7 +10,7 @@ export const FILTER_IDS = {
 export const BASE_API_URL = "hub.esante.gouv.fr/annuaire/api";
 export const API_URL = "http://localhost:5000/hub/prod"; //"https://admin.hub.esante.gouv.fr/annuaire/api";
 
-export const RABBITMQ_URL = "amqps://messaging.hub.esante.gouv.fr";
+export const RABBITMQ_URL = "amqps://messaging.hub.esante.gouv.fr:5671";
 
 export const CLIENT_ID_PREFIX = {
   SAMU: "fr.health.samu",

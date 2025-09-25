@@ -7,13 +7,14 @@ import {
   perimeter,
 } from "./constants.js";
 import { FILTERS_CONFIG } from "./filters.js";
-import { getDepartmentsInProd, getActorsFromDepartment } from "./data.js";
+import { getDepartmentsInProd, getActorsFromDepartment, sortClientConfig } from "./data.js";
 
 export function renderClientsConfigTable(clientsConfig) {
+  const sortedClientConfig = sortClientConfig(clientsConfig);
   const tableAnnuaireContent = document.getElementById(CLIENTS_CONFIG_TABLE_ID);
   tableAnnuaireContent.innerHTML = "";
 
-  clientsConfig.forEach((item) => {
+  sortedClientConfig.forEach((item) => {
     const row = createClientConfigRow(item);
     tableAnnuaireContent.appendChild(row);
   });
