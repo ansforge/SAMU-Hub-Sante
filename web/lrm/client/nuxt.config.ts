@@ -8,7 +8,14 @@ function isEnvProd() {
 }
 
 export default defineNuxtConfig({
-  ssr: true,
+  // Configuration Vue 3 + Nuxt 3
+  vue: {
+    runtimeCompiler: false, // ✅ Force la compilation à build-time
+    compilerOptions: {
+      isCustomElement: (tag) => tag.startsWith('custom-'),
+    },
+  },
+
   vite: {
     plugins: [
       vuetify({ autoImport: true }),
@@ -22,6 +29,18 @@ export default defineNuxtConfig({
     vue: {
       template: {
         transformAssetUrls,
+        compilerOptions: {
+          isCustomElement: (tag) => tag.startsWith('ion-'),
+        },
+      },
+    },
+    build: {
+      minify: 'terser',
+      rollupOptions: {
+        output: {
+          // Éviter le code dynamique
+          manualChunks: undefined,
+        },
       },
     },
     optimizeDeps: {
@@ -40,16 +59,20 @@ export default defineNuxtConfig({
 
   // Build Configuration: https://go.nuxtjs.dev/config-build
   build: {
-    // Necessary for "à la carte" import of vuetify components as the js import in vjsf.js was failing
-    // Ref.: https://koumoul-dev.github.io/vuetify-jsonschema-form/latest/getting-started
     transpile: ['vuetify/lib', '@koumoul/vjsf'],
   },
 
-  generate: {
-    // Ignore href links of default.vue | Ref.: https://github.com/nuxt/nuxt.js/issues/8105#issuecomment-706702793
-    exclude: [],
+  // Configuration CSP native Nuxt 3
+  ssr: true,
+  nitro: {
+    compressPublicAssets: true,
+    // Configuration pour éviter eval dans le serveur
+    experimental: {
+      wasm: false,
+    },
   },
 
+  // Configuration existante...
   app: {
     baseURL: isEnvProd() ? '/lrm/' : '/',
     head: {
