@@ -23,3 +23,8 @@ kubectl create secret tls landing-cert --key certs/sslforfree/private.key --cert
 ## Debug
 ### Forbidden files (403 errors)
 They need read rights for nginx to work -> `chmod 644 filename`
+
+## Run tests
+```bash
+npm run test
+```
