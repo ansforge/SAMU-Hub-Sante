@@ -1,5 +1,6 @@
 import logging
 from flask import Flask, jsonify, abort
+from flask_cors import CORS
 import csv
 import os
 
@@ -25,6 +26,7 @@ HEADERS_COLUMNS_TO_KEEP = [
 
 def create_app():
     app = Flask(__name__)
+    CORS(app, resources={r"/annuaire/api/": {"origins": ["https://qualification.hub.esante.gouv.fr", "https://hub.esante.gouv.fr"]}})
     register_routes(app)
     csv_data = parse_csv(CSV_FILENAME)
     if csv_data is None:
