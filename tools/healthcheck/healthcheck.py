@@ -49,7 +49,7 @@ HTTP_TIMEOUT = int(os.getenv("HTTP_TIMEOUT", 5))  # Timeout in seconds, configur
 
 RABBITMQ_HEALTH_URL = f"{RABBITMQ_URL}/rabbitmq/api/health/checks/alarms"
 CONVERTER_HEALTH_URL = "http://converter.app.svc.cluster.local:8080/health"
-ANNUAIRE_HEALTH_URL = "http://annuaire.app.svc.cluster.local:8080/annuaire/health"
+ANNUAIRE_HEALTH_URL = "http://annuaire-service.annuaire.svc.cluster.local:8080/annuaire/health"
 METRICS_ENDPOINT = "/metrics"
 HEALTH_ENDPOINT = "/health"
 DEFAULT_FLASK_HOST = "0.0.0.0"
