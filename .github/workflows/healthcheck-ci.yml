@@ -42,7 +42,6 @@ jobs:
           RABBITMQ_MONITORING_USERNAME: "foo"
           RABBITMQ_MONITORING_PASSWORD: "bar"
           DISPATCHER_INSTANCES: "bar"
-          ANNUAIRE_URL: "foo"
         run: |
           coverage run --source=healthcheck -m unittest test_healthcheck.py
           coverage report -m
