@@ -15,9 +15,9 @@ python -m pip install -r requirements.txt
 
 ## Tests
 
-To run the tests: `RABBITMQ_URL=http://test RABBITMQ_MONITORING_USERNAME=test RABBITMQ_MONITORING_PASSWORD=test DISPATCHER_INSTANCES=dispatcher_instance ANNUAIRE_URL=annuaire_url python -m unittest test_healthcheck.py -v`
+To run the tests: `RABBITMQ_URL=http://test RABBITMQ_MONITORING_USERNAME=test RABBITMQ_MONITORING_PASSWORD=test DISPATCHER_INSTANCES=dispatcher_instance python -m unittest test_healthcheck.py -v`
 
-To run the tests and generate a coverage report: `RABBITMQ_URL=http://test RABBITMQ_MONITORING_USERNAME=test RABBITMQ_MONITORING_PASSWORD=test DISPATCHER_INSTANCES=dispatcher_instance ANNUAIRE_URL=annuaire_url coverage run --source=healthcheck -m unittest test_healthcheck.py`
+To run the tests and generate a coverage report: `RABBITMQ_URL=http://test RABBITMQ_MONITORING_USERNAME=test RABBITMQ_MONITORING_PASSWORD=test DISPATCHER_INSTANCES=dispatcher_instance coverage run --source=healthcheck -m unittest test_healthcheck.py`
 
 To display the coverage report summary in the terminal: `coverage report -m`
 

@@ -27,7 +27,6 @@ REQUIRED_ENV_VARS = [
     "RABBITMQ_MONITORING_USERNAME",
     "RABBITMQ_MONITORING_PASSWORD",
     "DISPATCHER_INSTANCES",
-    "ANNUAIRE_URL"
 ]
 
 # Check all required environment variables
@@ -40,8 +39,6 @@ RABBITMQ_MONITORING_USERNAME = os.getenv("RABBITMQ_MONITORING_USERNAME")
 RABBITMQ_MONITORING_PASSWORD = os.getenv("RABBITMQ_MONITORING_PASSWORD")
 RABBITMQ_CA_CERT_PATH = '/etc/ssl/certs/hubsante-rabbitmq-ca.crt'
 
-ANNUAIRE_URL = os.getenv("ANNUAIRE_URL")
-
 DISPATCHER_INSTANCES_ENV_VAR = os.getenv("DISPATCHER_INSTANCES")
 DISPATCHER_INSTANCES = DISPATCHER_INSTANCES_ENV_VAR.split(",") if DISPATCHER_INSTANCES_ENV_VAR else []
 
@@ -49,7 +46,7 @@ HTTP_TIMEOUT = int(os.getenv("HTTP_TIMEOUT", 5))  # Timeout in seconds, configur
 
 RABBITMQ_HEALTH_URL = f"{RABBITMQ_URL}/rabbitmq/api/health/checks/alarms"
 CONVERTER_HEALTH_URL = "http://converter.app.svc.cluster.local:8080/health"
-ANNUAIRE_HEALTH_URL = f"{ANNUAIRE_URL}/annuaire/health"
+ANNUAIRE_HEALTH_URL = "http://annuaire-service.annuaire.svc.cluster.local:8080/annuaire/health"
 METRICS_ENDPOINT = "/metrics"
 HEALTH_ENDPOINT = "/health"
 DEFAULT_FLASK_HOST = "0.0.0.0"
@@ -112,7 +109,7 @@ def converter_healthcheck():
         logger.error("Error occurred on converter healthcheck: ", exc_info=True)
         converter_status_metric.set(0)
         return {"status": Status.DOWN.value}
-    
+
 def annuaire_healthcheck():
     try:
         response = requests.get(ANNUAIRE_HEALTH_URL, timeout=HTTP_TIMEOUT)
