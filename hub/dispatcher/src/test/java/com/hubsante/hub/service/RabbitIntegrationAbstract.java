@@ -56,6 +56,7 @@ public class RabbitIntegrationAbstract {
     protected static final String SAMU_A_INFO_QUEUE = SAMU_A_ROUTING_KEY + ".info";
     protected static final String SAMU_B_ROUTING_KEY = "fr.health.samuB";
     protected static final String SAMU_B_MESSAGE_QUEUE = SAMU_B_ROUTING_KEY + ".message";
+    protected static final String SAMU_B_INFO_QUEUE = SAMU_B_ROUTING_KEY + ".info";
 
     protected static final String JSON = MessageProperties.CONTENT_TYPE_JSON;
 
