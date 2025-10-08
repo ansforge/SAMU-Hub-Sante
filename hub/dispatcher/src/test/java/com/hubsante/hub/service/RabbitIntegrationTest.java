@@ -91,8 +91,24 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
         Thread.sleep(DISPATCHER_PROCESS_TIME);
 
         assertErrorHasBeenReceived(samuA_publisher, SAMU_A_INFO_QUEUE, ErrorCode.UNROUTABLE_MESSAGE,
-                "unable do deliver message to fr.health.inexistent.message",
+                "fr.health.samuA_2608323d-507d-4cbf-bf74-52007f8124ea", "unable do deliver message to fr.health.inexistent.message",
                 "312", "NO_ROUTE");
+    }
+
+    @Test
+    @DisplayName("publish to inexistent recipient with XML")
+    public void publishToInexistentRecipientFailsWithXML() throws Exception {
+        String p12Path = classLoader.getResource("config/certs/samuB/samuB.p12").getPath();
+        RabbitTemplate samuB_publisher = getCustomRabbitTemplate(p12Path, "samuB");
+
+        Message published = createInvalidMessage("EDXL-DE/inexistent-recipient-queue.xml", SAMU_B_ROUTING_KEY);
+        samuB_publisher.send(HUBSANTE_EXCHANGE, SAMU_B_ROUTING_KEY, published);
+        Thread.sleep(DISPATCHER_PROCESS_TIME);
+
+        assertErrorHasBeenReceived(samuB_publisher, SAMU_B_INFO_QUEUE, ErrorCode.UNROUTABLE_MESSAGE,
+                "fr.health.samuB_2608323d-507d-4cbf-bf74-52007f8124ea",
+                "312",
+                "unable do deliver message to fr.health.inexistent.message", "NO_ROUTE");
     }
 
     @Test
@@ -105,7 +121,7 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
         Thread.sleep(DISPATCHER_PROCESS_TIME + DEFAULT_TTL);
         assertRecipientDidNotReceive("samuB", SAMU_B_MESSAGE_QUEUE);
         assertErrorHasBeenReceived(samuA_publisher, SAMU_A_INFO_QUEUE, ErrorCode.DEAD_LETTER_QUEUED,
-                "fr.health.samuA_2608323d-507d-4cbf-bf74-52007f8124ea", "dead-letter-queue; reason was expired");
+                "fr.health.samuA_2608323d-507d-4cbf-bf74-52007f8124ea", "fr.health.samuA_2608323d-507d-4cbf-bf74-52007f8124ea", "dead-letter-queue; reason was expired");
     }
 
     @Test
@@ -125,7 +141,7 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
         });
         Thread.sleep(DISPATCHER_PROCESS_TIME);
         assertRecipientDidNotReceive("samuB", SAMU_B_MESSAGE_QUEUE);
-        assertErrorHasBeenReceived(samuA_publisher, SAMU_A_INFO_QUEUE, ErrorCode.DEAD_LETTER_QUEUED,
+        assertErrorHasBeenReceived(samuA_publisher, SAMU_A_INFO_QUEUE, ErrorCode.DEAD_LETTER_QUEUED, "fr.health.samuA_2608323d-507d-4cbf-bf74-52007f8124ea",
                 "rejected");
     }
 
@@ -138,7 +154,7 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
     }
 
     private void assertErrorHasBeenReceived(RabbitTemplate rabbitTemplate, String infoQueueName,
-                                                         ErrorCode errorCode, String... errorCause) throws JsonProcessingException {
+                                                         ErrorCode errorCode, String referenceDistributionId, String... errorCause) throws JsonProcessingException {
 
         Message infoMsg = rabbitTemplate.receive(infoQueueName);
         assertNotNull(infoMsg);
@@ -148,6 +164,7 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
                 ((ErrorWrapper) edxlHandler.deserializeXmlEDXL(errorString).getFirstContentMessage()).getError() :
                 ((ErrorWrapper) edxlHandler.deserializeJsonEDXL(errorString).getFirstContentMessage()).getError();
         assertEquals(errorCode, error.getErrorCode());
+        assertEquals(referenceDistributionId, error.getReferencedDistributionID());
         Arrays.stream(errorCause).forEach(cause -> assertTrue(error.getErrorCause().contains(cause)));
     }
 }
