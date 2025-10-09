@@ -51,6 +51,13 @@ $ npm run start
 $ npm run generate
 ```
 
+To launch on your machine the production build, you will need to import the necessary environment variables.
+To do so, you can run:
+```bash
+npm run build
+npm run start-local
+```
+
 For detailed explanation on how things work, check out the [documentation](https://nuxtjs.org).
 
 ## Special Directories
