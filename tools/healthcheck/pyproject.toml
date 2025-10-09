@@ -1,0 +1,7 @@
+[project]
+name = "healthcheck"
+version = "0.1.0"
+description = "Healthcheck service to expose status of Hub Santé internal components"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = []
