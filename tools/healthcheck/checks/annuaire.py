@@ -25,7 +25,7 @@ def annuaire_healthcheck():
             else {"status": Status.DOWN.value}
         )
 
-    except requests.RequestException as e:
+    except requests.RequestException:
         logging.error("Error occurred on annuaire healthcheck: ", exc_info=True)
         annuaire_status_metric.set(0)
         return {"status": Status.DOWN.value}

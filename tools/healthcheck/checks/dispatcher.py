@@ -34,7 +34,7 @@ def dispatcher_healthcheck(app_name):
         return OrderedDict(
             [("status", status), ("components", data.get("components", {}))]
         )
-    except requests.RequestException as e:
+    except requests.RequestException:
         logging.error(
             "Error occurred on dispatcher %s healthcheck: ", app_name, exc_info=True
         )

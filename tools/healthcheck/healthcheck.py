@@ -1,7 +1,6 @@
-import os
 import json
 import logging
-from flask import Flask, jsonify, Response, request
+from flask import Flask, Response, request
 from collections import OrderedDict
 from prometheus_flask_exporter import PrometheusMetrics
 

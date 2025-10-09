@@ -30,7 +30,7 @@ def rabbitmq_healthcheck():
             if status == Status.OK.value
             else {"status": Status.DOWN.value}
         )
-    except requests.RequestException as e:
+    except requests.RequestException:
         logging.error(
             "Error occurred on RabbitMQ server's healthcheck: ", exc_info=True
         )
