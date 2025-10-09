@@ -3,7 +3,12 @@ from unittest.mock import patch
 from parameterized import parameterized
 import json
 import requests
-from healthcheck import CONVERTER_HEALTH_URL, HEALTH_ENDPOINT, RABBITMQ_HEALTH_URL, ANNUAIRE_HEALTH_URL, Status, app, remove_error_keys
+from healthcheck import HEALTH_EXTERNAL_ENDPOINT, app
+from utils import remove_error_keys
+from checks.status import Status
+from checks.annuaire import ANNUAIRE_HEALTH_URL
+from checks.rabbitmq import RABBITMQ_HEALTH_URL
+from checks.converter import CONVERTER_HEALTH_URL
 import logging
 
 class HealthCheckTestCase(unittest.TestCase):
@@ -65,7 +70,7 @@ class HealthCheckTestCase(unittest.TestCase):
 
         with patch("healthcheck.DISPATCHER_INSTANCES", ["dispatcher1"]):
             with app.test_client() as client:
-                response = client.get(HEALTH_ENDPOINT)
+                response = client.get(HEALTH_EXTERNAL_ENDPOINT)
                 self.assertEqual(response.status_code, 200)
                 data = json.loads(response.data)
                 self.assertEqual(data["status"], global_status)
@@ -79,7 +84,7 @@ class HealthCheckTestCase(unittest.TestCase):
         mock_get.side_effect = self.create_mock_side_effect(rabbitmq_error=True)
 
         with app.test_client() as client:
-            response = client.get(HEALTH_ENDPOINT)
+            response = client.get(HEALTH_EXTERNAL_ENDPOINT)
             self.assertEqual(response.status_code, 200)
             data = json.loads(response.data)
             self.assertEqual(data["status"], Status.DOWN.value)
@@ -92,7 +97,7 @@ class HealthCheckTestCase(unittest.TestCase):
 
         with patch("healthcheck.DISPATCHER_INSTANCES", ["dispatcher_instance"]):
             with app.test_client() as client:
-                response = client.get(HEALTH_ENDPOINT)
+                response = client.get(HEALTH_EXTERNAL_ENDPOINT)
                 self.assertEqual(response.status_code, 200)
                 data = json.loads(response.data)
                 self.assertEqual(data["status"], Status.DOWN.value) # global status
@@ -109,7 +114,7 @@ class HealthCheckTestCase(unittest.TestCase):
 
         with patch("healthcheck.DISPATCHER_INSTANCES", ["dispatcher_instance"]):
             with app.test_client() as client:
-                response = client.get(HEALTH_ENDPOINT)
+                response = client.get(HEALTH_EXTERNAL_ENDPOINT)
                 self.assertEqual(response.status_code, 200)
                 data = json.loads(response.data)
                 self.assertEqual(data["status"], expected_global_status)
@@ -121,7 +126,7 @@ class HealthCheckTestCase(unittest.TestCase):
 
         with patch("healthcheck.DISPATCHER_INSTANCES", ["dispatcher_instance"]):
             with app.test_client() as client:
-                response = client.get(HEALTH_ENDPOINT)
+                response = client.get(HEALTH_EXTERNAL_ENDPOINT)
                 self.assertEqual(response.status_code, 200)
                 data = json.loads(response.data)
                 self.assertEqual(data["status"], Status.DOWN.value) # global status
@@ -138,7 +143,7 @@ class HealthCheckTestCase(unittest.TestCase):
 
         with patch("healthcheck.DISPATCHER_INSTANCES", ["dispatcher_instance"]):
             with app.test_client() as client:
-                response = client.get(HEALTH_ENDPOINT)
+                response = client.get(HEALTH_EXTERNAL_ENDPOINT)
                 self.assertEqual(response.status_code, 200)
                 data = json.loads(response.data)
                 self.assertEqual(data["status"], expected_global_status)
@@ -155,7 +160,7 @@ class HealthCheckTestCase(unittest.TestCase):
 
         with patch("healthcheck.DISPATCHER_INSTANCES", ["dispatcher1", "dispatcher2"]):
             with app.test_client() as client:
-                response = client.get(HEALTH_ENDPOINT)
+                response = client.get(HEALTH_EXTERNAL_ENDPOINT)
                 self.assertEqual(response.status_code, 200)
                 data = json.loads(response.data)
                 self.assertEqual(data["status"], global_status)
