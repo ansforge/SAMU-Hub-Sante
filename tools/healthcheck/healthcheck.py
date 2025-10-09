@@ -24,7 +24,10 @@ DEFAULT_FLASK_HOST = "0.0.0.0"
 DEFAULT_FLASK_PORT = 8080
 
 # TODO: remove dependancy to this variable in this file
-DISPATCHER_INSTANCES = DISPATCHER_INSTANCES_ENV_VAR.split(",") if DISPATCHER_INSTANCES_ENV_VAR else []
+DISPATCHER_INSTANCES = (
+    DISPATCHER_INSTANCES_ENV_VAR.split(",") if DISPATCHER_INSTANCES_ENV_VAR else []
+)
+
 
 @app.before_request
 def update_metrics_before_scrapping():
@@ -35,7 +38,8 @@ def update_metrics_before_scrapping():
         converter_healthcheck()
         annuaire_healthcheck()
 
-@app.route(HEALTH_EXTERNAL_ENDPOINT, methods=['GET'])
+
+@app.route(HEALTH_EXTERNAL_ENDPOINT, methods=["GET"])
 def health_external():
     global_status = Status.UP.value
     components = OrderedDict()
@@ -65,14 +69,11 @@ def health_external():
         global_status = Status.DOWN.value
 
     # Aggregate and return the result
-    result = OrderedDict([
-        ("status", global_status),
-        ("components", components)
-    ])
+    result = OrderedDict([("status", global_status), ("components", components)])
     return Response(
-        response=json.dumps(remove_error_keys(result)),
-        mimetype="application/json"
+        response=json.dumps(remove_error_keys(result)), mimetype="application/json"
     )
+
 
 if __name__ == "__main__":
     app.run(host=DEFAULT_FLASK_HOST, port=DEFAULT_FLASK_PORT)
