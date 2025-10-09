@@ -4,4 +4,14 @@ version = "0.1.0"
 description = "Healthcheck service to expose status of Hub Santé internal components"
 readme = "README.md"
 requires-python = ">=3.11"
-dependencies = []
+dependencies = [
+    "coverage==7.10.7",
+    "flask==3.1.2",
+    "gunicorn==23.0.0",
+    "parameterized==0.9.0",
+    "prometheus-client==0.23.1",
+    "prometheus-flask-exporter==0.23.2",
+    "requests==2.32.5",
+    "setuptools==78.1.1",
+    "werkzeug==3.1.3",
+]
