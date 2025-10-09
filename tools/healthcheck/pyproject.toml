@@ -29,3 +29,8 @@ exclude_lines = [
     "if __name__ == .__main__.:",
     "pass",
 ]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.14.0",
+]
