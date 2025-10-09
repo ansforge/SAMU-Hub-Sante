@@ -39,6 +39,9 @@ jobs:
 
       - name: Check formatting
         run: uv run ruff format --check .
+      
+      - name: Check linting
+        run: uv run ruff check .
 
       - name: Run tests & generate HTML coverage report
         # TODO: try to mock the env variables in the tests directly
