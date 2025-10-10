@@ -30,10 +30,18 @@ jobs:
           python-version: "3.11"
           cache: "pip"
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install -r requirements.txt
+          uv sync
+
+      - name: Check formatting
+        run: uv run ruff format --check .
+      
+      - name: Check linting
+        run: uv run ruff check .
 
       - name: Run tests & generate HTML coverage report
         # TODO: try to mock the env variables in the tests directly
@@ -43,9 +51,9 @@ jobs:
           RABBITMQ_MONITORING_PASSWORD: "bar"
           DISPATCHER_INSTANCES: "bar"
         run: |
-          coverage run --source=healthcheck -m unittest test_healthcheck.py
-          coverage report -m
-          coverage html
+          uv run coverage run -m unittest test_healthcheck.py
+          uv run coverage report -m
+          uv run coverage html
 
       - name: Upload HTML coverage report
         uses: actions/upload-artifact@v4
