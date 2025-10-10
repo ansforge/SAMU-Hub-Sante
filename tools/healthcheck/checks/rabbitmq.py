@@ -5,11 +5,13 @@ from prometheus_client import Gauge
 from checks.status import Status
 from config import (
     HTTP_TIMEOUT,
-    RABBITMQ_HEALTH_URL,
+    RABBITMQ_URL,
     RABBITMQ_MONITORING_USERNAME,
     RABBITMQ_MONITORING_PASSWORD,
     RABBITMQ_CA_CERT_PATH,
 )
+
+RABBITMQ_HEALTH_URL = f"{RABBITMQ_URL}/rabbitmq/api/health/checks/alarms"
 
 rabbitmq_status_metric = Gauge("rabbitmq_status", "Statut de RabbitMQ (1=UP, 0=DOWN)")
 
