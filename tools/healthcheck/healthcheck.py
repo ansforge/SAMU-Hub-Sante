@@ -4,12 +4,11 @@ from flask import Flask, Response, request
 from collections import OrderedDict
 from prometheus_flask_exporter import PrometheusMetrics
 
-from config import DISPATCHER_INSTANCES_ENV_VAR
 from utils import remove_error_keys
 from checks.status import Status
 from checks.converter import converter_healthcheck
 from checks.rabbitmq import rabbitmq_healthcheck
-from checks.dispatcher import dispatcher_healthcheck
+from checks.dispatcher import dispatchers_healthcheck
 from checks.annuaire import annuaire_healthcheck
 
 app = Flask(__name__)
@@ -22,18 +21,12 @@ HEALTH_EXTERNAL_ENDPOINT = "/health"
 DEFAULT_FLASK_HOST = "0.0.0.0"
 DEFAULT_FLASK_PORT = 8080
 
-# TODO: remove dependancy to this variable in this file
-DISPATCHER_INSTANCES = (
-    DISPATCHER_INSTANCES_ENV_VAR.split(",") if DISPATCHER_INSTANCES_ENV_VAR else []
-)
-
 
 @app.before_request
 def update_metrics_before_scrapping():
     if request.path == METRICS_ENDPOINT:
         rabbitmq_healthcheck()
-        for dispatcher_instance in DISPATCHER_INSTANCES:
-            dispatcher_healthcheck(dispatcher_instance)
+        dispatchers_healthcheck()
         converter_healthcheck()
         annuaire_healthcheck()
 
@@ -49,10 +42,8 @@ def health_external():
     if rabbitmq_health["status"] == Status.DOWN.value:
         global_status = Status.DOWN.value
 
-    # Fetch health from Spring apps
-    logging.info(f"Checking health of dispatcher instances: {DISPATCHER_INSTANCES}")
-    for dispatcher_instance in DISPATCHER_INSTANCES:
-        spring_health = dispatcher_healthcheck(dispatcher_instance)
+    dispatchers_health = dispatchers_healthcheck()
+    for dispatcher_instance, spring_health in dispatchers_health.items():
         components[dispatcher_instance] = spring_health
         if spring_health["status"] == Status.DOWN.value:
             global_status = Status.DOWN.value

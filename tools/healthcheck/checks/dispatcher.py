@@ -1,11 +1,13 @@
 import requests
 import logging
+import os
 from prometheus_client import Gauge
 from collections import OrderedDict
 
 from checks.status import Status
-from config import HTTP_TIMEOUT, DISPATCHER_INSTANCES_ENV_VAR
+from config import HTTP_TIMEOUT
 
+DISPATCHER_INSTANCES_ENV_VAR = os.getenv("DISPATCHER_INSTANCES")
 DISPATCHER_INSTANCES = (
     DISPATCHER_INSTANCES_ENV_VAR.split(",") if DISPATCHER_INSTANCES_ENV_VAR else []
 )
@@ -19,7 +21,15 @@ for dispatcher in DISPATCHER_INSTANCES:
     dispatcher_status_metric.labels(dispatcher=dispatcher).set(0)
 
 
-def dispatcher_healthcheck(app_name):
+def dispatchers_healthcheck():
+    logging.info(f"Checking health of dispatcher instances: {DISPATCHER_INSTANCES}")
+    result = {}
+    for dispatcher_instance in DISPATCHER_INSTANCES:
+        result[dispatcher_instance] = single_dispatcher_healthcheck(dispatcher_instance)
+    return result
+
+
+def single_dispatcher_healthcheck(app_name):
     try:
         dispatcher_health_url = (
             f"http://{app_name}.app.svc.cluster.local:8080/actuator/health"

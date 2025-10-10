@@ -140,7 +140,7 @@ class HealthCheckTestCase(unittest.TestCase):
         mock_get.return_value.status_code = 200
         mock_get.return_value.json.side_effect = side_effect
 
-        with patch("healthcheck.DISPATCHER_INSTANCES", ["dispatcher1"]):
+        with patch("checks.dispatcher.DISPATCHER_INSTANCES", ["dispatcher1"]):
             with app.test_client() as client:
                 response = client.get(HEALTH_EXTERNAL_ENDPOINT)
                 self.assertEqual(response.status_code, 200)
@@ -177,7 +177,7 @@ class HealthCheckTestCase(unittest.TestCase):
     def test_converter_healthcheck_error(self, mock_get):
         mock_get.side_effect = self.create_mock_side_effect(converter_error=True)
 
-        with patch("healthcheck.DISPATCHER_INSTANCES", ["dispatcher_instance"]):
+        with patch("checks.dispatcher.DISPATCHER_INSTANCES", ["dispatcher_instance"]):
             with app.test_client() as client:
                 response = client.get(HEALTH_EXTERNAL_ENDPOINT)
                 self.assertEqual(response.status_code, 200)
@@ -206,7 +206,7 @@ class HealthCheckTestCase(unittest.TestCase):
             converter_response={"status": converter_status}
         )
 
-        with patch("healthcheck.DISPATCHER_INSTANCES", ["dispatcher_instance"]):
+        with patch("checks.dispatcher.DISPATCHER_INSTANCES", ["dispatcher_instance"]):
             with app.test_client() as client:
                 response = client.get(HEALTH_EXTERNAL_ENDPOINT)
                 self.assertEqual(response.status_code, 200)
@@ -220,7 +220,7 @@ class HealthCheckTestCase(unittest.TestCase):
     def test_annuaire_healthcheck_error(self, mock_get):
         mock_get.side_effect = self.create_mock_side_effect(annuaire_error=True)
 
-        with patch("healthcheck.DISPATCHER_INSTANCES", ["dispatcher_instance"]):
+        with patch("checks.dispatcher.DISPATCHER_INSTANCES", ["dispatcher_instance"]):
             with app.test_client() as client:
                 response = client.get(HEALTH_EXTERNAL_ENDPOINT)
                 self.assertEqual(response.status_code, 200)
@@ -249,7 +249,7 @@ class HealthCheckTestCase(unittest.TestCase):
             annuaire_response={"status": annuaire_status}
         )
 
-        with patch("healthcheck.DISPATCHER_INSTANCES", ["dispatcher_instance"]):
+        with patch("checks.dispatcher.DISPATCHER_INSTANCES", ["dispatcher_instance"]):
             with app.test_client() as client:
                 response = client.get(HEALTH_EXTERNAL_ENDPOINT)
                 self.assertEqual(response.status_code, 200)
@@ -308,7 +308,9 @@ class HealthCheckTestCase(unittest.TestCase):
         mock_get.return_value.status_code = 200
         mock_get.return_value.json.side_effect = side_effect
 
-        with patch("healthcheck.DISPATCHER_INSTANCES", ["dispatcher1", "dispatcher2"]):
+        with patch(
+            "checks.dispatcher.DISPATCHER_INSTANCES", ["dispatcher1", "dispatcher2"]
+        ):
             with app.test_client() as client:
                 response = client.get(HEALTH_EXTERNAL_ENDPOINT)
                 self.assertEqual(response.status_code, 200)
