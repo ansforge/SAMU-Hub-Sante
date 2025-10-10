@@ -348,6 +348,33 @@ class HealthCheckTestCase(unittest.TestCase):
         self.assertNotIn("error", result["components"]["dispatcher1"])
         self.assertEqual(result["status"], Status.UP.value)
 
+    @patch("requests.get")
+    def test_update_metrics_before_scrapping_requests_are_made(self, mock_get):
+        mock_get.return_value.status_code = 200
+        mock_get.return_value.json.return_value = {"status": Status.UP.value}
+
+        with patch(
+            "checks.dispatcher.DISPATCHER_INSTANCES", ["dispatcher1", "dispatcher2"]
+        ):
+            with app.test_client() as client:
+                client.get("/metrics")
+
+            called_urls = [call_args[0][0] for call_args in mock_get.call_args_list]
+
+            # 5 calls for: converter, annuaire, rabbitmq and the 2 dispatchers
+            self.assertEqual(len(called_urls), 5)
+            self.assertIn(RABBITMQ_HEALTH_URL, called_urls)
+            self.assertIn(CONVERTER_HEALTH_URL, called_urls)
+            self.assertIn(ANNUAIRE_HEALTH_URL, called_urls)
+            self.assertIn(
+                "http://dispatcher1.app.svc.cluster.local:8080/actuator/health",
+                called_urls,
+            )
+            self.assertIn(
+                "http://dispatcher2.app.svc.cluster.local:8080/actuator/health",
+                called_urls,
+            )
+
 
 if __name__ == "__main__":
     unittest.main()
