@@ -13,7 +13,7 @@ from config import (
     RABBITMQ_CA_CERT_PATH,
 )
 
-RABBITMQ_SHOVEL_STATUS_URL = f"{RABBITMQ_URL}/rabbitmq/api/shovels"
+SHOVEL_STATUS_URL = f"{RABBITMQ_URL}/rabbitmq/api/shovels"
 MONITORED_SHOVEL_CONFIG_FILE_NAME = "monitored_partners_shovels.txt"
 
 
@@ -81,7 +81,7 @@ def hubex_partners_shovels_healthcheck():
     logging.info(f"Checking health of hubex partners connexions: {SHOVELS_MAP}")
     try:
         response = requests.get(
-            RABBITMQ_SHOVEL_STATUS_URL,
+            SHOVEL_STATUS_URL,
             auth=(RABBITMQ_MONITORING_USERNAME, RABBITMQ_MONITORING_PASSWORD),
             verify=RABBITMQ_CA_CERT_PATH,
             timeout=HTTP_TIMEOUT,
