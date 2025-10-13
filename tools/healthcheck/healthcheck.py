@@ -10,6 +10,7 @@ from checks.converter import converter_healthcheck
 from checks.rabbitmq import rabbitmq_healthcheck
 from checks.dispatcher import dispatchers_healthcheck
 from checks.annuaire import annuaire_healthcheck
+from checks.hubex_partners_shovels import hubex_partners_shovels_healthcheck
 
 app = Flask(__name__)
 metrics = PrometheusMetrics(app)
@@ -29,6 +30,7 @@ def update_metrics_before_scrapping():
         dispatchers_healthcheck()
         converter_healthcheck()
         annuaire_healthcheck()
+        hubex_partners_shovels_healthcheck()
 
 
 @app.route(HEALTH_EXTERNAL_ENDPOINT, methods=["GET"])
@@ -46,6 +48,12 @@ def health_external():
     for dispatcher_instance, spring_health in dispatchers_health.items():
         components[dispatcher_instance] = spring_health
         if spring_health["status"] == Status.DOWN.value:
+            global_status = Status.DOWN.value
+
+    partners_shovels_health = hubex_partners_shovels_healthcheck()
+    for shovel_name, shovel_health in partners_shovels_health.items():
+        components[shovel_name] = shovel_health
+        if shovel_health["status"] == Status.DOWN.value:
             global_status = Status.DOWN.value
 
     converter_health = converter_healthcheck()
