@@ -64,11 +64,11 @@ def init_shovels_check():
             hubex_partners_status_metric.labels(shovel=f"{vhost}-{queue_name}").set(0)
 
 
-def check_shovel_response(response, vhost, src_queue):
+def check_shovel_response(data, vhost, src_queue):
     def find_shovel(element):
         return element["vhost"] == vhost and element["src_queue"] == src_queue
 
-    res = list(filter(find_shovel, response))
+    res = list(filter(find_shovel, data))
     if len(res) == 1:
         if res[0]["blocked_status"] != EXPECTED_SHOVEL_STATUS:
             return {"status": Status.DOWN.value}
@@ -91,10 +91,11 @@ def hubex_partners_shovels_healthcheck():
             timeout=HTTP_TIMEOUT,
         )
         response.raise_for_status()
+        data = response.json()
         result = {}
         for vhost, shovels_list in SHOVELS_MAP.items():
             for shovel in shovels_list:
-                shovel_status = check_shovel_response(response, vhost, shovel)
+                shovel_status = check_shovel_response(data, vhost, shovel)
                 shovel_label = f"{vhost}-{shovel}"
                 result[shovel_label] = shovel_status
                 hubex_partners_status_metric.labels(shovel=shovel_label).set(
