@@ -40,12 +40,17 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ./gradlew licenseFormat
 
+
       - name: Build and run tests
         env:
           # required to run tests because the whole build.gradle seems to be evaluated, even if the jib task is not executed
           # so the GITHUB_TOKEN var must be resolved
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./gradlew test
+        run: |
+          # test on each supported model lib version
+          for MODEL_VERSION in "1.2" "2.3" "3.1"; do
+            ./gradlew test -PmodelVersion=$MODEL_VERSION
+          done
 
       - name: Add coverage to PR
         id: jacoco
