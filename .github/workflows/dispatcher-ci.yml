@@ -13,8 +13,6 @@ on:
     paths:
       - 'hub/dispatcher/**'
 
-  workflow_dispatch:
-
 jobs:
   coverage:
     runs-on: ubuntu-latest
