@@ -104,5 +104,5 @@ def hubex_partners_shovels_healthcheck():
             for shovel in shovels_list:
                 shovel_label = f"{vhost}-{shovel}"
                 result[shovel_label] = {"status": Status.DOWN.value}
-                hubex_partners_status_metric.labels(dispatcher=shovel_label).set(0)
+                hubex_partners_status_metric.labels(shovel=shovel_label).set(0)
         return result
