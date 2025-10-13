@@ -38,9 +38,9 @@ def parse_monitored_shovels_config_file(config_file_path):
                 vhost, src_queues = parse_monitored_shovels_line(line)
                 shovels[vhost] = src_queues
     except FileNotFoundError:
-        sys.exit(f"monitored_partners_shovels.txt not found at {config_file_path}")
+        sys.exit(f"{MONITORED_SHOVEL_CONFIG_FILE_NAME} not found at {config_file_path}")
     except Exception as e:
-        sys.exit(f"Error reading monitored_partners_shovels.txt: {e}")
+        sys.exit(f"Error reading {MONITORED_SHOVEL_CONFIG_FILE_NAME}: {e}")
     return shovels
 
 
@@ -52,12 +52,16 @@ hubex_partners_status_metric = Gauge(
     ["shovel"],
 )
 
-config_file_path = build_shovels_config_file_path()
-SHOVELS_MAP = parse_monitored_shovels_config_file(config_file_path)
+SHOVELS_MAP = {}
 
-for vhost, shovels_list in SHOVELS_MAP.items():
-    for queue_name in shovels_list:
-        hubex_partners_status_metric.labels(shovel=f"{vhost}-{queue_name}").set(0)
+
+def init_shovels_check():
+    config_file_path = build_shovels_config_file_path()
+    SHOVELS_MAP = parse_monitored_shovels_config_file(config_file_path)
+
+    for vhost, shovels_list in SHOVELS_MAP.items():
+        for queue_name in shovels_list:
+            hubex_partners_status_metric.labels(shovel=f"{vhost}-{queue_name}").set(0)
 
 
 def check_shovel_response(response, vhost, src_queue):
