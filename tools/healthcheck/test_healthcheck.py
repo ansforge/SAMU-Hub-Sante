@@ -9,6 +9,7 @@ from checks.status import Status
 from checks.annuaire import ANNUAIRE_HEALTH_URL
 from checks.rabbitmq import RABBITMQ_HEALTH_URL
 from checks.converter import CONVERTER_HEALTH_URL
+from checks.hubex_partners_shovels import SHOVEL_STATUS_URL
 import logging
 
 
@@ -26,10 +27,12 @@ class HealthCheckTestCase(unittest.TestCase):
         dispatcher_response=None,
         converter_response=None,
         annuaire_response=None,
+        shovel_status_response=None,
         rabbitmq_error=False,
         dispatcher_error=False,
         converter_error=False,
         annuaire_error=False,
+        shovel_status_error=False,
     ):
         def side_effect(url, **kwargs):
             if CONVERTER_HEALTH_URL in url:
@@ -54,6 +57,14 @@ class HealthCheckTestCase(unittest.TestCase):
                 mock_response = requests.Response()
                 mock_response.status_code = 200
                 response_data = annuaire_response or {"status": Status.UP.value}
+                mock_response._content = json.dumps(response_data).encode()
+                return mock_response
+            elif SHOVEL_STATUS_URL in url:
+                if shovel_status_error:
+                    raise requests.exceptions.RequestException("Shovel Status Error")
+                mock_response = requests.Response()
+                mock_response.status_code = 200
+                response_data = shovel_status_response or []
                 mock_response._content = json.dumps(response_data).encode()
                 return mock_response
             else:
@@ -361,11 +372,13 @@ class HealthCheckTestCase(unittest.TestCase):
 
             called_urls = [call_args[0][0] for call_args in mock_get.call_args_list]
 
-            # 5 calls for: converter, annuaire, rabbitmq and the 2 dispatchers
-            self.assertEqual(len(called_urls), 5)
+            # 6 calls for: converter, annuaire, rabbitmq, shovel status and the 2 dispatchers
+            expected_numbers_of_requests = 6
+            self.assertEqual(len(called_urls), expected_numbers_of_requests)
             self.assertIn(RABBITMQ_HEALTH_URL, called_urls)
             self.assertIn(CONVERTER_HEALTH_URL, called_urls)
             self.assertIn(ANNUAIRE_HEALTH_URL, called_urls)
+            self.assertIn(SHOVEL_STATUS_URL, called_urls)
             self.assertIn(
                 "http://dispatcher1.app.svc.cluster.local:8080/actuator/health",
                 called_urls,
