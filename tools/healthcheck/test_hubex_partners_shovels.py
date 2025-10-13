@@ -1,7 +1,5 @@
 import unittest
 from unittest.mock import patch, mock_open
-import requests
-import json
 
 from checks.hubex_partners_shovels import (
     check_shovel_response,
@@ -12,17 +10,6 @@ from checks.status import Status
 
 
 class TestHubexPartnersShovels(unittest.TestCase):
-    def create_mock_side_effect(self, error=False, response_data=None):
-        def side_effect(**kwargs):
-            if error:
-                raise requests.exceptions.RequestException("Error")
-            mock_response = requests.Response()
-            mock_response.status_code = 200
-            mock_response._content = json.dumps(response_data or []).encode()
-            return mock_response
-
-        return side_effect
-
     @patch(
         "builtins.open", mock_open(read_data="vhost1;queue1,queue2\nvhost2;queue3\n")
     )
