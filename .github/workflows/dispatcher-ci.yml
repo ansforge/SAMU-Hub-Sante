@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - 'fix/test-all-model-versions'
     paths:
       - 'hub/dispatcher/**'
 
