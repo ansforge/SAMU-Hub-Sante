@@ -64,7 +64,13 @@ class HealthCheckTestCase(unittest.TestCase):
                     raise requests.exceptions.RequestException("Shovel Status Error")
                 mock_response = requests.Response()
                 mock_response.status_code = 200
-                response_data = shovel_status_response or []
+                response_data = shovel_status_response or [
+                    {
+                        "vhost": "vhost1",
+                        "src_queue": "queue1",
+                        "blocked_status": "running",
+                    },
+                ]
                 mock_response._content = json.dumps(response_data).encode()
                 return mock_response
             else:
@@ -157,6 +163,7 @@ class HealthCheckTestCase(unittest.TestCase):
                 self.assertEqual(response.status_code, 200)
                 data = json.loads(response.data)
                 self.assertEqual(data["status"], global_status)
+                print(data)
                 self.assertEqual(
                     data["components"]["rabbitmq_server"]["status"], rabbitmq_status
                 )
@@ -171,7 +178,10 @@ class HealthCheckTestCase(unittest.TestCase):
                 )
 
     @patch("requests.get")
-    def test_rabbitmq_healthcheck_error(self, mock_get):
+    def test_rabbitmq_healthcheck_error(
+        self,
+        mock_get,
+    ):
         mock_get.side_effect = self.create_mock_side_effect(rabbitmq_error=True)
 
         with app.test_client() as client:
@@ -185,7 +195,10 @@ class HealthCheckTestCase(unittest.TestCase):
             )
 
     @patch("requests.get")
-    def test_converter_healthcheck_error(self, mock_get):
+    def test_converter_healthcheck_error(
+        self,
+        mock_get,
+    ):
         mock_get.side_effect = self.create_mock_side_effect(converter_error=True)
 
         with patch("checks.dispatcher.DISPATCHER_INSTANCES", ["dispatcher_instance"]):
@@ -228,7 +241,10 @@ class HealthCheckTestCase(unittest.TestCase):
                 )
 
     @patch("requests.get")
-    def test_annuaire_healthcheck_error(self, mock_get):
+    def test_annuaire_healthcheck_error(
+        self,
+        mock_get,
+    ):
         mock_get.side_effect = self.create_mock_side_effect(annuaire_error=True)
 
         with patch("checks.dispatcher.DISPATCHER_INSTANCES", ["dispatcher_instance"]):
@@ -343,7 +359,9 @@ class HealthCheckTestCase(unittest.TestCase):
                     data["components"]["annuaire"]["status"], annuaire_status
                 )
 
-    def test_remove_error_keys(self):
+    def test_remove_error_keys(
+        self,
+    ):
         # Test if error keys are properly removed
         data = {
             "status": Status.UP.value,
@@ -360,7 +378,10 @@ class HealthCheckTestCase(unittest.TestCase):
         self.assertEqual(result["status"], Status.UP.value)
 
     @patch("requests.get")
-    def test_update_metrics_before_scrapping_requests_are_made(self, mock_get):
+    def test_update_metrics_before_scrapping_requests_are_made(
+        self,
+        mock_get,
+    ):
         mock_get.return_value.status_code = 200
         mock_get.return_value.json.return_value = {"status": Status.UP.value}
 
