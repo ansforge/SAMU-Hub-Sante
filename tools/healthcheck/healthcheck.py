@@ -10,7 +10,10 @@ from checks.converter import converter_healthcheck
 from checks.rabbitmq import rabbitmq_healthcheck
 from checks.dispatcher import dispatchers_healthcheck
 from checks.annuaire import annuaire_healthcheck
-from checks.hubex_partners_shovels import hubex_partners_shovels_healthcheck
+from checks.hubex_partners_shovels import (
+    hubex_partners_shovels_healthcheck,
+    init_shovels_check,
+)
 
 app = Flask(__name__)
 metrics = PrometheusMetrics(app)
@@ -74,4 +77,5 @@ def health_external():
 
 
 if __name__ == "__main__":
+    init_shovels_check()
     app.run(host=DEFAULT_FLASK_HOST, port=DEFAULT_FLASK_PORT)
