@@ -57,6 +57,8 @@ SHOVELS_MAP = {}
 
 def init_shovels_check():
     config_file_path = build_shovels_config_file_path()
+    # TODO: remove this atrocity
+    global SHOVELS_MAP
     SHOVELS_MAP = parse_monitored_shovels_config_file(config_file_path)
 
     for vhost, shovels_list in SHOVELS_MAP.items():
