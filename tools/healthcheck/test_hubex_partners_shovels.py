@@ -11,21 +11,27 @@ from checks.status import Status
 
 class TestHubexPartnersShovels(unittest.TestCase):
     @patch(
-        "builtins.open", mock_open(read_data="vhost1;queue1,queue2\nvhost2;queue3\n")
+        "checks.hubex_partners_shovels.open",
+        new_callable=mock_open,
+        read_data="vhost1;queue1,queue2\nvhost2;queue3\n",
     )
-    def test_parse_monitored_shovels_config_file_valid(self, **mocks):
+    def test_parse_monitored_shovels_config_file_valid(self, *args):
         shovels_config = parse_monitored_shovels_config_file("mock_path")
         self.assertEqual(
             shovels_config, {"vhost1": ["queue1", "queue2"], "vhost2": ["queue3"]}
         )
 
-    @patch("builtins.open", side_effect=FileNotFoundError)
+    @patch("checks.hubex_partners_shovels.open", side_effect=FileNotFoundError)
     def test_parse_monitored_shovels_config_file_file_not_found(self, *args):
         with self.assertRaises(SystemExit) as error:
             parse_monitored_shovels_config_file("mock_path")
         self.assertIn("not found", str(error.exception))
 
-    @patch("builtins.open", mock_open(read_data="invalid_line\nvhost1;queue1,queue2\n"))
+    @patch(
+        "checks.hubex_partners_shovels.open",
+        new_callable=mock_open,
+        read_data="invalid_line\nvhost1;queue1,queue2\n",
+    )
     def test_parse_monitored_shovels_config_file_invalid_line(self, *args):
         with self.assertRaises(SystemExit) as error:
             parse_monitored_shovels_config_file("mock_path")
@@ -33,7 +39,7 @@ class TestHubexPartnersShovels(unittest.TestCase):
             "Error reading monitored_partners_shovels.txt", str(error.exception)
         )
 
-    def test_check_shovel_response_up(self):
+    def test_check_shovel_response_status_up(self):
         response = [
             {
                 "vhost": "vhost1",
@@ -44,14 +50,14 @@ class TestHubexPartnersShovels(unittest.TestCase):
         result = check_shovel_response(response, "vhost1", "queue1")
         self.assertEqual(result["status"], Status.UP.value)
 
-    def test_check_shovel_response_down(self):
+    def test_check_shovel_response_sttaus_down(self):
         response = [
             {"vhost": "vhost1", "src_queue": "queue1", "blocked_status": "not_running"}
         ]
         result = check_shovel_response(response, "vhost1", "queue1")
         self.assertEqual(result["status"], Status.DOWN.value)
 
-    def test_check_shovel_response_missing(self):
+    def test_check_shovel_response_status_down_when_missing_shovel(self):
         response = []
         with self.assertLogs(level="ERROR") as log:
             result = check_shovel_response(response, "vhost1", "queue1")
