@@ -47,6 +47,7 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.Objects;
 
 import static com.hubsante.hub.config.AmqpConfiguration.DISTRIBUTION_EXCHANGE;
 import static com.hubsante.hub.config.AmqpConfiguration.ORIGINAL_ROUTING_KEY;
@@ -286,6 +287,16 @@ public class MessageHandler {
         return edxlMessage;
     }
 
+    private String extractReferencedDistributionID(EdxlMessage edxlMessage) {
+        ContentMessage contentMessage = edxlMessage.getFirstContentMessage();
+        boolean isAck = DistributionKind.ACK.equals(edxlMessage.getDistributionKind());
+        boolean isReferenceWrapper = contentMessage instanceof ReferenceWrapper;
+        if (isAck && isReferenceWrapper) {
+            return ((ReferenceWrapper) contentMessage).getReference().getDistributionID();
+        }
+        return null;
+    }
+
     @Timed(value = "serialize.forwarded.message", description = "Serialize forwarded message and return new AMQP message")
     private Message getFwdMessageBody(EdxlMessage edxlMessage, Message receivedAmqpMessage, MessageProperties fwdAmqpProperties) {
         String recipientID = getRecipientID(edxlMessage);
@@ -302,13 +313,10 @@ public class MessageHandler {
                 fwdAmqpProperties.setContentType(MessageProperties.CONTENT_TYPE_JSON);
             }
 
-            ContentMessage contentMessage = edxlMessage.getFirstContentMessage();
-            boolean isAck = DistributionKind.ACK.getValue().equals(distributionKind);
-            boolean isReferenceWrapper = contentMessage instanceof ReferenceWrapper;
             String distributionID = edxlMessage.getDistributionID();
             String hashedBody = hashBody(receivedAmqpMessage);
-            if (isAck && isReferenceWrapper) {
-                String referencedDistributionID = ((ReferenceWrapper) contentMessage).getReference().getDistributionID();
+            String referencedDistributionID = extractReferencedDistributionID(edxlMessage);
+            if (Objects.nonNull(referencedDistributionID)) {
                 log.info("  ↳ [x] Forwarding {} to '{}': message with distributionID {}, referenced distributionID {} and hashed value {}",
                         distributionKind, recipientID, distributionID, referencedDistributionID, hashedBody);
             } else {
@@ -339,14 +347,11 @@ public class MessageHandler {
 
     private void logMessage(Message message, EdxlMessage edxlMessage, String receivedEdxl) {
         String distributionKind = edxlMessage.getDistributionKind().getValue();
-        ContentMessage contentMessage = edxlMessage.getFirstContentMessage();
         String receivedRoutingKey = message.getMessageProperties().getReceivedRoutingKey();
-        boolean isAck = DistributionKind.ACK.getValue().equals(distributionKind);
-        boolean isReferenceWrapper = contentMessage instanceof ReferenceWrapper;
         String distributionID = edxlMessage.getDistributionID();
+        String referencedDistributionID = extractReferencedDistributionID(edxlMessage);
         String hashedBody = hashBody(message);
-        if (isAck && isReferenceWrapper) {
-            String referencedDistributionID = ((ReferenceWrapper) contentMessage).getReference().getDistributionID();
+        if (Objects.nonNull(referencedDistributionID)) {
             log.info(" [x] Received {} from '{}': message with distributionID {}, referenced distributionID {} and hashed value {}",
                     distributionKind, receivedRoutingKey, distributionID, referencedDistributionID, hashedBody);
         } else {
