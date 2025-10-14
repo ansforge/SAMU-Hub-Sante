@@ -15,7 +15,7 @@ from checks.hubex_partners_shovels import HubexPartnersHealthcheck
 app = Flask(__name__)
 metrics = PrometheusMetrics(app)
 
-hubex_partners_checks = HubexPartnersHealthcheck()
+checkers = [HubexPartnersHealthcheck()]
 
 logging.basicConfig(level=logging.INFO)
 
@@ -32,7 +32,8 @@ def update_metrics_before_scrapping():
         dispatchers_healthcheck()
         converter_healthcheck()
         annuaire_healthcheck()
-        hubex_partners_checks.hubex_partners_shovels_healthcheck()
+        for checker in checkers:
+            checker.perform_checks()
 
 
 @app.route(HEALTH_EXTERNAL_ENDPOINT, methods=["GET"])
@@ -52,12 +53,6 @@ def health_external():
         if spring_health["status"] == Status.DOWN.value:
             global_status = Status.DOWN.value
 
-    partners_shovels_health = hubex_partners_checks.hubex_partners_shovels_healthcheck()
-    for shovel_name, shovel_health in partners_shovels_health.items():
-        components[shovel_name] = shovel_health
-        if shovel_health["status"] == Status.DOWN.value:
-            global_status = Status.DOWN.value
-
     converter_health = converter_healthcheck()
     components["converter"] = converter_health
     if converter_health["status"] == Status.DOWN.value:
@@ -67,6 +62,13 @@ def health_external():
     components["annuaire"] = annuaire_health
     if annuaire_health["status"] == Status.DOWN.value:
         global_status = Status.DOWN.value
+
+    for checker in checkers:
+        health_statuses = checker.perform_checks()
+        for component, status in health_statuses.items():
+            components[component] = status
+            if status["status"] == Status.DOWN.value:
+                global_status = Status.DOWN.value
 
     # Aggregate and return the result
     result = OrderedDict([("status", global_status), ("components", components)])

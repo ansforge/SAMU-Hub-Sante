@@ -94,6 +94,8 @@ class HealthCheckTestCase(unittest.TestCase):
                 [
                     {"status": "ok"},
                     {"status": "UP", "components": {}},
+                    {"status": "UP"},
+                    {"status": "UP"},
                     [
                         {
                             "vhost": "vhost1",
@@ -101,8 +103,6 @@ class HealthCheckTestCase(unittest.TestCase):
                             "blocked_status": "running",
                         },
                     ],
-                    {"status": "UP"},
-                    {"status": "UP"},
                 ],
                 "UP",
                 "UP",
@@ -115,6 +115,8 @@ class HealthCheckTestCase(unittest.TestCase):
                 [
                     {"status": "down"},
                     {"status": "UP", "components": {}},
+                    {"status": "UP"},
+                    {"status": "UP"},
                     [
                         {
                             "vhost": "vhost1",
@@ -122,8 +124,6 @@ class HealthCheckTestCase(unittest.TestCase):
                             "blocked_status": "running",
                         },
                     ],
-                    {"status": "UP"},
-                    {"status": "UP"},
                 ],
                 "DOWN",
                 "DOWN",
@@ -136,6 +136,8 @@ class HealthCheckTestCase(unittest.TestCase):
                 [
                     {"status": "ok"},
                     {"status": "DOWN", "components": {}},
+                    {"status": "DOWN"},
+                    {"status": "DOWN"},
                     [
                         {
                             "vhost": "vhost1",
@@ -143,8 +145,6 @@ class HealthCheckTestCase(unittest.TestCase):
                             "blocked_status": "running",
                         },
                     ],
-                    {"status": "DOWN"},
-                    {"status": "DOWN"},
                 ],
                 "DOWN",
                 "UP",
@@ -157,6 +157,8 @@ class HealthCheckTestCase(unittest.TestCase):
                 [
                     {"status": "down"},
                     {"status": "DOWN", "components": {}},
+                    {"status": "DOWN"},
+                    {"status": "DOWN"},
                     [
                         {
                             "vhost": "vhost1",
@@ -164,8 +166,6 @@ class HealthCheckTestCase(unittest.TestCase):
                             "blocked_status": "not_running",
                         },
                     ],
-                    {"status": "DOWN"},
-                    {"status": "DOWN"},
                 ],
                 "DOWN",
                 "DOWN",
@@ -329,6 +329,8 @@ class HealthCheckTestCase(unittest.TestCase):
                     {"status": "ok"},
                     {"status": "UP", "components": {}},
                     {"status": "UP", "components": {}},
+                    {"status": "UP"},
+                    {"status": "UP"},
                     [
                         {
                             "vhost": "vhost1",
@@ -336,8 +338,6 @@ class HealthCheckTestCase(unittest.TestCase):
                             "blocked_status": "running",
                         },
                     ],
-                    {"status": "UP"},
-                    {"status": "UP"},
                 ],
                 "UP",
                 "UP",
@@ -352,6 +352,8 @@ class HealthCheckTestCase(unittest.TestCase):
                     {"status": "ok"},
                     {"status": "UP", "components": {}},
                     {"status": "DOWN", "components": {}},
+                    {"status": "DOWN"},
+                    {"status": "DOWN"},
                     [
                         {
                             "vhost": "vhost1",
@@ -359,8 +361,6 @@ class HealthCheckTestCase(unittest.TestCase):
                             "blocked_status": "running",
                         },
                     ],
-                    {"status": "DOWN"},
-                    {"status": "DOWN"},
                 ],
                 "DOWN",
                 "UP",

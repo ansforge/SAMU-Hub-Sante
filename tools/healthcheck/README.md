@@ -17,11 +17,11 @@ uv sync
 
 ## Tests
 
-To run the tests: `RABBITMQ_URL=http://test RABBITMQ_MONITORING_USERNAME=test RABBITMQ_MONITORING_PASSWORD=test DISPATCHER_INSTANCES=dispatcher_instance uv run python -m unittest test_*.py -v`
+To run the tests: `RABBITMQ_URL=http://test RABBITMQ_MONITORING_USERNAME=test RABBITMQ_MONITORING_PASSWORD=test DISPATCHER_INSTANCES=dispatcher_instance uv run python -m unittest tests/*.py -v`
 
-To run the tests and generate a coverage report: `RABBITMQ_URL=http://test RABBITMQ_MONITORING_USERNAME=test RABBITMQ_MONITORING_PASSWORD=test DISPATCHER_INSTANCES=dispatcher_instance uv run coverage run -m unittest test_*.py`
+To run the tests and generate a coverage report: `make test`
 
-To display the coverage report summary in the terminal: `uv run coverage report -m`
+To display the coverage report summary in the terminal: `make show-coverage`
 
 To generate a html report from an existing report: `uv run coverage html` & open [htmlcov/index.html](htmlcov/index.html) in a browser.
 

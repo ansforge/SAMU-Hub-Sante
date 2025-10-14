@@ -4,6 +4,7 @@ import os
 import sys
 from prometheus_client import Gauge
 
+from checks.checker import IChecker
 from checks.status import Status
 from config import (
     HTTP_TIMEOUT,
@@ -62,7 +63,7 @@ def check_shovel_response(data, vhost, src_queue):
         return {"status": Status.DOWN.value}
 
 
-class HubexPartnersHealthcheck:
+class HubexPartnersHealthcheck(IChecker):
     hubex_partners_status_metric = Gauge(
         "hubex_partners_status",
         "Statut des shovels connectés aux Hubex partenaires (1=UP, 0=DOWN)",
@@ -80,7 +81,7 @@ class HubexPartnersHealthcheck:
                     shovel=f"{vhost}-{queue_name}"
                 ).set(0)
 
-    def hubex_partners_shovels_healthcheck(self):
+    def perform_checks(self):
         logging.info(
             f"Checking health of hubex partners connexions: {self.SHOVELS_MAP}"
         )
