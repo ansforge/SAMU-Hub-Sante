@@ -2,6 +2,7 @@ import requests
 import logging
 from prometheus_client import Gauge
 
+from checks.checker import IChecker
 from checks.status import Status
 from config import (
     HTTP_TIMEOUT,
@@ -13,28 +14,33 @@ from config import (
 
 RABBITMQ_HEALTH_URL = f"{RABBITMQ_URL}/rabbitmq/api/health/checks/alarms"
 
-rabbitmq_status_metric = Gauge("rabbitmq_status", "Statut de RabbitMQ (1=UP, 0=DOWN)")
 
+class RabbitMQHealthcheck(IChecker):
+    rabbitmq_status_metric = Gauge(
+        "rabbitmq_status", "Statut de RabbitMQ (1=UP, 0=DOWN)"
+    )
 
-def rabbitmq_healthcheck():
-    try:
-        response = requests.get(
-            RABBITMQ_HEALTH_URL,
-            auth=(RABBITMQ_MONITORING_USERNAME, RABBITMQ_MONITORING_PASSWORD),
-            verify=RABBITMQ_CA_CERT_PATH,
-            timeout=HTTP_TIMEOUT,
-        )
-        response.raise_for_status()
-        status = response.json().get("status", Status.UNKNOWN.value)
-        rabbitmq_status_metric.set(1 if status == Status.OK.value else 0)
-        return (
-            {"status": Status.UP.value}
-            if status == Status.OK.value
-            else {"status": Status.DOWN.value}
-        )
-    except requests.RequestException:
-        logging.error(
-            "Error occurred on RabbitMQ server's healthcheck: ", exc_info=True
-        )
-        rabbitmq_status_metric.set(0)
-        return {"status": Status.DOWN.value}
+    def perform_checks(self):
+        try:
+            response = requests.get(
+                RABBITMQ_HEALTH_URL,
+                auth=(RABBITMQ_MONITORING_USERNAME, RABBITMQ_MONITORING_PASSWORD),
+                verify=RABBITMQ_CA_CERT_PATH,
+                timeout=HTTP_TIMEOUT,
+            )
+            response.raise_for_status()
+            status = response.json().get("status", Status.UNKNOWN.value)
+            self.rabbitmq_status_metric.set(1 if status == Status.OK.value else 0)
+            return {
+                "rabbitmq_server": (
+                    {"status": Status.UP.value}
+                    if status == Status.OK.value
+                    else {"status": Status.DOWN.value}
+                )
+            }
+        except requests.RequestException:
+            logging.error(
+                "Error occurred on RabbitMQ server's healthcheck: ", exc_info=True
+            )
+            self.rabbitmq_status_metric.set(0)
+            return {"rabbitmq_server": {"status": Status.DOWN.value}}

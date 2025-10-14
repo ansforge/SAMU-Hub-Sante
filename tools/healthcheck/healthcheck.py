@@ -6,16 +6,22 @@ from prometheus_flask_exporter import PrometheusMetrics
 
 from utils import remove_error_keys
 from checks.status import Status
-from checks.converter import converter_healthcheck
-from checks.rabbitmq import rabbitmq_healthcheck
-from checks.dispatcher import dispatchers_healthcheck
-from checks.annuaire import annuaire_healthcheck
+from checks.converter import ConverterHealthcheck
+from checks.rabbitmq import RabbitMQHealthcheck
+from checks.dispatcher import DispatchersHealthcheck
+from checks.annuaire import AnnuaireHealthcheck
 from checks.hubex_partners_shovels import HubexPartnersHealthcheck
 
 app = Flask(__name__)
 metrics = PrometheusMetrics(app)
 
-checkers = [HubexPartnersHealthcheck()]
+checkers = [
+    RabbitMQHealthcheck(),
+    DispatchersHealthcheck(),
+    ConverterHealthcheck(),
+    AnnuaireHealthcheck(),
+    HubexPartnersHealthcheck(),
+]
 
 logging.basicConfig(level=logging.INFO)
 
@@ -28,10 +34,6 @@ DEFAULT_FLASK_PORT = 8080
 @app.before_request
 def update_metrics_before_scrapping():
     if request.path == METRICS_ENDPOINT:
-        rabbitmq_healthcheck()
-        dispatchers_healthcheck()
-        converter_healthcheck()
-        annuaire_healthcheck()
         for checker in checkers:
             checker.perform_checks()
 
@@ -40,28 +42,6 @@ def update_metrics_before_scrapping():
 def health_external():
     global_status = Status.UP.value
     components = OrderedDict()
-
-    # Fetch RabbitMQ health
-    rabbitmq_health = rabbitmq_healthcheck()
-    components["rabbitmq_server"] = rabbitmq_health
-    if rabbitmq_health["status"] == Status.DOWN.value:
-        global_status = Status.DOWN.value
-
-    dispatchers_health = dispatchers_healthcheck()
-    for dispatcher_instance, spring_health in dispatchers_health.items():
-        components[dispatcher_instance] = spring_health
-        if spring_health["status"] == Status.DOWN.value:
-            global_status = Status.DOWN.value
-
-    converter_health = converter_healthcheck()
-    components["converter"] = converter_health
-    if converter_health["status"] == Status.DOWN.value:
-        global_status = Status.DOWN.value
-
-    annuaire_health = annuaire_healthcheck()
-    components["annuaire"] = annuaire_health
-    if annuaire_health["status"] == Status.DOWN.value:
-        global_status = Status.DOWN.value
 
     for checker in checkers:
         health_statuses = checker.perform_checks()
