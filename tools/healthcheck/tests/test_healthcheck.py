@@ -11,7 +11,7 @@ from checks.hubex_partners_shovels import SHOVEL_STATUS_URL
 import logging
 
 with patch("checks.hubex_partners_shovels.open", mock_open(read_data="vhost1;queue1")):
-    from healthcheck import HEALTH_EXTERNAL_ENDPOINT, app
+    from healthcheck import HEALTH_INTERNAL_ENDPOINT, HEALTH_EXTERNAL_ENDPOINT, app
 
 
 class HealthCheckTestCase(unittest.TestCase):
@@ -193,7 +193,7 @@ class HealthCheckTestCase(unittest.TestCase):
 
         with patch("checks.dispatcher.DISPATCHER_INSTANCES", ["dispatcher1"]):
             with app.test_client() as client:
-                response = client.get(HEALTH_EXTERNAL_ENDPOINT)
+                response = client.get(HEALTH_INTERNAL_ENDPOINT)
                 self.assertEqual(response.status_code, 200)
                 data = json.loads(response.data)
                 self.assertEqual(data["status"], global_status)
@@ -221,7 +221,7 @@ class HealthCheckTestCase(unittest.TestCase):
         mock_get.side_effect = self.create_mock_side_effect(rabbitmq_error=True)
 
         with app.test_client() as client:
-            response = client.get(HEALTH_EXTERNAL_ENDPOINT)
+            response = client.get(HEALTH_INTERNAL_ENDPOINT)
             self.assertEqual(response.status_code, 200)
             data = json.loads(response.data)
             self.assertEqual(data["status"], Status.DOWN.value)
@@ -239,7 +239,7 @@ class HealthCheckTestCase(unittest.TestCase):
 
         with patch("checks.dispatcher.DISPATCHER_INSTANCES", ["dispatcher_instance"]):
             with app.test_client() as client:
-                response = client.get(HEALTH_EXTERNAL_ENDPOINT)
+                response = client.get(HEALTH_INTERNAL_ENDPOINT)
                 self.assertEqual(response.status_code, 200)
                 data = json.loads(response.data)
                 self.assertEqual(data["status"], Status.DOWN.value)  # global status
@@ -268,7 +268,7 @@ class HealthCheckTestCase(unittest.TestCase):
 
         with patch("checks.dispatcher.DISPATCHER_INSTANCES", ["dispatcher_instance"]):
             with app.test_client() as client:
-                response = client.get(HEALTH_EXTERNAL_ENDPOINT)
+                response = client.get(HEALTH_INTERNAL_ENDPOINT)
                 self.assertEqual(response.status_code, 200)
                 data = json.loads(response.data)
                 self.assertEqual(data["status"], expected_global_status)
@@ -285,7 +285,7 @@ class HealthCheckTestCase(unittest.TestCase):
 
         with patch("checks.dispatcher.DISPATCHER_INSTANCES", ["dispatcher_instance"]):
             with app.test_client() as client:
-                response = client.get(HEALTH_EXTERNAL_ENDPOINT)
+                response = client.get(HEALTH_INTERNAL_ENDPOINT)
                 self.assertEqual(response.status_code, 200)
                 data = json.loads(response.data)
                 self.assertEqual(data["status"], Status.DOWN.value)  # global status
@@ -314,7 +314,7 @@ class HealthCheckTestCase(unittest.TestCase):
 
         with patch("checks.dispatcher.DISPATCHER_INSTANCES", ["dispatcher_instance"]):
             with app.test_client() as client:
-                response = client.get(HEALTH_EXTERNAL_ENDPOINT)
+                response = client.get(HEALTH_INTERNAL_ENDPOINT)
                 self.assertEqual(response.status_code, 200)
                 data = json.loads(response.data)
                 self.assertEqual(data["status"], expected_global_status)
@@ -392,7 +392,7 @@ class HealthCheckTestCase(unittest.TestCase):
             "checks.dispatcher.DISPATCHER_INSTANCES", ["dispatcher1", "dispatcher2"]
         ):
             with app.test_client() as client:
-                response = client.get(HEALTH_EXTERNAL_ENDPOINT)
+                response = client.get(HEALTH_INTERNAL_ENDPOINT)
                 self.assertEqual(response.status_code, 200)
                 data = json.loads(response.data)
                 self.assertEqual(data["status"], global_status)
@@ -414,6 +414,35 @@ class HealthCheckTestCase(unittest.TestCase):
                 self.assertEqual(
                     data["components"]["vhost1-queue1"]["status"], shovel_status
                 )
+
+    @patch("requests.get")
+    def test_external_health_check(
+        self,
+        mock_get,
+    ):
+        mock_get.side_effect = self.create_mock_side_effect()
+
+        with patch("checks.dispatcher.DISPATCHER_INSTANCES", ["dispatcher_instance"]):
+            with app.test_client() as client:
+                response = client.get(HEALTH_EXTERNAL_ENDPOINT)
+                self.assertEqual(response.status_code, 200)
+                data = json.loads(response.data)
+                self.assertEqual(data["status"], Status.UP.value)
+                self.assertEqual(len(data["components"]), 4)
+                self.assertEqual(
+                    data["components"]["rabbitmq_server"]["status"], Status.UP.value
+                )
+                self.assertEqual(
+                    data["components"]["dispatcher_instance"]["status"],
+                    Status.UP.value,
+                )
+                self.assertEqual(
+                    data["components"]["converter"]["status"], Status.UP.value
+                )
+                self.assertEqual(
+                    data["components"]["vhost1-queue1"]["status"], Status.UP.value
+                )
+                self.assertNotIn("annuaire", data["components"].keys())
 
     @patch("requests.get")
     def test_update_metrics_before_scrapping_requests_are_made(
