@@ -1,9 +1,8 @@
 import unittest
-from unittest.mock import patch
+from unittest.mock import patch, mock_open
 from parameterized import parameterized
 import json
 import requests
-from healthcheck import HEALTH_EXTERNAL_ENDPOINT, app
 from utils import remove_error_keys
 from checks.status import Status
 from checks.annuaire import ANNUAIRE_HEALTH_URL
@@ -11,6 +10,9 @@ from checks.rabbitmq import RABBITMQ_HEALTH_URL
 from checks.converter import CONVERTER_HEALTH_URL
 from checks.hubex_partners_shovels import SHOVEL_STATUS_URL
 import logging
+
+with patch("checks.hubex_partners_shovels.open", mock_open(read_data="vhost1;queue1")):
+    from healthcheck import HEALTH_EXTERNAL_ENDPOINT, app
 
 
 class HealthCheckTestCase(unittest.TestCase):
@@ -191,29 +193,26 @@ class HealthCheckTestCase(unittest.TestCase):
         mock_get.return_value.json.side_effect = side_effect
 
         with patch("checks.dispatcher.DISPATCHER_INSTANCES", ["dispatcher1"]):
-            with patch(
-                "checks.hubex_partners_shovels.SHOVELS_MAP", {"vhost1": ["queue1"]}
-            ):
-                with app.test_client() as client:
-                    response = client.get(HEALTH_EXTERNAL_ENDPOINT)
-                    self.assertEqual(response.status_code, 200)
-                    data = json.loads(response.data)
-                    self.assertEqual(data["status"], global_status)
-                    self.assertEqual(
-                        data["components"]["rabbitmq_server"]["status"], rabbitmq_status
-                    )
-                    self.assertEqual(
-                        data["components"]["dispatcher1"]["status"], dispatcher_status
-                    )
-                    self.assertEqual(
-                        data["components"]["converter"]["status"], converter_status
-                    )
-                    self.assertEqual(
-                        data["components"]["annuaire"]["status"], annuaire_status
-                    )
-                    self.assertEqual(
-                        data["components"]["vhost1-queue1"]["status"], shovel_status
-                    )
+            with app.test_client() as client:
+                response = client.get(HEALTH_EXTERNAL_ENDPOINT)
+                self.assertEqual(response.status_code, 200)
+                data = json.loads(response.data)
+                self.assertEqual(data["status"], global_status)
+                self.assertEqual(
+                    data["components"]["rabbitmq_server"]["status"], rabbitmq_status
+                )
+                self.assertEqual(
+                    data["components"]["dispatcher1"]["status"], dispatcher_status
+                )
+                self.assertEqual(
+                    data["components"]["converter"]["status"], converter_status
+                )
+                self.assertEqual(
+                    data["components"]["annuaire"]["status"], annuaire_status
+                )
+                self.assertEqual(
+                    data["components"]["vhost1-queue1"]["status"], shovel_status
+                )
 
     @patch("requests.get")
     def test_rabbitmq_healthcheck_error(
@@ -393,32 +392,29 @@ class HealthCheckTestCase(unittest.TestCase):
         with patch(
             "checks.dispatcher.DISPATCHER_INSTANCES", ["dispatcher1", "dispatcher2"]
         ):
-            with patch(
-                "checks.hubex_partners_shovels.SHOVELS_MAP", {"vhost1": ["queue1"]}
-            ):
-                with app.test_client() as client:
-                    response = client.get(HEALTH_EXTERNAL_ENDPOINT)
-                    self.assertEqual(response.status_code, 200)
-                    data = json.loads(response.data)
-                    self.assertEqual(data["status"], global_status)
-                    self.assertEqual(
-                        data["components"]["rabbitmq_server"]["status"], rabbitmq_status
-                    )
-                    self.assertEqual(
-                        data["components"]["dispatcher1"]["status"], dispatcher1_status
-                    )
-                    self.assertEqual(
-                        data["components"]["dispatcher2"]["status"], dispatcher2_status
-                    )
-                    self.assertEqual(
-                        data["components"]["converter"]["status"], converter_status
-                    )
-                    self.assertEqual(
-                        data["components"]["annuaire"]["status"], annuaire_status
-                    )
-                    self.assertEqual(
-                        data["components"]["vhost1-queue1"]["status"], shovel_status
-                    )
+            with app.test_client() as client:
+                response = client.get(HEALTH_EXTERNAL_ENDPOINT)
+                self.assertEqual(response.status_code, 200)
+                data = json.loads(response.data)
+                self.assertEqual(data["status"], global_status)
+                self.assertEqual(
+                    data["components"]["rabbitmq_server"]["status"], rabbitmq_status
+                )
+                self.assertEqual(
+                    data["components"]["dispatcher1"]["status"], dispatcher1_status
+                )
+                self.assertEqual(
+                    data["components"]["dispatcher2"]["status"], dispatcher2_status
+                )
+                self.assertEqual(
+                    data["components"]["converter"]["status"], converter_status
+                )
+                self.assertEqual(
+                    data["components"]["annuaire"]["status"], annuaire_status
+                )
+                self.assertEqual(
+                    data["components"]["vhost1-queue1"]["status"], shovel_status
+                )
 
     def test_remove_error_keys(
         self,
