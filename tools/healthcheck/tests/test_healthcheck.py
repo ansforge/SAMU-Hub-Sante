@@ -3,7 +3,6 @@ from unittest.mock import patch, mock_open
 from parameterized import parameterized
 import json
 import requests
-from utils import remove_error_keys
 from checks.status import Status
 from checks.annuaire import ANNUAIRE_HEALTH_URL
 from checks.rabbitmq import RABBITMQ_HEALTH_URL
@@ -415,24 +414,6 @@ class HealthCheckTestCase(unittest.TestCase):
                 self.assertEqual(
                     data["components"]["vhost1-queue1"]["status"], shovel_status
                 )
-
-    def test_remove_error_keys(
-        self,
-    ):
-        # Test if error keys are properly removed
-        data = {
-            "status": Status.UP.value,
-            "components": {
-                "rabbitmq_server": {"status": Status.UP.value},
-                "dispatcher1": {
-                    "status": Status.DOWN.value,
-                    "error": "Dispatcher failed",
-                },
-            },
-        }
-        result = remove_error_keys(data)
-        self.assertNotIn("error", result["components"]["dispatcher1"])
-        self.assertEqual(result["status"], Status.UP.value)
 
     @patch("requests.get")
     def test_update_metrics_before_scrapping_requests_are_made(

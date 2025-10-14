@@ -51,7 +51,7 @@ jobs:
           RABBITMQ_MONITORING_PASSWORD: "bar"
           DISPATCHER_INSTANCES: "bar"
         run: |
-          uv run coverage run -m unittest test_*.py
+          uv run coverage run -m unittest tests/*.py
           uv run coverage report -m
           uv run coverage html
 

@@ -19,7 +19,7 @@ dependencies = [
 [tool.coverage.run]
 branch = true
 omit = [
-    "test_healthcheck.py",
+    "tests/*.py",
 ]
 
 [tool.coverage.report]
