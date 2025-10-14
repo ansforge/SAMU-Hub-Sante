@@ -10,13 +10,12 @@ from checks.converter import converter_healthcheck
 from checks.rabbitmq import rabbitmq_healthcheck
 from checks.dispatcher import dispatchers_healthcheck
 from checks.annuaire import annuaire_healthcheck
-from checks.hubex_partners_shovels import (
-    hubex_partners_shovels_healthcheck,
-    init_shovels_check,
-)
+from checks.hubex_partners_shovels import HubexPartnersHealthcheck
 
 app = Flask(__name__)
 metrics = PrometheusMetrics(app)
+
+hubex_partners_checks = HubexPartnersHealthcheck()
 
 logging.basicConfig(level=logging.INFO)
 
@@ -33,7 +32,7 @@ def update_metrics_before_scrapping():
         dispatchers_healthcheck()
         converter_healthcheck()
         annuaire_healthcheck()
-        hubex_partners_shovels_healthcheck()
+        hubex_partners_checks.hubex_partners_shovels_healthcheck()
 
 
 @app.route(HEALTH_EXTERNAL_ENDPOINT, methods=["GET"])
@@ -53,7 +52,7 @@ def health_external():
         if spring_health["status"] == Status.DOWN.value:
             global_status = Status.DOWN.value
 
-    partners_shovels_health = hubex_partners_shovels_healthcheck()
+    partners_shovels_health = hubex_partners_checks.hubex_partners_shovels_healthcheck()
     for shovel_name, shovel_health in partners_shovels_health.items():
         components[shovel_name] = shovel_health
         if shovel_health["status"] == Status.DOWN.value:
@@ -77,5 +76,4 @@ def health_external():
 
 
 if __name__ == "__main__":
-    init_shovels_check()
     app.run(host=DEFAULT_FLASK_HOST, port=DEFAULT_FLASK_PORT)
