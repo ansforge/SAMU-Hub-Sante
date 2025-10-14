@@ -111,9 +111,10 @@ public class MessageHandler {
         // send Error to sender
         String senderClientID = message.getMessageProperties().getHeader(ORIGINAL_ROUTING_KEY);
 
+        logErrorMessage(error, senderClientID);
         // currently, we do not handle error messages on other hubex
         if (senderClientID.startsWith(FR_HEALTH_PREFIX)) {
-            logErrorAndSendReport(error, senderClientID);
+            sendErrorReport(error, senderClientID);
         }
         else {
             log.info("Error message not sent to {} as it is not a health perimeter", senderClientID);
@@ -125,9 +126,7 @@ public class MessageHandler {
         throw new AmqpRejectAndDontRequeueException(exception);
     }
 
-    protected void logErrorAndSendReport(Error error, String sender) {
-        String infoQueueName = getInfoQueueNameFromClientId(sender);
-
+    protected void logErrorMessage(Error error, String sender) {
         // log error
         // TODO bbo : add a logback pattern to allow structured logging
         log.error(
@@ -135,6 +134,10 @@ public class MessageHandler {
                         "Error " + error.getErrorCode() + "\n" +
                         "ErrorCause " + error.getErrorCause());
         log.debug("ErrorSourceMessage was {}", error.getSourceMessage());
+    }
+
+    protected void sendErrorReport(Error error, String sender) {
+        String infoQueueName = getInfoQueueNameFromClientId(sender);
 
         ErrorWrapper wrapper = new ErrorWrapperBuilder(error).build();
 
