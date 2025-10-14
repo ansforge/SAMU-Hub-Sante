@@ -15,6 +15,7 @@ from config import (
 
 SHOVEL_STATUS_URL = f"{RABBITMQ_URL}/rabbitmq/api/shovels"
 MONITORED_SHOVEL_CONFIG_FILE_NAME = "monitored_partners_shovels.txt"
+EXPECTED_SHOVEL_STATUS = "running"
 
 
 def build_shovels_config_file_path():
@@ -44,28 +45,6 @@ def parse_monitored_shovels_config_file(config_file_path):
     return shovels
 
 
-EXPECTED_SHOVEL_STATUS = "running"
-
-hubex_partners_status_metric = Gauge(
-    "hubex_partners_status",
-    "Statut des shovels connectés aux Hubex partenaires (1=UP, 0=DOWN)",
-    ["shovel"],
-)
-
-SHOVELS_MAP = {}
-
-
-def init_shovels_check():
-    config_file_path = build_shovels_config_file_path()
-    # TODO: remove this atrocity
-    global SHOVELS_MAP
-    SHOVELS_MAP = parse_monitored_shovels_config_file(config_file_path)
-
-    for vhost, shovels_list in SHOVELS_MAP.items():
-        for queue_name in shovels_list:
-            hubex_partners_status_metric.labels(shovel=f"{vhost}-{queue_name}").set(0)
-
-
 def check_shovel_response(data, vhost, src_queue):
     def find_shovel(element):
         return element["vhost"] == vhost and element["src_queue"] == src_queue
@@ -83,33 +62,55 @@ def check_shovel_response(data, vhost, src_queue):
         return {"status": Status.DOWN.value}
 
 
-def hubex_partners_shovels_healthcheck():
-    logging.info(f"Checking health of hubex partners connexions: {SHOVELS_MAP}")
-    try:
-        response = requests.get(
-            SHOVEL_STATUS_URL,
-            auth=(RABBITMQ_MONITORING_USERNAME, RABBITMQ_MONITORING_PASSWORD),
-            verify=RABBITMQ_CA_CERT_PATH,
-            timeout=HTTP_TIMEOUT,
+class HubexPartnersHealthcheck:
+    hubex_partners_status_metric = Gauge(
+        "hubex_partners_status",
+        "Statut des shovels connectés aux Hubex partenaires (1=UP, 0=DOWN)",
+        ["shovel"],
+    )
+
+    SHOVELS_MAP = {}
+
+    def __init__(self):
+        config_file_path = build_shovels_config_file_path()
+        self.SHOVELS_MAP = parse_monitored_shovels_config_file(config_file_path)
+        for vhost, shovels_list in self.SHOVELS_MAP.items():
+            for queue_name in shovels_list:
+                self.hubex_partners_status_metric.labels(
+                    shovel=f"{vhost}-{queue_name}"
+                ).set(0)
+
+    def hubex_partners_shovels_healthcheck(self):
+        logging.info(
+            f"Checking health of hubex partners connexions: {self.SHOVELS_MAP}"
         )
-        response.raise_for_status()
-        data = response.json()
-        result = {}
-        for vhost, shovels_list in SHOVELS_MAP.items():
-            for shovel in shovels_list:
-                shovel_status = check_shovel_response(data, vhost, shovel)
-                shovel_label = f"{vhost}-{shovel}"
-                result[shovel_label] = shovel_status
-                hubex_partners_status_metric.labels(shovel=shovel_label).set(
-                    1 if shovel_status["status"] == Status.OK.value else 0
-                )
-        return result
-    except requests.RequestException:
-        logging.error("Error occurred on Hubex partners healthcheck: ", exc_info=True)
-        result = {}
-        for vhost, shovels_list in SHOVELS_MAP.items():
-            for shovel in shovels_list:
-                shovel_label = f"{vhost}-{shovel}"
-                result[shovel_label] = {"status": Status.DOWN.value}
-                hubex_partners_status_metric.labels(shovel=shovel_label).set(0)
-        return result
+        try:
+            response = requests.get(
+                SHOVEL_STATUS_URL,
+                auth=(RABBITMQ_MONITORING_USERNAME, RABBITMQ_MONITORING_PASSWORD),
+                verify=RABBITMQ_CA_CERT_PATH,
+                timeout=HTTP_TIMEOUT,
+            )
+            response.raise_for_status()
+            data = response.json()
+            result = {}
+            for vhost, shovels_list in self.SHOVELS_MAP.items():
+                for shovel in shovels_list:
+                    shovel_status = check_shovel_response(data, vhost, shovel)
+                    shovel_label = f"{vhost}-{shovel}"
+                    result[shovel_label] = shovel_status
+                    self.hubex_partners_status_metric.labels(shovel=shovel_label).set(
+                        1 if shovel_status["status"] == Status.OK.value else 0
+                    )
+            return result
+        except requests.RequestException:
+            logging.error(
+                "Error occurred on Hubex partners healthcheck: ", exc_info=True
+            )
+            result = {}
+            for vhost, shovels_list in self.SHOVELS_MAP.items():
+                for shovel in shovels_list:
+                    shovel_label = f"{vhost}-{shovel}"
+                    result[shovel_label] = {"status": Status.DOWN.value}
+                    self.hubex_partners_status_metric.labels(shovel=shovel_label).set(0)
+            return result
