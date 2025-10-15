@@ -46,10 +46,11 @@ jobs:
           # required to run tests because the whole build.gradle seems to be evaluated, even if the jib task is not executed
           # so the GITHUB_TOKEN var must be resolved
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          MODEL_VERSIONS: ${{ vars.MODEL_VERSIONS }}
+          DISPATCHER_TESTS_MODEL_VERSIONS: ${{ vars.DISPATCHER_TESTS_MODEL_VERSIONS }}
         run: |
           # test on each supported model lib version
-          for MODEL_VERSION in $MODEL_VERSIONS; do
+          for MODEL_VERSION in $DISPATCHER_TESTS_MODEL_VERSIONS; do
+            echo "🚀 Running dispatcher tests for model version $MODEL_VERSION"
             ./gradlew test -PmodelVersion=$MODEL_VERSION
           done
 
