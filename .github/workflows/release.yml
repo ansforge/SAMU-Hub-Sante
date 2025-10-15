@@ -73,9 +73,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: ${{ steps.extract_info.outputs.version }}
+          MODEL_VERSIONS: ${{ vars.MODEL_VERSIONS }}
         run: |
           # Build for each model version
-          for MODEL_VERSION in "1.2" "2.3" "3.1"; do
+          for MODEL_VERSION in $MODEL_VERSIONS; do
             IMAGE_TAG="${TAG}-model-${MODEL_VERSION}"
             echo "Building image for $IMAGE_TAG"
             ./gradlew jib \
