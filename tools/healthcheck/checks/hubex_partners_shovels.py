@@ -101,7 +101,7 @@ class HubexPartnersHealthcheck(IChecker):
                     shovel_label = f"{vhost}-{shovel}"
                     result[shovel_label] = shovel_status
                     self.hubex_partners_status_metric.labels(shovel=shovel_label).set(
-                        1 if shovel_status["status"] == Status.OK.value else 0
+                        1 if shovel_status["status"] == Status.UP.value else 0
                     )
             return result
         except requests.RequestException:

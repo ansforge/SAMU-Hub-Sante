@@ -1,5 +1,6 @@
 import unittest
 from unittest.mock import patch, mock_open, MagicMock
+import logging
 
 from checks.hubex_partners_shovels import (
     check_shovel_response,
@@ -74,6 +75,15 @@ class TestHubexPartnersShovels(unittest.TestCase):
             result = check_shovel_response(response, "vhost1", "queue1")
         self.assertEqual(result["status"], Status.DOWN.value)
         self.assertTrue(any("Mutliple shovels" in m for m in log.output))
+
+
+class TestFunctionalHubexPartnersShovels(unittest.TestCase):
+    def setUp(self):
+        # Prevent logging errors when the mocks throw exceptions.
+        logging.disable(logging.CRITICAL)
+
+    def tearDown(self):
+        logging.disable(logging.NOTSET)
 
     @patch(
         "checks.hubex_partners_shovels.open",
