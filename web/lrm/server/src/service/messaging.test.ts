@@ -62,18 +62,20 @@ describe('Messaging service', () => {
 
     const service = new MessagingService('15-15_v1.5', config, connector, new WebSocketServer({ noServer: true }));
 
+    const mockError = new Error('Mock error during connection to queue');
+
     service.connectToVhost();
     for (let i = 0; i < 3; i++) {
-      mockChannel.emit('error', new Error('Mock error during connection to queue'));
+      mockChannel.emit('error', mockError);
     }
 
     expect(handleChannelErrorSpy).toHaveBeenCalledTimes(3);
     expect(reconnectSpy).toHaveBeenCalledTimes(3);
 
     try {
-      mockChannel.emit('error', new Error('Mock error during connection to queue'));
+      mockChannel.emit('error', mockError);
     } catch (err) {
-      expect(err).toEqual(new Error('Mock error during connection to queue'));
+      expect(err).toEqual(new Error("Max reconnection attempts reached for vhost '15-15_v1.5'"));
     }
 
     // Check that all the expect statements have been checked (wether valid or failing)
@@ -88,18 +90,16 @@ describe('Messaging service', () => {
 
     service.connectToVhost();
 
+    const mockErrorPayload = {
+      code: 404,
+      message: 'NOT_FOUND - no queue fr.health.test.samuV1',
+    };
     try {
-      mockChannel.emit('error', {
-        code: 404,
-        message: 'NOT_FOUND - no queue fr.health.test.samuV1',
-      });
+      mockChannel.emit('error', mockErrorPayload);
     } catch (err) {
       expect(handleChannelErrorSpy).toHaveBeenCalledTimes(1);
       expect(reconnectSpy).not.toHaveBeenCalled();
-      expect(err).toEqual({
-        code: 404,
-        message: 'NOT_FOUND - no queue fr.health.test.samuV1',
-      });
+      expect(err).toEqual(new Error("Missing queue for vhost '15-15_v1.5'"));
     }
     // Check that all the expect statements have been checked (wether valid or failing)
     expect.assertions(3);
