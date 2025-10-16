@@ -7,7 +7,7 @@ from checks.status import Status
 from config import HTTP_TIMEOUT
 
 ANNUAIRE_HEALTH_URL = (
-    "http://annuaire-service.annuaire.svc.cluster.local:8080/annuaire/health"
+    "http://annuaire-service.annuaire.svc.cluster.local/annuaire/health"
 )
 
 
