@@ -20,7 +20,6 @@ HTTP_TIMEOUT = int(
     os.getenv("HTTP_TIMEOUT", 5)
 )  # Timeout in seconds, configurable via environment variable
 RABBITMQ_URL = os.getenv("RABBITMQ_URL")
-RABBITMQ_HEALTH_URL = f"{RABBITMQ_URL}/rabbitmq/api/health/checks/alarms"
 RABBITMQ_MONITORING_USERNAME = os.getenv("RABBITMQ_MONITORING_USERNAME")
 RABBITMQ_MONITORING_PASSWORD = os.getenv("RABBITMQ_MONITORING_PASSWORD")
 RABBITMQ_CA_CERT_PATH = "/etc/ssl/certs/hubsante-rabbitmq-ca.crt"
