@@ -56,10 +56,14 @@ def check_shovel_response(data, vhost, src_queue):
             return {"status": Status.DOWN.value}
         return {"status": Status.UP.value}
     elif len(res) == 0:
-        logging.error("Missing shovel in RabbitMQ API response")
+        logging.error(
+            f"Missing shovel with vhost '{vhost}' and src_queue '{src_queue}' in RabbitMQ API response. Shovel status endpoint returned: {data}"
+        )
         return {"status": Status.DOWN.value}
     else:
-        logging.error("Mutliple shovels found in RabbitMQ API response. Config Error")
+        logging.error(
+            f"Mutliple shovels found with vhost '{vhost}' and src_queue '{src_queue}' in RabbitMQ API response. This is a config error. Shovel status endpoint returned: {data}"
+        )
         return {"status": Status.DOWN.value}
 
 
