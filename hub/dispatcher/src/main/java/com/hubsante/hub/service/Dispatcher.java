@@ -117,9 +117,10 @@ public class Dispatcher {
             }
             error.setReferencedDistributionID(returnedEdxlMessage != null ? returnedEdxlMessage.getDistributionID() : DISTRIBUTION_ID_UNAVAILABLE);
             String senderRoutingKey = returned.getMessage().getMessageProperties().getHeader(ORIGINAL_ROUTING_KEY);
+            messageHandler.logErrorMessage(error, senderRoutingKey);
             // currently, we do not handle error messages on other hubex
             if (senderRoutingKey.startsWith(FR_HEALTH_PREFIX)) {
-                messageHandler.logErrorAndSendReport(error, senderRoutingKey);
+                messageHandler.sendErrorReport(error, senderRoutingKey);
             }
             messageHandler.publishErrorMetric(ErrorCode.UNROUTABLE_MESSAGE.getStatusString(), senderRoutingKey);
         });

@@ -770,4 +770,34 @@ public class DispatcherTest {
         Mockito.verify(rabbitTemplate, times(1)).send(
                 eq(DISTRIBUTION_EXCHANGE), eq(SAMU_A_INFO_QUEUE), argument.capture());
     }
+
+    @Test
+    @DisplayName("should log referencedDistributionID for ACK ReferenceWrapper")
+    public void shouldLogReferencedDistributionIdForAckReferenceWrapper() throws Exception {
+        Message message = createMessage("rc-ref", JSON, SAMU_A_ROUTING_KEY);
+
+        // Log capturing setup
+        org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(MessageHandler.class);
+        ch.qos.logback.classic.Logger logbackLogger = (ch.qos.logback.classic.Logger) logger;
+        ch.qos.logback.classic.Level originalLevel = logbackLogger.getLevel();
+        logbackLogger.setLevel(ch.qos.logback.classic.Level.INFO);
+        ch.qos.logback.core.read.ListAppender<ch.qos.logback.classic.spi.ILoggingEvent> appender =
+                new ch.qos.logback.core.read.ListAppender<>();
+        appender.start();
+        logbackLogger.addAppender(appender);
+
+        dispatcher.dispatch(message);
+
+        boolean foundReceivedLog = appender.list.stream()
+            .anyMatch(event -> event.getFormattedMessage().contains(" [x] Received Ack from 'fr.health.samuA': message with distributionID fr.health.samuA_2608323d-507d-4cbf-bf74-52007f8124ea, referenced distributionID fr.health.samuB_2607723d-507d-4cbf-bf74-12345f7064cd"));
+        assertTrue(foundReceivedLog, "Received log should contain referenced distributionID: fr.health.samuB_2607723d-507d-4cbf-bf74-12345f7064cd");
+
+        boolean foundForwardingLog = appender.list.stream()
+                .anyMatch(event -> event.getFormattedMessage().contains(" ↳ [x] Forwarding Ack to 'fr.health.samuB': message with distributionID fr.health.samuA_2608323d-507d-4cbf-bf74-52007f8124ea, referenced distributionID fr.health.samuB_2607723d-507d-4cbf-bf74-12345f7064cd"));
+        assertTrue(foundForwardingLog, "Forwarding log should contain referenced distributionID: fr.health.samuB_2607723d-507d-4cbf-bf74-12345f7064cd");
+
+        // Cleanup
+        logbackLogger.detachAppender(appender);
+        logbackLogger.setLevel(originalLevel);
+    }
 }

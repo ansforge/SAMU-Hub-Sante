@@ -23,8 +23,11 @@ import com.hubsante.hub.exception.*;
 import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.Validator;
 import com.hubsante.model.builders.ErrorWrapperBuilder;
+import com.hubsante.model.edxl.ContentMessage;
+import com.hubsante.model.edxl.DistributionKind;
 import com.hubsante.model.edxl.EdxlMessage;
 import com.hubsante.model.exception.ValidationException;
+import com.hubsante.model.reference.ReferenceWrapper;
 import com.hubsante.model.report.Error;
 import com.hubsante.model.report.ErrorWrapper;
 
@@ -44,6 +47,7 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.Objects;
 
 import static com.hubsante.hub.config.AmqpConfiguration.DISTRIBUTION_EXCHANGE;
 import static com.hubsante.hub.config.AmqpConfiguration.ORIGINAL_ROUTING_KEY;
@@ -111,9 +115,10 @@ public class MessageHandler {
         // send Error to sender
         String senderClientID = message.getMessageProperties().getHeader(ORIGINAL_ROUTING_KEY);
 
+        logErrorMessage(error, senderClientID);
         // currently, we do not handle error messages on other hubex
         if (senderClientID.startsWith(FR_HEALTH_PREFIX)) {
-            logErrorAndSendReport(error, senderClientID);
+            sendErrorReport(error, senderClientID);
         }
         else {
             log.info("Error message not sent to {} as it is not a health perimeter", senderClientID);
@@ -125,9 +130,7 @@ public class MessageHandler {
         throw new AmqpRejectAndDontRequeueException(exception);
     }
 
-    protected void logErrorAndSendReport(Error error, String sender) {
-        String infoQueueName = getInfoQueueNameFromClientId(sender);
-
+    protected void logErrorMessage(Error error, String sender) {
         // log error
         // TODO bbo : add a logback pattern to allow structured logging
         log.error(
@@ -135,6 +138,10 @@ public class MessageHandler {
                         "Error " + error.getErrorCode() + "\n" +
                         "ErrorCause " + error.getErrorCause());
         log.debug("ErrorSourceMessage was {}", error.getSourceMessage());
+    }
+
+    protected void sendErrorReport(Error error, String sender) {
+        String infoQueueName = getInfoQueueNameFromClientId(sender);
 
         ErrorWrapper wrapper = new ErrorWrapperBuilder(error).build();
 
@@ -280,6 +287,16 @@ public class MessageHandler {
         return edxlMessage;
     }
 
+    private String extractReferencedDistributionID(EdxlMessage edxlMessage) {
+        ContentMessage contentMessage = edxlMessage.getFirstContentMessage();
+        boolean isAck = DistributionKind.ACK.equals(edxlMessage.getDistributionKind());
+        boolean isReferenceWrapper = contentMessage instanceof ReferenceWrapper;
+        if (isAck && isReferenceWrapper) {
+            return ((ReferenceWrapper) contentMessage).getReference().getDistributionID();
+        }
+        return null;
+    }
+
     @Timed(value = "serialize.forwarded.message", description = "Serialize forwarded message and return new AMQP message")
     private Message getFwdMessageBody(EdxlMessage edxlMessage, Message receivedAmqpMessage, MessageProperties fwdAmqpProperties) {
         String recipientID = getRecipientID(edxlMessage);
@@ -295,8 +312,17 @@ public class MessageHandler {
                 edxlString = edxlHandler.serializeJsonEDXL(edxlMessage);
                 fwdAmqpProperties.setContentType(MessageProperties.CONTENT_TYPE_JSON);
             }
-            log.info("  ↳ [x] Forwarding {} to '{}': message with distributionID {} and hashed value {}",
-            distributionKind, recipientID, edxlMessage.getDistributionID(), hashBody(receivedAmqpMessage));
+
+            String distributionID = edxlMessage.getDistributionID();
+            String hashedBody = hashBody(receivedAmqpMessage);
+            String referencedDistributionID = extractReferencedDistributionID(edxlMessage);
+            if (Objects.nonNull(referencedDistributionID)) {
+                log.info("  ↳ [x] Forwarding {} to '{}': message with distributionID {}, referenced distributionID {} and hashed value {}",
+                        distributionKind, recipientID, distributionID, referencedDistributionID, hashedBody);
+            } else {
+                log.info("  ↳ [x] Forwarding {} to '{}': message with distributionID {} and hashed value {}",
+                        distributionKind, recipientID, distributionID, hashedBody);
+            }
             log.debug(edxlString);
 
             return new Message(edxlString.getBytes(StandardCharsets.UTF_8), fwdAmqpProperties);
@@ -321,11 +347,17 @@ public class MessageHandler {
 
     private void logMessage(Message message, EdxlMessage edxlMessage, String receivedEdxl) {
         String distributionKind = edxlMessage.getDistributionKind().getValue();
-        log.info(" [x] Received {} from '{}': message with distributionID {} and hashed value {}",
-                distributionKind,
-                message.getMessageProperties().getReceivedRoutingKey(),
-                edxlMessage.getDistributionID(),
-                hashBody(message));
+        String receivedRoutingKey = message.getMessageProperties().getReceivedRoutingKey();
+        String distributionID = edxlMessage.getDistributionID();
+        String referencedDistributionID = extractReferencedDistributionID(edxlMessage);
+        String hashedBody = hashBody(message);
+        if (Objects.nonNull(referencedDistributionID)) {
+            log.info(" [x] Received {} from '{}': message with distributionID {}, referenced distributionID {} and hashed value {}",
+                    distributionKind, receivedRoutingKey, distributionID, referencedDistributionID, hashedBody);
+        } else {
+            log.info(" [x] Received {} from '{}': message with distributionID {} and hashed value {}",
+                    distributionKind, receivedRoutingKey, distributionID, hashedBody);
+        }
         log.debug(receivedEdxl);
     }
 
