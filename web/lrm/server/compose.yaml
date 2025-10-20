@@ -8,4 +8,4 @@ services:
     ports:
       - "8081:80"
     volumes:
-      - "./src/rabbit/certs:/app/dist/rabbit/certs"
+      - "./src/rabbit/certs:/app/rabbit/certs"
