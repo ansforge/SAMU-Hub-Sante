@@ -34,17 +34,16 @@ export class MessagingService {
   }
 
   handleConnectionError(err: unknown) {
-    logger.error(`Connection error for vhost '${this.vhost}': ${err}`);
-    // Crash the app
-    process.exit();
+    logger.error(err);
+    throw new Error(`Connection error for vhost '${this.vhost}'`);
   }
 
   handleChannelError(err: any) {
     if (this.isMissingQueueError(err)) {
-      logger.error(`Missing queue for vhost '${this.vhost}': ${err}`);
-      throw err;
+      logger.error(err);
+      throw new Error(`Missing queue for vhost '${this.vhost}'`);
     } else {
-      logger.error(`Channel error for vhost '${this.vhost}': ${err}`);
+      logger.error(err);
       if (this.reconnectionAttemptCount < MAX_RECONNEXION_ATTEMPT) {
         // Trick to reset the reconnection attemp count, as we don't have access
         // to a callback when the channel connection is successfull.
@@ -53,7 +52,8 @@ export class MessagingService {
         }
         this.reconnect();
       } else {
-        throw err;
+        logger.error(err);
+        throw new Error(`Max reconnection attempts reached for vhost '${this.vhost}'`);
       }
     }
   }
@@ -61,7 +61,7 @@ export class MessagingService {
   reconnect() {
     this.reconnectionAttemptCount++;
     this.lastReconnectionAttemptTime = Date.now();
-    logger.info(`trying to reconnect (attempt n°${this.reconnectionAttemptCount})`);
+    logger.info(`Trying to reconnect to vhost '${this.vhost}' (attempt n°${this.reconnectionAttemptCount})`);
     setTimeout(() => {
       if (this.connection !== undefined) {
         this.connection.createChannel((_, channel) => {
@@ -72,7 +72,7 @@ export class MessagingService {
   }
 
   isMissingQueueError(err: any) {
-    return err.code === 404 && err.message?.includes(NOT_FOUND_QUEUE_ERROR_MESSAGE_PATTERN);
+    return err?.code === 404 && err.message?.includes(NOT_FOUND_QUEUE_ERROR_MESSAGE_PATTERN);
   }
 
   connectToVhost() {

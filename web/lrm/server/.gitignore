@@ -1,6 +1,4 @@
-error.log
-combined.log
-info.log
+*.log
 node_modules/
 ui/
 coverage/
