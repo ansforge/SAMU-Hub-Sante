@@ -354,6 +354,33 @@ public class DispatcherTest {
     }
 
     @Test
+    @DisplayName("should reset expiration AMQP property expiration to null before dispatching")
+    public void shouldResetExpirationPropertyToNullBeforeDispatch() throws IOException {
+        try (MockedStatic<ConversionUtils> mockedConversionUtils = mockStatic(ConversionUtils.class)) {
+            mockedConversionUtils.when(() -> ConversionUtils.requiresVersionConversion(any(), any())).thenReturn(false);
+            // Create a message and set an expiration property
+            Message base = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
+            MessageProperties props = base.getMessageProperties();
+            props.setExpiration("1000");
+            EdxlMessage edxlMessage = edxlHandler.deserializeJsonEDXL(new String(base.getBody(), StandardCharsets.UTF_8));
+            Message customTTLMessage = new Message(edxlHandler.serializeJsonEDXL(edxlMessage).getBytes(), props);
+
+            // Ensure the expiration property is set before dispatch
+            assertEquals("1000", customTTLMessage.getMessageProperties().getExpiration());
+
+            // Dispatch the message
+            dispatcher.dispatch(customTTLMessage);
+
+            // Capture the forwarded message and check that expiration is null (reset)
+            ArgumentCaptor<Message> argument = ArgumentCaptor.forClass(Message.class);
+            Mockito.verify(rabbitTemplate, times(1)).send(
+                    eq(DISTRIBUTION_EXCHANGE), eq(SAMU_B_MESSAGE_QUEUE), argument.capture());
+            Message sentMessage = argument.getValue();
+            assertNull(sentMessage.getMessageProperties().getExpiration());
+        }
+    }
+
+    @Test
     @DisplayName("should send info to sender of DLQed message - expiration")
     public void handleDLQMessage() throws Exception {
         // we test that the message has been rejected after the DLQ listener has been called
