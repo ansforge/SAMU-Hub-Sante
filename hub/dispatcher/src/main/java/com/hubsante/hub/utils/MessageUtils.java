@@ -153,20 +153,21 @@ public class MessageUtils {
     public static void overrideExpirationIfNeeded(EdxlMessage edxlMessage, MessageProperties properties, long defaultTTL) {
         // OffsetDateTime comes with seconds and nanos, not millis
         // We assume that one second is an acceptable interval
-        long queueExpirationDateTime = OffsetDateTime.now().plusSeconds(defaultTTL).toEpochSecond();
-        long edxlCustomExpirationDateTime = edxlMessage.getDateTimeExpires().toEpochSecond();
+        long messageCustomExpirationDateTime = edxlMessage.getDateTimeExpires().toEpochSecond();
 
-        // if default expiration (now + queue TTl) outlasts edxl.dateTimeExpires,
-        // we have to override per-message TTL
-        if (queueExpirationDateTime > edxlCustomExpirationDateTime) {
-            // if edxl.dateTimeExpires is in the past, we set TTL to 0
-            // it would be automatically discarded to DLQ (cf https://www.rabbitmq.com/ttl.html)
-            long newTTL = Math.max(0,
-                    edxlMessage.getDateTimeExpires().toEpochSecond() - OffsetDateTime.now().toEpochSecond());
-            if (newTTL == 0) {
-                String errorCause = "Message " + edxlMessage.getDistributionID() + " has expired before reaching the recipient queue";
-                throw new ExpiredBeforeDispatchMessageException(errorCause, edxlMessage.getDistributionID());
-            }
+        // if edxl.dateTimeExpires is in the past, we set expiration header to 0
+        // it would be automatically discarded to DLQ (cf https://www.rabbitmq.com/ttl.html)
+        long newTTL = messageCustomExpirationDateTime - OffsetDateTime.now().toEpochSecond();
+        boolean isNewTTLInThePast =  newTTL <= 0;
+        if (isNewTTLInThePast) {
+            String errorCause = "Message " + edxlMessage.getDistributionID() + " has expired before reaching the recipient queue";
+            throw new ExpiredBeforeDispatchMessageException(errorCause, edxlMessage.getDistributionID());
+        }
+
+        // if edxl.dateTimeExpires is before default expiration time (now + default queue TTl),
+        // we have to override expiration header in AMQP message
+        long defaultExpirationDateTime = OffsetDateTime.now().plusSeconds(defaultTTL).toEpochSecond();
+        if (messageCustomExpirationDateTime < defaultExpirationDateTime) {
             properties.setExpiration(String.valueOf(newTTL * 1000));
             log.info("override expiration for message {}: expiration is now {}",
                     edxlMessage.getDistributionID(),
