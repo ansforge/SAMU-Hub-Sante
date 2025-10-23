@@ -32,6 +32,7 @@ import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Base64;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -154,6 +155,13 @@ public class MessageUtils {
         // OffsetDateTime comes with seconds and nanos, not millis
         // We assume that one second is an acceptable interval
         long messageCustomExpirationDateTime = edxlMessage.getDateTimeExpires().toEpochSecond();
+
+        // Reset the expiration header if it was set by the client,
+        // they should use dateTimeExpires for that purpose.
+        if (Objects.nonNull(properties.getExpiration())) {
+            log.info("Reset expiration header for message {} that was originally set to {}", edxlMessage.getDistributionID(), properties.getExpiration());
+            properties.setExpiration(null);
+        }
 
         // if edxl.dateTimeExpires is in the past, we set expiration header to 0
         // it would be automatically discarded to DLQ (cf https://www.rabbitmq.com/ttl.html)
