@@ -163,8 +163,8 @@ public class MessageUtils {
             properties.setExpiration(null);
         }
 
-        // if edxl.dateTimeExpires is in the past, we set expiration header to 0
-        // it would be automatically discarded to DLQ (cf https://www.rabbitmq.com/ttl.html)
+        // if edxl.dateTimeExpires is in the past
+        // we throw an ExpiredBeforeDispatchMessageException error
         long newTTL = messageCustomExpirationDateTime - OffsetDateTime.now().toEpochSecond();
         boolean isNewTTLInThePast =  newTTL <= 0;
         if (isNewTTLInThePast) {
