@@ -79,7 +79,8 @@ export default defineNuxtConfig({
             '15-gps_v1.0': '1.0.0',
           }
         : {},
-      backendLrmServer: 'localhost:8081',
+      lrmServerApiUrl: 'http://localhost:8081',
+      lrmServerWebsocketUrl: 'ws://localhost:8081',
     },
   },
 
