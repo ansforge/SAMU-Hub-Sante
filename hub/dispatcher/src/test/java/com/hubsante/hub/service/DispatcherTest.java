@@ -21,6 +21,7 @@ import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.hubsante.hub.HubApplication;
 import com.hubsante.hub.config.HubConfiguration;
 import com.hubsante.hub.exception.ConversionException;
+import com.hubsante.hub.exception.ExpiredBeforeDispatchMessageException;
 import com.hubsante.hub.exception.UnroutableMessageException;
 import com.hubsante.hub.service.utils.MessageTestUtils;
 import com.hubsante.hub.utils.ConversionRulesCommand;
@@ -325,6 +326,57 @@ public class DispatcherTest {
 
             // when calling rabbitTemplate.send(), the message has new expiration set
             assertNotNull(argument.getValue().getMessageProperties().getExpiration());
+        }
+    }
+
+    @Test
+    @DisplayName("should send error message if the custom dateTimeExpires is in the past")
+    public void shouldThrowExpiredBeforeDispatchMessageException() throws IOException {
+        try (MockedStatic<ConversionUtils> mockedConversionUtils = mockStatic(ConversionUtils.class)) {
+            mockedConversionUtils.when(() -> ConversionUtils.requiresVersionConversion(any(), any())).thenReturn(false);
+            // get message and override dateTimeExpires field with a value in the past
+            Message base = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
+            EdxlMessage edxlMessage = edxlHandler.deserializeJsonEDXL(new String(base.getBody(), StandardCharsets.UTF_8));
+            setCustomExpirationDate(edxlMessage, -2);
+            Message customTTLMessage = new Message(edxlHandler.serializeJsonEDXL(edxlMessage).getBytes(), base.getMessageProperties());
+
+            // before dispatch, the message has no expiration set
+            assertNull(customTTLMessage.getMessageProperties().getExpiration());
+
+            AmqpRejectAndDontRequeueException ex = assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(customTTLMessage));
+            assertNotNull(ex.getCause());
+            assertInstanceOf(ExpiredBeforeDispatchMessageException.class, ex.getCause(), "Cause should be ExpiredBeforeDispatchMessageException");
+
+            ArgumentCaptor<Message> argument = ArgumentCaptor.forClass(Message.class);
+            Mockito.verify(rabbitTemplate, times(1)).send(
+                    eq(DISTRIBUTION_EXCHANGE), eq(SAMU_A_INFO_QUEUE), argument.capture());
+        }
+    }
+
+    @Test
+    @DisplayName("should reset expiration AMQP property expiration to null before dispatching")
+    public void shouldResetExpirationPropertyToNullBeforeDispatch() throws IOException {
+        try (MockedStatic<ConversionUtils> mockedConversionUtils = mockStatic(ConversionUtils.class)) {
+            mockedConversionUtils.when(() -> ConversionUtils.requiresVersionConversion(any(), any())).thenReturn(false);
+            // Create a message and set an expiration property
+            Message base = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
+            MessageProperties props = base.getMessageProperties();
+            props.setExpiration("1000");
+            EdxlMessage edxlMessage = edxlHandler.deserializeJsonEDXL(new String(base.getBody(), StandardCharsets.UTF_8));
+            Message customTTLMessage = new Message(edxlHandler.serializeJsonEDXL(edxlMessage).getBytes(), props);
+
+            // Ensure the expiration property is set before dispatch
+            assertEquals("1000", customTTLMessage.getMessageProperties().getExpiration());
+
+            // Dispatch the message
+            dispatcher.dispatch(customTTLMessage);
+
+            // Capture the forwarded message and check that expiration is null (reset)
+            ArgumentCaptor<Message> argument = ArgumentCaptor.forClass(Message.class);
+            Mockito.verify(rabbitTemplate, times(1)).send(
+                    eq(DISTRIBUTION_EXCHANGE), eq(SAMU_B_MESSAGE_QUEUE), argument.capture());
+            Message sentMessage = argument.getValue();
+            assertNull(sentMessage.getMessageProperties().getExpiration());
         }
     }
 
