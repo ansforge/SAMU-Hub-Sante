@@ -57,7 +57,8 @@ jobs:
           ["fr.health.samuC",["fr.health.samuA"]]
         ]
       NUXT_PUBLIC_MODEL_BRANCH: develop
-      NUXT_PUBLIC_BACKEND_LRM_SERVER: integration.hub.esante.gouv.fr
+      NUXT_PUBLIC_LRM_SERVER_API_URL: https://integration.hub.esante.gouv.fr/lrm/api
+      NUXT_PUBLIC_LRM_SERVER_WEBSOCKET_URL: wss://integration.hub.esante.gouv.fr/lrm/api
 
     steps:
       - name: Checkout

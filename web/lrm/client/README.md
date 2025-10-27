@@ -9,7 +9,8 @@ cp .env.template .env
 ```
 
 - *Optional:* Update the content of the `.env` file:
-  - `NUXT_PUBLIC_BACKEND_LRM_SERVER` controls the backend instance the app will connect to. Use `<environment>.hub.esante.gouv.fr` to connect to a specific environment (or `hub.esante.gouv.fr` for production).
+  - `NUXT_PUBLIC_LRM_SERVER_API_URL` controls the backend HTTP server instance the app will connect to (used for Github linked features: list branches, guided commits etc...). Use `https://<environment>.hub.esante.gouv.fr/lrm/api` to connect to a specific environment, or `https://hub.esante.gouv.fr/lrm/api` for production and `http://localhost:8081` for local development.
+  - `NUXT_PUBLIC_LRM_SERVER_WEBSOCKET_URL` controls the backend server instance the app will connect to when establishing the websocket connection. Use `wss://<environment>.hub.esante.gouv.fr/lrm/api` to connect to a specific environment, or `wss://hub.esante.gouv.fr/lrm/api` for production and `http://localhost:8081` for local development.
   - `NUXT_PUBLIC_MODEL_BRANCH` sets the base ref in the dropdown when fetching the model examples.
   - `NUXT_PUBLIC_VHOST_MAP` controls the available vhost and their model version. Format is vhost as key and model version as value.
   - `NUXT_PUBLIC_CLIENT_MAP` controls what's available in the landing page dropdown (which clients can connect to one another). Format is array of arrays with first a given clientId and in second an array with the associated clientIds => [[samuA, [samuB, samuC]], ...]

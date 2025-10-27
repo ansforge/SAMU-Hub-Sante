@@ -155,7 +155,6 @@ import { REPOSITORY_URL } from '@/constants';
 import mixinWebsocket from '~/mixins/mixinWebsocket';
 import { trimEmptyValues } from '~/composables/messageUtils';
 import { useMainStore } from '~/store';
-import { isEnvProd } from '~/composables/envUtils';
 
 // eslint-disable-next-line no-undef
 useHead({
@@ -303,11 +302,10 @@ export default {
       }
     },
     getServerUrl() {
-      return `${isEnvProd() ? 'https' : 'http'}://${
-        this.$config.public.backendLrmServer
-      }/lrm/api`;
+      return this.$config.public.lrmServerApiUrl;
     },
     async fetchBranchesNames() {
+      // TODO: fix $fetch being undefined for linter
       // eslint-disable-next-line no-undef
       this.branchesNames = await $fetch(
         `${this.getServerUrl()}/modeles/branches`

@@ -25,7 +25,7 @@ export default {
   methods: {
     wsConnect() {
       this.store.socket = new WebSocket(
-        'wss://' + this.$config.public.backendLrmServer + '/lrm/api/'
+        this.$config.public.lrmServerWebsocketUrl
       );
       this.store.socket.onopen = () => {
         this.store.isWebsocketConnected = true;
