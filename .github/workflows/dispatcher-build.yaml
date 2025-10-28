@@ -26,6 +26,9 @@ jobs:
     name: Build Dispatcher images
     needs: get-tags
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: hub/dispatcher
 
     strategy:
       matrix:
@@ -40,7 +43,7 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
       - name: Grant execute permission for Gradlew
-        run: chmod +x hub/dispatcher/gradlew
+        run: chmod +x gradlew
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
       - name: Login to Container Registry
@@ -50,7 +53,6 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Run tests, build and push Docker image
-        working-directory: hub/dispatcher
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DISPATCHER_VERSION: ${{ needs.get-tags.outputs.dispatcher-version }}
