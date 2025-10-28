@@ -16,8 +16,6 @@ jobs:
           distribution: 'temurin'
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
-      - name: Grant execute permission for Gradlew
-        run: chmod +x hub/dispatcher/gradlew
       - name: Extract release information
         id: extract_info
         run: |
@@ -67,23 +65,6 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Run tests, build and push dispatcher Docker image
-        if: steps.extract_info.outputs.project == 'dispatcher'
-        working-directory: hub/dispatcher
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAG: ${{ steps.extract_info.outputs.version }}
-          MODEL_VERSIONS: ${{ vars.MODEL_VERSIONS }}
-        run: |
-          # Build for each model version
-          for MODEL_VERSION in $MODEL_VERSIONS; do
-            IMAGE_TAG="${TAG}-model-${MODEL_VERSION}"
-            echo "Building image for $IMAGE_TAG"
-            ./gradlew jib \
-              -Pversion=$TAG \
-              -PmodelVersion=$MODEL_VERSION \
-              --image ghcr.io/${{ github.repository_owner }}/dispatcher:$IMAGE_TAG
-          done
       - name: Build and push lrm backend Docker image
         if: steps.extract_info.outputs.project == 'lrm'
         uses: docker/build-push-action@v5
