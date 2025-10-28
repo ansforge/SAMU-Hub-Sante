@@ -41,7 +41,7 @@ jobs:
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             MODEL_VERSIONS="${{ inputs.tag }}"
           else
-            MODEL_VERSIONS=${{ vars.MODEL_VERSIONS }}
+            MODEL_VERSIONS="${{ vars.MODEL_VERSIONS }}"
           fi
           VERSION_JSON_ARRAY=$(echo "$MODEL_VERSIONS" | jq -R 'split(" ")')
           echo "versions=VERSION_JSON_ARRAY" >> $GITHUB_OUTPUT
