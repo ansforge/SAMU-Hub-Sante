@@ -8,8 +8,8 @@ jobs:
   extract-version:
     runs-on: ubuntu-latest
     steps:
-      - name: Extract release information
-        id: extract_version
+      - name: Extract version from tag
+        id: extract-dispatcher-version
         run: |
           TAG_NAME=${{ github.ref_name }}
           VERSION=${TAG_NAME#dispatcher-}
@@ -22,7 +22,7 @@ jobs:
 
   build-dispatcher:
     name: Build Dispatcher images
-    needs: extract-version
+    needs: get-tags
     runs-on: ubuntu-latest
 
     strategy:
@@ -51,7 +51,7 @@ jobs:
         working-directory: hub/dispatcher
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          DISPATCHER_VERSION: ${{ needs.extract-version.outputs.version }}
+          DISPATCHER_VERSION: ${{ needs.get-tags.outputs.dispatcher-version }}
           MODEL_VERSION: ${{ matrix.model_version }}
         run: |
           IMAGE_TAG="${DISPATCHER_VERSION}-model-${MODEL_VERSION}"
