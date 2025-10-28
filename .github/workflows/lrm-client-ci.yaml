@@ -26,7 +26,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 24.11
+          node-version: '19'
 
       - name: Install dependencies
         run: npm ci
@@ -39,3 +39,88 @@ jobs:
 
       - name: Run Prettier check
         run: npx prettier --check "**/*.{js,ts,vue,css,scss}"
+
+  security-scan:
+    runs-on: ubuntu-latest
+    name: Security Scanning
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '19'
+          cache: 'npm'
+          cache-dependency-path: 'web/lrm/client/package-lock.json'
+
+      - name: Install Node.js dependencies for Trivy scan
+        working-directory: web/lrm/client
+        run: |
+          npm ci
+
+      - name: Run Trivy vulnerability scanner - Filesystem Scan
+        uses: aquasecurity/trivy-action@0.24.0
+        with:
+          scan-type: 'fs'
+          scan-ref: 'web/lrm/client'
+          format: 'sarif'
+          output: 'trivy-filesystem.sarif'
+          severity: 'LOW,MEDIUM,HIGH,CRITICAL'
+          exit-code: '0'
+          scanners: 'vuln,secret,config,license'
+          skip-files: '**/node_modules/**,**/dist/**,**/build/**,**/.nuxt/**'
+        continue-on-error: true
+
+      - name: Fix SARIF file paths for GitHub Security tab - Filesystem
+        if: always() && hashFiles('trivy-filesystem.sarif') != ''
+        uses: ./.github/actions/fix-trivy-sarif
+        with:
+          sarif-file: 'trivy-filesystem.sarif'
+          scan-path: 'web/lrm/client'
+
+      - name: Upload Trivy scan results to GitHub Security tab - Filesystem
+        if: always() && hashFiles('trivy-filesystem.sarif') != ''
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-filesystem.sarif'
+          category: 'trivy-lrm-client-filesystem'
+
+      - name: Run Trivy vulnerability scanner - Dockerfile
+        id: trivy-dockerfile
+        uses: aquasecurity/trivy-action@0.24.0
+        with:
+          scan-type: 'config'
+          scan-ref: 'web/lrm/client/Dockerfile'
+          format: 'sarif'
+          output: 'trivy-dockerfile.sarif'
+          severity: 'LOW,MEDIUM,HIGH,CRITICAL'
+          exit-code: '1'
+          scanners: 'config,secret,vuln,license'
+        continue-on-error: true
+
+      - name: Fix Dockerfile SARIF file paths for GitHub Security tab
+        if: always() && hashFiles('trivy-dockerfile.sarif') != ''
+        uses: ./.github/actions/fix-trivy-sarif
+        with:
+          sarif-file: 'trivy-dockerfile.sarif'
+          scan-path: 'web/lrm/client'
+
+      - name: Upload Trivy scan results to GitHub Security tab - Dockerfile
+        if: always() && hashFiles('trivy-dockerfile.sarif') != ''
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-dockerfile.sarif'
+          category: 'trivy-lrm-client-dockerfile'
+
+      - name: Upload Security scan reports as artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-reports-lrm-client
+          path: |
+            trivy-filesystem.sarif
+            trivy-dockerfile.sarif
+          retention-days: 7
+          if-no-files-found: warn

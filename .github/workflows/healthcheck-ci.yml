@@ -59,3 +59,107 @@ jobs:
           # https://github.com/actions/upload-artifact/issues/232
           path: tools/healthcheck/htmlcov
           retention-days: 7
+
+  security-scan:
+    runs-on: ubuntu-latest
+    name: Security Scanning
+    defaults:
+      run:
+        working-directory: .
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner - Filesystem Scan
+        uses: aquasecurity/trivy-action@0.24.0
+        with:
+          scan-type: 'fs'
+          scan-ref: 'tools/healthcheck'
+          format: 'sarif'
+          output: 'trivy-filesystem.sarif'
+          severity: 'LOW,MEDIUM,HIGH,CRITICAL'
+          exit-code: '0'
+          scanners: 'vuln,secret,config,license'
+          skip-files: '**/*.pyc,**/__pycache__/**,**/build/**,**/dist/**,**/.ruff_cache/**'
+        continue-on-error: true
+
+      - name: Fix SARIF file paths for GitHub Security tab - Filesystem
+        if: always() && hashFiles('trivy-filesystem.sarif') != ''
+        uses: ./.github/actions/fix-trivy-sarif
+        with:
+          sarif-file: 'trivy-filesystem.sarif'
+          scan-path: 'tools/healthcheck'
+
+      - name: Upload Trivy scan results to GitHub Security tab - Filesystem
+        if: always() && hashFiles('trivy-filesystem.sarif') != ''
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-filesystem.sarif'
+          category: 'trivy-healthcheck-filesystem'
+
+      - name: Run Trivy vulnerability scanner - Dockerfile
+        id: trivy-dockerfile
+        uses: aquasecurity/trivy-action@0.24.0
+        with:
+          scan-type: 'config'
+          scan-ref: 'tools/healthcheck/Dockerfile'
+          format: 'sarif'
+          output: 'trivy-dockerfile.sarif'
+          severity: 'LOW,MEDIUM,HIGH,CRITICAL'
+          exit-code: '0'
+          scanners: 'config,secret,vuln,license'
+        continue-on-error: true
+
+      - name: Fix Dockerfile SARIF file paths for GitHub Security tab
+        if: always() && hashFiles('trivy-dockerfile.sarif') != ''
+        uses: ./.github/actions/fix-trivy-sarif
+        with:
+          sarif-file: 'trivy-dockerfile.sarif'
+          scan-path: 'tools/healthcheck'
+
+      - name: Upload Trivy scan results to GitHub Security tab - Dockerfile
+        if: always() && hashFiles('trivy-dockerfile.sarif') != ''
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-dockerfile.sarif'
+          category: 'trivy-healthcheck-dockerfile'
+
+      - name: Run Trivy vulnerability scanner - Config Files
+        uses: aquasecurity/trivy-action@0.24.0
+        with:
+          scan-type: 'config'
+          scan-ref: 'tools/healthcheck'
+          format: 'sarif'
+          output: 'trivy-config.sarif'
+          severity: 'LOW,MEDIUM,HIGH,CRITICAL'
+          exit-code: '0'
+          scanners: 'config,secret'
+          skip-files: '**/*.pyc,**/__pycache__/**,**/build/**,**/dist/**,**/.ruff_cache/**'
+        continue-on-error: true
+
+      - name: Fix SARIF file paths for GitHub Security tab - Config
+        if: always() && hashFiles('trivy-config.sarif') != ''
+        uses: ./.github/actions/fix-trivy-sarif
+        with:
+          sarif-file: 'trivy-config.sarif'
+          scan-path: 'tools/healthcheck'
+
+      - name: Upload Trivy scan results to GitHub Security tab - Config
+        if: always() && hashFiles('trivy-config.sarif') != ''
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-config.sarif'
+          category: 'trivy-healthcheck-config'
+
+      - name: Upload Security scan reports as artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-reports-healthcheck
+          path: |
+            trivy-filesystem.sarif
+            trivy-dockerfile.sarif
+            trivy-config.sarif
+          retention-days: 7
+          if-no-files-found: warn

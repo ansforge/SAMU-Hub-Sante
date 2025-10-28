@@ -54,6 +54,67 @@ jobs:
           path: tools/annuaire/htmlcov
           retention-days: 7
 
+      - name: Run Trivy vulnerability scanner - Dependencies
+        uses: aquasecurity/trivy-action@0.24.0
+        with:
+          scan-type: 'fs'
+          scan-ref: 'tools/annuaire'
+          format: 'sarif'
+          output: 'trivy-dependencies.sarif'
+          severity: 'LOW,MEDIUM,HIGH,CRITICAL'
+          exit-code: '1'
+          scanners: 'vuln'
+        continue-on-error: false
+
+      - name: Fix SARIF file paths for GitHub Security tab
+        if: always() && hashFiles('trivy-dependencies.sarif') != ''
+        uses: ./.github/actions/fix-trivy-sarif
+        with:
+          sarif-file: 'trivy-dependencies.sarif'
+          scan-path: 'tools/annuaire'
+
+      - name: Upload Trivy scan results to GitHub Security tab - Dependencies
+        if: always() && hashFiles('trivy-dependencies.sarif') != ''
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-dependencies.sarif'
+          category: 'trivy-annuaire-dependencies'
+
+      - name: Run Trivy vulnerability scanner - Dockerfile
+        id: trivy-dockerfile
+        uses: aquasecurity/trivy-action@0.24.0
+        with:
+          scan-type: 'config'
+          scan-ref: 'tools/annuaire/Dockerfile'
+          format: 'sarif'
+          output: 'trivy-dockerfile.sarif'
+          severity: 'LOW,MEDIUM,HIGH,CRITICAL'
+          exit-code: '1'
+          scanners: 'config,secret,vuln,license'
+        continue-on-error: true
+
+      - name: Fix Dockerfile SARIF file paths for GitHub Security tab
+        if: always() && hashFiles('trivy-dockerfile.sarif') != ''
+        uses: ./.github/actions/fix-trivy-sarif
+        with:
+          sarif-file: 'trivy-dockerfile.sarif'
+          scan-path: 'tools/annuaire'
+
+      - name: Upload Trivy scan results to GitHub Security tab - Dockerfile
+        if: always() && hashFiles('trivy-dockerfile.sarif') != ''
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-dockerfile.sarif'
+          category: 'trivy-annuaire-dockerfile'
+
+      - name: Upload Trivy reports as artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-reports-annuaire
+          path: '*.sarif'
+          retention-days: 7
+
   security:
     runs-on: ubuntu-latest
     defaults:

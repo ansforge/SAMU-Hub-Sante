@@ -39,11 +39,12 @@ jobs:
       - name: Check linting
         run: uv run ruff check .
 
-  security:
+  security-scan:
     runs-on: ubuntu-latest
+    name: Security Scanning
     defaults:
       run:
-        working-directory: tools/chatbot
+        working-directory: .
 
     steps:
       - name: Checkout repository
@@ -56,8 +57,75 @@ jobs:
           python-version: "3.13"
 
       - name: Install dependencies
+        working-directory: tools/chatbot
         run: uv sync
 
       - name: Run security audit
+        working-directory: tools/chatbot
         run: uv run pip-audit
         continue-on-error: true
+
+      - name: Run Trivy vulnerability scanner - Filesystem Scan
+        uses: aquasecurity/trivy-action@0.24.0
+        with:
+          scan-type: 'fs'
+          scan-ref: 'tools/chatbot'
+          format: 'sarif'
+          output: 'trivy-filesystem.sarif'
+          severity: 'LOW,MEDIUM,HIGH,CRITICAL'
+          exit-code: '0'
+          scanners: 'vuln,secret,config,license'
+          skip-files: '**/*.pyc,**/__pycache__/**,**/build/**,**/dist/**,**/.uv_cache/**'
+        continue-on-error: true
+
+      - name: Fix SARIF file paths for GitHub Security tab - Filesystem
+        if: always() && hashFiles('trivy-filesystem.sarif') != ''
+        uses: ./.github/actions/fix-trivy-sarif
+        with:
+          sarif-file: 'trivy-filesystem.sarif'
+          scan-path: 'tools/chatbot'
+
+      - name: Upload Trivy scan results to GitHub Security tab - Filesystem
+        if: always() && hashFiles('trivy-filesystem.sarif') != ''
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-filesystem.sarif'
+          category: 'trivy-chatbot-filesystem'
+
+      - name: Run Trivy vulnerability scanner - Dockerfile
+        id: trivy-dockerfile
+        uses: aquasecurity/trivy-action@0.24.0
+        with:
+          scan-type: 'config'
+          scan-ref: 'tools/chatbot/Dockerfile'
+          format: 'sarif'
+          output: 'trivy-dockerfile.sarif'
+          severity: 'LOW,MEDIUM,HIGH,CRITICAL'
+          exit-code: '0'
+          scanners: 'config,secret,vuln,license'
+        continue-on-error: true
+
+      - name: Fix Dockerfile SARIF file paths for GitHub Security tab - Dockerfile
+        if: always() && hashFiles('trivy-dockerfile.sarif') != ''
+        uses: ./.github/actions/fix-trivy-sarif
+        with:
+          sarif-file: 'trivy-dockerfile.sarif'
+          scan-path: 'tools/chatbot'
+
+      - name: Upload Trivy scan results to GitHub Security tab - Dockerfile
+        if: always() && hashFiles('trivy-dockerfile.sarif') != ''
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-dockerfile.sarif'
+          category: 'trivy-chatbot-dockerfile'
+
+      - name: Upload Security scan reports as artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-reports-chatbot
+          path: |
+            trivy-filesystem.sarif
+            trivy-dockerfile.sarif
+          retention-days: 7
+          if-no-files-found: warn

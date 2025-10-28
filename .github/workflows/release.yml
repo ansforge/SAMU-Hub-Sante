@@ -73,6 +73,17 @@ jobs:
           platforms: linux/amd64
           tags: ghcr.io/${{ github.repository_owner }}/hub-lrm-back:${{ steps.extract_info.outputs.version }}
           context: ./web/lrm/server
+
+      - name: Scan LRM backend Docker image
+        if: steps.extract_info.outputs.project == 'lrm'
+        uses: aquasecurity/trivy-action@0.24.0
+        with:
+          image-ref: 'ghcr.io/${{ github.repository_owner }}/hub-lrm-back:${{ steps.extract_info.outputs.version }}'
+          format: 'sarif'
+          output: 'trivy-lrm-backend-image.sarif'
+          severity: 'HIGH,CRITICAL'
+          exit-code: '1'
+
       - name: Build and push lrm frontend Docker image
         if: steps.extract_info.outputs.project == 'lrm'
         uses: docker/build-push-action@v5
@@ -81,6 +92,39 @@ jobs:
           platforms: linux/amd64
           tags: ghcr.io/${{ github.repository_owner }}/hub-lrm-front:${{ steps.extract_info.outputs.version }}
           context: ./web/lrm/client
+
+      - name: Scan LRM frontend Docker image
+        if: steps.extract_info.outputs.project == 'lrm'
+        uses: aquasecurity/trivy-action@0.24.0
+        with:
+          image-ref: 'ghcr.io/${{ github.repository_owner }}/hub-lrm-front:${{ steps.extract_info.outputs.version }}'
+          format: 'sarif'
+          output: 'trivy-lrm-frontend-image.sarif'
+          severity: 'HIGH,CRITICAL'
+          exit-code: '1'
+
+      - name: Upload LRM Backend image scan results to GitHub Security tab
+        if: always() && steps.extract_info.outputs.project == 'lrm' && hashFiles('trivy-lrm-backend-image.sarif') != ''
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-lrm-backend-image.sarif'
+          category: 'trivy-lrm-backend-image'
+
+      - name: Upload LRM Frontend image scan results to GitHub Security tab
+        if: always() && steps.extract_info.outputs.project == 'lrm' && hashFiles('trivy-lrm-frontend-image.sarif') != ''
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-lrm-frontend-image.sarif'
+          category: 'trivy-lrm-frontend-image'
+
+      - name: Upload LRM image scan reports as artifacts
+        if: always() && steps.extract_info.outputs.project == 'lrm'
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-reports-lrm-images
+          path: '*.sarif'
+          retention-days: 7
+
       - name: Build and push landing Docker image
         if: steps.extract_info.outputs.project == 'landing'
         uses: docker/build-push-action@v5
@@ -89,6 +133,32 @@ jobs:
           platforms: linux/amd64
           tags: ghcr.io/${{ github.repository_owner }}/hub-web-landing:${{ steps.extract_info.outputs.version }}
           context: ./web/landing
+
+      - name: Scan landing Docker image
+        if: steps.extract_info.outputs.project == 'landing'
+        uses: aquasecurity/trivy-action@0.24.0
+        with:
+          image-ref: 'ghcr.io/${{ github.repository_owner }}/hub-web-landing:${{ steps.extract_info.outputs.version }}'
+          format: 'sarif'
+          output: 'trivy-landing-image.sarif'
+          severity: 'HIGH,CRITICAL'
+          exit-code: '1'
+
+      - name: Upload Landing image scan results to GitHub Security tab
+        if: always() && steps.extract_info.outputs.project == 'landing' && hashFiles('trivy-landing-image.sarif') != ''
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-landing-image.sarif'
+          category: 'trivy-landing-image'
+
+      - name: Upload Landing image scan reports as artifacts
+        if: always() && steps.extract_info.outputs.project == 'landing'
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-reports-landing-image
+          path: '*.sarif'
+          retention-days: 7
+
       - name: Build and push healthcheck service Docker image
         if: steps.extract_info.outputs.project == 'healthcheck'
         uses: docker/build-push-action@v5
@@ -97,6 +167,32 @@ jobs:
           platforms: linux/amd64
           tags: ghcr.io/${{ github.repository_owner }}/hub-healthcheck:${{ steps.extract_info.outputs.version }}
           context: ./tools/healthcheck
+
+      - name: Scan healthcheck Docker image
+        if: steps.extract_info.outputs.project == 'healthcheck'
+        uses: aquasecurity/trivy-action@0.24.0
+        with:
+          image-ref: 'ghcr.io/${{ github.repository_owner }}/hub-healthcheck:${{ steps.extract_info.outputs.version }}'
+          format: 'sarif'
+          output: 'trivy-healthcheck-image.sarif'
+          severity: 'HIGH,CRITICAL'
+          exit-code: '1'
+
+      - name: Upload Healthcheck image scan results to GitHub Security tab
+        if: always() && steps.extract_info.outputs.project == 'healthcheck' && hashFiles('trivy-healthcheck-image.sarif') != ''
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-healthcheck-image.sarif'
+          category: 'trivy-healthcheck-image'
+
+      - name: Upload Healthcheck image scan reports as artifacts  
+        if: always() && steps.extract_info.outputs.project == 'healthcheck'
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-reports-healthcheck-image
+          path: '*.sarif'
+          retention-days: 7
+
       - name: Build and push chatbot Docker image
         if: steps.extract_info.outputs.project == 'chatbot'
         uses: docker/build-push-action@v5
@@ -105,6 +201,31 @@ jobs:
           platforms: linux/amd64
           tags: ghcr.io/${{ github.repository_owner }}/hub-chatbot:${{ steps.extract_info.outputs.version }}
           context: ./tools/chatbot
+
+      - name: Scan chatbot Docker image
+        if: steps.extract_info.outputs.project == 'chatbot'
+        uses: aquasecurity/trivy-action@0.24.0
+        with:
+          image-ref: 'ghcr.io/${{ github.repository_owner }}/hub-chatbot:${{ steps.extract_info.outputs.version }}'
+          format: 'sarif'
+          output: 'trivy-chatbot-image.sarif'
+          severity: 'HIGH,CRITICAL'
+          exit-code: '1'
+
+      - name: Upload Chatbot image scan results to GitHub Security tab
+        if: always() && steps.extract_info.outputs.project == 'chatbot' && hashFiles('trivy-chatbot-image.sarif') != ''
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-chatbot-image.sarif'
+          category: 'trivy-chatbot-image'
+
+      - name: Upload Chatbot image scan reports as artifacts
+        if: always() && steps.extract_info.outputs.project == 'chatbot'
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-reports-chatbot-image
+          path: '*.sarif'
+          retention-days: 7
 
       - name: Build and push openssl Docker image
         if: steps.extract_info.outputs.project == 'openssl'
@@ -115,6 +236,31 @@ jobs:
           tags: ghcr.io/${{ github.repository_owner }}/openssl:${{ steps.extract_info.outputs.version }}
           context: ./tools/openssl
 
+      - name: Scan openssl Docker image
+        if: steps.extract_info.outputs.project == 'openssl'
+        uses: aquasecurity/trivy-action@0.24.0
+        with:
+          image-ref: 'ghcr.io/${{ github.repository_owner }}/openssl:${{ steps.extract_info.outputs.version }}'
+          format: 'sarif'
+          output: 'trivy-openssl-image.sarif'
+          severity: 'HIGH,CRITICAL'
+          exit-code: '1'
+
+      - name: Upload OpenSSL image scan results to GitHub Security tab
+        if: always() && steps.extract_info.outputs.project == 'openssl' && hashFiles('trivy-openssl-image.sarif') != ''
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-openssl-image.sarif'
+          category: 'trivy-openssl-image'
+
+      - name: Upload OpenSSL image scan reports as artifacts
+        if: always() && steps.extract_info.outputs.project == 'openssl'
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-reports-openssl-image
+          path: '*.sarif'
+          retention-days: 7
+
       - name: Build and push specs Docker image
         if: steps.extract_info.outputs.project == 'specs'
         uses: docker/build-push-action@v5
@@ -124,6 +270,31 @@ jobs:
           tags: ghcr.io/${{ github.repository_owner }}/hub-specs:${{ steps.extract_info.outputs.version }}
           context: ./web/specs
 
+      - name: Scan specs Docker image
+        if: steps.extract_info.outputs.project == 'specs'
+        uses: aquasecurity/trivy-action@0.24.0
+        with:
+          image-ref: 'ghcr.io/${{ github.repository_owner }}/hub-specs:${{ steps.extract_info.outputs.version }}'
+          format: 'sarif'
+          output: 'trivy-specs-image.sarif'
+          severity: 'HIGH,CRITICAL'
+          exit-code: '1'
+
+      - name: Upload Specs image scan results to GitHub Security tab
+        if: always() && steps.extract_info.outputs.project == 'specs' && hashFiles('trivy-specs-image.sarif') != ''
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-specs-image.sarif'
+          category: 'trivy-specs-image'
+
+      - name: Upload Specs image scan reports as artifacts
+        if: always() && steps.extract_info.outputs.project == 'specs'
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-reports-specs-image
+          path: '*.sarif'
+          retention-days: 7
+
       - name: Build and push annuaire Docker image
         if: steps.extract_info.outputs.project == 'annuaire'
         uses: docker/build-push-action@v5
@@ -132,3 +303,28 @@ jobs:
           platforms: linux/amd64
           tags: ghcr.io/${{ github.repository_owner }}/hub-annuaire:${{ steps.extract_info.outputs.version }}
           context: ./tools/annuaire
+
+      - name: Scan annuaire Docker image
+        if: steps.extract_info.outputs.project == 'annuaire'
+        uses: aquasecurity/trivy-action@0.24.0
+        with:
+          image-ref: 'ghcr.io/${{ github.repository_owner }}/hub-annuaire:${{ steps.extract_info.outputs.version }}'
+          format: 'sarif'
+          output: 'trivy-annuaire-image.sarif'
+          severity: 'HIGH,CRITICAL'
+          exit-code: '1'
+
+      - name: Upload Annuaire image scan results to GitHub Security tab
+        if: always() && steps.extract_info.outputs.project == 'annuaire' && hashFiles('trivy-annuaire-image.sarif') != ''
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-annuaire-image.sarif'
+          category: 'trivy-annuaire-image'
+
+      - name: Upload Annuaire image scan reports as artifacts
+        if: always() && steps.extract_info.outputs.project == 'annuaire'
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-reports-annuaire-image
+          path: '*.sarif'
+          retention-days: 7
