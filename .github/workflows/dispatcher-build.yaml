@@ -55,6 +55,7 @@ jobs:
         working-directory: hub/dispatcher
 
     strategy:
+      fail-fast: false
       matrix:
         model_version: fromJson('${{ needs.get-tags.outputs.model-versions }}')
 
