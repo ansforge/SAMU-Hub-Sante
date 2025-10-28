@@ -18,7 +18,7 @@ jobs:
             echo "Invalid version number"
             exit 1
           fi
-          echo "::set-output name=version::$VERSION"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
 
   build-dispatcher:
     name: Build Dispatcher images
@@ -27,7 +27,7 @@ jobs:
 
     strategy:
       matrix:
-        model_version: ${{ fromJSON(vars.MODEL_VERSIONS) }}
+        model_version: ["1.2", "2.3", "3.1.1", "3.2.0-rc.3"]
 
     steps:
       - name: Checkout
