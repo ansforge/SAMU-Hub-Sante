@@ -5,7 +5,7 @@ on:
     tags:
       - 'dispatcher-*'
 jobs:
-  build-image:
+  extract-version:
     runs-on: ubuntu-latest
     steps:
       - name: Extract release information
@@ -19,8 +19,19 @@ jobs:
             exit 1
           fi
           echo "::set-output name=version::$VERSION"
+
+  build-dispatcher:
+    name: Build Dispatcher images
+    needs: extract-version
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        model_version: ${{ fromJSON(vars.MODEL_VERSIONS) }}
+
+    steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Set up JDK
         uses: actions/setup-java@v2
         with:
@@ -36,19 +47,16 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Run tests, build and push dispatcher Docker image
+      - name: Run tests, build and push Docker image
         working-directory: hub/dispatcher
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAG: ${{ steps.extract_version.outputs.version }}
-          MODEL_VERSIONS: ${{ vars.MODEL_VERSIONS }}
+          DISPATCHER_VERSION: ${{ needs.extract-version.outputs.version }}
+          MODEL_VERSION: ${{ matrix.model_version }}
         run: |
-          # Build for each model version
-          for MODEL_VERSION in $MODEL_VERSIONS; do
-            IMAGE_TAG="${TAG}-model-${MODEL_VERSION}"
+          IMAGE_TAG="${DISPATCHER_VERSION}-model-${MODEL_VERSION}"
             echo "Building image for $IMAGE_TAG"
-            ./gradlew jib \
-              -Pversion=$TAG \
-              -PmodelVersion=$MODEL_VERSION \
-              --image ghcr.io/${{ github.repository_owner }}/dispatcher:$IMAGE_TAG
-          done
+          ./gradlew jib \
+            -Pversion=$DISPATCHER_VERSION \
+            -PmodelVersion=$MODEL_VERSION \
+            --image ghcr.io/${{ github.repository_owner }}/dispatcher:$IMAGE_TAG
