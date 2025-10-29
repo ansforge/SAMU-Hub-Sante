@@ -5,10 +5,6 @@ on:
       - 'dispatcher-*'
   workflow_dispatch:
     inputs:
-      tag:
-        description: "Tag de déploiement"
-        required: true
-        type: string
       model_versions:
         description: "Liste des versions de modèle séparées par des espaces"
         required: true
@@ -23,11 +19,7 @@ jobs:
       - name: Extract version from tag
         id: extract-dispatcher-version
         run: |
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            TAG_NAME="${{ inputs.tag }}"
-          else
-            TAG_NAME="${{ github.ref_name }}"
-          fi
+          TAG_NAME="${{ github.ref_name }}"
           VERSION=${TAG_NAME#dispatcher-}
           PATTERN="^([0-9]+\.[0-9]+(\.[0-9]+)?)(-[A-Za-z0-9\.]+)*$"
           if [[ ! "$VERSION" =~ $PATTERN ]]; then
@@ -40,7 +32,7 @@ jobs:
         id: set-model-versions
         run: |
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            MODEL_VERSIONS="${{ inputs.tag }}"
+            MODEL_VERSIONS="${{ inputs.model_versions }}"
           else
             MODEL_VERSIONS="${{ vars.MODEL_VERSIONS }}"
           fi
