@@ -15,3 +15,7 @@
 ## 🔗Ticket associé
 
 [Asana]()
+
+## ✅ A vérifier
+
+- [ ] J'ai exécuté les tests e2e du LRM client localement, s'il a été modifié
