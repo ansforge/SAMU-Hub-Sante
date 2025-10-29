@@ -1,0 +1,93 @@
+name: Build dispatcher image
+on:
+  push:
+    tags:
+      - 'dispatcher-*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag de déploiement"
+        required: true
+        type: string
+      model_versions:
+        description: "Liste des versions de modèle séparées par des espaces"
+        required: true
+        type: string
+jobs:
+  get-tags:
+    runs-on: ubuntu-latest
+    outputs:
+      dispatcher-version: ${{ steps.extract-dispatcher-version.outputs.version }}
+      model-versions: ${{ steps.set-model-versions.outputs.versions }}
+    steps:
+      - name: Extract version from tag
+        id: extract-dispatcher-version
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            TAG_NAME="${{ inputs.tag }}"
+          else
+            TAG_NAME="${{ github.ref_name }}"
+          fi
+          VERSION=${TAG_NAME#dispatcher-}
+          PATTERN="^([0-9]+\.[0-9]+(\.[0-9]+)?)(-[A-Za-z0-9\.]+)*$"
+          if [[ ! "$VERSION" =~ $PATTERN ]]; then
+            echo "Invalid version number"
+            echo $VERSION
+            exit 1
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+      - name: Set model versions output
+        id: set-model-versions
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            MODEL_VERSIONS="${{ inputs.tag }}"
+          else
+            MODEL_VERSIONS="${{ vars.MODEL_VERSIONS }}"
+          fi
+          VERSION_JSON_ARRAY=$(echo "$MODEL_VERSIONS" | jq -R 'split(" ")' | jq -c '.')
+          echo $VERSION_JSON_ARRAY
+          echo "versions=$VERSION_JSON_ARRAY" >> $GITHUB_OUTPUT
+
+  build-dispatcher:
+    name: Build Dispatcher images
+    needs: get-tags
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: hub/dispatcher
+
+    strategy:
+      fail-fast: false
+      matrix:
+        model_version: ${{ fromJson(needs.get-tags.outputs.model-versions) }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+      - name: Grant execute permission for Gradlew
+        run: chmod +x gradlew
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Login to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Run tests, build and push Docker image
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DISPATCHER_VERSION: ${{ needs.get-tags.outputs.dispatcher-version }}
+          MODEL_VERSION: ${{ matrix.model_version }}
+        run: |
+          IMAGE_TAG="${DISPATCHER_VERSION}-model-${MODEL_VERSION}"
+            echo "Building image for $IMAGE_TAG"
+          ./gradlew jib \
+            -Pversion=$DISPATCHER_VERSION \
+            -PmodelVersion=$MODEL_VERSION \
+            --image ghcr.io/${{ github.repository_owner }}/dispatcher:$IMAGE_TAG
