@@ -219,8 +219,10 @@ public class MessageHandler {
             } else if (isXML(message)) {
                 validator.validateXML(receivedEdxl, FULL_XSD);
             } else {
+                String extractedDistributionId = extractDistributionId(receivedEdxl);
+                log.error("Unhandled Content-Type in message coming from {} with extracted distributionId {}", message.getMessageProperties().getReceivedRoutingKey(), extractedDistributionId);
                 String errorCause = "Unhandled Content-Type ! Message Content-Type should be set at 'application/json' or 'application/xml'";
-                throw new NotAllowedContentTypeException(errorCause, extractDistributionId(receivedEdxl));
+                throw new NotAllowedContentTypeException(errorCause, extractedDistributionId);
             }
         } catch (IOException exception) {
             log.error("Could not find schema file", exception);
