@@ -40,7 +40,7 @@ jobs:
         id: set-model-versions
         run: |
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            MODEL_VERSIONS="${{ inputs.tag }}"
+            MODEL_VERSIONS="${{ inputs.model_versions }}"
           else
             MODEL_VERSIONS="${{ vars.MODEL_VERSIONS }}"
           fi
