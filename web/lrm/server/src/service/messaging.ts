@@ -4,6 +4,7 @@ import { WebSocketServer, OPEN } from 'ws';
 import { logger } from '../logger';
 import { RabbitMQConnector } from '../rabbit/utils';
 import { Config } from '../config';
+import { Logger } from "winston";
 
 const NOT_FOUND_QUEUE_ERROR_MESSAGE_PATTERN = 'NOT_FOUND - no queue';
 const MAX_RECONNEXION_ATTEMPT = 3;
@@ -14,6 +15,7 @@ export class MessagingService {
   private readonly rabbitMQConnector: RabbitMQConnector;
   private readonly wss: WebSocketServer;
   private readonly config: Config;
+  private readonly logger: Logger;
   private connection: Connection | undefined;
   private reconnectionAttemptCount: number;
   private lastReconnectionAttemptTime: number;
@@ -25,6 +27,7 @@ export class MessagingService {
     this.wss = wss;
     this.reconnectionAttemptCount = 0;
     this.lastReconnectionAttemptTime = Date.now();
+    this.logger = logger.child({ vhost: this.vhost, component: 'MessagingService' });
 
     this.reconnect = this.reconnect.bind(this);
     this.handleChannelError = this.handleChannelError.bind(this);
@@ -34,16 +37,16 @@ export class MessagingService {
   }
 
   handleConnectionError(err: unknown) {
-    logger.error(err);
+    this.logger.error(err);
     throw new Error(`Connection error for vhost '${this.vhost}'`);
   }
 
   handleChannelError(err: any) {
     if (this.isMissingQueueError(err)) {
-      logger.error(err);
+      this.logger.error(err);
       throw new Error(`Missing queue for vhost '${this.vhost}'`);
     } else {
-      logger.error(err);
+      this.logger.error(err);
       if (this.reconnectionAttemptCount < MAX_RECONNEXION_ATTEMPT) {
         // Trick to reset the reconnection attemp count, as we don't have access
         // to a callback when the channel connection is successfull.
@@ -52,7 +55,7 @@ export class MessagingService {
         }
         this.reconnect();
       } else {
-        logger.error(err);
+        this.logger.error(err);
         throw new Error(`Max reconnection attempts reached for vhost '${this.vhost}'`);
       }
     }
@@ -61,7 +64,7 @@ export class MessagingService {
   reconnect() {
     this.reconnectionAttemptCount++;
     this.lastReconnectionAttemptTime = Date.now();
-    logger.info(`Trying to reconnect to vhost '${this.vhost}' (attempt n°${this.reconnectionAttemptCount})`);
+    this.logger.info(`Trying to reconnect to vhost '${this.vhost}' (attempt n°${this.reconnectionAttemptCount})`);
     setTimeout(() => {
       if (this.connection !== undefined) {
         this.connection.createChannel((_, channel) => {
@@ -94,7 +97,7 @@ export class MessagingService {
   handleCloseConnection() {
     if (this.connection) {
       this.rabbitMQConnector.close(this.connection);
-      logger.info(`RabbitMQ connection ${this.vhost} shut down`);
+      this.logger.info(`RabbitMQ connection ${this.vhost} shut down`);
     }
   }
 }
@@ -104,12 +107,14 @@ export class ClientListenerService {
   private readonly clientId: string;
   private readonly wss: WebSocketServer;
   private readonly channel: Channel;
+  private readonly logger: Logger;
 
   constructor(vhost: string, clientId: string, wss: WebSocketServer, channel: Channel) {
     this.vhost = vhost;
     this.clientId = clientId;
     this.wss = wss;
     this.channel = channel;
+    this.logger = logger.child({ vhost: this.vhost, clientId: this.clientId, component: 'ClientListenerService' });
 
     this.handleConsumeMessage = this.handleConsumeMessage.bind(this);
     this.listenClientQueues = this.listenClientQueues.bind(this);
@@ -122,9 +127,9 @@ export class ClientListenerService {
         this.channel.consume(queue, this.handleConsumeMessage(queue), {
           noAck: true, // Ref.: https://amqp-node.github.io/amqplib/channel_api.html#channelconsume
         });
-        logger.info(` [*] Waiting for ${this.clientId} messages in ${queue} (${this.vhost}). To exit press CTRL+C`);
+        this.logger.info(` [*] Waiting for ${this.clientId} messages in ${queue} (${this.vhost}).`);
       } catch (err) {
-        logger.error(`Error while consuming from queue '${queue}' in vhost '${this.vhost}': ${err}`);
+        this.logger.error(`Error while consuming from queue '${queue}' in vhost '${this.vhost}': ${err}`);
       }
     }
   }
@@ -135,8 +140,8 @@ export class ClientListenerService {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-expect-error
       const body = JSON.parse(msg.content);
-      logger.info(` [x] Received for ${this.clientId} (${this.vhost}): ${body.distributionID}`);
-      logger.debug(
+      this.logger.info(` [x] Received for ${this.clientId} (${this.vhost}): ${body.distributionID}`);
+      this.logger.debug(
         // TODO: handle msg content properly
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-expect-error
@@ -159,8 +164,8 @@ export class ClientListenerService {
           clientCounts += 1;
         }
       });
-      logger.info(`Sent to ${clientCounts} clients: ${data.body.distributionID}`);
-      logger.debug(`Sent to ${clientCounts} clients: ${data} of content ${data}`);
+      this.logger.info(`Sent to ${clientCounts} clients: ${data.body.distributionID}`);
+      this.logger.debug(`Sent to ${clientCounts} clients: ${data} of content ${data}`);
     };
   }
 }

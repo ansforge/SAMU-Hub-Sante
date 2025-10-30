@@ -3,10 +3,13 @@ import { readFileSync } from 'fs';
 import amqp, { credentials, Channel, Connection } from 'amqplib/callback_api';
 import { logger } from '../logger';
 import { Config } from '../config';
+import { Logger } from "winston";
 
 export class RabbitMQConnector {
   private config: Config;
   private connectionOptions: unknown;
+  private readonly logger: Logger;
+
   constructor(config: Config) {
     this.config = config;
     this.connectionOptions = {
@@ -15,6 +18,7 @@ export class RabbitMQConnector {
       credentials: credentials.external(),
       clientProperties: { connection_name: 'lrm-interface' },
     };
+    this.logger = logger.child({ component: 'RabbitMQConnector' });
   }
 
   private readCerts(): { pfx: Buffer<ArrayBufferLike>; ca: Buffer<ArrayBufferLike>[] } {
@@ -33,13 +37,13 @@ export class RabbitMQConnector {
   public connect(vhost: string, callback: (connection: Connection, channel: Channel) => void) {
     amqp.connect(`${this.config.getHubUrl()}/${vhost}`, this.connectionOptions, (error0, connection) => {
       if (error0) {
-        logger.error(`Error during AMQP connection: ${error0}`);
+        this.logger.error(`Error during AMQP connection: ${error0}`);
         throw error0;
       }
 
       connection.createChannel((error1, channel) => {
         if (error1) {
-          logger.error(`Error during AMQP channel creation: ${error1}`);
+          this.logger.error(`Error during AMQP channel creation: ${error1}`);
           throw error1;
         }
         callback(connection, channel);

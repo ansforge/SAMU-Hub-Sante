@@ -11,6 +11,7 @@ import { ModelesRouter } from './router/modelesRouter';
 import { Config } from './config';
 import { WebSocketHandler } from './WebSocketHandler';
 import { MessagingService } from './service/messaging';
+import { Logger } from "winston";
 
 export class ExpressServer {
   private readonly config: Config;
@@ -19,6 +20,7 @@ export class ExpressServer {
   private readonly connections: MessagingService[];
   private wss: WebSocketServer | undefined;
   private server: Server | undefined;
+  private logger: Logger;
 
   constructor(config: Config, connector: RabbitMQConnector) {
     this.config = config;
@@ -26,6 +28,7 @@ export class ExpressServer {
     this.app = express();
     this.connections = [];
     this.setupMiddleware();
+    this.logger = logger.child({ component: 'ExpressServer' });
   }
 
   setupMiddleware() {
@@ -59,11 +62,11 @@ export class ExpressServer {
       wsHandler.listen();
     });
 
-    logger.info(`Listening on port ${this.config.getPort()}`);
+    this.logger.info(`Listening on port ${this.config.getPort()}`);
 
     const VHOST_CLIENT_MAP = this.config.getVhostClientMap();
     // Subscribe to Hub messages and send them to the client through web socket
-    logger.info(`VHOST_CLIENT_MAP: ${JSON.stringify(VHOST_CLIENT_MAP)}`);
+    this.logger.info(`VHOST_CLIENT_MAP: ${JSON.stringify(VHOST_CLIENT_MAP)}`);
     // Get list of keys (corresponding to vhosts) from the VHOSTS map
     const vhostsArray = Object.keys(VHOST_CLIENT_MAP);
 
@@ -81,7 +84,7 @@ export class ExpressServer {
     await new Promise((resolve) => {
       if (this.wss !== undefined) {
         this.wss.close(() => {
-          logger.info(`WebSocket closed`);
+          this.logger.info(`WebSocket closed`);
           resolve(null);
         });
       }
@@ -89,7 +92,7 @@ export class ExpressServer {
     await new Promise((resolve) => {
       if (this.server !== undefined) {
         this.server.close(() => {
-          logger.info(`Server on port ${this.config.getPort()} shut down`);
+          this.logger.info(`Server on port ${this.config.getPort()} shut down`);
           resolve(null);
         });
       }
