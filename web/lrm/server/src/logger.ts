@@ -6,10 +6,9 @@ export const logger = createLogger({
   level: 'debug',
   format: format.combine(
     format.timestamp(),
-    format.errors({ stack: true }), // Ref.: https://stackoverflow.com/a/5847568
-    format.simple(),
+    format.errors({ stack: true }),
+    format.json(),
   ),
-  defaultMeta: { service: 'user-service' },
   transports: [buildDefaultConsoleTransport()],
   exceptionHandlers: [buildDefaultConsoleTransport()],
   rejectionHandlers: [buildDefaultConsoleTransport()],

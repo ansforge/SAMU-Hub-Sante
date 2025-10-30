@@ -3,6 +3,7 @@ import { WebSocket, RawData } from 'ws';
 import { logger } from './logger';
 import { Config } from './config';
 import { RabbitMQConnector } from './rabbit/utils';
+import { Logger } from "winston";
 
 enum WS_EVENT {
   MESSAGE = 'message',
@@ -13,11 +14,13 @@ export class WebSocketHandler {
   private readonly ws: WebSocket;
   private readonly config: Config;
   private readonly rabbitMQConnector: RabbitMQConnector;
+  private readonly logger: Logger;
 
   constructor(ws: WebSocket, config: Config, rabbitMQConnector: RabbitMQConnector) {
     this.ws = ws;
     this.config = config;
     this.rabbitMQConnector = rabbitMQConnector;
+    this.logger = logger.child({ component: 'WebSocketHandler' });
 
     this.sendMessage = this.sendMessage.bind(this);
     this.close = this.close.bind(this);
@@ -33,9 +36,9 @@ export class WebSocketHandler {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-expect-error
     const { key, msg, vhost } = JSON.parse(body);
-    logger.info(`Received message from WebSocket client: ${msg.distributionID}`);
+    this.logger.info(`Received message from WebSocket client: ${msg.distributionID}`);
     try {
-      logger.info(` [x] Sending msg ${msg.distributionID} to key ${key} (vhost: ${vhost})`);
+      this.logger.info(` [x] Sending msg ${msg.distributionID} to key ${key} (vhost: ${vhost})`);
       const { connection, channel } = await this.rabbitMQConnector.connectAsync(vhost);
       channel.publish(this.config.getHubSanteExchange(), key, Buffer.from(JSON.stringify(msg)), {
         // Ref.: https://github.com/amqp-node/amqplib/blob/4791f2dfbe8f3bfbd02bb0907e3c35129ae71c13/lib/api_args.js#L231
@@ -44,13 +47,13 @@ export class WebSocketHandler {
         priority: 0,
       });
       this.rabbitMQConnector.close(connection);
-      logger.info(`Publish call done and connection closed for ${msg.distributionID} (vhost: ${vhost})`);
+      this.logger.info(`Publish call done and connection closed for ${msg.distributionID} (vhost: ${vhost})`);
     } catch (error) {
-      logger.error(`Error publishing message to RabbitMQ (vhost: ${vhost}): ${error}`);
+      this.logger.error(`Error publishing message to RabbitMQ (vhost: ${vhost}): ${error}`);
     }
   }
 
   close() {
-    logger.info('WebSocket client disconnected');
+    this.logger.info('WebSocket client disconnected');
   }
 }

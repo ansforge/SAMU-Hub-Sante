@@ -6,11 +6,15 @@ import {
   createPullRequest,
   findExistingPullRequest,
 } from '../service/modeles';
+import { logger } from "../logger";
+import { Logger } from "winston";
 
 const VALIDATION_ERROR_MESSAGE = 'Missing mandatory attribute in payload';
 
 const AUTHORIZED_BRANCH_PATTERN = /^auto-json-creator\/.*/;
 const AUTHORIZED_BRANCH_ERROR_MESSAGE = 'Invalid branch name';
+
+const modelesRouterLogger: Logger = logger.child({ component: 'ModelesRouter' });
 
 const getModelesBranchesHandler = async (_: Request, res: Response<string[]>) => {
   const branchNames = await getModelesBranchNames();
@@ -79,6 +83,7 @@ const commitModelesChanges = async (
 
   // TODO: inject config in service
   if (password !== process.env.ADMIN_PASSWORD) {
+    modelesRouterLogger.error("Unauthorized access attempt detected");
     res.status(401).json({ message: 'Unauthorized' });
     return;
   }
@@ -86,10 +91,9 @@ const commitModelesChanges = async (
   try {
     validatePayload(req.body);
   } catch (err) {
-    // TODO: manage error handling globaly
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-expect-error
-    res.status(400).json({ message: err.message });
+    const errorMessage = err instanceof Error ? err.message : 'Unknown validation error';
+    modelesRouterLogger.error("An error occurred during payload validation", { error: errorMessage });
+    res.status(400).json({ message: errorMessage });
     return;
   }
 
@@ -131,11 +135,10 @@ const commitModelesChanges = async (
       },
     });
   } catch (err) {
+    const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+    modelesRouterLogger.error("An error occurred during commit process", { error: errorMessage });
     res.status(500).json({
-      // TODO: manage error handling globaly
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-expect-error
-      message: `An unexpected error happend: ${err.message || 'Internal Server Error'}`,
+      message: `An unexpected error happend: ${errorMessage || 'Internal Server Error'}`,
     });
   }
 };

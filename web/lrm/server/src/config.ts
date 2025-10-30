@@ -1,14 +1,16 @@
 import { logger } from './logger';
+import { Logger } from "winston";
 
 type VhostClientMap = Record<string, string[]>;
 
 export class Config {
-  private port: number;
-  private adminPassword: string;
-  private hubUrl: string;
-  private lrmCertPassphrase: string;
-  private hubSanteExchange: string;
-  private vhostClientMap: VhostClientMap;
+  private readonly port: number;
+  private readonly adminPassword: string;
+  private readonly hubUrl: string;
+  private readonly lrmCertPassphrase: string;
+  private readonly hubSanteExchange: string;
+  private readonly vhostClientMap: VhostClientMap;
+  private readonly logger: Logger;
 
   constructor() {
     this.port = this.extractNumericEnvVar('PORT', 8081);
@@ -17,8 +19,8 @@ export class Config {
     this.lrmCertPassphrase = this.extractEnvVar('LRM_PASSPHRASE');
     this.hubSanteExchange = 'hubsante';
     this.vhostClientMap = JSON.parse(this.extractEnvVar('VHOST_CLIENT_MAP'));
-
-    logger.info(this);
+    this.logger = logger.child({ component: 'Config' });
+    this.logger.info(this);
   }
 
   private extractNumericEnvVar(key: string, defaultValue?: number) {
