@@ -9,7 +9,6 @@ export const logger = createLogger({
     format.errors({ stack: true }),
     format.json(),
   ),
-  defaultMeta: { service: 'user-service' },
   transports: [buildDefaultConsoleTransport()],
   exceptionHandlers: [buildDefaultConsoleTransport()],
   rejectionHandlers: [buildDefaultConsoleTransport()],
