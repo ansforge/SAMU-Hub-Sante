@@ -127,7 +127,7 @@ export class ClientListenerService {
         this.channel.consume(queue, this.handleConsumeMessage(queue), {
           noAck: true, // Ref.: https://amqp-node.github.io/amqplib/channel_api.html#channelconsume
         });
-        this.logger.info(` [*] Waiting for ${this.clientId} messages in ${queue} (${this.vhost}). To exit press CTRL+C`);
+        this.logger.info(` [*] Waiting for ${this.clientId} messages in ${queue} (${this.vhost}).`);
       } catch (err) {
         this.logger.error(`Error while consuming from queue '${queue}' in vhost '${this.vhost}': ${err}`);
       }
