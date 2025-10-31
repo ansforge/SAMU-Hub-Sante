@@ -2,8 +2,11 @@
 <!DOCTYPE configuration>
 
 <configuration>
+    <springProperty scope="context" name="vhost" source="spring.rabbitmq.virtual-host"/>
+
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <globalCustomFields>{"vhost":"${vhost}"}</globalCustomFields>
             <fieldNames>
                 <timestamp>timestamp</timestamp>
             </fieldNames>
