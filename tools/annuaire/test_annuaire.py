@@ -137,7 +137,7 @@ class AnnuaireTestCase(unittest.TestCase):
                 self.assertEqual(
                     actual_value,
                     expected_value,
-                    f"Erreur sur la ligne {i+1}, colonne '{key}': "
+                    f"Erreur sur la ligne {i + 1}, colonne '{key}': "
                     f"attendu '{expected_value}', obtenu '{actual_value}'",
                 )
 
