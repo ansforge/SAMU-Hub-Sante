@@ -38,7 +38,9 @@ print("Documents loaded")
 
 text_splitter = RecursiveCharacterTextSplitter(chunk_size=3000, chunk_overlap=500)
 splits = text_splitter.split_documents(docs)
-vectorstore = Chroma.from_documents(documents=splits, embedding=OpenAIEmbeddings(model="text-embedding-3-large"))
+vectorstore = Chroma.from_documents(
+    documents=splits, embedding=OpenAIEmbeddings(model="text-embedding-3-large")
+)
 retriever = vectorstore.as_retriever(search_type="similarity", search_kwargs={"k": 6})
 print("Documents stored")
 
@@ -64,14 +66,15 @@ rag_chain = create_retrieval_chain(retriever, question_answer_chain)
 print("RAG created")
 
 
-app = App(token = bot_token)
+app = App(token=bot_token)
+
 
 @app.event("app_mention")
 def answer_question(event, say):
     # Retreive the message without the chatbot mention
-    message = event['text'].replace("<@U089QKJ74HM>", "")
+    message = event["text"].replace("<@U089QKJ74HM>", "")
     print("Chatbot called", message)
-    
+
     response = rag_chain.invoke({"input": message})
     print("RAG result", response)
 
@@ -84,21 +87,24 @@ def answer_question(event, say):
             if source not in source_pages:
                 source_pages[source] = set()
             source_pages[source].add(page)
-    
+
     # Add formatted sources to the answer
     answer_with_sources = response["answer"]
     if source_pages:
         answer_with_sources += "\n\n_Sources_ :\n"
         for source in source_pages:
             source_name = "DSF" if source == DSF else "DST"
-            page_links = [f"<{source}#page={page + 1}|{page + 1}>" for page in sorted(source_pages[source])]
+            page_links = [
+                f"<{source}#page={page + 1}|{page + 1}>"
+                for page in sorted(source_pages[source])
+            ]
             answer_with_sources += f"• {source_name} : pages {', '.join(page_links)}\n"
-    
+
     say(answer_with_sources)
     print("Chatbot answered", answer_with_sources)
 
- 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     handler = SocketModeHandler(app, app_token)
     handler.start()
     print("Chatbot started")
