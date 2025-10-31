@@ -27,59 +27,63 @@ public class PublishExample extends Simulation {
         private final String exchangeName = dotenv.get("EXCHANGE_NAME");
         private final String vhost = "15-15_v1.5";
 
-        private ConnectionFactory mtlsFactory() throws Exception {
-            final ConnectionFactory factory = new ConnectionFactory();
+    private ConnectionFactory mtlsFactory() throws Exception {
+        final ConnectionFactory factory = new ConnectionFactory();
 
-            factory.setSaslConfig(DefaultSaslConfig.EXTERNAL);
-            factory.setHost(this.host);
-            factory.setPort(this.port);
-            factory.setVirtualHost(this.vhost);
+        factory.setSaslConfig(DefaultSaslConfig.EXTERNAL);
+        factory.setHost(this.host);
+        factory.setPort(this.port);
+        factory.setVirtualHost(this.vhost);
 
-            // Here, configure the connection recovery policies
-            // NB - You can set a fixed time interval using setNetworkRecoveryInterval(NETWORK_RECOVERY_INTERVAL);
-            // NB - You can optionally configure ExponentialBackoffDelayHandler with your own backoff sequence.
-            factory.setAutomaticRecoveryEnabled(true);
-            final RecoveryDelayHandler delayHandler = new RecoveryDelayHandler.ExponentialBackoffDelayHandler();
-            factory.setRecoveryDelayHandler(delayHandler);
+        // Here, configure the connection recovery policies
+        // NB - You can set a fixed time interval using setNetworkRecoveryInterval(NETWORK_RECOVERY_INTERVAL);
+        // NB - You can optionally configure ExponentialBackoffDelayHandler with your own backoff sequence.
+        factory.setAutomaticRecoveryEnabled(true);
+        final RecoveryDelayHandler delayHandler = new RecoveryDelayHandler.ExponentialBackoffDelayHandler();
+        factory.setRecoveryDelayHandler(delayHandler);
 
 
-            final TLSConf tlsConf = new TLSConf(
-                TLS_PROTOCOL_VERSION,
-                dotenv.get("KEY_PASSPHRASE"),
-                dotenv.get("CERTIFICATE_PATH"),
-                dotenv.get("TRUST_STORE_PASSWORD"),
-                dotenv.get("TRUST_STORE_PATH"));
+        final TLSConf tlsConf = new TLSConf(
+            TLS_PROTOCOL_VERSION,
+            dotenv.get("KEY_PASSPHRASE"),
+            dotenv.get("CERTIFICATE_PATH"),
+            dotenv.get("TRUST_STORE_PASSWORD"),
+            dotenv.get("TRUST_STORE_PATH"));
 
-            factory.useSslProtocol(tlsConf.getSslContext());
+        factory.useSslProtocol(tlsConf.getSslContext());
 
-            factory.enableHostnameVerification();
+        factory.enableHostnameVerification();
 
-            return factory;
-        }
-
-    public ScenarioBuilder scn = scenario("AMQP test")
-            .feed(Utils.idFeeder)
-            .exec(
-                    amqp("publish to exchange")
-                            .publish()
-                            .topicExchange(this.exchangeName, "fr.health.test.samuA")
-                            .textMessage()
-                            .contentType(JSON_CONTENT_TYPE)
-            );
-
+        return factory;
+    }
 
     {
         try {
+            var is = PublishExample.class.getClassLoader().getResourceAsStream("samuA_to_samuC.json");
+            if (is == null) throw new IOException("Resource not found: samuA_to_samuC.json");
+            String stringMessage = new String(is.readAllBytes(), StandardCharsets.UTF_8);
+
             AmqpProtocolBuilder amqpConf = amqp()
                     .connectionFactory(
                             mtlsFactory()
                     )
                     .usePersistentDeliveryMode();
 
+            ScenarioBuilder scn = scenario("AMQP test")
+                    .feed(Utils.idFeeder)
+                    .exec(
+                            amqp("publish to exchange")
+                                    .publish()
+                                    .topicExchange(this.exchangeName, "fr.health.test.samuA")
+                                    .textMessage(stringMessage)
+                                    .contentType(JSON_CONTENT_TYPE)
+                    );
+
             setUp(
                     scn.injectOpen(
                             rampUsersPerSec(1).to(5).during(60),
-                            constantUsersPerSec(5).during(300))
+                            constantUsersPerSec(5).during(300)
+                    )
             )
                     .protocols(amqpConf)
                     .maxDuration(600);
