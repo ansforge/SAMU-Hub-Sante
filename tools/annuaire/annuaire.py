@@ -1,5 +1,5 @@
 import logging
-from flask import Flask, jsonify, abort
+from flask import Flask, jsonify
 import csv
 import os
 

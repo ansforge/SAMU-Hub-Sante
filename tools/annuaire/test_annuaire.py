@@ -6,14 +6,12 @@ from unittest import mock
 from annuaire import (
     parse_csv,
     select_columns,
-    CSV_DATA_KEY,
     API_ENDPOINT,
     HEALTH_ENDPOINT,
     CSV_FILENAME,
     HEADERS_COLUMNS_TO_KEEP,
     CSV_NOT_FOUND_MSG,
 )
-from flask import Flask
 
 FOLDER_NAME_PATCH_PATH = "annuaire.CSV_DIR"
 
@@ -139,7 +137,8 @@ class AnnuaireTestCase(unittest.TestCase):
                 self.assertEqual(
                     actual_value,
                     expected_value,
-                    f"Erreur sur la ligne {i+1}, colonne '{key}': attendu '{expected_value}', obtenu '{actual_value}'",
+                    f"Erreur sur la ligne {i+1}, colonne '{key}': "
+                    f"attendu '{expected_value}', obtenu '{actual_value}'",
                 )
 
     def test_select_columns(self):
