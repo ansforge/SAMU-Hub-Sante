@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.hubsante.hub.config.Constants;
 import com.hubsante.hub.config.HubConfiguration;
+import com.hubsante.hub.config.LogConstants;
 import com.hubsante.hub.exception.*;
 import com.hubsante.hub.utils.ConversionRulesCommand;
 import com.hubsante.hub.utils.ConversionUtils;
@@ -152,7 +153,10 @@ public class Dispatcher {
                 ConversionRulesCommand conversionRulesCommand = new ConversionRulesCommand(edxlMessage, hubConfig);
                 String convertedMessage = conversionHandler.applyConversionRules(conversionRulesCommand);
                 sendToTransferExchange(convertedMessage, message, conversionRulesCommand);
-                log.debug("The converted message has been sent to the exchange to reach the recipient's vhost.");
+                log.atDebug().setMessage("The converted message has been sent to the exchange to reach the recipient's vhost.")
+                        .addKeyValue(LogConstants.DISTRIBUTION_ID, edxlMessage.getDistributionID())
+                        .addKeyValue(LogConstants.SENDER_ID, edxlMessage.getSenderID())
+                        .log();
                 // We MUST return here to exit the dispatch() function, otherwise the message will be published on the source Exchange as well
                 return;
             }
@@ -169,7 +173,11 @@ public class Dispatcher {
         } catch (Exception e) {
             // still log.error because it is not one of our AbstractHubExceptions, so there must be
             // a hole in our error cover
-            log.error("Unexpected error occurred while dispatching message from " + message.getMessageProperties().getReceivedRoutingKey(), e);
+            String senderID = getSenderFromRoutingKey(message);
+            log.atError()
+                    .setMessage(String.format("Unexpected error occurred while dispatching message from %s : %s", senderID, e))
+                    .addKeyValue(LogConstants.SENDER_ID, senderID)
+                    .log();
             throw new AmqpRejectAndDontRequeueException(e);
         }
     }
@@ -181,7 +189,9 @@ public class Dispatcher {
 
         String routingKey = message.getMessageProperties().getReceivedRoutingKey();
 
-        log.info("Message transferred to exchange: {} with routing key: {}", transferExchangeName, routingKey);
+        log.atInfo().setMessage(String.format("Message transferred to exchange: %s with routing key: %s", transferExchangeName, routingKey))
+                .addKeyValue(LogConstants.SENDER_ID, routingKey)
+                .log();
 
         rabbitTemplate.send(transferExchangeName, routingKey, forwardedMsg);
     }
@@ -207,7 +217,10 @@ public class Dispatcher {
             if (!(e instanceof AmqpRejectAndDontRequeueException)) {
                 String originalRoutingKey = message.getMessageProperties().getHeader(ORIGINAL_ROUTING_KEY) != null ?
                         message.getMessageProperties().getHeader(ORIGINAL_ROUTING_KEY) : "Unknown routing key";
-                log.warn("Unexpected error occurred while DLQ-dispatching message from " + originalRoutingKey, e);
+                log.atWarn()
+                        .setMessage(String.format("Unexpected error occurred while DLQ-dispatching message from %s: %s", originalRoutingKey, e))
+                        .addKeyValue(LogConstants.SENDER_ID, originalRoutingKey)
+                        .log();
             }
             throw new AmqpRejectAndDontRequeueException(e);
         }

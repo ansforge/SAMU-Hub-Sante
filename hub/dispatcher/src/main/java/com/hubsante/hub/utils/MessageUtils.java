@@ -16,6 +16,7 @@
 package com.hubsante.hub.utils;
 
 import com.hubsante.hub.config.HubConfiguration;
+import com.hubsante.hub.config.LogConstants;
 import com.hubsante.hub.exception.*;
 import com.hubsante.model.edxl.DistributionKind;
 import com.hubsante.model.edxl.EdxlMessage;
@@ -58,9 +59,12 @@ public class MessageUtils {
         String receivedRoutingKey = getSenderFromRoutingKey(message);
         if (!receivedRoutingKey.equals(edxlMessage.getSenderID())) {
             if (!receivedRoutingKey.startsWith(HEALTH_PREFIX)) {
-                log.info("Message has been received from hubex partner with routing key {} and senderID {}",
-                        message.getMessageProperties().getReceivedRoutingKey(),
-                        edxlMessage.getSenderID());
+                String senderID = edxlMessage.getSenderID();
+                log.atInfo()
+                        .setMessage(String.format("Message has been received from hubex partner with routing key %s and senderID %s", message.getMessageProperties().getReceivedRoutingKey(), senderID))
+                        .addKeyValue(LogConstants.DISTRIBUTION_ID, edxlMessage.getDistributionID())
+                        .addKeyValue(LogConstants.SENDER_ID, senderID)
+                        .log();
                 return;
             }
             String errorCause = "Sender inconsistency for message " +
@@ -84,7 +88,10 @@ public class MessageUtils {
     public static void checkDeliveryModeIsPersistent(Message message, String messageId) {
         if (!MessageDeliveryMode.PERSISTENT.equals(message.getMessageProperties().getReceivedDeliveryMode())) {
             if (!message.getMessageProperties().getReceivedRoutingKey().startsWith(HEALTH_PREFIX)) {
-                log.error("Message has been received from hubex with routing key {} without persistent mode enabled", message.getMessageProperties().getReceivedRoutingKey());
+                String senderID = getSenderFromRoutingKey(message);
+                log.atError().setMessage(String.format("Message has been received from hubex with routing key %s without persistent mode enabled", senderID))
+                        .addKeyValue(LogConstants.SENDER_ID, senderID)
+                        .log();
                 return;
             }
             String errorCause = "Message " + messageId + " has been sent with non-persistent delivery mode";
@@ -159,7 +166,11 @@ public class MessageUtils {
         // Reset the expiration header if it was set by the client,
         // they should use dateTimeExpires for that purpose.
         if (Objects.nonNull(properties.getExpiration())) {
-            log.info("Reset expiration header for message {} that was originally set to {}", edxlMessage.getDistributionID(), properties.getExpiration());
+            String distributionId = edxlMessage.getDistributionID();
+            log.atInfo()
+                    .setMessage(String.format("Reset expiration header for message %s that was originally set to %s", distributionId, properties.getExpiration()))
+                    .addKeyValue(LogConstants.DISTRIBUTION_ID, distributionId)
+                    .log();
             properties.setExpiration(null);
         }
 
@@ -177,9 +188,14 @@ public class MessageUtils {
         long defaultExpirationDateTime = OffsetDateTime.now().plusSeconds(defaultTTL).toEpochSecond();
         if (messageCustomExpirationDateTime < defaultExpirationDateTime) {
             properties.setExpiration(String.valueOf(newTTL * 1000));
-            log.info("override expiration for message {}: expiration is now {}",
-                    edxlMessage.getDistributionID(),
-                    edxlMessage.getDateTimeExpires().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+            String distributionId = edxlMessage.getDistributionID();
+            String dateTimeExpires = edxlMessage.getDateTimeExpires().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+            String senderID = edxlMessage.getSenderID();
+            log.atInfo()
+                    .setMessage(String.format("override expiration for message %s: expiration is now %s", distributionId, dateTimeExpires))
+                    .addKeyValue(LogConstants.DISTRIBUTION_ID, distributionId)
+                    .addKeyValue(LogConstants.SENDER_ID, senderID)
+                    .log();
         }
     }
 
@@ -222,7 +238,10 @@ public class MessageUtils {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");byte[] hashedBytes = digest.digest(body.getBytes(StandardCharsets.UTF_8));
             return Base64.getEncoder().encodeToString(hashedBytes);
         } catch (NoSuchAlgorithmException e) {
-            log.error("Could not get SHA-256 algorithm");
+            String senderID = getSenderFromRoutingKey(message);
+            log.atError().setMessage("Could not get SHA-256 algorithm")
+                    .addKeyValue(LogConstants.SENDER_ID, senderID)
+                    .log();
             throw new RuntimeException(e);
         }
 

@@ -16,6 +16,7 @@
 package com.hubsante.hub.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.hubsante.hub.config.LogConstants;
 import com.hubsante.hub.exception.ConversionException;
 import com.hubsante.hub.utils.ConversionRulesCommand;
 import com.hubsante.model.EdxlHandler;
@@ -46,19 +47,33 @@ public class ConversionHandler {
         String targetModelVersion = applyConversionRulesCommand.getTargetModelVersion();
         Boolean isCisuConversion = applyConversionRulesCommand.getCisuConversion();
         EdxlMessage edxlMessage = applyConversionRulesCommand.getEdxlMessage();
+        String distributionID = edxlMessage.getDistributionID();
+        String senderID = edxlMessage.getSenderID();
 
         String jsonEdxlString = edxlHandler.serializeJsonEDXL(edxlMessage);
 
         try {
-            log.debug("Starting conversion for message {} from {} to {}, isCisu ? {}", edxlMessage.getDistributionID(), sourceModelVersion, targetModelVersion, isCisuConversion);
-            String convertedJson = callConversionService(jsonEdxlString, sourceModelVersion, targetModelVersion, isCisuConversion, edxlMessage.getDistributionID());
-            log.debug("Message converted successfully: " + convertedJson);
+            log.atDebug()
+                    .setMessage(String.format("Starting conversion for message %s from %s to %s, isCisu ? %s",distributionID, sourceModelVersion, targetModelVersion, isCisuConversion))
+                    .addKeyValue(LogConstants.DISTRIBUTION_ID, distributionID)
+                    .addKeyValue(LogConstants.SENDER_ID, senderID)
+                    .log();
+            String convertedJson = callConversionService(jsonEdxlString, sourceModelVersion, targetModelVersion, isCisuConversion,distributionID);
+            log.atDebug()
+                    .setMessage("Message converted successfully: " + convertedJson)
+                    .addKeyValue(LogConstants.DISTRIBUTION_ID, distributionID)
+                    .addKeyValue(LogConstants.SENDER_ID, senderID)
+                    .log();
 
             return convertedJson; // returns a string (deserialization is not possible because of version change)
         } catch (RuntimeException e) {
             // Error raised by the conversion service or its call
-            log.error("Error during internal call to Hub Santé conversion service", e);
-            throw new ConversionException(e.getMessage(), edxlMessage.getDistributionID());
+            log.atError()
+                    .setMessage("Error during internal call to Hub Santé conversion service " + e)
+                    .addKeyValue(LogConstants.DISTRIBUTION_ID, distributionID)
+                    .addKeyValue(LogConstants.SENDER_ID, senderID)
+                    .log();
+            throw new ConversionException(e.getMessage(),distributionID);
         }
     }
 
@@ -86,14 +101,18 @@ public class ConversionHandler {
             try {
                 JsonNode errorNode = objectMapper.readTree(e.getResponseBodyAsString());
                 String errorMessage = errorNode.has("error") ? errorNode.get("error").asText() : e.getMessage();
-                log.error("Error received from converter service " + errorMessage);
+                log.atError().setMessage("Error received from converter service " + errorMessage)
+                        .addKeyValue(LogConstants.DISTRIBUTION_ID, distributionID)
+                        .log();
                 throw new ConversionException(errorMessage, distributionID);
             } catch (JsonProcessingException jsonException) {
                 // this should never happen as long as the objectMapper.readTree method has already been called earlier in the 'try' block
                 throw new ConversionException("Failed to parse error response from conversion service: " + e.getMessage(), distributionID);
             }
         } catch (JsonProcessingException e) {
-            log.error("Failed to parse error response from conversion service: " + e.getMessage());
+            log.atError().setMessage("Failed to parse error response from conversion service: " + e.getMessage())
+                    .addKeyValue(LogConstants.DISTRIBUTION_ID, distributionID)
+                    .log();
             throw new ConversionException("Failed to parse response from conversion service: " + e.getMessage(), distributionID);
         }
     }
