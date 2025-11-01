@@ -1,0 +1,40 @@
+{
+  "distributionID": "fr.health.test.samuB_55c3391c-6d2d-4397-b7da-f44d30a27336",
+  "senderID": "fr.health.test.samuB",
+  "dateTimeSent": "2025-10-31T11:36:05+01:00",
+  "dateTimeExpires": "2072-09-27T08:23:34+02:00",
+  "distributionStatus": "Actual",
+  "distributionKind": "Report",
+  "descriptor": {
+    "language": "fr-FR",
+    "explicitAddress": {
+      "explicitAddressScheme": "hubex",
+      "explicitAddressValue": "fr.health.test.samuC"
+    }
+  },
+  "content": [
+    {
+      "jsonContent": {
+        "embeddedJsonContent": {
+          "message": {
+            "messageId": "fr.health.test.samuB_55c3391c-6d2d-4397-b7da-f44d30a27336",
+            "sender": {
+              "name": "test.samuB",
+              "URI": "hubex:fr.health.test.samuB"
+            },
+            "sentAt": "2025-10-31T11:36:05+01:00",
+            "status": "Actual",
+            "kind": "Report",
+            "recipient": [
+              {
+                "name": "test.samuC",
+                "URI": "hubex:fr.health.test.samuC"
+              }
+            ],
+            "NotExistingMessage": {}
+          }
+        }
+      }
+    }
+  ]
+}
