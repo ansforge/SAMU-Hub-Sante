@@ -1,5 +1,6 @@
 package example;
 
+import io.gatling.javaapi.core.PopulationBuilder;
 import org.galaxio.gatling.amqp.javaapi.protocol.AmqpProtocolBuilder;
 import io.gatling.javaapi.core.ScenarioBuilder;
 import io.gatling.javaapi.core.Simulation;
@@ -20,20 +21,20 @@ import java.nio.charset.StandardCharsets;
 import io.github.cdimascio.dotenv.Dotenv;
 
 public class PublishExample extends Simulation {
-        final Dotenv dotenv = Dotenv.load();
-        private static final Logger log = LoggerFactory.getLogger(PublishExample.class);
-        private final String host = dotenv.get("RABBITMQ_HOST");
-        private final Integer port = Integer.parseInt(dotenv.get("RABBITMQ_PORT"));
-        private final String exchangeName = dotenv.get("EXCHANGE_NAME");
-        private final String vhost = "15-15_v1.5";
+    final Dotenv dotenv = Dotenv.load();
+    private static final Logger log = LoggerFactory.getLogger(PublishExample.class);
+    private final String host = dotenv.get("RABBITMQ_HOST");
+    private final Integer port = Integer.parseInt(dotenv.get("RABBITMQ_PORT"));
+    private final String exchangeName = dotenv.get("EXCHANGE_NAME");
+    private final String vhost = "15-15_v1.5";
 
-    private ConnectionFactory mtlsFactory() throws Exception {
+    private ConnectionFactory mtlsFactory(String vhost) throws Exception {
         final ConnectionFactory factory = new ConnectionFactory();
 
         factory.setSaslConfig(DefaultSaslConfig.EXTERNAL);
         factory.setHost(this.host);
         factory.setPort(this.port);
-        factory.setVirtualHost(this.vhost);
+        factory.setVirtualHost(vhost);
 
         // Here, configure the connection recovery policies
         // NB - You can set a fixed time interval using setNetworkRecoveryInterval(NETWORK_RECOVERY_INTERVAL);
@@ -57,35 +58,63 @@ public class PublishExample extends Simulation {
         return factory;
     }
 
-    {
-        try {
-            var is = PublishExample.class.getClassLoader().getResourceAsStream("samuA_to_samuC.json");
-            if (is == null) throw new IOException("Resource not found: samuA_to_samuC.json");
-            String stringMessage = new String(is.readAllBytes(), StandardCharsets.UTF_8);
+    private String loadSampleMessage(String fileName) throws Exception {
+        var is = PublishExample.class.getClassLoader().getResourceAsStream("messages/"+fileName);
+        if (is == null) throw new IOException("Resource not found:" + fileName);
+        return new String(is.readAllBytes(), StandardCharsets.UTF_8);
+    }
 
-            AmqpProtocolBuilder amqpConf = amqp()
-                    .connectionFactory(
-                            mtlsFactory()
-                    )
-                    .usePersistentDeliveryMode();
-
-            ScenarioBuilder scn = scenario("AMQP test")
+    private ScenarioBuilder buildAMPQScenario(String name, String clientId, String messageString) {
+        return scenario(name)
                     .feed(Utils.idFeeder)
                     .exec(
                             amqp("publish to exchange")
                                     .publish()
-                                    .topicExchange(this.exchangeName, "fr.health.test.samuA")
-                                    .textMessage(stringMessage)
+                                    .topicExchange(this.exchangeName, clientId)
+                                    .textMessage(messageString)
                                     .contentType(JSON_CONTENT_TYPE)
                     );
+    }
+
+    private AmqpProtocolBuilder amqpConfFactory(String vhost) throws Exception {
+        return amqp()
+                .connectionFactory(
+                        mtlsFactory(vhost)
+                        )
+                .usePersistentDeliveryMode();
+    }
+
+    private PopulationBuilder setupScenario(ScenarioBuilder scenario, AmqpProtocolBuilder protocol, Integer maxUsers) {
+        return scenario.injectOpen(
+                rampUsersPerSec(1).to(maxUsers).during(60),
+                constantUsersPerSec(maxUsers).during(180),
+                rampUsersPerSec(maxUsers).to(1).during(60)
+        ).protocols(protocol);
+    }
+
+    {
+        try {
+            String messageString = loadSampleMessage("rs-eda.json");
+            String invalidMessageString = loadSampleMessage("invalid.json");
+            String conversionMessageString = loadSampleMessage("conversion.json");
+            String traductionMessageString = loadSampleMessage("traduction.json");
+
+            AmqpProtocolBuilder samuAConnection = amqpConfFactory("15-15_v1.5");
+            AmqpProtocolBuilder samuv1Connection = amqpConfFactory("15-15_v1.5");
+            AmqpProtocolBuilder samuv3Connection = amqpConfFactory("15-15_v2.1");
+            AmqpProtocolBuilder samuBConnection = amqpConfFactory("15-nexsis_v1.9");
+
+            ScenarioBuilder standardScenario = buildAMPQScenario("RS-EDA", "fr.health.test.samuA", messageString);
+            ScenarioBuilder conversionScenario = buildAMPQScenario("Convert RS-EDA v1 to v3", "fr.health.test.samuv1", conversionMessageString);
+            ScenarioBuilder translationScenario = buildAMPQScenario("Translate RS-EDA to RC-EDA", "fr.health.test.samuv3", traductionMessageString);
+            ScenarioBuilder invalidMessageScenario = buildAMPQScenario("Invalid message", "fr.health.test.samuB", invalidMessageString);
 
             setUp(
-                    scn.injectOpen(
-                            rampUsersPerSec(1).to(5).during(60),
-                            constantUsersPerSec(5).during(300)
-                    )
+                    setupScenario(conversionScenario, samuv1Connection, 5),
+                    setupScenario(standardScenario, samuAConnection, 10),
+                    setupScenario(translationScenario, samuv3Connection, 5),
+                    setupScenario(invalidMessageScenario, samuBConnection, 5)
             )
-                    .protocols(amqpConf)
                     .maxDuration(600);
         } catch(Exception e) {
             log.error("e: ", e);
