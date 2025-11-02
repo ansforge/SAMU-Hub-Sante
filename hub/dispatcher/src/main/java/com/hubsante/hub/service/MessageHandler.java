@@ -161,7 +161,7 @@ public class MessageHandler {
                 boolean isVersionConversion = ConversionUtils.requiresVersionConversion(hubConfig, errorEdxlMessage);
 
                 if (isVersionConversion) {
-                    ConversionRulesCommand conversionRulesCommand = new ConversionRulesCommand(errorEdxlMessage, this);
+                    ConversionRulesCommand conversionRulesCommand = new ConversionRulesCommand(errorEdxlMessage, hubConfig);
                     String convertedMessage = conversionHandler.applyConversionRules(conversionRulesCommand);
                     errorAmqpMessage = forwardedStringMessage(convertedMessage, errorAmqpMessage);
                     destinationExchange = ConversionUtils.buildExchangeDestination(conversionRulesCommand.getSourceVHost(), conversionRulesCommand.getTargetVHost());

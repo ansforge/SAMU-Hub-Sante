@@ -134,7 +134,7 @@ public class DispatcherTest {
     @PostConstruct
     public void init() {
         messageHandler = new MessageHandler(rabbitTemplate, edxlHandler, hubConfig, validator, registry, xmlMapper, jsonMapper, conversionHandler);
-        conversionHandler = Mockito.spy(new ConversionHandler(conversionWebClient));
+        conversionHandler = Mockito.spy(new ConversionHandler(conversionWebClient, edxlHandler));
         dispatcher = new Dispatcher(messageHandler, rabbitTemplate, edxlHandler, xmlMapper, jsonMapper, conversionHandler);
     }
 
@@ -518,7 +518,7 @@ public class DispatcherTest {
             mockedConversionUtils.when(() -> ConversionUtils.getSourceVHost(hubConfig))
                     .thenReturn("15-15_v1.5");
 
-            ConversionRulesCommand conversionRulesCommand = new ConversionRulesCommand(edxlMessage, messageHandler);
+            ConversionRulesCommand conversionRulesCommand = new ConversionRulesCommand(edxlMessage, hubConfig);
 
             dispatcher.sendToTransferExchange(message.toString(), message, conversionRulesCommand);
 

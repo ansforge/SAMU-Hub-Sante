@@ -150,7 +150,7 @@ public class Dispatcher {
 
             boolean isConversionRequired = ConversionUtils.requiresConversion(messageHandler.getHubConfig(), edxlMessage);
             if (isConversionRequired) {
-                ConversionRulesCommand conversionRulesCommand = new ConversionRulesCommand(edxlMessage, messageHandler);
+                ConversionRulesCommand conversionRulesCommand = new ConversionRulesCommand(edxlMessage, messageHandler.getHubConfig());
                 String convertedMessage = conversionHandler.applyConversionRules(conversionRulesCommand);
                 sendToTransferExchange(convertedMessage, message, conversionRulesCommand);
                 log.debug("The converted message has been sent to the exchange to reach the recipient's vhost.");
