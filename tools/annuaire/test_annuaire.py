@@ -17,7 +17,6 @@ FOLDER_NAME_PATCH_PATH = "annuaire.CSV_DIR"
 
 
 class AnnuaireTestCase(unittest.TestCase):
-
     def setUp(self):
         self.tempdir = tempfile.TemporaryDirectory()
         self.csv_path = os.path.join(self.tempdir.name, CSV_FILENAME)

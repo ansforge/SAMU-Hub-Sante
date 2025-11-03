@@ -62,6 +62,8 @@ uv run coverage html
 
 Open [htmlcov/index.html](htmlcov/index.html) in a browser to view the report.
 
+Coverage doc available [here](https://coverage.readthedocs.io/en/7.8.0/)
+
 ### Development
 
 Install development dependencies:

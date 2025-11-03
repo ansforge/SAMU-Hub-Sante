@@ -33,10 +33,11 @@ jobs:
       - name: Install dependencies
         run: uv sync
 
-      - name: Run linting
-        run: |
-          uv run black --check .
-          uv run flake8 .
+      - name: Check formatting
+        run: uv run ruff format --check .
+
+      - name: Check linting
+        run: uv run ruff check .
 
   security:
     runs-on: ubuntu-latest
