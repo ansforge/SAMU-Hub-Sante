@@ -28,9 +28,7 @@ jobs:
         uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
-
-      - name: Set up Python
-        run: uv python install 3.13
+          python-version: "3.13"
 
       - name: Install dependencies
         run: uv sync
@@ -69,9 +67,7 @@ jobs:
         uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
-
-      - name: Set up Python
-        run: uv python install 3.13
+          python-version: "3.13"
 
       - name: Install dependencies
         run: uv sync
