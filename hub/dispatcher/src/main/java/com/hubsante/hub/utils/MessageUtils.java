@@ -51,7 +51,8 @@ public class MessageUtils {
 
     private static final String SDISZ_LRM_USER = "fr.fire.nexsis.sdisZ";
     public static String getSenderFromRoutingKey(Message message) {
-        return message.getMessageProperties().getReceivedRoutingKey();
+        String receivedRoutingKey = message.getMessageProperties().getReceivedRoutingKey();
+        return receivedRoutingKey != null ? receivedRoutingKey : "";
     }
 
     public static void setOriginalRoutingKeyHeader(Message message) {
