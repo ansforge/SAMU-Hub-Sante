@@ -1,3 +1,0 @@
-[flake8]
-ignore = E501
-exclude = .venv,venv,.git,__pycache__,build,dist,.pytest_cache

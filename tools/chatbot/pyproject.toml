@@ -19,7 +19,6 @@ dependencies = [
 [dependency-groups]
 dev = [
     "pytest>=7.0.0",
-    "black>=23.0.0",
-    "flake8>=6.0.0",
+    "ruff>=0.14.3",
     "pip-audit>=2.6.0",
 ]
