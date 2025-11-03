@@ -1,7 +1,7 @@
 import { Channel, Connection, Message } from 'amqplib/callback_api';
 import { WebSocketServer, OPEN } from 'ws';
 
-import { logger } from '../logger';
+import { getMessageLogsMetadata, logger } from '../logger';
 import { RabbitMQConnector } from '../rabbit/utils';
 import { Config } from '../config';
 import { Logger } from "winston";
@@ -140,12 +140,14 @@ export class ClientListenerService {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-expect-error
       const body = JSON.parse(msg.content);
-      this.logger.info(` [x] Received for ${this.clientId} (${this.vhost}): ${body.distributionID}`);
+      const logsMetadata = getMessageLogsMetadata(body);
+      this.logger.info(` [x] Received for ${this.clientId} (${this.vhost}): ${body.distributionID}`, logsMetadata);
       this.logger.debug(
         // TODO: handle msg content properly
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-expect-error
         ` [x] Received for ${this.clientId} (${this.vhost}): ${body.distributionID} of content ${msg.content}`,
+          logsMetadata
       );
       const d = new Date();
       const data = {
@@ -164,8 +166,8 @@ export class ClientListenerService {
           clientCounts += 1;
         }
       });
-      this.logger.info(`Sent to ${clientCounts} clients: ${data.body.distributionID}`);
-      this.logger.debug(`Sent to ${clientCounts} clients: ${data} of content ${data}`);
+      this.logger.info(`Sent to ${clientCounts} clients: ${data.body.distributionID}`, logsMetadata);
+      this.logger.debug(`Sent to ${clientCounts} clients: ${data} of content ${data}`, logsMetadata);
     };
   }
 }
