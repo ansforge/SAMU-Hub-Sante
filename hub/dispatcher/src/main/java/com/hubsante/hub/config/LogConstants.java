@@ -15,9 +15,18 @@
  */
 package com.hubsante.hub.config;
 
-public class LogConstants {
+import lombok.Getter;
 
-    public static final String SENDER_ID = "senderId";
-    public static final String RECIPIENT_ID = "recipientId";
-    public static final String DISTRIBUTION_ID = "distributionId";
+@Getter
+public enum LogConstants {
+
+    SENDER_ID("senderId"),
+    RECIPIENT_ID("recipientId"),
+    DISTRIBUTION_ID("distributionId");
+
+    private final String key;
+
+    LogConstants(String key) {
+        this.key = key;
+    }
 }
