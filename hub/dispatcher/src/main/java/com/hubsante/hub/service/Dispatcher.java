@@ -23,8 +23,6 @@ import com.hubsante.hub.config.HubConfiguration;
 import com.hubsante.hub.exception.*;
 import com.hubsante.hub.utils.ConversionRulesCommand;
 import com.hubsante.hub.utils.ConversionUtils;
-import com.hubsante.hub.utils.EdxlUtils;
-import com.hubsante.hub.utils.MessageUtils;
 import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.edxl.EdxlMessage;
 import com.hubsante.model.report.ErrorCode;
@@ -42,7 +40,6 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
-import java.util.List;
 
 import static com.hubsante.hub.config.AmqpConfiguration.*;
 import static com.hubsante.hub.utils.MessageUtils.*;

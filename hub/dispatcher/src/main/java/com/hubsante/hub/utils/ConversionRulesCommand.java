@@ -1,7 +1,6 @@
 package com.hubsante.hub.utils;
 
 import com.hubsante.hub.config.HubConfiguration;
-import com.hubsante.hub.service.MessageHandler;
 import com.hubsante.model.edxl.EdxlMessage;
 
 import static com.hubsante.hub.config.Constants.CONVERSION_VHOST_MODEL;

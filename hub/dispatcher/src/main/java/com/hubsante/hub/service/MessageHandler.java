@@ -379,12 +379,4 @@ public class MessageHandler {
     private String getEditorFromSender(String sender) {
         return hubConfig.getClientsEditorMap().getOrDefault(sender, UNKNOWN);
     }
-
-    protected String serializeJsonEDXL(EdxlMessage edxlMessage) throws JsonProcessingException {
-        return edxlHandler.serializeJsonEDXL(edxlMessage);
-    }
-
-    protected EdxlMessage deserializeJsonEDXL(String edxlString) throws JsonProcessingException {
-        return edxlHandler.deserializeJsonEDXL(edxlString);
-    }
 }

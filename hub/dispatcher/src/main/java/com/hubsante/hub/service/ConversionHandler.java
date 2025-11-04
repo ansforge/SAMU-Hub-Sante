@@ -21,7 +21,6 @@ import com.hubsante.hub.utils.ConversionRulesCommand;
 import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.edxl.EdxlMessage;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
@@ -33,7 +32,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Slf4j
 public class ConversionHandler {
 
-    @Autowired
     private final WebClient conversionWebClient;
     private final EdxlHandler edxlHandler;
     private final ObjectMapper objectMapper = new ObjectMapper();
