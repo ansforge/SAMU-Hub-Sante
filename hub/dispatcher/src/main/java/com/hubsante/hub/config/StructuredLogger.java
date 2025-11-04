@@ -32,7 +32,15 @@ public record StructuredLogger(Logger logger) {
         log(Level.WARN, message, metadata, null);
     }
 
+    public void warn(String message, Map<LogConstants, String> metadata, Throwable t) {
+        log(Level.WARN, message, metadata, t);
+    }
+
     public void error(String message, Map<LogConstants, String> metadata) {
         log(Level.ERROR, message, metadata, null);
+    }
+
+    public void error(String message, Map<LogConstants, String> metadata, Throwable t) {
+        log(Level.ERROR, message, metadata, t);
     }
 }
