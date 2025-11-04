@@ -134,8 +134,8 @@ public class DispatcherTest {
     @PostConstruct
     public void init() {
         messageHandler = new MessageHandler(rabbitTemplate, edxlHandler, hubConfig, validator, registry, xmlMapper, jsonMapper, conversionHandler);
-        conversionHandler = Mockito.spy(new ConversionHandler(conversionWebClient));
-        dispatcher = new Dispatcher(messageHandler, rabbitTemplate, edxlHandler, xmlMapper, jsonMapper, conversionHandler);
+        conversionHandler = Mockito.spy(new ConversionHandler(conversionWebClient, edxlHandler));
+        dispatcher = new Dispatcher(messageHandler, rabbitTemplate, edxlHandler, xmlMapper, jsonMapper, conversionHandler, hubConfig);
     }
 
     @BeforeEach
@@ -518,7 +518,7 @@ public class DispatcherTest {
             mockedConversionUtils.when(() -> ConversionUtils.getSourceVHost(hubConfig))
                     .thenReturn("15-15_v1.5");
 
-            ConversionRulesCommand conversionRulesCommand = new ConversionRulesCommand(edxlMessage, messageHandler);
+            ConversionRulesCommand conversionRulesCommand = new ConversionRulesCommand(edxlMessage, hubConfig);
 
             dispatcher.sendToTransferExchange(message.toString(), message, conversionRulesCommand);
 
@@ -530,7 +530,7 @@ public class DispatcherTest {
     @DisplayName("should call sendToTransferExchange when there is a version conversion")
     public void transferToOtherVhost() throws IOException {
         try (MockedStatic<ConversionUtils> mockedConversionUtils = mockStatic(ConversionUtils.class)) {
-            Dispatcher dispatcher = spy(new Dispatcher(messageHandler, rabbitTemplate, edxlHandler, xmlMapper, jsonMapper, conversionHandler));
+            Dispatcher dispatcher = spy(new Dispatcher(messageHandler, rabbitTemplate, edxlHandler, xmlMapper, jsonMapper, conversionHandler, hubConfig));
 
             Message message = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
 
@@ -640,7 +640,7 @@ public class DispatcherTest {
         try (MockedStatic<ConversionUtils> mockedConversionUtils = mockStatic(ConversionUtils.class)) {
             // Create a spy of the messageHandler for this test only
             MessageHandler messageHandlerSpy = spy(messageHandler);
-            Dispatcher testDispatcher = new Dispatcher(messageHandlerSpy, rabbitTemplate, edxlHandler, xmlMapper, jsonMapper, conversionHandler);
+            Dispatcher testDispatcher = new Dispatcher(messageHandlerSpy, rabbitTemplate, edxlHandler, xmlMapper, jsonMapper, conversionHandler, hubConfig);
 
             Message receivedMessage = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
             EdxlMessage edxlMessage = edxlHandler.deserializeJsonEDXL(new String(receivedMessage.getBody(), StandardCharsets.UTF_8));
@@ -713,7 +713,7 @@ public class DispatcherTest {
             mockedEdxlUtils.when(() -> EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage()))
                     .thenReturn(supportedClassName);
 
-            new Dispatcher(messageHandler, rabbitTemplate, edxlHandler, xmlMapper, jsonMapper, conversionHandler);
+            new Dispatcher(messageHandler, rabbitTemplate, edxlHandler, xmlMapper, jsonMapper, conversionHandler, hubConfig);
 
             assertDoesNotThrow(() -> MessageUtils.checkMessageClassNameSupported(edxlMessage, hubConfig));
         }
@@ -733,7 +733,7 @@ public class DispatcherTest {
             mockedEdxlUtils.when(() -> EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage()))
                     .thenReturn(unsupportedClassName);
 
-            new Dispatcher(messageHandler, rabbitTemplate, edxlHandler, xmlMapper, jsonMapper, conversionHandler);
+            new Dispatcher(messageHandler, rabbitTemplate, edxlHandler, xmlMapper, jsonMapper, conversionHandler, hubConfig);
 
             UnroutableMessageException thrown = assertThrows(UnroutableMessageException.class, () -> {
                 MessageUtils.checkMessageClassNameSupported(edxlMessage, hubConfig);
@@ -755,7 +755,7 @@ public class DispatcherTest {
                 .when(validatorMock).validateJSON(anyString(), any());
 
         MessageHandler messageHandlerSpy = new MessageHandler(rabbitTemplate, edxlHandler, hubConfigSpy, validatorMock, registry, xmlMapper, jsonMapper, conversionHandler);
-        Dispatcher dispatcherSpy = new Dispatcher(messageHandlerSpy, rabbitTemplate, edxlHandler, xmlMapper, jsonMapper, conversionHandler);
+        Dispatcher dispatcherSpy = new Dispatcher(messageHandlerSpy, rabbitTemplate, edxlHandler, xmlMapper, jsonMapper, conversionHandler, hubConfigSpy);
 
         Message message = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
 
@@ -784,7 +784,7 @@ public class DispatcherTest {
         doReturn(new String[] {"1.5"}).when(hubConfigSpy).getClientVersionsForPerimeter(SAMU_A_ROUTING_KEY, "15-15");
 
         MessageHandler messageHandlerSpy = new MessageHandler(rabbitTemplate, edxlHandler, hubConfigSpy, validator, registry, xmlMapper, jsonMapper, conversionHandler);
-        Dispatcher dispatcherSpy = new Dispatcher(messageHandlerSpy, rabbitTemplate, edxlHandler, xmlMapper, jsonMapper, conversionHandler);
+        Dispatcher dispatcherSpy = new Dispatcher(messageHandlerSpy, rabbitTemplate, edxlHandler, xmlMapper, jsonMapper, conversionHandler, hubConfigSpy);
 
         Message errorMessage = createMessage("hub-error-to-samuA", JSON, "fr.health.hub");
 
@@ -808,7 +808,7 @@ public class DispatcherTest {
                 .when(validatorMock).validateJSON(anyString(), any());
 
         MessageHandler messageHandlerSpy = new MessageHandler(rabbitTemplate, edxlHandler, hubConfigSpy, validatorMock, registry, xmlMapper, jsonMapper, conversionHandler);
-        Dispatcher dispatcherSpy = new Dispatcher(messageHandlerSpy, rabbitTemplate, edxlHandler, xmlMapper, jsonMapper, conversionHandler);
+        Dispatcher dispatcherSpy = new Dispatcher(messageHandlerSpy, rabbitTemplate, edxlHandler, xmlMapper, jsonMapper, conversionHandler, hubConfigSpy);
 
         Message message = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
 

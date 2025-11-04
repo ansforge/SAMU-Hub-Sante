@@ -18,7 +18,6 @@ package com.hubsante.hub.utils;
 import com.hubsante.model.builders.EDXL_DE_Builder;
 import com.hubsante.model.edxl.*;
 
-import java.time.OffsetDateTime;
 import java.util.UUID;
 
 public class EdxlUtils {

@@ -1,12 +1,11 @@
 package com.hubsante.hub.utils;
 
-import com.hubsante.hub.service.MessageHandler;
+import com.hubsante.hub.config.HubConfiguration;
 import com.hubsante.model.edxl.EdxlMessage;
 
 import static com.hubsante.hub.config.Constants.CONVERSION_VHOST_MODEL;
 
 public class ConversionRulesCommand {
-    MessageHandler messageHandler;
     EdxlMessage edxlMessage;
     String sourceVHost;
     String targetVHost;
@@ -14,16 +13,14 @@ public class ConversionRulesCommand {
     String targetModelVersion;
     Boolean isCisuConversion;
 
-
-    public ConversionRulesCommand(EdxlMessage edxlMessage, MessageHandler messageHandler) {
-        this.messageHandler = messageHandler;
+    public ConversionRulesCommand(EdxlMessage edxlMessage, HubConfiguration hubConfig) {
         this.edxlMessage = edxlMessage;
-        this.sourceVHost = messageHandler.getHubConfig().getVhost();
+        this.sourceVHost = hubConfig.getVhost();
 
-        String[] targetVhosts = ConversionUtils.getTargetVHosts(messageHandler.getHubConfig(), edxlMessage);
+        String[] targetVhosts = ConversionUtils.getTargetVHosts(hubConfig, edxlMessage);
         this.targetVHost = targetVhosts[targetVhosts.length-1];
 
-        this.isCisuConversion = ConversionUtils.requiresCisuConversion(messageHandler.getHubConfig(), edxlMessage);
+        this.isCisuConversion = ConversionUtils.requiresCisuConversion(hubConfig, edxlMessage);
         this.sourceModelVersion = getVHostMatchingModelVersion(sourceVHost);
         this.targetModelVersion = getVHostMatchingModelVersion(targetVHost);
     }
@@ -46,10 +43,6 @@ public class ConversionRulesCommand {
 
     public String getTargetModelVersion() {
         return targetModelVersion;
-    }
-
-    public MessageHandler getMessageHandler() {
-        return messageHandler;
     }
 
     public EdxlMessage getEdxlMessage() {

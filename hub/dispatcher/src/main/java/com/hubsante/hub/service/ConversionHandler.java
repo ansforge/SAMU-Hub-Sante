@@ -18,9 +18,9 @@ package com.hubsante.hub.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.hubsante.hub.exception.ConversionException;
 import com.hubsante.hub.utils.ConversionRulesCommand;
+import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.edxl.EdxlMessage;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
@@ -32,12 +32,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Slf4j
 public class ConversionHandler {
 
-    @Autowired
-    private WebClient conversionWebClient;
+    private final WebClient conversionWebClient;
+    private final EdxlHandler edxlHandler;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public ConversionHandler(WebClient conversionWebClient) {
+    public ConversionHandler(WebClient conversionWebClient, EdxlHandler edxlHandler) {
         this.conversionWebClient = conversionWebClient;
+        this.edxlHandler = edxlHandler;
     }
 
     protected String applyConversionRules(ConversionRulesCommand applyConversionRulesCommand) throws JsonProcessingException {
@@ -45,9 +46,8 @@ public class ConversionHandler {
         String targetModelVersion = applyConversionRulesCommand.getTargetModelVersion();
         Boolean isCisuConversion = applyConversionRulesCommand.getCisuConversion();
         EdxlMessage edxlMessage = applyConversionRulesCommand.getEdxlMessage();
-        MessageHandler messageHandler = applyConversionRulesCommand.getMessageHandler();
 
-        String jsonEdxlString = messageHandler.serializeJsonEDXL(edxlMessage);
+        String jsonEdxlString = edxlHandler.serializeJsonEDXL(edxlMessage);
 
         try {
             log.debug("Starting conversion for message {} from {} to {}, isCisu ? {}", edxlMessage.getDistributionID(), sourceModelVersion, targetModelVersion, isCisuConversion);

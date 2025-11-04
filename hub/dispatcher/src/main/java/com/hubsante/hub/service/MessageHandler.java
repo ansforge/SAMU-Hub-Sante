@@ -161,7 +161,7 @@ public class MessageHandler {
                 boolean isVersionConversion = ConversionUtils.requiresVersionConversion(hubConfig, errorEdxlMessage);
 
                 if (isVersionConversion) {
-                    ConversionRulesCommand conversionRulesCommand = new ConversionRulesCommand(errorEdxlMessage, this);
+                    ConversionRulesCommand conversionRulesCommand = new ConversionRulesCommand(errorEdxlMessage, hubConfig);
                     String convertedMessage = conversionHandler.applyConversionRules(conversionRulesCommand);
                     errorAmqpMessage = forwardedStringMessage(convertedMessage, errorAmqpMessage);
                     destinationExchange = ConversionUtils.buildExchangeDestination(conversionRulesCommand.getSourceVHost(), conversionRulesCommand.getTargetVHost());
@@ -378,13 +378,5 @@ public class MessageHandler {
 
     private String getEditorFromSender(String sender) {
         return hubConfig.getClientsEditorMap().getOrDefault(sender, UNKNOWN);
-    }
-
-    protected String serializeJsonEDXL(EdxlMessage edxlMessage) throws JsonProcessingException {
-        return edxlHandler.serializeJsonEDXL(edxlMessage);
-    }
-
-    protected EdxlMessage deserializeJsonEDXL(String edxlString) throws JsonProcessingException {
-        return edxlHandler.deserializeJsonEDXL(edxlString);
     }
 }

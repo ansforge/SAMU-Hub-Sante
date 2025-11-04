@@ -23,8 +23,6 @@ import com.hubsante.hub.config.HubConfiguration;
 import com.hubsante.hub.exception.*;
 import com.hubsante.hub.utils.ConversionRulesCommand;
 import com.hubsante.hub.utils.ConversionUtils;
-import com.hubsante.hub.utils.EdxlUtils;
-import com.hubsante.hub.utils.MessageUtils;
 import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.edxl.EdxlMessage;
 import com.hubsante.model.report.ErrorCode;
@@ -42,7 +40,6 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
-import java.util.List;
 
 import static com.hubsante.hub.config.AmqpConfiguration.*;
 import static com.hubsante.hub.utils.MessageUtils.*;
@@ -77,14 +74,16 @@ public class Dispatcher {
     @Qualifier("jsonMapper")
     private ObjectMapper jsonMapper;
     private final ConversionHandler conversionHandler;
+    private final HubConfiguration hubConfig;
 
-    public Dispatcher(MessageHandler messageHandler, RabbitTemplate rabbitTemplate, EdxlHandler edxlHandler, XmlMapper xmlMapper, ObjectMapper jsonMapper, ConversionHandler conversionHandler) {
+    public Dispatcher(MessageHandler messageHandler, RabbitTemplate rabbitTemplate, EdxlHandler edxlHandler, XmlMapper xmlMapper, ObjectMapper jsonMapper, ConversionHandler conversionHandler, HubConfiguration hubConfig) {
         this.messageHandler = messageHandler;
         this.rabbitTemplate = rabbitTemplate;
         this.edxlHandler = edxlHandler;
         this.xmlMapper = xmlMapper;
         this.jsonMapper = jsonMapper;
         this.conversionHandler = conversionHandler;
+        this.hubConfig = hubConfig;
         initReturnsCallback();
     }
 
@@ -134,7 +133,7 @@ public class Dispatcher {
             // Deserialize the message according to its content type
             EdxlMessage edxlMessage = messageHandler.extractMessage(message);
             // check message type is allowed on the current vhost
-            checkMessageClassNameSupported(edxlMessage, messageHandler.getHubConfig());
+            checkMessageClassNameSupported(edxlMessage, hubConfig);
             // reject the message if no health actor is involved (as sender or recipient)
             checkHealthActorIsInvolved(edxlMessage);
             // ToDo: see how hubConfig should be made available to the Dispatcher (and remove getter in MessageHandler)
@@ -148,9 +147,9 @@ public class Dispatcher {
                 checkDistributionIDFormat(edxlMessage);
             }
 
-            boolean isConversionRequired = ConversionUtils.requiresConversion(messageHandler.getHubConfig(), edxlMessage);
+            boolean isConversionRequired = ConversionUtils.requiresConversion(hubConfig, edxlMessage);
             if (isConversionRequired) {
-                ConversionRulesCommand conversionRulesCommand = new ConversionRulesCommand(edxlMessage, messageHandler);
+                ConversionRulesCommand conversionRulesCommand = new ConversionRulesCommand(edxlMessage, hubConfig);
                 String convertedMessage = conversionHandler.applyConversionRules(conversionRulesCommand);
                 sendToTransferExchange(convertedMessage, message, conversionRulesCommand);
                 log.debug("The converted message has been sent to the exchange to reach the recipient's vhost.");
