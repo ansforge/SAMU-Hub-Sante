@@ -20,6 +20,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.hubsante.hub.config.Constants;
 import com.hubsante.hub.config.HubConfiguration;
+import com.hubsante.hub.config.LogConstants;
+import com.hubsante.hub.config.StructuredLogger;
 import com.hubsante.hub.exception.*;
 import com.hubsante.hub.utils.ConversionRulesCommand;
 import com.hubsante.hub.utils.ConversionUtils;
@@ -40,6 +42,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.Map;
 
 import static com.hubsante.hub.config.AmqpConfiguration.*;
 import static com.hubsante.hub.utils.MessageUtils.*;
@@ -75,6 +78,7 @@ public class Dispatcher {
     private ObjectMapper jsonMapper;
     private final ConversionHandler conversionHandler;
     private final HubConfiguration hubConfig;
+    private static final StructuredLogger structuredLog = new StructuredLogger(log);
 
     public Dispatcher(MessageHandler messageHandler, RabbitTemplate rabbitTemplate, EdxlHandler edxlHandler, XmlMapper xmlMapper, ObjectMapper jsonMapper, ConversionHandler conversionHandler, HubConfiguration hubConfig) {
         this.messageHandler = messageHandler;
@@ -152,7 +156,10 @@ public class Dispatcher {
                 ConversionRulesCommand conversionRulesCommand = new ConversionRulesCommand(edxlMessage, hubConfig);
                 String convertedMessage = conversionHandler.applyConversionRules(conversionRulesCommand);
                 sendToTransferExchange(convertedMessage, message, conversionRulesCommand);
-                log.debug("The converted message has been sent to the exchange to reach the recipient's vhost.");
+                structuredLog.debug(
+                        "The converted message has been sent to the exchange to reach the recipient's vhost.",
+                        Map.of(LogConstants.DISTRIBUTION_ID, edxlMessage.getDistributionID(), LogConstants.SENDER_ID, edxlMessage.getSenderID())
+                );
                 // We MUST return here to exit the dispatch() function, otherwise the message will be published on the source Exchange as well
                 return;
             }
@@ -169,7 +176,11 @@ public class Dispatcher {
         } catch (Exception e) {
             // still log.error because it is not one of our AbstractHubExceptions, so there must be
             // a hole in our error cover
-            log.error("Unexpected error occurred while dispatching message from " + message.getMessageProperties().getReceivedRoutingKey(), e);
+            String senderID = getSenderFromRoutingKey(message);
+            structuredLog.error(
+                    String.format("Unexpected error occurred while dispatching message from %s : %s", senderID, e),
+                    Map.of(LogConstants.SENDER_ID, senderID)
+            );
             throw new AmqpRejectAndDontRequeueException(e);
         }
     }
@@ -181,7 +192,10 @@ public class Dispatcher {
 
         String routingKey = message.getMessageProperties().getReceivedRoutingKey();
 
-        log.info("Message transferred to exchange: {} with routing key: {}", transferExchangeName, routingKey);
+        structuredLog.info(
+                String.format("Message transferred to exchange: %s with routing key: %s", transferExchangeName, routingKey),
+                Map.of(LogConstants.SENDER_ID, routingKey)
+        );
 
         rabbitTemplate.send(transferExchangeName, routingKey, forwardedMsg);
     }
@@ -207,7 +221,10 @@ public class Dispatcher {
             if (!(e instanceof AmqpRejectAndDontRequeueException)) {
                 String originalRoutingKey = message.getMessageProperties().getHeader(ORIGINAL_ROUTING_KEY) != null ?
                         message.getMessageProperties().getHeader(ORIGINAL_ROUTING_KEY) : "Unknown routing key";
-                log.warn("Unexpected error occurred while DLQ-dispatching message from " + originalRoutingKey, e);
+                structuredLog.warn(
+                    String.format("Unexpected error occurred while DLQ-dispatching message from %s: %s", originalRoutingKey, e),
+                    Map.of(LogConstants.SENDER_ID, originalRoutingKey)
+                );
             }
             throw new AmqpRejectAndDontRequeueException(e);
         }

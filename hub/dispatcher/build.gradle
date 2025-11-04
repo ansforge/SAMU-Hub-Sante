@@ -83,6 +83,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-aop:3.1.2'
     implementation 'org.aspectj:aspectjtools:'
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
+    implementation 'net.logstash.logback:logstash-logback-encoder:9.0'
 
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     annotationProcessor 'org.projectlombok:lombok'
