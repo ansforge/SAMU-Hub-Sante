@@ -48,6 +48,10 @@ def parse_monitored_shovels_config_file(config_file_path):
 
 def check_shovel_response(data, vhost, src_queue):
     def find_shovel(element):
+        if not isinstance(element, dict):
+            return False
+        if "vhost" not in element or "src_queue" not in element:
+            return False
         return element["vhost"] == vhost and element["src_queue"] == src_queue
 
     res = list(filter(find_shovel, data))
