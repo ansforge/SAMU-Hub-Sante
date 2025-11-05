@@ -126,6 +126,63 @@ class TestFunctionalHubexPartnersShovels(unittest.TestCase):
             },
         )
 
+    @patch(
+        "checks.hubex_partners_shovels.open",
+        new_callable=mock_open,
+        read_data="vhost1;queue1,queue2\n",
+    )
+    @patch("checks.hubex_partners_shovels.requests.get")
+    def test_status_up_for_healthy_components_when_a_failure_occurs(
+        self, mock_get, mock_file
+    ):
+        # Mock the response from requests.get
+        mock_response = MagicMock()
+        mock_response.json.return_value = [
+            {
+                "vhost": "vhost1",
+                "src_queue": "queue1",
+                "blocked_status": EXPECTED_SHOVEL_STATUS,
+            },
+            {"unexpected_field": "value"},
+        ]
+        mock_response.raise_for_status.return_value = None
+        mock_get.return_value = mock_response
+
+        # Instantiate and run the check
+        checker = HubexPartnersHealthcheck()
+        check_response = checker.perform_checks()
+
+        # Check the metric value
+        metric = checker.hubex_partners_status_metric
+        vhost1_queue1_samples = [
+            s
+            for s in metric.collect()[0].samples
+            if s.labels.get("shovel") == "vhost1-queue1"
+        ]
+        self.assertTrue(
+            vhost1_queue1_samples, "Metric sample for vhost1-queue1 not found"
+        )
+        self.assertEqual(vhost1_queue1_samples[0].value, 1.0)
+
+        vhost1_queue2_samples = [
+            s
+            for s in metric.collect()[0].samples
+            if s.labels.get("shovel") == "vhost1-queue2"
+        ]
+        self.assertTrue(
+            vhost1_queue1_samples, "Metric sample for vhost1-queue2 not found"
+        )
+        self.assertEqual(vhost1_queue2_samples[0].value, 0.0)
+
+        # Check the response
+        self.assertDictEqual(
+            check_response,
+            {
+                "vhost1-queue1": {"status": Status.UP.value},
+                "vhost1-queue2": {"status": Status.DOWN.value},
+            },
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
