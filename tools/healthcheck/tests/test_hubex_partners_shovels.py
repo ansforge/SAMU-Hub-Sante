@@ -91,7 +91,7 @@ class TestFunctionalHubexPartnersShovels(unittest.TestCase):
         read_data="vhost1;queue1\n",
     )
     @patch("checks.hubex_partners_shovels.requests.get")
-    def test_metric_set_to_1_on_success(self, mock_file, mock_get):
+    def test_metric_set_to_1_on_success(self, mock_get, mock_file):
         # Mock the response from requests.get
         mock_response = MagicMock()
         mock_response.json.return_value = [
@@ -106,7 +106,7 @@ class TestFunctionalHubexPartnersShovels(unittest.TestCase):
 
         # Instantiate and run the check
         checker = HubexPartnersHealthcheck()
-        checker.perform_checks()
+        check_response = checker.perform_checks()
 
         # Check the metric value
         metric = checker.hubex_partners_status_metric
@@ -117,6 +117,14 @@ class TestFunctionalHubexPartnersShovels(unittest.TestCase):
         ]
         self.assertTrue(samples, "Metric sample for vhost1-queue1 not found")
         self.assertEqual(samples[0].value, 1.0)
+
+        # Check the response
+        self.assertDictEqual(
+            check_response,
+            {
+                "vhost1-queue1": {"status": Status.UP.value},
+            },
+        )
 
 
 if __name__ == "__main__":
