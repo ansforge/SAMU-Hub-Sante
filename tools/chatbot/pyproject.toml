@@ -1,0 +1,24 @@
+[project]
+name = "samu-hub-chatbot"
+version = "0.1.0"
+description = "SAMU Hub Santé Slack chatbot"
+requires-python = ">=3.11"
+dependencies = [
+    "slack-bolt~=1.26.0",
+    "langchain~=1.0.3",
+    "langchain-openai~=1.0.1",
+    "langchain-community~=0.4.1",
+    "langchain-core~=1.0.2",
+    "langchain-chroma~=1.0.0",
+    "chromadb~=1.3.0",
+    "openai~=2.6.1",
+    "python-dotenv~=1.2.1",
+    "pypdf~=6.1.3",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=7.0.0",
+    "ruff>=0.14.3",
+    "pip-audit>=2.6.0",
+]

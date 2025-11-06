@@ -7,6 +7,7 @@ htmlcov/
 .coverage.*
 .cache
 coverage.xml
+.pytest_cache/
 
 
 # Environments

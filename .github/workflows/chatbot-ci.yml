@@ -1,24 +1,24 @@
-name: Annuaire CI
+name: Chatbot CI
 
 on:
   push:
     branches:
       - main
     paths:
-      - "tools/annuaire/**"
+      - "tools/chatbot/**"
 
   pull_request:
     branches:
       - "**"
     paths:
-      - "tools/annuaire/**"
+      - "tools/chatbot/**"
 
 jobs:
-  coverage:
+  test:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: tools/annuaire
+        working-directory: tools/chatbot
 
     steps:
       - name: Checkout repository
@@ -39,26 +39,11 @@ jobs:
       - name: Check linting
         run: uv run ruff check .
 
-      - name: Run tests & generate HTML coverage report
-        run: |
-          uv run coverage run --source=annuaire -m unittest test_annuaire.py
-          uv run coverage report -m
-          uv run coverage html
-
-      - name: Upload HTML coverage report
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-report
-          # Working directory is not used in the action
-          # https://github.com/actions/upload-artifact/issues/232
-          path: tools/annuaire/htmlcov
-          retention-days: 7
-
   security:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: tools/annuaire
+        working-directory: tools/chatbot
 
     steps:
       - name: Checkout repository
