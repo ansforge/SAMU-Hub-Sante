@@ -41,91 +41,121 @@ jobs:
 
   security-scan:
     runs-on: ubuntu-latest
-    name: Security Scanning
     defaults:
       run:
-        working-directory: .
+        working-directory: tools/chatbot
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v5
+      # 1️⃣ Checkout repository
+      - uses: actions/checkout@v5
 
-      - name: Install uv
+      # 2️⃣ Install uv (Python 3.13 included)
+      - name: Set up uv with Python 3.13
         uses: astral-sh/setup-uv@v7
         with:
-          enable-cache: true
+          version: "latest"
           python-version: "3.13"
 
-      - name: Install dependencies
-        working-directory: tools/chatbot
-        run: uv sync
+      # 3️⃣ Install security tools via uv
+      - name: Install security tools
+        run: |
+          uv add --dev uv-secure semgrep
 
-      - name: Run security audit
-        working-directory: tools/chatbot
-        run: uv run pip-audit
-        continue-on-error: true
+      # 4️⃣ Dependency scan
+      - name: Scan dependencies (uv-secure)
+        run: |
+          uv run uv-secure uv.lock --format json > uv-secure.json || true
 
-      - name: Run Trivy vulnerability scanner - Filesystem Scan
-        uses: aquasecurity/trivy-action@0.24.0
-        with:
-          scan-type: 'fs'
-          scan-ref: 'tools/chatbot'
-          format: 'sarif'
-          output: 'trivy-filesystem.sarif'
-          severity: 'LOW,MEDIUM,HIGH,CRITICAL'
-          exit-code: '0'
-          scanners: 'vuln,secret,config,license'
-          skip-files: '**/*.pyc,**/__pycache__/**,**/build/**,**/dist/**,**/.uv_cache/**'
-        continue-on-error: true
+      # 5️⃣ Semgrep scan (code scanning)
+      - name: Run Semgrep
+        run: |
+          # Exclude virtual environments, cache, and non-source directories
+          uv run semgrep --config auto --sarif --output semgrep.sarif \
+            --exclude='.venv' \
+            --exclude='.cache' \
+            --exclude='__pycache__' \
+            --exclude='.git' \
+            --exclude='.pytest_cache' \
+            --exclude='node_modules' \
+            --exclude='build' \
+            --exclude='dist' \
+            --exclude='.tox' \
+            --exclude='.mypy_cache' \
+            --exclude='uv.lock' \
+            --exclude='*.pyc'
 
-      - name: Fix SARIF file paths for GitHub Security tab - Filesystem
-        if: always() && hashFiles('trivy-filesystem.sarif') != ''
+      - name: Fix Semgrep SARIF file paths for GitHub Security tab
+        if: always() && hashFiles('tools/chatbot/semgrep.sarif') != ''
         uses: ./.github/actions/fix-trivy-sarif
         with:
-          sarif-file: 'trivy-filesystem.sarif'
+          sarif-file: 'tools/chatbot/semgrep.sarif'
           scan-path: 'tools/chatbot'
 
-      - name: Upload Trivy scan results to GitHub Security tab - Filesystem
-        if: always() && hashFiles('trivy-filesystem.sarif') != ''
+      - name: Upload Semgrep results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v3
         with:
-          sarif_file: 'trivy-filesystem.sarif'
-          category: 'trivy-chatbot-filesystem'
+          sarif_file: tools/chatbot/semgrep.sarif
+          category: semgrep
 
-      - name: Run Trivy vulnerability scanner - Dockerfile
-        id: trivy-dockerfile
-        uses: aquasecurity/trivy-action@0.24.0
+      # 6️⃣ Trivy scan (filesystem, Dockerfile, configs, secrets)
+      - name: Run Trivy filesystem scan
+        uses: aquasecurity/trivy-action@0.33.1
         with:
-          scan-type: 'config'
-          scan-ref: 'tools/chatbot/Dockerfile'
-          format: 'sarif'
-          output: 'trivy-dockerfile.sarif'
-          severity: 'LOW,MEDIUM,HIGH,CRITICAL'
+          scan-type: fs
+          scan-ref: tools/chatbot
+          scanners: vuln,secret,config
+          format: sarif
+          output: tools/chatbot/trivy-filesystem.sarif
+          ignore-unfixed: true
           exit-code: '0'
-          scanners: 'config,secret,vuln,license'
-        continue-on-error: true
 
-      - name: Fix Dockerfile SARIF file paths for GitHub Security tab - Dockerfile
-        if: always() && hashFiles('trivy-dockerfile.sarif') != ''
+      - name: Run Trivy Dockerfile scan
+        uses: aquasecurity/trivy-action@0.33.1
+        with:
+          scan-type: config
+          scan-ref: tools/chatbot/Dockerfile
+          scanners: vuln,config
+          format: sarif
+          output: tools/chatbot/trivy-dockerfile.sarif
+          ignore-unfixed: true
+          exit-code: '0'
+
+      - name: Fix Trivy filesystem SARIF file paths for GitHub Security tab
+        if: always() && hashFiles('tools/chatbot/trivy-filesystem.sarif') != ''
         uses: ./.github/actions/fix-trivy-sarif
         with:
-          sarif-file: 'trivy-dockerfile.sarif'
+          sarif-file: 'tools/chatbot/trivy-filesystem.sarif'
           scan-path: 'tools/chatbot'
 
-      - name: Upload Trivy scan results to GitHub Security tab - Dockerfile
-        if: always() && hashFiles('trivy-dockerfile.sarif') != ''
+      - name: Upload Trivy filesystem results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v3
         with:
-          sarif_file: 'trivy-dockerfile.sarif'
-          category: 'trivy-chatbot-dockerfile'
+          sarif_file: tools/chatbot/trivy-filesystem.sarif
+          category: trivy-filesystem
 
-      - name: Upload Security scan reports as artifacts
+      - name: Fix Trivy Dockerfile SARIF file paths for GitHub Security tab
+        if: always() && hashFiles('tools/chatbot/trivy-dockerfile.sarif') != ''
+        uses: ./.github/actions/fix-trivy-sarif
+        with:
+          sarif-file: 'tools/chatbot/trivy-dockerfile.sarif'
+          scan-path: 'tools/chatbot'
+
+      - name: Upload Trivy Dockerfile results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: tools/chatbot/trivy-dockerfile.sarif
+          category: trivy-dockerfile
+
+      # 7️⃣ Upload all security scan reports as a single artifact
+      - name: Upload Security scan reports as artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: security-reports-chatbot
+          name: security-reports
           path: |
-            trivy-filesystem.sarif
-            trivy-dockerfile.sarif
+            tools/chatbot/semgrep.sarif
+            tools/chatbot/trivy-filesystem.sarif
+            tools/chatbot/trivy-dockerfile.sarif
+            tools/chatbot/uv-secure.json
           retention-days: 7
           if-no-files-found: warn
