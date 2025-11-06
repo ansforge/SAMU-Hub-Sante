@@ -1,5 +1,4 @@
 import requests
-import logging
 from prometheus_client import Gauge
 
 from checks.checker import IChecker
@@ -15,21 +14,19 @@ class ConverterHealthcheck(IChecker):
     )
 
     def perform_checks(self):
-        try:
-            response = requests.get(CONVERTER_HEALTH_URL, timeout=HTTP_TIMEOUT)
-            response.raise_for_status()
-            data = response.json()
-            status = data.get("status", Status.UNKNOWN.value)
-            self.converter_status_metric.set(1 if status == Status.UP.value else 0)
-            return {
-                "converter": (
-                    {"status": Status.UP.value}
-                    if status == Status.UP.value
-                    else {"status": Status.DOWN.value}
-                )
-            }
+        response = requests.get(CONVERTER_HEALTH_URL, timeout=HTTP_TIMEOUT)
+        response.raise_for_status()
+        data = response.json()
+        status = data.get("status", Status.UNKNOWN.value)
+        self.converter_status_metric.set(1 if status == Status.UP.value else 0)
+        return {
+            "converter": (
+                {"status": Status.UP.value}
+                if status == Status.UP.value
+                else {"status": Status.DOWN.value}
+            )
+        }
 
-        except requests.RequestException:
-            logging.error("Error occurred on converter healthcheck: ", exc_info=True)
-            self.converter_status_metric.set(0)
-            return {"converter": {"status": Status.DOWN.value}}
+    def check_failure_fallback(self):
+        self.converter_status_metric.set(0)
+        return {"converter": {"status": Status.DOWN.value}}

@@ -33,6 +33,13 @@ class DispatchersHealthcheck(IChecker):
             )
         return result
 
+    def check_failure_fallback(self):
+        result = {}
+        for dispatcher_instance in DISPATCHER_INSTANCES:
+            result[dispatcher_instance] = {"status": Status.DOWN.value}
+            self.dispatcher_status_metric.labels(dispatcher=dispatcher_instance).set(0)
+        return result
+
     def single_dispatcher_healthcheck(self, app_name):
         try:
             dispatcher_health_url = (
