@@ -1,0 +1,1 @@
+.m-contact [href^="tel:"] svg:last-child{font-size:1.6rem;margin:-.4rem 0 0 .8rem;max-width:none;position:static}.m-contact__img{height:7.8rem;overflow:hidden;width:7.8rem}.m-contact__img img{height:100%;-o-object-fit:cover;object-fit:cover;width:100%}.m-contact__details>p:not(:first-child){margin-top:.5rem}
