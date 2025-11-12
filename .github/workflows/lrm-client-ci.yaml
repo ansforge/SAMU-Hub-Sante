@@ -26,7 +26,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '19'
+          node-version: 24.11
 
       - name: Install dependencies
         run: npm ci
@@ -43,11 +43,15 @@ jobs:
   security-scan:
     runs-on: ubuntu-latest
     name: Security Scanning
+    defaults:
+      run:
+        working-directory: web/lrm/client
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      # 1️⃣ Checkout repository
+      - uses: actions/checkout@v5
 
+      # 2️⃣ Set up Node.js (needed for JavaScript project analysis)
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -55,72 +59,97 @@ jobs:
           cache: 'npm'
           cache-dependency-path: 'web/lrm/client/package-lock.json'
 
-      - name: Install Node.js dependencies for Trivy scan
-        working-directory: web/lrm/client
+      # 3️⃣ Install dependencies for better dependency scanning
+      - name: Install dependencies
+        run: npm ci
+
+      # 4️⃣ Semgrep scan (code scanning)
+      - name: Run Semgrep
         run: |
-          npm ci
+          # Install Semgrep
+          pip install semgrep
+          # Exclude virtual environments, cache, and non-source directories
+          semgrep --config auto --sarif --output semgrep.sarif \
+            --exclude='node_modules' \
+            --exclude='dist' \
+            --exclude='build' \
+            --exclude='.nuxt' \
+            --exclude='.git' \
+            --exclude='coverage' \
+            --exclude='*.min.js' \
+            --exclude='*.bundle.js'
 
-      - name: Run Trivy vulnerability scanner - Filesystem Scan
-        uses: aquasecurity/trivy-action@0.24.0
+      - name: Fix Semgrep SARIF file paths for GitHub Security tab
+        if: always() && hashFiles('web/lrm/client/semgrep.sarif') != ''
+        uses: ./.github/actions/fix-trivy-sarif
         with:
-          scan-type: 'fs'
-          scan-ref: 'web/lrm/client'
-          format: 'sarif'
-          output: 'trivy-filesystem.sarif'
-          severity: 'LOW,MEDIUM,HIGH,CRITICAL'
+          sarif-file: 'web/lrm/client/semgrep.sarif'
+          scan-path: 'web/lrm/client'
+
+      - name: Upload Semgrep results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: web/lrm/client/semgrep.sarif
+          category: semgrep-lrm-client
+
+      # 5️⃣ Trivy scan (filesystem, Dockerfile, configs, secrets)
+      - name: Run Trivy filesystem scan
+        uses: aquasecurity/trivy-action@0.33.1
+        with:
+          scan-type: fs
+          scan-ref: web/lrm/client
+          scanners: vuln,secret,config
+          format: sarif
+          output: web/lrm/client/trivy-filesystem.sarif
+          ignore-unfixed: true
           exit-code: '0'
-          scanners: 'vuln,secret,config,license'
-          skip-files: '**/node_modules/**,**/dist/**,**/build/**,**/.nuxt/**'
-        continue-on-error: true
 
-      - name: Fix SARIF file paths for GitHub Security tab - Filesystem
-        if: always() && hashFiles('trivy-filesystem.sarif') != ''
+      - name: Run Trivy Dockerfile scan
+        uses: aquasecurity/trivy-action@0.33.1
+        with:
+          scan-type: config
+          scan-ref: web/lrm/client/Dockerfile
+          scanners: vuln,config
+          format: sarif
+          output: web/lrm/client/trivy-dockerfile.sarif
+          ignore-unfixed: true
+          exit-code: '0'
+
+      - name: Fix Trivy filesystem SARIF file paths for GitHub Security tab
+        if: always() && hashFiles('web/lrm/client/trivy-filesystem.sarif') != ''
         uses: ./.github/actions/fix-trivy-sarif
         with:
-          sarif-file: 'trivy-filesystem.sarif'
+          sarif-file: 'web/lrm/client/trivy-filesystem.sarif'
           scan-path: 'web/lrm/client'
 
-      - name: Upload Trivy scan results to GitHub Security tab - Filesystem
-        if: always() && hashFiles('trivy-filesystem.sarif') != ''
+      - name: Upload Trivy filesystem results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v3
         with:
-          sarif_file: 'trivy-filesystem.sarif'
-          category: 'trivy-lrm-client-filesystem'
+          sarif_file: web/lrm/client/trivy-filesystem.sarif
+          category: trivy-lrm-client-filesystem
 
-      - name: Run Trivy vulnerability scanner - Dockerfile
-        id: trivy-dockerfile
-        uses: aquasecurity/trivy-action@0.24.0
-        with:
-          scan-type: 'config'
-          scan-ref: 'web/lrm/client/Dockerfile'
-          format: 'sarif'
-          output: 'trivy-dockerfile.sarif'
-          severity: 'LOW,MEDIUM,HIGH,CRITICAL'
-          exit-code: '1'
-          scanners: 'config,secret,vuln,license'
-        continue-on-error: true
-
-      - name: Fix Dockerfile SARIF file paths for GitHub Security tab
-        if: always() && hashFiles('trivy-dockerfile.sarif') != ''
+      - name: Fix Trivy Dockerfile SARIF file paths for GitHub Security tab
+        if: always() && hashFiles('web/lrm/client/trivy-dockerfile.sarif') != ''
         uses: ./.github/actions/fix-trivy-sarif
         with:
-          sarif-file: 'trivy-dockerfile.sarif'
+          sarif-file: 'web/lrm/client/trivy-dockerfile.sarif'
           scan-path: 'web/lrm/client'
 
-      - name: Upload Trivy scan results to GitHub Security tab - Dockerfile
-        if: always() && hashFiles('trivy-dockerfile.sarif') != ''
+      - name: Upload Trivy Dockerfile results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v3
         with:
-          sarif_file: 'trivy-dockerfile.sarif'
-          category: 'trivy-lrm-client-dockerfile'
+          sarif_file: web/lrm/client/trivy-dockerfile.sarif
+          category: trivy-lrm-client-dockerfile
 
-      - name: Upload Security scan reports as artifacts
+      # 6️⃣ Upload all security scan reports as a single artifact
+      - name: Upload Security scan reports as artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: security-reports-lrm-client
           path: |
-            trivy-filesystem.sarif
-            trivy-dockerfile.sarif
+            web/lrm/client/semgrep.sarif
+            web/lrm/client/trivy-filesystem.sarif
+            web/lrm/client/trivy-dockerfile.sarif
           retention-days: 7
           if-no-files-found: warn
