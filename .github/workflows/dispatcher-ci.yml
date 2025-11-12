@@ -80,73 +80,79 @@ jobs:
     name: Security Scanning
     defaults:
       run:
-        working-directory: .
-    
+        working-directory: hub/dispatcher
+
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      # 1️⃣ Checkout repository
+      - uses: actions/checkout@v5
 
-      - name: Run Trivy vulnerability scanner - Filesystem Scan
-        uses: aquasecurity/trivy-action@0.24.0
+      # 2️⃣ Set up JDK (needed for Gradle project analysis)
+      - name: Set up JDK
+        uses: actions/setup-java@v5
         with:
-          scan-type: 'fs'
-          scan-ref: 'hub/dispatcher'
-          format: 'sarif'
-          output: 'trivy-filesystem.sarif'
-          severity: 'LOW,MEDIUM,HIGH,CRITICAL'
+          java-version: '21'
+          distribution: 'temurin'
+
+      # 3️⃣ Semgrep scan (code scanning)
+      - name: Run Semgrep
+        run: |
+          # Install Semgrep
+          pip install semgrep
+          # Exclude virtual environments, cache, and non-source directories
+          semgrep --config auto --sarif --output semgrep.sarif \
+            --exclude='.gradle' \
+            --exclude='build' \
+            --exclude='gradle/wrapper' \
+            --exclude='.git' \
+            --exclude='*.class' \
+            --exclude='*.jar'
+
+      - name: Fix Semgrep SARIF file paths for GitHub Security tab
+        if: always() && hashFiles('hub/dispatcher/semgrep.sarif') != ''
+        uses: ./.github/actions/fix-trivy-sarif
+        with:
+          sarif-file: 'hub/dispatcher/semgrep.sarif'
+          scan-path: 'hub/dispatcher'
+
+      - name: Upload Semgrep results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: hub/dispatcher/semgrep.sarif
+          category: semgrep-dispatcher
+
+      # 4️⃣ Trivy scan (filesystem, configs, secrets)
+      - name: Run Trivy filesystem scan
+        uses: aquasecurity/trivy-action@0.33.1
+        with:
+          scan-type: fs
+          scan-ref: hub/dispatcher
+          scanners: vuln,secret,config
+          format: sarif
+          output: hub/dispatcher/trivy-filesystem.sarif
+          ignore-unfixed: true
           exit-code: '0'
-          scanners: 'vuln,secret,config,license'
-          skip-files: '**/build/**,**/gradle/wrapper/**,**/.gradle/**'
-        continue-on-error: true
 
-      - name: Fix SARIF file paths for GitHub Security tab - Filesystem
-        if: always() && hashFiles('trivy-filesystem.sarif') != ''
+      - name: Fix Trivy filesystem SARIF file paths for GitHub Security tab
+        if: always() && hashFiles('hub/dispatcher/trivy-filesystem.sarif') != ''
         uses: ./.github/actions/fix-trivy-sarif
         with:
-          sarif-file: 'trivy-filesystem.sarif'
+          sarif-file: 'hub/dispatcher/trivy-filesystem.sarif'
           scan-path: 'hub/dispatcher'
 
-      - name: Upload Trivy scan results to GitHub Security tab - Filesystem
-        if: always() && hashFiles('trivy-filesystem.sarif') != ''
+      - name: Upload Trivy filesystem results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v3
         with:
-          sarif_file: 'trivy-filesystem.sarif'
-          category: 'trivy-dispatcher-filesystem'
+          sarif_file: hub/dispatcher/trivy-filesystem.sarif
+          category: trivy-dispatcher-filesystem
 
-      - name: Run Trivy vulnerability scanner - Dockerfile
-        id: trivy-dockerfile
-        uses: aquasecurity/trivy-action@0.24.0
-        with:
-          scan-type: 'config'
-          scan-ref: 'hub/dispatcher/Dockerfile'
-          format: 'sarif'
-          output: 'trivy-dockerfile.sarif'
-          severity: 'LOW,MEDIUM,HIGH,CRITICAL'
-          exit-code: '1'
-          scanners: 'config,secret,vuln,license'
-        continue-on-error: true
-
-      - name: Fix Dockerfile SARIF file paths for GitHub Security tab
-        if: always() && hashFiles('trivy-dockerfile.sarif') != ''
-        uses: ./.github/actions/fix-trivy-sarif
-        with:
-          sarif-file: 'trivy-dockerfile.sarif'
-          scan-path: 'hub/dispatcher'
-
-      - name: Upload Trivy scan results to GitHub Security tab - Dockerfile
-        if: always() && hashFiles('trivy-dockerfile.sarif') != ''
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: 'trivy-dockerfile.sarif'
-          category: 'trivy-dispatcher-dockerfile'
-
-      - name: Upload Security scan reports as artifacts
+      # 5️⃣ Upload all security scan reports as a single artifact
+      - name: Upload Security scan reports as artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: security-reports-dispatcher
           path: |
-            trivy-filesystem.sarif
-            trivy-dockerfile.sarif
+            hub/dispatcher/semgrep.sarif
+            hub/dispatcher/trivy-filesystem.sarif
           retention-days: 7
           if-no-files-found: warn
