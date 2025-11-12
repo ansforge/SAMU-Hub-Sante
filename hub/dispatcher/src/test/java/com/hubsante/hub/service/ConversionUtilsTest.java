@@ -271,8 +271,6 @@ public class ConversionUtilsTest {
                 new Boolean[]{true,  false, true},
                 new Boolean[]{true,  true,  false},
                 new Boolean[]{false,  false, false},
-                new Boolean[]{false,  true,  false},
-                new Boolean[]{false, false, false},
                 new Boolean[]{false, true,  false}
             );
 
