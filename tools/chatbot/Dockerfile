@@ -37,4 +37,4 @@ COPY --chown=chatbot:chatbot . .
 RUN uv sync --frozen --no-dev
 
 # Run the application (--no-sync prevents any dependency downloads at runtime)
-CMD ["uv", "run", "--no-sync", "python", "chatbot.py"] 
+CMD ["uv", "run", "--no-sync", "python", "chatbot.py"]
