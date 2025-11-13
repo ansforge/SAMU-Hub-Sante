@@ -54,26 +54,7 @@ jobs:
       run:
         working-directory: ${{ inputs.working-directory }}
     env:
-      SEMGREP_EXCLUDES: |
-        --exclude='.git' \
-        --exclude='node_modules' \
-        --exclude='dist' \
-        --exclude='build' \
-        --exclude='coverage' \
-        --exclude='__pycache__' \
-        --exclude='.venv' \
-        --exclude='.cache' \
-        --exclude='.pytest_cache' \
-        --exclude='.tox' \
-        --exclude='.mypy_cache' \
-        --exclude='uv.lock' \
-        --exclude='*.pyc' \
-        --exclude='*.min.js' \
-        --exclude='*.bundle.js' \
-        --exclude='.gradle' \
-        --exclude='gradle/wrapper' \
-        --exclude='*.class' \
-        --exclude='*.jar'
+      SEMGREP_EXCLUDES: "--exclude='.git' --exclude='node_modules' --exclude='dist' --exclude='build' --exclude='coverage' --exclude='__pycache__' --exclude='.venv' --exclude='.cache' --exclude='.pytest_cache' --exclude='.tox' --exclude='.mypy_cache' --exclude='uv.lock' --exclude='*.pyc' --exclude='*.min.js' --exclude='*.bundle.js' --exclude='.gradle' --exclude='gradle/wrapper' --exclude='*.class' --exclude='*.jar'"
 
     steps:
       - name: Checkout repository
