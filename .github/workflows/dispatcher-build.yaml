@@ -83,39 +83,31 @@ jobs:
             -Pversion=$DISPATCHER_VERSION \
             -PmodelVersion=$MODEL_VERSION \
             --image ghcr.io/${{ github.repository_owner }}/dispatcher:$IMAGE_TAG
+
+  image-security-scan:
+    name: Scan Docker Images
+    needs: [get-tags, build-dispatcher]
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        model_version: ${{ fromJson(needs.get-tags.outputs.model-versions) }}
+
+    steps:
+      - name: Login to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
       - name: Scan Dispatcher Docker image
         uses: aquasecurity/trivy-action@0.33.1
-        continue-on-error: true
         with:
           image-ref: 'ghcr.io/${{ github.repository_owner }}/dispatcher:${{ needs.get-tags.outputs.dispatcher-version }}-model-${{ matrix.model_version }}'
           format: 'sarif'
           output: 'trivy-dispatcher-${{ matrix.model_version }}-image.sarif'
           severity: 'HIGH,CRITICAL'
-          exit-code: '0'
-      - name: Check for vulnerabilities
-        if: always()
-        run: |
-          echo "Checking for SARIF file: trivy-dispatcher-${{ matrix.model_version }}-image.sarif"
-          if [ -f "trivy-dispatcher-${{ matrix.model_version }}-image.sarif" ]; then
-            echo "SARIF file found, checking for vulnerabilities..."
-            # Count the number of vulnerability results in the SARIF file
-            VULN_COUNT=$(jq '[.runs[].results[] | select(.level == "error" or .level == "warning")] | length' "trivy-dispatcher-${{ matrix.model_version }}-image.sarif" 2>/dev/null || echo "0")
-            echo "Found $VULN_COUNT HIGH/CRITICAL vulnerabilities"
-            
-            if [ "$VULN_COUNT" -gt 0 ]; then
-              echo "HIGH or CRITICAL vulnerabilities found in dispatcher image"
-              echo "Please check the security scan results in the Security tab"
-              # Set a flag for later use but don't exit here to allow uploads
-              echo "VULNERABILITIES_FOUND=true" >> $GITHUB_ENV
-            else
-              echo "No HIGH or CRITICAL vulnerabilities found"
-              echo "VULNERABILITIES_FOUND=false" >> $GITHUB_ENV
-            fi
-          else
-            echo "SARIF report not found"
-            echo "This might indicate the Trivy scan failed to complete or generate output"
-            echo "VULNERABILITIES_FOUND=unknown" >> $GITHUB_ENV
-          fi
+          exit-code: '1'
       - name: Upload Dispatcher image scan results to GitHub Security tab
         if: always() && hashFiles('trivy-dispatcher-${{ matrix.model_version }}-image.sarif') != ''
         uses: github/codeql-action/upload-sarif@v3
@@ -129,15 +121,3 @@ jobs:
           name: trivy-reports-dispatcher-${{ matrix.model_version }}-image
           path: '*.sarif'
           retention-days: 7
-      - name: Fail if vulnerabilities found
-        if: always()
-        run: |
-          if [ "$VULNERABILITIES_FOUND" = "true" ]; then
-            echo "Failing the build due to HIGH or CRITICAL vulnerabilities found"
-            exit 1
-          elif [ "$VULNERABILITIES_FOUND" = "unknown" ]; then
-            echo "Could not determine vulnerability status - SARIF file was missing"
-            exit 1
-          else  
-            echo "No vulnerabilities found or vulnerability check completed successfully"
-          fi
