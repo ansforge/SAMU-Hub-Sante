@@ -1,0 +1,205 @@
+name: Reusable Security Scan
+
+on:
+  workflow_call:
+    inputs:
+      working-directory:
+        description: 'Working directory for the scan'
+        required: true
+        type: string
+      project-type:
+        description: 'Project type: nodejs, python, java'
+        required: true
+        type: string
+      node-version:
+        description: 'Node.js version (for nodejs projects)'
+        required: false
+        type: string
+        default: '24.11'
+      python-version:
+        description: 'Python version (for python projects)'
+        required: false
+        type: string
+        default: '3.13'
+      java-version:
+        description: 'Java version (for java projects)'
+        required: false
+        type: string
+        default: '21'
+      component-name:
+        description: 'Component name for categories and artifacts'
+        required: true
+        type: string
+      scan-dockerfile:
+        description: 'Whether to scan Dockerfile'
+        required: false
+        type: boolean
+        default: true
+      semgrep-excludes:
+        description: 'Additional Semgrep excludes (space-separated)'
+        required: false
+        type: string
+        default: ''
+      dependency-scan:
+        description: 'Whether to run dependency vulnerability scan'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  security-scan:
+    runs-on: ubuntu-latest
+    name: Security Scanning
+    defaults:
+      run:
+        working-directory: ${{ inputs.working-directory }}
+    env:
+      SEMGREP_EXCLUDES: |
+        --exclude='.git' \
+        --exclude='node_modules' \
+        --exclude='dist' \
+        --exclude='build' \
+        --exclude='coverage' \
+        --exclude='__pycache__' \
+        --exclude='.venv' \
+        --exclude='.cache' \
+        --exclude='.pytest_cache' \
+        --exclude='.tox' \
+        --exclude='.mypy_cache' \
+        --exclude='uv.lock' \
+        --exclude='*.pyc' \
+        --exclude='*.min.js' \
+        --exclude='*.bundle.js' \
+        --exclude='.gradle' \
+        --exclude='gradle/wrapper' \
+        --exclude='*.class' \
+        --exclude='*.jar'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      # Setup environment based on project type
+      - name: Set up Node.js
+        if: inputs.project-type == 'nodejs'
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node-version }}
+          cache: 'npm'
+          cache-dependency-path: '${{ inputs.working-directory }}/package-lock.json'
+
+      - name: Set up Python with uv
+        if: inputs.project-type == 'python'
+        uses: astral-sh/setup-uv@v7
+        with:
+          version: "latest"
+          python-version: ${{ inputs.python-version }}
+
+      - name: Set up JDK
+        if: inputs.project-type == 'java'
+        uses: actions/setup-java@v5
+        with:
+          java-version: ${{ inputs.java-version }}
+          distribution: 'temurin'
+
+      # Install dependencies based on project type
+      - name: Install Node.js dependencies
+        if: inputs.project-type == 'nodejs'
+        run: npm ci
+
+      - name: Install Python security tools
+        if: inputs.project-type == 'python' && inputs.dependency-scan
+        run: |
+          uv add --dev uv-secure
+
+      # Run dependency vulnerability scans
+      - name: Scan Python dependencies (uv-secure)
+        if: inputs.project-type == 'python' && inputs.dependency-scan
+        run: |
+          uv run uv-secure uv.lock --format json > uv-secure.json || true
+
+      # Run Semgrep code scanning
+      - name: Run Semgrep
+        run: |
+          pip install semgrep
+          semgrep --config auto --sarif --output semgrep.sarif \
+            $SEMGREP_EXCLUDES \
+            ${{ inputs.semgrep-excludes }}
+
+      # Fix and upload Semgrep results
+      - name: Fix Semgrep SARIF file paths for GitHub Security tab
+        if: always() && hashFiles(format('{0}/semgrep.sarif', inputs.working-directory)) != ''
+        uses: ./.github/actions/fix-trivy-sarif
+        with:
+          sarif-file: '${{ inputs.working-directory }}/semgrep.sarif'
+          scan-path: '${{ inputs.working-directory }}'
+
+      - name: Upload Semgrep results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: ${{ inputs.working-directory }}/semgrep.sarif
+          category: semgrep-${{ inputs.component-name }}
+
+      # Run Trivy filesystem scan
+      - name: Run Trivy filesystem scan
+        uses: aquasecurity/trivy-action@0.33.1
+        with:
+          scan-type: fs
+          scan-ref: ${{ inputs.working-directory }}
+          scanners: vuln,secret,config
+          format: sarif
+          output: ${{ inputs.working-directory }}/trivy-filesystem.sarif
+          ignore-unfixed: true
+          exit-code: '0'
+
+      - name: Fix Trivy filesystem SARIF file paths for GitHub Security tab
+        if: always() && hashFiles(format('{0}/trivy-filesystem.sarif', inputs.working-directory)) != ''
+        uses: ./.github/actions/fix-trivy-sarif
+        with:
+          sarif-file: '${{ inputs.working-directory }}/trivy-filesystem.sarif'
+          scan-path: '${{ inputs.working-directory }}'
+
+      - name: Upload Trivy filesystem results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: ${{ inputs.working-directory }}/trivy-filesystem.sarif
+          category: trivy-${{ inputs.component-name }}-filesystem
+
+      # Run Trivy Dockerfile scan (optional)
+      - name: Run Trivy Dockerfile scan
+        if: inputs.scan-dockerfile
+        uses: aquasecurity/trivy-action@0.33.1
+        with:
+          scan-type: config
+          scan-ref: ${{ inputs.working-directory }}/Dockerfile
+          scanners: vuln,config
+          format: sarif
+          output: ${{ inputs.working-directory }}/trivy-dockerfile.sarif
+          ignore-unfixed: true
+          exit-code: '0'
+
+      - name: Fix Trivy Dockerfile SARIF file paths for GitHub Security tab
+        if: inputs.scan-dockerfile && always() && hashFiles(format('{0}/trivy-dockerfile.sarif', inputs.working-directory)) != ''
+        uses: ./.github/actions/fix-trivy-sarif
+        with:
+          sarif-file: '${{ inputs.working-directory }}/trivy-dockerfile.sarif'
+          scan-path: '${{ inputs.working-directory }}'
+
+      - name: Upload Trivy Dockerfile results to GitHub Security tab
+        if: inputs.scan-dockerfile
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: ${{ inputs.working-directory }}/trivy-dockerfile.sarif
+          category: trivy-${{ inputs.component-name }}-dockerfile
+
+      # Upload all security reports as artifacts
+      - name: Upload Security scan reports as artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-reports-${{ inputs.component-name }}
+          path: |
+            ${{ inputs.working-directory }}/*.sarif
+            ${{ inputs.working-directory }}/*.json
+          retention-days: 7
+          if-no-files-found: ignore

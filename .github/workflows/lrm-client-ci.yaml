@@ -41,110 +41,11 @@ jobs:
         run: npx prettier --check "**/*.{js,ts,vue,css,scss}"
 
   security-scan:
-    runs-on: ubuntu-latest
-    name: Security Scanning
-    defaults:
-      run:
-        working-directory: web/lrm/client
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v5
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 24.11
-          cache: 'npm'
-          cache-dependency-path: 'web/lrm/client/package-lock.json'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Run Semgrep (code scanning)
-        run: |
-          # Install Semgrep
-          pip install semgrep
-          # Exclude virtual environments, cache, and non-source directories
-          semgrep --config auto --sarif --output semgrep.sarif \
-            --exclude='node_modules' \
-            --exclude='dist' \
-            --exclude='build' \
-            --exclude='.nuxt' \
-            --exclude='.git' \
-            --exclude='coverage' \
-            --exclude='*.min.js' \
-            --exclude='*.bundle.js'
-
-      - name: Fix Semgrep SARIF file paths for GitHub Security tab
-        if: always() && hashFiles('web/lrm/client/semgrep.sarif') != ''
-        uses: ./.github/actions/fix-trivy-sarif
-        with:
-          sarif-file: 'web/lrm/client/semgrep.sarif'
-          scan-path: 'web/lrm/client'
-
-      - name: Upload Semgrep results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: web/lrm/client/semgrep.sarif
-          category: semgrep-lrm-client
-
-      - name: Run Trivy filesystem scan
-        uses: aquasecurity/trivy-action@0.33.1
-        with:
-          scan-type: fs
-          scan-ref: web/lrm/client
-          scanners: vuln,secret,config
-          format: sarif
-          output: web/lrm/client/trivy-filesystem.sarif
-          ignore-unfixed: true
-          exit-code: '0'
-
-      - name: Run Trivy Dockerfile scan
-        uses: aquasecurity/trivy-action@0.33.1
-        with:
-          scan-type: config
-          scan-ref: web/lrm/client/Dockerfile
-          scanners: vuln,config
-          format: sarif
-          output: web/lrm/client/trivy-dockerfile.sarif
-          ignore-unfixed: true
-          exit-code: '0'
-
-      - name: Fix Trivy filesystem SARIF file paths for GitHub Security tab
-        if: always() && hashFiles('web/lrm/client/trivy-filesystem.sarif') != ''
-        uses: ./.github/actions/fix-trivy-sarif
-        with:
-          sarif-file: 'web/lrm/client/trivy-filesystem.sarif'
-          scan-path: 'web/lrm/client'
-
-      - name: Upload Trivy filesystem results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: web/lrm/client/trivy-filesystem.sarif
-          category: trivy-lrm-client-filesystem
-
-      - name: Fix Trivy Dockerfile SARIF file paths for GitHub Security tab
-        if: always() && hashFiles('web/lrm/client/trivy-dockerfile.sarif') != ''
-        uses: ./.github/actions/fix-trivy-sarif
-        with:
-          sarif-file: 'web/lrm/client/trivy-dockerfile.sarif'
-          scan-path: 'web/lrm/client'
-
-      - name: Upload Trivy Dockerfile results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: web/lrm/client/trivy-dockerfile.sarif
-          category: trivy-lrm-client-dockerfile
-
-      - name: Upload Security scan reports as artifact
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: security-reports-lrm-client
-          path: |
-            web/lrm/client/semgrep.sarif
-            web/lrm/client/trivy-filesystem.sarif
-            web/lrm/client/trivy-dockerfile.sarif
-          retention-days: 7
-          if-no-files-found: warn
+    uses: ./.github/workflows/security-scan.yml
+    with:
+      working-directory: 'web/lrm/client'
+      project-type: 'nodejs'
+      node-version: '24.11'
+      component-name: 'lrm-client'
+      scan-dockerfile: true
+      semgrep-excludes: '--exclude=".nuxt"'
