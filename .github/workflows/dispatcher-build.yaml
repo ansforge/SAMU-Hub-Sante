@@ -92,6 +92,7 @@ jobs:
           output: 'trivy-dispatcher-${{ matrix.model_version }}-image.sarif'
           severity: 'HIGH,CRITICAL'
           exit-code: '0'
+
       - name: Upload Dispatcher image scan results to GitHub Security tab
         if: always() && hashFiles('trivy-dispatcher-${{ matrix.model_version }}-image.sarif') != ''
         uses: github/codeql-action/upload-sarif@v3
@@ -106,10 +107,16 @@ jobs:
           path: '*.sarif'
           retention-days: 7
       - name: Check for vulnerabilities
+        if: always()
         run: |
+          echo "Checking for SARIF file: trivy-dispatcher-${{ matrix.model_version }}-image.sarif"
           if [ -f "trivy-dispatcher-${{ matrix.model_version }}-image.sarif" ]; then
-            # Check if the SARIF file contains any results indicating vulnerabilities
-            if grep -q '"results":\s*\[.*\]' "trivy-dispatcher-${{ matrix.model_version }}-image.sarif" && ! grep -q '"results":\s*\[\s*\]' "trivy-dispatcher-${{ matrix.model_version }}-image.sarif"; then
+            echo "SARIF file found, checking for vulnerabilities..."
+            # Count the number of vulnerability results in the SARIF file
+            VULN_COUNT=$(jq '[.runs[].results[] | select(.level == "error" or .level == "warning")] | length' "trivy-dispatcher-${{ matrix.model_version }}-image.sarif" 2>/dev/null || echo "0")
+            echo "Found $VULN_COUNT HIGH/CRITICAL vulnerabilities"
+            
+            if [ "$VULN_COUNT" -gt 0 ]; then
               echo "HIGH or CRITICAL vulnerabilities found in dispatcher image"
               echo "Please check the security scan results in the Security tab"
               exit 1
@@ -118,5 +125,6 @@ jobs:
             fi
           else
             echo "SARIF report not found"
+            echo "This might indicate the Trivy scan failed to complete or generate output"
             exit 1
           fi
