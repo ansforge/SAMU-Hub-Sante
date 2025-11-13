@@ -83,3 +83,27 @@ jobs:
             -Pversion=$DISPATCHER_VERSION \
             -PmodelVersion=$MODEL_VERSION \
             --image ghcr.io/${{ github.repository_owner }}/dispatcher:$IMAGE_TAG
+      - name: Scan Dispatcher Docker image
+        uses: aquasecurity/trivy-action@0.24.0
+        env:
+          DISPATCHER_VERSION: ${{ needs.get-tags.outputs.dispatcher-version }}
+          MODEL_VERSION: ${{ matrix.model_version }}
+        with:
+          image-ref: 'ghcr.io/${{ github.repository_owner }}/dispatcher:${{ env.DISPATCHER_VERSION }}-model-${{ env.MODEL_VERSION }}'
+          format: 'sarif'
+          output: 'trivy-dispatcher-${{ matrix.model_version }}-image.sarif'
+          severity: 'HIGH,CRITICAL'
+          exit-code: '1'
+      - name: Upload Dispatcher image scan results to GitHub Security tab
+        if: always() && hashFiles('trivy-dispatcher-${{ matrix.model_version }}-image.sarif') != ''
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-dispatcher-${{ matrix.model_version }}-image.sarif'
+          category: 'trivy-dispatcher-${{ matrix.model_version }}-image'
+      - name: Upload Dispatcher image scan reports as artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-reports-dispatcher-${{ matrix.model_version }}-image
+          path: '*.sarif'
+          retention-days: 7
