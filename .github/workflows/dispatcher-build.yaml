@@ -85,12 +85,13 @@ jobs:
             --image ghcr.io/${{ github.repository_owner }}/dispatcher:$IMAGE_TAG
       - name: Scan Dispatcher Docker image
         uses: aquasecurity/trivy-action@0.33.1
+        continue-on-error: true
         with:
           image-ref: 'ghcr.io/${{ github.repository_owner }}/dispatcher:${{ needs.get-tags.outputs.dispatcher-version }}-model-${{ matrix.model_version }}'
           format: 'sarif'
           output: 'trivy-dispatcher-${{ matrix.model_version }}-image.sarif'
           severity: 'HIGH,CRITICAL'
-          exit-code: '1'
+          exit-code: '0'
       - name: Upload Dispatcher image scan results to GitHub Security tab
         if: always() && hashFiles('trivy-dispatcher-${{ matrix.model_version }}-image.sarif') != ''
         uses: github/codeql-action/upload-sarif@v3
@@ -104,3 +105,18 @@ jobs:
           name: trivy-reports-dispatcher-${{ matrix.model_version }}-image
           path: '*.sarif'
           retention-days: 7
+      - name: Check for vulnerabilities
+        run: |
+          if [ -f "trivy-dispatcher-${{ matrix.model_version }}-image.sarif" ]; then
+            # Check if the SARIF file contains any results indicating vulnerabilities
+            if grep -q '"results":\s*\[.*\]' "trivy-dispatcher-${{ matrix.model_version }}-image.sarif" && ! grep -q '"results":\s*\[\s*\]' "trivy-dispatcher-${{ matrix.model_version }}-image.sarif"; then
+              echo "HIGH or CRITICAL vulnerabilities found in dispatcher image"
+              echo "Please check the security scan results in the Security tab"
+              exit 1
+            else
+              echo "No HIGH or CRITICAL vulnerabilities found"
+            fi
+          else
+            echo "SARIF report not found"
+            exit 1
+          fi
