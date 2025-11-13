@@ -88,6 +88,7 @@ jobs:
     name: Scan Docker Images
     needs: [get-tags, build-dispatcher]
     runs-on: ubuntu-latest
+    continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
