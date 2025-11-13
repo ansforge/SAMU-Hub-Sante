@@ -42,10 +42,9 @@ jobs:
         working-directory: web/lrm/server
 
     steps:
-      # 1️⃣ Checkout repository
-      - uses: actions/checkout@v5
+      - name: Checkout repository
+        uses: actions/checkout@v5
 
-      # 2️⃣ Set up Node.js (needed for JavaScript project analysis)
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -53,12 +52,10 @@ jobs:
           cache: 'npm'
           cache-dependency-path: 'web/lrm/server/package-lock.json'
 
-      # 3️⃣ Install dependencies for better dependency scanning
       - name: Install dependencies
         run: npm ci
 
-      # 4️⃣ Semgrep scan (code scanning)
-      - name: Run Semgrep
+      - name: Run Semgrep (code scanning)
         run: |
           # Install Semgrep
           pip install semgrep
@@ -85,7 +82,6 @@ jobs:
           sarif_file: web/lrm/server/semgrep.sarif
           category: semgrep-lrm-server
 
-      # 5️⃣ Trivy scan (filesystem, Dockerfile, configs, secrets)
       - name: Run Trivy filesystem scan
         uses: aquasecurity/trivy-action@0.33.1
         with:
@@ -134,7 +130,6 @@ jobs:
           sarif_file: web/lrm/server/trivy-dockerfile.sarif
           category: trivy-lrm-server-dockerfile
 
-      # 6️⃣ Upload all security scan reports as a single artifact
       - name: Upload Security scan reports as artifact
         if: always()
         uses: actions/upload-artifact@v4

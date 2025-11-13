@@ -68,28 +68,24 @@ jobs:
         working-directory: tools/healthcheck
 
     steps:
-      # 1️⃣ Checkout repository
-      - uses: actions/checkout@v5
+      - name: Checkout repository
+        uses: actions/checkout@v5
 
-      # 2️⃣ Install uv (Python 3.11 included)
       - name: Set up uv with Python 3.11
         uses: astral-sh/setup-uv@v7
         with:
           version: "latest"
           python-version: "3.11"
 
-      # 3️⃣ Install security tools via uv
       - name: Install security tools
         run: |
           uv add --dev uv-secure semgrep
 
-      # 4️⃣ Dependency scan
       - name: Scan dependencies (uv-secure)
         run: |
           uv run uv-secure uv.lock --format json > uv-secure.json || true
 
-      # 5️⃣ Semgrep scan (code scanning)
-      - name: Run Semgrep
+      - name: Run Semgrep (code scanning)
         run: |
           # Exclude virtual environments, cache, and non-source directories
           uv run semgrep --config auto --sarif --output semgrep.sarif \
@@ -119,7 +115,6 @@ jobs:
           sarif_file: tools/healthcheck/semgrep.sarif
           category: semgrep-healthcheck
 
-      # 6️⃣ Trivy scan (filesystem, Dockerfile, configs, secrets)
       - name: Run Trivy filesystem scan
         uses: aquasecurity/trivy-action@0.33.1
         with:
@@ -168,7 +163,6 @@ jobs:
           sarif_file: tools/healthcheck/trivy-dockerfile.sarif
           category: trivy-healthcheck-dockerfile
 
-      # 7️⃣ Upload all security scan reports as a single artifact
       - name: Upload Security scan reports as artifact
         if: always()
         uses: actions/upload-artifact@v4

@@ -83,18 +83,16 @@ jobs:
         working-directory: hub/dispatcher
 
     steps:
-      # 1️⃣ Checkout repository
-      - uses: actions/checkout@v5
+      - name: Checkout repository
+        uses: actions/checkout@v5
 
-      # 2️⃣ Set up JDK (needed for Gradle project analysis)
-      - name: Set up JDK
+      - name: Set up JDK # needed for Gradle project analysis
         uses: actions/setup-java@v5
         with:
           java-version: '21'
           distribution: 'temurin'
 
-      # 3️⃣ Semgrep scan (code scanning)
-      - name: Run Semgrep
+      - name: Run Semgrep (code scanning)
         run: |
           # Install Semgrep
           pip install semgrep
@@ -120,7 +118,6 @@ jobs:
           sarif_file: hub/dispatcher/semgrep.sarif
           category: semgrep-dispatcher
 
-      # 4️⃣ Trivy scan (filesystem, configs, secrets)
       - name: Run Trivy filesystem scan
         uses: aquasecurity/trivy-action@0.33.1
         with:
@@ -145,7 +142,6 @@ jobs:
           sarif_file: hub/dispatcher/trivy-filesystem.sarif
           category: trivy-dispatcher-filesystem
 
-      # 5️⃣ Upload all security scan reports as a single artifact
       - name: Upload Security scan reports as artifact
         if: always()
         uses: actions/upload-artifact@v4
