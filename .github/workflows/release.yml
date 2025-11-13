@@ -76,7 +76,7 @@ jobs:
 
       - name: Scan LRM backend Docker image
         if: steps.extract_info.outputs.project == 'lrm'
-        uses: aquasecurity/trivy-action@0.24.0
+        uses: aquasecurity/trivy-action@0.33.1
         with:
           image-ref: 'ghcr.io/${{ github.repository_owner }}/hub-lrm-back:${{ steps.extract_info.outputs.version }}'
           format: 'sarif'
@@ -95,7 +95,7 @@ jobs:
 
       - name: Scan LRM frontend Docker image
         if: steps.extract_info.outputs.project == 'lrm'
-        uses: aquasecurity/trivy-action@0.24.0
+        uses: aquasecurity/trivy-action@0.33.1
         with:
           image-ref: 'ghcr.io/${{ github.repository_owner }}/hub-lrm-front:${{ steps.extract_info.outputs.version }}'
           format: 'sarif'
@@ -136,7 +136,7 @@ jobs:
 
       - name: Scan landing Docker image
         if: steps.extract_info.outputs.project == 'landing'
-        uses: aquasecurity/trivy-action@0.24.0
+        uses: aquasecurity/trivy-action@0.33.1
         with:
           image-ref: 'ghcr.io/${{ github.repository_owner }}/hub-web-landing:${{ steps.extract_info.outputs.version }}'
           format: 'sarif'
@@ -170,7 +170,7 @@ jobs:
 
       - name: Scan healthcheck Docker image
         if: steps.extract_info.outputs.project == 'healthcheck'
-        uses: aquasecurity/trivy-action@0.24.0
+        uses: aquasecurity/trivy-action@0.33.1
         with:
           image-ref: 'ghcr.io/${{ github.repository_owner }}/hub-healthcheck:${{ steps.extract_info.outputs.version }}'
           format: 'sarif'
@@ -204,7 +204,7 @@ jobs:
 
       - name: Scan chatbot Docker image
         if: steps.extract_info.outputs.project == 'chatbot'
-        uses: aquasecurity/trivy-action@0.24.0
+        uses: aquasecurity/trivy-action@0.33.1
         with:
           image-ref: 'ghcr.io/${{ github.repository_owner }}/hub-chatbot:${{ steps.extract_info.outputs.version }}'
           format: 'sarif'
@@ -238,7 +238,7 @@ jobs:
 
       - name: Scan openssl Docker image
         if: steps.extract_info.outputs.project == 'openssl'
-        uses: aquasecurity/trivy-action@0.24.0
+        uses: aquasecurity/trivy-action@0.33.1
         with:
           image-ref: 'ghcr.io/${{ github.repository_owner }}/openssl:${{ steps.extract_info.outputs.version }}'
           format: 'sarif'
@@ -272,7 +272,7 @@ jobs:
 
       - name: Scan specs Docker image
         if: steps.extract_info.outputs.project == 'specs'
-        uses: aquasecurity/trivy-action@0.24.0
+        uses: aquasecurity/trivy-action@0.33.1
         with:
           image-ref: 'ghcr.io/${{ github.repository_owner }}/hub-specs:${{ steps.extract_info.outputs.version }}'
           format: 'sarif'
@@ -306,7 +306,7 @@ jobs:
 
       - name: Scan annuaire Docker image
         if: steps.extract_info.outputs.project == 'annuaire'
-        uses: aquasecurity/trivy-action@0.24.0
+        uses: aquasecurity/trivy-action@0.33.1
         with:
           image-ref: 'ghcr.io/${{ github.repository_owner }}/hub-annuaire:${{ steps.extract_info.outputs.version }}'
           format: 'sarif'
