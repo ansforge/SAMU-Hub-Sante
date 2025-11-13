@@ -85,11 +85,8 @@ jobs:
             --image ghcr.io/${{ github.repository_owner }}/dispatcher:$IMAGE_TAG
       - name: Scan Dispatcher Docker image
         uses: aquasecurity/trivy-action@0.24.0
-        env:
-          DISPATCHER_VERSION: ${{ needs.get-tags.outputs.dispatcher-version }}
-          MODEL_VERSION: ${{ matrix.model_version }}
         with:
-          image-ref: 'ghcr.io/${{ github.repository_owner }}/dispatcher:${{ env.DISPATCHER_VERSION }}-model-${{ env.MODEL_VERSION }}'
+          image-ref: 'ghcr.io/${{ github.repository_owner }}/dispatcher:${{ needs.get-tags.outputs.dispatcher-version }}-model-${{ matrix.model_version }}'
           format: 'sarif'
           output: 'trivy-dispatcher-${{ matrix.model_version }}-image.sarif'
           severity: 'HIGH,CRITICAL'
