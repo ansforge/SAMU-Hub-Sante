@@ -100,7 +100,6 @@ public class ConversionUtils {
 
     public static boolean requiresCisuConversion(HubConfiguration hubConfig, EdxlMessage edxlMessage) {
         return isOneCisuHubexInvolved(edxlMessage)
-                && isConvertedModel(edxlMessage)
                 && !isAlreadyCisuConverted(hubConfig.getVhost(), edxlMessage.getDescriptor().getExplicitAddress().getExplicitAddressValue())
                 && !isDirectCisuForHealthActor(hubConfig, edxlMessage);
     }
@@ -124,14 +123,6 @@ public class ConversionUtils {
         String recipientID = getRecipientID(edxlMessage);
         String senderID = edxlMessage.getSenderID();
         return !(recipientID.startsWith(HEALTH_PREFIX) && senderID.startsWith(HEALTH_PREFIX));
-    }
-
-    public static boolean isConvertedModel(EdxlMessage edxlMessage) {
-        // Checks if the message is a CISU model
-        // ToDo: Remove if not used (nor adapted to only directCisuModel to target only EDA and not EMSI)
-        //  OR add a class in model lib to know if the message is a CISU model (to decouple dispatcher from model lib)
-        return edxlMessage.getFirstContentMessage() instanceof CreateCaseWrapper
-                || edxlMessage.getFirstContentMessage() instanceof CreateCaseHealthWrapper;
     }
 
     public static boolean isDirectCisuForHealthActor(HubConfiguration hubConfig, EdxlMessage edxlMessage) {

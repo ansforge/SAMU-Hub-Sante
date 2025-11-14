@@ -241,21 +241,6 @@ public class ConversionUtilsTest {
     }
 
     @Test
-    void testIsCisuModel() {
-        // CreateCaseWrapper
-        when(edxlMessage.getFirstContentMessage()).thenReturn(createCaseWrapper);
-        assertTrue(ConversionUtils.isConvertedModel(edxlMessage));
-
-        // CreateCaseHealthWrapper
-        when(edxlMessage.getFirstContentMessage()).thenReturn(createCaseHealthWrapper);
-        assertTrue(ConversionUtils.isConvertedModel(edxlMessage));
-
-        // Other type (EMSI conversion not handled for now)
-        when(edxlMessage.getFirstContentMessage()).thenReturn(emsiWrapper);
-        assertFalse(ConversionUtils.isConvertedModel(edxlMessage));
-    }
-
-    @Test
     void testIsDirectCisuForHealthActor() {
         try (MockedStatic<MessageUtils> mockedMessageUtils = mockStatic(MessageUtils.class)) {
             when(edxlMessage.getSenderID()).thenReturn("fr.health.samuA");
@@ -283,14 +268,10 @@ public class ConversionUtilsTest {
             // EDA is a converted model
             // SNH = Should Not Happen
             List<Boolean[]> testCases = Arrays.asList(
-                new Boolean[]{true,  true,  false, true},
-                new Boolean[]{true,  true,  true,  false},
-                new Boolean[]{true,  false, false, false},
-                new Boolean[]{true,  false, true,  false},
-                new Boolean[]{false, true,  false, false},
-                new Boolean[]{false, true,  true,  false},
-                new Boolean[]{false, false, false, false},
-                new Boolean[]{false, false, true,  false}
+                new Boolean[]{true,  false, true},
+                new Boolean[]{true,  true,  false},
+                new Boolean[]{false,  false, false},
+                new Boolean[]{false, true,  false}
             );
 
             when(edxlMessage.getDescriptor().getExplicitAddress().getExplicitAddressValue()).thenReturn("fr.fire.something");
@@ -305,16 +286,15 @@ public class ConversionUtilsTest {
 
                 // Mock the helper methods
                 mockedConversionUtils.when(() -> ConversionUtils.isOneCisuHubexInvolved(edxlMessage)).thenReturn(testCase[0]);
-                mockedConversionUtils.when(() -> ConversionUtils.isConvertedModel(edxlMessage)).thenReturn(testCase[1]);
                 mockedConversionUtils.when(() -> ConversionUtils.isAlreadyCisuConverted(hubConfig.getVhost(), MessageUtils.getRecipientID(edxlMessage))).thenReturn(false);
-                mockedConversionUtils.when(() -> ConversionUtils.isDirectCisuForHealthActor(hubConfig, edxlMessage)).thenReturn(testCase[2]);
+                mockedConversionUtils.when(() -> ConversionUtils.isDirectCisuForHealthActor(hubConfig, edxlMessage)).thenReturn(testCase[1]);
 
                 // Assert with descriptive message
                 String testDescription = String.format(
-                    "Test case %d failed: isCisuExchange=%b, isConvertedModel=%b, isDirectCisuForHealthActor=%b, expected=%b",
-                    i, testCase[0], testCase[1], testCase[2], testCase[3]
+                    "Test case %d failed: isCisuExchange=%b, isDirectCisuForHealthActor=%b, expected=%b",
+                    i, testCase[0], testCase[1], testCase[2]
                 );
-                assertEquals(testCase[3], ConversionUtils.requiresCisuConversion(hubConfig, edxlMessage), testDescription);
+                assertEquals(testCase[2], ConversionUtils.requiresCisuConversion(hubConfig, edxlMessage), testDescription);
             }
         }
     }
