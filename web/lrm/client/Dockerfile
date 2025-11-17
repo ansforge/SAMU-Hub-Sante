@@ -29,11 +29,21 @@ COPY --from=builder /app/.output ./.output
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/public ./public
 
+# Create non-root user for security
+RUN addgroup -g 1001 -S app
+RUN adduser -S app -u 1001 -G app
+
+# Change ownership of the app directory to the non-root user
+RUN chown -R app:app /app
+
 ENV NUXT_HOST=0.0.0.0
 ENV NUXT_PORT=3000
 
 # Expose port 3000
 EXPOSE 3000
+
+# Switch to non-root user
+USER app
 
 # Start the web app
 CMD ["npm", "start"]
