@@ -9,6 +9,9 @@ import java.security.KeyStore;
 public class TLSConf {
 
     private SSLContext sslContext;
+    private static final String CERTIFICATE_KEYSTORE_INSTANCE_NAME = "PKCS12";
+    private static final String TRUST_STORE_KEYSTORE_INSTANCE_NAME = "JKS";
+    private static final String KEY_MANAGER_FACTORY_NAME = "SunX509";
 
     public TLSConf(String protocol, String keyPassphrase, String keyPath, String trustPassphrase, String trustStorePath) throws Exception {
         KeyManagerFactory kmf = loadClientKey(keyPassphrase.toCharArray(), keyPath);
@@ -26,19 +29,19 @@ public class TLSConf {
     }
 
     public static KeyManagerFactory loadClientKey(char[] keyPassphrase, String keyPath) throws Exception {
-        KeyStore ks = KeyStore.getInstance("PKCS12");
+        KeyStore ks = KeyStore.getInstance(CERTIFICATE_KEYSTORE_INSTANCE_NAME);
         ks.load(new FileInputStream(keyPath), keyPassphrase);
 
-        KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
+        KeyManagerFactory kmf = KeyManagerFactory.getInstance(KEY_MANAGER_FACTORY_NAME);
         kmf.init(ks, keyPassphrase);
         return kmf;
     }
 
     public static TrustManagerFactory loadTrustStore(char[] trustPassphrase, String trustStorePath) throws Exception {
-        KeyStore tks = KeyStore.getInstance("JKS");
+        KeyStore tks = KeyStore.getInstance(TRUST_STORE_KEYSTORE_INSTANCE_NAME);
         tks.load(new FileInputStream(trustStorePath), trustPassphrase);
 
-        TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
+        TrustManagerFactory tmf = TrustManagerFactory.getInstance(KEY_MANAGER_FACTORY_NAME);
         tmf.init(tks);
         return tmf;
     }
