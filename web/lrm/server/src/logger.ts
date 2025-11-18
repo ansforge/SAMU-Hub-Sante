@@ -1,6 +1,8 @@
 import { transports, createLogger, format } from 'winston';
 
-const buildDefaultConsoleTransport = () => new transports.Console({ level: 'info' });
+const logLevel = process.env.LOG_LEVEL || 'info';
+
+const buildDefaultConsoleTransport = () => new transports.Console({ level: logLevel });
 
 export const logger = createLogger({
   format: format.combine(
