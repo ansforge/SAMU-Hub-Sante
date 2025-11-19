@@ -17,46 +17,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import io.github.cdimascio.dotenv.Dotenv;
 
 public class PublishExample extends Simulation {
-    final Dotenv dotenv = Dotenv.load();
+    private static final Dotenv dotenv = Dotenv.load();
     private static final Logger log = LoggerFactory.getLogger(PublishExample.class);
-    private final String host = dotenv.get("RABBITMQ_HOST");
-    private final Integer port = Integer.parseInt(dotenv.get("RABBITMQ_PORT"));
-    private final String exchangeName = dotenv.get("EXCHANGE_NAME");
-    private final String vhost = "15-15_v1.5";
-
-    private ConnectionFactory mtlsFactory(String vhost) throws Exception {
-        final ConnectionFactory factory = new ConnectionFactory();
-
-        factory.setSaslConfig(DefaultSaslConfig.EXTERNAL);
-        factory.setHost(this.host);
-        factory.setPort(this.port);
-        factory.setVirtualHost(vhost);
-
-        // Here, configure the connection recovery policies
-        // NB - You can set a fixed time interval using setNetworkRecoveryInterval(NETWORK_RECOVERY_INTERVAL);
-        // NB - You can optionally configure ExponentialBackoffDelayHandler with your own backoff sequence.
-        factory.setAutomaticRecoveryEnabled(true);
-        final RecoveryDelayHandler delayHandler = new RecoveryDelayHandler.ExponentialBackoffDelayHandler();
-        factory.setRecoveryDelayHandler(delayHandler);
-
-
-        final TLSConf tlsConf = new TLSConf(
-            TLS_PROTOCOL_VERSION,
-            dotenv.get("KEY_PASSPHRASE"),
-            dotenv.get("CERTIFICATE_PATH"),
-            dotenv.get("TRUST_STORE_PASSWORD"),
-            dotenv.get("TRUST_STORE_PATH"));
-
-        factory.useSslProtocol(tlsConf.getSslContext());
-
-        factory.enableHostnameVerification();
-
-        return factory;
-    }
+    private static final String exchangeName = dotenv.get("EXCHANGE_NAME");
+    private static MTLSConnectionFactory mtlsConnectionFactory;
+    private static TLSConf tlsConf;
 
     private String loadSampleMessage(String fileName) throws Exception {
         InputStream fileStream = PublishExample.class.getClassLoader().getResourceAsStream("messages/"+fileName);
@@ -70,7 +40,7 @@ public class PublishExample extends Simulation {
                     .exec(
                             amqp("publish to exchange")
                                     .publish()
-                                    .topicExchange(this.exchangeName, clientId)
+                                    .topicExchange(exchangeName, clientId)
                                     .textMessage(messageString)
                                     .contentType(JSON_CONTENT_TYPE)
                     );
@@ -79,7 +49,7 @@ public class PublishExample extends Simulation {
     private AmqpProtocolBuilder amqpConfFactory(String vhost) throws Exception {
         return amqp()
                 .connectionFactory(
-                        mtlsFactory(vhost)
+                        mtlsConnectionFactory.buildConnectionToVhost(tlsConf, vhost)
                         )
                 .usePersistentDeliveryMode();
     }
@@ -94,6 +64,16 @@ public class PublishExample extends Simulation {
 
     {
         try {
+            String host = dotenv.get("RABBITMQ_HOST");
+            int port = Integer.parseInt(dotenv.get("RABBITMQ_PORT"));
+            mtlsConnectionFactory = new MTLSConnectionFactory(host, port);
+            tlsConf = new TLSConf(
+                    TLS_PROTOCOL_VERSION,
+                    dotenv.get("KEY_PASSPHRASE"),
+                    dotenv.get("CERTIFICATE_PATH"),
+                    dotenv.get("TRUST_STORE_PASSWORD"),
+                    dotenv.get("TRUST_STORE_PATH"));
+
             String messageString = loadSampleMessage("rs-eda.json");
             String invalidMessageString = loadSampleMessage("invalid.json");
             String conversionMessageString = loadSampleMessage("conversion.json");
@@ -117,7 +97,7 @@ public class PublishExample extends Simulation {
             )
                     .maxDuration(600);
         } catch(Exception e) {
-            log.error("e: ", e);
+            log.error("Unexpected error during load test", e);
         }
     }
 }
