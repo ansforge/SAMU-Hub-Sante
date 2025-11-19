@@ -22,9 +22,17 @@ import java.nio.charset.StandardCharsets;
 import io.github.cdimascio.dotenv.Dotenv;
 
 public class PublishExample extends Simulation {
+    private static final String EXCHANGE_NAME_ENV_VAR = "EXCHANGE_NAME";
+    private static final String RABBITMQ_HOST_ENV_VAR = "RABBITMQ_HOST";
+    private static final String RABBITMQ_PORT_ENV_VAR = "RABBITMQ_PORT";
+    private static final String KEY_PASSPHRASE_ENV_VAR = "KEY_PASSPHRASE";
+    private static final String CERTIFICATE_PATH_ENV_VAR = "CERTIFICATE_PATH";
+    private static final String TRUST_STORE_PASSWORD_ENV_VAR = "TRUST_STORE_PASSWORD";
+    private static final String TRUST_STORE_PATH_ENV_VAR = "TRUST_STORE_PATH";
+
     private static final Dotenv dotenv = Dotenv.load();
     private static final Logger log = LoggerFactory.getLogger(PublishExample.class);
-    private static final String exchangeName = dotenv.get("EXCHANGE_NAME");
+    private static final String EXCHANGE_NAME = dotenv.get(EXCHANGE_NAME_ENV_VAR);
     private static MTLSConnectionFactory mtlsConnectionFactory;
     private static TLSConf tlsConf;
 
@@ -40,7 +48,7 @@ public class PublishExample extends Simulation {
                     .exec(
                             amqp("publish to exchange")
                                     .publish()
-                                    .topicExchange(exchangeName, clientId)
+                                    .topicExchange(EXCHANGE_NAME, clientId)
                                     .textMessage(messageString)
                                     .contentType(JSON_CONTENT_TYPE)
                     );
@@ -64,15 +72,15 @@ public class PublishExample extends Simulation {
 
     {
         try {
-            String host = dotenv.get("RABBITMQ_HOST");
-            int port = Integer.parseInt(dotenv.get("RABBITMQ_PORT"));
+            String host = dotenv.get(RABBITMQ_HOST_ENV_VAR);
+            int port = Integer.parseInt(dotenv.get(RABBITMQ_PORT_ENV_VAR));
             mtlsConnectionFactory = new MTLSConnectionFactory(host, port);
             tlsConf = new TLSConf(
                     TLS_PROTOCOL_VERSION,
-                    dotenv.get("KEY_PASSPHRASE"),
-                    dotenv.get("CERTIFICATE_PATH"),
-                    dotenv.get("TRUST_STORE_PASSWORD"),
-                    dotenv.get("TRUST_STORE_PATH"));
+                    dotenv.get(KEY_PASSPHRASE_ENV_VAR),
+                    dotenv.get(CERTIFICATE_PATH_ENV_VAR),
+                    dotenv.get(TRUST_STORE_PASSWORD_ENV_VAR),
+                    dotenv.get(TRUST_STORE_PATH_ENV_VAR));
 
             String messageString = loadSampleMessage("rs-eda.json");
             String invalidMessageString = loadSampleMessage("invalid.json");
