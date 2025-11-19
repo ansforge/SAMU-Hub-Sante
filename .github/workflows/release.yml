@@ -4,18 +4,13 @@ on:
   release:
     types: [published]
 jobs:
-  build-image:
+  extract-release-info:
     runs-on: ubuntu-latest
+    outputs:
+      project: ${{ steps.extract_info.outputs.project }}
+      version: ${{ steps.extract_info.outputs.version }}
+      matrix: ${{ steps.extract_info.outputs.matrix }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Set up JDK
-        uses: actions/setup-java@v2
-        with:
-          java-version: '21'
-          distribution: 'temurin'
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
       - name: Extract release information
         id: extract_info
         run: |
@@ -57,282 +52,90 @@ jobs:
             exit 1
           fi
           
-          echo "::set-output name=project::$PROJECT"
-          echo "::set-output name=version::$VERSION"
+          echo "project=$PROJECT" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          
+          # Define matrix based on project
+          case $PROJECT in
+            lrm)
+              MATRIX='{"include":[{"name":"lrm-backend","context":"./web/lrm/server","tag":"hub-lrm-back","artifact-name":"trivy-reports-lrm-backend"},{"name":"lrm-frontend","context":"./web/lrm/client","tag":"hub-lrm-front","artifact-name":"trivy-reports-lrm-frontend"}]}'
+              ;;
+            landing)
+              MATRIX='{"include":[{"name":"landing","context":"./web/landing","tag":"hub-web-landing","artifact-name":"trivy-reports-landing"}]}'
+              ;;
+            healthcheck)
+              MATRIX='{"include":[{"name":"healthcheck","context":"./tools/healthcheck","tag":"hub-healthcheck","artifact-name":"trivy-reports-healthcheck"}]}'
+              ;;
+            chatbot)
+              MATRIX='{"include":[{"name":"chatbot","context":"./tools/chatbot","tag":"hub-chatbot","artifact-name":"trivy-reports-chatbot"}]}'
+              ;;
+            openssl)
+              MATRIX='{"include":[{"name":"openssl","context":"./tools/openssl","tag":"openssl","artifact-name":"trivy-reports-openssl"}]}'
+              ;;
+            specs)
+              MATRIX='{"include":[{"name":"specs","context":"./web/specs","tag":"hub-specs","artifact-name":"trivy-reports-specs"}]}'
+              ;;
+            annuaire)
+              MATRIX='{"include":[{"name":"annuaire","context":"./tools/annuaire","tag":"hub-annuaire","artifact-name":"trivy-reports-annuaire"}]}'
+              ;;
+          esac
+          
+          echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
+
+  build-image:
+    needs: extract-release-info
+    if: needs.extract-release-info.outputs.project != 'dispatcher'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix: ${{ fromJson(needs.extract-release-info.outputs.matrix) }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+      
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
       - name: Login to Container Registry
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Build and push lrm backend Docker image
-        if: steps.extract_info.outputs.project == 'lrm'
-        uses: docker/build-push-action@v5
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
         with:
           push: true
           platforms: linux/amd64
-          tags: ghcr.io/${{ github.repository_owner }}/hub-lrm-back:${{ steps.extract_info.outputs.version }}
-          context: ./web/lrm/server
+          tags: ghcr.io/${{ github.repository_owner }}/${{ matrix.tag }}:${{ needs.extract-release-info.outputs.version }}
+          context: ${{ matrix.context }}
 
-      - name: Scan LRM backend Docker image
-        if: steps.extract_info.outputs.project == 'lrm'
+      - name: Scan Docker image
         continue-on-error: true
         uses: aquasecurity/trivy-action@0.33.1
         with:
-          image-ref: 'ghcr.io/${{ github.repository_owner }}/hub-lrm-back:${{ steps.extract_info.outputs.version }}'
+          image-ref: 'ghcr.io/${{ github.repository_owner }}/${{ matrix.tag }}:${{ needs.extract-release-info.outputs.version }}'
           format: 'sarif'
-          output: 'trivy-lrm-backend-image.sarif'
+          output: 'trivy-${{ matrix.name }}-image.sarif'
           severity: 'HIGH,CRITICAL'
           exit-code: '1'
 
-      - name: Build and push lrm frontend Docker image
-        if: steps.extract_info.outputs.project == 'lrm'
-        uses: docker/build-push-action@v5
-        with:
-          push: true
-          platforms: linux/amd64
-          tags: ghcr.io/${{ github.repository_owner }}/hub-lrm-front:${{ steps.extract_info.outputs.version }}
-          context: ./web/lrm/client
-
-      - name: Scan LRM frontend Docker image
-        if: steps.extract_info.outputs.project == 'lrm'
-        continue-on-error: true
-        uses: aquasecurity/trivy-action@0.33.1
-        with:
-          image-ref: 'ghcr.io/${{ github.repository_owner }}/hub-lrm-front:${{ steps.extract_info.outputs.version }}'
-          format: 'sarif'
-          output: 'trivy-lrm-frontend-image.sarif'
-          severity: 'HIGH,CRITICAL'
-          exit-code: '1'
-
-      - name: Upload LRM Backend image scan results to GitHub Security tab
-        if: always() && steps.extract_info.outputs.project == 'lrm' && hashFiles('trivy-lrm-backend-image.sarif') != ''
+      - name: Upload image scan results to GitHub Security tab
+        if: always() && hashFiles('trivy-${{ matrix.name }}-image.sarif') != ''
         uses: github/codeql-action/upload-sarif@v3
         with:
-          sarif_file: 'trivy-lrm-backend-image.sarif'
-          category: 'trivy-lrm-backend-image'
+          sarif_file: 'trivy-${{ matrix.name }}-image.sarif'
+          category: 'trivy-${{ matrix.name }}-image'
 
-      - name: Upload LRM Frontend image scan results to GitHub Security tab
-        if: always() && steps.extract_info.outputs.project == 'lrm' && hashFiles('trivy-lrm-frontend-image.sarif') != ''
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: 'trivy-lrm-frontend-image.sarif'
-          category: 'trivy-lrm-frontend-image'
-
-      - name: Upload LRM image scan reports as artifacts
-        if: always() && steps.extract_info.outputs.project == 'lrm'
+      - name: Upload image scan reports as artifacts
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: trivy-reports-lrm-images
-          path: '*.sarif'
-          retention-days: 7
-
-      - name: Build and push landing Docker image
-        if: steps.extract_info.outputs.project == 'landing'
-        uses: docker/build-push-action@v5
-        with:
-          push: true
-          platforms: linux/amd64
-          tags: ghcr.io/${{ github.repository_owner }}/hub-web-landing:${{ steps.extract_info.outputs.version }}
-          context: ./web/landing
-
-      - name: Scan landing Docker image
-        if: steps.extract_info.outputs.project == 'landing'
-        continue-on-error: true
-        uses: aquasecurity/trivy-action@0.33.1
-        with:
-          image-ref: 'ghcr.io/${{ github.repository_owner }}/hub-web-landing:${{ steps.extract_info.outputs.version }}'
-          format: 'sarif'
-          output: 'trivy-landing-image.sarif'
-          severity: 'HIGH,CRITICAL'
-          exit-code: '1'
-
-      - name: Upload Landing image scan results to GitHub Security tab
-        if: always() && steps.extract_info.outputs.project == 'landing' && hashFiles('trivy-landing-image.sarif') != ''
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: 'trivy-landing-image.sarif'
-          category: 'trivy-landing-image'
-
-      - name: Upload Landing image scan reports as artifacts
-        if: always() && steps.extract_info.outputs.project == 'landing'
-        uses: actions/upload-artifact@v4
-        with:
-          name: trivy-reports-landing-image
-          path: '*.sarif'
-          retention-days: 7
-
-      - name: Build and push healthcheck service Docker image
-        if: steps.extract_info.outputs.project == 'healthcheck'
-        uses: docker/build-push-action@v5
-        with:
-          push: true
-          platforms: linux/amd64
-          tags: ghcr.io/${{ github.repository_owner }}/hub-healthcheck:${{ steps.extract_info.outputs.version }}
-          context: ./tools/healthcheck
-
-      - name: Scan healthcheck Docker image
-        if: steps.extract_info.outputs.project == 'healthcheck'
-        continue-on-error: true
-        uses: aquasecurity/trivy-action@0.33.1
-        with:
-          image-ref: 'ghcr.io/${{ github.repository_owner }}/hub-healthcheck:${{ steps.extract_info.outputs.version }}'
-          format: 'sarif'
-          output: 'trivy-healthcheck-image.sarif'
-          severity: 'HIGH,CRITICAL'
-          exit-code: '1'
-
-      - name: Upload Healthcheck image scan results to GitHub Security tab
-        if: always() && steps.extract_info.outputs.project == 'healthcheck' && hashFiles('trivy-healthcheck-image.sarif') != ''
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: 'trivy-healthcheck-image.sarif'
-          category: 'trivy-healthcheck-image'
-
-      - name: Upload Healthcheck image scan reports as artifacts  
-        if: always() && steps.extract_info.outputs.project == 'healthcheck'
-        uses: actions/upload-artifact@v4
-        with:
-          name: trivy-reports-healthcheck-image
-          path: '*.sarif'
-          retention-days: 7
-
-      - name: Build and push chatbot Docker image
-        if: steps.extract_info.outputs.project == 'chatbot'
-        uses: docker/build-push-action@v5
-        with:
-          push: true
-          platforms: linux/amd64
-          tags: ghcr.io/${{ github.repository_owner }}/hub-chatbot:${{ steps.extract_info.outputs.version }}
-          context: ./tools/chatbot
-
-      - name: Scan chatbot Docker image
-        if: steps.extract_info.outputs.project == 'chatbot'
-        continue-on-error: true
-        uses: aquasecurity/trivy-action@0.33.1
-        with:
-          image-ref: 'ghcr.io/${{ github.repository_owner }}/hub-chatbot:${{ steps.extract_info.outputs.version }}'
-          format: 'sarif'
-          output: 'trivy-chatbot-image.sarif'
-          severity: 'HIGH,CRITICAL'
-          exit-code: '1'
-
-      - name: Upload Chatbot image scan results to GitHub Security tab
-        if: always() && steps.extract_info.outputs.project == 'chatbot' && hashFiles('trivy-chatbot-image.sarif') != ''
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: 'trivy-chatbot-image.sarif'
-          category: 'trivy-chatbot-image'
-
-      - name: Upload Chatbot image scan reports as artifacts
-        if: always() && steps.extract_info.outputs.project == 'chatbot'
-        uses: actions/upload-artifact@v4
-        with:
-          name: trivy-reports-chatbot-image
-          path: '*.sarif'
-          retention-days: 7
-
-      - name: Build and push openssl Docker image
-        if: steps.extract_info.outputs.project == 'openssl'
-        uses: docker/build-push-action@v5
-        with:
-          push: true
-          platforms: linux/amd64
-          tags: ghcr.io/${{ github.repository_owner }}/openssl:${{ steps.extract_info.outputs.version }}
-          context: ./tools/openssl
-
-      - name: Scan openssl Docker image
-        if: steps.extract_info.outputs.project == 'openssl'
-        continue-on-error: true
-        uses: aquasecurity/trivy-action@0.33.1
-        with:
-          image-ref: 'ghcr.io/${{ github.repository_owner }}/openssl:${{ steps.extract_info.outputs.version }}'
-          format: 'sarif'
-          output: 'trivy-openssl-image.sarif'
-          severity: 'HIGH,CRITICAL'
-          exit-code: '1'
-
-      - name: Upload OpenSSL image scan results to GitHub Security tab
-        if: always() && steps.extract_info.outputs.project == 'openssl' && hashFiles('trivy-openssl-image.sarif') != ''
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: 'trivy-openssl-image.sarif'
-          category: 'trivy-openssl-image'
-
-      - name: Upload OpenSSL image scan reports as artifacts
-        if: always() && steps.extract_info.outputs.project == 'openssl'
-        uses: actions/upload-artifact@v4
-        with:
-          name: trivy-reports-openssl-image
-          path: '*.sarif'
-          retention-days: 7
-
-      - name: Build and push specs Docker image
-        if: steps.extract_info.outputs.project == 'specs'
-        uses: docker/build-push-action@v5
-        with:
-          push: true
-          platforms: linux/amd64
-          tags: ghcr.io/${{ github.repository_owner }}/hub-specs:${{ steps.extract_info.outputs.version }}
-          context: ./web/specs
-
-      - name: Scan specs Docker image
-        if: steps.extract_info.outputs.project == 'specs'
-        continue-on-error: true
-        uses: aquasecurity/trivy-action@0.33.1
-        with:
-          image-ref: 'ghcr.io/${{ github.repository_owner }}/hub-specs:${{ steps.extract_info.outputs.version }}'
-          format: 'sarif'
-          output: 'trivy-specs-image.sarif'
-          severity: 'HIGH,CRITICAL'
-          exit-code: '1'
-
-      - name: Upload Specs image scan results to GitHub Security tab
-        if: always() && steps.extract_info.outputs.project == 'specs' && hashFiles('trivy-specs-image.sarif') != ''
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: 'trivy-specs-image.sarif'
-          category: 'trivy-specs-image'
-
-      - name: Upload Specs image scan reports as artifacts
-        if: always() && steps.extract_info.outputs.project == 'specs'
-        uses: actions/upload-artifact@v4
-        with:
-          name: trivy-reports-specs-image
-          path: '*.sarif'
-          retention-days: 7
-
-      - name: Build and push annuaire Docker image
-        if: steps.extract_info.outputs.project == 'annuaire'
-        uses: docker/build-push-action@v5
-        with:
-          push: true
-          platforms: linux/amd64
-          tags: ghcr.io/${{ github.repository_owner }}/hub-annuaire:${{ steps.extract_info.outputs.version }}
-          context: ./tools/annuaire
-
-      - name: Scan annuaire Docker image
-        if: steps.extract_info.outputs.project == 'annuaire'
-        continue-on-error: true
-        uses: aquasecurity/trivy-action@0.33.1
-        with:
-          image-ref: 'ghcr.io/${{ github.repository_owner }}/hub-annuaire:${{ steps.extract_info.outputs.version }}'
-          format: 'sarif'
-          output: 'trivy-annuaire-image.sarif'
-          severity: 'HIGH,CRITICAL'
-          exit-code: '1'
-
-      - name: Upload Annuaire image scan results to GitHub Security tab
-        if: always() && steps.extract_info.outputs.project == 'annuaire' && hashFiles('trivy-annuaire-image.sarif') != ''
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: 'trivy-annuaire-image.sarif'
-          category: 'trivy-annuaire-image'
-
-      - name: Upload Annuaire image scan reports as artifacts
-        if: always() && steps.extract_info.outputs.project == 'annuaire'
-        uses: actions/upload-artifact@v4
-        with:
-          name: trivy-reports-annuaire-image
+          name: ${{ matrix.artifact-name }}
           path: '*.sarif'
           retention-days: 7
