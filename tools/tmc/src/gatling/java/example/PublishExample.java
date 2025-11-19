@@ -59,9 +59,9 @@ public class PublishExample extends Simulation {
     }
 
     private String loadSampleMessage(String fileName) throws Exception {
-        var is = PublishExample.class.getClassLoader().getResourceAsStream("messages/"+fileName);
-        if (is == null) throw new IOException("Resource not found:" + fileName);
-        return new String(is.readAllBytes(), StandardCharsets.UTF_8);
+        InputStream fileStream = PublishExample.class.getClassLoader().getResourceAsStream("messages/"+fileName);
+        if (fileStream == null) throw new IOException("Resource not found:" + fileName);
+        return new String(fileStream.readAllBytes(), StandardCharsets.UTF_8);
     }
 
     private ScenarioBuilder buildAMPQScenario(String name, String clientId, String messageString) {
