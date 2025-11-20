@@ -18,7 +18,6 @@ jobs:
         id: extract_info
         run: |
           RELEASE_NAME=${{ github.event.release.name || github.ref_name }}
-
           echo "Processing release: $RELEASE_NAME"
           
           # Simple pattern matching to extract project and version
@@ -31,10 +30,9 @@ jobs:
             exit 1
           fi
           
-          # Verify project exists in configuration
           CONFIG_FILE=".github/config/build-matrices.yaml"
           
-          # Check if project exists in YAML directly
+          # Check if project exists in YAML
           if ! yq eval ".projects | has(\"$PROJECT\")" "$CONFIG_FILE" | grep -q "true"; then
             echo "Project '$PROJECT' is not configured!"
             echo "Available projects:"
@@ -52,10 +50,6 @@ jobs:
           echo "project=$PROJECT" >> $GITHUB_OUTPUT
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           
-          # Load build matrix configuration directly from YAML
-          echo "Loading matrix configuration for project: $PROJECT"
-          
-          # Extract ONLY the include section and output as compact JSON
           INCLUDE_ARRAY=$(yq eval ".projects.${PROJECT}.include" "$CONFIG_FILE" -o=json -I=0)
           
           if [[ "$INCLUDE_ARRAY" == "null" ]]; then
@@ -65,9 +59,6 @@ jobs:
           
           # Wrap in the matrix format expected by GitHub Actions
           MATRIX_JSON="{\"include\":$INCLUDE_ARRAY}"
-          
-          echo "Matrix configuration loaded successfully"
-          echo "MATRIX: $MATRIX_JSON"
           echo "matrix=$MATRIX_JSON" >> $GITHUB_OUTPUT
 
   build-image:
