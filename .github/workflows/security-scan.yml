@@ -60,44 +60,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v5
 
-      # Setup environment based on project type
-      - name: Set up Node.js
-        if: inputs.project-type == 'nodejs'
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ inputs.node-version }}
-          cache: 'npm'
-          cache-dependency-path: '${{ inputs.working-directory }}/package-lock.json'
-
-      - name: Set up Python with uv
-        if: inputs.project-type == 'python'
-        uses: astral-sh/setup-uv@v7
-        with:
-          version: "latest"
-          python-version: ${{ inputs.python-version }}
-
-      - name: Set up JDK
-        if: inputs.project-type == 'java'
-        uses: actions/setup-java@v5
-        with:
-          java-version: ${{ inputs.java-version }}
-          distribution: 'temurin'
-
-      # Install dependencies based on project type
-      - name: Install Node.js dependencies
-        if: inputs.project-type == 'nodejs'
-        run: npm ci
-
-      - name: Install Python security tools
-        if: inputs.project-type == 'python' && inputs.dependency-scan
-        run: |
-          uv add --dev uv-secure
-
       # Run dependency vulnerability scans
-      - name: Scan Python dependencies (uv-secure)
+      - name: Install and run Python dependency scanner
         if: inputs.project-type == 'python' && inputs.dependency-scan
         run: |
-          uv run uv-secure uv.lock --format json > uv-secure.json || true
+          pip install uv-secure
+          uv-secure ${{ inputs.working-directory }}/uv.lock --format json > ${{ inputs.working-directory }}/uv-secure.json || true
 
       # Run Semgrep code scanning
       - name: Run Semgrep
