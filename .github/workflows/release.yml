@@ -49,7 +49,7 @@ jobs:
           fi
           
           # Validate version format (semantic versioning)
-          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+(\.[0-9]+)?([-][A-Za-z0-9\.]+)*$ ]]; then
+          if [[ ! "$VERSION" =~ ^([0-9]+\.[0-9]+(\.[0-9]+)?)(-[A-Za-z0-9\.]+)*$ ]]; then
             echo "::error::Invalid version format: $VERSION"
             echo "::notice::Expected semantic versioning format (e.g., 1.2.3, 1.2.3-beta)"
             exit 1
