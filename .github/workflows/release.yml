@@ -11,76 +11,64 @@ jobs:
       version: ${{ steps.extract_info.outputs.version }}
       matrix: ${{ steps.extract_info.outputs.matrix }}
     steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        
       - name: Extract release information
         id: extract_info
         run: |
           RELEASE_NAME=${{ github.event.release.name || github.ref_name }}
-          echo $RELEASE_NAME
+
+          echo "Processing release: $RELEASE_NAME"
           
-          if [[ "$RELEASE_NAME" == dispatcher-* ]]; then
-            PROJECT="dispatcher"
-            VERSION=${RELEASE_NAME#dispatcher-}
-          elif [[ "$RELEASE_NAME" == lrm-* ]]; then
-            PROJECT="lrm"
-            VERSION=${RELEASE_NAME#lrm-}
-          elif [[ "$RELEASE_NAME" == landing-* ]]; then
-            PROJECT="landing"
-            VERSION=${RELEASE_NAME#landing-}
-          elif [[ "$RELEASE_NAME" == healthcheck-* ]]; then
-            PROJECT="healthcheck"
-            VERSION=${RELEASE_NAME#healthcheck-}
-          elif [[ "$RELEASE_NAME" == chatbot-* ]]; then
-            PROJECT="chatbot"
-            VERSION=${RELEASE_NAME#chatbot-}
-          elif [[ "$RELEASE_NAME" == specs-* ]]; then
-            PROJECT="specs"
-            VERSION=${RELEASE_NAME#specs-}
-          elif [[ "$RELEASE_NAME" == openssl-* ]]; then
-            PROJECT="openssl"
-            VERSION=${RELEASE_NAME#openssl-}
-          elif [[ "$RELEASE_NAME" == annuaire-* ]]; then
-            PROJECT="annuaire"
-            VERSION=${RELEASE_NAME#annuaire-}
+          # Simple pattern matching to extract project and version
+          if [[ "$RELEASE_NAME" =~ ^([a-zA-Z-]+)-(.+)$ ]]; then
+            PROJECT="${BASH_REMATCH[1]}"
+            VERSION="${BASH_REMATCH[2]}"
+            echo "Extracted project: $PROJECT, version: $VERSION"
           else
-            echo "Invalid release name prefix. Must be 'dispatcher', 'lrm', 'landing', 'healthcheck', 'chatbot', 'specs' or 'annuaire'."
+            echo "Invalid release name format. Expected: 'project-version'"
             exit 1
           fi
           
-          PATTERN="^([0-9]+\.[0-9]+(\.[0-9]+)?)(-[A-Za-z0-9\.]+)*$"
-          if [[ ! "$VERSION" =~ $PATTERN ]]; then
-            echo "Invalid version number"
+          # Verify project exists in configuration
+          CONFIG_FILE=".github/config/build-matrices.yaml"
+          
+          # Check if project exists in YAML directly
+          if ! yq eval ".projects | has(\"$PROJECT\")" "$CONFIG_FILE" | grep -q "true"; then
+            echo "Project '$PROJECT' is not configured!"
+            echo "Available projects:"
+            yq eval '.projects | keys | .[]' "$CONFIG_FILE" | sed 's/^/  - /'
+            exit 1
+          fi
+          
+          # Validate version format (semantic versioning)
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+(\.[0-9]+)?([-][A-Za-z0-9\.]+)*$ ]]; then
+            echo "Invalid version format: $VERSION"
+            echo "Expected semantic versioning format (e.g., 1.2.3, 1.2.3-beta)"
             exit 1
           fi
           
           echo "project=$PROJECT" >> $GITHUB_OUTPUT
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           
-          # Define matrix based on project
-          case $PROJECT in
-            lrm)
-              MATRIX='{"include":[{"name":"lrm-backend","context":"./web/lrm/server","tag":"hub-lrm-back","artifact-name":"trivy-reports-lrm-backend"},{"name":"lrm-frontend","context":"./web/lrm/client","tag":"hub-lrm-front","artifact-name":"trivy-reports-lrm-frontend"}]}'
-              ;;
-            landing)
-              MATRIX='{"include":[{"name":"landing","context":"./web/landing","tag":"hub-web-landing","artifact-name":"trivy-reports-landing"}]}'
-              ;;
-            healthcheck)
-              MATRIX='{"include":[{"name":"healthcheck","context":"./tools/healthcheck","tag":"hub-healthcheck","artifact-name":"trivy-reports-healthcheck"}]}'
-              ;;
-            chatbot)
-              MATRIX='{"include":[{"name":"chatbot","context":"./tools/chatbot","tag":"hub-chatbot","artifact-name":"trivy-reports-chatbot"}]}'
-              ;;
-            openssl)
-              MATRIX='{"include":[{"name":"openssl","context":"./tools/openssl","tag":"openssl","artifact-name":"trivy-reports-openssl"}]}'
-              ;;
-            specs)
-              MATRIX='{"include":[{"name":"specs","context":"./web/specs","tag":"hub-specs","artifact-name":"trivy-reports-specs"}]}'
-              ;;
-            annuaire)
-              MATRIX='{"include":[{"name":"annuaire","context":"./tools/annuaire","tag":"hub-annuaire","artifact-name":"trivy-reports-annuaire"}]}'
-              ;;
-          esac
+          # Load build matrix configuration directly from YAML
+          echo "Loading matrix configuration for project: $PROJECT"
           
-          echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
+          # Extract ONLY the include section and output as compact JSON
+          INCLUDE_ARRAY=$(yq eval ".projects.${PROJECT}.include" "$CONFIG_FILE" -o=json -I=0)
+          
+          if [[ "$INCLUDE_ARRAY" == "null" ]]; then
+            echo "No include configuration found for project '$PROJECT'!"
+            exit 1
+          fi
+          
+          # Wrap in the matrix format expected by GitHub Actions
+          MATRIX_JSON="{\"include\":$INCLUDE_ARRAY}"
+          
+          echo "Matrix configuration loaded successfully"
+          echo "MATRIX: $MATRIX_JSON"
+          echo "matrix=$MATRIX_JSON" >> $GITHUB_OUTPUT
 
   build-image:
     needs: extract-release-info
