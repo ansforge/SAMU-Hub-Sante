@@ -14,11 +14,13 @@ This project uses [uv](https://docs.astral.sh/uv/) for dependency management.
 ### Installation
 
 1. Install uv if you haven't already:
+
    ```bash
    curl -LsSf https://astral.sh/uv/install.sh | sh
    ```
 
 2. Install dependencies:
+
    ```bash
    uv sync
    ```
@@ -33,7 +35,7 @@ uv run python chatbot.py
 
 Create a `.env` file with the following variables:
 
-```
+```txt
 SLACK_APP_TOKEN=xapp-...
 SLACK_BOT_TOKEN=xoxb-...
 OPENAI_API_KEY=sk-...
@@ -58,13 +60,13 @@ uv run pytest
 Format code:
 
 ```bash
-uv run black .
+uv run ruff format .
 ```
 
 Lint code:
 
 ```bash
-uv run flake8 .
+uv run ruff check .
 ```
 
 ### Docker
