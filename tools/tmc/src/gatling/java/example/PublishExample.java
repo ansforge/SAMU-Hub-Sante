@@ -10,9 +10,6 @@ import static io.gatling.javaapi.core.CoreDsl.*;
 import static org.galaxio.gatling.amqp.javaapi.AmqpDsl.*;
 import static example.Constants.TLS_PROTOCOL_VERSION;
 
-import com.rabbitmq.client.ConnectionFactory;
-import com.rabbitmq.client.DefaultSaslConfig;
-import com.rabbitmq.client.RecoveryDelayHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
