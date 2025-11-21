@@ -1,4 +1,4 @@
-package example;
+package loadtesting;
 
 public final class Constants {
     private Constants() {}

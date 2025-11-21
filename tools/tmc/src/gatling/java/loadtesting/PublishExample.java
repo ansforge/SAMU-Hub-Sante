@@ -1,14 +1,14 @@
-package example;
+package loadtesting;
 
 import io.gatling.javaapi.core.PopulationBuilder;
 import org.galaxio.gatling.amqp.javaapi.protocol.AmqpProtocolBuilder;
 import io.gatling.javaapi.core.ScenarioBuilder;
 import io.gatling.javaapi.core.Simulation;
 
-import static example.Constants.JSON_CONTENT_TYPE;
+import static loadtesting.Constants.JSON_CONTENT_TYPE;
 import static io.gatling.javaapi.core.CoreDsl.*;
 import static org.galaxio.gatling.amqp.javaapi.AmqpDsl.*;
-import static example.Constants.TLS_PROTOCOL_VERSION;
+import static loadtesting.Constants.TLS_PROTOCOL_VERSION;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +30,7 @@ public class PublishExample extends Simulation {
     private static final Dotenv dotenv = Dotenv.load();
     private static final Logger log = LoggerFactory.getLogger(PublishExample.class);
     private static final String EXCHANGE_NAME = dotenv.get(EXCHANGE_NAME_ENV_VAR);
-    private static MTLSConnectionFactory mtlsConnectionFactory;
+    private static AmqpConnectionFactory mtlsConnectionFactory;
     private static TLSConf tlsConf;
 
     private String loadSampleMessage(String fileName) throws Exception {
@@ -71,7 +71,7 @@ public class PublishExample extends Simulation {
         try {
             String host = dotenv.get(RABBITMQ_HOST_ENV_VAR);
             int port = Integer.parseInt(dotenv.get(RABBITMQ_PORT_ENV_VAR));
-            mtlsConnectionFactory = new MTLSConnectionFactory(host, port);
+            mtlsConnectionFactory = new AmqpConnectionFactory(host, port);
             tlsConf = new TLSConf(
                     TLS_PROTOCOL_VERSION,
                     dotenv.get(KEY_PASSPHRASE_ENV_VAR),

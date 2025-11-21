@@ -1,14 +1,14 @@
-package example;
+package loadtesting;
 
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.DefaultSaslConfig;
 import com.rabbitmq.client.RecoveryDelayHandler;
 
-public class MTLSConnectionFactory {
+public class AmqpConnectionFactory {
     private final String host;
     private final int port;
 
-    public MTLSConnectionFactory(String host, int port) {
+    public AmqpConnectionFactory(String host, int port) {
         this.host = host;
         this.port = port;
     }

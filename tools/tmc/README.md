@@ -37,7 +37,7 @@ Note : l'exposition des variables d'environnement via fichier `.env` est géré 
 Pour lancer la simulation `PublishExample` utiliser la commande :
 
 ```bash
-./gradlew gatlingRun --simulation example.PublishExample
+./gradlew gatlingRun --simulation loadtesting.PublishExample
 ```
 
 ## Architecture technique

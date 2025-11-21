@@ -1,4 +1,4 @@
-package example;
+package loadtesting;
 
 import java.util.Collections;
 import java.util.Iterator;
