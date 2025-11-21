@@ -31,12 +31,22 @@ RUN npm ci --omit=dev
 # Copy build directory from stage 1
 COPY --from=build /app/dist .
 
+# Create non-root user for security
+RUN addgroup -g 1001 -S app
+RUN adduser -S app -u 1001 -G app
+
+# Change ownership of the app directory to the non-root user
+RUN chown -R app:app /app
+
 # Setup ENV variable
 ENV NODE_ENV=production
 ENV PORT=80
 
 # Expose port 80 to allow incoming traffic
 EXPOSE 80
+
+# Switch to non-root user
+USER app
 
 # Start the Node web server
 CMD ["node", "index.js"]

@@ -39,3 +39,13 @@ jobs:
 
       - name: Run Prettier check
         run: npx prettier --check "**/*.{js,ts,vue,css,scss}"
+
+  security-scan:
+    uses: ./.github/workflows/security-scan.yml
+    with:
+      working-directory: 'web/lrm/client'
+      project-type: 'nodejs'
+      node-version: '24.11'
+      component-name: 'lrm-client'
+      scan-dockerfile: true
+      semgrep-excludes: '--exclude=".nuxt"'

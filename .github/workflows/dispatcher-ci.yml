@@ -74,3 +74,12 @@ jobs:
         with:
           reports: ${{ github.workspace }}/hub/dispatcher/build/reports/jacoco/test/jacocoTestReport.xml
           targetdir: coveragereport
+
+  security-scan:
+    uses: ./.github/workflows/security-scan.yml
+    with:
+      working-directory: 'hub/dispatcher'
+      project-type: 'java'
+      java-version: '21'
+      component-name: 'dispatcher'
+      scan-dockerfile: false

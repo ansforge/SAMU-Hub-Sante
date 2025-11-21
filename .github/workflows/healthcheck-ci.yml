@@ -59,3 +59,13 @@ jobs:
           # https://github.com/actions/upload-artifact/issues/232
           path: tools/healthcheck/htmlcov
           retention-days: 7
+
+  security-scan:
+    uses: ./.github/workflows/security-scan.yml
+    with:
+      working-directory: 'tools/healthcheck'
+      project-type: 'python'
+      python-version: '3.11'
+      component-name: 'healthcheck'
+      scan-dockerfile: true
+      dependency-scan: true

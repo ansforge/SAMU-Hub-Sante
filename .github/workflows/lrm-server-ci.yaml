@@ -33,3 +33,12 @@ jobs:
 
       - name: Run unit tests
         run: npm run test
+
+  security-scan:
+    uses: ./.github/workflows/security-scan.yml
+    with:
+      working-directory: 'web/lrm/server'
+      project-type: 'nodejs'
+      node-version: '24.11'
+      component-name: 'lrm-server'
+      scan-dockerfile: true
