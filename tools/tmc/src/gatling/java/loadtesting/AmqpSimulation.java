@@ -1,5 +1,6 @@
 package loadtesting;
 
+import io.gatling.javaapi.core.OpenInjectionStep;
 import io.gatling.javaapi.core.PopulationBuilder;
 import org.galaxio.gatling.amqp.javaapi.protocol.AmqpProtocolBuilder;
 import io.gatling.javaapi.core.ScenarioBuilder;
@@ -10,6 +11,7 @@ import static io.gatling.javaapi.core.CoreDsl.*;
 import static org.galaxio.gatling.amqp.javaapi.AmqpDsl.*;
 import static loadtesting.Constants.TLS_PROTOCOL_VERSION;
 
+import org.galaxio.gatling.amqp.javaapi.request.PublishDslBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,31 +41,20 @@ public abstract class AmqpSimulation extends Simulation {
         return new String(fileStream.readAllBytes(), StandardCharsets.UTF_8);
     }
 
-    protected ScenarioBuilder buildAMPQScenario(String name, String clientId, String messageString) {
-        return scenario(name)
-                .exec(
-                        amqp("publish to exchange")
-                                .publish()
-                                .topicExchange(EXCHANGE_NAME, clientId)
-                                .textMessage(messageString)
-                                .contentType(JSON_CONTENT_TYPE)
-                );
+    protected PublishDslBuilder sendAmqpMessage(String clientId, String messageString) {
+        return amqp("publish message as client " + clientId + " to exchange " + EXCHANGE_NAME)
+                .publish()
+                .topicExchange(EXCHANGE_NAME, clientId)
+                .textMessage(messageString)
+                .contentType(JSON_CONTENT_TYPE);
     }
 
-    protected AmqpProtocolBuilder amqpConfFactory(String vhost) throws Exception {
+    protected AmqpProtocolBuilder amqpConnectionWrapper(String vhost) throws Exception {
         return amqp()
                 .connectionFactory(
                         amqpConnectionFactory.buildConnectionToVhost(tlsConf, vhost)
                 )
                 .usePersistentDeliveryMode();
-    }
-
-    protected PopulationBuilder setupScenario(ScenarioBuilder scenario, AmqpProtocolBuilder protocol, Integer maxUsers) {
-        return scenario.injectOpen(
-                rampUsersPerSec(1).to(maxUsers).during(60),
-                constantUsersPerSec(maxUsers).during(180),
-                rampUsersPerSec(maxUsers).to(1).during(60)
-        ).protocols(protocol);
     }
 
     private void initSimulation() throws Exception {
