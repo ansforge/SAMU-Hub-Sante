@@ -41,7 +41,6 @@ public abstract class AmqpSimulation extends Simulation {
 
     protected ScenarioBuilder buildAMPQScenario(String name, String clientId, String messageString) {
         return scenario(name)
-                .feed(Utils.idFeeder)
                 .exec(
                         amqp("publish to exchange")
                                 .publish()
