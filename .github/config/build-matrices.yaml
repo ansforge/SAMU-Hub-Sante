@@ -62,7 +62,3 @@ projects:
         context: ./tools/annuaire
         tag: hub-annuaire
         artifact-name: trivy-reports-annuaire
-
-  dispatcher:
-    description: "Hub dispatcher service"
-    # Note: dispatcher doesn't use the build-image job, handled separately
