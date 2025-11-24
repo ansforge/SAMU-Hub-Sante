@@ -78,7 +78,6 @@ jobs:
 
   build-image:
     needs: extract-release-info
-    if: needs.extract-release-info.outputs.project != 'dispatcher'
     runs-on: ubuntu-latest
     strategy:
       matrix: ${{ fromJson(needs.extract-release-info.outputs.matrix) }}
