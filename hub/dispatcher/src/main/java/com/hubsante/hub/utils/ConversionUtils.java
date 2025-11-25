@@ -17,8 +17,6 @@ package com.hubsante.hub.utils;
 
 import lombok.extern.slf4j.Slf4j;
 
-import com.hubsante.model.cisu.CreateCaseWrapper;
-import com.hubsante.model.health.CreateCaseHealthWrapper;
 import com.hubsante.model.edxl.EdxlMessage;
 import com.hubsante.hub.config.HubConfiguration;
 

@@ -65,9 +65,10 @@ public class MessageUtils {
         if (!receivedRoutingKey.equals(edxlMessage.getSenderID())) {
             if (!receivedRoutingKey.startsWith(HEALTH_PREFIX)) {
                 String senderID = edxlMessage.getSenderID();
+                String recipientID = getRecipientID(edxlMessage);
                 structuredLog.info(
-                        String.format("Message has been received from hubex partner with routing key %s and senderID %s", message.getMessageProperties().getReceivedRoutingKey(), senderID),
-                        Map.of(LogConstants.DISTRIBUTION_ID, edxlMessage.getDistributionID(), LogConstants.SENDER_ID, senderID)
+                        String.format("Message has been received from hubex partner with routing key %s and senderID %s", receivedRoutingKey, senderID),
+                        Map.of(LogConstants.DISTRIBUTION_ID, edxlMessage.getDistributionID(), LogConstants.SENDER_ID, senderID, LogConstants.RECIPIENT_ID, recipientID)
                 );
                 return;
             }
@@ -89,18 +90,18 @@ public class MessageUtils {
         }
     }
 
-    public static void checkDeliveryModeIsPersistent(Message message, String messageId) {
+    public static void checkDeliveryModeIsPersistent(Message message, String distributionId) {
         if (!MessageDeliveryMode.PERSISTENT.equals(message.getMessageProperties().getReceivedDeliveryMode())) {
             if (!message.getMessageProperties().getReceivedRoutingKey().startsWith(HEALTH_PREFIX)) {
                 String senderID = getSenderFromRoutingKey(message);
                 structuredLog.error(
                         String.format("Message has been received from hubex with routing key %s without persistent mode enabled", senderID),
-                        Map.of(LogConstants.SENDER_ID, senderID)
+                        Map.of(LogConstants.SENDER_ID, senderID, LogConstants.DISTRIBUTION_ID, distributionId)
                 );
                 return;
             }
-            String errorCause = "Message " + messageId + " has been sent with non-persistent delivery mode";
-            throw new DeliveryModeInconsistencyException(errorCause, messageId);
+            String errorCause = "Message " + distributionId + " has been sent with non-persistent delivery mode";
+            throw new DeliveryModeInconsistencyException(errorCause, distributionId);
         }
     }
 
@@ -167,14 +168,16 @@ public class MessageUtils {
         // OffsetDateTime comes with seconds and nanos, not millis
         // We assume that one second is an acceptable interval
         long messageCustomExpirationDateTime = edxlMessage.getDateTimeExpires().toEpochSecond();
+        String distributionId = edxlMessage.getDistributionID();
+        String senderID = edxlMessage.getSenderID();
+        String recipientID = getRecipientID(edxlMessage);
 
         // Reset the expiration header if it was set by the client,
         // they should use dateTimeExpires for that purpose.
         if (Objects.nonNull(properties.getExpiration())) {
-            String distributionId = edxlMessage.getDistributionID();
             structuredLog.info(
                     String.format("Reset expiration header for message %s that was originally set to %s", distributionId, properties.getExpiration()),
-                    Map.of(LogConstants.DISTRIBUTION_ID, distributionId)
+                    Map.of(LogConstants.DISTRIBUTION_ID, distributionId, LogConstants.SENDER_ID, senderID, LogConstants.RECIPIENT_ID, recipientID)
             );
             properties.setExpiration(null);
         }
@@ -193,12 +196,10 @@ public class MessageUtils {
         long defaultExpirationDateTime = OffsetDateTime.now().plusSeconds(defaultTTL).toEpochSecond();
         if (messageCustomExpirationDateTime < defaultExpirationDateTime) {
             properties.setExpiration(String.valueOf(newTTL * 1000));
-            String distributionId = edxlMessage.getDistributionID();
             String dateTimeExpires = edxlMessage.getDateTimeExpires().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
-            String senderID = edxlMessage.getSenderID();
             structuredLog.info(
                     String.format("override expiration for message %s: expiration is now %s", distributionId, dateTimeExpires),
-                    Map.of(LogConstants.DISTRIBUTION_ID, distributionId, LogConstants.SENDER_ID, senderID)
+                    Map.of(LogConstants.DISTRIBUTION_ID, distributionId, LogConstants.SENDER_ID, senderID, LogConstants.RECIPIENT_ID, recipientID)
             );
         }
     }
