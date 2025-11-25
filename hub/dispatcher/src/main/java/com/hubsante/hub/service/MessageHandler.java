@@ -250,12 +250,14 @@ public class MessageHandler {
             structuredLog.error("Could not find schema file", Map.of(LogConstants.DISTRIBUTION_ID, extractedDistributionId), exception);
             throw new SchemaNotFoundException("An internal server error has occurred, please contact the administration team", extractDistributionId(receivedEdxl));
         } catch (ValidationException validationException) {
-            validateEnvelopeOnly(message, receivedEdxl, validationException);
+            validateEnvelopeOnly(message, receivedEdxl);
+            String distributionId = extractDistributionId(receivedEdxl);
+            throw new SchemaValidationException(validationException.getMessage(), distributionId);
         }
     }
 
     @Timed(value = "validate.received.envelope", description = "Validate incoming envelope")
-    private void validateEnvelopeOnly(Message message, String receivedEdxl, ValidationException contentValidationException) {
+    private void validateEnvelopeOnly(Message message, String receivedEdxl) {
         try {
             String distributionId = UNKNOWN;
             if (isJSON(message)) {
@@ -274,7 +276,6 @@ public class MessageHandler {
                     String.format("Received message String was %s", receivedEdxl),
                     Map.of(LogConstants.SENDER_ID, senderId)
             );
-            throw new SchemaValidationException(contentValidationException.getMessage(), distributionId);
         } catch (ValidationException envelopeValidationException) {
             // we replace the ValidationException from the models lib by another one extending AbstractHubException
             String senderId = message.getMessageProperties().getReceivedRoutingKey();
