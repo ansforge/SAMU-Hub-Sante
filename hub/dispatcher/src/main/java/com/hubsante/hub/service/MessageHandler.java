@@ -257,7 +257,7 @@ public class MessageHandler {
     @Timed(value = "validate.received.envelope", description = "Validate incoming envelope")
     private void validateEnvelopeOnly(Message message, String receivedEdxl, ValidationException contentValidationException) {
         try {
-            String distributionId = null;
+            String distributionId = UNKNOWN;
             if (isJSON(message)) {
                 validator.validateJSON(receivedEdxl, ENVELOPE_SCHEMA);
                 distributionId = edxlHandler.deserializeJsonEDXLEnvelope(receivedEdxl).getDistributionID();
@@ -346,6 +346,7 @@ public class MessageHandler {
         String senderID = getSenderFromRoutingKey(receivedAmqpMessage);
         String edxlString;
         String distributionKind = edxlMessage.getDistributionKind().getValue();
+        String messageType = getUseCaseFromMessage(edxlMessage.getFirstContentMessage());
 
         try {
             if (convertToXML(recipientID, hubConfig.getUseXmlPreferences().getOrDefault(recipientID, DEFAULT_USE_XML_PREFERENCE))) {
@@ -362,17 +363,17 @@ public class MessageHandler {
             if (Objects.nonNull(referencedDistributionID)) {
                 structuredLog.info(
                         String.format("  ↳ [x] Forwarding %s to '%s': message with distributionID %s, referenced distributionID %s and hashed value %s", distributionKind, recipientID, distributionID, referencedDistributionID, hashedBody),
-                        Map.of(LogConstants.RECIPIENT_ID, recipientID, LogConstants.DISTRIBUTION_ID, distributionID, LogConstants.SENDER_ID, senderID)
+                        Map.of(LogConstants.RECIPIENT_ID, recipientID, LogConstants.DISTRIBUTION_ID, distributionID, LogConstants.SENDER_ID, senderID, LogConstants.MESSAGE_TYPE, messageType)
                 );
             } else {
                 structuredLog.info(
                         String.format("  ↳ [x] Forwarding %s to '%s': message with distributionID %s and hashed value %s", distributionKind, recipientID, distributionID, hashedBody),
-                        Map.of(LogConstants.RECIPIENT_ID, recipientID, LogConstants.DISTRIBUTION_ID, distributionID, LogConstants.SENDER_ID, senderID)
+                        Map.of(LogConstants.RECIPIENT_ID, recipientID, LogConstants.DISTRIBUTION_ID, distributionID, LogConstants.SENDER_ID, senderID, LogConstants.MESSAGE_TYPE, messageType)
                 );
             }
             structuredLog.debug(
                     edxlString,
-                    Map.of(LogConstants.RECIPIENT_ID, recipientID, LogConstants.DISTRIBUTION_ID, distributionID, LogConstants.SENDER_ID, senderID)
+                    Map.of(LogConstants.RECIPIENT_ID, recipientID, LogConstants.DISTRIBUTION_ID, distributionID, LogConstants.SENDER_ID, senderID, LogConstants.MESSAGE_TYPE, messageType)
             );
 
             return new Message(edxlString.getBytes(StandardCharsets.UTF_8), fwdAmqpProperties);
@@ -405,20 +406,22 @@ public class MessageHandler {
         String recipientID = getRecipientID(edxlMessage);
         String referencedDistributionID = extractReferencedDistributionID(edxlMessage);
         String hashedBody = hashBody(message);
+        String messageType = getUseCaseFromMessage(edxlMessage.getFirstContentMessage());
+
         if (Objects.nonNull(referencedDistributionID)) {
             structuredLog.info(
                     String.format(" [x] Received %s from '%s': message with distributionID %s, referenced distributionID %s and hashed value %s", distributionKind, senderID, distributionID, referencedDistributionID, hashedBody),
-                    Map.of(LogConstants.RECIPIENT_ID, recipientID, LogConstants.DISTRIBUTION_ID, distributionID, LogConstants.SENDER_ID, senderID)
+                    Map.of(LogConstants.RECIPIENT_ID, recipientID, LogConstants.DISTRIBUTION_ID, distributionID, LogConstants.SENDER_ID, senderID, LogConstants.MESSAGE_TYPE, messageType)
             );
         } else {
             structuredLog.info(
                     String.format(" [x] Received %s from '%s': message with distributionID %s and hashed value %s", distributionKind, senderID, distributionID, hashedBody),
-                    Map.of(LogConstants.RECIPIENT_ID, recipientID, LogConstants.DISTRIBUTION_ID, distributionID, LogConstants.SENDER_ID, senderID)
+                    Map.of(LogConstants.RECIPIENT_ID, recipientID, LogConstants.DISTRIBUTION_ID, distributionID, LogConstants.SENDER_ID, senderID, LogConstants.MESSAGE_TYPE, messageType)
             );
         }
         structuredLog.debug(
                 receivedEdxl,
-                Map.of(LogConstants.RECIPIENT_ID, recipientID, LogConstants.DISTRIBUTION_ID, distributionID, LogConstants.SENDER_ID, senderID)
+                Map.of(LogConstants.RECIPIENT_ID, recipientID, LogConstants.DISTRIBUTION_ID, distributionID, LogConstants.SENDER_ID, senderID, LogConstants.MESSAGE_TYPE, messageType)
         );
     }
 

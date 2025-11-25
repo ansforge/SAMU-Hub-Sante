@@ -20,6 +20,7 @@ import com.hubsante.hub.config.LogConstants;
 import com.hubsante.hub.config.StructuredLogger;
 import com.hubsante.hub.exception.ConversionException;
 import com.hubsante.hub.utils.ConversionRulesCommand;
+import com.hubsante.hub.utils.EdxlUtils;
 import com.hubsante.hub.utils.MessageUtils;
 import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.edxl.EdxlMessage;
@@ -55,18 +56,19 @@ public class ConversionHandler {
         String distributionID = edxlMessage.getDistributionID();
         String senderID = edxlMessage.getSenderID();
         String recipientID = MessageUtils.getRecipientID(edxlMessage);
+        String messageType = EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage());
 
         String jsonEdxlString = edxlHandler.serializeJsonEDXL(edxlMessage);
 
         try {
             structuredLog.debug(
                     String.format("Starting conversion for message %s from %s to %s, isCisu ? %s",distributionID, sourceModelVersion, targetModelVersion, isCisuConversion),
-                    Map.of(LogConstants.DISTRIBUTION_ID, distributionID, LogConstants.SENDER_ID, senderID, LogConstants.RECIPIENT_ID, recipientID)
+                    Map.of(LogConstants.DISTRIBUTION_ID, distributionID, LogConstants.SENDER_ID, senderID, LogConstants.RECIPIENT_ID, recipientID, LogConstants.MESSAGE_TYPE, messageType)
             );
             String convertedJson = callConversionService(jsonEdxlString, sourceModelVersion, targetModelVersion, isCisuConversion,distributionID);
             structuredLog.debug(
                     "Message converted successfully: " + convertedJson,
-                    Map.of(LogConstants.DISTRIBUTION_ID, distributionID, LogConstants.SENDER_ID, senderID, LogConstants.RECIPIENT_ID, recipientID)
+                    Map.of(LogConstants.DISTRIBUTION_ID, distributionID, LogConstants.SENDER_ID, senderID, LogConstants.RECIPIENT_ID, recipientID, LogConstants.MESSAGE_TYPE, messageType)
             );
 
             return convertedJson; // returns a string (deserialization is not possible because of version change)
@@ -74,7 +76,7 @@ public class ConversionHandler {
             // Error raised by the conversion service or its call
             structuredLog.error(
                     "Error during internal call to Hub Santé conversion service " + e,
-                    Map.of(LogConstants.DISTRIBUTION_ID, distributionID, LogConstants.SENDER_ID, senderID, LogConstants.RECIPIENT_ID, recipientID)
+                    Map.of(LogConstants.DISTRIBUTION_ID, distributionID, LogConstants.SENDER_ID, senderID, LogConstants.RECIPIENT_ID, recipientID, LogConstants.MESSAGE_TYPE, messageType)
             );
             throw new ConversionException(e.getMessage(), distributionID);
         }

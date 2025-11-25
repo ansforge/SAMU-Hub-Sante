@@ -22,7 +22,8 @@ public enum LogConstants {
 
     SENDER_ID("senderId"),
     RECIPIENT_ID("recipientId"),
-    DISTRIBUTION_ID("distributionId");
+    DISTRIBUTION_ID("distributionId"),
+    MESSAGE_TYPE("messageType");
 
     private final String key;
 

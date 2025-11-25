@@ -25,6 +25,7 @@ import com.hubsante.hub.config.StructuredLogger;
 import com.hubsante.hub.exception.*;
 import com.hubsante.hub.utils.ConversionRulesCommand;
 import com.hubsante.hub.utils.ConversionUtils;
+import com.hubsante.hub.utils.EdxlUtils;
 import com.hubsante.hub.utils.MessageUtils;
 import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.edxl.EdxlMessage;
@@ -109,6 +110,9 @@ public class Dispatcher {
             }
 
             String distributionId = returnedEdxlMessage != null ? returnedEdxlMessage.getDistributionID() : DISTRIBUTION_ID_UNAVAILABLE;
+            String messageType = returnedEdxlMessage != null ?
+                    EdxlUtils.getUseCaseFromMessage(returnedEdxlMessage.getFirstContentMessage()) :
+                    UNKNOWN;
 
             Error error = new Error();
             error.setErrorCode(ErrorCode.UNROUTABLE_MESSAGE);
@@ -120,7 +124,7 @@ public class Dispatcher {
                     error.setSourceMessage(xmlMapper.readValue(returned.getMessage().getBody(), HashMap.class));
                 }
             } catch (IOException e) {
-                structuredLog.error("Could not read message body", Map.of(LogConstants.DISTRIBUTION_ID, distributionId), e);
+                structuredLog.error("Could not read message body", Map.of(LogConstants.DISTRIBUTION_ID, distributionId, LogConstants.MESSAGE_TYPE, messageType), e);
             }
             error.setReferencedDistributionID(distributionId);
             String senderRoutingKey = returned.getMessage().getMessageProperties().getHeader(ORIGINAL_ROUTING_KEY);
@@ -161,9 +165,10 @@ public class Dispatcher {
                 String convertedMessage = conversionHandler.applyConversionRules(conversionRulesCommand);
                 sendToTransferExchange(convertedMessage, message, conversionRulesCommand);
                 String recipientId = MessageUtils.getRecipientID(edxlMessage);
+                String messageType = EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage());
                 structuredLog.debug(
                         "The converted message has been sent to the exchange to reach the recipient's vhost.",
-                        Map.of(LogConstants.DISTRIBUTION_ID, edxlMessage.getDistributionID(), LogConstants.SENDER_ID, edxlMessage.getSenderID(), LogConstants.RECIPIENT_ID, recipientId)
+                        Map.of(LogConstants.DISTRIBUTION_ID, edxlMessage.getDistributionID(), LogConstants.SENDER_ID, edxlMessage.getSenderID(), LogConstants.RECIPIENT_ID, recipientId, LogConstants.MESSAGE_TYPE, messageType)
                 );
                 // We MUST return here to exit the dispatch() function, otherwise the message will be published on the source Exchange as well
                 return;

@@ -66,9 +66,10 @@ public class MessageUtils {
             if (!receivedRoutingKey.startsWith(HEALTH_PREFIX)) {
                 String senderID = edxlMessage.getSenderID();
                 String recipientID = getRecipientID(edxlMessage);
+                String messageType = EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage());
                 structuredLog.info(
                         String.format("Message has been received from hubex partner with routing key %s and senderID %s", receivedRoutingKey, senderID),
-                        Map.of(LogConstants.DISTRIBUTION_ID, edxlMessage.getDistributionID(), LogConstants.SENDER_ID, senderID, LogConstants.RECIPIENT_ID, recipientID)
+                        Map.of(LogConstants.DISTRIBUTION_ID, edxlMessage.getDistributionID(), LogConstants.SENDER_ID, senderID, LogConstants.RECIPIENT_ID, recipientID, LogConstants.MESSAGE_TYPE, messageType)
                 );
                 return;
             }
@@ -171,13 +172,14 @@ public class MessageUtils {
         String distributionId = edxlMessage.getDistributionID();
         String senderID = edxlMessage.getSenderID();
         String recipientID = getRecipientID(edxlMessage);
+        String messageType = EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage());
 
         // Reset the expiration header if it was set by the client,
         // they should use dateTimeExpires for that purpose.
         if (Objects.nonNull(properties.getExpiration())) {
             structuredLog.info(
                     String.format("Reset expiration header for message %s that was originally set to %s", distributionId, properties.getExpiration()),
-                    Map.of(LogConstants.DISTRIBUTION_ID, distributionId, LogConstants.SENDER_ID, senderID, LogConstants.RECIPIENT_ID, recipientID)
+                    Map.of(LogConstants.DISTRIBUTION_ID, distributionId, LogConstants.SENDER_ID, senderID, LogConstants.RECIPIENT_ID, recipientID, LogConstants.MESSAGE_TYPE, messageType)
             );
             properties.setExpiration(null);
         }
@@ -199,7 +201,7 @@ public class MessageUtils {
             String dateTimeExpires = edxlMessage.getDateTimeExpires().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
             structuredLog.info(
                     String.format("override expiration for message %s: expiration is now %s", distributionId, dateTimeExpires),
-                    Map.of(LogConstants.DISTRIBUTION_ID, distributionId, LogConstants.SENDER_ID, senderID, LogConstants.RECIPIENT_ID, recipientID)
+                    Map.of(LogConstants.DISTRIBUTION_ID, distributionId, LogConstants.SENDER_ID, senderID, LogConstants.RECIPIENT_ID, recipientID, LogConstants.MESSAGE_TYPE, messageType)
             );
         }
     }
