@@ -1,9 +1,16 @@
-name: build image on release
+name: Build images (lrm, landing, healthcheck, chatbot, openSSL, specs, annuaire)
 
 on:
   workflow_dispatch:
-  release:
-    types: [published]
+  push:
+    tags:
+      - 'lrm-*'
+      - 'landing-*'
+      - 'healthcheck-*'
+      - 'chatbot-*'
+      - 'openssl-*'
+      - 'specs-*'
+      - 'annuaire-*'
 
 permissions:
   contents: read
@@ -24,7 +31,7 @@ jobs:
       - name: Extract release information
         id: extract_info
         run: |
-          RELEASE_NAME=${{ github.event.release.name || github.ref_name }}
+          RELEASE_NAME=${{ github.ref_name }}
           echo "Processing release: $RELEASE_NAME"
           
           # Simple pattern matching to extract project and version
@@ -71,7 +78,6 @@ jobs:
 
   build-image:
     needs: extract-release-info
-    if: needs.extract-release-info.outputs.project != 'dispatcher'
     runs-on: ubuntu-latest
     strategy:
       matrix: ${{ fromJson(needs.extract-release-info.outputs.matrix) }}
