@@ -385,7 +385,7 @@ public class MessageHandler {
         }
     }
 
-    @Timed(value = "serialize.forwarded.message", description = "Serialize forwarded string message and return new AMQP message")
+    @Timed(value = "serialize.forwarded.string.message", description = "Serialize forwarded string message and return new AMQP message")
     private Message getFwdStringMessageBody(String message, Message receivedAmqpMessage, MessageProperties fwdAmqpProperties) {
         String senderId = getSenderFromRoutingKey(receivedAmqpMessage);
 
