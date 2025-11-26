@@ -227,8 +227,8 @@ public class MessageHandler {
         return deserializeMessage(message, receivedEdxl);
     }
 
-    @Timed(value = "validate.received.message", description = "Validate incoming message")
     private void validateFullMessage(Message message, String receivedEdxl) {
+        registry.counter("validate.received.message").increment();
         // We deserialize according to the content type
         // It MUST be explicitly set by the client
         String extractedDistributionId = extractDistributionId(receivedEdxl);
@@ -255,8 +255,8 @@ public class MessageHandler {
         }
     }
 
-    @Timed(value = "validate.received.envelope", description = "Validate incoming envelope")
     private void validateEnvelopeOnly(Message message, String receivedEdxl) {
+        registry.counter("validate.received.envelope").increment();
         try {
             String distributionId = UNKNOWN;
             if (isJSON(message)) {
@@ -294,8 +294,8 @@ public class MessageHandler {
         }
     }
 
-    @Timed(value = "deserialize.received.message", description = "Deserialize incoming message")
     private EdxlMessage deserializeMessage(Message message, String receivedEdxl) {
+        registry.counter("deserialize.received.message").increment();
         EdxlMessage edxlMessage;
 
         // We deserialize according to the content type
@@ -340,8 +340,8 @@ public class MessageHandler {
         return null;
     }
 
-    @Timed(value = "serialize.forwarded.message", description = "Serialize forwarded message and return new AMQP message")
     private Message getFwdMessageBody(EdxlMessage edxlMessage, Message receivedAmqpMessage, MessageProperties fwdAmqpProperties) {
+        registry.counter("serialize.forwarded.message").increment();
         String recipientId = getRecipientID(edxlMessage);
         String senderId = getSenderFromRoutingKey(receivedAmqpMessage);
         String edxlString;
@@ -385,8 +385,8 @@ public class MessageHandler {
         }
     }
 
-    @Timed(value = "serialize.forwarded.string.message", description = "Serialize forwarded string message and return new AMQP message")
     private Message getFwdStringMessageBody(String message, Message receivedAmqpMessage, MessageProperties fwdAmqpProperties) {
+        registry.counter("serialize.forwarded.string.message").increment();
         String senderId = getSenderFromRoutingKey(receivedAmqpMessage);
 
         fwdAmqpProperties.setContentType(MessageProperties.CONTENT_TYPE_JSON);
