@@ -284,7 +284,7 @@ public class MessageHandler {
                     String.format("Could not validate envelope of message coming from %s with distributionId possibly being (regex extraction) %s: %s", senderId, distributionId, envelopeValidationException.getMessage()),
                     Map.of(LogConstants.SENDER_ID, senderId, LogConstants.DISTRIBUTION_ID, distributionId)
             );
-            throw new SchemaValidationException("CAUTION: distributionID has been extracted by regex because the envelope could not be deserialized.\n" + envelopeValidationException.getMessage(), extractDistributionId(receivedEdxl));
+            throw new SchemaValidationException("CAUTION: distributionId has been extracted by regex because the envelope could not be deserialized.\n" + envelopeValidationException.getMessage(), extractDistributionId(receivedEdxl));
         } catch (IOException exception) {
             String distributionId = extractDistributionId(receivedEdxl);
             structuredLog.error(
@@ -343,14 +343,14 @@ public class MessageHandler {
 
     @Timed(value = "serialize.forwarded.message", description = "Serialize forwarded message and return new AMQP message")
     private Message getFwdMessageBody(EdxlMessage edxlMessage, Message receivedAmqpMessage, MessageProperties fwdAmqpProperties) {
-        String recipientID = getRecipientID(edxlMessage);
-        String senderID = getSenderFromRoutingKey(receivedAmqpMessage);
+        String recipientId = getRecipientID(edxlMessage);
+        String senderId = getSenderFromRoutingKey(receivedAmqpMessage);
         String edxlString;
         String distributionKind = edxlMessage.getDistributionKind().getValue();
         String messageType = getUseCaseFromMessage(edxlMessage.getFirstContentMessage());
 
         try {
-            if (convertToXML(recipientID, hubConfig.getUseXmlPreferences().getOrDefault(recipientID, DEFAULT_USE_XML_PREFERENCE))) {
+            if (convertToXML(recipientId, hubConfig.getUseXmlPreferences().getOrDefault(recipientId, DEFAULT_USE_XML_PREFERENCE))) {
                 edxlString = edxlHandler.serializeXmlEDXL(edxlMessage);
                 fwdAmqpProperties.setContentType(MessageProperties.CONTENT_TYPE_XML);
             } else {
@@ -358,23 +358,23 @@ public class MessageHandler {
                 fwdAmqpProperties.setContentType(MessageProperties.CONTENT_TYPE_JSON);
             }
 
-            String distributionID = edxlMessage.getDistributionID();
+            String distributionId = edxlMessage.getDistributionID();
             String hashedBody = hashBody(receivedAmqpMessage);
-            String referencedDistributionID = extractReferencedDistributionID(edxlMessage);
-            if (Objects.nonNull(referencedDistributionID)) {
+            String referencedDistributionId = extractReferencedDistributionID(edxlMessage);
+            if (Objects.nonNull(referencedDistributionId)) {
                 structuredLog.info(
-                        String.format("  ↳ [x] Forwarding %s to '%s': message with distributionID %s, referenced distributionID %s and hashed value %s", distributionKind, recipientID, distributionID, referencedDistributionID, hashedBody),
-                        Map.of(LogConstants.RECIPIENT_ID, recipientID, LogConstants.DISTRIBUTION_ID, distributionID, LogConstants.SENDER_ID, senderID, LogConstants.MESSAGE_TYPE, messageType)
+                        String.format("  ↳ [x] Forwarding %s to '%s': message with distributionId %s, referenced distributionId %s and hashed value %s", distributionKind, recipientId, distributionId, referencedDistributionId, hashedBody),
+                        Map.of(LogConstants.RECIPIENT_ID, recipientId, LogConstants.DISTRIBUTION_ID, distributionId, LogConstants.SENDER_ID, senderId, LogConstants.MESSAGE_TYPE, messageType)
                 );
             } else {
                 structuredLog.info(
-                        String.format("  ↳ [x] Forwarding %s to '%s': message with distributionID %s and hashed value %s", distributionKind, recipientID, distributionID, hashedBody),
-                        Map.of(LogConstants.RECIPIENT_ID, recipientID, LogConstants.DISTRIBUTION_ID, distributionID, LogConstants.SENDER_ID, senderID, LogConstants.MESSAGE_TYPE, messageType)
+                        String.format("  ↳ [x] Forwarding %s to '%s': message with distributionId %s and hashed value %s", distributionKind, recipientId, distributionId, hashedBody),
+                        Map.of(LogConstants.RECIPIENT_ID, recipientId, LogConstants.DISTRIBUTION_ID, distributionId, LogConstants.SENDER_ID, senderId, LogConstants.MESSAGE_TYPE, messageType)
                 );
             }
             structuredLog.debug(
                     edxlString,
-                    Map.of(LogConstants.RECIPIENT_ID, recipientID, LogConstants.DISTRIBUTION_ID, distributionID, LogConstants.SENDER_ID, senderID, LogConstants.MESSAGE_TYPE, messageType)
+                    Map.of(LogConstants.RECIPIENT_ID, recipientId, LogConstants.DISTRIBUTION_ID, distributionId, LogConstants.SENDER_ID, senderId, LogConstants.MESSAGE_TYPE, messageType)
             );
 
             return new Message(edxlString.getBytes(StandardCharsets.UTF_8), fwdAmqpProperties);
@@ -402,27 +402,27 @@ public class MessageHandler {
 
     private void logMessage(Message message, EdxlMessage edxlMessage, String receivedEdxl) {
         String distributionKind = edxlMessage.getDistributionKind().getValue();
-        String senderID = getSenderFromRoutingKey(message);
-        String distributionID = edxlMessage.getDistributionID();
-        String recipientID = getRecipientID(edxlMessage);
-        String referencedDistributionID = extractReferencedDistributionID(edxlMessage);
+        String senderId = getSenderFromRoutingKey(message);
+        String distributionId = edxlMessage.getDistributionID();
+        String recipientId = getRecipientID(edxlMessage);
+        String referencedDistributionId = extractReferencedDistributionID(edxlMessage);
         String hashedBody = hashBody(message);
         String messageType = getUseCaseFromMessage(edxlMessage.getFirstContentMessage());
 
-        if (Objects.nonNull(referencedDistributionID)) {
+        if (Objects.nonNull(referencedDistributionId)) {
             structuredLog.info(
-                    String.format(" [x] Received %s from '%s': message with distributionID %s, referenced distributionID %s and hashed value %s", distributionKind, senderID, distributionID, referencedDistributionID, hashedBody),
-                    Map.of(LogConstants.RECIPIENT_ID, recipientID, LogConstants.DISTRIBUTION_ID, distributionID, LogConstants.SENDER_ID, senderID, LogConstants.MESSAGE_TYPE, messageType)
+                    String.format(" [x] Received %s from '%s': message with distributionId %s, referenced distributionId %s and hashed value %s", distributionKind, senderId, distributionId, referencedDistributionId, hashedBody),
+                    Map.of(LogConstants.RECIPIENT_ID, recipientId, LogConstants.DISTRIBUTION_ID, distributionId, LogConstants.SENDER_ID, senderId, LogConstants.MESSAGE_TYPE, messageType)
             );
         } else {
             structuredLog.info(
-                    String.format(" [x] Received %s from '%s': message with distributionID %s and hashed value %s", distributionKind, senderID, distributionID, hashedBody),
-                    Map.of(LogConstants.RECIPIENT_ID, recipientID, LogConstants.DISTRIBUTION_ID, distributionID, LogConstants.SENDER_ID, senderID, LogConstants.MESSAGE_TYPE, messageType)
+                    String.format(" [x] Received %s from '%s': message with distributionId %s and hashed value %s", distributionKind, senderId, distributionId, hashedBody),
+                    Map.of(LogConstants.RECIPIENT_ID, recipientId, LogConstants.DISTRIBUTION_ID, distributionId, LogConstants.SENDER_ID, senderId, LogConstants.MESSAGE_TYPE, messageType)
             );
         }
         structuredLog.debug(
                 receivedEdxl,
-                Map.of(LogConstants.RECIPIENT_ID, recipientID, LogConstants.DISTRIBUTION_ID, distributionID, LogConstants.SENDER_ID, senderID, LogConstants.MESSAGE_TYPE, messageType)
+                Map.of(LogConstants.RECIPIENT_ID, recipientId, LogConstants.DISTRIBUTION_ID, distributionId, LogConstants.SENDER_ID, senderId, LogConstants.MESSAGE_TYPE, messageType)
         );
     }
 

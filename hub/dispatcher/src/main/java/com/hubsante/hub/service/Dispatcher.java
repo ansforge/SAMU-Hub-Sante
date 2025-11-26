@@ -154,7 +154,7 @@ public class Dispatcher {
             checkSenderConsistency(message, edxlMessage);
             // Reject the message if the delivery mode is not PERSISTENT
             checkDeliveryModeIsPersistent(message, edxlMessage.getDistributionID());
-            // Reject the message if distributionID does not respect the format (senderID_internalID)
+            // Reject the message if distributionId does not respect the format (senderId_internalId)
             if (message.getMessageProperties().getReceivedRoutingKey().startsWith(Constants.FR_HEALTH_PREFIX)) {
                 checkDistributionIDFormat(edxlMessage);
             }

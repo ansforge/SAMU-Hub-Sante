@@ -65,26 +65,26 @@ public class ConversionUtils {
     }
 
     public static String[] getTargetVHosts(HubConfiguration hubConfig, EdxlMessage edxlMessage) {
-        String recipientID = getRecipientID(edxlMessage);
-        String senderID = edxlMessage.getSenderID();
+        String recipientId = getRecipientID(edxlMessage);
+        String senderId = edxlMessage.getSenderID();
         String sourceVhost = hubConfig.getVhost(); // ex '15-15_v1.5'
         String sourcePerimeter = trimVersionSuffix(sourceVhost);  // ex '15-15'
         String[] targetVersionsOnSourcePerimeter = new String[]{};
 
         // CISU conversion case - recipient and sender are on different vhosts
-        boolean isNexsisRecipient = recipientID.startsWith(FR_FIRE_PREFIX) || recipientID.startsWith(FR_CISU_PREFIX);
+        boolean isNexsisRecipient = recipientId.startsWith(FR_FIRE_PREFIX) || recipientId.startsWith(FR_CISU_PREFIX);
         if (isNexsisRecipient) {
             return new String[]{NEXSIS_VHOST}; // ["15-nexsis_v1.9"]
         }
-        boolean isCisuSender = !senderID.startsWith(FR_HEALTH_PREFIX);
+        boolean isCisuSender = !senderId.startsWith(FR_HEALTH_PREFIX);
         boolean isDirectCisu = isDirectCisuForHealthActor(hubConfig, edxlMessage);
         if(isCisuSender && !isDirectCisu) {
             String perimeter15_15 = "15-15";
-            targetVersionsOnSourcePerimeter = hubConfig.getClientVersionsForPerimeter(recipientID, perimeter15_15); // ex ['1.5, 2.0']
+            targetVersionsOnSourcePerimeter = hubConfig.getClientVersionsForPerimeter(recipientId, perimeter15_15); // ex ['1.5, 2.0']
             return formatVersionToVhosts(targetVersionsOnSourcePerimeter, perimeter15_15);
         }
 
-        targetVersionsOnSourcePerimeter = hubConfig.getClientVersionsForPerimeter(recipientID, sourcePerimeter); // ex ['1.5, 2.0']
+        targetVersionsOnSourcePerimeter = hubConfig.getClientVersionsForPerimeter(recipientId, sourcePerimeter); // ex ['1.5, 2.0']
         return formatVersionToVhosts(targetVersionsOnSourcePerimeter, sourcePerimeter); // ex ["15-15_v1.5", "15-15_v2.0"]
 
     }
@@ -118,16 +118,16 @@ public class ConversionUtils {
     }
 
     public static boolean isOneCisuHubexInvolved(EdxlMessage edxlMessage) {
-        String recipientID = getRecipientID(edxlMessage);
-        String senderID = edxlMessage.getSenderID();
-        return !(recipientID.startsWith(HEALTH_PREFIX) && senderID.startsWith(HEALTH_PREFIX));
+        String recipientId = getRecipientID(edxlMessage);
+        String senderId = edxlMessage.getSenderID();
+        return !(recipientId.startsWith(HEALTH_PREFIX) && senderId.startsWith(HEALTH_PREFIX));
     }
 
     public static boolean isDirectCisuForHealthActor(HubConfiguration hubConfig, EdxlMessage edxlMessage) {
         // Checks if the health actor is direct CISU
-        String recipientID = getRecipientID(edxlMessage);
-        String senderID = edxlMessage.getSenderID();
-        String healthActor = senderID.startsWith(HEALTH_PREFIX) ? senderID : recipientID;
+        String recipientId = getRecipientID(edxlMessage);
+        String senderId = edxlMessage.getSenderID();
+        String healthActor = senderId.startsWith(HEALTH_PREFIX) ? senderId : recipientId;
         Boolean directCisuPreference = hubConfig.getDirectCisuPreferences().getOrDefault(healthActor, DEFAULT_DIRECT_CISU_PREFERENCE);
         return directCisuPreference != null && directCisuPreference;
     }
