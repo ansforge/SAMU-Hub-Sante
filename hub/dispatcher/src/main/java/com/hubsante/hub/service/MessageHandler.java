@@ -251,8 +251,7 @@ public class MessageHandler {
             throw new SchemaNotFoundException("An internal server error has occurred, please contact the administration team", extractDistributionId(receivedEdxl));
         } catch (ValidationException validationException) {
             validateEnvelopeOnly(message, receivedEdxl);
-            String distributionId = extractDistributionId(receivedEdxl);
-            throw new SchemaValidationException(validationException.getMessage(), distributionId);
+            throw new SchemaValidationException(validationException.getMessage(), extractedDistributionId);
         }
     }
 
