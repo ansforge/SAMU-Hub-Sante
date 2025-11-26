@@ -42,7 +42,7 @@ public class Utils {
         String referencedMessageSender = receivedMessage.getSenderID();
         String referencedMessageDistributionID = receivedMessage.getDistributionID();
 
-        String distributionID = referencedMessageRecipient + "_" + UUID.randomUUID();
+        String distributionId = referencedMessageRecipient + "_" + UUID.randomUUID();
 
         Recipient recipient = new Recipient();
         recipient.setName(referencedMessageSender);
@@ -51,12 +51,12 @@ public class Utils {
         recipients.add(recipient);
 
         DistributionElement distributionElement =
-                new DistributionElementBuilder(distributionID,referencedMessageSender, recipients)
+                new DistributionElementBuilder(distributionId,referencedMessageSender, recipients)
                         .kind(DistributionElement.KindEnum.ACK).status(DistributionElement.StatusEnum.SYSTEM).build();
         ReferenceWrapper referenceWrapper =
                 new ReferenceWrapperBuilder(distributionElement, referencedMessageDistributionID).build();
 
-        return new EDXL_DE_Builder(distributionID, referencedMessageRecipient, referencedMessageSender)
+        return new EDXL_DE_Builder(distributionId, referencedMessageRecipient, referencedMessageSender)
                 .distributionKind(DistributionKind.ACK)
                 .distributionStatus(receivedMessage.getDistributionStatus())
                 .contentMessage(referenceWrapper)

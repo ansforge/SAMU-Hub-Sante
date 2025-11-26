@@ -25,6 +25,8 @@ import com.hubsante.hub.config.StructuredLogger;
 import com.hubsante.hub.exception.*;
 import com.hubsante.hub.utils.ConversionRulesCommand;
 import com.hubsante.hub.utils.ConversionUtils;
+import com.hubsante.hub.utils.EdxlUtils;
+import com.hubsante.hub.utils.MessageUtils;
 import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.edxl.EdxlMessage;
 import com.hubsante.model.report.ErrorCode;
@@ -106,6 +108,12 @@ public class Dispatcher {
                 // This should never happen as if we've reached this point, the message has already been deserialized
                 log.error("Could not deserialize message " + returnedEdxlString, e);
             }
+
+            String distributionId = returnedEdxlMessage != null ? returnedEdxlMessage.getDistributionID() : DISTRIBUTION_ID_UNAVAILABLE;
+            String messageType = returnedEdxlMessage != null ?
+                    EdxlUtils.getUseCaseFromMessage(returnedEdxlMessage.getFirstContentMessage()) :
+                    UNKNOWN;
+
             Error error = new Error();
             error.setErrorCode(ErrorCode.UNROUTABLE_MESSAGE);
             error.setErrorCause("unable do deliver message to " + returned.getRoutingKey() + ", cause was " + returned.getReplyText() + " (" + returned.getReplyCode() + ")");
@@ -116,11 +124,11 @@ public class Dispatcher {
                     error.setSourceMessage(xmlMapper.readValue(returned.getMessage().getBody(), HashMap.class));
                 }
             } catch (IOException e) {
-                log.error("Could not read message body", e);
+                structuredLog.error("Could not read message body", Map.of(LogConstants.DISTRIBUTION_ID, distributionId, LogConstants.MESSAGE_TYPE, messageType), e);
             }
-            error.setReferencedDistributionID(returnedEdxlMessage != null ? returnedEdxlMessage.getDistributionID() : DISTRIBUTION_ID_UNAVAILABLE);
+            error.setReferencedDistributionID(distributionId);
             String senderRoutingKey = returned.getMessage().getMessageProperties().getHeader(ORIGINAL_ROUTING_KEY);
-            messageHandler.logErrorMessage(error, senderRoutingKey);
+            messageHandler.logErrorMessage(error, distributionId, senderRoutingKey);
             // currently, we do not handle error messages on other hubex
             if (senderRoutingKey.startsWith(FR_HEALTH_PREFIX)) {
                 messageHandler.sendErrorReport(error, senderRoutingKey);
@@ -146,7 +154,7 @@ public class Dispatcher {
             checkSenderConsistency(message, edxlMessage);
             // Reject the message if the delivery mode is not PERSISTENT
             checkDeliveryModeIsPersistent(message, edxlMessage.getDistributionID());
-            // Reject the message if distributionID does not respect the format (senderID_internalID)
+            // Reject the message if distributionId does not respect the format (senderId_internalId)
             if (message.getMessageProperties().getReceivedRoutingKey().startsWith(Constants.FR_HEALTH_PREFIX)) {
                 checkDistributionIDFormat(edxlMessage);
             }
@@ -156,9 +164,11 @@ public class Dispatcher {
                 ConversionRulesCommand conversionRulesCommand = new ConversionRulesCommand(edxlMessage, hubConfig);
                 String convertedMessage = conversionHandler.applyConversionRules(conversionRulesCommand);
                 sendToTransferExchange(convertedMessage, message, conversionRulesCommand);
+                String recipientId = MessageUtils.getRecipientID(edxlMessage);
+                String messageType = EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage());
                 structuredLog.debug(
                         "The converted message has been sent to the exchange to reach the recipient's vhost.",
-                        Map.of(LogConstants.DISTRIBUTION_ID, edxlMessage.getDistributionID(), LogConstants.SENDER_ID, edxlMessage.getSenderID())
+                        Map.of(LogConstants.DISTRIBUTION_ID, edxlMessage.getDistributionID(), LogConstants.SENDER_ID, edxlMessage.getSenderID(), LogConstants.RECIPIENT_ID, recipientId, LogConstants.MESSAGE_TYPE, messageType)
                 );
                 // We MUST return here to exit the dispatch() function, otherwise the message will be published on the source Exchange as well
                 return;
@@ -176,10 +186,11 @@ public class Dispatcher {
         } catch (Exception e) {
             // still log.error because it is not one of our AbstractHubExceptions, so there must be
             // a hole in our error cover
-            String senderID = getSenderFromRoutingKey(message);
+            String senderId = getSenderFromRoutingKey(message);
             structuredLog.error(
-                    String.format("Unexpected error occurred while dispatching message from %s : %s", senderID, e),
-                    Map.of(LogConstants.SENDER_ID, senderID)
+                    String.format("Unexpected error occurred while dispatching message from %s", senderId),
+                    Map.of(LogConstants.SENDER_ID, senderId),
+                    e
             );
             throw new AmqpRejectAndDontRequeueException(e);
         }
@@ -222,8 +233,9 @@ public class Dispatcher {
                 String originalRoutingKey = message.getMessageProperties().getHeader(ORIGINAL_ROUTING_KEY) != null ?
                         message.getMessageProperties().getHeader(ORIGINAL_ROUTING_KEY) : "Unknown routing key";
                 structuredLog.warn(
-                    String.format("Unexpected error occurred while DLQ-dispatching message from %s: %s", originalRoutingKey, e),
-                    Map.of(LogConstants.SENDER_ID, originalRoutingKey)
+                    String.format("Unexpected error occurred while DLQ-dispatching message from %s", originalRoutingKey),
+                    Map.of(LogConstants.SENDER_ID, originalRoutingKey),
+                    e
                 );
             }
             throw new AmqpRejectAndDontRequeueException(e);

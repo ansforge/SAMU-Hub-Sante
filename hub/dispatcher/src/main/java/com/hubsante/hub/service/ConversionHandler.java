@@ -20,6 +20,8 @@ import com.hubsante.hub.config.LogConstants;
 import com.hubsante.hub.config.StructuredLogger;
 import com.hubsante.hub.exception.ConversionException;
 import com.hubsante.hub.utils.ConversionRulesCommand;
+import com.hubsante.hub.utils.EdxlUtils;
+import com.hubsante.hub.utils.MessageUtils;
 import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.edxl.EdxlMessage;
 import lombok.extern.slf4j.Slf4j;
@@ -51,20 +53,22 @@ public class ConversionHandler {
         String targetModelVersion = applyConversionRulesCommand.getTargetModelVersion();
         Boolean isCisuConversion = applyConversionRulesCommand.getCisuConversion();
         EdxlMessage edxlMessage = applyConversionRulesCommand.getEdxlMessage();
-        String distributionID = edxlMessage.getDistributionID();
-        String senderID = edxlMessage.getSenderID();
+        String distributionId = edxlMessage.getDistributionID();
+        String senderId = edxlMessage.getSenderID();
+        String recipientId = MessageUtils.getRecipientID(edxlMessage);
+        String messageType = EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage());
 
         String jsonEdxlString = edxlHandler.serializeJsonEDXL(edxlMessage);
 
         try {
             structuredLog.debug(
-                    String.format("Starting conversion for message %s from %s to %s, isCisu ? %s",distributionID, sourceModelVersion, targetModelVersion, isCisuConversion),
-                    Map.of(LogConstants.DISTRIBUTION_ID, distributionID, LogConstants.SENDER_ID, senderID)
+                    String.format("Starting conversion for message %s from %s to %s, isCisu ? %s",distributionId, sourceModelVersion, targetModelVersion, isCisuConversion),
+                    Map.of(LogConstants.DISTRIBUTION_ID, distributionId, LogConstants.SENDER_ID, senderId, LogConstants.RECIPIENT_ID, recipientId, LogConstants.MESSAGE_TYPE, messageType)
             );
-            String convertedJson = callConversionService(jsonEdxlString, sourceModelVersion, targetModelVersion, isCisuConversion,distributionID);
+            String convertedJson = callConversionService(jsonEdxlString, sourceModelVersion, targetModelVersion, isCisuConversion,distributionId);
             structuredLog.debug(
                     "Message converted successfully: " + convertedJson,
-                    Map.of(LogConstants.DISTRIBUTION_ID, distributionID, LogConstants.SENDER_ID, senderID)
+                    Map.of(LogConstants.DISTRIBUTION_ID, distributionId, LogConstants.SENDER_ID, senderId, LogConstants.RECIPIENT_ID, recipientId, LogConstants.MESSAGE_TYPE, messageType)
             );
 
             return convertedJson; // returns a string (deserialization is not possible because of version change)
@@ -72,13 +76,13 @@ public class ConversionHandler {
             // Error raised by the conversion service or its call
             structuredLog.error(
                     "Error during internal call to Hub Santé conversion service " + e,
-                    Map.of(LogConstants.DISTRIBUTION_ID, distributionID, LogConstants.SENDER_ID, senderID)
+                    Map.of(LogConstants.DISTRIBUTION_ID, distributionId, LogConstants.SENDER_ID, senderId, LogConstants.RECIPIENT_ID, recipientId, LogConstants.MESSAGE_TYPE, messageType)
             );
-            throw new ConversionException(e.getMessage(),distributionID);
+            throw new ConversionException(e.getMessage(), distributionId);
         }
     }
 
-    protected String callConversionService(String jsonEdxlString, String sourceVersion, String targetVersion, boolean cisuConversion, String distributionID) {
+    protected String callConversionService(String jsonEdxlString, String sourceVersion, String targetVersion, boolean cisuConversion, String distributionId) {
         // Create request body with all required parameters
         String requestBody = String.format(
                 "{\"edxl\": %s, \"sourceVersion\": \"%s\", \"targetVersion\": \"%s\", \"cisuConversion\": %s}",
@@ -104,19 +108,19 @@ public class ConversionHandler {
                 String errorMessage = errorNode.has("error") ? errorNode.get("error").asText() : e.getMessage();
                 structuredLog.error(
                         "Error received from converter service " + errorMessage,
-                        Map.of(LogConstants.DISTRIBUTION_ID, distributionID)
+                        Map.of(LogConstants.DISTRIBUTION_ID, distributionId)
                 );
-                throw new ConversionException(errorMessage, distributionID);
+                throw new ConversionException(errorMessage, distributionId);
             } catch (JsonProcessingException jsonException) {
                 // this should never happen as long as the objectMapper.readTree method has already been called earlier in the 'try' block
-                throw new ConversionException("Failed to parse error response from conversion service: " + e.getMessage(), distributionID);
+                throw new ConversionException("Failed to parse error response from conversion service: " + e.getMessage(), distributionId);
             }
         } catch (JsonProcessingException e) {
             structuredLog.error(
                     "Failed to parse error response from conversion service: " + e.getMessage(),
-                    Map.of(LogConstants.DISTRIBUTION_ID, distributionID)
+                    Map.of(LogConstants.DISTRIBUTION_ID, distributionId)
             );
-            throw new ConversionException("Failed to parse response from conversion service: " + e.getMessage(), distributionID);
+            throw new ConversionException("Failed to parse response from conversion service: " + e.getMessage(), distributionId);
         }
     }
 }

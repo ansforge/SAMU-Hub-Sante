@@ -841,12 +841,12 @@ public class DispatcherTest {
         dispatcher.dispatch(message);
 
         boolean foundReceivedLog = appender.list.stream()
-            .anyMatch(event -> event.getFormattedMessage().contains(" [x] Received Ack from 'fr.health.samuA': message with distributionID fr.health.samuA_2608323d-507d-4cbf-bf74-52007f8124ea, referenced distributionID fr.health.samuB_2607723d-507d-4cbf-bf74-12345f7064cd"));
-        assertTrue(foundReceivedLog, "Received log should contain referenced distributionID: fr.health.samuB_2607723d-507d-4cbf-bf74-12345f7064cd");
+            .anyMatch(event -> event.getFormattedMessage().contains(" [x] Received Ack from 'fr.health.samuA': message with distributionId fr.health.samuA_2608323d-507d-4cbf-bf74-52007f8124ea, referenced distributionId fr.health.samuB_2607723d-507d-4cbf-bf74-12345f7064cd"));
+        assertTrue(foundReceivedLog, "Received log should contain referenced distributionId: fr.health.samuB_2607723d-507d-4cbf-bf74-12345f7064cd");
 
         boolean foundForwardingLog = appender.list.stream()
-                .anyMatch(event -> event.getFormattedMessage().contains(" ↳ [x] Forwarding Ack to 'fr.health.samuB': message with distributionID fr.health.samuA_2608323d-507d-4cbf-bf74-52007f8124ea, referenced distributionID fr.health.samuB_2607723d-507d-4cbf-bf74-12345f7064cd"));
-        assertTrue(foundForwardingLog, "Forwarding log should contain referenced distributionID: fr.health.samuB_2607723d-507d-4cbf-bf74-12345f7064cd");
+                .anyMatch(event -> event.getFormattedMessage().contains(" ↳ [x] Forwarding Ack to 'fr.health.samuB': message with distributionId fr.health.samuA_2608323d-507d-4cbf-bf74-52007f8124ea, referenced distributionId fr.health.samuB_2607723d-507d-4cbf-bf74-12345f7064cd"));
+        assertTrue(foundForwardingLog, "Forwarding log should contain referenced distributionId: fr.health.samuB_2607723d-507d-4cbf-bf74-12345f7064cd");
 
         // Cleanup
         logbackLogger.detachAppender(appender);
