@@ -34,8 +34,10 @@ public class CompleteProductionSimulation extends Simulation {
             ScenarioBuilder conversionScenario = scenario("Convert RS-EDA v1 to v3").exec(SimulationUtils.sendAmqpMessage("fr.health.test.samuv1", conversionMessageString));
             ScenarioBuilder translationScenario = scenario("Translate RS-EDA to RC-EDA").exec(SimulationUtils.sendAmqpMessage("fr.health.test.samuv3", traductionMessageString));
             ScenarioBuilder invalidMessageScenario = scenario("Invalid message").exec(SimulationUtils.sendAmqpMessage("fr.health.test.samuB", invalidMessageString));
+            ScenarioBuilder samuGpsScenario = scenario("GEO-POS").exec(SimulationUtils.sendAmqpMessage("fr.health.test.samuA", messageString));
 
             int duration = SimulationUtils.getNumericEnvVar("SCENARIO_DURATION", defaultDuration);
+            int samuGpsUserCount = SimulationUtils.getNumericEnvVar("SAMU_GPS_SCENARIO_USER_COUNT", defaultDuration);
 
             setUp(
                     conversionScenario.injectOpen(
@@ -50,6 +52,9 @@ public class CompleteProductionSimulation extends Simulation {
                     invalidMessageScenario.injectOpen(
                             constantUsersPerSec(5).during(duration)
                     ).protocols(samuToNexsisV3Connection),
+                    samuGpsScenario.injectOpen(
+                            constantUsersPerSec(samuGpsUserCount).during(duration)
+                    ).protocols(samuGpsConnection)
             ).maxDuration(duration * 2L);
         } catch (Exception e) {
             log.error("Unexpected error during load test", e);
