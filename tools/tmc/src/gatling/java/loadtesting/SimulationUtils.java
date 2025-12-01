@@ -32,7 +32,7 @@ public final class SimulationUtils {
         return defaultValue;
     }
 
-    public static String loadSampleMessage(String fileName) throws Exception {
+    public static String loadSampleFile(String fileName) throws Exception {
         InputStream fileStream = SimulationUtils.class.getClassLoader().getResourceAsStream("messages/" + fileName);
         if (fileStream == null) throw new IOException("Resource not found:" + fileName);
         return new String(fileStream.readAllBytes(), StandardCharsets.UTF_8);
