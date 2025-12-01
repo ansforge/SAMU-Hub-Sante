@@ -220,15 +220,15 @@ public class MessageHandler {
     /*
      ** Deserialize the message according to its content type
      */
-    @Timed(value = "extract.received.message", description = "Extract incoming message - include validation and deseralization")
     protected EdxlMessage extractMessage(Message message) {
+        registry.counter(METRIC_MESSAGE_PROCESSING, OPERATION, "extract", VHOST_TAG, sanitizeVhostForProm(hubConfig.getVhost())).increment();
         String receivedEdxl = new String(message.getBody(), StandardCharsets.UTF_8);
         validateFullMessage(message, receivedEdxl);
         return deserializeMessage(message, receivedEdxl);
     }
 
-    @Timed(value = "validate.received.message", description = "Validate incoming message")
     private void validateFullMessage(Message message, String receivedEdxl) {
+        registry.counter(METRIC_MESSAGE_PROCESSING, OPERATION, "validate.full", VHOST_TAG, sanitizeVhostForProm(hubConfig.getVhost())).increment();
         // We deserialize according to the content type
         // It MUST be explicitly set by the client
         String extractedDistributionId = extractDistributionId(receivedEdxl);
@@ -255,8 +255,8 @@ public class MessageHandler {
         }
     }
 
-    @Timed(value = "validate.received.envelope", description = "Validate incoming envelope")
     private void validateEnvelopeOnly(Message message, String receivedEdxl) {
+        registry.counter(METRIC_MESSAGE_PROCESSING, OPERATION, "validate.envelope", VHOST_TAG, sanitizeVhostForProm(hubConfig.getVhost())).increment();
         try {
             String distributionId = UNKNOWN;
             if (isJSON(message)) {
@@ -294,8 +294,8 @@ public class MessageHandler {
         }
     }
 
-    @Timed(value = "deserialize.received.message", description = "Deserialize incoming message")
     private EdxlMessage deserializeMessage(Message message, String receivedEdxl) {
+        registry.counter(METRIC_MESSAGE_PROCESSING, OPERATION, "deserialize", VHOST_TAG, sanitizeVhostForProm(hubConfig.getVhost())).increment();
         EdxlMessage edxlMessage;
 
         // We deserialize according to the content type
@@ -340,8 +340,8 @@ public class MessageHandler {
         return null;
     }
 
-    @Timed(value = "serialize.forwarded.message", description = "Serialize forwarded message and return new AMQP message")
     private Message getFwdMessageBody(EdxlMessage edxlMessage, Message receivedAmqpMessage, MessageProperties fwdAmqpProperties) {
+        registry.counter(METRIC_MESSAGE_PROCESSING, OPERATION, "serialize.edxl", VHOST_TAG, sanitizeVhostForProm(hubConfig.getVhost())).increment();
         String recipientId = getRecipientID(edxlMessage);
         String senderId = getSenderFromRoutingKey(receivedAmqpMessage);
         String edxlString;
@@ -385,8 +385,8 @@ public class MessageHandler {
         }
     }
 
-    @Timed(value = "serialize.forwarded.message", description = "Serialize forwarded string message and return new AMQP message")
     private Message getFwdStringMessageBody(String message, Message receivedAmqpMessage, MessageProperties fwdAmqpProperties) {
+        registry.counter(METRIC_MESSAGE_PROCESSING, OPERATION, "serialize.string", VHOST_TAG, sanitizeVhostForProm(hubConfig.getVhost())).increment();
         String senderId = getSenderFromRoutingKey(receivedAmqpMessage);
 
         fwdAmqpProperties.setContentType(MessageProperties.CONTENT_TYPE_JSON);
