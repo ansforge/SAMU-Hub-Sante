@@ -1,4 +1,4 @@
-package example;
+package loadtesting;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
