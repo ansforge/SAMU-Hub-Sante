@@ -1,5 +1,4 @@
 import requests
-import logging
 from prometheus_client import Gauge
 
 from checks.checker import IChecker
@@ -21,26 +20,23 @@ class RabbitMQHealthcheck(IChecker):
     )
 
     def perform_checks(self):
-        try:
-            response = requests.get(
-                RABBITMQ_HEALTH_URL,
-                auth=(RABBITMQ_MONITORING_USERNAME, RABBITMQ_MONITORING_PASSWORD),
-                verify=RABBITMQ_CA_CERT_PATH,
-                timeout=HTTP_TIMEOUT,
+        response = requests.get(
+            RABBITMQ_HEALTH_URL,
+            auth=(RABBITMQ_MONITORING_USERNAME, RABBITMQ_MONITORING_PASSWORD),
+            verify=RABBITMQ_CA_CERT_PATH,
+            timeout=HTTP_TIMEOUT,
+        )
+        response.raise_for_status()
+        status = response.json().get("status", Status.UNKNOWN.value)
+        self.rabbitmq_status_metric.set(1 if status == Status.OK.value else 0)
+        return {
+            "rabbitmq_server": (
+                {"status": Status.UP.value}
+                if status == Status.OK.value
+                else {"status": Status.DOWN.value}
             )
-            response.raise_for_status()
-            status = response.json().get("status", Status.UNKNOWN.value)
-            self.rabbitmq_status_metric.set(1 if status == Status.OK.value else 0)
-            return {
-                "rabbitmq_server": (
-                    {"status": Status.UP.value}
-                    if status == Status.OK.value
-                    else {"status": Status.DOWN.value}
-                )
-            }
-        except requests.RequestException:
-            logging.error(
-                "Error occurred on RabbitMQ server's healthcheck: ", exc_info=True
-            )
-            self.rabbitmq_status_metric.set(0)
-            return {"rabbitmq_server": {"status": Status.DOWN.value}}
+        }
+
+    def check_failure_fallback(self):
+        self.rabbitmq_status_metric.set(0)
+        return {"rabbitmq_server": {"status": Status.DOWN.value}}

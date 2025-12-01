@@ -38,7 +38,7 @@ def compute_globale_status(custom_checkers):
     components = OrderedDict()
 
     for checker in custom_checkers:
-        health_statuses = checker.perform_checks()
+        health_statuses = checker.check_wrapper()
         for component, status in health_statuses.items():
             components[component] = status
             if status["status"] == Status.DOWN.value:
@@ -52,7 +52,7 @@ def compute_globale_status(custom_checkers):
 def update_metrics_before_scrapping():
     if request.path == METRICS_ENDPOINT:
         for checker in internal_checkers:
-            checker.perform_checks()
+            checker.check_wrapper()
 
 
 @app.route(HEALTH_EXTERNAL_ENDPOINT, methods=["GET"])

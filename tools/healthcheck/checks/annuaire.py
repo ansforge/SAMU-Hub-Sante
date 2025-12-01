@@ -1,5 +1,4 @@
 import requests
-import logging
 from prometheus_client import Gauge
 
 from checks.checker import IChecker
@@ -17,21 +16,19 @@ class AnnuaireHealthcheck(IChecker):
     )
 
     def perform_checks(self):
-        try:
-            response = requests.get(ANNUAIRE_HEALTH_URL, timeout=HTTP_TIMEOUT)
-            response.raise_for_status()
-            data = response.json()
-            status = data.get("status", Status.UNKNOWN.value)
-            self.annuaire_status_metric.set(1 if status == Status.UP.value else 0)
-            return {
-                "annuaire": (
-                    {"status": Status.UP.value}
-                    if status == Status.UP.value
-                    else {"status": Status.DOWN.value}
-                )
-            }
+        response = requests.get(ANNUAIRE_HEALTH_URL, timeout=HTTP_TIMEOUT)
+        response.raise_for_status()
+        data = response.json()
+        status = data.get("status", Status.UNKNOWN.value)
+        self.annuaire_status_metric.set(1 if status == Status.UP.value else 0)
+        return {
+            "annuaire": (
+                {"status": Status.UP.value}
+                if status == Status.UP.value
+                else {"status": Status.DOWN.value}
+            )
+        }
 
-        except requests.RequestException:
-            logging.error("Error occurred on annuaire healthcheck: ", exc_info=True)
-            self.annuaire_status_metric.set(0)
-            return {"annuaire": {"status": Status.DOWN.value}}
+    def check_failure_fallback(self):
+        self.annuaire_status_metric.set(0)
+        return {"annuaire": {"status": Status.DOWN.value}}
