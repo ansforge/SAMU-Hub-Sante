@@ -342,7 +342,7 @@ public class MessageHandler {
     }
 
     private Message getFwdMessageBody(EdxlMessage edxlMessage, Message receivedAmqpMessage, MessageProperties fwdAmqpProperties) {
-        registry.counter("message.processing", "operation", "serialize", VHOST_TAG, sanitizeVhostForProm(hubConfig.getVhost())).increment();
+        registry.counter("message.processing", "operation", "serialize.edxl", VHOST_TAG, sanitizeVhostForProm(hubConfig.getVhost())).increment();
         String recipientId = getRecipientID(edxlMessage);
         String senderId = getSenderFromRoutingKey(receivedAmqpMessage);
         String edxlString;
