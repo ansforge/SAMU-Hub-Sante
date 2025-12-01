@@ -129,6 +129,12 @@ jib {
         image "ghcr.io/${System.getenv('GITHUB_REPOSITORY_OWNER')}/dispatcher"
         tags = gitRefs()
     }
+    container {
+        environment = [
+            'APP_VERSION'  : project.version,
+            'APP_MODEL_VERSION'  : modelVersion
+        ]
+    }
 }
 
 import groovy.json.JsonSlurper
