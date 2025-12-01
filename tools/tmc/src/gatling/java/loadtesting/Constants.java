@@ -6,4 +6,6 @@ public final class Constants {
     public static final String TLS_PROTOCOL_VERSION = "TLSv1.2";
 
     public static final String JSON_CONTENT_TYPE = "application/json";
+
+    public final static String CLIENT_ID_PREFIX = "fr.health.";
 }
