@@ -2,11 +2,13 @@
 <!DOCTYPE configuration>
 
 <configuration>
+    <springProperty scope="context" name="version" source="app.version"/>
+    <springProperty scope="context" name="modelVersion" source="app.model-version"/>
     <springProperty scope="context" name="vhost" source="spring.rabbitmq.virtual-host"/>
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="net.logstash.logback.encoder.LogstashEncoder">
-            <globalCustomFields>{"vhost":"${vhost}"}</globalCustomFields>
+            <globalCustomFields>{"vhost":"${vhost}","version":"${version}","modelVersion":"${modelVersion}"}</globalCustomFields>
             <fieldNames>
                 <timestamp>timestamp</timestamp>
             </fieldNames>
