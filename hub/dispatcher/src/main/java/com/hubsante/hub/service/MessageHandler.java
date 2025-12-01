@@ -220,7 +220,6 @@ public class MessageHandler {
     /*
      ** Deserialize the message according to its content type
      */
-    @Timed(value = METRIC_MESSAGE_PROCESSING, extraTags = {OPERATION, "extract"}, description = "Extract incoming message - include validation and deserialization")
     protected EdxlMessage extractMessage(Message message) {
         registry.counter(METRIC_MESSAGE_PROCESSING, OPERATION, "extract", VHOST_TAG, sanitizeVhostForProm(hubConfig.getVhost())).increment();
         String receivedEdxl = new String(message.getBody(), StandardCharsets.UTF_8);
