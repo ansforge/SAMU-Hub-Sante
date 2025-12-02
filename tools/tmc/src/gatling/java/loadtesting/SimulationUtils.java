@@ -19,9 +19,9 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 import static loadtesting.Constants.CLIENT_ID_PREFIX;
 import static loadtesting.Constants.JSON_CONTENT_TYPE;
@@ -112,5 +112,16 @@ public final class SimulationUtils {
 
     public static String buildEdxlMessageString(String useCaseString, String senderId, String recipientId) throws Exception {
         return buildEdxlMessageString(useCaseString, senderId, recipientId, DistributionKind.REPORT, DistributionStatus.ACTUAL);
+    }
+
+    public static Iterator<Map<String, Object>> generateMessageFeeder(String useCaseString, String senderId, String recipientId) {
+        return Stream.generate((Supplier<Map<String, Object>>) () ->
+        {
+            try {
+                return Collections.singletonMap("message", buildEdxlMessageString(useCaseString, senderId, recipientId));
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }).iterator();
     }
 }
