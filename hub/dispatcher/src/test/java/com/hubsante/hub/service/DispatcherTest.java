@@ -738,7 +738,7 @@ public class DispatcherTest {
             UnroutableMessageException thrown = assertThrows(UnroutableMessageException.class, () -> {
                 MessageUtils.checkMessageClassNameSupported(edxlMessage, hubConfig);
             });
-            assertEquals("The received message classname is not supported on this vhost", thrown.getMessage());
+            assertEquals("The received message classname (UNSUPPORTED_CLASS) is not supported on this vhost", thrown.getMessage());
         }
     }
 
