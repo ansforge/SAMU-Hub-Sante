@@ -2,6 +2,7 @@ plugins {
     id 'java'
     // The following line allows to load io.gatling.gradle plugin and directly apply it
     id 'io.gatling.gradle' version '3.11.3'
+    id 'com.google.cloud.tools.jib' version '3.4.4'
 }
 
 def modelVersion = '3.1'
@@ -97,5 +98,21 @@ tasks.register("gatlingRunAllParallel") {
         if (!failures.isEmpty()) {
             throw new GradleException("Some simulations failed:\n" + failures.join("\n"))
         }
+    }
+}
+
+jib {
+    from {
+        image = 'eclipse-temurin:21-jre'
+    }
+    to {
+        image = project.findProperty('image') ?: 'ghcr.io/ansforge/tmc:latest'
+        tags = [project.findProperty('version') ?: 'latest']
+    }
+    container {
+        mainClass = 'io.gatling.app.Gatling'
+        jvmFlags = ['-Xms512m', '-Xmx2048m']
+        environment = [:]
+        ports = []
     }
 }
