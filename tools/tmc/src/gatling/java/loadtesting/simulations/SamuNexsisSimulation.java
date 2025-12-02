@@ -46,7 +46,7 @@ public class SamuNexsisSimulation extends Simulation {
     }
 
     public static ScenarioBuilder getConversionScenario() throws Exception {
-        String createCaseHealthContent = SimulationUtils.loadSampleFile("rc-eda.json");
+        String createCaseHealthContent = SimulationUtils.loadSampleFile("rs-eda.json");
         Iterator<Map<String, Object>> conversionScenarioFeeder = SimulationUtils.generateMessageFeeder(createCaseHealthContent, conversionScenarioSenderId, recipientId);
         return scenario("15-18: conversion transfer")
                 .feed(
