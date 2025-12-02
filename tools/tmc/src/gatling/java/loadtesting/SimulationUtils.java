@@ -24,8 +24,6 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import static loadtesting.Constants.CLIENT_ID_PREFIX;
-import static loadtesting.Constants.JSON_CONTENT_TYPE;
-import static org.galaxio.gatling.amqp.javaapi.AmqpDsl.amqp;
 
 public final class SimulationUtils {
     private static final Dotenv dotenv = Dotenv.load();
@@ -54,12 +52,8 @@ public final class SimulationUtils {
         return new String(fileStream.readAllBytes(), StandardCharsets.UTF_8);
     }
 
-    public static PublishDslBuilder sendAmqpMessage(String clientId, String messageString) {
-        return amqp("publish message as client " + clientId + " to exchange " + EXCHANGE_NAME)
-                .publish()
-                .topicExchange(EXCHANGE_NAME, clientId)
-                .textMessage(messageString)
-                .contentType(JSON_CONTENT_TYPE);
+    public static String getExchange() {
+        return EXCHANGE_NAME;
     }
 
     public static String buildEdxlMessageString(String useCaseString, String senderId, String recipientId, DistributionKind distributionKind, DistributionStatus distributionStatus) throws Exception {
