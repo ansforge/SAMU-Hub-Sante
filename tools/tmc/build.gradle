@@ -114,5 +114,14 @@ jib {
         jvmFlags = ['-Xms512m', '-Xmx2048m']
         environment = [:]
         ports = []
+        workingDirectory = '/app'
+    }
+    extraDirectories {
+        paths {
+            path {
+                from = file('certs')
+                into = '/app/certs'
+            }
+        }
     }
 }
