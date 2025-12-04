@@ -247,7 +247,8 @@ public class MessageUtils {
     public static String hashBody(Message message){
         try {
             String body = new String(message.getBody(), StandardCharsets.UTF_8);
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");byte[] hashedBytes = digest.digest(body.getBytes(StandardCharsets.UTF_8));
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hashedBytes = digest.digest(body.getBytes(StandardCharsets.UTF_8));
             return Base64.getEncoder().encodeToString(hashedBytes);
         } catch (NoSuchAlgorithmException e) {
             String senderId = getSenderFromRoutingKey(message);
