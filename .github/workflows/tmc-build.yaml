@@ -64,9 +64,8 @@ jobs:
           TMC_VERSION: ${{ needs.get-version.outputs.tmc-version }}
         run: |
           echo "Building TMC image for version $TMC_VERSION"
-          ./gradlew jib \
-            -Pversion=$TMC_VERSION \
-            --image ghcr.io/${{ github.repository_owner }}/tmc:$TMC_VERSION
+          docker build -t ghcr.io/${{ github.repository_owner }}/tmc:$TMC_VERSION .
+          docker push ghcr.io/${{ github.repository_owner }}/tmc:$TMC_VERSION
 
   image-security-scan:
     name: Scan Docker Image
