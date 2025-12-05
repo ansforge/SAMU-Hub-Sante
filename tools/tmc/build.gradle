@@ -39,7 +39,7 @@ def discoverGatlingSimulations = {
 
     classesDirs.each { dir ->
         if (!dir.exists()) return
-        fileTree(dir).matching { include "**/*Simulation.class" }.files.each { f ->
+        fileTree(dir).matching { include "**/simulations/*Simulation.class" }.files.each { f ->
             def relPath = f.absolutePath - (dir.absolutePath + File.separator)
             def fqn = relPath
                     .replace(File.separatorChar, '.' as char)
