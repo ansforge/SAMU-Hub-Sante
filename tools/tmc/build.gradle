@@ -29,3 +29,74 @@ repositories {
         }
     }
 }
+
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
+
+def discoverGatlingSimulations = {
+    def classesDirs = sourceSets.gatling.output.classesDirs.files
+    def sims = []
+
+    classesDirs.each { dir ->
+        if (!dir.exists()) return
+        fileTree(dir).matching { include "**/*Simulation.class" }.files.each { f ->
+            def relPath = f.absolutePath - (dir.absolutePath + File.separator)
+            def fqn = relPath
+                    .replace(File.separatorChar, '.' as char)
+                    .replaceAll(/\.class$/, '')
+            sims << fqn
+        }
+    }
+
+    sims.unique().sort()
+}
+
+tasks.register("gatlingRunAllParallel") {
+    group = "gatling"
+    description = "Run all Gatling simulations in parallel (one JVM per simulation)."
+
+    dependsOn("gatlingClasses")
+
+    doLast {
+        def sims = discoverGatlingSimulations()
+        if (sims.isEmpty()) {
+            println "No simulations found."
+            return
+        }
+
+        println "Found simulations:"
+        sims.each { println " - $it" }
+
+        def gatlingCpFiles = sourceSets.gatling.runtimeClasspath.files.toList()
+
+        int maxThreads = Math.min(sims.size(), Runtime.runtime.availableProcessors())
+        def pool = Executors.newFixedThreadPool(maxThreads)
+        def failures = Collections.synchronizedList([])
+
+        sims.each { sim ->
+            pool.submit {
+                try {
+                    def simpleName = sim.tokenize('.').last()
+                    def reportDir = file("$buildDir/reports/gatling/${simpleName}-${System.currentTimeMillis()}")
+
+                    javaexec {
+                        classpath files(gatlingCpFiles)
+                        mainClass = "io.gatling.app.Gatling"
+                        args = ["-s", sim, "-rf", reportDir.absolutePath]
+                        systemProperties System.properties.findAll { k, v -> k.startsWith("gatling.") }
+                    }
+                } catch (Throwable t) {
+                    failures << "${sim}: ${t.message}"
+                    t.printStackTrace()
+                }
+            }
+        }
+
+        pool.shutdown()
+        pool.awaitTermination(7, TimeUnit.DAYS)
+
+        if (!failures.isEmpty()) {
+            throw new GradleException("Some simulations failed:\n" + failures.join("\n"))
+        }
+    }
+}
