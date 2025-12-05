@@ -35,7 +35,7 @@ import java.util.concurrent.TimeUnit
 
 def discoverGatlingSimulations = {
     def classesDirs = sourceSets.gatling.output.classesDirs.files
-    def sims = []
+    def simulations = []
 
     classesDirs.each { dir ->
         if (!dir.exists()) return
@@ -44,11 +44,11 @@ def discoverGatlingSimulations = {
             def fqn = relPath
                     .replace(File.separatorChar, '.' as char)
                     .replaceAll(/\.class$/, '')
-            sims << fqn
+            simulations << fqn
         }
     }
 
-    sims.unique().sort()
+    simulations.unique().sort()
 }
 
 tasks.register("gatlingRunAllParallel") {
@@ -58,42 +58,41 @@ tasks.register("gatlingRunAllParallel") {
     dependsOn("gatlingClasses")
 
     doLast {
-        def sims = discoverGatlingSimulations()
-        if (sims.isEmpty()) {
+        def simulations = discoverGatlingSimulations()
+        if (simulations.isEmpty()) {
             println "No simulations found."
             return
         }
 
         println "Found simulations:"
-        sims.each { println " - $it" }
+        simulations.each { println " - $it" }
 
         def gatlingCpFiles = sourceSets.gatling.runtimeClasspath.files.toList()
 
-        int maxThreads = Math.min(sims.size(), Runtime.runtime.availableProcessors())
+        int maxThreads = Math.min(simulations.size(), Runtime.runtime.availableProcessors())
         def pool = Executors.newFixedThreadPool(maxThreads)
         def failures = Collections.synchronizedList([])
 
-        sims.each { sim ->
+        simulations.each { simulation ->
             pool.submit {
                 try {
-                    def simpleName = sim.tokenize('.').last()
-                    def reportDir = file("$buildDir/reports/gatling/${simpleName}-${System.currentTimeMillis()}")
+                    def simulationClassName = simulation.toString().tokenize('.').last()
+                    def reportDir = file("${layout.buildDirectory.asFile.get()}/reports/gatling/${simulationClassName}-${System.currentTimeMillis()}")
 
                     javaexec {
                         classpath files(gatlingCpFiles)
                         mainClass = "io.gatling.app.Gatling"
-                        args = ["-s", sim, "-rf", reportDir.absolutePath]
-                        systemProperties System.properties.findAll { k, v -> k.startsWith("gatling.") }
+                        args = ["-s", simulation, "-rf", reportDir.absolutePath]
                     }
                 } catch (Throwable t) {
-                    failures << "${sim}: ${t.message}"
+                    failures << "${simulation}: ${t.message}"
                     t.printStackTrace()
                 }
             }
         }
 
         pool.shutdown()
-        pool.awaitTermination(7, TimeUnit.DAYS)
+        pool.awaitTermination(2, TimeUnit.HOURS)
 
         if (!failures.isEmpty()) {
             throw new GradleException("Some simulations failed:\n" + failures.join("\n"))
