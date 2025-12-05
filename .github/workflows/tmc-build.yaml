@@ -58,14 +58,15 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Build and push Docker image
+      - name: Build and push Docker image with Jib
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TMC_VERSION: ${{ needs.get-version.outputs.tmc-version }}
         run: |
-          echo "Building TMC image for version $TMC_VERSION"
-          docker build -t ghcr.io/${{ github.repository_owner }}/tmc:$TMC_VERSION .
-          docker push ghcr.io/${{ github.repository_owner }}/tmc:$TMC_VERSION
+          echo "Building TMC image for version $TMC_VERSION using Jib"
+          ./gradlew jib \
+            -Pversion=$TMC_VERSION \
+            -Pimage=ghcr.io/${{ github.repository_owner }}/tmc:$TMC_VERSION
 
   image-security-scan:
     name: Scan Docker Image

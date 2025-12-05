@@ -103,14 +103,14 @@ tasks.register("gatlingRunAllParallel") {
 
 jib {
     from {
-        image = 'eclipse-temurin:21-jre'
+        image = 'eclipse-temurin:21-jdk'  // Changed to JDK for building
     }
     to {
         image = project.findProperty('image') ?: 'ghcr.io/ansforge/tmc:latest'
         tags = [project.findProperty('version') ?: 'latest']
     }
     container {
-        mainClass = 'io.gatling.app.Gatling'
+        entrypoint = ['./gradlew', 'gatlingRun']  // Use gradlew as entrypoint
         jvmFlags = ['-Xms512m', '-Xmx2048m']
         environment = [:]
         ports = []
@@ -119,9 +119,13 @@ jib {
     extraDirectories {
         paths {
             path {
-                from = file('certs')
-                into = '/app/certs'
+                from = file('.')
+                into = '/app'
+                excludes = ['build/**', '.gradle/**', '.git/**', '*.log']
             }
         }
+        permissions = [
+            '/app/gradlew': '755'
+        ]
     }
 }
