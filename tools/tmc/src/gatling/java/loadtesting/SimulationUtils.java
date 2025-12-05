@@ -10,7 +10,6 @@ import com.hubsante.model.rcde.DistributionElement;
 import com.hubsante.model.rcde.Recipient;
 import com.hubsante.model.rcde.Sender;
 import io.github.cdimascio.dotenv.Dotenv;
-import org.galaxio.gatling.amqp.javaapi.request.PublishDslBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,14 +22,11 @@ import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-import static loadtesting.Constants.CLIENT_ID_PREFIX;
+import static loadtesting.Constants.RC_DE_USER_PREFIX;
 
 public final class SimulationUtils {
     private static final Dotenv dotenv = Dotenv.load();
     private static final Logger log = LoggerFactory.getLogger(SimulationUtils.class);
-
-    private static final String EXCHANGE_NAME_ENV_VAR = "EXCHANGE_NAME";
-    private static final String EXCHANGE_NAME = dotenv.get(EXCHANGE_NAME_ENV_VAR);
     private static final ObjectMapper jsonMapper = Utils.getJsonMapper();
 
     public static int getNumericEnvVar(String key, int defaultValue) {
@@ -52,8 +48,11 @@ public final class SimulationUtils {
         return new String(fileStream.readAllBytes(), StandardCharsets.UTF_8);
     }
 
-    public static String getExchange() {
-        return EXCHANGE_NAME;
+    private static String sanitizeClientId(String clientId) {
+        if (clientId == null) return null;
+        String[] parts = clientId.split("\\.");
+        if (parts.length <= 2) return "";
+        return String.join(".", Arrays.copyOfRange(parts, 2, parts.length));
     }
 
     public static String buildEdxlMessageString(String useCaseString, String senderId, String recipientId, DistributionKind distributionKind, DistributionStatus distributionStatus) throws Exception {
@@ -69,11 +68,11 @@ public final class SimulationUtils {
                 .distributionStatus(distributionStatus)
                 .build();
 
-        String sanitizedSenderId = senderId.substring(CLIENT_ID_PREFIX.length());
-        String sanitizedRecipientId = recipientId.substring(CLIENT_ID_PREFIX.length());
+        String sanitizedSenderId = sanitizeClientId(senderId);
+        String sanitizedRecipientId = sanitizeClientId(recipientId);
 
-        Sender sender = new Sender().name(sanitizedSenderId).URI(String.format("hubex:%s", sanitizedSenderId));
-        Recipient recipient = new Recipient().name(sanitizedRecipientId).URI(String.format("hubex:%s", sanitizedRecipientId));
+        Sender sender = new Sender().name(sanitizedSenderId).URI(String.format("%s:%s", RC_DE_USER_PREFIX, sanitizedSenderId));
+        Recipient recipient = new Recipient().name(sanitizedRecipientId).URI(String.format("%s:%s", RC_DE_USER_PREFIX, sanitizedRecipientId));
         List<Recipient> recipients = new ArrayList<>();
         recipients.add(recipient);
 

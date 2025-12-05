@@ -7,11 +7,11 @@ public final class Constants {
 
     public static final String JSON_CONTENT_TYPE = "application/json";
 
-    public final static String CLIENT_ID_PREFIX = "fr.health.";
-
     public final static String HUBSANTE_EXCHANGE = "hubsante";
 
     public final static String GATLING_EL_MESSAGE_KEY = "message";
 
     public final static String AMQP_REQUEST_NAME = "publish message as client";
+
+    public final static String RC_DE_USER_PREFIX = "hubex";
 }
