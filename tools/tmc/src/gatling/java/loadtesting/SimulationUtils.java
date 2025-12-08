@@ -71,8 +71,8 @@ public final class SimulationUtils {
         String sanitizedSenderId = sanitizeClientId(senderId);
         String sanitizedRecipientId = sanitizeClientId(recipientId);
 
-        Sender sender = new Sender().name(sanitizedSenderId).URI(String.format("%s:%s", RC_DE_USER_PREFIX, sanitizedSenderId));
-        Recipient recipient = new Recipient().name(sanitizedRecipientId).URI(String.format("%s:%s", RC_DE_USER_PREFIX, sanitizedRecipientId));
+        Sender sender = new Sender().name(sanitizedSenderId).URI(String.format("%s:%s", RC_DE_USER_PREFIX, senderId));
+        Recipient recipient = new Recipient().name(sanitizedRecipientId).URI(String.format("%s:%s", RC_DE_USER_PREFIX, recipientId));
         List<Recipient> recipients = new ArrayList<>();
         recipients.add(recipient);
 
