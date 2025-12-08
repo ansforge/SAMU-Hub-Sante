@@ -4,18 +4,98 @@ plugins {
     id 'io.gatling.gradle' version '3.11.3'
 }
 
+def modelVersion = '3.1'
+
 dependencies {
     gatling("org.galaxio:gatling-amqp-plugin_2.13:0.14.0")
     gatling("io.github.cdimascio:dotenv-java:3.2.0")
+    gatling("com.hubsante:models:${modelVersion}")
 }
 
 gatling {
-  enterprise {
-    // Enterprise Cloud (https://cloud.gatling.io/) configuration reference: https://gatling.io/docs/gatling/reference/current/extensions/gradle_plugin/#working-with-gatling-enterprise-cloud
-    // Enterprise Self-Hosted configuration reference: https://gatling.io/docs/gatling/reference/current/extensions/gradle_plugin/#working-with-gatling-enterprise-self-hosted
-  }
+    enterprise {
+        // Enterprise Cloud (https://cloud.gatling.io/) configuration reference: https://gatling.io/docs/gatling/reference/current/extensions/gradle_plugin/#working-with-gatling-enterprise-cloud
+        // Enterprise Self-Hosted configuration reference: https://gatling.io/docs/gatling/reference/current/extensions/gradle_plugin/#working-with-gatling-enterprise-self-hosted
+    }
 }
 
 repositories {
-  mavenCentral()
+    mavenCentral()
+    maven {
+        url = uri("https://maven.pkg.github.com/ansforge/SAMU-Hub-Modeles")
+        credentials {
+            username = System.getenv('GITHUB_ACTOR')
+            password = System.getenv('GITHUB_TOKEN')
+        }
+    }
+}
+
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
+
+def discoverGatlingSimulations = {
+    def classesDirs = sourceSets.gatling.output.classesDirs.files
+    def simulations = []
+
+    classesDirs.each { dir ->
+        if (!dir.exists()) return
+        fileTree(dir).matching { include "**/simulations/*Simulation.class" }.files.each { f ->
+            def relPath = f.absolutePath - (dir.absolutePath + File.separator)
+            def fqn = relPath
+                    .replace(File.separatorChar, '.' as char)
+                    .replaceAll(/\.class$/, '')
+            simulations << fqn
+        }
+    }
+
+    simulations.unique().sort()
+}
+
+tasks.register("gatlingRunAllParallel") {
+    group = "gatling"
+    description = "Run all Gatling simulations in parallel (one JVM per simulation)."
+
+    dependsOn("gatlingClasses")
+
+    doLast {
+        def simulations = discoverGatlingSimulations()
+        if (simulations.isEmpty()) {
+            println "No simulations found."
+            return
+        }
+
+        println "Found simulations:"
+        simulations.each { println " - $it" }
+
+        def gatlingCpFiles = sourceSets.gatling.runtimeClasspath.files.toList()
+
+        int maxThreads = Math.min(simulations.size(), Runtime.runtime.availableProcessors())
+        def pool = Executors.newFixedThreadPool(maxThreads)
+        def failures = Collections.synchronizedList([])
+
+        simulations.each { simulation ->
+            pool.submit {
+                try {
+                    def simulationClassName = simulation.toString().tokenize('.').last()
+                    def reportDir = file("${layout.buildDirectory.asFile.get()}/reports/gatling/${simulationClassName}-${System.currentTimeMillis()}")
+
+                    javaexec {
+                        classpath files(gatlingCpFiles)
+                        mainClass = "io.gatling.app.Gatling"
+                        args = ["-s", simulation, "-rf", reportDir.absolutePath]
+                    }
+                } catch (Throwable t) {
+                    failures << "${simulation}: ${t.message}"
+                    t.printStackTrace()
+                }
+            }
+        }
+
+        pool.shutdown()
+        pool.awaitTermination(2, TimeUnit.HOURS)
+
+        if (!failures.isEmpty()) {
+            throw new GradleException("Some simulations failed:\n" + failures.join("\n"))
+        }
+    }
 }
