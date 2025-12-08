@@ -3,7 +3,7 @@ import { readFileSync } from 'fs';
 import amqp, { credentials, Channel, Connection } from 'amqplib/callback_api';
 import { logger } from '../logger';
 import { Config } from '../config';
-import { Logger } from "winston";
+import { Logger } from 'winston';
 
 export class RabbitMQConnector {
   private config: Config;
@@ -15,22 +15,19 @@ export class RabbitMQConnector {
     this.connectionOptions = {
       ...this.readCerts(),
       passphrase: this.config.getLrmCertPassphrase(),
+      // Ref.: https://github.com/amqp-node/amqplib/issues/105
       credentials: credentials.external(),
       clientProperties: { connection_name: 'lrm-interface' },
     };
     this.logger = logger.child({ component: 'RabbitMQConnector' });
   }
 
-  private readCerts(): { pfx: Buffer<ArrayBufferLike>; ca: Buffer<ArrayBufferLike>[] } {
+  private readCerts(): { cert: Buffer<ArrayBufferLike>; key: Buffer<ArrayBufferLike>; ca: Buffer<ArrayBufferLike>[] } {
     const moduleDir = __dirname;
     return {
-      // pfx with new encryption needed for Node 19 support
-      // Ref: https://github.com/nodejs/node/issues/40672#issuecomment-1680460423
-      pfx: readFileSync(join(moduleDir, 'certs/lrm_test.pfx')),
-      // cert: fs.readFileSync(path.join(moduleDir, 'certs/local_test.crt')), // client cert
-      // key: fs.readFileSync(path.join(moduleDir, 'certs/local_test.key')), // client key
+      cert: readFileSync(join(moduleDir, 'certs/lrm_test.crt')), // client cert
+      key: readFileSync(join(moduleDir, 'certs/lrm_test.key')), // client key
       ca: [readFileSync(join(moduleDir, 'certs/rootCA.crt'))], // array of trusted CA certs
-      // Ref.: https://github.com/amqp-node/amqplib/issues/105
     };
   }
 
