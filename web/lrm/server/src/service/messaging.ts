@@ -1,7 +1,7 @@
 import { Channel, Connection, Message } from 'amqplib/callback_api';
 import { WebSocketServer, OPEN } from 'ws';
 import { Logger } from 'winston';
-import { Histogram } from 'prom-client';
+import { Histogram, exponentialBuckets } from 'prom-client';
 
 import { getMessageLogsMetadata, logger } from '../logger';
 import { RabbitMQConnector } from '../rabbit/utils';
@@ -15,6 +15,7 @@ const RECONNEXION_ATTEMPT_DELAY = 5000;
 const treatmentDurationHistogram = new Histogram({
   name: 'message_treatment_duration',
   help: 'The estimated duration of treatment of a message by the Hub (delta between the dateTimeSent field and the date it has been consumed by the LRM server',
+  buckets: exponentialBuckets(0.1, 2, 10),
 });
 register.registerMetric(treatmentDurationHistogram);
 
