@@ -34,10 +34,16 @@ Note : l'exposition des variables d'environnement via fichier `.env` est géré 
 
 ### Lancement des tests
 
-Pour lancer la simulation `CompleteProductionSimulation`, utiliser la commande :
+Pour lancer toutes les simulations présentes dans le dossier [simulations](tools/tmc/src/gatling/java/loadtesting/simulations), utiliser la commande :
 
 ```bash
-./gradlew gatlingRun --simulation loadtesting.simulations.CompleteProductionSimulation
+./gradlew gatlingRunAllParallel
+```
+
+Pour lancer une simulation , utiliser la commande :
+
+```bash
+./gradlew gatlingRun --simulation loadtesting.simulations.<NOM_DE_LA_SIMULATION>
 ```
 
 ## Architecture technique
