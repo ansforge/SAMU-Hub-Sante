@@ -16,6 +16,7 @@ const treatmentDurationHistogram = new Histogram({
   name: 'message_treatment_duration',
   help: 'The estimated duration of treatment of a message by the Hub (delta between the dateTimeSent field and the date it has been consumed by the LRM server',
   buckets: exponentialBuckets(0.1, 2, 10),
+  labelNames: ["vhost"]
 });
 register.registerMetric(treatmentDurationHistogram);
 
@@ -176,7 +177,7 @@ export class ClientListenerService {
         }
       });
       const treatmentDuration = this.computeTreamtmentDuration(body);
-      if (treatmentDuration !== null) treatmentDurationHistogram.observe(treatmentDuration);
+      if (treatmentDuration !== null) treatmentDurationHistogram.labels(this.vhost).observe(treatmentDuration);
       this.logger.info(`Sent to ${clientCounts} clients: ${data.body.distributionID}`, logsMetadata);
       this.logger.debug(`Sent to ${clientCounts} clients: ${data} of content ${data}`, logsMetadata);
     };
