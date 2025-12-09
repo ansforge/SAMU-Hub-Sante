@@ -40,6 +40,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ./gradlew licenseFormat
 
+      - name: Check format
+        run: ./gradlew spotlessCheck
 
       - name: Build and run tests
         env:
