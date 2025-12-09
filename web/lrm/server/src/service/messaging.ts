@@ -1,14 +1,24 @@
 import { Channel, Connection, Message } from 'amqplib/callback_api';
 import { WebSocketServer, OPEN } from 'ws';
+import { Logger } from 'winston';
+import { Histogram, exponentialBuckets } from 'prom-client';
 
 import { getMessageLogsMetadata, logger } from '../logger';
 import { RabbitMQConnector } from '../rabbit/utils';
 import { Config } from '../config';
-import { Logger } from "winston";
+import { register } from '../metrics';
 
 const NOT_FOUND_QUEUE_ERROR_MESSAGE_PATTERN = 'NOT_FOUND - no queue';
 const MAX_RECONNEXION_ATTEMPT = 3;
 const RECONNEXION_ATTEMPT_DELAY = 5000;
+
+const treatmentDurationHistogram = new Histogram({
+  name: 'message_treatment_duration',
+  help: 'The estimated duration of treatment of a message by the Hub (delta between the dateTimeSent field and the date it has been consumed by the LRM server',
+  buckets: exponentialBuckets(0.1, 2, 10),
+  labelNames: ["vhost"]
+});
+register.registerMetric(treatmentDurationHistogram);
 
 export class MessagingService {
   private readonly vhost: string;
@@ -147,7 +157,7 @@ export class ClientListenerService {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-expect-error
         ` [x] Received for ${this.clientId} (${this.vhost}): ${body.distributionID} of content ${msg.content}`,
-          logsMetadata
+        logsMetadata,
       );
       const d = new Date();
       const data = {
@@ -166,8 +176,38 @@ export class ClientListenerService {
           clientCounts += 1;
         }
       });
+      const treatmentDuration = this.computeTreamtmentDuration(body);
+      if (treatmentDuration !== null) treatmentDurationHistogram.labels(this.vhost).observe(treatmentDuration);
       this.logger.info(`Sent to ${clientCounts} clients: ${data.body.distributionID}`, logsMetadata);
       this.logger.debug(`Sent to ${clientCounts} clients: ${data} of content ${data}`, logsMetadata);
     };
+  }
+
+  computeTreamtmentDuration(body: any): number | null {
+    const logsMetadata = getMessageLogsMetadata(body);
+    if (!body || typeof body.dateTimeSent !== 'string') {
+      this.logger.warn(
+        'Hub treatment duration computation error: missing or invalid dateTimeSent field in message body',
+        logsMetadata,
+      );
+      return null;
+    }
+    const sentDate = new Date(body.dateTimeSent);
+    if (Number.isNaN(sentDate.getTime())) {
+      this.logger.warn(
+        `Hub treatment duration computation error: could not parse dateTimeSent: ${body.dateTimeSent}`,
+        logsMetadata,
+      );
+      return null;
+    }
+    const deltaMs = Date.now() - sentDate.getTime();
+    if (deltaMs < 0) {
+      this.logger.warn(
+        `Hub treatment duration computation error: dateTimeSent is in the future: ${body.dateTimeSent}`,
+        logsMetadata,
+      );
+      return null;
+    }
+    return deltaMs / 1000;
   }
 }

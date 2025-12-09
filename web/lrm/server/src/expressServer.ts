@@ -4,6 +4,7 @@ import express, { Express } from 'express';
 import cookieParser from 'cookie-parser';
 import bodyParser from 'body-parser';
 import { WebSocketServer } from 'ws';
+import { Logger } from 'winston';
 
 import { logger } from './logger';
 import { RabbitMQConnector } from './rabbit/utils';
@@ -11,7 +12,7 @@ import { ModelesRouter } from './router/modelesRouter';
 import { Config } from './config';
 import { WebSocketHandler } from './WebSocketHandler';
 import { MessagingService } from './service/messaging';
-import { Logger } from "winston";
+import { register } from './metrics';
 
 export class ExpressServer {
   private readonly config: Config;
@@ -39,6 +40,11 @@ export class ExpressServer {
     this.app.use(cookieParser());
 
     this.app.use('/modeles', ModelesRouter);
+
+    this.app.get('/metrics', async (_, res) => {
+      res.setHeader('Content-Type', register.contentType);
+      res.send(await register.metrics());
+    });
 
     // TODO: handle error handling middleware typing properly
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
