@@ -16,12 +16,11 @@
 package com.hubsante.hub.config;
 
 import com.rabbitmq.client.DefaultSaslConfig;
+import jakarta.annotation.PostConstruct;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.amqp.RabbitProperties;
 import org.springframework.context.annotation.Configuration;
-
-import jakarta.annotation.PostConstruct;
 
 @Configuration
 public class AmqpConfiguration {
@@ -52,10 +51,14 @@ public class AmqpConfiguration {
 
     @PostConstruct
     public void init() {
-        // To avoid "No compatible authentication mechanism found - server offered [EXTERNAL]" errors
+        // To avoid "No compatible authentication mechanism found - server offered [EXTERNAL]"
+        // errors
         // Ref.: https://github.com/spring-projects/spring-boot/issues/6719#issuecomment-259268574
-        if (rabbitProperties.getSsl().getEnabled() && rabbitProperties.getSsl().getKeyStore() != null) {
-            connectionFactory.getRabbitConnectionFactory().setSaslConfig(DefaultSaslConfig.EXTERNAL);
+        if (rabbitProperties.getSsl().getEnabled()
+                && rabbitProperties.getSsl().getKeyStore() != null) {
+            connectionFactory
+                    .getRabbitConnectionFactory()
+                    .setSaslConfig(DefaultSaslConfig.EXTERNAL);
         }
     }
 }

@@ -19,6 +19,11 @@ import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.Validator;
 import io.micrometer.core.aop.TimedAspect;
 import io.micrometer.core.instrument.MeterRegistry;
+import jakarta.annotation.PostConstruct;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.params.shadow.com.univocity.parsers.common.ParsingContext;
 import org.junit.jupiter.params.shadow.com.univocity.parsers.common.processor.ObjectRowProcessor;
@@ -29,12 +34,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import jakarta.annotation.PostConstruct;
-import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
-import java.util.stream.Collectors;
-
 @Slf4j
 @Configuration
 public class HubConfiguration {
@@ -42,7 +41,6 @@ public class HubConfiguration {
     private static final int ROW_LENGTH = 9;
     private static final String DATA_DIVIDER = ",";
     private static final String COLUMN_DIVIDER = ";";
-
 
     @Value("${client.preferences.file}")
     private File configFile;
@@ -77,18 +75,21 @@ public class HubConfiguration {
             // We define a custom row processor to read the config file
             // we override the rowProcessed method on the fly to store the config in a HashMap
             // then we define the parser settings and parse the file
-            ObjectRowProcessor clientPreferencesRowProcessor = new ObjectRowProcessor() {
-                @Override
-                public void rowProcessed(Object[] objects, ParsingContext parsingContext) {
-                    if (objects.length != ROW_LENGTH) {
-                        log.warn("There were more than {} columns in the client preferences file, extra columns are being ignored", ROW_LENGTH);
-                    }
-                    String[] items = Arrays.asList(objects).toArray(new String[ROW_LENGTH]);
-                    useXmlPreferences.put(items[0], Boolean.parseBoolean(items[1]));
-                    directCisuPreferences.put(items[0], Boolean.parseBoolean(items[2]));
-                    clientsEditorMap.put(items[0], items[3]);
-                }
-            };
+            ObjectRowProcessor clientPreferencesRowProcessor =
+                    new ObjectRowProcessor() {
+                        @Override
+                        public void rowProcessed(Object[] objects, ParsingContext parsingContext) {
+                            if (objects.length != ROW_LENGTH) {
+                                log.warn(
+                                        "There were more than {} columns in the client preferences file, extra columns are being ignored",
+                                        ROW_LENGTH);
+                            }
+                            String[] items = Arrays.asList(objects).toArray(new String[ROW_LENGTH]);
+                            useXmlPreferences.put(items[0], Boolean.parseBoolean(items[1]));
+                            directCisuPreferences.put(items[0], Boolean.parseBoolean(items[2]));
+                            clientsEditorMap.put(items[0], items[3]);
+                        }
+                    };
             CsvParserSettings parserSettings = new CsvParserSettings();
             parserSettings.getFormat().setLineSeparator("\n");
             parserSettings.getFormat().setDelimiter(';');
@@ -107,14 +108,16 @@ public class HubConfiguration {
 
     public Map<String, Map<String, String>> loadClientsPerimetersAndVersions() throws IOException {
         Map<String, Map<String, String>> clientsPerimeterAndVersions = new HashMap<>();
-        BufferedReader reader = new BufferedReader(new FileReader(configFile, StandardCharsets.UTF_8));
+        BufferedReader reader =
+                new BufferedReader(new FileReader(configFile, StandardCharsets.UTF_8));
         String headerLine = reader.readLine();
         String[] headers = headerLine.split(COLUMN_DIVIDER);
         int numberOfColumns = headers.length;
 
-        Set<String> perimeterNames = Arrays.stream(Constants.Perimeter.values())
-                           .map(Constants.Perimeter::getName)
-                           .collect(Collectors.toSet());
+        Set<String> perimeterNames =
+                Arrays.stream(Constants.Perimeter.values())
+                        .map(Constants.Perimeter::getName)
+                        .collect(Collectors.toSet());
 
         Map<String, Integer> perimeterColumnIndexes = new HashMap<>();
         for (int i = 0; i < numberOfColumns; i++) {
@@ -138,47 +141,54 @@ public class HubConfiguration {
             }
 
             clientsPerimeterAndVersions.put(clientId, allPerimetersVersions);
-        };
+        }
+        ;
 
         reader.close();
         return clientsPerimeterAndVersions;
     }
 
     public String[] getClientVersionsForPerimeter(String clientId, String perimeterName) {
-        Map<String, String> clientPerimeterDefinition = clientsPerimeterAndVersions.getOrDefault(clientId, null);
-        if(clientPerimeterDefinition == null){
-            log.debug("ClientId was not found in clientsPerimeterAndVersions, or the variable is not initialized.");
+        Map<String, String> clientPerimeterDefinition =
+                clientsPerimeterAndVersions.getOrDefault(clientId, null);
+        if (clientPerimeterDefinition == null) {
+            log.debug(
+                    "ClientId was not found in clientsPerimeterAndVersions, or the variable is not initialized.");
             return null;
         }
         String versions = clientPerimeterDefinition.getOrDefault(perimeterName, null);
         return splitString(versions);
     }
 
-    public List<String> loadSupportedMessages(String vhost) throws Exception{
+    public List<String> loadSupportedMessages(String vhost) throws Exception {
         List<String> supportedMessages = new ArrayList<>();
-        try (BufferedReader reader = new BufferedReader(new FileReader(supportedMessagesFile, StandardCharsets.UTF_8))) {
+        try (BufferedReader reader =
+                new BufferedReader(new FileReader(supportedMessagesFile, StandardCharsets.UTF_8))) {
             String line;
             while ((line = reader.readLine()) != null) {
-                if (line.startsWith("common" + COLUMN_DIVIDER) || line.startsWith(vhost + COLUMN_DIVIDER)) {
+                if (line.startsWith("common" + COLUMN_DIVIDER)
+                        || line.startsWith(vhost + COLUMN_DIVIDER)) {
                     String[] rowParts = line.split(COLUMN_DIVIDER);
                     if (rowParts.length > 1) {
                         String[] messages = rowParts[1].split(DATA_DIVIDER);
                         for (String messageClassName : messages) {
                             String messageClassNameTrimmed = messageClassName.trim();
-                            if (!messageClassNameTrimmed.isEmpty() && !supportedMessages.contains(messageClassNameTrimmed)) {
+                            if (!messageClassNameTrimmed.isEmpty()
+                                    && !supportedMessages.contains(messageClassNameTrimmed)) {
                                 supportedMessages.add(messageClassNameTrimmed);
                             }
                         }
                     }
                 }
-            };
+            }
+            ;
         } catch (IOException e) {
             throw new Exception("Error reading supported messages file: {}", e);
         }
         return supportedMessages;
     }
 
-    public List<String> getSupportedMessages(){
+    public List<String> getSupportedMessages() {
         return supportedMessages;
     }
 
@@ -198,7 +208,9 @@ public class HubConfiguration {
         return defaultTTL;
     }
 
-    public String getVhost() {return vhost; }
+    public String getVhost() {
+        return vhost;
+    }
 
     @Bean
     public EdxlHandler edxlHandler() {
@@ -224,8 +236,6 @@ public class HubConfiguration {
 
     @Bean
     public WebClient conversionWebClient(@Value("${conversion.service.url}") String baseUrl) {
-        return WebClient.builder()
-                .baseUrl(baseUrl)
-                .build();
+        return WebClient.builder().baseUrl(baseUrl).build();
     }
 }

@@ -15,14 +15,14 @@
  */
 package com.hubsante.hub.service;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import com.hubsante.hub.utils.EdxlUtils;
 import com.hubsante.model.edxl.DistributionKind;
 import com.hubsante.model.edxl.DistributionStatus;
 import com.hubsante.model.edxl.EdxlMessage;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class EdxlUtilsTest {
 
@@ -38,7 +38,11 @@ public class EdxlUtilsTest {
         assertEquals(DistributionStatus.ACTUAL, edxlMessage.getDistributionStatus());
         assertEquals(DistributionKind.ERROR, edxlMessage.getDistributionKind());
         assertEquals("fr-FR", edxlMessage.getDescriptor().getLanguage());
-        assertEquals("hubex", edxlMessage.getDescriptor().getExplicitAddress().getExplicitAddressScheme());
-        assertEquals(recipientId, edxlMessage.getDescriptor().getExplicitAddress().getExplicitAddressValue());
+        assertEquals(
+                "hubex",
+                edxlMessage.getDescriptor().getExplicitAddress().getExplicitAddressScheme());
+        assertEquals(
+                recipientId,
+                edxlMessage.getDescriptor().getExplicitAddress().getExplicitAddressValue());
     }
 }

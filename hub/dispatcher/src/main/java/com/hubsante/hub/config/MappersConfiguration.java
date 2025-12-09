@@ -41,25 +41,32 @@ public class MappersConfiguration {
 
     @Bean(name = "xmlMapper")
     public XmlMapper xmlMapper() {
-        return (XmlMapper) new XmlMapper()
-                .registerModule(new JavaTimeModule())
-                .enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
-                .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-                .disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE);
+        return (XmlMapper)
+                new XmlMapper()
+                        .registerModule(new JavaTimeModule())
+                        .enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+                        .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+                        .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+                        .disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE);
     }
 
-    // we need a second XmlMapper bean to add the XML declaration at serialization, for EDXL messages only
+    // we need a second XmlMapper bean to add the XML declaration at serialization, for EDXL
+    // messages only
     @Bean(name = "rootXmlMapper")
     public XmlMapper xmlMapperWithDeclaration() {
-        XmlMapper xmlMapper = (XmlMapper) new XmlMapper()
-                .registerModule(new JavaTimeModule())
-                .enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
-                .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-                .disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE);
+        XmlMapper xmlMapper =
+                (XmlMapper)
+                        new XmlMapper()
+                                .registerModule(new JavaTimeModule())
+                                .enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+                                .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+                                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+                                .disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE);
 
-        xmlMapper.configure(com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator.Feature.WRITE_XML_DECLARATION, true);
+        xmlMapper.configure(
+                com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator.Feature
+                        .WRITE_XML_DECLARATION,
+                true);
         return xmlMapper;
     }
 }

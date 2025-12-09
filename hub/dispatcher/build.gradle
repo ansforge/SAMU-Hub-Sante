@@ -5,6 +5,7 @@ plugins {
     id 'com.google.cloud.tools.jib' version '3.4.0'
     id 'jacoco'
     id 'com.github.hierynomus.license' version '0.16.1'
+    id 'com.diffplug.spotless' version '8.1.0'
 }
 
 group = 'com.hubsante'
@@ -25,6 +26,13 @@ jacocoTestReport {
     reports {
         html.required = true
         xml.required = true
+    }
+}
+
+spotless {
+    java {
+        googleJavaFormat('1.33.0').aosp().formatJavadoc(false)
+        target 'src/**/*.java'
     }
 }
 

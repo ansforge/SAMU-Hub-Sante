@@ -15,10 +15,10 @@
  */
 package com.hubsante.hub.utils;
 
+import static com.hubsante.hub.config.Constants.CONVERSION_VHOST_MODEL;
+
 import com.hubsante.hub.config.HubConfiguration;
 import com.hubsante.model.edxl.EdxlMessage;
-
-import static com.hubsante.hub.config.Constants.CONVERSION_VHOST_MODEL;
 
 public class ConversionRulesCommand {
     EdxlMessage edxlMessage;
@@ -33,7 +33,7 @@ public class ConversionRulesCommand {
         this.sourceVHost = hubConfig.getVhost();
 
         String[] targetVhosts = ConversionUtils.getTargetVHosts(hubConfig, edxlMessage);
-        this.targetVHost = targetVhosts[targetVhosts.length-1];
+        this.targetVHost = targetVhosts[targetVhosts.length - 1];
 
         this.isCisuConversion = ConversionUtils.requiresCisuConversion(hubConfig, edxlMessage);
         this.sourceModelVersion = getVHostMatchingModelVersion(sourceVHost);
@@ -64,9 +64,10 @@ public class ConversionRulesCommand {
         return edxlMessage;
     }
 
-    public String getVHostMatchingModelVersion(String vHost){
+    public String getVHostMatchingModelVersion(String vHost) {
         if (CONVERSION_VHOST_MODEL.get(vHost) == null) {
-            throw new IllegalArgumentException("There is no model version associated with the host " + vHost);
+            throw new IllegalArgumentException(
+                    "There is no model version associated with the host " + vHost);
         }
         return CONVERSION_VHOST_MODEL.get(vHost);
     }

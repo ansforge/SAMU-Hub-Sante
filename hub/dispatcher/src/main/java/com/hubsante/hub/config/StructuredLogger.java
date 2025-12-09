@@ -15,12 +15,10 @@
  */
 package com.hubsante.hub.config;
 
-
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.event.Level;
 import org.slf4j.spi.LoggingEventBuilder;
-
-import java.util.Map;
 
 public record StructuredLogger(Logger logger) {
 

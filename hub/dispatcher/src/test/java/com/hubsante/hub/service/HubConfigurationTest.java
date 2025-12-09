@@ -16,18 +16,17 @@
 package com.hubsante.hub.service;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
+import com.hubsante.hub.config.HubConfiguration;
 import java.io.File;
 import java.io.FileWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import com.hubsante.hub.config.HubConfiguration;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 
 public class HubConfigurationTest {
@@ -49,8 +48,10 @@ public class HubConfigurationTest {
 
         File tempConfigFile = File.createTempFile("client.preferences", ".csv");
         try (FileWriter writer = new FileWriter(tempConfigFile, StandardCharsets.UTF_8)) {
-            writer.write("client_id;useXML;directCISU;editor;lrm_test;15-15;15-nexsis;15-smur;15-gps\n");
-            writer.write("fr.health.samuA;false;false;default-editor;false;1.5,2.0,2.1;1.9;1.7;2.0\n");
+            writer.write(
+                    "client_id;useXML;directCISU;editor;lrm_test;15-15;15-nexsis;15-smur;15-gps\n");
+            writer.write(
+                    "fr.health.samuA;false;false;default-editor;false;1.5,2.0,2.1;1.9;1.7;2.0\n");
             writer.write("fr.health.samuV2;false;false;default-editor;false;2.0;1.9;1.7;2.0\n");
             writer.write("fr.health.samuV1;false;false;default-editor;false;1.5;;;\n");
         }
@@ -65,7 +66,7 @@ public class HubConfigurationTest {
         assertArrayEquals(expectedOutput, HubConfiguration.splitString(input));
 
         input = "apple";
-        expectedOutput = new String[]{"apple"};
+        expectedOutput = new String[] {"apple"};
         assertArrayEquals(expectedOutput, HubConfiguration.splitString(input));
 
         input = "";
@@ -76,7 +77,7 @@ public class HubConfigurationTest {
 
         // todo - enlever le cas des quotes vides
         input = ",apple,,banana,,orange,";
-        expectedOutput = new String[]{"","apple", "", "banana", "", "orange"};
+        expectedOutput = new String[] {"", "apple", "", "banana", "", "orange"};
         assertArrayEquals(expectedOutput, HubConfiguration.splitString(input));
     }
 
@@ -113,7 +114,8 @@ public class HubConfigurationTest {
 
     @Test
     void testLoadPerimeterVersions() throws Exception {
-        Map<String, Map<String, String>> clientsPerimetersAndVersions = hubConfig.loadClientsPerimetersAndVersions();
+        Map<String, Map<String, String>> clientsPerimetersAndVersions =
+                hubConfig.loadClientsPerimetersAndVersions();
         Map<String, Map<String, String>> expectedMap = new HashMap<>();
 
         Map<String, String> samuV1Map = new HashMap<>();
