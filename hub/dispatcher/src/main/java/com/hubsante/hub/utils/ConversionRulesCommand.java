@@ -1,9 +1,24 @@
+/**
+ * Copyright © 2023-2025 Agence du Numerique en Sante (ANS)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.hubsante.hub.utils;
+
+import static com.hubsante.hub.config.Constants.CONVERSION_VHOST_MODEL;
 
 import com.hubsante.hub.config.HubConfiguration;
 import com.hubsante.model.edxl.EdxlMessage;
-
-import static com.hubsante.hub.config.Constants.CONVERSION_VHOST_MODEL;
 
 public class ConversionRulesCommand {
     EdxlMessage edxlMessage;
@@ -18,7 +33,7 @@ public class ConversionRulesCommand {
         this.sourceVHost = hubConfig.getVhost();
 
         String[] targetVhosts = ConversionUtils.getTargetVHosts(hubConfig, edxlMessage);
-        this.targetVHost = targetVhosts[targetVhosts.length-1];
+        this.targetVHost = targetVhosts[targetVhosts.length - 1];
 
         this.isCisuConversion = ConversionUtils.requiresCisuConversion(hubConfig, edxlMessage);
         this.sourceModelVersion = getVHostMatchingModelVersion(sourceVHost);
@@ -49,9 +64,10 @@ public class ConversionRulesCommand {
         return edxlMessage;
     }
 
-    public String getVHostMatchingModelVersion(String vHost){
+    public String getVHostMatchingModelVersion(String vHost) {
         if (CONVERSION_VHOST_MODEL.get(vHost) == null) {
-            throw new IllegalArgumentException("There is no model version associated with the host " + vHost);
+            throw new IllegalArgumentException(
+                    "There is no model version associated with the host " + vHost);
         }
         return CONVERSION_VHOST_MODEL.get(vHost);
     }

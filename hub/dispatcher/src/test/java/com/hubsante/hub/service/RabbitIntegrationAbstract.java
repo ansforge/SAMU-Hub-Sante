@@ -19,12 +19,12 @@ import com.hubsante.hub.HubApplication;
 import com.hubsante.hub.service.utils.SSLTestUtils;
 import com.hubsante.model.EdxlHandler;
 import com.rabbitmq.client.DefaultSaslConfig;
+import java.io.IOException;
+import javax.net.ssl.SSLContext;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.ClassOrderer;
-import org.junit.jupiter.api.TestClassOrder;
 import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -40,11 +40,10 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
-import javax.net.ssl.SSLContext;
-import java.io.IOException;
-
 @SpringBootTest
-@ContextConfiguration(classes = HubApplication.class, initializers = RabbitIntegrationTest.Initializer.class)
+@ContextConfiguration(
+        classes = HubApplication.class,
+        initializers = RabbitIntegrationTest.Initializer.class)
 @Testcontainers
 @Slf4j
 public class RabbitIntegrationAbstract {
@@ -60,33 +59,33 @@ public class RabbitIntegrationAbstract {
 
     protected static final String JSON = MessageProperties.CONTENT_TYPE_JSON;
 
-    @Autowired
-    protected RabbitTemplate rabbitTemplate;
+    @Autowired protected RabbitTemplate rabbitTemplate;
 
     static ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
-    @Autowired
-    protected EdxlHandler converter;
+    @Autowired protected EdxlHandler converter;
     protected volatile boolean failed = false;
 
     @Container
-    public static RabbitMQContainer rabbitMQContainer = new RabbitMQContainer(
-            DockerImageName.parse(RABBITMQ_IMAGE))
-            .withPluginsEnabled("rabbitmq_management", "rabbitmq_auth_mechanism_ssl")
-            .withCopyFileToContainer(mountFile("config/definitions.json"),
-                    "/tmp/rabbitmq/config/definitions.json")
-            .withCopyFileToContainer(mountFile("config/certs/rabbitmq/"),
-                    "/etc/rabbitmq-tls/")
-            .withCopyFileToContainer(mountFile("config/batch-test.sh"),
-                    "/tmp/rabbitmq/config/batch-test.sh")
-            .withRabbitMQConfigSysctl(mountFile("config/rabbitmq.conf"));
+    public static RabbitMQContainer rabbitMQContainer =
+            new RabbitMQContainer(DockerImageName.parse(RABBITMQ_IMAGE))
+                    .withPluginsEnabled("rabbitmq_management", "rabbitmq_auth_mechanism_ssl")
+                    .withCopyFileToContainer(
+                            mountFile("config/definitions.json"),
+                            "/tmp/rabbitmq/config/definitions.json")
+                    .withCopyFileToContainer(
+                            mountFile("config/certs/rabbitmq/"), "/etc/rabbitmq-tls/")
+                    .withCopyFileToContainer(
+                            mountFile("config/batch-test.sh"), "/tmp/rabbitmq/config/batch-test.sh")
+                    .withRabbitMQConfigSysctl(mountFile("config/rabbitmq.conf"));
 
     @BeforeAll
     public static void beforeAll() throws IOException, InterruptedException {
         rabbitMQContainer.start();
         // only for debug : to see the management console
         Integer port = rabbitMQContainer.getMappedPort(15672);
-        rabbitMQContainer.execInContainer("rabbitmqctl", "import_definitions", "/tmp/rabbitmq/config/definitions.json");
+        rabbitMQContainer.execInContainer(
+                "rabbitmqctl", "import_definitions", "/tmp/rabbitmq/config/definitions.json");
         rabbitMQContainer.execInContainer("chmod", "+x", "/tmp/rabbitmq/config/batch-test.sh");
     }
 
@@ -99,7 +98,8 @@ public class RabbitIntegrationAbstract {
         failed = false;
     }
 
-    protected RabbitTemplate getCustomRabbitTemplate(String p12Path, String p12Passphrase) throws Exception {
+    protected RabbitTemplate getCustomRabbitTemplate(String p12Path, String p12Passphrase)
+            throws Exception {
         com.rabbitmq.client.ConnectionFactory cf = new com.rabbitmq.client.ConnectionFactory();
         cf.setHost(rabbitMQContainer.getHost());
         cf.setPort(rabbitMQContainer.getAmqpsPort());
@@ -116,34 +116,44 @@ public class RabbitIntegrationAbstract {
         return new RabbitTemplate(ccf);
     }
 
-    public static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
+    public static class Initializer
+            implements ApplicationContextInitializer<ConfigurableApplicationContext> {
         @Override
         public void initialize(ConfigurableApplicationContext applicationContext) {
-            val values = TestPropertyValues.of(
-                    // broker identification
-                    "spring.rabbitmq.host=" + rabbitMQContainer.getHost(),
-                    "spring.rabbitmq.port=" + rabbitMQContainer.getAmqpsPort(),
+            val values =
+                    TestPropertyValues.of(
+                            // broker identification
+                            "spring.rabbitmq.host=" + rabbitMQContainer.getHost(),
+                            "spring.rabbitmq.port=" + rabbitMQContainer.getAmqpsPort(),
 
-                    // default RabbitTemplate conf (dispatcher)
-                    "spring.rabbitmq.ssl.key-store-password=dispatcher",
-                    "spring.rabbitmq.ssl.trust-store-password=trustStore",
-                    "spring.rabbitmq.ssl.key-store=" + Thread.currentThread().getContextClassLoader()
-                            .getResource("config/certs/dispatcher/dispatcher.test.p12"),
-                    "spring.rabbitmq.ssl.trust-store=" + Thread.currentThread().getContextClassLoader()
-                            .getResource("config/certs/trustStore"),
-                    "client.preferences.file=" + Thread.currentThread().getContextClassLoader()
-                            .getResource("config/client.preferences.csv"),
-                    "supported.messages.file=" + Thread.currentThread().getContextClassLoader()
-                            .getResource("config/supported.messages.csv"),
-                    "dispatcher.default.ttl=5",
+                            // default RabbitTemplate conf (dispatcher)
+                            "spring.rabbitmq.ssl.key-store-password=dispatcher",
+                            "spring.rabbitmq.ssl.trust-store-password=trustStore",
+                            "spring.rabbitmq.ssl.key-store="
+                                    + Thread.currentThread()
+                                            .getContextClassLoader()
+                                            .getResource(
+                                                    "config/certs/dispatcher/dispatcher.test.p12"),
+                            "spring.rabbitmq.ssl.trust-store="
+                                    + Thread.currentThread()
+                                            .getContextClassLoader()
+                                            .getResource("config/certs/trustStore"),
+                            "client.preferences.file="
+                                    + Thread.currentThread()
+                                            .getContextClassLoader()
+                                            .getResource("config/client.preferences.csv"),
+                            "supported.messages.file="
+                                    + Thread.currentThread()
+                                            .getContextClassLoader()
+                                            .getResource("config/supported.messages.csv"),
+                            "dispatcher.default.ttl=5",
 
-                    // must be set to handle PublisherConfirms in other RabbitTemplates,
-                    // even if we don't use it in Dispatcher
-                    "spring.rabbitmq.publisher-confirm-type=correlated",
-                    "spring.rabbitmq.publisher-returns=true",
-                    "spring.rabbitmq.template.mandatory=true",
-                    "spring.rabbitmq.virtual-host=15-15_v2.1"
-            );
+                            // must be set to handle PublisherConfirms in other RabbitTemplates,
+                            // even if we don't use it in Dispatcher
+                            "spring.rabbitmq.publisher-confirm-type=correlated",
+                            "spring.rabbitmq.publisher-returns=true",
+                            "spring.rabbitmq.template.mandatory=true",
+                            "spring.rabbitmq.virtual-host=15-15_v2.1");
             values.applyTo(applicationContext);
         }
     }

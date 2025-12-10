@@ -15,15 +15,12 @@
  */
 package com.hubsante.hub.service.utils;
 
+import static com.hubsante.hub.config.Constants.*;
+
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.search.Search;
-
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicReference;
-
-import static com.hubsante.hub.config.Constants.*;
 
 public class MetricsUtils {
 
@@ -36,28 +33,19 @@ public class MetricsUtils {
     }
 
     public static double getOverallCounterForClient(MeterRegistry registry, String sender) {
-        return registry.get(DISPATCH_ERROR)
-                .tag(CLIENT_ID_TAG, sender)
-                .counters()
-                .stream()
+        return registry.get(DISPATCH_ERROR).tag(CLIENT_ID_TAG, sender).counters().stream()
                 .mapToDouble(Counter::count)
                 .sum();
     }
 
     public static double getOverallCounterForEditor(MeterRegistry registry, String editor) {
-        return registry.get(DISPATCH_ERROR)
-                .tag(EDITOR_TAG, editor)
-                .counters()
-                .stream()
+        return registry.get(DISPATCH_ERROR).tag(EDITOR_TAG, editor).counters().stream()
                 .mapToDouble(Counter::count)
                 .sum();
     }
 
     public static double getOverallCounterForError(MeterRegistry registry, String reason) {
-        return registry.get(DISPATCH_ERROR)
-                .tag(REASON_TAG, reason)
-                .counters()
-                .stream()
+        return registry.get(DISPATCH_ERROR).tag(REASON_TAG, reason).counters().stream()
                 .mapToDouble(Counter::count)
                 .sum();
     }

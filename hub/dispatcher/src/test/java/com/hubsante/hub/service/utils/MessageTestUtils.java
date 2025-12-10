@@ -15,11 +15,17 @@
  */
 package com.hubsante.hub.service.utils;
 
+import static com.hubsante.hub.config.AmqpConfiguration.*;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.edxl.EdxlMessage;
 import com.hubsante.model.report.Error;
 import com.hubsante.model.report.ErrorWrapper;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.time.OffsetDateTime;
 import org.apache.commons.compress.utils.FileNameUtils;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.amqp.core.Message;
@@ -27,20 +33,16 @@ import org.springframework.amqp.core.MessageDeliveryMode;
 import org.springframework.amqp.core.MessageProperties;
 import org.testcontainers.shaded.com.google.common.io.ByteStreams;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.time.OffsetDateTime;
-
-import static com.hubsante.hub.config.AmqpConfiguration.*;
-
 public class MessageTestUtils {
-    
+
     public static String getSampleMessage(String message, boolean isXML) throws IOException {
         String extension = isXML ? ".xml" : ".json";
         String filepath = message + "/" + message + extension;
         String json;
-        try (InputStream is = MessageTestUtils.class.getClassLoader().getResourceAsStream("sample/valid/" + filepath)) {
+        try (InputStream is =
+                MessageTestUtils.class
+                        .getClassLoader()
+                        .getResourceAsStream("sample/valid/" + filepath)) {
             assert is != null;
             json = new String(ByteStreams.toByteArray(is), StandardCharsets.UTF_8);
         }
@@ -49,39 +51,49 @@ public class MessageTestUtils {
 
     public static String getInvalidMessage(String messagePath) throws IOException {
         String json;
-        try (InputStream is = MessageTestUtils.class.getClassLoader().getResourceAsStream("sample/failing/" + messagePath)) {
+        try (InputStream is =
+                MessageTestUtils.class
+                        .getClassLoader()
+                        .getResourceAsStream("sample/failing/" + messagePath)) {
             assert is != null;
             json = new String(ByteStreams.toByteArray(is), StandardCharsets.UTF_8);
         }
         return json;
     }
-    
-    public static Message createMessage(String filename, String contentType, String receivedRoutingKey) throws IOException {
+
+    public static Message createMessage(
+            String filename, String contentType, String receivedRoutingKey) throws IOException {
         boolean isXML = MessageProperties.CONTENT_TYPE_XML.equals(contentType);
         String edxlString = getSampleMessage(filename, isXML);
 
         MessageProperties properties = getMessageProperties(receivedRoutingKey);
 
-        Message createdMessage = new Message(edxlString.getBytes(StandardCharsets.UTF_8), properties);
+        Message createdMessage =
+                new Message(edxlString.getBytes(StandardCharsets.UTF_8), properties);
         createdMessage.getMessageProperties().setContentType(contentType);
 
         return createdMessage;
     }
 
-    public static Message createMessage(String filename, String receivedRoutingKey) throws IOException {
+    public static Message createMessage(String filename, String receivedRoutingKey)
+            throws IOException {
         return createMessage(filename, getContentTypeFromFilename(filename), receivedRoutingKey);
     }
 
-    public static Message createInvalidMessage(String filename, String receivedRoutingKey) throws IOException {
-        return createInvalidMessage(filename, getContentTypeFromFilename(filename), receivedRoutingKey);
+    public static Message createInvalidMessage(String filename, String receivedRoutingKey)
+            throws IOException {
+        return createInvalidMessage(
+                filename, getContentTypeFromFilename(filename), receivedRoutingKey);
     }
 
-    public static Message createInvalidMessage(String filename, String contentType, String receivedRoutingKey) throws IOException {
+    public static Message createInvalidMessage(
+            String filename, String contentType, String receivedRoutingKey) throws IOException {
         String edxlString = getInvalidMessage(filename);
 
         MessageProperties properties = getMessageProperties(receivedRoutingKey);
 
-        Message createdMessage = new Message(edxlString.getBytes(StandardCharsets.UTF_8), properties);
+        Message createdMessage =
+                new Message(edxlString.getBytes(StandardCharsets.UTF_8), properties);
         createdMessage.getMessageProperties().setContentType(contentType);
 
         return createdMessage;
@@ -95,7 +107,8 @@ public class MessageTestUtils {
         // When testing consumers (aka the SpringAMPQ Message passed as a method parameter),
         // we need to set the receivedDeliveryMode, which is PERSISTENT by default
         //
-        // When testing producers we would need to set the deliveryMode only to test the CheckDeliveryMode method
+        // When testing producers we would need to set the deliveryMode only to test the
+        // CheckDeliveryMode method
         // (already tested in DispatcherTest)
         properties.setReceivedDeliveryMode(MessageDeliveryMode.PERSISTENT);
         return properties;
@@ -103,8 +116,11 @@ public class MessageTestUtils {
 
     public static Message applyRabbitmqDLQHeaders(Message originalMessage, String dlqReason) {
         originalMessage.getMessageProperties().setHeader(DLQ_REASON, dlqReason);
-        originalMessage.getMessageProperties().setHeader(ORIGINAL_ROUTING_KEY,
-                originalMessage.getMessageProperties().getReceivedRoutingKey());
+        originalMessage
+                .getMessageProperties()
+                .setHeader(
+                        ORIGINAL_ROUTING_KEY,
+                        originalMessage.getMessageProperties().getReceivedRoutingKey());
 
         return originalMessage;
     }
@@ -120,13 +136,19 @@ public class MessageTestUtils {
         }
     }
 
-    public static Error getErrorFromMessage(EdxlHandler edxlHandler, Message message) throws JsonProcessingException {
+    public static Error getErrorFromMessage(EdxlHandler edxlHandler, Message message)
+            throws JsonProcessingException {
 
         String msgString = new String(message.getBody());
 
-        ErrorWrapper wrapper = message.getMessageProperties().getContentType().equals(MessageProperties.CONTENT_TYPE_XML) ?
-                (ErrorWrapper) edxlHandler.deserializeXmlEDXL(msgString).getFirstContentMessage() :
-                (ErrorWrapper) edxlHandler.deserializeJsonEDXL(msgString).getFirstContentMessage();
+        ErrorWrapper wrapper =
+                message.getMessageProperties()
+                                .getContentType()
+                                .equals(MessageProperties.CONTENT_TYPE_XML)
+                        ? (ErrorWrapper)
+                                edxlHandler.deserializeXmlEDXL(msgString).getFirstContentMessage()
+                        : (ErrorWrapper)
+                                edxlHandler.deserializeJsonEDXL(msgString).getFirstContentMessage();
 
         return wrapper.getError();
     }
@@ -137,7 +159,8 @@ public class MessageTestUtils {
         edxlMessage.setDateTimeExpires(now.plusSeconds(offset_in_seconds));
     }
 
-    public static void setMessageConsistentWithRoutingKey(EdxlMessage edxlMessage, String routingKey) {
+    public static void setMessageConsistentWithRoutingKey(
+            EdxlMessage edxlMessage, String routingKey) {
         edxlMessage.setSenderID(routingKey);
         edxlMessage.setDistributionID(routingKey + "_2608323d-507d-4cbf-bf74-52007f8124ea");
     }

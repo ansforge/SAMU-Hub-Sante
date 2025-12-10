@@ -17,7 +17,7 @@ package com.hubsante.hub.exception;
 
 import com.hubsante.model.report.ErrorCode;
 
-public class InvalidDistributionIDException extends AbstractHubException{
+public class InvalidDistributionIDException extends AbstractHubException {
     public InvalidDistributionIDException(String message, String referencedDistributionID) {
         super(message, ErrorCode.INVALID_MESSAGE, referencedDistributionID);
     }

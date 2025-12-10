@@ -55,3 +55,19 @@ echo "client_id;useXML" > dispatcher/src/main/resources/client.preferences.csv
 ### Run on Kubernetes locally
 
 To run the RabbitMQ or/and Dispatcher locally through Kubernetes and Docker, go to [infra/](./infra/README.md)
+
+### Format the code
+
+The code is formatted using [Spotless](https://github.com/diffplug/spotless), which is checked during the CI process.
+To format it, run the following command in the `hub/dispatcher` folder:
+```bash
+./gradlew spotlessApply
+```
+
+### Format license headers
+
+The license headers are managed using the [Gradle License Plugin](https://github.com/hierynomus/license-gradle-plugin).
+To format it, run the following command in the `hub/dispatcher` folder:
+```bash
+./gradlew licenseFormat
+```

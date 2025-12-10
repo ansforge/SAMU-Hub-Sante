@@ -15,21 +15,19 @@
  */
 package com.hubsante.hub.utils;
 
-import lombok.extern.slf4j.Slf4j;
-
-import com.hubsante.model.edxl.EdxlMessage;
-import com.hubsante.hub.config.HubConfiguration;
-
 import static com.hubsante.hub.config.AmqpConfiguration.TRANSFER_EXCHANGE_PREFIX;
 import static com.hubsante.hub.config.Constants.*;
 import static com.hubsante.hub.utils.MessageUtils.*;
 
+import com.hubsante.hub.config.HubConfiguration;
+import com.hubsante.model.edxl.EdxlMessage;
 import java.util.Arrays;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class ConversionUtils {
 
-    private final static boolean DEFAULT_DIRECT_CISU_PREFERENCE = false;
+    private static final boolean DEFAULT_DIRECT_CISU_PREFERENCE = false;
 
     public static String buildExchangeDestination(String sourceVHost, String targetVHost) {
         return TRANSFER_EXCHANGE_PREFIX + sourceVHost + "_to_" + targetVHost;
@@ -42,7 +40,8 @@ public class ConversionUtils {
         return isVersionConversion || isCisuConversion;
     }
 
-    public static boolean requiresVersionConversion(HubConfiguration hubConfig, EdxlMessage edxlMessage) {
+    public static boolean requiresVersionConversion(
+            HubConfiguration hubConfig, EdxlMessage edxlMessage) {
         String sourceVHost = getSourceVHost(hubConfig);
         String[] targetVHosts = getTargetVHosts(hubConfig, edxlMessage);
 
@@ -56,7 +55,7 @@ public class ConversionUtils {
         return !Arrays.asList(targetVHosts).contains(sourceVHost);
     }
 
-    public static boolean isConversionAvailable(String vhost){
+    public static boolean isConversionAvailable(String vhost) {
         return CONVERSION_VHOST_MODEL.get(vhost) != null;
     }
 
@@ -68,37 +67,48 @@ public class ConversionUtils {
         String recipientId = getRecipientID(edxlMessage);
         String senderId = edxlMessage.getSenderID();
         String sourceVhost = hubConfig.getVhost(); // ex '15-15_v1.5'
-        String sourcePerimeter = trimVersionSuffix(sourceVhost);  // ex '15-15'
-        String[] targetVersionsOnSourcePerimeter = new String[]{};
+        String sourcePerimeter = trimVersionSuffix(sourceVhost); // ex '15-15'
+        String[] targetVersionsOnSourcePerimeter = new String[] {};
 
         // CISU conversion case - recipient and sender are on different vhosts
-        boolean isNexsisRecipient = recipientId.startsWith(FR_FIRE_PREFIX) || recipientId.startsWith(FR_CISU_PREFIX);
+        boolean isNexsisRecipient =
+                recipientId.startsWith(FR_FIRE_PREFIX) || recipientId.startsWith(FR_CISU_PREFIX);
         if (isNexsisRecipient) {
-            return new String[]{NEXSIS_VHOST}; // ["15-nexsis_v1.9"]
+            return new String[] {NEXSIS_VHOST}; // ["15-nexsis_v1.9"]
         }
         boolean isCisuSender = !senderId.startsWith(FR_HEALTH_PREFIX);
         boolean isDirectCisu = isDirectCisuForHealthActor(hubConfig, edxlMessage);
-        if(isCisuSender && !isDirectCisu) {
+        if (isCisuSender && !isDirectCisu) {
             String perimeter15_15 = "15-15";
-            targetVersionsOnSourcePerimeter = hubConfig.getClientVersionsForPerimeter(recipientId, perimeter15_15); // ex ['1.5, 2.0']
+            targetVersionsOnSourcePerimeter =
+                    hubConfig.getClientVersionsForPerimeter(
+                            recipientId, perimeter15_15); // ex ['1.5, 2.0']
             return formatVersionToVhosts(targetVersionsOnSourcePerimeter, perimeter15_15);
         }
 
-        targetVersionsOnSourcePerimeter = hubConfig.getClientVersionsForPerimeter(recipientId, sourcePerimeter); // ex ['1.5, 2.0']
-        return formatVersionToVhosts(targetVersionsOnSourcePerimeter, sourcePerimeter); // ex ["15-15_v1.5", "15-15_v2.0"]
-
+        targetVersionsOnSourcePerimeter =
+                hubConfig.getClientVersionsForPerimeter(
+                        recipientId, sourcePerimeter); // ex ['1.5, 2.0']
+        return formatVersionToVhosts(
+                targetVersionsOnSourcePerimeter,
+                sourcePerimeter); // ex ["15-15_v1.5", "15-15_v2.0"]
     }
 
-    public static String[] formatVersionToVhosts(String[] versions, String sourcePerimeter){
-        if(versions != null){
-            return Arrays.stream(versions).map(version -> sourcePerimeter + "_v" +  version).toArray(String[]::new);
+    public static String[] formatVersionToVhosts(String[] versions, String sourcePerimeter) {
+        if (versions != null) {
+            return Arrays.stream(versions)
+                    .map(version -> sourcePerimeter + "_v" + version)
+                    .toArray(String[]::new);
         }
         return null;
     }
 
-    public static boolean requiresCisuConversion(HubConfiguration hubConfig, EdxlMessage edxlMessage) {
+    public static boolean requiresCisuConversion(
+            HubConfiguration hubConfig, EdxlMessage edxlMessage) {
         return isOneCisuHubexInvolved(edxlMessage)
-                && !isAlreadyCisuConverted(hubConfig.getVhost(), edxlMessage.getDescriptor().getExplicitAddress().getExplicitAddressValue())
+                && !isAlreadyCisuConverted(
+                        hubConfig.getVhost(),
+                        edxlMessage.getDescriptor().getExplicitAddress().getExplicitAddressValue())
                 && !isDirectCisuForHealthActor(hubConfig, edxlMessage);
     }
 
@@ -123,12 +133,16 @@ public class ConversionUtils {
         return !(recipientId.startsWith(HEALTH_PREFIX) && senderId.startsWith(HEALTH_PREFIX));
     }
 
-    public static boolean isDirectCisuForHealthActor(HubConfiguration hubConfig, EdxlMessage edxlMessage) {
+    public static boolean isDirectCisuForHealthActor(
+            HubConfiguration hubConfig, EdxlMessage edxlMessage) {
         // Checks if the health actor is direct CISU
         String recipientId = getRecipientID(edxlMessage);
         String senderId = edxlMessage.getSenderID();
         String healthActor = senderId.startsWith(HEALTH_PREFIX) ? senderId : recipientId;
-        Boolean directCisuPreference = hubConfig.getDirectCisuPreferences().getOrDefault(healthActor, DEFAULT_DIRECT_CISU_PREFERENCE);
+        Boolean directCisuPreference =
+                hubConfig
+                        .getDirectCisuPreferences()
+                        .getOrDefault(healthActor, DEFAULT_DIRECT_CISU_PREFERENCE);
         return directCisuPreference != null && directCisuPreference;
     }
 }

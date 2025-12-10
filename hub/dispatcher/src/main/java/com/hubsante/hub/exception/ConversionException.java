@@ -21,6 +21,9 @@ public class ConversionException extends AbstractHubException {
 
     public ConversionException(String message, String referencedDistributionID) {
         // ToDo: create a specific error code?
-        super("Error during internal call to Hub Santé conversion service: " + message, ErrorCode.INVALID_MESSAGE, referencedDistributionID);
+        super(
+                "Error during internal call to Hub Santé conversion service: " + message,
+                ErrorCode.INVALID_MESSAGE,
+                referencedDistributionID);
     }
 }

@@ -19,7 +19,6 @@ import lombok.Getter;
 
 @Getter
 public enum LogConstants {
-
     SENDER_ID("senderId"),
     RECIPIENT_ID("recipientId"),
     DISTRIBUTION_ID("distributionId"),
