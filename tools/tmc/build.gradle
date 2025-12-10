@@ -122,5 +122,8 @@ jib {
                 excludes = ['build/**', '.gradle/**', '.git/**', '*.log']
             }
         }
+        permissions = [
+            '/app/gradlew': '755'
+        ]
     }
 }
