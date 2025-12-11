@@ -53,10 +53,10 @@ public class LogIntegrityTest {
     private ConversionHandler conversionHandler;
     private RabbitTemplate rabbitTemplate;
 
-    private static final String SENDER_ID = "fr.health.test.samuA";
+    private static final String SENDER_ID = "fr.health.samuA";
     private static final String DISTRIBUTION_ID =
-            "fr.health.test.samuA_c89f718b-73e0-4d0a-b8a9-12696bd49522";
-    private static final String INPUT_HASH = "QMMrnn7DpO1+CUpTUpgNaU3XuyrBFP1PlWQJqBvApg4=";
+            "fr.health.samuA_c89f718b-73e0-4d0a-b8a9-12696bd49522";
+    private static final String INPUT_HASH = "qApPYbRZrMv2CvDC6UkUAWbq8JF3/s53gOsyyMSgWIs=";
 
     @BeforeEach
     void setup() {
