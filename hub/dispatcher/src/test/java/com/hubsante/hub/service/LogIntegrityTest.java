@@ -7,6 +7,7 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.hubsante.hub.config.HubConfiguration;
@@ -53,14 +54,15 @@ public class LogIntegrityTest {
     private ConversionHandler conversionHandler;
     private RabbitTemplate rabbitTemplate;
 
-    private static final String SENDER_ID = "fr.health.samuA";
+    private static final String SENDER_ID = "fr.health.samuV3";
     private static final String DISTRIBUTION_ID =
-            "fr.health.samuA_c89f718b-73e0-4d0a-b8a9-12696bd49522";
-    private static final String INPUT_HASH = "qApPYbRZrMv2CvDC6UkUAWbq8JF3/s53gOsyyMSgWIs=";
+            "fr.health.samuV3_c89f718b-73e0-4d0a-b8a9-12696bd49522";
+    private static final String INPUT_HASH = "PcWky8lq6P+7yWgaiXIfjPj1dU21RB7llWkzl52W+tE=";
 
     @BeforeEach
-    void setup() {
+    void setup() throws JsonProcessingException {
         conversionHandler = mock(ConversionHandler.class);
+        when(conversionHandler.applyConversionRules(any())).thenReturn("{}");
         rabbitTemplate = mock(RabbitTemplate.class);
     }
 
