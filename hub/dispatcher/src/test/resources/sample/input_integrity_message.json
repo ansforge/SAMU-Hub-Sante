@@ -1,0 +1,154 @@
+{
+  "distributionID": "fr.health.test.samuA_c89f718b-73e0-4d0a-b8a9-12696bd49522",
+  "senderID": "fr.health.test.samuA",
+  "dateTimeSent": "2025-12-11T10:53:23+01:00",
+  "dateTimeExpires": "2072-09-27T08:23:34+02:00",
+  "distributionStatus": "Actual",
+  "distributionKind": "Report",
+  "descriptor": {
+    "language": "fr-FR",
+    "explicitAddress": {
+      "explicitAddressScheme": "hubex",
+      "explicitAddressValue": "fr.health.test.samuC"
+    }
+  },
+  "content": [
+    {
+      "jsonContent": {
+        "embeddedJsonContent": {
+          "message": {
+            "messageId": "fr.health.test.samuA_c89f718b-73e0-4d0a-b8a9-12696bd49522",
+            "sender": {
+              "name": "test.samuA",
+              "URI": "hubex:fr.health.test.samuA"
+            },
+            "sentAt": "2025-12-11T10:53:23+01:00",
+            "status": "Actual",
+            "kind": "Report",
+            "recipient": [
+              {
+                "name": "test.samuC",
+                "URI": "hubex:fr.health.test.samuC"
+              }
+            ],
+            "createCaseHealth": {
+              "caseId": "fr.health.samu770.DRFR157702400400055",
+              "senderCaseId": "DRFR157702400400055",
+              "creation": "2024-01-04T08:01:00+01:00",
+              "qualification": {
+                "whatsHappen": {
+                  "code": "C02.08.05",
+                  "label": "Atteinte aux personnes ; Traumatisme / Accident ; Par objet tranchant ou perforant"
+                },
+                "locationKind": {
+                  "code": "L01.01.04",
+                  "label": "Domicile ; Maison particulière, pavillon ;  dépendance"
+                },
+                "healthMotive": {
+                  "code": "M01.02",
+                  "label": "Détresse vitale; Altération de la conscience; Dont inconscient, coma"
+                },
+                "details": {
+                  "priority": "P0",
+                  "attribution": "DRM.MRU.MU"
+                },
+                "origin": "CTA-PI"
+              },
+              "location": {
+                "detailedAddress": {
+                  "complete": "12 Rue Louis Aristide Verdier",
+                  "number": "12",
+                  "wayName": {
+                    "complete": "Rue Louis Aristide Verdier",
+                    "type": "rue",
+                    "name": "Louis Aristide Verdier"
+                  }
+                },
+                "city": {
+                  "name": "Vaires-sur-Marne",
+                  "inseeCode": "77360"
+                },
+                "freetext": "aller directement dans le garage, la porte est ouverte",
+                "geometry": {
+                  "point": {
+                    "coord": {
+                      "lat": 48.8668403,
+                      "lon": 2.6320988,
+                      "precision": "ADRESSE"
+                    }
+                  },
+                  "datetime": "2024-01-03T03:00:00+01:00"
+                }
+              },
+              "initialAlert": {
+                "reception": "2024-01-04T08:00:00+01:00",
+                "caller": {
+                  "callerContact": {
+                    "channel": "PERSONNE",
+                    "type": "TEL",
+                    "detail": "+33607080915"
+                  },
+                  "language": "fr",
+                  "freetext": "fils de la victime",
+                  "detailedName": {
+                    "complete": "Sébastien Morel ",
+                    "lastName": "Morel ",
+                    "firstName": "Sébastien"
+                  },
+                  "type": "FAMILLE"
+                },
+                "notes": [
+                  {
+                    "freetext": "Accident de bricolage, atelier particulier.",
+                    "creation": "2024-01-04T08:02:00+01:00"
+                  }
+                ]
+              },
+              "owner": "fr.health.samu770",
+              "patient": [
+                {
+                  "detail": {
+                    "age": "P65Y"
+                  },
+                  "identity": {
+                    "nonStrictFeatures": {
+                      "complete": "Didier Morel",
+                      "lastName": "Morel",
+                      "firstName": "Didier"
+                    },
+                    "strictFeatures": {
+                      "sex": "M"
+                    }
+                  },
+                  "patientId": "fr.health.samu770.patient.DRFR157702400400055.1"
+                }
+              ],
+              "perimeter": "AMU",
+              "interventionType": "T1",
+              "medicalNote": [
+                {
+                  "operator": {
+                    "role": "ARM"
+                  },
+                  "patientId": "fr.health.samu770.patient.DRFR157702400400055.1",
+                  "medicalNoteId": "fr.health.samu770.medicalNote.45db215",
+                  "freetext": "Coupure grave causée par une scie circulaire au niveau de la main; saigne beaucoup.",
+                  "creation": "2024-01-04T08:03:00+01:00"
+                },
+                {
+                  "operator": {
+                    "role": "ARM"
+                  },
+                  "patientId": "fr.health.samu770.patient.DRFR157702400400055.1",
+                  "medicalNoteId": "fr.health.samu770.medicalNote.15as456",
+                  "freetext": "La victime est inconsciente (perte de connaissance).",
+                  "creation": "2024-01-04T08:04:00+01:00"
+                }
+              ]
+            }
+          }
+        }
+      }
+    }
+  ]
+}
