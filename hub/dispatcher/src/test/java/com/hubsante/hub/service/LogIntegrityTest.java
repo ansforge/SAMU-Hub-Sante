@@ -73,6 +73,7 @@ public class LogIntegrityTest {
     private static final String DISTRIBUTION_ID =
             "fr.health.samuV3_c89f718b-73e0-4d0a-b8a9-12696bd49522";
     private static final String INPUT_HASH = "PcWky8lq6P+7yWgaiXIfjPj1dU21RB7llWkzl52W+tE=";
+    private static final String INPUT_MESSAGE_TYPE = MessageProperties.CONTENT_TYPE_JSON;
 
     @BeforeEach
     void setup() throws JsonProcessingException {
@@ -118,14 +119,14 @@ public class LogIntegrityTest {
         // Arrange: Prepare a JSON AMQP message from input file
         MessageProperties props =
                 MessagePropertiesBuilder.newInstance()
-                        .setContentType(MessageProperties.CONTENT_TYPE_JSON)
+                        .setContentType(INPUT_MESSAGE_TYPE)
                         .build();
         props.setReceivedRoutingKey(SENDER_ID);
         props.setReceivedDeliveryMode(MessageDeliveryMode.PERSISTENT);
         byte[] body =
                 this.getClass()
                         .getClassLoader()
-                        .getResourceAsStream("sample/input_integrity_message.json")
+                        .getResourceAsStream("sample/input_integrity_message")
                         .readAllBytes();
         Message amqpMessage = new Message(body, props);
 

@@ -78,7 +78,7 @@ To ensure the integrity of the platform and that it does not modify the content 
 A test located in the `com.hubsante.hub.service.LogIntegrityTest` module verifies that this hash is logged, and allows to replay a message in the dispatcher.
 With this test, it is possible to verify that the message provided by the client is exactly the same as the one that passed through the dispatcher by comparing the input hashes.
 
-To perform this comparison, modify the `input_integrity_message.json` file in the `src/test/resources/sample` folder with the content of the original message. Then modify the `SENDER_ID`, `DISTRIBUTION_ID`, and `INPUT_HASH` attributes of the test file with the values retrieved from the production environment logs.
+To perform this comparison, modify the `input_integrity_message` file in the `src/test/resources/sample` folder with the content of the original message. Then modify the `SENDER_ID`, `DISTRIBUTION_ID`, `INPUT_HASH` and `INPUT_MESSAGE_TYPE` attributes of the test file with the values retrieved from the production environment logs.
 You can also change the config files (`src/test/resources/config/supported.messages.csv` and `src/test/resources/config/client.preferences.csv`) to match the cluster configuration used in production. 
 Finally, specify the virtual host of RabbitMQ to use, at the top of the test file in the SpringBootTest properties.
 
