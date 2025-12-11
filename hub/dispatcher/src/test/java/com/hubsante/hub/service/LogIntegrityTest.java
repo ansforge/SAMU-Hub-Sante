@@ -1,7 +1,6 @@
 package com.hubsante.hub.service;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import ch.qos.logback.classic.Level;
@@ -13,67 +12,56 @@ import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.hubsante.hub.config.HubConfiguration;
 import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.Validator;
-import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
-import java.util.HashMap;
-import java.util.List;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageDeliveryMode;
 import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.core.MessagePropertiesBuilder;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.test.context.junit4.SpringRunner;
 
-@RunWith(MockitoJUnitRunner.class)
+@SpringBootTest(
+        classes = {HubConfiguration.class, LogIntegrityTest.TestConfig.class},
+        properties = {
+            "supported.messages.file=config/supported.messages.csv",
+            "client.preferences.file=config/client.preferences.csv",
+            "dispatcher.default.ttl=600",
+            "spring.rabbitmq.virtual-host=15-15_v2.1"
+        })
+@RunWith(SpringRunner.class)
 public class LogIntegrityTest {
 
-    private HubConfiguration hubConfiguration;
-    private MeterRegistry meterRegistry;
+    @Configuration
+    static class TestConfig {
+        @Bean
+        public MeterRegistry meterRegistry() {
+            return new SimpleMeterRegistry();
+        }
+    }
+
+    @Autowired private HubConfiguration hubConfiguration;
+    @Autowired private MeterRegistry meterRegistry;
     private ConversionHandler conversionHandler;
     private RabbitTemplate rabbitTemplate;
 
-    private static final String V_HOST = "15-15_v2.1";
-    private static final List<String> SUPPORTED_MESSAGES =
-            List.of(
-                    "ReferenceWrapper",
-                    "ErrorWrapper",
-                    "CreateCaseHealthWrapper",
-                    "CreateCaseHealthUpdateWrapper",
-                    "ResourcesInfoWrapper",
-                    "ResourcesStatusWrapper",
-                    "ResourcesRequestWrapper",
-                    "ResourcesResponseWrapper",
-                    "GeoPositionsUpdateWrapper",
-                    "GeoResourcesRequestWrapper",
-                    "GeoResourcesDetailsWrapper");
     private static final String SENDER_ID = "fr.health.test.samuA";
-    private static final String RECIPIENT_ID = "fr.health.test.samuC";
     private static final String DISTRIBUTION_ID =
             "fr.health.test.samuA_c89f718b-73e0-4d0a-b8a9-12696bd49522";
     private static final String INPUT_HASH = "QMMrnn7DpO1+CUpTUpgNaU3XuyrBFP1PlWQJqBvApg4=";
-    private static final HashMap<String, Boolean> DIRECT_CISU =
-            new HashMap<>() {
-                {
-                    put(SENDER_ID, false);
-                    put(RECIPIENT_ID, false);
-                }
-            };
 
     @BeforeEach
     void setup() {
-        hubConfiguration = mock(HubConfiguration.class);
-        meterRegistry = mock(MeterRegistry.class);
         conversionHandler = mock(ConversionHandler.class);
         rabbitTemplate = mock(RabbitTemplate.class);
-        when(hubConfiguration.getVhost()).thenReturn(V_HOST);
-        when(hubConfiguration.getDirectCisuPreferences()).thenReturn(DIRECT_CISU);
-        when(hubConfiguration.getSupportedMessages()).thenReturn(SUPPORTED_MESSAGES);
-        when(meterRegistry.counter(anyString(), any(String[].class)))
-                .thenReturn(mock(Counter.class));
     }
 
     @Test
