@@ -1,0 +1,14 @@
+# Trivy ignore file for TMC image
+# Vulnérabilités non corrigeables dans l'image de base Alpine (eclipse-temurin:21-jdk-alpine)
+
+# BusyBox vulnerabilities - fixed in 1.37.0-r20 (not available in current Alpine version)
+CVE-2024-58251
+CVE-2025-46394
+
+# LibPNG vulnerabilities - multiple HIGH/MEDIUM severity issues
+# Fixed versions not available in current Alpine repositories
+CVE-2025-64720
+CVE-2025-65018
+CVE-2025-66293
+CVE-2025-64505
+CVE-2025-64506

@@ -12,6 +12,7 @@ import java.util.Map;
 
 import static io.gatling.javaapi.core.CoreDsl.constantUsersPerSec;
 import static io.gatling.javaapi.core.CoreDsl.scenario;
+import static loadtesting.ConfigUtils.getNumericEnvVar;
 import static loadtesting.Constants.*;
 import static org.galaxio.gatling.amqp.javaapi.AmqpDsl.amqp;
 
@@ -44,8 +45,8 @@ public abstract class BaseSimulation extends Simulation {
 
             AmqpConnectionFactory connectionFactory = new AmqpConnectionFactory();
 
-            int duration = SimulationUtils.getNumericEnvVar("SCENARIO_DURATION", defaultDuration);
-            int userCount = SimulationUtils.getNumericEnvVar(config.userCountEnvVarKey(), defaultUserCount);
+            int duration = getNumericEnvVar("SCENARIO_DURATION", defaultDuration);
+            int userCount = getNumericEnvVar(config.userCountEnvVarKey(), defaultUserCount);
 
             setUp(
                     scenario.injectOpen(

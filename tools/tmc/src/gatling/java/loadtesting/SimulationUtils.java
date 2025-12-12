@@ -9,7 +9,6 @@ import com.hubsante.model.edxl.*;
 import com.hubsante.model.rcde.DistributionElement;
 import com.hubsante.model.rcde.Recipient;
 import com.hubsante.model.rcde.Sender;
-import io.github.cdimascio.dotenv.Dotenv;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,24 +22,11 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import static loadtesting.Constants.RC_DE_USER_PREFIX;
+import static loadtesting.ConfigUtils.getNumericEnvVar;
 
 public final class SimulationUtils {
-    private static final Dotenv dotenv = Dotenv.load();
     private static final Logger log = LoggerFactory.getLogger(SimulationUtils.class);
     private static final ObjectMapper jsonMapper = Utils.getJsonMapper();
-
-    public static int getNumericEnvVar(String key, int defaultValue) {
-        String envValue = dotenv.get(key);
-        if (envValue != null) {
-            try {
-                return Integer.parseInt(envValue);
-            } catch (NumberFormatException e) {
-                String warningMessage = String.format("Failed to parse value provided for system variable %s", key);
-                log.warn(warningMessage, e);
-            }
-        }
-        return defaultValue;
-    }
 
     public static String loadSampleFile(String fileName) throws Exception {
         InputStream fileStream = SimulationUtils.class.getClassLoader().getResourceAsStream("messages/" + fileName);

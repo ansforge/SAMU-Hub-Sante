@@ -3,10 +3,10 @@ package loadtesting;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.DefaultSaslConfig;
 import com.rabbitmq.client.RecoveryDelayHandler;
-import io.github.cdimascio.dotenv.Dotenv;
 import org.galaxio.gatling.amqp.javaapi.protocol.AmqpProtocolBuilder;
 
 import static loadtesting.Constants.TLS_PROTOCOL_VERSION;
+import static loadtesting.ConfigUtils.getEnvVar;
 import static org.galaxio.gatling.amqp.javaapi.AmqpDsl.amqp;
 
 public class AmqpConnectionFactory {
@@ -22,18 +22,17 @@ public class AmqpConnectionFactory {
     private final TLSConf tlsConf;
 
     public AmqpConnectionFactory() throws Exception {
-        Dotenv dotenv = Dotenv.load();
-        String host = dotenv.get(RABBITMQ_HOST_ENV_VAR);
-        int port = Integer.parseInt(dotenv.get(RABBITMQ_PORT_ENV_VAR));
+        String host = getEnvVar(RABBITMQ_HOST_ENV_VAR);
+        int port = Integer.parseInt(getEnvVar(RABBITMQ_PORT_ENV_VAR));
 
         this.host = host;
         this.port = port;
         this.tlsConf = new TLSConf(
                 TLS_PROTOCOL_VERSION,
-                dotenv.get(KEY_PASSPHRASE_ENV_VAR),
-                dotenv.get(CERTIFICATE_PATH_ENV_VAR),
-                dotenv.get(TRUST_STORE_PASSWORD_ENV_VAR),
-                dotenv.get(TRUST_STORE_PATH_ENV_VAR));
+                getEnvVar(KEY_PASSPHRASE_ENV_VAR),
+                getEnvVar(CERTIFICATE_PATH_ENV_VAR),
+                getEnvVar(TRUST_STORE_PASSWORD_ENV_VAR),
+                getEnvVar(TRUST_STORE_PATH_ENV_VAR));
     }
 
     private ConnectionFactory buildConnectionFactoryToVhost(String vhost) {
