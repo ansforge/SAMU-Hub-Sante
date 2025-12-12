@@ -142,7 +142,6 @@ public class HubConfiguration {
 
             clientsPerimeterAndVersions.put(clientId, allPerimetersVersions);
         }
-        ;
 
         reader.close();
         return clientsPerimeterAndVersions;

@@ -408,11 +408,9 @@ public class MessageHandler {
             if (isJSON(message)) {
                 edxlMessage = edxlHandler.deserializeJsonEDXL(receivedEdxl);
                 logMessage(message, edxlMessage, receivedEdxl);
-
             } else if (isXML(message)) {
                 edxlMessage = edxlHandler.deserializeXmlEDXL(receivedEdxl);
                 logMessage(message, edxlMessage, receivedEdxl);
-
             } else {
                 String errorCause =
                         "Unhandled Content-Type ! Message Content-Type should be set at 'application/json' or 'application/xml'";

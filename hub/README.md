@@ -71,3 +71,17 @@ To format it, run the following command in the `hub/dispatcher` folder:
 ```bash
 ./gradlew licenseFormat
 ```
+
+### Message Integrity Testing
+
+To ensure the integrity of the platform and that it does not modify the content of messages, the message is hashed when entering and leaving the dispatcher.
+A test located in the `com.hubsante.hub.service.LogIntegrityTest` module verifies that this hash is logged, and allows to replay a message in the dispatcher.
+With this test, it is possible to verify that the message provided by the client is exactly the same as the one that passed through the dispatcher by comparing the input hashes.
+
+To perform this comparison, modify the `input_integrity_message` file in the `src/test/resources/sample` folder with the content of the original message. Then modify the `SENDER_ID`, `DISTRIBUTION_ID`, `INPUT_HASH` and `INPUT_MESSAGE_TYPE` attributes of the test file with the values retrieved from the production environment logs.
+You can also change the config files (`src/test/resources/config/supported.messages.csv` and `src/test/resources/config/client.preferences.csv`) to match the cluster configuration used in production. 
+Finally, specify the virtual host of RabbitMQ to use, at the top of the test file in the SpringBootTest properties.
+
+After modifying these values, run the test, which should succeed if the input message provided is correct.
+
+Be sure to use the same version of the dispatcher and of the model library (this can be referenced in the `build.gradle`) that was used in production.
