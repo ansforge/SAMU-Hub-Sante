@@ -2,7 +2,7 @@ plugins {
     id 'java'
     // The following line allows to load io.gatling.gradle plugin and directly apply it
     id 'io.gatling.gradle' version '3.11.3'
-    id 'com.google.cloud.tools.jib' version '3.4.4'
+    id 'com.google.cloud.tools.jib' version '3.5.1'
 }
 
 def modelVersion = '3.1'
@@ -28,6 +28,16 @@ repositories {
             username = System.getenv('GITHUB_ACTOR')
             password = System.getenv('GITHUB_TOKEN')
         }
+    }
+}
+
+configurations.all {
+    resolutionStrategy {
+        // Force newer versions to fix security vulnerabilities
+        force 'commons-io:commons-io:2.15.1'
+        force 'org.apache.sshd:sshd-common:2.12.1'
+        force 'org.apache.sshd:sshd-core:2.12.1'
+        force 'org.apache.sshd:sshd-sftp:2.12.1'
     }
 }
 
