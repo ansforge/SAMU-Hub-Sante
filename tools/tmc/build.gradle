@@ -103,21 +103,15 @@ tasks.register("gatlingRunAllParallel") {
 
 jib {
     from {
-        // Alpine is lighter and has fewer vulnerabilities than Ubuntu-based images
-        // Uses musl libc instead of glibc, reducing attack surface
         image = 'eclipse-temurin:21-jdk-alpine'
-        
-        // Alternative options:
-        // Ubuntu-based (current): 'eclipse-temurin:21-jdk-noble'
-        // Distroless (no Gradle support): 'gcr.io/distroless/java21-debian12'
-        // Chainguard (enterprise): 'cgr.dev/chainguard/jdk:latest'
     }
     to {
         image = project.findProperty('image') ?: 'ghcr.io/ansforge/tmc:latest'
         tags = [project.findProperty('version') ?: 'latest']
     }
     container {
-        entrypoint = ['./gradlew', 'gatlingRunAllParallel']
+        entrypoint = ['./gradlew']
+        args = ['gatlingRunAllParallel']
         jvmFlags = ['-Xms512m', '-Xmx2048m']
         workingDirectory = '/app'
     }
