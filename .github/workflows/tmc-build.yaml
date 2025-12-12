@@ -81,6 +81,8 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Checkout
+        uses: actions/checkout@v5
       - name: Scan TMC Docker image
         uses: aquasecurity/trivy-action@0.33.1
         with:
@@ -89,6 +91,7 @@ jobs:
           output: 'trivy-tmc-image.sarif'
           severity: 'HIGH,CRITICAL'
           exit-code: '1'
+          trivyignores: 'tools/tmc/.trivyignore'
       - name: Upload TMC image scan results to GitHub Security tab
         if: always() && hashFiles('trivy-tmc-image.sarif') != ''
         uses: github/codeql-action/upload-sarif@v3
