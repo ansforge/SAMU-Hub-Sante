@@ -103,7 +103,8 @@ tasks.register("gatlingRunAllParallel") {
 
 jib {
     from {
-        image = 'eclipse-temurin:21-jdk'  // Changed to JDK for building
+        // Use a more recent patch version to get security updates
+        image = 'eclipse-temurin:21-jdk-noble'  // Ubuntu 24.04 (Noble) with latest patches
     }
     to {
         image = project.findProperty('image') ?: 'ghcr.io/ansforge/tmc:latest'
