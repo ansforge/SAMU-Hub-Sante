@@ -72,7 +72,7 @@ public class LogIntegrityTest {
     private static final String SENDER_ID = "fr.health.samuV3";
     private static final String DISTRIBUTION_ID =
             "fr.health.samuV3_c89f718b-73e0-4d0a-b8a9-12696bd49522";
-    private static final String INPUT_HASH = "PcWky8lq6P+7yWgaiXIfjPj1dU21RB7llWkzl52W+tE=";
+    private static final String INPUT_HASH = "9slJ9F2xZCUd/JM2WM9n5+Dk+OnkxrLaHW1CvJmsb78=";
     private static final String INPUT_MESSAGE_TYPE = MessageProperties.CONTENT_TYPE_JSON;
 
     @BeforeEach
@@ -118,9 +118,7 @@ public class LogIntegrityTest {
 
         // Arrange: Prepare a JSON AMQP message from input file
         MessageProperties props =
-                MessagePropertiesBuilder.newInstance()
-                        .setContentType(INPUT_MESSAGE_TYPE)
-                        .build();
+                MessagePropertiesBuilder.newInstance().setContentType(INPUT_MESSAGE_TYPE).build();
         props.setReceivedRoutingKey(SENDER_ID);
         props.setReceivedDeliveryMode(MessageDeliveryMode.PERSISTENT);
         byte[] body =

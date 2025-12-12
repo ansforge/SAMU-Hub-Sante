@@ -84,4 +84,4 @@ Finally, specify the virtual host of RabbitMQ to use, at the top of the test fil
 
 After modifying these values, run the test, which should succeed if the input message provided is correct.
 
-Be sure to use the same version of the dispatcher that was used in production.
+Be sure to use the same version of the dispatcher and of the model library (this can be referenced in the `build.gradle`) that was used in production.
