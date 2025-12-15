@@ -178,7 +178,10 @@ public class Dispatcher {
     }
 
     @RabbitListener(queues = DISPATCH_QUEUE_NAME)
-    @Timed(value = DISPATCH_TIMED_METRIC, description = "Time taken to fully dispatch a message", histogram = true)
+    @Timed(
+            value = DISPATCH_TIMED_METRIC,
+            description = "Time taken to fully dispatch a message",
+            histogram = true)
     public void dispatch(Message message) {
         try {
             setOriginalRoutingKeyHeader(message);
