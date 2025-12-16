@@ -1,3 +1,6 @@
+// ================================================================
+// Plugins
+// ================================================================
 plugins {
     id 'java'
     id 'org.springframework.boot' version '3.2.0'
@@ -8,6 +11,9 @@ plugins {
     id 'com.diffplug.spotless' version '8.1.0'
 }
 
+// ================================================================
+// Project properties
+// ================================================================
 group = 'com.hubsante'
 
 def modelVersion = project.hasProperty('modelVersion') ? project.getProperty('modelVersion') : '3.1'
@@ -18,36 +24,9 @@ java {
     }
 }
 
-springBoot {
-    mainClass = 'com.hubsante.hub.HubApplication'
-}
-
-jacocoTestReport {
-    reports {
-        html.required = true
-        xml.required = true
-    }
-}
-
-spotless {
-    java {
-        googleJavaFormat(libs.versions.googleJavaFormat.get()).aosp().formatJavadoc(false)
-        target 'src/**/*.java'
-    }
-}
-
-configurations {
-    compileOnly {
-        extendsFrom annotationProcessor
-    }
-}
-
-allprojects {
-    tasks.withType(JavaCompile) {
-        options.encoding = 'UTF-8'
-    }
-}
-
+// ================================================================
+// Repositories
+// ================================================================
 repositories {
     /*
     * We use mavenCentral() for every dependency but the models library, which is published on GitHub Packages.
@@ -69,6 +48,19 @@ repositories {
     }
 }
 
+// ================================================================
+// Dependency Management (BOMs)
+// ================================================================
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.boot:spring-boot-dependencies:${libs.versions.springBoot.get()}"
+        mavenBom "org.testcontainers:testcontainers-bom:${libs.versions.testcontainers.get()}"
+    }
+}
+
+// ================================================================
+// Dependencies
+// ================================================================
 dependencies {
     // ===== Modèle =====
     implementation "com.hubsante:models:${modelVersion}"
@@ -80,7 +72,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-amqp'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
-    
+
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
 
     // ===== Observabilité =====
@@ -103,22 +95,46 @@ dependencies {
     // ===== Tests =====
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.amqp:spring-rabbit-test'
-    
+
     testImplementation 'org.testcontainers:junit-jupiter'
     testImplementation 'org.testcontainers:rabbitmq'
 
 }
 
-dependencyManagement {
-    imports {
-        mavenBom "org.springframework.boot:spring-boot-dependencies:${libs.versions.springBoot.get()}"
-        mavenBom "org.testcontainers:testcontainers-bom:${libs.versions.testcontainers.get()}"
+// ================================================================
+// Configurations
+// ================================================================
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
     }
 }
 
-tasks.named('test') {
-    useJUnitPlatform()
-    finalizedBy jacocoTestReport // report is always generated after tests run
+// ================================================================
+// Plugin configurations
+// ================================================================
+springBoot {
+    mainClass = 'com.hubsante.hub.HubApplication'
+}
+
+jacocoTestReport {
+    reports {
+        html.required = true
+        xml.required = true
+    }
+}
+
+spotless {
+    java {
+        googleJavaFormat(libs.versions.googleJavaFormat.get()).aosp().formatJavadoc(false)
+        target 'src/**/*.java'
+    }
+}
+
+allprojects {
+    tasks.withType(JavaCompile) {
+        options.encoding = 'UTF-8'
+    }
 }
 
 license {
@@ -151,6 +167,17 @@ jib {
     }
 }
 
+// ================================================================
+// Tasks configurations
+// ================================================================
+tasks.named('test') {
+    useJUnitPlatform()
+    finalizedBy jacocoTestReport // report is always generated after tests run
+}
+
+// ================================================================
+// Utility methods
+// ================================================================
 import groovy.json.JsonSlurper
 
 def gitRefs() {
