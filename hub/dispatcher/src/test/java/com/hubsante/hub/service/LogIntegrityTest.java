@@ -29,6 +29,7 @@ import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.Validator;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -115,8 +116,15 @@ public class LogIntegrityTest {
         WebClient.RequestBodyUriSpec requestBodyUriSpec = mock(WebClient.RequestBodyUriSpec.class);
         WebClient.RequestHeadersSpec requestHeadersSpec = mock(WebClient.RequestHeadersSpec.class);
         WebClient.ResponseSpec responseSpec = mock(WebClient.ResponseSpec.class);
-        // Minimal string value returned by conversion API
-        Mono<String> responseMono = Mono.just("{\"edxl\": {}}");
+        // String value returned by conversion API
+        String convertedJsonString =
+                new String(
+                        this.getClass()
+                                .getClassLoader()
+                                .getResourceAsStream("sample/conversion-response-content.json")
+                                .readAllBytes(),
+                        StandardCharsets.UTF_8);
+        Mono<String> responseMono = Mono.just(convertedJsonString);
 
         when(webClient.post()).thenReturn(requestBodyUriSpec);
         when(requestBodyUriSpec.uri(anyString())).thenReturn(requestBodyUriSpec);
