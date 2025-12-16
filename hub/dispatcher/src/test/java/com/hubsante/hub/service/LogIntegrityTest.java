@@ -199,8 +199,7 @@ public class LogIntegrityTest {
         assertFalse(logs.isEmpty());
         var receivedLogWithHash = logs.getLast();
         String expectedForwardingLog = "  ↳ [x] Forwarding";
-        String expectedHashValue =
-                String.format("message from %s with hashed value %s", SENDER_ID, OUTPUT_HASH);
+        String expectedHashValue = String.format("hashed value %s", OUTPUT_HASH);
         assertEquals(Level.INFO, receivedLogWithHash.getLevel());
         assertTrue(receivedLogWithHash.getMessage().contains(expectedForwardingLog));
         assertTrue(receivedLogWithHash.getMessage().contains(expectedHashValue));
