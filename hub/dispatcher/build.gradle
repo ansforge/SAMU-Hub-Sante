@@ -31,7 +31,7 @@ jacocoTestReport {
 
 spotless {
     java {
-        googleJavaFormat('1.29.0').aosp().formatJavadoc(false)
+        googleJavaFormat(libs.versions.googleJavaFormat.get()).aosp().formatJavadoc(false)
         target 'src/**/*.java'
     }
 }
@@ -69,15 +69,6 @@ repositories {
     }
 }
 
-ext {
-    set('testcontainersVersion', "1.21.4")
-    set('jsonSchemaValidatorVersion', "1.0.87")
-    set('logstashEncoderVersion', "9.0")
-    set('groovyJson', "3.0.9")
-    set('orgJson', "20220924")
-    set('univocityParsers', "2.9.1")
-}
-
 dependencies {
     // ===== Modèle =====
     implementation "com.hubsante:models:${modelVersion}"
@@ -96,12 +87,12 @@ dependencies {
     runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
 
     // ===== JSON / XML / CSV =====
-    implementation "com.networknt:json-schema-validator:${jsonSchemaValidatorVersion}"
     implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-xml"
-    implementation "net.logstash.logback:logstash-logback-encoder:${logstashEncoderVersion}"
-    implementation "com.univocity:univocity-parsers:${univocityParsers}"
-    implementation "org.codehaus.groovy:groovy-json:${groovyJson}"
-    implementation "org.json:json:${orgJson}"
+    implementation "com.networknt:json-schema-validator:${libs.versions.jsonSchemaValidator.get()}"
+    implementation "net.logstash.logback:logstash-logback-encoder:${libs.versions.logstashEncoder.get()}"
+    implementation "com.univocity:univocity-parsers:${libs.versions.univocityParsers.get()}"
+    implementation "org.codehaus.groovy:groovy-json:${libs.versions.groovyJson.get()}"
+    implementation "org.json:json:${libs.versions.orgJson.get()}"
 
     // ===== Lombok =====
     compileOnly 'org.projectlombok:lombok'
@@ -112,8 +103,7 @@ dependencies {
     // ===== Tests =====
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.amqp:spring-rabbit-test'
-
-    testImplementation platform("org.testcontainers:testcontainers-bom:${testcontainersVersion}")
+    
     testImplementation 'org.testcontainers:junit-jupiter'
     testImplementation 'org.testcontainers:rabbitmq'
 
@@ -121,7 +111,8 @@ dependencies {
 
 dependencyManagement {
     imports {
-        mavenBom "org.testcontainers:testcontainers-bom:${testcontainersVersion}"
+        mavenBom "org.springframework.boot:spring-boot-dependencies:${libs.versions.springBoot.get()}"
+        mavenBom "org.testcontainers:testcontainers-bom:${libs.versions.testcontainers.get()}"
     }
 }
 

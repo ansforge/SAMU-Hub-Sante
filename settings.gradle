@@ -10,3 +10,11 @@
 rootProject.name = 'SAMU-Hub-Sante'
 include 'clients'
 include 'hub:dispatcher'
+
+dependencyResolutionManagement {
+    versionCatalogs {
+        libs {
+            from(files("hub/dispatcher/gradle/libs.versions.toml"))
+        }
+    }
+}
