@@ -85,6 +85,7 @@ public class LogIntegrityTest {
     private static final String DISTRIBUTION_ID =
             "fr.health.samuV3_c89f718b-73e0-4d0a-b8a9-12696bd49522";
     private static final String INPUT_HASH = "9slJ9F2xZCUd/JM2WM9n5+Dk+OnkxrLaHW1CvJmsb78=";
+    private static final String OUTPUT_HASH = "9slJ9F2xZCUd/JM2WM9n5+Dk+OnkxrLaHW1CvJmsb78=";
     private static final String INPUT_MESSAGE_TYPE = MessageProperties.CONTENT_TYPE_JSON;
 
     @BeforeEach
@@ -178,5 +179,22 @@ public class LogIntegrityTest {
                         SENDER_ID, DISTRIBUTION_ID, INPUT_HASH);
         assertEquals(Level.INFO, receivedLogWithHash.getLevel());
         assertTrue(receivedLogWithHash.getMessage().contains(expectedMessage));
+    }
+
+    @Test
+    void dispatchLogsHashBeforeSendingMessage() throws Exception {
+        // Act: call dispatch
+        dispatcher.dispatch(amqpMessage);
+
+        // Assert: check that the last log found in logger contains expected message and hash
+        var logs = listAppender.list;
+        assertFalse(logs.isEmpty());
+        var receivedLogWithHash = logs.getLast();
+        String expectedForwardingLog = "  ↳ [x] Forwarding";
+        String expectedHashValue =
+                String.format("message from %s with hashed value %s", SENDER_ID, OUTPUT_HASH);
+        assertEquals(Level.INFO, receivedLogWithHash.getLevel());
+        assertTrue(receivedLogWithHash.getMessage().contains(expectedForwardingLog));
+        assertTrue(receivedLogWithHash.getMessage().contains(expectedHashValue));
     }
 }
