@@ -22,7 +22,6 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.hubsante.hub.config.HubConfiguration;
@@ -30,6 +29,9 @@ import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.Validator;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
@@ -44,6 +46,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 @SpringBootTest(
         classes = {HubConfiguration.class, LogIntegrityTest.TestConfig.class},
@@ -66,7 +70,6 @@ public class LogIntegrityTest {
 
     @Autowired private HubConfiguration hubConfiguration;
     @Autowired private MeterRegistry meterRegistry;
-    private ConversionHandler conversionHandler;
     private RabbitTemplate rabbitTemplate;
 
     private static final String SENDER_ID = "fr.health.samuV3";
@@ -76,9 +79,7 @@ public class LogIntegrityTest {
     private static final String INPUT_MESSAGE_TYPE = MessageProperties.CONTENT_TYPE_JSON;
 
     @BeforeEach
-    void setup() throws JsonProcessingException {
-        conversionHandler = mock(ConversionHandler.class);
-        when(conversionHandler.applyConversionRules(any())).thenReturn("{}");
+    void setup() {
         rabbitTemplate = mock(RabbitTemplate.class);
     }
 
@@ -90,10 +91,42 @@ public class LogIntegrityTest {
         listAppender.start();
         logger.addAppender(listAppender);
 
-        EdxlHandler edxlHandler = new EdxlHandler();
         XmlMapper xmlMapper = new XmlMapper();
         Validator validator = new Validator();
         ObjectMapper jsonMapper = new ObjectMapper();
+
+        // Mock web client to output conversion call body in a local file
+        WebClient webClient = mock(WebClient.class);
+        WebClient.RequestBodyUriSpec requestBodyUriSpec = mock(WebClient.RequestBodyUriSpec.class);
+        WebClient.RequestHeadersSpec requestHeadersSpec = mock(WebClient.RequestHeadersSpec.class);
+        WebClient.ResponseSpec responseSpec = mock(WebClient.ResponseSpec.class);
+        // Minimal string value returned by conversion API
+        Mono<String> responseMono = Mono.just("{\"edxl\": {}}");
+
+        when(webClient.post()).thenReturn(requestBodyUriSpec);
+        when(requestBodyUriSpec.uri(anyString())).thenReturn(requestBodyUriSpec);
+        when(requestBodyUriSpec.contentType(any())).thenReturn(requestBodyUriSpec);
+
+        // Capture the bodyValue argument to write it to a file
+        doAnswer(
+                        invocation -> {
+                            String requestBody = invocation.getArgument(0);
+                            // Write requestBody to a file under at root of project
+                            Path outDir = Paths.get("");
+                            Files.createDirectories(outDir);
+                            Path outFile = outDir.resolve("conversion-request-body.json");
+                            Files.writeString(outFile, requestBody);
+                            // Return mocked value
+                            return requestHeadersSpec;
+                        })
+                .when(requestBodyUriSpec)
+                .bodyValue(any());
+
+        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
+        when(responseSpec.bodyToMono(String.class)).thenReturn(responseMono);
+
+        EdxlHandler edxlHandler = new EdxlHandler();
+        ConversionHandler conversionHandler = new ConversionHandler(webClient, edxlHandler);
 
         MessageHandler messageHandler =
                 new MessageHandler(
