@@ -179,9 +179,10 @@ public class Dispatcher {
 
     @RabbitListener(queues = DISPATCH_QUEUE_NAME)
     @Timed(
-            value = DISPATCH_TIMED_METRIC,
+            value = METRIC_MESSAGE_PROCESSING,
             description = "Time taken to fully dispatch a message",
-            histogram = true)
+            histogram = true,
+            extraTags = {"operation", "dispatch"})
     public void dispatch(Message message) {
         try {
             setOriginalRoutingKeyHeader(message);
@@ -282,9 +283,10 @@ public class Dispatcher {
 
     @RabbitListener(queues = DISPATCH_DLQ_NAME)
     @Timed(
-            value = DLQ_TIMED_METRIC,
+            value = METRIC_MESSAGE_PROCESSING,
             description = "Time taken to fully dispatch a dead letter queued message",
-            histogram = true)
+            histogram = true,
+            extraTags = {"operation", "dispatch_dlq"})
     public void dispatchDLQ(Message message) {
         try {
             //  If an info message sent by the Hub has not been read, we do not want to loop and
