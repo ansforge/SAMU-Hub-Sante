@@ -71,6 +71,15 @@ public class LogIntegrityTest {
     @Autowired private HubConfiguration hubConfiguration;
     @Autowired private MeterRegistry meterRegistry;
     private RabbitTemplate rabbitTemplate;
+    private final XmlMapper xmlMapper = new XmlMapper();
+    private final ObjectMapper jsonMapper = new ObjectMapper();
+    private final Validator validator = new Validator();
+    private final EdxlHandler edxlHandler = new EdxlHandler();
+    private Dispatcher dispatcher;
+
+    private Message amqpMessage;
+
+    private ListAppender<ILoggingEvent> listAppender;
 
     private static final String SENDER_ID = "fr.health.samuV3";
     private static final String DISTRIBUTION_ID =
@@ -79,21 +88,26 @@ public class LogIntegrityTest {
     private static final String INPUT_MESSAGE_TYPE = MessageProperties.CONTENT_TYPE_JSON;
 
     @BeforeEach
-    void setup() {
+    void setup() throws Exception {
         rabbitTemplate = mock(RabbitTemplate.class);
-    }
 
-    @Test
-    void dispatchLogsHashWhenReceivingMessage() throws Exception {
+        // Arrange: Prepare a JSON AMQP message from input file
+        MessageProperties props =
+                MessagePropertiesBuilder.newInstance().setContentType(INPUT_MESSAGE_TYPE).build();
+        props.setReceivedRoutingKey(SENDER_ID);
+        props.setReceivedDeliveryMode(MessageDeliveryMode.PERSISTENT);
+        byte[] body =
+                this.getClass()
+                        .getClassLoader()
+                        .getResourceAsStream("sample/input_integrity_message")
+                        .readAllBytes();
+        amqpMessage = new Message(body, props);
+
         // Arrange: set up MessageHandler and Dispatcher with a ListAppender to capture logs
         Logger logger = (Logger) LoggerFactory.getLogger(MessageHandler.class);
-        ListAppender<ILoggingEvent> listAppender = new ListAppender<>();
+        listAppender = new ListAppender<>();
         listAppender.start();
         logger.addAppender(listAppender);
-
-        XmlMapper xmlMapper = new XmlMapper();
-        Validator validator = new Validator();
-        ObjectMapper jsonMapper = new ObjectMapper();
 
         // Mock web client to output conversion call body in a local file
         WebClient webClient = mock(WebClient.class);
@@ -125,7 +139,6 @@ public class LogIntegrityTest {
         when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
         when(responseSpec.bodyToMono(String.class)).thenReturn(responseMono);
 
-        EdxlHandler edxlHandler = new EdxlHandler();
         ConversionHandler conversionHandler = new ConversionHandler(webClient, edxlHandler);
 
         MessageHandler messageHandler =
@@ -139,7 +152,7 @@ public class LogIntegrityTest {
                         jsonMapper,
                         conversionHandler);
 
-        Dispatcher dispatcher =
+        dispatcher =
                 new Dispatcher(
                         messageHandler,
                         rabbitTemplate,
@@ -148,19 +161,10 @@ public class LogIntegrityTest {
                         jsonMapper,
                         conversionHandler,
                         hubConfiguration);
+    }
 
-        // Arrange: Prepare a JSON AMQP message from input file
-        MessageProperties props =
-                MessagePropertiesBuilder.newInstance().setContentType(INPUT_MESSAGE_TYPE).build();
-        props.setReceivedRoutingKey(SENDER_ID);
-        props.setReceivedDeliveryMode(MessageDeliveryMode.PERSISTENT);
-        byte[] body =
-                this.getClass()
-                        .getClassLoader()
-                        .getResourceAsStream("sample/input_integrity_message")
-                        .readAllBytes();
-        Message amqpMessage = new Message(body, props);
-
+    @Test
+    void dispatchLogsHashWhenReceivingMessage() {
         // Act: call dispatch
         dispatcher.dispatch(amqpMessage);
 
