@@ -70,38 +70,53 @@ repositories {
 }
 
 ext {
-    set('testcontainersVersion', "1.17.6")
+    set('testcontainersVersion', "1.21.4")
+    set('jsonSchemaValidatorVersion', "1.0.87")
+    set('logstashEncoderVersion', "9.0")
+    set('groovyJson', "3.0.9")
+    set('orgJson', "20220924")
+    set('univocityParsers', "2.9.1")
 }
 
 dependencies {
+    // ===== Modèle =====
     implementation "com.hubsante:models:${modelVersion}"
 
-    implementation 'org.codehaus.groovy:groovy-json:3.0.9'
-    implementation 'org.springframework.boot:spring-boot-starter-amqp'
-    implementation 'com.github.jknack:handlebars:4.3.1'
-    implementation 'org.springframework.boot:spring-boot-starter-validation'
-    implementation 'org.json:json:20220924'
-    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
-    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.12.5'
-    implementation 'com.networknt:json-schema-validator:1.0.87'
-    implementation 'org.projectlombok:lombok'
-    implementation 'org.junit.jupiter:junit-jupiter-params'
-    implementation 'org.springframework.boot:spring-boot-starter-actuator:3.1.2'
-    implementation 'org.springframework.boot:spring-boot-starter-web:3.1.2'
-    implementation 'org.springframework.boot:spring-boot-starter-aop:3.1.2'
-    implementation 'org.aspectj:aspectjtools:'
+    // ===== Spring Boot =====
+    implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
-    implementation 'net.logstash.logback:logstash-logback-encoder:9.0'
-
+    implementation 'org.springframework.boot:spring-boot-starter-aop'
+    implementation 'org.springframework.boot:spring-boot-starter-amqp'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
-    annotationProcessor 'org.projectlombok:lombok'
-    runtimeOnly 'io.micrometer:micrometer-registry-prometheus:1.11.2'
 
+    // ===== Observabilité =====
+    runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
+
+    // ===== JSON / XML / CSV =====
+    implementation "com.networknt:json-schema-validator:${jsonSchemaValidatorVersion}"
+    implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-xml"
+    implementation "net.logstash.logback:logstash-logback-encoder:${logstashEncoderVersion}"
+    implementation "com.univocity:univocity-parsers:${univocityParsers}"
+    implementation "org.codehaus.groovy:groovy-json:${groovyJson}"
+    implementation "org.json:json:${orgJson}"
+
+    // ===== Lombok =====
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+    testCompileOnly 'org.projectlombok:lombok'
     testAnnotationProcessor 'org.projectlombok:lombok'
+
+    // ===== Tests =====
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.amqp:spring-rabbit-test'
+
+    testImplementation platform("org.testcontainers:testcontainers-bom:${testcontainersVersion}")
     testImplementation 'org.testcontainers:junit-jupiter'
     testImplementation 'org.testcontainers:rabbitmq'
+
 }
 
 dependencyManagement {
