@@ -1,0 +1,18 @@
+license {
+    header = file('LICENSE_HEADER.txt')
+    strictCheck = true
+
+    ext {
+        company = "Agence du Numerique en Sante (ANS)"
+        year = licenseYear()
+    }
+
+    mapping 'java', 'JAVADOC_STYLE'
+    include "**/*.java"
+    exclude "**/test/**"
+}
+
+static def licenseYear() {
+    def currentYear = new Date().format('yyyy')
+    return currentYear != "2023" ? "2023-" + currentYear : "2023"
+}

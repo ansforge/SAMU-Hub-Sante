@@ -1,0 +1,6 @@
+spotless {
+    java {
+        googleJavaFormat(libs.versions.googleJavaFormat.get()).aosp().formatJavadoc(false)
+        target 'src/**/*.java'
+    }
+}
