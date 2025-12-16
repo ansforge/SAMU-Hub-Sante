@@ -126,9 +126,9 @@ public class LogIntegrityTest {
                         invocation -> {
                             String requestBody = invocation.getArgument(0);
                             // Write requestBody to a file under at root of project
-                            Path outDir = Paths.get("");
+                            Path outDir = Paths.get("src", "test", "resources");
                             Files.createDirectories(outDir);
-                            Path outFile = outDir.resolve("conversion-request-body.json");
+                            Path outFile = outDir.resolve("sample/conversion-request-body.json");
                             Files.writeString(outFile, requestBody);
                             // Return mocked value
                             return requestHeadersSpec;

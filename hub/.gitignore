@@ -4,7 +4,6 @@ build/
 !dispatcher/gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
-dispatcher/conversion-request-body.json
 
 ### STS ###
 .apt_generated
