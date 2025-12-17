@@ -82,6 +82,13 @@ To perform this comparison, modify the `input_integrity_message` file in the `sr
 You can also change the config files (`src/test/resources/config/supported.messages.csv` and `src/test/resources/config/client.preferences.csv`) to match the cluster configuration used in production. 
 Finally, specify the virtual host of RabbitMQ to use, at the top of the test file in the SpringBootTest properties.
 
-After modifying these values, run the test, which should succeed if the input message provided is correct.
+After modifying these values, run the first test `dispatchLogsHashWhenReceivingMessage`, which should succeed if the input message provided is correct.
+This test should output the request to the converter in `src/test/resources/sample/conversion-request-body.json`, if the conversion was required.
 
-Be sure to use the same version of the dispatcher and of the model library (this can be referenced in the `build.gradle`) that was used in production.
+If the conversion is needed, you can take the content of this output file, call the converter API and retrieve the JSON response.
+Then, replace the content of the `conversion-response-content.json` file in the `src/test/resources/sample` folder with this JSON response.
+Finally, run the second test `dispatchLogsHashBeforeSendingMessage`, which should also succeed if the output message matches the one sent in production.
+
+If the conversion is not needed, you can immediatly run the second test `dispatchLogsHashBeforeSendingMessage` which should succeed as well.
+
+Be sure to use the same version of the dispatcher, of the model library (this can be referenced in the `build.gradle`) and of the converter API (if needed) that was used in production.

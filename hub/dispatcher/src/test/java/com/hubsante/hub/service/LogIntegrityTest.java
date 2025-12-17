@@ -22,7 +22,6 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.hubsante.hub.config.HubConfiguration;
@@ -30,7 +29,11 @@ import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.Validator;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
-import org.junit.jupiter.api.BeforeEach;
+import jakarta.annotation.PostConstruct;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.LoggerFactory;
@@ -44,6 +47,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 @SpringBootTest(
         classes = {HubConfiguration.class, LogIntegrityTest.TestConfig.class},
@@ -66,34 +71,78 @@ public class LogIntegrityTest {
 
     @Autowired private HubConfiguration hubConfiguration;
     @Autowired private MeterRegistry meterRegistry;
-    private ConversionHandler conversionHandler;
     private RabbitTemplate rabbitTemplate;
+    private final XmlMapper xmlMapper = new XmlMapper();
+    private final ObjectMapper jsonMapper = new ObjectMapper();
+    private final Validator validator = new Validator();
+    private final EdxlHandler edxlHandler = new EdxlHandler();
+    private Dispatcher dispatcher;
+
+    private Message amqpMessage;
 
     private static final String SENDER_ID = "fr.health.samuV3";
     private static final String DISTRIBUTION_ID =
             "fr.health.samuV3_c89f718b-73e0-4d0a-b8a9-12696bd49522";
     private static final String INPUT_HASH = "9slJ9F2xZCUd/JM2WM9n5+Dk+OnkxrLaHW1CvJmsb78=";
-    private static final String INPUT_MESSAGE_TYPE = MessageProperties.CONTENT_TYPE_JSON;
+    private static final String OUTPUT_HASH = "RBNvo1WzZ4oRRq0W9+hknpT7T8If536DEMBg9hyq/4o=";
+    private static final String INPUT_MESSAGE_CONTENT_TYPE = MessageProperties.CONTENT_TYPE_JSON;
 
-    @BeforeEach
-    void setup() throws JsonProcessingException {
-        conversionHandler = mock(ConversionHandler.class);
-        when(conversionHandler.applyConversionRules(any())).thenReturn("{}");
+    @PostConstruct
+    void setup() throws Exception {
         rabbitTemplate = mock(RabbitTemplate.class);
-    }
 
-    @Test
-    void dispatchLogsHashWhenReceivingMessage() throws Exception {
-        // Arrange: set up MessageHandler and Dispatcher with a ListAppender to capture logs
-        Logger logger = (Logger) LoggerFactory.getLogger(MessageHandler.class);
-        ListAppender<ILoggingEvent> listAppender = new ListAppender<>();
-        listAppender.start();
-        logger.addAppender(listAppender);
+        // Arrange: Prepare a JSON AMQP message from input file
+        MessageProperties props =
+                MessagePropertiesBuilder.newInstance()
+                        .setContentType(INPUT_MESSAGE_CONTENT_TYPE)
+                        .build();
+        props.setReceivedRoutingKey(SENDER_ID);
+        props.setReceivedDeliveryMode(MessageDeliveryMode.PERSISTENT);
+        byte[] body =
+                this.getClass()
+                        .getClassLoader()
+                        .getResourceAsStream("sample/input_integrity_message")
+                        .readAllBytes();
+        amqpMessage = new Message(body, props);
 
-        EdxlHandler edxlHandler = new EdxlHandler();
-        XmlMapper xmlMapper = new XmlMapper();
-        Validator validator = new Validator();
-        ObjectMapper jsonMapper = new ObjectMapper();
+        // Mock web client to output conversion call body in a local file
+        WebClient webClient = mock(WebClient.class);
+        WebClient.RequestBodyUriSpec requestBodyUriSpec = mock(WebClient.RequestBodyUriSpec.class);
+        WebClient.RequestHeadersSpec requestHeadersSpec = mock(WebClient.RequestHeadersSpec.class);
+        WebClient.ResponseSpec responseSpec = mock(WebClient.ResponseSpec.class);
+        // String value returned by conversion API
+        String convertedJsonString =
+                new String(
+                        this.getClass()
+                                .getClassLoader()
+                                .getResourceAsStream("sample/conversion-response-content.json")
+                                .readAllBytes(),
+                        StandardCharsets.UTF_8);
+        Mono<String> responseMono = Mono.just(convertedJsonString);
+
+        when(webClient.post()).thenReturn(requestBodyUriSpec);
+        when(requestBodyUriSpec.uri(anyString())).thenReturn(requestBodyUriSpec);
+        when(requestBodyUriSpec.contentType(any())).thenReturn(requestBodyUriSpec);
+
+        // Capture the bodyValue argument to write it to a file
+        doAnswer(
+                        invocation -> {
+                            String requestBody = invocation.getArgument(0);
+                            // Write requestBody to a file under at root of project
+                            Path outDir = Paths.get("src", "test", "resources");
+                            Files.createDirectories(outDir);
+                            Path outFile = outDir.resolve("sample/conversion-request-body.json");
+                            Files.writeString(outFile, requestBody);
+                            // Return mocked value
+                            return requestHeadersSpec;
+                        })
+                .when(requestBodyUriSpec)
+                .bodyValue(any());
+
+        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
+        when(responseSpec.bodyToMono(String.class)).thenReturn(responseMono);
+
+        ConversionHandler conversionHandler = new ConversionHandler(webClient, edxlHandler);
 
         MessageHandler messageHandler =
                 new MessageHandler(
@@ -106,7 +155,7 @@ public class LogIntegrityTest {
                         jsonMapper,
                         conversionHandler);
 
-        Dispatcher dispatcher =
+        dispatcher =
                 new Dispatcher(
                         messageHandler,
                         rabbitTemplate,
@@ -115,18 +164,15 @@ public class LogIntegrityTest {
                         jsonMapper,
                         conversionHandler,
                         hubConfiguration);
+    }
 
-        // Arrange: Prepare a JSON AMQP message from input file
-        MessageProperties props =
-                MessagePropertiesBuilder.newInstance().setContentType(INPUT_MESSAGE_TYPE).build();
-        props.setReceivedRoutingKey(SENDER_ID);
-        props.setReceivedDeliveryMode(MessageDeliveryMode.PERSISTENT);
-        byte[] body =
-                this.getClass()
-                        .getClassLoader()
-                        .getResourceAsStream("sample/input_integrity_message")
-                        .readAllBytes();
-        Message amqpMessage = new Message(body, props);
+    @Test
+    void dispatchLogsHashWhenReceivingMessage() {
+        // Arrange: set up MessageHandler with a ListAppender to capture logs
+        Logger logger = (Logger) LoggerFactory.getLogger(MessageHandler.class);
+        ListAppender<ILoggingEvent> listAppender = new ListAppender<>();
+        listAppender.start();
+        logger.addAppender(listAppender);
 
         // Act: call dispatch
         dispatcher.dispatch(amqpMessage);
@@ -141,5 +187,27 @@ public class LogIntegrityTest {
                         SENDER_ID, DISTRIBUTION_ID, INPUT_HASH);
         assertEquals(Level.INFO, receivedLogWithHash.getLevel());
         assertTrue(receivedLogWithHash.getMessage().contains(expectedMessage));
+    }
+
+    @Test
+    void dispatchLogsHashBeforeSendingMessage() {
+        // Arrange: set up MessageHandler with a ListAppender to capture logs
+        Logger logger = (Logger) LoggerFactory.getLogger(MessageHandler.class);
+        ListAppender<ILoggingEvent> listAppender = new ListAppender<>();
+        listAppender.start();
+        logger.addAppender(listAppender);
+
+        // Act: call dispatch
+        dispatcher.dispatch(amqpMessage);
+
+        // Assert: check that the last log found in logger contains expected message and hash
+        var logs = listAppender.list;
+        assertFalse(logs.isEmpty());
+        var receivedLogWithHash = logs.getLast();
+        String expectedForwardingLog = "  ↳ [x] Forwarding";
+        String expectedHashValue = String.format("hashed value %s", OUTPUT_HASH);
+        assertEquals(Level.INFO, receivedLogWithHash.getLevel());
+        assertTrue(receivedLogWithHash.getMessage().contains(expectedForwardingLog));
+        assertTrue(receivedLogWithHash.getMessage().contains(expectedHashValue));
     }
 }

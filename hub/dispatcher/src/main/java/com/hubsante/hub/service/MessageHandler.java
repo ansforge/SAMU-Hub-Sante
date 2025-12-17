@@ -553,13 +553,16 @@ public class MessageHandler {
 
         fwdAmqpProperties.setContentType(MessageProperties.CONTENT_TYPE_JSON);
 
+        Message fwdMessage =
+                new Message(message.getBytes(StandardCharsets.UTF_8), fwdAmqpProperties);
+
         structuredLog.info(
                 String.format(
                         "  ↳ [x] Forwarding converted message from %s with hashed value %s",
-                        senderId, hashBody(receivedAmqpMessage)),
+                        senderId, hashBody(fwdMessage)),
                 Map.of(LogConstants.SENDER_ID, senderId));
 
-        return new Message(message.getBytes(StandardCharsets.UTF_8), fwdAmqpProperties);
+        return fwdMessage;
     }
 
     private void logMessage(Message message, EdxlMessage edxlMessage, String receivedEdxl) {
