@@ -29,11 +29,11 @@ import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.Validator;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import jakarta.annotation.PostConstruct;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.LoggerFactory;
@@ -80,8 +80,6 @@ public class LogIntegrityTest {
 
     private Message amqpMessage;
 
-    private ListAppender<ILoggingEvent> listAppender;
-
     private static final String SENDER_ID = "fr.health.samuV3";
     private static final String DISTRIBUTION_ID =
             "fr.health.samuV3_c89f718b-73e0-4d0a-b8a9-12696bd49522";
@@ -89,7 +87,7 @@ public class LogIntegrityTest {
     private static final String OUTPUT_HASH = "RBNvo1WzZ4oRRq0W9+hknpT7T8If536DEMBg9hyq/4o=";
     private static final String INPUT_MESSAGE_CONTENT_TYPE = MessageProperties.CONTENT_TYPE_JSON;
 
-    @BeforeEach
+    @PostConstruct
     void setup() throws Exception {
         rabbitTemplate = mock(RabbitTemplate.class);
 
@@ -106,12 +104,6 @@ public class LogIntegrityTest {
                         .getResourceAsStream("sample/input_integrity_message")
                         .readAllBytes();
         amqpMessage = new Message(body, props);
-
-        // Arrange: set up MessageHandler and Dispatcher with a ListAppender to capture logs
-        Logger logger = (Logger) LoggerFactory.getLogger(MessageHandler.class);
-        listAppender = new ListAppender<>();
-        listAppender.start();
-        logger.addAppender(listAppender);
 
         // Mock web client to output conversion call body in a local file
         WebClient webClient = mock(WebClient.class);
@@ -176,6 +168,12 @@ public class LogIntegrityTest {
 
     @Test
     void dispatchLogsHashWhenReceivingMessage() {
+        // Arrange: set up MessageHandler with a ListAppender to capture logs
+        Logger logger = (Logger) LoggerFactory.getLogger(MessageHandler.class);
+        ListAppender<ILoggingEvent> listAppender = new ListAppender<>();
+        listAppender.start();
+        logger.addAppender(listAppender);
+
         // Act: call dispatch
         dispatcher.dispatch(amqpMessage);
 
@@ -192,7 +190,13 @@ public class LogIntegrityTest {
     }
 
     @Test
-    void dispatchLogsHashBeforeSendingMessage() throws Exception {
+    void dispatchLogsHashBeforeSendingMessage() {
+        // Arrange: set up MessageHandler with a ListAppender to capture logs
+        Logger logger = (Logger) LoggerFactory.getLogger(MessageHandler.class);
+        ListAppender<ILoggingEvent> listAppender = new ListAppender<>();
+        listAppender.start();
+        logger.addAppender(listAppender);
+
         // Act: call dispatch
         dispatcher.dispatch(amqpMessage);
 
