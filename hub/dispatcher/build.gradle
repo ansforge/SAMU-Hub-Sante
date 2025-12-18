@@ -104,7 +104,7 @@ allprojects {
     }
 }
 
-apply from: 'gradle/jacoco.gradle'
+apply from: 'gradle/tests.gradle'
 apply from: 'gradle/license.gradle'
 apply from: 'gradle/spotless.gradle'
 apply from: 'gradle/jib.gradle'
