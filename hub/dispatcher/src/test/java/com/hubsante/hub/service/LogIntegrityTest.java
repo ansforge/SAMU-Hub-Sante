@@ -24,58 +24,46 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import com.hubsante.hub.HubApplication;
 import com.hubsante.hub.config.HubConfiguration;
 import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.Validator;
 import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import jakarta.annotation.PostConstruct;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Objects;
 import org.junit.jupiter.api.Test;
-import org.junit.runner.RunWith;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageDeliveryMode;
 import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.core.MessagePropertiesBuilder;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.amqp.rabbit.test.context.SpringRabbitTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
-@SpringBootTest(
-        classes = {HubConfiguration.class, LogIntegrityTest.TestConfig.class},
-        properties = {
-            "supported.messages.file=config/supported.messages.csv",
-            "client.preferences.file=config/client.preferences.csv",
-            "dispatcher.default.ttl=600",
-            "spring.rabbitmq.virtual-host=15-15_v2.1"
-        })
-@RunWith(SpringRunner.class)
+@SpringBootTest
+@ContextConfiguration(classes = HubApplication.class)
+@SpringRabbitTest
 public class LogIntegrityTest {
 
-    @Configuration
-    static class TestConfig {
-        @Bean
-        public MeterRegistry meterRegistry() {
-            return new SimpleMeterRegistry();
-        }
-    }
-
+    private RabbitTemplate rabbitTemplate = mock(RabbitTemplate.class);
+    @Autowired private EdxlHandler edxlHandler;
+    @Autowired private Validator validator;
     @Autowired private HubConfiguration hubConfiguration;
     @Autowired private MeterRegistry meterRegistry;
-    private RabbitTemplate rabbitTemplate;
-    private final XmlMapper xmlMapper = new XmlMapper();
-    private final ObjectMapper jsonMapper = new ObjectMapper();
-    private final Validator validator = new Validator();
-    private final EdxlHandler edxlHandler = new EdxlHandler();
+    @Autowired private XmlMapper xmlMapper;
+    @Autowired private ObjectMapper jsonMapper;
+    static ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
     private Dispatcher dispatcher;
 
     private Message amqpMessage;
@@ -87,9 +75,24 @@ public class LogIntegrityTest {
     private static final String OUTPUT_HASH = "RBNvo1WzZ4oRRq0W9+hknpT7T8If536DEMBg9hyq/4o=";
     private static final String INPUT_MESSAGE_CONTENT_TYPE = MessageProperties.CONTENT_TYPE_JSON;
 
+    @DynamicPropertySource
+    static void registerPgProperties(DynamicPropertyRegistry propertiesRegistry) {
+        propertiesRegistry.add(
+                "supported.messages.file",
+                () ->
+                        Objects.requireNonNull(
+                                classLoader.getResource("config/supported.messages.csv")));
+        propertiesRegistry.add(
+                "client.preferences.file",
+                () ->
+                        Objects.requireNonNull(
+                                classLoader.getResource("config/client.preferences.csv")));
+        propertiesRegistry.add("dispatcher.default.ttl", () -> 600);
+        propertiesRegistry.add("spring.rabbitmq.virtual-host", () -> "15-15_v2.1");
+    }
+
     @PostConstruct
     void setup() throws Exception {
-        rabbitTemplate = mock(RabbitTemplate.class);
 
         // Arrange: Prepare a JSON AMQP message from input file
         MessageProperties props =
