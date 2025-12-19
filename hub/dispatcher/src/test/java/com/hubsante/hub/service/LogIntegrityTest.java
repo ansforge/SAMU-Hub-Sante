@@ -116,8 +116,7 @@ public class LogIntegrityTest {
         // String value returned by conversion API
         String convertedJsonString =
                 new String(
-                        this.getClass()
-                                .getClassLoader()
+                        classLoader
                                 .getResourceAsStream("sample/conversion-response-content.json")
                                 .readAllBytes(),
                         StandardCharsets.UTF_8);
