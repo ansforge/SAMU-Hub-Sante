@@ -334,8 +334,14 @@ public class MessageUtils {
             return Base64.getEncoder().encodeToString(hashedBytes);
         } catch (NoSuchAlgorithmException e) {
             String senderId = getSenderFromRoutingKey(message);
+            String distributionId = extractDistributionId(stringifyBody(message));
             structuredLog.error(
-                    "Could not get SHA-256 algorithm", Map.of(LogConstants.SENDER_ID, senderId));
+                    "Could not get SHA-256 algorithm",
+                    Map.of(
+                            LogConstants.SENDER_ID,
+                            senderId,
+                            LogConstants.DISTRIBUTION_ID,
+                            distributionId));
             throw new RuntimeException(e);
         }
     }

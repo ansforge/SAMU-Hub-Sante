@@ -362,7 +362,11 @@ public class MessageHandler {
                             distributionId));
             structuredLog.debug(
                     String.format("Received message String was %s", receivedEdxl),
-                    Map.of(LogConstants.SENDER_ID, senderId));
+                    Map.of(
+                            LogConstants.SENDER_ID,
+                            senderId,
+                            LogConstants.DISTRIBUTION_ID,
+                            distributionId));
         } catch (ValidationException envelopeValidationException) {
             // we replace the ValidationException from the models lib by another one extending
             // AbstractHubException
@@ -550,6 +554,7 @@ public class MessageHandler {
                         sanitizeVhostForProm(hubConfig.getVhost()))
                 .increment();
         String senderId = getSenderFromRoutingKey(receivedAmqpMessage);
+        String distributionId = extractDistributionId(message);
 
         fwdAmqpProperties.setContentType(MessageProperties.CONTENT_TYPE_JSON);
 
@@ -560,7 +565,11 @@ public class MessageHandler {
                 String.format(
                         "  ↳ [x] Forwarding converted message from %s with hashed value %s",
                         senderId, hashBody(fwdMessage)),
-                Map.of(LogConstants.SENDER_ID, senderId));
+                Map.of(
+                        LogConstants.SENDER_ID,
+                        senderId,
+                        LogConstants.DISTRIBUTION_ID,
+                        distributionId));
 
         return fwdMessage;
     }

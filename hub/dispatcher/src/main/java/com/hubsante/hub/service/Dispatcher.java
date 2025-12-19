@@ -249,11 +249,16 @@ public class Dispatcher {
             // still log.error because it is not one of our AbstractHubExceptions, so there must be
             // a hole in our error cover
             String senderId = getSenderFromRoutingKey(message);
+            String distributionId = extractDistributionId(stringifyBody(message));
             structuredLog.error(
                     String.format(
                             "Unexpected error occurred while dispatching message from %s",
                             senderId),
-                    Map.of(LogConstants.SENDER_ID, senderId),
+                    Map.of(
+                            LogConstants.SENDER_ID,
+                            senderId,
+                            LogConstants.DISTRIBUTION_ID,
+                            distributionId),
                     e);
             throw new AmqpRejectAndDontRequeueException(e);
         }
@@ -271,12 +276,17 @@ public class Dispatcher {
                         conversionRulesCommand.getTargetVHost());
 
         String routingKey = message.getMessageProperties().getReceivedRoutingKey();
+        String distributionId = extractDistributionId(stringifyBody(message));
 
         structuredLog.info(
                 String.format(
                         "Message transferred to exchange: %s with routing key: %s",
                         transferExchangeName, routingKey),
-                Map.of(LogConstants.SENDER_ID, routingKey));
+                Map.of(
+                        LogConstants.SENDER_ID,
+                        routingKey,
+                        LogConstants.DISTRIBUTION_ID,
+                        distributionId));
 
         rabbitTemplate.send(transferExchangeName, routingKey, forwardedMsg);
     }
@@ -313,11 +323,17 @@ public class Dispatcher {
                         message.getMessageProperties().getHeader(ORIGINAL_ROUTING_KEY) != null
                                 ? message.getMessageProperties().getHeader(ORIGINAL_ROUTING_KEY)
                                 : "Unknown routing key";
+                String distributionId = extractDistributionId(stringifyBody(message));
+
                 structuredLog.warn(
                         String.format(
                                 "Unexpected error occurred while DLQ-dispatching message from %s",
                                 originalRoutingKey),
-                        Map.of(LogConstants.SENDER_ID, originalRoutingKey),
+                        Map.of(
+                                LogConstants.SENDER_ID,
+                                originalRoutingKey,
+                                LogConstants.DISTRIBUTION_ID,
+                                distributionId),
                         e);
             }
             throw new AmqpRejectAndDontRequeueException(e);
