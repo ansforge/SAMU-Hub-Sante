@@ -64,7 +64,7 @@ def discoverGatlingSimulations = {
 
 tasks.register("gatlingRunAllParallel") {
     group = "gatling"
-    description = "Run all Gatling simulations in parallel (one JVM per simulation)."
+    description = "Run all Gatling simulations in parallel (one thread per simulation)."
 
     dependsOn("gatlingClasses")
 
@@ -80,8 +80,7 @@ tasks.register("gatlingRunAllParallel") {
 
         def gatlingCpFiles = sourceSets.gatling.runtimeClasspath.files.toList()
 
-        int maxThreads = Math.min(simulations.size(), Runtime.runtime.availableProcessors())
-        def pool = Executors.newFixedThreadPool(maxThreads)
+        def pool = Executors.newFixedThreadPool(simulations.size())
         def failures = Collections.synchronizedList([])
 
         simulations.each { simulation ->
