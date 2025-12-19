@@ -1,0 +1,60 @@
+jib {
+    from {
+        image 'eclipse-temurin:21-jre'
+    }
+    to {
+        image "ghcr.io/${System.getenv('GITHUB_REPOSITORY_OWNER')}/dispatcher"
+        tags = gitRefs()
+    }
+    container {
+        environment = [
+                'APP_VERSION'      : project.version,
+                'APP_MODEL_VERSION': modelVersion
+        ]
+    }
+}
+
+import groovy.json.JsonSlurper
+
+def gitRefs() {
+    try {
+        def releaseCommitHash = null
+        def tagName = null
+
+        if (System.getenv('GITHUB_TOKEN')) {
+            def releaseData = callGithubAPI('releases/latest')
+            tagName = releaseData.tag_name
+
+            def commitData = callGithubAPI('commits/tags/' + tagName)
+            releaseCommitHash = commitData.sha.take(7)
+            println("Release commit hash: " + releaseCommitHash)
+        }
+
+        new ByteArrayOutputStream().withStream { os ->
+            exec {
+                commandLine 'git', 'rev-parse', '--short=7', 'HEAD'
+                standardOutput = os
+            }
+            def currentCommitHash = os.toString().trim()
+            println("Current commit hash: " + currentCommitHash)
+
+            if (currentCommitHash == releaseCommitHash) {
+                return ['latest', currentCommitHash, tagName]
+            } else {
+                return [currentCommitHash]
+            }
+        }
+    } catch (Exception e) {
+        throw new GradleException('Failed to retrieve Git commit hash.', e)
+    }
+}
+
+static def callGithubAPI(String endpoint) {
+    def apiUrl = 'https://api.github.com/repos/ansforge/SAMU-Hub-Sante/'
+    def token = System.getenv('GITHUB_TOKEN')
+    def request = new URL(apiUrl + endpoint).openConnection()
+    request.setRequestProperty('Authorization', 'token ' + token)
+    request.connect()
+
+    return new JsonSlurper().parseText(request.getInputStream().getText())
+}

@@ -1,0 +1,12 @@
+[versions]
+springBoot = "3.2.0" # Check the consistency with the plugin version value in the build.gradle
+testcontainers = "1.21.4"
+jsonSchemaValidator = "1.0.87"
+logstashEncoder = "9.0"
+univocityParsers = "2.9.1"
+groovyJson = "3.0.9"
+orgJson = "20220924"
+googleJavaFormat = "1.29.0"
+
+[plugins]
+spring-boot = { id = "org.springframework.boot", version.ref = "springBoot" }

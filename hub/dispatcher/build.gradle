@@ -1,6 +1,6 @@
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '3.2.0'
+    alias(libs.plugins.spring.boot)
     id 'io.spring.dependency-management' version '1.1.0'
     id 'com.google.cloud.tools.jib' version '3.4.0'
     id 'jacoco'
@@ -10,41 +10,13 @@ plugins {
 
 group = 'com.hubsante'
 
-def modelVersion = project.hasProperty('modelVersion') ? project.getProperty('modelVersion') : '3.1'
+ext {
+    modelVersion = project.hasProperty('modelVersion') ? project.getProperty('modelVersion') : '3.1'
+}
 
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(21)
-    }
-}
-
-springBoot {
-    mainClass = 'com.hubsante.hub.HubApplication'
-}
-
-jacocoTestReport {
-    reports {
-        html.required = true
-        xml.required = true
-    }
-}
-
-spotless {
-    java {
-        googleJavaFormat('1.33.0').aosp().formatJavadoc(false)
-        target 'src/**/*.java'
-    }
-}
-
-configurations {
-    compileOnly {
-        extendsFrom annotationProcessor
-    }
-}
-
-allprojects {
-    tasks.withType(JavaCompile) {
-        options.encoding = 'UTF-8'
     }
 }
 
@@ -69,137 +41,70 @@ repositories {
     }
 }
 
-ext {
-    set('testcontainersVersion', "1.17.6")
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.boot:spring-boot-dependencies:${libs.versions.springBoot.get()}"
+        mavenBom "org.testcontainers:testcontainers-bom:${libs.versions.testcontainers.get()}"
+    }
 }
 
 dependencies {
-    implementation "com.hubsante:models:${modelVersion}"
+    // ===== Modèle =====
+    implementation "com.hubsante:models:${project.ext.modelVersion}"
 
-    implementation 'org.codehaus.groovy:groovy-json:3.0.9'
-    implementation 'org.springframework.boot:spring-boot-starter-amqp'
-    implementation 'com.github.jknack:handlebars:4.3.1'
-    implementation 'org.springframework.boot:spring-boot-starter-validation'
-    implementation 'org.json:json:20220924'
-    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
-    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.12.5'
-    implementation 'com.networknt:json-schema-validator:1.0.87'
-    implementation 'org.projectlombok:lombok'
-    implementation 'org.junit.jupiter:junit-jupiter-params'
-    implementation 'org.springframework.boot:spring-boot-starter-actuator:3.1.2'
-    implementation 'org.springframework.boot:spring-boot-starter-web:3.1.2'
-    implementation 'org.springframework.boot:spring-boot-starter-aop:3.1.2'
-    implementation 'org.aspectj:aspectjtools:'
+    // ===== Spring Boot =====
+    implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
-    implementation 'net.logstash.logback:logstash-logback-encoder:9.0'
+    implementation 'org.springframework.boot:spring-boot-starter-aop'
+    implementation 'org.springframework.boot:spring-boot-starter-amqp'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
-    annotationProcessor 'org.projectlombok:lombok'
-    runtimeOnly 'io.micrometer:micrometer-registry-prometheus:1.11.2'
 
+    // ===== Observabilité =====
+    runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
+
+    // ===== JSON / XML / CSV =====
+    implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-xml"
+    implementation "com.networknt:json-schema-validator:${libs.versions.jsonSchemaValidator.get()}"
+    implementation "net.logstash.logback:logstash-logback-encoder:${libs.versions.logstashEncoder.get()}"
+    implementation "com.univocity:univocity-parsers:${libs.versions.univocityParsers.get()}"
+    implementation "org.codehaus.groovy:groovy-json:${libs.versions.groovyJson.get()}"
+    implementation "org.json:json:${libs.versions.orgJson.get()}"
+
+    // ===== Lombok =====
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+    testCompileOnly 'org.projectlombok:lombok'
     testAnnotationProcessor 'org.projectlombok:lombok'
+
+    // ===== Tests =====
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.amqp:spring-rabbit-test'
+
     testImplementation 'org.testcontainers:junit-jupiter'
     testImplementation 'org.testcontainers:rabbitmq'
+
 }
 
-dependencyManagement {
-    imports {
-        mavenBom "org.testcontainers:testcontainers-bom:${testcontainersVersion}"
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
     }
 }
 
-tasks.named('test') {
-    useJUnitPlatform()
-    finalizedBy jacocoTestReport // report is always generated after tests run
+springBoot {
+    mainClass = 'com.hubsante.hub.HubApplication'
 }
 
-license {
-    header = file('LICENSE_HEADER.txt')
-    strictCheck = true
-
-    ext {
-        company = "Agence du Numerique en Sante (ANS)"
-        year = licenseYear()
-    }
-
-    mapping 'java', 'JAVADOC_STYLE'
-    include "**/*.java"
-    exclude "**/test/**"
-}
-
-jib {
-    from {
-        image 'eclipse-temurin:21-jre'
-    }
-    to {
-        image "ghcr.io/${System.getenv('GITHUB_REPOSITORY_OWNER')}/dispatcher"
-        tags = gitRefs()
-    }
-    container {
-        environment = [
-            'APP_VERSION'  : project.version,
-            'APP_MODEL_VERSION'  : modelVersion
-        ]
+allprojects {
+    tasks.withType(JavaCompile) {
+        options.encoding = 'UTF-8'
     }
 }
 
-import groovy.json.JsonSlurper
-
-def gitRefs() {
-    try {
-        def releaseCommitHash = null
-        def tagName = null
-
-        if (System.getenv('GITHUB_TOKEN')) {
-            def releaseData = callGithubAPI('releases/latest')
-            tagName = releaseData.tag_name
-
-            def commitData = callGithubAPI('commits/tags/' + tagName)
-            releaseCommitHash = commitData.sha.take(7)
-            println("Release commit hash: " + releaseCommitHash)
-        }
-
-        new ByteArrayOutputStream().withStream { os ->
-            exec {
-                commandLine 'git', 'rev-parse', '--short=7', 'HEAD'
-                standardOutput = os
-            }
-            def currentCommitHash = os.toString().trim()
-            println("Current commit hash: " + currentCommitHash)
-
-            if (currentCommitHash == releaseCommitHash) {
-                return ['latest', currentCommitHash, tagName]
-            } else {
-                return [currentCommitHash]
-            }
-        }
-    } catch (Exception e) {
-        throw new GradleException('Failed to retrieve Git commit hash.', e)
-    }
-}
-
-static def licenseYear() {
-    def currentYear = new Date().format('yyyy')
-    def licenseYear
-
-    if (currentYear != "2023") {
-        licenseYear = "2023-" + currentYear
-    } else {
-        licenseYear = "2023"
-
-    }
-    return licenseYear
-}
-
-static def callGithubAPI(String endpoint) {
-    // GitHub API base URL
-    def apiUrl = 'https://api.github.com/repos/ansforge/SAMU-Hub-Sante/'
-    def token = System.getenv('GITHUB_TOKEN')
-    def request = new URL(apiUrl + endpoint).openConnection()
-    request.setRequestProperty('Authorization', 'token ' + token)
-    request.connect()
-
-    return new JsonSlurper().parseText(request.getInputStream().getText())
-}
+apply from: 'gradle/tests.gradle'
+apply from: 'gradle/license.gradle'
+apply from: 'gradle/spotless.gradle'
+apply from: 'gradle/jib.gradle'
