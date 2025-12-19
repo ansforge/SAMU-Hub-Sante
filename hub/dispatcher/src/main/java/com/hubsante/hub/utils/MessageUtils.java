@@ -328,7 +328,7 @@ public class MessageUtils {
 
     public static String hashBody(Message message) {
         try {
-            String body = new String(message.getBody(), StandardCharsets.UTF_8);
+            String body = stringifyBody(message);
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             byte[] hashedBytes = digest.digest(body.getBytes(StandardCharsets.UTF_8));
             return Base64.getEncoder().encodeToString(hashedBytes);
@@ -338,5 +338,9 @@ public class MessageUtils {
                     "Could not get SHA-256 algorithm", Map.of(LogConstants.SENDER_ID, senderId));
             throw new RuntimeException(e);
         }
+    }
+
+    public static String stringifyBody(Message message) {
+        return new String(message.getBody(), StandardCharsets.UTF_8);
     }
 }

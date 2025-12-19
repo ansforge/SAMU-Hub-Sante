@@ -280,7 +280,7 @@ public class MessageHandler {
                         VHOST_TAG,
                         sanitizeVhostForProm(hubConfig.getVhost()))
                 .increment();
-        String receivedEdxl = new String(message.getBody(), StandardCharsets.UTF_8);
+        String receivedEdxl = stringifyBody(message);
         validateFullMessage(message, receivedEdxl);
         return deserializeMessage(message, receivedEdxl);
     }
