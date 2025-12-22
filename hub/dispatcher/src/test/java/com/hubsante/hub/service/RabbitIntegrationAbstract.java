@@ -71,8 +71,7 @@ public class RabbitIntegrationAbstract {
             new RabbitMQContainer(DockerImageName.parse(RABBITMQ_IMAGE))
                     .withPluginsEnabled("rabbitmq_management", "rabbitmq_auth_mechanism_ssl")
                     .withCopyFileToContainer(
-                            mountFile("config/definitions.json"),
-                            "/tmp/rabbitmq/config/definitions.json")
+                            mountFile("config/definitions.json"), "/config/definitions.json")
                     .withCopyFileToContainer(
                             mountFile("config/certs/rabbitmq/"), "/etc/rabbitmq-tls/")
                     .withCopyFileToContainer(
@@ -84,8 +83,6 @@ public class RabbitIntegrationAbstract {
         rabbitMQContainer.start();
         // only for debug : to see the management console
         Integer port = rabbitMQContainer.getMappedPort(15672);
-        rabbitMQContainer.execInContainer(
-                "rabbitmqctl", "import_definitions", "/tmp/rabbitmq/config/definitions.json");
         rabbitMQContainer.execInContainer("chmod", "+x", "/tmp/rabbitmq/config/batch-test.sh");
     }
 
