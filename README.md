@@ -35,7 +35,7 @@ Les contributions, *issues* & *pull requests* sont les bienvenues !
 
 ## Environnement de développement local
 
-Un fichier docker-compose est disponible dans le dossier `tools/local-dev` du projet pour démarrer les différents services nécessaires au fonctionnement du Hub Santé en local (RabbitMQ, ...).
+Un fichier docker-compose est disponible dans le dossier `tools/local-dev` du projet pour démarrer les différents services nécessaires au fonctionnement du Hub Santé en local (RabbitMQ, converter, ...).
 Lancez la commande suivante depuis ce dossier :
 
 ```bash
@@ -43,6 +43,8 @@ docker compose up
 ```
 
 Après l'avoir lancé, pour se connecter à l'IHM de RabbitMQ, rendez-vous sur [http://localhost:15672](http://localhost:15672) avec les identifiants suivants : admin / admin.
+
+Après avoir dupliqué le fichier .envrc.template dans un fichier .envrc, les images des applications peuvent être être choisies les y renseignant dans le fichier.
 
 ## Montrez votre soutien
 

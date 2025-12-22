@@ -1,1 +1,2 @@
 export RABBIT_MQ_IMAGE=rabbitmq:4.0.2
+export CONVERTER_IMAGE=ghcr.io/ansforge/hub-converter:2.6.1

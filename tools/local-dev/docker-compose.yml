@@ -14,6 +14,11 @@ services:
       - ../../hub/dispatcher/src/test/resources/config/certs/rabbitmq/rabbitmq.key:/etc/rabbitmq-tls/rabbitmq.key
       - ../../hub/dispatcher/src/test/resources/config/definitions.json:/config/definitions.json
 
+  converter:
+    image: ${CONVERTER_IMAGE}
+    ports:
+      - "8083:8080"
+
 configs:
   rabbitmq-plugins:
     content: "[rabbitmq_management]."
