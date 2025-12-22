@@ -1,6 +1,6 @@
 services:
   rabbitmq:
-    image: rabbitmq:4.0.2
+    image: ${RABBIT_MQ_IMAGE:-rabbitmq:4.0.2}
     ports:
       - "5671:5671"
       - "15672:15672"
