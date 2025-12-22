@@ -1,5 +1,5 @@
 [versions]
-springBoot = "3.2.0" # Check the consistency with the plugin version value in the build.gradle
+springBoot = "3.5.0"
 testcontainers = "1.21.4"
 jsonSchemaValidator = "1.0.87"
 logstashEncoder = "9.0"
