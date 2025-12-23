@@ -243,12 +243,9 @@ public class MessageUtils {
         long newTTL = messageCustomExpirationDateTime - OffsetDateTime.now().toEpochSecond();
         boolean isNewTTLInThePast = newTTL <= 0;
         if (isNewTTLInThePast) {
-            String errorCause =
-                    "Message "
-                            + edxlMessage.getDistributionID()
-                            + " has expired before reaching the recipient queue";
+            String errorCause = "Message has expired before reaching the recipient queue";
             throw new ExpiredBeforeDispatchMessageException(
-                    errorCause, edxlMessage.getDistributionID());
+                    errorCause, distributionId, recipientId, messageType);
         }
 
         // if edxl.dateTimeExpires is before default expiration time (now + default queue TTl),
