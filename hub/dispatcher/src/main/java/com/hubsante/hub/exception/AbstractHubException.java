@@ -24,11 +24,26 @@ public abstract class AbstractHubException extends AmqpRejectAndDontRequeueExcep
 
     private ErrorCode errorCode;
     private String referencedDistributionID;
+    private String recipientId;
+    private String messageType;
 
     public AbstractHubException(
             String message, ErrorCode errorCode, String referencedDistributionID) {
         super(message);
         this.errorCode = errorCode;
         this.referencedDistributionID = referencedDistributionID;
+    }
+
+    public AbstractHubException(
+            String message,
+            ErrorCode errorCode,
+            String referencedDistributionID,
+            String recipientId,
+            String messageType) {
+        super(message);
+        this.errorCode = errorCode;
+        this.referencedDistributionID = referencedDistributionID;
+        this.recipientId = recipientId;
+        this.messageType = messageType;
     }
 }
