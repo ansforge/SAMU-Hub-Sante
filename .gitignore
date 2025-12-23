@@ -48,3 +48,6 @@ client/bin/
 
 # HubSanté applications certificates
 certs/
+
+# Environment variables
+.envrc
