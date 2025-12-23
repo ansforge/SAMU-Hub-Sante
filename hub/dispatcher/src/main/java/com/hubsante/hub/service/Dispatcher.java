@@ -260,9 +260,7 @@ public class Dispatcher {
             String senderId = getSenderFromRoutingKey(message);
             String distributionId = extractDistributionId(stringifyBody(message));
             structuredLog.error(
-                    String.format(
-                            "Unexpected error occurred while dispatching message from %s",
-                            senderId),
+                    "Unexpected error occurred while dispatching message",
                     Map.of(
                             LogConstants.SENDER_ID,
                             senderId,
@@ -339,9 +337,7 @@ public class Dispatcher {
                 String distributionId = extractDistributionId(stringifyBody(message));
 
                 structuredLog.warn(
-                        String.format(
-                                "Unexpected error occurred while DLQ-dispatching message from %s",
-                                originalRoutingKey),
+                        "Unexpected error occurred while DLQ-dispatching message",
                         Map.of(
                                 LogConstants.SENDER_ID,
                                 originalRoutingKey,

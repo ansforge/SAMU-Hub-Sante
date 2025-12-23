@@ -119,9 +119,7 @@ public class MessageUtils {
             if (!message.getMessageProperties().getReceivedRoutingKey().startsWith(HEALTH_PREFIX)) {
                 String senderId = getSenderFromRoutingKey(message);
                 structuredLog.error(
-                        String.format(
-                                "Message has been received from hubex with routing key %s without persistent mode enabled",
-                                senderId),
+                        "Message has been received from hubex without persistent mode enabled",
                         Map.of(
                                 LogConstants.SENDER_ID,
                                 senderId,
@@ -145,10 +143,7 @@ public class MessageUtils {
 
         boolean isMessageClassNameSupported = supportedMessages.contains(messageClassName);
         if (!isMessageClassNameSupported) {
-            String errorMessage =
-                    String.format(
-                            "The received message classname (%s) is not supported on this vhost",
-                            messageClassName);
+            String errorMessage = "The received message classname is not supported on this vhost";
             String distributionId = edxlMessage.getDistributionID();
             String recipientId = getRecipientID(edxlMessage);
             throw new UnroutableMessageException(
@@ -225,8 +220,8 @@ public class MessageUtils {
         if (Objects.nonNull(properties.getExpiration())) {
             structuredLog.info(
                     String.format(
-                            "Reset expiration header for message %s that was originally set to %s",
-                            distributionId, properties.getExpiration()),
+                            "Reset expiration header that was originally set to %s",
+                            properties.getExpiration()),
                     Map.of(
                             LogConstants.DISTRIBUTION_ID,
                             distributionId,
@@ -258,9 +253,7 @@ public class MessageUtils {
             String dateTimeExpires =
                     edxlMessage.getDateTimeExpires().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
             structuredLog.info(
-                    String.format(
-                            "override expiration for message %s: expiration is now %s",
-                            distributionId, dateTimeExpires),
+                    String.format("override expiration: expiration is now %s", dateTimeExpires),
                     Map.of(
                             LogConstants.DISTRIBUTION_ID,
                             distributionId,

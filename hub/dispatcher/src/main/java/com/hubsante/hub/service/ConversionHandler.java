@@ -63,11 +63,8 @@ public class ConversionHandler {
         try {
             structuredLog.debug(
                     String.format(
-                            "Starting conversion for message %s from %s to %s, isCisu ? %s",
-                            distributionId,
-                            sourceModelVersion,
-                            targetModelVersion,
-                            isCisuConversion),
+                            "Starting conversion from %s to %s, isCisu ? %s",
+                            sourceModelVersion, targetModelVersion, isCisuConversion),
                     Map.of(
                             LogConstants.DISTRIBUTION_ID,
                             distributionId,

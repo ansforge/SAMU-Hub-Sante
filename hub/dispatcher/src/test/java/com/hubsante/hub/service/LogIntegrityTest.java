@@ -69,8 +69,6 @@ public class LogIntegrityTest {
     private Message amqpMessage;
 
     private static final String SENDER_ID = "fr.health.samuV3";
-    private static final String DISTRIBUTION_ID =
-            "fr.health.samuV3_c89f718b-73e0-4d0a-b8a9-12696bd49522";
     private static final String INPUT_HASH = "9slJ9F2xZCUd/JM2WM9n5+Dk+OnkxrLaHW1CvJmsb78=";
     private static final String OUTPUT_HASH = "RBNvo1WzZ4oRRq0W9+hknpT7T8If536DEMBg9hyq/4o=";
     private static final String INPUT_MESSAGE_CONTENT_TYPE = MessageProperties.CONTENT_TYPE_JSON;
@@ -184,9 +182,7 @@ public class LogIntegrityTest {
         assertFalse(logs.isEmpty());
         var receivedLogWithHash = logs.getFirst();
         String expectedMessage =
-                String.format(
-                        " [x] Received Report from '%s': message with distributionId %s and hashed value %s",
-                        SENDER_ID, DISTRIBUTION_ID, INPUT_HASH);
+                String.format("Received Report: message with hashed value %s", INPUT_HASH);
         assertEquals(Level.INFO, receivedLogWithHash.getLevel());
         assertTrue(receivedLogWithHash.getMessage().contains(expectedMessage));
     }
@@ -206,7 +202,7 @@ public class LogIntegrityTest {
         var logs = listAppender.list;
         assertFalse(logs.isEmpty());
         var receivedLogWithHash = logs.getLast();
-        String expectedForwardingLog = "  ↳ [x] Forwarding";
+        String expectedForwardingLog = "Forwarding";
         String expectedHashValue = String.format("hashed value %s", OUTPUT_HASH);
         assertEquals(Level.INFO, receivedLogWithHash.getLevel());
         assertTrue(receivedLogWithHash.getMessage().contains(expectedForwardingLog));

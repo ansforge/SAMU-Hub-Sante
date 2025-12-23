@@ -1051,7 +1051,7 @@ public class DispatcherTest {
                                 MessageUtils.checkMessageClassNameSupported(edxlMessage, hubConfig);
                             });
             assertEquals(
-                    "The received message classname (UNSUPPORTED_CLASS) is not supported on this vhost",
+                    "The received message classname is not supported on this vhost",
                     thrown.getMessage());
         }
     }
@@ -1238,7 +1238,7 @@ public class DispatcherTest {
                                 event ->
                                         event.getFormattedMessage()
                                                 .contains(
-                                                        " [x] Received Ack from 'fr.health.samuA': message with distributionId fr.health.samuA_2608323d-507d-4cbf-bf74-52007f8124ea, referenced distributionId fr.health.samuB_2607723d-507d-4cbf-bf74-12345f7064cd"));
+                                                        "Received Ack: message with referenced distributionId fr.health.samuB_2607723d-507d-4cbf-bf74-12345f7064cd"));
         assertTrue(
                 foundReceivedLog,
                 "Received log should contain referenced distributionId: fr.health.samuB_2607723d-507d-4cbf-bf74-12345f7064cd");
@@ -1249,7 +1249,7 @@ public class DispatcherTest {
                                 event ->
                                         event.getFormattedMessage()
                                                 .contains(
-                                                        " ↳ [x] Forwarding Ack to 'fr.health.samuB': message with distributionId fr.health.samuA_2608323d-507d-4cbf-bf74-52007f8124ea, referenced distributionId fr.health.samuB_2607723d-507d-4cbf-bf74-12345f7064cd"));
+                                                        "Forwarding Ack: message with referenced distributionId fr.health.samuB_2607723d-507d-4cbf-bf74-12345f7064cd"));
         assertTrue(
                 foundForwardingLog,
                 "Forwarding log should contain referenced distributionId: fr.health.samuB_2607723d-507d-4cbf-bf74-12345f7064cd");

@@ -134,9 +134,7 @@ public class MessageHandler {
             sendErrorReport(error, senderClientId);
         } else {
             structuredLog.info(
-                    String.format(
-                            "Error message not sent to %s as it is not a health perimeter",
-                            senderClientId),
+                    "Error message not sent as it is not a health perimeter",
                     Map.of(
                             LogConstants.SENDER_ID,
                             senderClientId,
@@ -248,9 +246,7 @@ public class MessageHandler {
             // single enum
             String distributionId = error.getReferencedDistributionID();
             structuredLog.error(
-                    String.format(
-                            "Could not serialize Error for message %s: %s",
-                            distributionId, e.getMessage()),
+                    String.format("Could not serialize Error : %s", e.getMessage()),
                     Map.of(
                             LogConstants.SENDER_ID,
                             sender,
@@ -325,8 +321,8 @@ public class MessageHandler {
                 String senderId = message.getMessageProperties().getReceivedRoutingKey();
                 structuredLog.error(
                         String.format(
-                                "Unhandled Content-Type in message coming from %s with extracted distributionId %s",
-                                senderId, extractedDistributionId),
+                                "Unhandled Content-Type in message with extracted distributionId %s",
+                                extractedDistributionId),
                         Map.of(
                                 LogConstants.SENDER_ID,
                                 senderId,
@@ -372,9 +368,7 @@ public class MessageHandler {
             }
             String senderId = message.getMessageProperties().getReceivedRoutingKey();
             structuredLog.error(
-                    String.format(
-                            "Could not validate content of message coming from %s with distributionId %s",
-                            senderId, distributionId),
+                    "Could not validate content of message",
                     Map.of(
                             LogConstants.SENDER_ID,
                             senderId,
@@ -394,8 +388,8 @@ public class MessageHandler {
             String distributionId = extractDistributionId(receivedEdxl);
             structuredLog.error(
                     String.format(
-                            "Could not validate envelope of message coming from %s with distributionId possibly being (regex extraction) %s: %s",
-                            senderId, distributionId, envelopeValidationException.getMessage()),
+                            "Could not validate envelope of message with distributionId possibly being (regex extraction) %s: %s",
+                            distributionId, envelopeValidationException.getMessage()),
                     Map.of(
                             LogConstants.SENDER_ID,
                             senderId,
@@ -445,9 +439,7 @@ public class MessageHandler {
             String senderId = message.getMessageProperties().getReceivedRoutingKey();
             String distributionId = extractDistributionId(receivedEdxl);
             structuredLog.error(
-                    String.format(
-                            "Could not deserialize content of message coming from %s %s",
-                            senderId, exception),
+                    String.format("Could not deserialize content: %s", exception),
                     Map.of(
                             LogConstants.SENDER_ID,
                             senderId,
@@ -513,12 +505,8 @@ public class MessageHandler {
             if (Objects.nonNull(referencedDistributionId)) {
                 structuredLog.info(
                         String.format(
-                                "  ↳ [x] Forwarding %s to '%s': message with distributionId %s, referenced distributionId %s and hashed value %s",
-                                distributionKind,
-                                recipientId,
-                                distributionId,
-                                referencedDistributionId,
-                                hashedBody),
+                                "Forwarding %s: message with referenced distributionId %s and hashed value %s",
+                                distributionKind, referencedDistributionId, hashedBody),
                         Map.of(
                                 LogConstants.RECIPIENT_ID,
                                 recipientId,
@@ -531,8 +519,8 @@ public class MessageHandler {
             } else {
                 structuredLog.info(
                         String.format(
-                                "  ↳ [x] Forwarding %s to '%s': message with distributionId %s and hashed value %s",
-                                distributionKind, recipientId, distributionId, hashedBody),
+                                "Forwarding %s: message with hashed value %s",
+                                distributionKind, hashedBody),
                         Map.of(
                                 LogConstants.RECIPIENT_ID,
                                 recipientId,
@@ -584,8 +572,7 @@ public class MessageHandler {
 
         structuredLog.info(
                 String.format(
-                        "  ↳ [x] Forwarding converted message from %s with hashed value %s",
-                        senderId, hashBody(fwdMessage)),
+                        "Forwarding converted message with hashed value %s", hashBody(fwdMessage)),
                 Map.of(
                         LogConstants.SENDER_ID,
                         senderId,
@@ -607,12 +594,8 @@ public class MessageHandler {
         if (Objects.nonNull(referencedDistributionId)) {
             structuredLog.info(
                     String.format(
-                            " [x] Received %s from '%s': message with distributionId %s, referenced distributionId %s and hashed value %s",
-                            distributionKind,
-                            senderId,
-                            distributionId,
-                            referencedDistributionId,
-                            hashedBody),
+                            "Received %s: message with referenced distributionId %s and hashed value %s",
+                            distributionKind, referencedDistributionId, hashedBody),
                     Map.of(
                             LogConstants.RECIPIENT_ID,
                             recipientId,
@@ -625,8 +608,8 @@ public class MessageHandler {
         } else {
             structuredLog.info(
                     String.format(
-                            " [x] Received %s from '%s': message with distributionId %s and hashed value %s",
-                            distributionKind, senderId, distributionId, hashedBody),
+                            "Received %s: message with hashed value %s",
+                            distributionKind, hashedBody),
                     Map.of(
                             LogConstants.RECIPIENT_ID,
                             recipientId,
