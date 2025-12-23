@@ -290,7 +290,10 @@ public class MessageUtils {
                             + ", senderId in the distributionId: "
                             + distributionIdSenderId
                             + "\n";
-            throw new InvalidDistributionIDException(errorCause, distributionId);
+            String recipientId = getRecipientID(message);
+            String messageType = EdxlUtils.getUseCaseFromMessage(message.getFirstContentMessage());
+            throw new InvalidDistributionIDException(
+                    errorCause, distributionId, recipientId, messageType);
         }
     }
 
