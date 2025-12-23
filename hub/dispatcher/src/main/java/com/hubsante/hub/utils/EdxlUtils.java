@@ -33,7 +33,11 @@ public class EdxlUtils {
     }
 
     public static String getUseCaseFromMessage(ContentMessage contentMessage) {
-        return contentMessage.getClass().getSimpleName();
+        try {
+            return contentMessage.getClass().getSimpleName();
+        } catch (Exception e) {
+            return "UNKOWN";
+        }
     }
 
     private static String UUID() {
