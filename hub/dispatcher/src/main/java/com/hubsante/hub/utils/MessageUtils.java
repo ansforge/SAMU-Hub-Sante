@@ -97,17 +97,18 @@ public class MessageUtils {
     }
 
     public static void checkHealthActorIsInvolved(EdxlMessage edxlMessage) {
-        if (!edxlMessage.getSenderID().startsWith(HEALTH_PREFIX)
-                && !edxlMessage
-                        .getDescriptor()
-                        .getExplicitAddress()
-                        .getExplicitAddressValue()
-                        .startsWith(HEALTH_PREFIX)) {
+        String senderId = edxlMessage.getSenderID();
+        String recipientId = getRecipientID(edxlMessage);
+        if (!senderId.startsWith(HEALTH_PREFIX) && !recipientId.startsWith(HEALTH_PREFIX)) {
             String errorCause =
                     "Unable to route message with id "
                             + edxlMessage.getDistributionID()
                             + ", no health actor involved.";
-            throw new UnroutableMessageException(errorCause, edxlMessage.getDistributionID());
+            throw new UnroutableMessageException(
+                    errorCause,
+                    edxlMessage.getDistributionID(),
+                    recipientId,
+                    EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage()));
         }
     }
 
@@ -161,7 +162,8 @@ public class MessageUtils {
                             recipientId,
                             LogConstants.MESSAGE_TYPE,
                             messageClassName));
-            throw new UnroutableMessageException(errorMessage, distributionId);
+            throw new UnroutableMessageException(
+                    errorMessage, distributionId, recipientId, messageClassName);
         }
     }
 
