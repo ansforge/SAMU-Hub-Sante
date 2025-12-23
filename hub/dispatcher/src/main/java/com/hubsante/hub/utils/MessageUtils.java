@@ -149,19 +149,7 @@ public class MessageUtils {
                             "The received message classname (%s) is not supported on this vhost",
                             messageClassName);
             String distributionId = edxlMessage.getDistributionID();
-            String senderId = edxlMessage.getSenderID();
             String recipientId = getRecipientID(edxlMessage);
-            structuredLog.error(
-                    errorMessage,
-                    Map.of(
-                            LogConstants.DISTRIBUTION_ID,
-                            distributionId,
-                            LogConstants.SENDER_ID,
-                            senderId,
-                            LogConstants.RECIPIENT_ID,
-                            recipientId,
-                            LogConstants.MESSAGE_TYPE,
-                            messageClassName));
             throw new UnroutableMessageException(
                     errorMessage, distributionId, recipientId, messageClassName);
         }
