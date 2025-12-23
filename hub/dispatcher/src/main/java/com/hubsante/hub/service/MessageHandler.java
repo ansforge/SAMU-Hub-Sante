@@ -436,9 +436,10 @@ public class MessageHandler {
                 edxlMessage = edxlHandler.deserializeXmlEDXL(receivedEdxl);
                 logMessage(message, edxlMessage, receivedEdxl);
             } else {
+                String distributionId = extractDistributionId(receivedEdxl);
                 String errorCause =
                         "Unhandled Content-Type ! Message Content-Type should be set at 'application/json' or 'application/xml'";
-                throw new NotAllowedContentTypeException(errorCause, null);
+                throw new NotAllowedContentTypeException(errorCause, distributionId);
             }
         } catch (JsonProcessingException exception) {
             String senderId = message.getMessageProperties().getReceivedRoutingKey();
