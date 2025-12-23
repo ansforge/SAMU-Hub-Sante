@@ -65,11 +65,11 @@ public class MessageUtils {
     public static void checkSenderConsistency(Message message, EdxlMessage edxlMessage) {
         String receivedRoutingKey = getSenderFromRoutingKey(message);
         if (!receivedRoutingKey.equals(edxlMessage.getSenderID())) {
+            String recipientId = getRecipientID(edxlMessage);
+            String messageType =
+                    EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage());
             if (!receivedRoutingKey.startsWith(HEALTH_PREFIX)) {
                 String senderId = edxlMessage.getSenderID();
-                String recipientId = getRecipientID(edxlMessage);
-                String messageType =
-                        EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage());
                 structuredLog.info(
                         String.format(
                                 "Message has been received from hubex partner with routing key %s and senderId %s",
@@ -92,7 +92,8 @@ public class MessageUtils {
                             + edxlMessage.getSenderID()
                             + " but received routing key is "
                             + receivedRoutingKey;
-            throw new SenderInconsistencyException(errorCause, edxlMessage.getDistributionID());
+            throw new SenderInconsistencyException(
+                    errorCause, edxlMessage.getDistributionID(), recipientId, messageType);
         }
     }
 
