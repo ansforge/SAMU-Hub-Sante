@@ -1,0 +1,19 @@
+services:
+  rabbitmq:
+    image: ${RABBIT_MQ_IMAGE:-rabbitmq:4.0.2}
+    ports:
+      - "5671:5671"
+      - "15672:15672"
+    configs:
+      - source: rabbitmq-plugins
+        target: /etc/rabbitmq/enabled_plugins
+    volumes:
+      - ../../hub/dispatcher/src/test/resources/config/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
+      - ../../hub/dispatcher/src/test/resources/config/certs/rabbitmq/ca.crt:/etc/rabbitmq-tls/ca.crt
+      - ../../hub/dispatcher/src/test/resources/config/certs/rabbitmq/rabbitmq.crt:/etc/rabbitmq-tls/rabbitmq.crt
+      - ../../hub/dispatcher/src/test/resources/config/certs/rabbitmq/rabbitmq.key:/etc/rabbitmq-tls/rabbitmq.key
+      - ../../hub/dispatcher/src/test/resources/config/definitions.json:/config/definitions.json
+
+configs:
+  rabbitmq-plugins:
+    content: "[rabbitmq_management]."
