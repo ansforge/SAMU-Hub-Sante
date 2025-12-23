@@ -111,7 +111,7 @@ public class ConversionHandler {
                             recipientId,
                             LogConstants.MESSAGE_TYPE,
                             messageType));
-            throw new ConversionException(e.getMessage(), distributionId);
+            throw new ConversionException(e.getMessage(), distributionId, recipientId, messageType);
         }
     }
 
