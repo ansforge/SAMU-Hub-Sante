@@ -18,6 +18,7 @@ package com.hubsante.hub.utils;
 import static com.hubsante.hub.config.AmqpConfiguration.ORIGINAL_ROUTING_KEY;
 import static com.hubsante.hub.config.Constants.DISTRIBUTION_ID_UNAVAILABLE;
 
+import com.hubsante.hub.config.Constants;
 import com.hubsante.hub.config.HubConfiguration;
 import com.hubsante.hub.config.LogConstants;
 import com.hubsante.hub.config.StructuredLogger;
@@ -156,6 +157,11 @@ public class MessageUtils {
     }
 
     public static String getRecipientID(EdxlMessage edxlMessage) {
+        if (edxlMessage == null
+                || edxlMessage.getDescriptor() == null
+                || edxlMessage.getDescriptor().getExplicitAddress() == null) {
+            return Constants.UNKNOWN;
+        }
         return edxlMessage.getDescriptor().getExplicitAddress().getExplicitAddressValue();
     }
 

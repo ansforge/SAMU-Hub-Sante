@@ -131,10 +131,7 @@ public class Dispatcher {
                                     ? EdxlUtils.getUseCaseFromMessage(
                                             returnedEdxlMessage.getFirstContentMessage())
                                     : UNKNOWN;
-                    String recipientId =
-                            returnedEdxlMessage != null
-                                    ? MessageUtils.getRecipientID(returnedEdxlMessage)
-                                    : UNKNOWN;
+                    String recipientId = MessageUtils.getRecipientID(returnedEdxlMessage);
                     String senderRoutingKey =
                             returned.getMessage()
                                     .getMessageProperties()
