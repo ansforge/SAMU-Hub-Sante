@@ -125,7 +125,10 @@ public class MessageHandler {
         // send Error to sender
         String senderClientId = message.getMessageProperties().getHeader(ORIGINAL_ROUTING_KEY);
 
-        logErrorMessage(error, distributionId, senderClientId);
+        String recipientId = exception.getRecipientId();
+        String messageType = exception.getMessageType();
+
+        logErrorMessage(error, distributionId, senderClientId, recipientId, messageType);
         // currently, we do not handle error messages on other hubex
         if (senderClientId.startsWith(FR_HEALTH_PREFIX)) {
             sendErrorReport(error, senderClientId);
@@ -138,7 +141,11 @@ public class MessageHandler {
                             LogConstants.SENDER_ID,
                             senderClientId,
                             LogConstants.DISTRIBUTION_ID,
-                            distributionId));
+                            distributionId,
+                            LogConstants.RECIPIENT_ID,
+                            recipientId,
+                            LogConstants.MESSAGE_TYPE,
+                            messageType));
         }
 
         // increment metric like dispatch_error{reason="INVALID_MESSAGE",sender="fr.health.samuXXX"}
@@ -147,7 +154,12 @@ public class MessageHandler {
         throw new AmqpRejectAndDontRequeueException(exception);
     }
 
-    protected void logErrorMessage(Error error, String distributionId, String senderId) {
+    protected void logErrorMessage(
+            Error error,
+            String distributionId,
+            String senderId,
+            String recipientId,
+            String messageType) {
         structuredLog.error(
                 String.format(
                         "Error occurred with message published by %s \nError %s \nErrorCause %s",
@@ -156,14 +168,22 @@ public class MessageHandler {
                         LogConstants.DISTRIBUTION_ID,
                         distributionId,
                         LogConstants.SENDER_ID,
-                        senderId));
+                        senderId,
+                        LogConstants.RECIPIENT_ID,
+                        recipientId,
+                        LogConstants.MESSAGE_TYPE,
+                        messageType));
         structuredLog.debug(
                 String.format("ErrorSourceMessage was %s", error.getSourceMessage()),
                 Map.of(
                         LogConstants.DISTRIBUTION_ID,
                         distributionId,
                         LogConstants.SENDER_ID,
-                        senderId));
+                        senderId,
+                        LogConstants.RECIPIENT_ID,
+                        recipientId,
+                        LogConstants.MESSAGE_TYPE,
+                        messageType));
     }
 
     protected void sendErrorReport(Error error, String sender) {

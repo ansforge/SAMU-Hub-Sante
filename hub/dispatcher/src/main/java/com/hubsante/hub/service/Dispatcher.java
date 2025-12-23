@@ -131,6 +131,14 @@ public class Dispatcher {
                                     ? EdxlUtils.getUseCaseFromMessage(
                                             returnedEdxlMessage.getFirstContentMessage())
                                     : UNKNOWN;
+                    String recipientId =
+                            returnedEdxlMessage != null
+                                    ? MessageUtils.getRecipientID(returnedEdxlMessage)
+                                    : UNKNOWN;
+                    String senderRoutingKey =
+                            returned.getMessage()
+                                    .getMessageProperties()
+                                    .getHeader(ORIGINAL_ROUTING_KEY);
 
                     Error error = new Error();
                     error.setErrorCode(ErrorCode.UNROUTABLE_MESSAGE);
@@ -159,15 +167,16 @@ public class Dispatcher {
                                         LogConstants.DISTRIBUTION_ID,
                                         distributionId,
                                         LogConstants.MESSAGE_TYPE,
-                                        messageType),
+                                        messageType,
+                                        LogConstants.SENDER_ID,
+                                        senderRoutingKey,
+                                        LogConstants.RECIPIENT_ID,
+                                        recipientId),
                                 e);
                     }
                     error.setReferencedDistributionID(distributionId);
-                    String senderRoutingKey =
-                            returned.getMessage()
-                                    .getMessageProperties()
-                                    .getHeader(ORIGINAL_ROUTING_KEY);
-                    messageHandler.logErrorMessage(error, distributionId, senderRoutingKey);
+                    messageHandler.logErrorMessage(
+                            error, distributionId, senderRoutingKey, recipientId, messageType);
                     // currently, we do not handle error messages on other hubex
                     if (senderRoutingKey.startsWith(FR_HEALTH_PREFIX)) {
                         messageHandler.sendErrorReport(error, senderRoutingKey);
