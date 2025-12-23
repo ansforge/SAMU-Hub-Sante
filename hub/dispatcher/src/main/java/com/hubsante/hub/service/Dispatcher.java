@@ -321,8 +321,12 @@ public class Dispatcher {
                             + edxlMessage.getDistributionID()
                             + " has been read from dead-letter-queue; reason was "
                             + message.getMessageProperties().getHeader(DLQ_REASON);
+            String messageType =
+                    EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage());
+            String recipientId = MessageUtils.getRecipientID(edxlMessage);
             DeadLetteredMessageException exception =
-                    new DeadLetteredMessageException(errorCause, edxlMessage.getDistributionID());
+                    new DeadLetteredMessageException(
+                            errorCause, edxlMessage.getDistributionID(), recipientId, messageType);
             messageHandler.handleError(exception, message);
         } catch (Exception e) {
             // We don't want to log again the error if it has been thrown by handleError
