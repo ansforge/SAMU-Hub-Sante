@@ -1,0 +1,29 @@
+spring:
+  rabbitmq:
+    host: localhost
+    port: '5671'
+    virtual-host: 15-15_v2.1
+    ssl:
+      enabled: true
+      key-store-password: password
+      trust-store-password: password
+      key-store: 'file:/certs/dispatcher.p12'
+      trust-store: 'file:/certs/trustStore'
+    publisher-confirm-type: correlated
+    publisher-returns: true
+    template:
+      mandatory: true
+  client:
+    preferences:
+      file: 'file:/config/client.preferences.csv'
+  supported:
+    messages:
+      file: 'file:/config/supported.messages.csv'
+  dispatcher:
+    vhost: 15-15-v2.1
+  conversion:
+    service:
+      url: http://localhost:8083
+  logging:
+    level:
+      com.hubsante.hub: INFO

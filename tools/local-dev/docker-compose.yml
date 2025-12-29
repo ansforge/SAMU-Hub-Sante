@@ -19,6 +19,17 @@ services:
     ports:
       - "8083:8080"
 
+  dispatcher-1:
+    image: ${DISPATCHER_1_IMAGE}
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./dispatcher/application.properties.yaml:/config/application.yaml
+      - ../../certs/dispatcher.tmp.p12:/certs/dispatcher.p12
+      - ../../certs/trustStore:/certs/trustStore
+      - ./dispatcher/client.preferences.csv:/config/client.preferences.csv
+      - ./dispatcher/supported.messages.csv:/config/supported.messages.csv
+
 configs:
   rabbitmq-plugins:
     content: "[rabbitmq_management]."
