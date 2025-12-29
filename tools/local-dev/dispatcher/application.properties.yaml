@@ -1,6 +1,6 @@
 spring:
   rabbitmq:
-    host: localhost
+    host: rabbitmq
     port: '5671'
     virtual-host: 15-15_v2.1
     ssl:
