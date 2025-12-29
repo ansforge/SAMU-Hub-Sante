@@ -21,6 +21,9 @@ services:
 
   dispatcher-1:
     image: ${DISPATCHER_1_IMAGE}
+    environment:
+      - DISPATCHER_KEYSTORE_PASSWORD=${DISPATCHER_KEYSTORE_PASSWORD}
+      - DISPATCHER_TRUSTSTORE_PASSWORD=${DISPATCHER_TRUSTSTORE_PASSWORD}
     ports:
       - "8080:8080"
     volumes:

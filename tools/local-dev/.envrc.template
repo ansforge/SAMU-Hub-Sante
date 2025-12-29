@@ -1,3 +1,5 @@
 export RABBIT_MQ_IMAGE=rabbitmq:4.0.2
 export CONVERTER_IMAGE=ghcr.io/ansforge/hub-converter:2.6.1
 export DISPATCHER_1_IMAGE=ghcr.io/ansforge/dispatcher:1.8.7-model-3.3.0
+export DISPATCHER_KEYSTORE_PASSWORD=password
+export DISPATCHER_TRUSTSTORE_PASSWORD=password

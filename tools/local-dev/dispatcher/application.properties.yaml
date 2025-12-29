@@ -5,8 +5,8 @@ spring:
     virtual-host: 15-15_v2.1
     ssl:
       enabled: true
-      key-store-password: password
-      trust-store-password: password
+      key-store-password: ${DISPATCHER_KEYSTORE_PASSWORD:password}
+      trust-store-password: ${DISPATCHER_TRUSTSTORE_PASSWORD:password}
       key-store: 'file:/certs/dispatcher.p12'
       trust-store: 'file:/certs/trustStore'
     publisher-confirm-type: correlated
