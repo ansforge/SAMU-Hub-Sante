@@ -23,7 +23,7 @@ spring:
     vhost: ${V_HOST:15-15-v2.1}
   conversion:
     service:
-      url: http://localhost:8083
+      url: http://converter:8083
   logging:
     level:
       com.hubsante.hub: INFO
