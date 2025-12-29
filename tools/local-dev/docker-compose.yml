@@ -22,14 +22,15 @@ services:
   dispatcher-1:
     image: ${DISPATCHER_1_IMAGE}
     environment:
+      - DISPATCHER_KEYSTORE_FILE=${DISPATCHER_KEYSTORE_FILE}
       - DISPATCHER_KEYSTORE_PASSWORD=${DISPATCHER_KEYSTORE_PASSWORD}
+      - DISPATCHER_TRUSTSTORE_FILE=${DISPATCHER_TRUSTSTORE_FILE}
       - DISPATCHER_TRUSTSTORE_PASSWORD=${DISPATCHER_TRUSTSTORE_PASSWORD}
     ports:
       - "8080:8080"
     volumes:
       - ./dispatcher/application.properties.yaml:/config/application.yaml
-      - ../../certs/dispatcher.tmp.p12:/certs/dispatcher.p12
-      - ../../certs/trustStore:/certs/trustStore
+      - ./dispatcher/certs/:/certs/
       - ./dispatcher/client.preferences.csv:/config/client.preferences.csv
       - ./dispatcher/supported.messages.csv:/config/supported.messages.csv
 
