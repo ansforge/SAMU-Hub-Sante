@@ -69,4 +69,4 @@ services:
 
 configs:
   rabbitmq-plugins:
-    content: "[rabbitmq_management]."
+    content: "[rabbitmq_management,rabbitmq_auth_mechanism_ssl]."
