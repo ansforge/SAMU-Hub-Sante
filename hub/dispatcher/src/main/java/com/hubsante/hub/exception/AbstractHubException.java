@@ -15,26 +15,38 @@
  */
 package com.hubsante.hub.exception;
 
+import com.hubsante.hub.config.Constants;
 import com.hubsante.model.report.ErrorCode;
+import lombok.Getter;
 import org.springframework.amqp.AmqpRejectAndDontRequeueException;
 
+@Getter
 public abstract class AbstractHubException extends AmqpRejectAndDontRequeueException {
 
-    private ErrorCode errorCode;
-    private String referencedDistributionID;
+    private final ErrorCode errorCode;
+    private final String referencedDistributionID;
+    private final String recipientId;
+    private final String messageType;
 
     public AbstractHubException(
             String message, ErrorCode errorCode, String referencedDistributionID) {
         super(message);
         this.errorCode = errorCode;
         this.referencedDistributionID = referencedDistributionID;
+        this.recipientId = Constants.UNKNOWN;
+        this.messageType = Constants.UNKNOWN;
     }
 
-    public ErrorCode getErrorCode() {
-        return errorCode;
-    }
-
-    public String getReferencedDistributionID() {
-        return referencedDistributionID;
+    public AbstractHubException(
+            String message,
+            ErrorCode errorCode,
+            String referencedDistributionID,
+            String recipientId,
+            String messageType) {
+        super(message);
+        this.errorCode = errorCode;
+        this.referencedDistributionID = referencedDistributionID;
+        this.recipientId = recipientId;
+        this.messageType = messageType;
     }
 }

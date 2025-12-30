@@ -18,6 +18,7 @@ package com.hubsante.hub.utils;
 import static com.hubsante.hub.config.AmqpConfiguration.ORIGINAL_ROUTING_KEY;
 import static com.hubsante.hub.config.Constants.DISTRIBUTION_ID_UNAVAILABLE;
 
+import com.hubsante.hub.config.Constants;
 import com.hubsante.hub.config.HubConfiguration;
 import com.hubsante.hub.config.LogConstants;
 import com.hubsante.hub.config.StructuredLogger;
@@ -65,11 +66,11 @@ public class MessageUtils {
     public static void checkSenderConsistency(Message message, EdxlMessage edxlMessage) {
         String receivedRoutingKey = getSenderFromRoutingKey(message);
         if (!receivedRoutingKey.equals(edxlMessage.getSenderID())) {
+            String recipientId = getRecipientID(edxlMessage);
+            String messageType =
+                    EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage());
             if (!receivedRoutingKey.startsWith(HEALTH_PREFIX)) {
                 String senderId = edxlMessage.getSenderID();
-                String recipientId = getRecipientID(edxlMessage);
-                String messageType =
-                        EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage());
                 structuredLog.info(
                         String.format(
                                 "Message has been received from hubex partner with routing key %s and senderId %s",
@@ -92,22 +93,24 @@ public class MessageUtils {
                             + edxlMessage.getSenderID()
                             + " but received routing key is "
                             + receivedRoutingKey;
-            throw new SenderInconsistencyException(errorCause, edxlMessage.getDistributionID());
+            throw new SenderInconsistencyException(
+                    errorCause, edxlMessage.getDistributionID(), recipientId, messageType);
         }
     }
 
     public static void checkHealthActorIsInvolved(EdxlMessage edxlMessage) {
-        if (!edxlMessage.getSenderID().startsWith(HEALTH_PREFIX)
-                && !edxlMessage
-                        .getDescriptor()
-                        .getExplicitAddress()
-                        .getExplicitAddressValue()
-                        .startsWith(HEALTH_PREFIX)) {
+        String senderId = edxlMessage.getSenderID();
+        String recipientId = getRecipientID(edxlMessage);
+        if (!senderId.startsWith(HEALTH_PREFIX) && !recipientId.startsWith(HEALTH_PREFIX)) {
             String errorCause =
                     "Unable to route message with id "
                             + edxlMessage.getDistributionID()
                             + ", no health actor involved.";
-            throw new UnroutableMessageException(errorCause, edxlMessage.getDistributionID());
+            throw new UnroutableMessageException(
+                    errorCause,
+                    edxlMessage.getDistributionID(),
+                    recipientId,
+                    EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage()));
         }
     }
 
@@ -117,9 +120,7 @@ public class MessageUtils {
             if (!message.getMessageProperties().getReceivedRoutingKey().startsWith(HEALTH_PREFIX)) {
                 String senderId = getSenderFromRoutingKey(message);
                 structuredLog.error(
-                        String.format(
-                                "Message has been received from hubex with routing key %s without persistent mode enabled",
-                                senderId),
+                        "Message has been received from hubex without persistent mode enabled",
                         Map.of(
                                 LogConstants.SENDER_ID,
                                 senderId,
@@ -143,25 +144,11 @@ public class MessageUtils {
 
         boolean isMessageClassNameSupported = supportedMessages.contains(messageClassName);
         if (!isMessageClassNameSupported) {
-            String errorMessage =
-                    String.format(
-                            "The received message classname (%s) is not supported on this vhost",
-                            messageClassName);
+            String errorMessage = "The received message classname is not supported on this vhost";
             String distributionId = edxlMessage.getDistributionID();
-            String senderId = edxlMessage.getSenderID();
             String recipientId = getRecipientID(edxlMessage);
-            structuredLog.error(
-                    errorMessage,
-                    Map.of(
-                            LogConstants.DISTRIBUTION_ID,
-                            distributionId,
-                            LogConstants.SENDER_ID,
-                            senderId,
-                            LogConstants.RECIPIENT_ID,
-                            recipientId,
-                            LogConstants.MESSAGE_TYPE,
-                            messageClassName));
-            throw new UnroutableMessageException(errorMessage, distributionId);
+            throw new UnroutableMessageException(
+                    errorMessage, distributionId, recipientId, messageClassName);
         }
     }
 
@@ -170,6 +157,11 @@ public class MessageUtils {
     }
 
     public static String getRecipientID(EdxlMessage edxlMessage) {
+        if (edxlMessage == null
+                || edxlMessage.getDescriptor() == null
+                || edxlMessage.getDescriptor().getExplicitAddress() == null) {
+            return Constants.UNKNOWN;
+        }
         return edxlMessage.getDescriptor().getExplicitAddress().getExplicitAddressValue();
     }
 
@@ -234,8 +226,8 @@ public class MessageUtils {
         if (Objects.nonNull(properties.getExpiration())) {
             structuredLog.info(
                     String.format(
-                            "Reset expiration header for message %s that was originally set to %s",
-                            distributionId, properties.getExpiration()),
+                            "Reset expiration header that was originally set to %s",
+                            properties.getExpiration()),
                     Map.of(
                             LogConstants.DISTRIBUTION_ID,
                             distributionId,
@@ -253,12 +245,9 @@ public class MessageUtils {
         long newTTL = messageCustomExpirationDateTime - OffsetDateTime.now().toEpochSecond();
         boolean isNewTTLInThePast = newTTL <= 0;
         if (isNewTTLInThePast) {
-            String errorCause =
-                    "Message "
-                            + edxlMessage.getDistributionID()
-                            + " has expired before reaching the recipient queue";
+            String errorCause = "Message has expired before reaching the recipient queue";
             throw new ExpiredBeforeDispatchMessageException(
-                    errorCause, edxlMessage.getDistributionID());
+                    errorCause, distributionId, recipientId, messageType);
         }
 
         // if edxl.dateTimeExpires is before default expiration time (now + default queue TTl),
@@ -270,9 +259,7 @@ public class MessageUtils {
             String dateTimeExpires =
                     edxlMessage.getDateTimeExpires().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
             structuredLog.info(
-                    String.format(
-                            "override expiration for message %s: expiration is now %s",
-                            distributionId, dateTimeExpires),
+                    String.format("override expiration: expiration is now %s", dateTimeExpires),
                     Map.of(
                             LogConstants.DISTRIBUTION_ID,
                             distributionId,
@@ -303,7 +290,10 @@ public class MessageUtils {
                             + ", senderId in the distributionId: "
                             + distributionIdSenderId
                             + "\n";
-            throw new InvalidDistributionIDException(errorCause, distributionId);
+            String recipientId = getRecipientID(message);
+            String messageType = EdxlUtils.getUseCaseFromMessage(message.getFirstContentMessage());
+            throw new InvalidDistributionIDException(
+                    errorCause, distributionId, recipientId, messageType);
         }
     }
 

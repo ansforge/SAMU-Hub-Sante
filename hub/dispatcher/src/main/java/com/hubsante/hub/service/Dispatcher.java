@@ -131,6 +131,11 @@ public class Dispatcher {
                                     ? EdxlUtils.getUseCaseFromMessage(
                                             returnedEdxlMessage.getFirstContentMessage())
                                     : UNKNOWN;
+                    String recipientId = MessageUtils.getRecipientID(returnedEdxlMessage);
+                    String senderRoutingKey =
+                            returned.getMessage()
+                                    .getMessageProperties()
+                                    .getHeader(ORIGINAL_ROUTING_KEY);
 
                     Error error = new Error();
                     error.setErrorCode(ErrorCode.UNROUTABLE_MESSAGE);
@@ -159,15 +164,16 @@ public class Dispatcher {
                                         LogConstants.DISTRIBUTION_ID,
                                         distributionId,
                                         LogConstants.MESSAGE_TYPE,
-                                        messageType),
+                                        messageType,
+                                        LogConstants.SENDER_ID,
+                                        senderRoutingKey,
+                                        LogConstants.RECIPIENT_ID,
+                                        recipientId),
                                 e);
                     }
                     error.setReferencedDistributionID(distributionId);
-                    String senderRoutingKey =
-                            returned.getMessage()
-                                    .getMessageProperties()
-                                    .getHeader(ORIGINAL_ROUTING_KEY);
-                    messageHandler.logErrorMessage(error, distributionId, senderRoutingKey);
+                    messageHandler.logErrorMessage(
+                            error, distributionId, senderRoutingKey, recipientId, messageType);
                     // currently, we do not handle error messages on other hubex
                     if (senderRoutingKey.startsWith(FR_HEALTH_PREFIX)) {
                         messageHandler.sendErrorReport(error, senderRoutingKey);
@@ -251,9 +257,7 @@ public class Dispatcher {
             String senderId = getSenderFromRoutingKey(message);
             String distributionId = extractDistributionId(stringifyBody(message));
             structuredLog.error(
-                    String.format(
-                            "Unexpected error occurred while dispatching message from %s",
-                            senderId),
+                    "Unexpected error occurred while dispatching message",
                     Map.of(
                             LogConstants.SENDER_ID,
                             senderId,
@@ -312,8 +316,12 @@ public class Dispatcher {
                             + edxlMessage.getDistributionID()
                             + " has been read from dead-letter-queue; reason was "
                             + message.getMessageProperties().getHeader(DLQ_REASON);
+            String messageType =
+                    EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage());
+            String recipientId = MessageUtils.getRecipientID(edxlMessage);
             DeadLetteredMessageException exception =
-                    new DeadLetteredMessageException(errorCause, edxlMessage.getDistributionID());
+                    new DeadLetteredMessageException(
+                            errorCause, edxlMessage.getDistributionID(), recipientId, messageType);
             messageHandler.handleError(exception, message);
         } catch (Exception e) {
             // We don't want to log again the error if it has been thrown by handleError
@@ -326,9 +334,7 @@ public class Dispatcher {
                 String distributionId = extractDistributionId(stringifyBody(message));
 
                 structuredLog.warn(
-                        String.format(
-                                "Unexpected error occurred while DLQ-dispatching message from %s",
-                                originalRoutingKey),
+                        "Unexpected error occurred while DLQ-dispatching message",
                         Map.of(
                                 LogConstants.SENDER_ID,
                                 originalRoutingKey,

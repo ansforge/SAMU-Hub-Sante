@@ -18,12 +18,24 @@ package com.hubsante.hub.exception;
 import com.hubsante.model.report.ErrorCode;
 
 public class ConversionException extends AbstractHubException {
-
-    public ConversionException(String message, String referencedDistributionID) {
+    public ConversionException(String message, String referencedDistributionId) {
         // ToDo: create a specific error code?
         super(
                 "Error during internal call to Hub Santé conversion service: " + message,
                 ErrorCode.INVALID_MESSAGE,
-                referencedDistributionID);
+                referencedDistributionId);
+    }
+
+    public ConversionException(
+            String message,
+            String referencedDistributionId,
+            String recipientId,
+            String messageType) {
+        super(
+                "Error during internal call to Hub Santé conversion service: " + message,
+                ErrorCode.INVALID_MESSAGE,
+                referencedDistributionId,
+                recipientId,
+                messageType);
     }
 }
