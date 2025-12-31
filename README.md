@@ -33,22 +33,6 @@ Vous êtes un développeur et vous voulez contribuez ou reproduire le Hub Santé
 Les contributions, *issues* & *pull requests* sont les bienvenues !
 <br />N'hésitez pas à utiliser notre [page d'*issues*](https://github.com/ansforge/SAMU-Hub-Sante/issue).
 
-## Environnement de développement local
-
-Un fichier docker-compose est disponible dans le dossier `tools/local-dev` du projet pour démarrer les différents services nécessaires au fonctionnement du Hub Santé en local (RabbitMQ, converter, ...).
-Lancez la commande suivante depuis ce dossier :
-
-```bash
-docker compose up
-```
-
-Après l'avoir lancé, pour se connecter à l'IHM de RabbitMQ, rendez-vous sur [http://localhost:15672](http://localhost:15672) avec les identifiants suivants : admin / admin.
-
-Après avoir dupliqué le fichier .envrc.template dans un fichier .envrc, les images des applications peuvent être être choisies les y renseignant dans le fichier.
-
-Pour faire tourner les dispatchers, il faudra avoir au préalable généré un [trustore](https://ans-esante.atlassian.net/wiki/x/ewBxOQ) et un [keystore](https://ans-esante.atlassian.net/wiki/x/DoDVOw) qu'il faudra renseigner dans le dossier `tools/local-dev/dispatcher/certs`.
-Le nom des fichiers pourra être renseigné dans le fichier .envrc.
-
 ## Montrez votre soutien
 
 Mettez une ⭐️ si ce projet vous a aidé !
