@@ -46,6 +46,9 @@ Après l'avoir lancé, pour se connecter à l'IHM de RabbitMQ, rendez-vous sur [
 
 Après avoir dupliqué le fichier .envrc.template dans un fichier .envrc, les images des applications peuvent être être choisies les y renseignant dans le fichier.
 
+Pour faire tourner les dispatchers, il faudra avoir au préalable généré un [trustore](https://ans-esante.atlassian.net/wiki/x/ewBxOQ) et un [keystore](https://ans-esante.atlassian.net/wiki/x/DoDVOw) qu'il faudra renseigner dans le dossier `tools/local-dev/dispatcher/certs`.
+Le nom des fichiers pourra être renseigné dans le fichier .envrc.
+
 ## Montrez votre soutien
 
 Mettez une ⭐️ si ce projet vous a aidé !

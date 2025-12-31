@@ -1,0 +1,29 @@
+spring:
+  rabbitmq:
+    host: rabbitmq
+    port: 5671
+    virtual-host: ${V_HOST:15-15_v2.1}
+    ssl:
+      enabled: true
+      key-store-password: ${DISPATCHER_KEYSTORE_PASSWORD:password}
+      trust-store-password: ${DISPATCHER_TRUSTSTORE_PASSWORD:password}
+      key-store: 'file:/certs/${DISPATCHER_KEYSTORE_FILE:dispatcher.p12}'
+      trust-store: 'file:/certs/${DISPATCHER_TRUSTSTORE_FILE:trustStore}'
+    publisher-confirm-type: correlated
+    publisher-returns: true
+    template:
+      mandatory: true
+  client:
+    preferences:
+      file: 'file:/config/client.preferences.csv'
+  supported:
+    messages:
+      file: 'file:/config/supported.messages.csv'
+  dispatcher:
+    vhost: ${V_HOST:15-15_v2.1}
+  conversion:
+    service:
+      url: http://converter:8083
+  logging:
+    level:
+      com.hubsante.hub: INFO
