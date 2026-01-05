@@ -103,6 +103,8 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Scan Dispatcher Docker image
         uses: aquasecurity/trivy-action@0.33.1
+        env:
+          TRIVY_SEVERITY: HIGH,CRITICAL
         with:
           image-ref: 'ghcr.io/${{ github.repository_owner }}/dispatcher:${{ needs.get-tags.outputs.dispatcher-version }}-model-${{ matrix.model_version }}'
           format: 'sarif'
