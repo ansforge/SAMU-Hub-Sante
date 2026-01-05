@@ -1,0 +1,15 @@
+pre-commit:
+  parallel: true
+  commands:
+    lrm-client-lint-fix:
+      root: "web/lrm/client/"
+      run: npm run lintfix
+      stage_fixed: true
+    dispatcher-lint-fix:
+      root: "hub/dispatcher/"
+      run: ./gradlew spotlessApply
+      stage_fixed: true
+    dispatcher-license-format:
+      root: "hub/dispatcher/"
+      run: "./gradlew licenseFormat"
+      stage_fixed: true
