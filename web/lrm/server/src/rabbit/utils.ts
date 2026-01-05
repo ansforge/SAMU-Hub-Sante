@@ -14,21 +14,17 @@ export class RabbitMQConnector {
     this.config = config;
     this.connectionOptions = {
       ...this.readCerts(),
-      passphrase: this.config.getLrmCertPassphrase(),
       credentials: credentials.external(),
       clientProperties: { connection_name: 'lrm-interface' },
     };
     this.logger = logger.child({ component: 'RabbitMQConnector' });
   }
 
-  private readCerts(): { pfx: Buffer<ArrayBufferLike>; ca: Buffer<ArrayBufferLike>[] } {
+  private readCerts(): { cert: Buffer<ArrayBufferLike>; key: Buffer<ArrayBufferLike>; ca: Buffer<ArrayBufferLike>[] } {
     const moduleDir = __dirname;
     return {
-      // pfx with new encryption needed for Node 19 support
-      // Ref: https://github.com/nodejs/node/issues/40672#issuecomment-1680460423
-      pfx: readFileSync(join(moduleDir, 'certs/lrm_test.pfx')),
-      // cert: fs.readFileSync(path.join(moduleDir, 'certs/local_test.crt')), // client cert
-      // key: fs.readFileSync(path.join(moduleDir, 'certs/local_test.key')), // client key
+      cert: readFileSync(join(moduleDir, 'certs/tls.crt')), // client cert
+      key: readFileSync(join(moduleDir, 'certs/tls.key')), // client key
       ca: [readFileSync(join(moduleDir, 'certs/rootCA.crt'))], // array of trusted CA certs
       // Ref.: https://github.com/amqp-node/amqplib/issues/105
     };

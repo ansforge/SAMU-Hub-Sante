@@ -7,7 +7,6 @@ export class Config {
   private readonly port: number;
   private readonly adminPassword: string;
   private readonly hubUrl: string;
-  private readonly lrmCertPassphrase: string;
   private readonly hubSanteExchange: string;
   private readonly vhostClientMap: VhostClientMap;
   private readonly logger: Logger;
@@ -16,7 +15,6 @@ export class Config {
     this.port = this.extractNumericEnvVar('PORT', 8081);
     this.adminPassword = this.extractEnvVar('ADMIN_PASSWORD');
     this.hubUrl = this.extractEnvVar('HUB_URL');
-    this.lrmCertPassphrase = this.extractEnvVar('LRM_PASSPHRASE');
     this.hubSanteExchange = 'hubsante';
     this.vhostClientMap = JSON.parse(this.extractEnvVar('VHOST_CLIENT_MAP'));
     this.logger = logger.child({ component: 'Config' });
@@ -53,10 +51,6 @@ export class Config {
 
   public getHubUrl() {
     return this.hubUrl;
-  }
-
-  public getLrmCertPassphrase() {
-    return this.lrmCertPassphrase;
   }
 
   public getHubSanteExchange() {
