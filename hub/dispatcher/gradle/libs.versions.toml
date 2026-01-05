@@ -5,7 +5,7 @@ jsonSchemaValidator = "1.0.87"
 logstashEncoder = "9.0"
 univocityParsers = "2.9.1"
 groovyJson = "3.0.9"
-orgJson = "20220924"
+orgJson = "20231013"
 googleJavaFormat = "1.29.0"
 
 [plugins]
