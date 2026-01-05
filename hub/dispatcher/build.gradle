@@ -98,6 +98,12 @@ springBoot {
     mainClass = 'com.hubsante.hub.HubApplication'
 }
 
+jib {
+    from {
+        image = 'eclipse-temurin:21-jdk-alpine'
+    }
+}
+
 allprojects {
     tasks.withType(JavaCompile) {
         options.encoding = 'UTF-8'
