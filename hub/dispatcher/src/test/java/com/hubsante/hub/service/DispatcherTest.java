@@ -1026,6 +1026,7 @@ public class DispatcherTest {
         HubConfiguration hubConfig = mock(HubConfiguration.class);
         String unsupportedClassName = "UNSUPPORTED_CLASS";
         when(hubConfig.getSupportedMessages()).thenReturn(List.of("SUPPORTED_CLASS"));
+        when(hubConfig.getVhost()).thenReturn("15-15_v1.5");
 
         try (MockedStatic<EdxlUtils> mockedEdxlUtils = mockStatic(EdxlUtils.class)) {
             mockedEdxlUtils
@@ -1051,7 +1052,7 @@ public class DispatcherTest {
                                 MessageUtils.checkMessageClassNameSupported(edxlMessage, hubConfig);
                             });
             assertEquals(
-                    "The received message classname is not supported on this vhost",
+                    "The received message classname UNSUPPORTED_CLASS is not supported on the vhost 15-15_v1.5",
                     thrown.getMessage());
         }
     }
