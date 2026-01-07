@@ -3,18 +3,6 @@
 # Example: lrm-1.2.3, chatbot-2.1.0-beta
 
 projects:
-  lrm:
-    description: "LRM project - includes both backend and frontend components"
-    include:
-      - name: lrm-backend
-        context: ./web/lrm/server
-        tag: hub-lrm-back
-        artifact-name: trivy-reports-lrm-backend
-      - name: lrm-frontend
-        context: ./web/lrm/client
-        tag: hub-lrm-front
-        artifact-name: trivy-reports-lrm-frontend
-
   landing:
     description: "Landing page web component"
     include:
