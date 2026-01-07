@@ -144,7 +144,10 @@ public class MessageUtils {
 
         boolean isMessageClassNameSupported = supportedMessages.contains(messageClassName);
         if (!isMessageClassNameSupported) {
-            String errorMessage = "The received message classname is not supported on this vhost";
+            String errorMessage =
+                    String.format(
+                            "The received message classname %s is not supported on the vhost %s",
+                            messageClassName, hubConfig.getVhost());
             String distributionId = edxlMessage.getDistributionID();
             String recipientId = getRecipientID(edxlMessage);
             throw new UnroutableMessageException(
