@@ -1,10 +1,9 @@
-name: Build images (lrm, landing, healthcheck, chatbot, openSSL, specs, annuaire)
+name: Build images (landing, healthcheck, chatbot, openSSL, specs, annuaire)
 
 on:
   workflow_dispatch:
   push:
     tags:
-      - 'lrm-*'
       - 'landing-*'
       - 'healthcheck-*'
       - 'chatbot-*'
