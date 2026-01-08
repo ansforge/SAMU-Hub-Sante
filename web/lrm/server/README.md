@@ -8,8 +8,6 @@
 cp .env.template .env
 ```
 
-- Set the value of `LRM_PASSPHRASE` to the passphrase of the server certificate to conect to RabbitMQ. Ask for the value to another member of the team.
-
 - *Optional:* Update the content of the `.env` file:
   - `HUB_URL` controls the RabbitMQ instance the app will connect to. Use `amqps://messaging.<environment>.hub.esante.gouv.fr` to connect to a specific environment (or `amqps://messaging.hub.esante.gouv.fr` for production).
   - `GITHUB_TOKEN` is used to interract with Github API. It should be set to a valid token when working of the feature that consumes the Github API. See [Github documentation](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens) on how to generate a personal token with the correct rights.
