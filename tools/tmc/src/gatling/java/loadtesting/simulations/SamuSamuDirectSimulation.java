@@ -10,7 +10,7 @@ public class SamuSamuDirectSimulation extends BaseSimulation {
                 "15-15: direct transfer",
                 "15-15_v2.1",
                 "fr.health.test.samuv3",
-                "fr.fire.nexsis.sdisZ",
+                "fr.health.test.samuA",
                 "rs-eda.json",
                 "SAMU_SAMU_DIRECT_SCENARIO_USER_COUNT"
         );
