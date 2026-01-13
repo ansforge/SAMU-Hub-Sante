@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "prepare": "cd ../../.. && husky web/lrm/client/.husky",
     "setup": "npm run cp:schemas && npm run cp:examples",
     "cp:schemas": "rm static/schemas/json-schema/* && cp -R ../../../../SAMU-Hub-Modeles/src/main/resources/json-schema/ static/schemas/",
     "cp:examples": "rm static/examples/* && cp -R ../../../../SAMU-Hub-Modeles/src/main/resources/sample/examples/ static/",
@@ -62,8 +61,6 @@
     "eslint-plugin-nuxt": "^4.0.0",
     "eslint-plugin-prettier": "^5.5.0",
     "eslint-plugin-vue": "^9.32.0",
-    "husky": "^9.1.7",
-    "lint-staged": "^16.1.2",
     "postcss-html": "^1.8.0",
     "prettier": "^3.6.0",
     "prettier-plugin-vue": "^1.1.6",
@@ -76,16 +73,6 @@
     "typescript": "^5.5.3",
     "vite-plugin-istanbul": "^7.0.0",
     "vuetify": "^3.6.10"
-  },
-  "lint-staged": {
-    "*.{js,ts,vue}": [
-      "eslint --fix",
-      "prettier --write"
-    ],
-    "*.{css,scss}": [
-      "stylelint --fix",
-      "prettier --write"
-    ]
   },
   "nyc": {
     "extension": [
