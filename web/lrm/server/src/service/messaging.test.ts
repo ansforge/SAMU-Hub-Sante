@@ -43,7 +43,6 @@ beforeEach(() => {
     ...originalEnv,
     ADMIN_PASSWORD: 'foo',
     HUB_URL: 'foo',
-    LRM_PASSPHRASE: 'foo',
     VHOST_CLIENT_MAP: JSON.stringify({
       '15-15_v1.5': ['fr.health.test.samuV1'],
     }),
