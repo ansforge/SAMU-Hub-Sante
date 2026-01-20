@@ -1,4 +1,3 @@
 # Trivy ignore file for LRM server image
 
 # glob vulnerability - current 10.4.5 & 11.0.3 - fixed in 11.1.0, 10.5.0 (not available in the latest node 24 images)
-CVE-2025-64756

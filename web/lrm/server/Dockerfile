@@ -7,8 +7,8 @@ WORKDIR /app
 # Copy the npm project files needed for install to the container
 COPY package*.json ./
 
-# Install dependencies via NPM
-RUN npm install
+# Install dependencies via NPM (use latest npm in build stage)
+RUN npm install -g npm@latest && npm ci
 
 # Copy the project files to the container
 COPY . .
@@ -25,8 +25,10 @@ WORKDIR /app
 # Copy the npm project files needed for install to the container
 COPY package*.json ./
 
-# Install production dependencies via NPM
-RUN npm ci --omit=dev
+# Install production dependencies via NPM, then remove npm to avoid shipping its bundled packages
+RUN npm ci --omit=dev && \
+	npm cache clean --force && \
+	rm -rf /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx
 
 # Copy build directory from stage 1
 COPY --from=build /app/dist .
