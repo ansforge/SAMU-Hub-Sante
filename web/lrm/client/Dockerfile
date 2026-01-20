@@ -16,6 +16,10 @@ COPY . .
 # Build the project
 RUN npm run build
 
+# Clean up npm and cache after build
+RUN npm cache clean --force && \
+	rm -rf /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx
+
 # 2. Start
 FROM node:24.11-alpine AS runner
 
