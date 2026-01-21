@@ -62,9 +62,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: 'lrm-backend'
+          - name: 'hub-lrm-back'
             folder: './web/lrm/server'
-          - name: 'lrm-frontend'
+          - name: 'hub-lrm-front'
             folder: './web/lrm/client'
     steps:
       - name: Checkout
