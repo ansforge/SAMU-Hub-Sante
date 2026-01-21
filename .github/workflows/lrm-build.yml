@@ -29,9 +29,9 @@ jobs:
     strategy:
       matrix:
         include:
-          - name: 'lrm-backend'
+          - name: 'hub-lrm-back'
             context: './web/lrm/server'
-          - name: 'lrm-frontend'
+          - name: 'hub-lrm-front'
             context: './web/lrm/client'
 
     steps:
