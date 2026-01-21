@@ -53,5 +53,5 @@ EXPOSE 3000
 # Switch to non-root user
 USER app
 
-# Start the web app
-CMD ["npm", "start"]
+# Start the web app directly with node (avoid runtime npm dependency)
+CMD ["node", ".output/server/index.mjs"]
