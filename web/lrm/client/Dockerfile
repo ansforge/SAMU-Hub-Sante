@@ -40,6 +40,10 @@ RUN adduser -S app -u 1001 -G app
 # Change ownership of the app directory to the non-root user
 RUN chown -R app:app /app
 
+# Remove npm from the final image to avoid shipping bundled vulnerable
+# packages (some base images include npm and its dependencies like tar)
+RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx || true
+
 ENV NUXT_HOST=0.0.0.0
 ENV NUXT_PORT=3000
 
