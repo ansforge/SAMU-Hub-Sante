@@ -1,5 +1,5 @@
 # Use an official Python runtime as a parent image
-FROM python:3.11-slim
+FROM python:3.14-alpine
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -8,16 +8,15 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     UV_LINK_MODE=copy
 
 # Install system dependencies and uv
-RUN apt-get update && apt-get install -y \
+RUN apk add --no-cache \
     curl \
     ca-certificates \
-    && rm -rf /var/lib/apt/lists/* \
     && curl -LsSf https://astral.sh/uv/install.sh | sh \
     && mv /root/.local/bin/uv /usr/local/bin/uv \
     && mv /root/.local/bin/uvx /usr/local/bin/uvx
 
 # Create a non-root user and group
-RUN groupadd -r -g 1000 healthcheck && useradd -r -u 1000 -g healthcheck healthcheck
+RUN addgroup -g 1000 healthcheck && adduser -D -u 1000 -G healthcheck healthcheck
 
 # Set the working directory in the container
 WORKDIR /app
