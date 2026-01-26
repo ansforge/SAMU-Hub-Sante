@@ -1,40 +1,46 @@
-# Use an official Python runtime as a parent image
-FROM dhi.io/python:3.14
+# Builder stage - use standard Python image for building
+FROM python:3.13-slim AS builder
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    UV_CACHE_DIR=/opt/uv-cache \
+    UV_CACHE_DIR=/tmp/uv-cache \
     UV_LINK_MODE=copy
 
-# Install system dependencies and uv
-RUN apt-get update && apt-get install -y \
-    curl \
-    ca-certificates \
-    && rm -rf /var/lib/apt/lists/* \
-    && curl -LsSf https://astral.sh/uv/install.sh | sh \
-    && mv /root/.local/bin/uv /usr/local/bin/uv \
-    && mv /root/.local/bin/uvx /usr/local/bin/uvx
+# Install uv
+RUN apt-get update && apt-get install -y curl ca-certificates && \
+    curl -LsSf https://astral.sh/uv/install.sh | sh && \
+    mv /root/.local/bin/uv /usr/local/bin/uv && \
+    rm -rf /var/lib/apt/lists/*
 
-# Create a non-root user and group
-RUN groupadd -r -g 1000 chatbot && useradd -r -u 1000 -g chatbot chatbot
-
-# Set the working directory in the container
+# Set the working directory
 WORKDIR /app
 
-# Create UV cache directory with proper permissions and set ownership of working directory
-RUN mkdir -p $UV_CACHE_DIR && \
-    chown -R chatbot:chatbot $UV_CACHE_DIR && \
-    chown -R chatbot:chatbot /app
+# Copy dependency files
+COPY pyproject.toml uv.lock ./
 
-# Switch to the non-root user
-USER chatbot
-
-# Copy the current directory contents into the container at /app
-COPY --chown=chatbot:chatbot . .
-
-# Install dependencies and project in one step
+# Install dependencies
 RUN uv sync --frozen --no-dev
 
-# Run the application (--no-sync prevents any dependency downloads at runtime)
-CMD ["uv", "run", "--no-sync", "python", "chatbot.py"]
+# Final stage - use hardened image
+FROM dhi.io/python:3.13
+
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+# Set the working directory
+WORKDIR /app
+
+# Copy virtual environment from builder
+COPY --from=builder /app/.venv /app/.venv
+
+# Copy application code
+COPY . .
+
+# Run as non-root user
+USER 1000:1000
+
+# Run the application using the virtual environment directly
+ENTRYPOINT ["/app/.venv/bin/python"]
+CMD ["chatbot.py"]
