@@ -1,5 +1,5 @@
 # Use an official Python runtime as a parent image
-FROM python:3.13-slim
+FROM dhi.io/python:3.14
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1 \
