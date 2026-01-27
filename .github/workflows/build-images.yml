@@ -1,4 +1,4 @@
-name: Build images (landing, healthcheck, chatbot, openSSL, specs, annuaire)
+name: Build images (landing, healthcheck, openSSL, specs, annuaire)
 
 on:
   workflow_dispatch:
@@ -6,7 +6,6 @@ on:
     tags:
       - 'landing-*'
       - 'healthcheck-*'
-      - 'chatbot-*'
       - 'openssl-*'
       - 'specs-*'
       - 'annuaire-*'
