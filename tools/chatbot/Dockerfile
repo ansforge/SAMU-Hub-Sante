@@ -8,7 +8,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     UV_LINK_MODE=copy
 
 # Install uv
-RUN apt-get update && apt-get install -y curl ca-certificates && \
+RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates && \
     curl -LsSf https://astral.sh/uv/install.sh | sh && \
     mv /root/.local/bin/uv /usr/local/bin/uv && \
     rm -rf /var/lib/apt/lists/*
