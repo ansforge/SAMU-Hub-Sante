@@ -1,5 +1,5 @@
 # Builder stage - use standard Python image for building
-FROM python:3.13-slim AS builder
+FROM python:3.14-slim AS builder
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -23,7 +23,7 @@ COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-dev
 
 # Final stage - use hardened image
-FROM dhi.io/python:3.14.2-alpine3.23
+FROM dhi.io/python:3.14-alpine3.23
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1 \
