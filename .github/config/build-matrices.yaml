@@ -42,3 +42,11 @@ projects:
         context: ./tools/annuaire
         tag: hub-annuaire
         artifact-name: trivy-reports-annuaire
+
+  chatbot:
+    description: "AI chatbot assistant"
+    include:
+      - name: chatbot
+        context: ./tools/chatbot
+        tag: hub-chatbot
+        artifact-name: trivy-reports-chatbot
