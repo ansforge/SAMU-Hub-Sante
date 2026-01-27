@@ -27,7 +27,8 @@ FROM dhi.io/python:3.13
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
+    PYTHONUNBUFFERED=1 \
+    PATH="/app/.venv/bin:$PATH"
 
 # Set the working directory
 WORKDIR /app
@@ -41,6 +42,5 @@ COPY . .
 # Run as non-root user
 USER 1000:1000
 
-# Run the application using the virtual environment directly
-ENTRYPOINT ["/app/.venv/bin/python"]
-CMD ["chatbot.py"]
+# Run the application using the virtual environment's Python (via PATH)
+CMD ["python", "chatbot.py"]
