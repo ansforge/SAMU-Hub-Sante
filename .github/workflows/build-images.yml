@@ -108,7 +108,18 @@ jobs:
           tags: ghcr.io/${{ github.repository_owner }}/${{ matrix.tag }}:${{ needs.extract-release-info.outputs.version }}
           context: ${{ matrix.context }}
 
+      - name: Check for trivyignore file
+        id: check-trivyignore
+        run: |
+          if [ -f "${{ matrix.context }}/.trivyignore" ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "path=${{ matrix.context }}/.trivyignore" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Scan Docker image
+        id: trivy-scan
         continue-on-error: true
         uses: aquasecurity/trivy-action@0.33.1
         with:
@@ -117,6 +128,7 @@ jobs:
           output: 'trivy-${{ matrix.name }}-image.sarif'
           severity: 'HIGH,CRITICAL'
           exit-code: '1'
+          trivyignores: ${{ steps.check-trivyignore.outputs.exists == 'true' && steps.check-trivyignore.outputs.path || '' }}
 
       - name: Upload image scan results to GitHub Security tab
         if: always() && hashFiles('trivy-${{ matrix.name }}-image.sarif') != ''
