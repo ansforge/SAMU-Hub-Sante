@@ -22,8 +22,8 @@ COPY pyproject.toml uv.lock ./
 # Install dependencies
 RUN uv sync --frozen --no-dev
 
-# Final stage - use hardened Debian-based image (not Alpine, for onnxruntime compatibility)
-FROM dhi.io/python:3.13
+# Final stage - use standard Debian slim (DHI too minimal for venv)
+FROM python:3.13-slim
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -39,8 +39,12 @@ COPY --from=builder /app/.venv /app/.venv
 # Copy application code
 COPY . .
 
-# Run as non-root user
-USER 1000:1000
+# Create non-root user
+RUN groupadd -r -g 1000 chatbot && useradd -r -u 1000 -g chatbot chatbot && \
+    chown -R chatbot:chatbot /app
 
-# Run the application using the virtual environment's Python (via PATH)
+# Run as non-root user
+USER chatbot
+
+# Run the application
 CMD ["python", "chatbot.py"]
