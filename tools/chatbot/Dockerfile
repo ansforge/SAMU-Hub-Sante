@@ -1,4 +1,4 @@
-# Builder stage - use standard Python image for building
+# Builder stage - use Debian Python image for building (onnxruntime needs glibc/manylinux)
 FROM python:3.13-slim AS builder
 
 # Set environment variables
@@ -7,7 +7,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     UV_CACHE_DIR=/tmp/uv-cache \
     UV_LINK_MODE=copy
 
-# Install uv
+# Install build dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates && \
     curl -LsSf https://astral.sh/uv/install.sh | sh && \
     mv /root/.local/bin/uv /usr/local/bin/uv && \
@@ -22,8 +22,8 @@ COPY pyproject.toml uv.lock ./
 # Install dependencies
 RUN uv sync --frozen --no-dev
 
-# Final stage - use hardened image
-FROM dhi.io/python:3.13-alpine3.23
+# Final stage - use hardened Debian-based image (not Alpine, for onnxruntime compatibility)
+FROM dhi.io/python:3.13
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1 \
