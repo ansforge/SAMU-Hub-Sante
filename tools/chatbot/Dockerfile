@@ -35,5 +35,12 @@ COPY --from=builder --chown=1000:1000 /app/.venv /app/.venv
 # Copy application code
 COPY chatbot.py chatbot.py
 
+# Explicit non-root user (already set by base image)
+USER 1000
+
+# Healthcheck: verify Python process is running
+HEALTHCHECK --interval=30s --timeout=10s --start-period=180s --retries=3 \
+    CMD pgrep -f "python chatbot.py" || exit 1
+
 # Run the application
 CMD ["python", "chatbot.py"]
