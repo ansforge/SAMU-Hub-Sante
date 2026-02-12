@@ -1,0 +1,19 @@
+# Vulnérabilités HIGH sans correctif disponible
+# Dernière révision: 27 janvier 2026
+
+# CVE-2026-0994 - protobuf (Python package)
+# DoS via nested google.protobuf.Any messages
+# Status: No fix available
+# Justification: Dépendance transitive de chromadb, impact faible (pas de parsing JSON externe malveillant)
+CVE-2026-0994
+
+# CVE-2026-0861 - glibc/libc6 (Debian system package)
+# Integer overflow in memalign leads to heap corruption
+# Status: No fix available
+# Justification: Exploitation nécessite contrôle des paramètres memalign (peu probable dans notre contexte)
+CVE-2026-0861
+
+# DS026 - HEALTHCHECK instruction missing
+# Justification: Utilisation de Kubernetes avec livenessProbe/readinessProbe
+# Le HEALTHCHECK Docker est ignoré par Kubernetes
+DS026

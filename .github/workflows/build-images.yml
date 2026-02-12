@@ -1,4 +1,4 @@
-name: Build images (landing, healthcheck, chatbot, openSSL, specs, annuaire)
+name: Build images (landing, healthcheck, openSSL, specs, annuaire, chatbot)
 
 on:
   workflow_dispatch:
@@ -6,10 +6,10 @@ on:
     tags:
       - 'landing-*'
       - 'healthcheck-*'
-      - 'chatbot-*'
       - 'openssl-*'
       - 'specs-*'
       - 'annuaire-*'
+      - 'chatbot-*'
 
 permissions:
   contents: read
@@ -87,6 +87,13 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       
+      - name: Login to Docker Hardened Images
+        uses: docker/login-action@v3
+        with:
+          registry: dhi.io
+          username: ${{ secrets.DHI_USERNAME }}
+          password: ${{ secrets.DHI_PASSWORD }}
+      
       - name: Login to Container Registry
         uses: docker/login-action@v3
         with:
@@ -101,27 +108,23 @@ jobs:
           tags: ghcr.io/${{ github.repository_owner }}/${{ matrix.tag }}:${{ needs.extract-release-info.outputs.version }}
           context: ${{ matrix.context }}
 
+      - name: Check for trivyignore file
+        id: check-trivyignore
+        run: |
+          if [ -f "${{ matrix.context }}/.trivyignore" ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "path=${{ matrix.context }}/.trivyignore" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Scan Docker image
+        id: trivy-scan
         continue-on-error: true
         uses: aquasecurity/trivy-action@0.33.1
         with:
           image-ref: ghcr.io/${{ github.repository_owner }}/${{ matrix.tag }}:${{ needs.extract-release-info.outputs.version }}
-          format: 'sarif'
-          output: 'trivy-${{ matrix.name }}-image.sarif'
+          format: 'table'
           severity: 'HIGH,CRITICAL'
           exit-code: '1'
-
-      - name: Upload image scan results to GitHub Security tab
-        if: always() && hashFiles('trivy-${{ matrix.name }}-image.sarif') != ''
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: 'trivy-${{ matrix.name }}-image.sarif'
-          category: 'trivy-${{ matrix.name }}-image'
-
-      - name: Upload image scan reports as artifacts
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ matrix.artifact-name }}
-          path: '*.sarif'
-          retention-days: 30
+          trivyignores: ${{ steps.check-trivyignore.outputs.exists == 'true' && steps.check-trivyignore.outputs.path || '' }}

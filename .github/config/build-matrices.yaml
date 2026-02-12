@@ -19,14 +19,6 @@ projects:
         tag: hub-healthcheck
         artifact-name: trivy-reports-healthcheck
 
-  chatbot:
-    description: "AI chatbot service"
-    include:
-      - name: chatbot
-        context: ./tools/chatbot
-        tag: hub-chatbot
-        artifact-name: trivy-reports-chatbot
-
   openssl:
     description: "OpenSSL utilities"
     include:
@@ -50,3 +42,11 @@ projects:
         context: ./tools/annuaire
         tag: hub-annuaire
         artifact-name: trivy-reports-annuaire
+
+  chatbot:
+    description: "AI chatbot assistant"
+    include:
+      - name: chatbot
+        context: ./tools/chatbot
+        tag: hub-chatbot
+        artifact-name: trivy-reports-chatbot
