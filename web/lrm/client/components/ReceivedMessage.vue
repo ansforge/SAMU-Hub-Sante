@@ -60,7 +60,9 @@
         </span>
         <v-spacer />
         <span v-if="!dense" class="d-flex row">
-          <div v-if="getMessageType({ body }) !== 'ack' && !isOut(direction)">
+          <div
+            v-if="getMessageType({ body }) === 'message' && !isOut(direction)"
+          >
             <v-btn
               icon
               variant="text"
@@ -199,6 +201,10 @@ const sendAck = () => {
   try {
     const distributionID = props.body.distributionID;
     const senderID = props.body.senderID;
+    if (senderID.includes(INTERNAL_HUB_USER)) {
+      console.warn(`Ack not sent: ${INTERNAL_HUB_USER} is not a valid client`);
+      return;
+    }
     const msg = buildAck({ distributionID, senderID });
     sendMessage(msg, props.vhost);
     isAcked.value = true;
