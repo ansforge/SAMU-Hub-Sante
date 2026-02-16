@@ -124,6 +124,7 @@ import { useAuthStore } from '@/store/auth';
 import {
   buildAck,
   sendMessage,
+  INTERNAL_HUB_USER,
   getMessageType,
   getDistributionIdOfAckedMessage,
 } from '~/composables/messageUtils';
