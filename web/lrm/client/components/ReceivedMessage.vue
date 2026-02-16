@@ -202,6 +202,9 @@ const sendAck = () => {
   try {
     const distributionID = props.body.distributionID;
     const senderID = props.body.senderID;
+    if (getMessageType({ body: props.body }) !== 'message') {
+      return;
+    }
     if (senderID.includes(INTERNAL_HUB_USER)) {
       console.warn(`Ack not sent: ${INTERNAL_HUB_USER} is not a valid client`);
       return;
