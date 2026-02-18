@@ -50,3 +50,11 @@ projects:
         context: ./tools/chatbot
         tag: hub-chatbot
         artifact-name: trivy-reports-chatbot
+  
+  demo-app-tempo:
+    description: "Simple demo app for Tempo"
+    include:
+      - name: demo-app-tempo
+        context: ./tools/demo-app-tempo
+        tag: demo-app-tempo
+        artifact-name: trivy-reports-tempo
