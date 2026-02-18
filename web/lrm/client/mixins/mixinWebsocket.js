@@ -67,7 +67,7 @@ export default {
           if (this.autoAck) {
             // Send back acks automatically to received messages
             if (
-              getMessageType(message) !== 'ack' &&
+              getMessageType(message) === 'message' &&
               message.routingKey.startsWith(this.store.user.clientId)
             ) {
               const msg = buildAck({

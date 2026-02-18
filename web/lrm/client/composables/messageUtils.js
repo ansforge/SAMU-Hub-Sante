@@ -29,6 +29,8 @@ const caseIdMap = {
   'RS-SR': 'resourcesStatus.caseId',
 };
 
+export const INTERNAL_HUB_USER = 'fr.health.hub';
+
 export function getCaseId(message, isRootMessage = false) {
   if (isRootMessage) {
     message = message.body.content[0].jsonContent.embeddedJsonContent.message;

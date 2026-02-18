@@ -60,7 +60,9 @@
         </span>
         <v-spacer />
         <span v-if="!dense" class="d-flex row">
-          <div v-if="getMessageType({ body }) !== 'ack' && !isOut(direction)">
+          <div
+            v-if="getMessageType({ body }) === 'message' && !isOut(direction)"
+          >
             <v-btn
               icon
               variant="text"
@@ -122,9 +124,11 @@ import { useAuthStore } from '@/store/auth';
 import {
   buildAck,
   sendMessage,
+  INTERNAL_HUB_USER,
   getMessageType,
   getDistributionIdOfAckedMessage,
 } from '~/composables/messageUtils';
+import consola from 'consola';
 
 const store = useMainStore();
 const authStore = useAuthStore();
@@ -199,11 +203,18 @@ const sendAck = () => {
   try {
     const distributionID = props.body.distributionID;
     const senderID = props.body.senderID;
+    if (getMessageType({ body: props.body }) !== 'message') {
+      return;
+    }
+    if (senderID.includes(INTERNAL_HUB_USER)) {
+      consola.warn(`Ack not sent: ${INTERNAL_HUB_USER} is not a valid client`);
+      return;
+    }
     const msg = buildAck({ distributionID, senderID });
     sendMessage(msg, props.vhost);
     isAcked.value = true;
   } catch (error) {
-    console.error("Erreur lors de l'envoi de l'acquittement", error);
+    consola.error("Erreur lors de l'envoi de l'acquittement", error);
   }
 };
 
