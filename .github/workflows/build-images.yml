@@ -10,6 +10,7 @@ on:
       - 'specs-*'
       - 'annuaire-*'
       - 'chatbot-*'
+      - 'demo-app-tempo-*'
 
 permissions:
   contents: read

@@ -1,0 +1,9 @@
+flask==3.0.0
+gunicorn==21.2.0
+
+opentelemetry-distro==0.52b0
+opentelemetry-exporter-otlp==1.31.0
+
+opentelemetry-instrumentation==0.52b0
+opentelemetry-instrumentation-flask==0.52b0
+opentelemetry-instrumentation-requests==0.52b0
