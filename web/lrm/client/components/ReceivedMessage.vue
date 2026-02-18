@@ -128,6 +128,7 @@ import {
   getMessageType,
   getDistributionIdOfAckedMessage,
 } from '~/composables/messageUtils';
+import consola from 'consola';
 
 const store = useMainStore();
 const authStore = useAuthStore();
@@ -206,14 +207,14 @@ const sendAck = () => {
       return;
     }
     if (senderID.includes(INTERNAL_HUB_USER)) {
-      console.warn(`Ack not sent: ${INTERNAL_HUB_USER} is not a valid client`);
+      consola.warn(`Ack not sent: ${INTERNAL_HUB_USER} is not a valid client`);
       return;
     }
     const msg = buildAck({ distributionID, senderID });
     sendMessage(msg, props.vhost);
     isAcked.value = true;
   } catch (error) {
-    console.error("Erreur lors de l'envoi de l'acquittement", error);
+    consola.error("Erreur lors de l'envoi de l'acquittement", error);
   }
 };
 
