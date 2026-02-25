@@ -1,0 +1,21 @@
+package tnr;
+
+public final class Constants {
+    private Constants() {}
+
+    public static final String TLS_PROTOCOL_VERSION = "TLSv1.2";
+
+    public static final String JSON_CONTENT_TYPE = "application/json";
+    public static final String XML_CONTENT_TYPE = "application/xml";
+
+    public static final String JSON_FILE_EXTENSION = "json";
+    public static final String XML_FILE_EXTENSION = "xml";
+
+    public static final String JSON_VALIDATION_SCHEMA = "EDXL-DE-full.schema.json";
+    public static final String XML_VALIDATION_SCHEMA = "EDXL-DE-full.xsd";
+
+    public final static String RC_DE_USER_PREFIX = "hubex";
+
+
+    public static final Integer NETWORK_RECOVERY_INTERVAL = 1000;
+}
