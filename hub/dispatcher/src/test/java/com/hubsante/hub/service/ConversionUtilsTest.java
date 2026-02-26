@@ -207,23 +207,7 @@ public class ConversionUtilsTest {
                         "15-15",
                         new String[] {},
                         false),
-                // Case 10: conversion 15-smur 2 -> 3
-                Arguments.of(
-                        "15-smur_v1.6",
-                        "fr.health.samuV2",
-                        "fr.health.samuV3",
-                        "15-smur",
-                        new String[] {"1.7"},
-                        true),
-                // Case 11: conversion 15-smur 3 -> 2
-                Arguments.of(
-                        "15-smur_v1.7",
-                        "fr.health.samuV3",
-                        "fr.health.samuV2",
-                        "15-smur",
-                        new String[] {"1.6"},
-                        true),
-                // Case 12: no conversion 15-smur 3 -> 3
+                // Case 10: no conversion 15-smur 3 -> 3
                 Arguments.of(
                         "15-smur_v1.7",
                         "fr.health.samuV3",
@@ -502,8 +486,7 @@ public class ConversionUtilsTest {
         assertTrue(ConversionUtils.isConversionAvailable("15-15_v2.1"));
         assertTrue(ConversionUtils.isConversionAvailable("15-15_v2.0"));
         assertTrue(ConversionUtils.isConversionAvailable("15-nexsis_v1.9"));
-        assertTrue(ConversionUtils.isConversionAvailable("15-smur_v1.6"));
-        assertTrue(ConversionUtils.isConversionAvailable("15-smur_v1.7"));
+        assertFalse(ConversionUtils.isConversionAvailable("15-smur_v1.7"));
         assertFalse(ConversionUtils.isConversionAvailable("other_vhost"));
     }
 }
