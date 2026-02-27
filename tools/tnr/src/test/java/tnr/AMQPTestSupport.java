@@ -105,6 +105,13 @@ abstract class AMQPTestSupport {
         producer.publish(routingKey, message.getBytes());
     }
 
+    String sendAck(String vhost, String routingKey, String recipientId, String referencedDistributionId) throws Exception {
+        String ackDistributionId = Utils.generateDistributionId(routingKey);
+        String refMessage = new AckBuilder().buildAck(routingKey, recipientId, ackDistributionId, referencedDistributionId);
+        sendMessage(vhost, routingKey, refMessage);
+        return ackDistributionId;
+    }
+
     private Producer getProducer(String vhost) {
         return producers.get(vhost);
     }
