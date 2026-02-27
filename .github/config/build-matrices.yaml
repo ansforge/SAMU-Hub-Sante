@@ -27,14 +27,6 @@ projects:
         tag: openssl
         artifact-name: trivy-reports-openssl
 
-  specs:
-    description: "API specifications documentation"
-    include:
-      - name: specs
-        context: ./web/specs
-        tag: hub-specs
-        artifact-name: trivy-reports-specs
-
   annuaire:
     description: "Directory service"
     include:

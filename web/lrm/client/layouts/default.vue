@@ -11,14 +11,6 @@
         <v-icon start> mdi-presentation </v-icon>
         Page web
       </v-btn>
-      <v-btn
-        class="ml-4"
-        href="https://hub.esante.gouv.fr/specs/"
-        target="_blank"
-      >
-        <v-icon start> mdi-file-document-multiple-outline </v-icon>
-        Specs
-      </v-btn>
       <v-btn data-cy="json-creator-button" class="ml-4" to="/json">
         <v-icon start> mdi-email-edit-outline </v-icon>
         Json Creator

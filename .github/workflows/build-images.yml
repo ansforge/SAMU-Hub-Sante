@@ -1,4 +1,4 @@
-name: Build images (landing, healthcheck, openSSL, specs, annuaire, chatbot)
+name: Build images (landing, healthcheck, openSSL, annuaire, chatbot)
 
 on:
   workflow_dispatch:
@@ -7,7 +7,6 @@ on:
       - 'landing-*'
       - 'healthcheck-*'
       - 'openssl-*'
-      - 'specs-*'
       - 'annuaire-*'
       - 'chatbot-*'
       - 'demo-app-tempo-*'
