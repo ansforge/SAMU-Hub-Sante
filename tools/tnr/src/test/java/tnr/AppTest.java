@@ -6,9 +6,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 
-import com.hubsante.model.edxl.DistributionKind;
-import com.hubsante.model.edxl.DistributionStatus;
-
 import tnr.dto.MessageDTO;
 
 class AppTest extends AMQPTestSupport {
@@ -27,8 +24,7 @@ class AppTest extends AMQPTestSupport {
         String useCase = Files.readString(Path.of(dotenv.get("EDXL_EXAMPLE_FILE_PATH_V1")));
         String distributionId = Utils.generateDistributionId(SAMU1_V1_ID);
         String edxlJson = new MessageBuilder().buildMessage(
-                useCase, distributionId, SAMU1_V1_ID, SAMU2_V1_ID,
-                DistributionKind.REPORT, DistributionStatus.ACTUAL);
+                useCase, distributionId, SAMU1_V1_ID, SAMU2_V1_ID);
 
         sendMessage(VHOST_15_15_V1_TAG, SAMU1_V1_ID, edxlJson);
 
@@ -58,8 +54,7 @@ class AppTest extends AMQPTestSupport {
         String distributionId = Utils.generateDistributionId(SAMU_V3_ID);
 
         String edxlJson = new MessageBuilder().buildMessage(
-                useCase, distributionId, SAMU_V3_ID, SAMU1_V1_ID,
-                DistributionKind.REPORT, DistributionStatus.ACTUAL);
+                useCase, distributionId, SAMU_V3_ID, SAMU1_V1_ID);
 
         sendMessage(VHOST_15_15_V3_TAG, SAMU_V3_ID, edxlJson);
 
@@ -89,8 +84,7 @@ class AppTest extends AMQPTestSupport {
         String distributionId = Utils.generateDistributionId(SAMU1_V1_ID);
 
         String edxlJson = new MessageBuilder().buildMessage(
-                useCase, distributionId, SAMU1_V1_ID, SAMU_V3_ID,
-                DistributionKind.REPORT, DistributionStatus.ACTUAL);
+                useCase, distributionId, SAMU1_V1_ID, SAMU_V3_ID);
 
         sendMessage(VHOST_15_15_V1_TAG, SAMU1_V1_ID, edxlJson);
 
@@ -120,8 +114,7 @@ class AppTest extends AMQPTestSupport {
         String distributionId = Utils.generateDistributionId(SAMU1_V1_ID);
 
         String edxlJson = new MessageBuilder().buildMessage(
-                useCase, distributionId, SAMU1_V1_ID, SDIS_Z_ID,
-                DistributionKind.REPORT, DistributionStatus.ACTUAL);
+                useCase, distributionId, SAMU1_V1_ID, SDIS_Z_ID);
 
         sendMessage(VHOST_15_15_V1_TAG, SAMU1_V1_ID, edxlJson);
 
