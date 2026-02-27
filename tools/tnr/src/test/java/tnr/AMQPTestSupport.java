@@ -65,9 +65,10 @@ abstract class AMQPTestSupport {
             producers.put(vhost, createProducer(host, port, vhost, exchange, tlsConf));
             for (String client : clients) {
                 consumers.add(
-                        createConsumer(host, port, vhost, exchange, client, inbox, tlsConf)
+                        createConsumer(host, port, vhost, exchange, client, client + ".message", inbox, tlsConf)
                 );
-
+                consumers.add(
+                        createConsumer(host, port, vhost, exchange, client, client + ".ack", inbox, tlsConf));
             }
         }
     }
