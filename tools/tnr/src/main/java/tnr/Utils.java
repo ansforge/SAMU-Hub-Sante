@@ -2,6 +2,8 @@ package tnr;
 
 import java.util.Arrays;
 
+import tnr.dto.MessageDTO;
+
 public class Utils {
 
     public static String sanitizeClientId(String clientId) {
@@ -13,5 +15,14 @@ public class Utils {
             return "";
         }
         return String.join(".", Arrays.copyOfRange(parts, 2, parts.length));
+    }
+
+    public static boolean isMessageOfType(MessageDTO message, String type) {
+        return message.getPayload()
+                .path("content").path(0)
+                .path("jsonContent")
+                .path("embeddedJsonContent")
+                .path("message")
+                .has(type);
     }
 }
