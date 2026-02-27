@@ -123,8 +123,8 @@ abstract class AMQPTestSupport {
     }
 
     private TestConsumer createConsumer(String host, int port, String vhost, String exchange,
-            String clientId, MessageCollector inbox, TLSConf tlsConf) throws Exception {
-        TestConsumer c = new TestConsumer(host, port, vhost, exchange, clientId + ".message", clientId, inbox);
+            String clientId, String queueName, MessageCollector inbox, TLSConf tlsConf) throws Exception {
+        TestConsumer c = new TestConsumer(host, port, vhost, exchange, queueName, clientId, inbox);
         c.connect(tlsConf);
         return c;
     }
