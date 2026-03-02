@@ -36,6 +36,16 @@ public class MessageBuilder {
             String useCaseString,
             String distributionId,
             String senderId,
+            String recipientId
+    ) throws JsonProcessingException {
+        return buildMessage(useCaseString, distributionId, senderId, recipientId,
+                DistributionKind.REPORT, DistributionStatus.ACTUAL);
+    }
+
+    public String buildMessage(
+            String useCaseString,
+            String distributionId,
+            String senderId,
             String recipientId,
             DistributionKind distributionKind,
             DistributionStatus distributionStatus

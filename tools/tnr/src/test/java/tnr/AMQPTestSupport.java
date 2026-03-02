@@ -65,9 +65,10 @@ abstract class AMQPTestSupport {
             producers.put(vhost, createProducer(host, port, vhost, exchange, tlsConf));
             for (String client : clients) {
                 consumers.add(
-                        createConsumer(host, port, vhost, exchange, client, inbox, tlsConf)
+                        createConsumer(host, port, vhost, exchange, client, client + ".message", inbox, tlsConf)
                 );
-
+                consumers.add(
+                        createConsumer(host, port, vhost, exchange, client, client + ".ack", inbox, tlsConf));
             }
         }
     }
@@ -104,6 +105,13 @@ abstract class AMQPTestSupport {
         producer.publish(routingKey, message.getBytes());
     }
 
+    String sendAck(String vhost, String routingKey, String recipientId, String referencedDistributionId) throws Exception {
+        String ackDistributionId = Utils.generateDistributionId(routingKey);
+        String refMessage = new AckBuilder().buildAck(routingKey, recipientId, ackDistributionId, referencedDistributionId);
+        sendMessage(vhost, routingKey, refMessage);
+        return ackDistributionId;
+    }
+
     private Producer getProducer(String vhost) {
         return producers.get(vhost);
     }
@@ -115,8 +123,8 @@ abstract class AMQPTestSupport {
     }
 
     private TestConsumer createConsumer(String host, int port, String vhost, String exchange,
-            String clientId, MessageCollector inbox, TLSConf tlsConf) throws Exception {
-        TestConsumer c = new TestConsumer(host, port, vhost, exchange, clientId + ".message", clientId, inbox);
+            String clientId, String queueName, MessageCollector inbox, TLSConf tlsConf) throws Exception {
+        TestConsumer c = new TestConsumer(host, port, vhost, exchange, queueName, clientId, inbox);
         c.connect(tlsConf);
         return c;
     }

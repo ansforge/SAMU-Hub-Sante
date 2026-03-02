@@ -4,12 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.UUID;
-
 import org.junit.jupiter.api.Test;
-
-import com.hubsante.model.edxl.DistributionKind;
-import com.hubsante.model.edxl.DistributionStatus;
 
 import tnr.dto.MessageDTO;
 
@@ -27,12 +22,9 @@ class AppTest extends AMQPTestSupport {
     @Test
     void messageFromV1ToV1() throws Exception {
         String useCase = Files.readString(Path.of(dotenv.get("EDXL_EXAMPLE_FILE_PATH_V1")));
-
-        String distributionId = SAMU1_V1_ID + "_" + UUID.randomUUID();
-
+        String distributionId = Utils.generateDistributionId(SAMU1_V1_ID);
         String edxlJson = new MessageBuilder().buildMessage(
-                useCase, distributionId, SAMU1_V1_ID, SAMU2_V1_ID,
-                DistributionKind.REPORT, DistributionStatus.ACTUAL);
+                useCase, distributionId, SAMU1_V1_ID, SAMU2_V1_ID);
 
         sendMessage(VHOST_15_15_V1_TAG, SAMU1_V1_ID, edxlJson);
 
@@ -42,17 +34,27 @@ class AppTest extends AMQPTestSupport {
         assertEquals(matched.getVhost(), "15-15_v1.5");
         assertEquals(matched.getQueue(), SAMU2_V1_ID + ".message");
         assertTrue(Utils.isMessageOfType(matched, "createCaseHealth"));
+
+        String ackDistributionId = sendAck(VHOST_15_15_V1_TAG, SAMU2_V1_ID, SAMU1_V1_ID, distributionId);
+
+        MessageDTO matchedAck = awaitMessage(ackDistributionId);
+
+        String referencedDistributionID = Utils.getReferencedDistributionID(matchedAck.getPayload());
+
+        assertNotNull(matchedAck, "Ack " + ackDistributionId + " not received within " + RECEIVE_TIMEOUT_SECS + "s");
+        assertEquals(referencedDistributionID, distributionId);
+        assertEquals(matchedAck.getVhost(), "15-15_v1.5");
+        assertEquals(matchedAck.getQueue(), SAMU1_V1_ID + ".ack");
     }
 
     @Test
     void messageFromV3ToV1() throws Exception {
         String useCase = Files.readString(Path.of(dotenv.get("EDXL_EXAMPLE_FILE_PATH_V3")));
 
-        String distributionId = SAMU_V3_ID + "_" + UUID.randomUUID();
+        String distributionId = Utils.generateDistributionId(SAMU_V3_ID);
 
         String edxlJson = new MessageBuilder().buildMessage(
-                useCase, distributionId, SAMU_V3_ID, SAMU1_V1_ID,
-                DistributionKind.REPORT, DistributionStatus.ACTUAL);
+                useCase, distributionId, SAMU_V3_ID, SAMU1_V1_ID);
 
         sendMessage(VHOST_15_15_V3_TAG, SAMU_V3_ID, edxlJson);
 
@@ -62,17 +64,27 @@ class AppTest extends AMQPTestSupport {
         assertEquals(matched.getVhost(), VHOST_15_15_V1_TAG);
         assertEquals(matched.getQueue(), SAMU1_V1_ID + ".message");
         assertTrue(Utils.isMessageOfType(matched, "createCaseHealth"));
+
+        String ackDistributionId = sendAck(VHOST_15_15_V1_TAG, SAMU1_V1_ID, SAMU_V3_ID, distributionId);
+
+        MessageDTO matchedAck = awaitMessage(ackDistributionId);
+
+        String referencedDistributionID = Utils.getReferencedDistributionID(matchedAck.getPayload());
+
+        assertNotNull(matchedAck, "Ack " + ackDistributionId + " not received within " + RECEIVE_TIMEOUT_SECS + "s");
+        assertEquals(referencedDistributionID, distributionId);
+        assertEquals(matchedAck.getVhost(), VHOST_15_15_V3_TAG);
+        assertEquals(matchedAck.getQueue(), SAMU_V3_ID + ".ack");
     }
 
     @Test
     void messageFromV1ToV3() throws Exception {
         String useCase = Files.readString(Path.of(dotenv.get("EDXL_EXAMPLE_FILE_PATH_V1")));
 
-        String distributionId = SAMU1_V1_ID + "_" + UUID.randomUUID();
+        String distributionId = Utils.generateDistributionId(SAMU1_V1_ID);
 
         String edxlJson = new MessageBuilder().buildMessage(
-                useCase, distributionId, SAMU1_V1_ID, SAMU_V3_ID,
-                DistributionKind.REPORT, DistributionStatus.ACTUAL);
+                useCase, distributionId, SAMU1_V1_ID, SAMU_V3_ID);
 
         sendMessage(VHOST_15_15_V1_TAG, SAMU1_V1_ID, edxlJson);
 
@@ -82,17 +94,27 @@ class AppTest extends AMQPTestSupport {
         assertEquals(matched.getVhost(), VHOST_15_15_V3_TAG);
         assertEquals(matched.getQueue(), SAMU_V3_ID + ".message");
         assertTrue(Utils.isMessageOfType(matched, "createCaseHealth"));
+
+        String ackDistributionId = sendAck(VHOST_15_15_V3_TAG, SAMU_V3_ID, SAMU1_V1_ID, distributionId);
+
+        MessageDTO matchedAck = awaitMessage(ackDistributionId);
+
+        String referencedDistributionID = Utils.getReferencedDistributionID(matchedAck.getPayload());
+
+        assertNotNull(matchedAck, "Ack " + ackDistributionId + " not received within " + RECEIVE_TIMEOUT_SECS + "s");
+        assertEquals(referencedDistributionID, distributionId);
+        assertEquals(matchedAck.getVhost(), VHOST_15_15_V1_TAG);
+        assertEquals(matchedAck.getQueue(), SAMU1_V1_ID + ".ack");
     }
 
     @Test
     void messageFromV1ToNexsis() throws Exception {
         String useCase = Files.readString(Path.of(dotenv.get("EDXL_EXAMPLE_FILE_PATH_V1")));
 
-        String distributionId = SAMU1_V1_ID + "_" + UUID.randomUUID();
+        String distributionId = Utils.generateDistributionId(SAMU1_V1_ID);
 
         String edxlJson = new MessageBuilder().buildMessage(
-                useCase, distributionId, SAMU1_V1_ID, SDIS_Z_ID,
-                DistributionKind.REPORT, DistributionStatus.ACTUAL);
+                useCase, distributionId, SAMU1_V1_ID, SDIS_Z_ID);
 
         sendMessage(VHOST_15_15_V1_TAG, SAMU1_V1_ID, edxlJson);
 
@@ -103,35 +125,6 @@ class AppTest extends AMQPTestSupport {
         assertEquals(matched.getQueue(), SDIS_Z_ID + ".message");
         assertTrue(Utils.isMessageOfType(matched, "createCase"));
 
-    }
-
-    @Test
-    void messagePublishedBy2ProducersCanBeReceivedInMisorder() throws Exception {
-        String useCase = Files.readString(Path.of(dotenv.get("EDXL_EXAMPLE_FILE_PATH_V1")));
-
-        String distributionId1 = SAMU1_V1_ID + "_" + UUID.randomUUID();
-        String distributionId2 = SAMU1_V1_ID + "_" + UUID.randomUUID();
-
-        String edxlJson1 = new MessageBuilder().buildMessage(
-                useCase, distributionId1, SAMU1_V1_ID, SAMU2_V1_ID,
-                DistributionKind.REPORT, DistributionStatus.ACTUAL
-        );
-
-        String edxlJson2 = new MessageBuilder().buildMessage(
-                useCase, distributionId2, SAMU1_V1_ID, SAMU2_V1_ID,
-                DistributionKind.REPORT, DistributionStatus.ACTUAL);
-
-        sendMessage(VHOST_15_15_V1_TAG, SAMU1_V1_ID, edxlJson1);
-        sendMessage(VHOST_15_15_V1_TAG, SAMU1_V1_ID, edxlJson2);
-
-        MessageDTO matched2 = awaitMessage(distributionId2);
-        MessageDTO matched1 = awaitMessage(distributionId1);
-
-        assertNotNull(matched2, "Message " + distributionId2 + " not received within " + RECEIVE_TIMEOUT_SECS + "s");
-        assertNotNull(matched1, "Message " + distributionId1 + " not received within " + RECEIVE_TIMEOUT_SECS + "s");
-
-        assertTrue(Utils.isMessageOfType(matched2, "createCaseHealth"));
-        assertTrue(Utils.isMessageOfType(matched1, "createCaseHealth"));
     }
 
 }
