@@ -1,0 +1,19 @@
+# Ignore Gradle project-specific cache directory
+.gradle
+
+# Ignore Gradle build output directory
+build
+
+# Ignore Kotlin plugin data
+.kotlin
+
+# env var
+.env
+*.crt
+*.key
+*.p12
+hubsante_oidc_kubeconfig
+trustStore
+*DS_Store
+
+local-certs
