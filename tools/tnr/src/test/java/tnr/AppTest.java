@@ -41,6 +41,7 @@ class AppTest extends AMQPTestSupport {
         assertNotNull(matched, "Message " + distributionId + " not received within " + RECEIVE_TIMEOUT_SECS + "s");
         assertEquals(matched.getVhost(), "15-15_v1.5");
         assertEquals(matched.getQueue(), SAMU2_V1_ID + ".message");
+        assertTrue(Utils.isMessageOfType(matched, "createCaseHealth"));
     }
 
     @Test
@@ -60,6 +61,7 @@ class AppTest extends AMQPTestSupport {
         assertNotNull(matched, "Message " + distributionId + " not received within " + RECEIVE_TIMEOUT_SECS + "s");
         assertEquals(matched.getVhost(), VHOST_15_15_V1_TAG);
         assertEquals(matched.getQueue(), SAMU1_V1_ID + ".message");
+        assertTrue(Utils.isMessageOfType(matched, "createCaseHealth"));
     }
 
     @Test
@@ -79,6 +81,7 @@ class AppTest extends AMQPTestSupport {
         assertNotNull(matched, "Message " + distributionId + " not received within " + RECEIVE_TIMEOUT_SECS + "s");
         assertEquals(matched.getVhost(), VHOST_15_15_V3_TAG);
         assertEquals(matched.getQueue(), SAMU_V3_ID + ".message");
+        assertTrue(Utils.isMessageOfType(matched, "createCaseHealth"));
     }
 
     @Test
@@ -98,6 +101,8 @@ class AppTest extends AMQPTestSupport {
         assertNotNull(matched, "Message " + distributionId + " not received within " + RECEIVE_TIMEOUT_SECS + "s");
         assertEquals(matched.getVhost(), VHOST_15_NEXSIS_V3_TAG);
         assertEquals(matched.getQueue(), SDIS_Z_ID + ".message");
+        assertTrue(Utils.isMessageOfType(matched, "createCase"));
+
     }
 
     @Test
@@ -124,6 +129,9 @@ class AppTest extends AMQPTestSupport {
 
         assertNotNull(matched2, "Message " + distributionId2 + " not received within " + RECEIVE_TIMEOUT_SECS + "s");
         assertNotNull(matched1, "Message " + distributionId1 + " not received within " + RECEIVE_TIMEOUT_SECS + "s");
+
+        assertTrue(Utils.isMessageOfType(matched2, "createCaseHealth"));
+        assertTrue(Utils.isMessageOfType(matched1, "createCaseHealth"));
     }
 
 }
