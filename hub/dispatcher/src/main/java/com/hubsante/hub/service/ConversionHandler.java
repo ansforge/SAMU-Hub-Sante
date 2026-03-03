@@ -26,6 +26,10 @@ import com.hubsante.hub.utils.EdxlUtils;
 import com.hubsante.hub.utils.MessageUtils;
 import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.edxl.EdxlMessage;
+import com.fasterxml.jackson.core.type.TypeReference;
+
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -47,7 +51,7 @@ public class ConversionHandler {
         this.edxlHandler = edxlHandler;
     }
 
-    protected String applyConversionRules(ConversionRulesCommand applyConversionRulesCommand)
+    protected List<String> applyConversionRules(ConversionRulesCommand applyConversionRulesCommand)
             throws JsonProcessingException {
         String sourceModelVersion = applyConversionRulesCommand.getSourceModelVersion();
         String targetModelVersion = applyConversionRulesCommand.getTargetModelVersion();
@@ -74,15 +78,15 @@ public class ConversionHandler {
                             recipientId,
                             LogConstants.MESSAGE_TYPE,
                             messageType));
-            String convertedJson =
-                    callConversionService(
+            List<String> convertedJsonList
+                    = callConversionService(
                             jsonEdxlString,
                             sourceModelVersion,
                             targetModelVersion,
                             isCisuConversion,
                             distributionId);
             structuredLog.debug(
-                    "Message converted successfully: " + convertedJson,
+                    "Message(s) converted successfully: " + convertedJsonList.toString(),
                     Map.of(
                             LogConstants.DISTRIBUTION_ID,
                             distributionId,
@@ -93,7 +97,7 @@ public class ConversionHandler {
                             LogConstants.MESSAGE_TYPE,
                             messageType));
 
-            return convertedJson; // returns a string (deserialization is not possible because of
+            return convertedJsonList; // returns a list of strings (deserialization is not possible because of
             // version change)
         } catch (RuntimeException e) {
             // Error raised by the conversion service or its call
@@ -112,7 +116,7 @@ public class ConversionHandler {
         }
     }
 
-    protected String callConversionService(
+    protected List<String> callConversionService(
             String jsonEdxlString,
             String sourceVersion,
             String targetVersion,
@@ -136,7 +140,16 @@ public class ConversionHandler {
                             .block(); // blocking call since the method is not async
 
             JsonNode jsonNode = objectMapper.readTree(response);
-            return jsonNode.get("edxl").toString();
+            JsonNode convertedMessagesNode = jsonNode.get("converted_messages");
+
+            if (convertedMessagesNode == null || !convertedMessagesNode.isArray()) {
+                return Collections.emptyList();
+            }
+
+            return objectMapper.convertValue(
+                    convertedMessagesNode,
+                    new TypeReference<List<String>>() {
+            });
 
         } catch (WebClientResponseException e) {
             // Handle HTTP error responses from conversion service
