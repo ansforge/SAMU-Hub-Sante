@@ -3,9 +3,9 @@ This directory contains all the code needed for the Hub Santé itself (RabbitMQ 
 
 ### Local development
 To run the Dispatched locally:
-1. Generate a custom `application-XXX.properties` file in `dispatcher/src/main/resources`:
+1. Generate a custom `application-XXX.yaml` file in `dispatcher/src/main/resources`:
 ```bash
-cp dispatcher/src/main/resources/application-rfo.properties dispatcher/src/main/resources/application-XXX.properties
+cp dispatcher/src/main/resources/application-XXX.template.yaml dispatcher/src/main/resources/application-XXX.yaml
 ```
 and update the paths according to your local setup & update the trigram in the filename.
 
@@ -13,8 +13,26 @@ and update the paths according to your local setup & update the trigram in the f
 ```bash
 echo "client_id;useXML" > dispatcher/src/main/resources/client.preferences.csv
 ```
+
 3. In your terminal, set the `GITHUB_ACTOR` env variable to your Github username, and `GITHUB_TOKEN` with the value of a Github Token with full `repo` and `read:package` permissions. To [generate a token](https://github.com/settings/tokens/new).
+
 4. In the `hub/dispatcher` folder, run `gradle bootRun --args='--spring.profiles.active=local,XXX'` (replace XXX with the correct trigram)
+
+5. Pour lancer les instances du dispatcher s'intégrant dans le setup de dev local :
+
+```bash
+# Vhost 15-15-v1
+./gradlew bootRun -PmodelVersion=1.3.0 --args='--spring.profiles.active=local,local-15-15-v1,XXX'
+
+# Vhost 15-15-v2
+./gradlew bootRun -PmodelVersion=2.4.0 --args='--spring.profiles.active=local,local-15-15-v2,XXX'
+
+# Vhost 15-15-v3
+./gradlew bootRun -PmodelVersion=3.3.2 --args='--spring.profiles.active=local,local-15-15-v3,XXX'
+
+# Vhost 15-nexsis
+./gradlew bootRun -PmodelVersion=3.3.2 --args='--spring.profiles.active=local,local-15-nexsis,XXX'
+```
 
 #### IntelliJ Setup
 
