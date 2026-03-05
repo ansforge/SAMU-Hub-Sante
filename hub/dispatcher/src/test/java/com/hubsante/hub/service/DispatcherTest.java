@@ -1263,8 +1263,8 @@ public class DispatcherTest {
     @Test
     @DisplayName("should transfer all messages received from converter as array")
     public void transferMultipleMessagedFromConverter() throws IOException {
-        try (MockedStatic<ConversionUtils> mockedConversionUtils
-                = mockStatic(ConversionUtils.class)) {
+        try (MockedStatic<ConversionUtils> mockedConversionUtils =
+                mockStatic(ConversionUtils.class)) {
             Message message = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
             String exchangeName = "transfer_15-15_v1.5_to_15-15_v2.0";
 
@@ -1277,7 +1277,7 @@ public class DispatcherTest {
                     .thenReturn("15-15_v1.5");
             mockedConversionUtils
                     .when(() -> ConversionUtils.getTargetVHosts(any(), any()))
-                    .thenReturn(new String[]{"15-15_v2.0"});
+                    .thenReturn(new String[] {"15-15_v2.0"});
             mockedConversionUtils
                     .when(() -> ConversionUtils.requiresConversion(any(), any()))
                     .thenReturn(true);
@@ -1285,7 +1285,11 @@ public class DispatcherTest {
                     .when(() -> ConversionUtils.requiresCisuConversion(any(), any()))
                     .thenReturn(false);
             // Returns a list of 2 converted messages
-            doAnswer(invocation -> List.of(invocation.getArgument(0).toString(), invocation.getArgument(0).toString()))
+            doAnswer(
+                            invocation ->
+                                    List.of(
+                                            invocation.getArgument(0).toString(),
+                                            invocation.getArgument(0).toString()))
                     .when(conversionHandler)
                     .callConversionService(
                             anyString(), anyString(), anyString(), anyBoolean(), anyString());

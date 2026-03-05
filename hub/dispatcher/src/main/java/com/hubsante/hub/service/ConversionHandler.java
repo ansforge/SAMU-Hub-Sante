@@ -16,6 +16,7 @@
 package com.hubsante.hub.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hubsante.hub.config.LogConstants;
@@ -26,8 +27,6 @@ import com.hubsante.hub.utils.EdxlUtils;
 import com.hubsante.hub.utils.MessageUtils;
 import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.edxl.EdxlMessage;
-import com.fasterxml.jackson.core.type.TypeReference;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -78,8 +77,8 @@ public class ConversionHandler {
                             recipientId,
                             LogConstants.MESSAGE_TYPE,
                             messageType));
-            List<String> convertedJsonList
-                    = callConversionService(
+            List<String> convertedJsonList =
+                    callConversionService(
                             jsonEdxlString,
                             sourceModelVersion,
                             targetModelVersion,
@@ -97,7 +96,8 @@ public class ConversionHandler {
                             LogConstants.MESSAGE_TYPE,
                             messageType));
 
-            return convertedJsonList; // returns a list of strings (deserialization is not possible because of
+            return convertedJsonList; // returns a list of strings (deserialization is not possible
+            // because of
             // version change)
         } catch (RuntimeException e) {
             // Error raised by the conversion service or its call
@@ -147,9 +147,7 @@ public class ConversionHandler {
             }
 
             return objectMapper.convertValue(
-                    convertedMessagesNode,
-                    new TypeReference<List<String>>() {
-            });
+                    convertedMessagesNode, new TypeReference<List<String>>() {});
 
         } catch (WebClientResponseException e) {
             // Handle HTTP error responses from conversion service

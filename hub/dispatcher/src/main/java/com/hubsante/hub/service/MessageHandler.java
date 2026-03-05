@@ -219,10 +219,10 @@ public class MessageHandler {
                         ConversionUtils.requiresVersionConversion(hubConfig, errorEdxlMessage);
 
                 if (isVersionConversion) {
-                    ConversionRulesCommand conversionRulesCommand
-                            = new ConversionRulesCommand(errorEdxlMessage, hubConfig);
-                    List<String> convertedMessages
-                            = conversionHandler.applyConversionRules(conversionRulesCommand);
+                    ConversionRulesCommand conversionRulesCommand =
+                            new ConversionRulesCommand(errorEdxlMessage, hubConfig);
+                    List<String> convertedMessages =
+                            conversionHandler.applyConversionRules(conversionRulesCommand);
                     if (convertedMessages.size() > 1) {
                         structuredLog.info(
                                 "convertedMessages has more than one message: %s",
@@ -231,11 +231,11 @@ public class MessageHandler {
                                         sender,
                                         LogConstants.DISTRIBUTION_ID,
                                         error.getReferencedDistributionID()));
-
                     }
-                    errorAmqpMessage = forwardedStringMessage(convertedMessages.getFirst(), errorAmqpMessage);
-                    destinationExchange
-                            = ConversionUtils.buildExchangeDestination(
+                    errorAmqpMessage =
+                            forwardedStringMessage(convertedMessages.getFirst(), errorAmqpMessage);
+                    destinationExchange =
+                            ConversionUtils.buildExchangeDestination(
                                     conversionRulesCommand.getSourceVHost(),
                                     conversionRulesCommand.getTargetVHost());
                     routingKey = HUB_ID;

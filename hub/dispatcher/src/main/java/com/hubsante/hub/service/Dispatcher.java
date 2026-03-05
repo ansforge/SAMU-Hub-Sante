@@ -217,10 +217,10 @@ public class Dispatcher {
             boolean isConversionRequired =
                     ConversionUtils.requiresConversion(hubConfig, edxlMessage);
             if (isConversionRequired) {
-                ConversionRulesCommand conversionRulesCommand
-                        = new ConversionRulesCommand(edxlMessage, hubConfig);
-                List<String> convertedMessages
-                        = conversionHandler.applyConversionRules(conversionRulesCommand);
+                ConversionRulesCommand conversionRulesCommand =
+                        new ConversionRulesCommand(edxlMessage, hubConfig);
+                List<String> convertedMessages =
+                        conversionHandler.applyConversionRules(conversionRulesCommand);
                 for (String convertedMessage : convertedMessages) {
                     sendToTransferExchange(convertedMessage, message, conversionRulesCommand);
                 }
@@ -228,7 +228,9 @@ public class Dispatcher {
                 String messageType =
                         EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage());
                 structuredLog.debug(
-                        String.format("The converted messages (%d) have been sent to the exchange to reach the recipient's vhost.", convertedMessages.size()),
+                        String.format(
+                                "The converted messages (%d) have been sent to the exchange to reach the recipient's vhost.",
+                                convertedMessages.size()),
                         Map.of(
                                 LogConstants.DISTRIBUTION_ID,
                                 edxlMessage.getDistributionID(),
