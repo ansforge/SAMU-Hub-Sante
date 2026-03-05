@@ -325,7 +325,7 @@ public class DispatcherTest {
                     .when(() -> ConversionUtils.requiresCisuConversion(any(), any()))
                     .thenReturn(true);
 
-            doAnswer(invocation -> invocation.getArgument(0))
+            doAnswer(invocation -> List.of(invocation.getArgument(0).toString()))
                     .when(conversionHandler)
                     .callConversionService(
                             anyString(), anyString(), anyString(), anyBoolean(), anyString());
@@ -360,7 +360,7 @@ public class DispatcherTest {
                     .when(() -> ConversionUtils.requiresCisuConversion(any(), any()))
                     .thenReturn(false);
 
-            doAnswer(invocation -> invocation.getArgument(0))
+            doAnswer(invocation -> List.of(invocation.getArgument(0).toString()))
                     .when(conversionHandler)
                     .callConversionService(
                             anyString(), anyString(), anyString(), anyBoolean(), anyString());
@@ -741,7 +741,7 @@ public class DispatcherTest {
                     .when(() -> ConversionUtils.requiresConversion(any(), any()))
                     .thenReturn(true);
 
-            doAnswer(invocation -> invocation.getArgument(0))
+            doAnswer(invocation -> List.of(invocation.getArgument(0).toString()))
                     .when(conversionHandler)
                     .callConversionService(
                             anyString(), anyString(), anyString(), anyBoolean(), anyString());
@@ -1101,7 +1101,7 @@ public class DispatcherTest {
         String exchangeName = "transfer_15-15_v2.0_to_15-15_v1.5";
 
         // Mock call to converter (return same payload for error message)
-        doAnswer(invocation -> invocation.getArgument(0))
+        doAnswer(invocation -> List.of(invocation.getArgument(0).toString()))
                 .when(conversionHandler)
                 .callConversionService(
                         anyString(), anyString(), anyString(), anyBoolean(), anyString());
