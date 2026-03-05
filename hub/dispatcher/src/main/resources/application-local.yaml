@@ -1,0 +1,17 @@
+spring:
+  rabbitmq:
+    host: localhost
+    port: 5671
+    publisher-confirm-type: correlated
+    publisher-returns: true
+    template:
+      mandatory: true
+  main:
+    # Start web server, useful when testing actuator config
+    web-application-type: reactive
+logging:
+  level:
+    com.hubsante.hub: DEBUG
+conversion:
+  service:
+    url: http://localhost:8083

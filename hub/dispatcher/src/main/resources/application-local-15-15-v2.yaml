@@ -1,0 +1,5 @@
+spring:
+  rabbitmq:
+    virtual-host: 15-15_v2.0
+  dispatcher:
+    vhost: 15-15_v2.0
