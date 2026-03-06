@@ -146,9 +146,9 @@ public class ConversionHandler {
                 return Collections.emptyList();
             }
 
-            List<String> result = new java.util.ArrayList<>();
+            List<String> result = new ArrayList<>(convertedMessagesNode.size());
             for (JsonNode node : convertedMessagesNode) {
-                result.add(node.isTextual() ? node.asText() : objectMapper.writeValueAsString(node));
+                result.add(node.isTextual() ? node.textValue() : node.toString());
             }
             return result;
 
