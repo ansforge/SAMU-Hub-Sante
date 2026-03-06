@@ -39,6 +39,7 @@ import io.micrometer.core.annotation.Timed;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.AmqpRejectAndDontRequeueException;
@@ -218,14 +219,18 @@ public class Dispatcher {
             if (isConversionRequired) {
                 ConversionRulesCommand conversionRulesCommand =
                         new ConversionRulesCommand(edxlMessage, hubConfig);
-                String convertedMessage =
+                List<String> convertedMessages =
                         conversionHandler.applyConversionRules(conversionRulesCommand);
-                sendToTransferExchange(convertedMessage, message, conversionRulesCommand);
+                for (String convertedMessage : convertedMessages) {
+                    sendToTransferExchange(convertedMessage, message, conversionRulesCommand);
+                }
                 String recipientId = MessageUtils.getRecipientID(edxlMessage);
                 String messageType =
                         EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage());
                 structuredLog.debug(
-                        "The converted message has been sent to the exchange to reach the recipient's vhost.",
+                        String.format(
+                                "The converted messages (%d) have been sent to the exchange to reach the recipient's vhost.",
+                                convertedMessages.size()),
                         Map.of(
                                 LogConstants.DISTRIBUTION_ID,
                                 edxlMessage.getDistributionID(),

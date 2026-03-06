@@ -48,6 +48,7 @@ import io.micrometer.core.instrument.MeterRegistry;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
@@ -220,9 +221,19 @@ public class MessageHandler {
                 if (isVersionConversion) {
                     ConversionRulesCommand conversionRulesCommand =
                             new ConversionRulesCommand(errorEdxlMessage, hubConfig);
-                    String convertedMessage =
+                    List<String> convertedMessages =
                             conversionHandler.applyConversionRules(conversionRulesCommand);
-                    errorAmqpMessage = forwardedStringMessage(convertedMessage, errorAmqpMessage);
+                    if (convertedMessages.size() > 1) {
+                        structuredLog.info(
+                                "convertedMessages has more than one message: %s",
+                                Map.of(
+                                        LogConstants.SENDER_ID,
+                                        sender,
+                                        LogConstants.DISTRIBUTION_ID,
+                                        error.getReferencedDistributionID()));
+                    }
+                    errorAmqpMessage =
+                            forwardedStringMessage(convertedMessages.getFirst(), errorAmqpMessage);
                     destinationExchange =
                             ConversionUtils.buildExchangeDestination(
                                     conversionRulesCommand.getSourceVHost(),
