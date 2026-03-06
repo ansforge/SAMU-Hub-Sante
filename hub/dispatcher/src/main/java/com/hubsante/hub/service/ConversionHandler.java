@@ -146,8 +146,11 @@ public class ConversionHandler {
                 return Collections.emptyList();
             }
 
-            return objectMapper.convertValue(
-                    convertedMessagesNode, new TypeReference<List<String>>() {});
+            List<String> result = new java.util.ArrayList<>();
+            for (JsonNode node : convertedMessagesNode) {
+                result.add(node.isTextual() ? node.asText() : objectMapper.writeValueAsString(node));
+            }
+            return result;
 
         } catch (WebClientResponseException e) {
             // Handle HTTP error responses from conversion service
