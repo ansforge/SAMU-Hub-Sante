@@ -83,6 +83,7 @@ public class Dispatcher {
 
     private final ConversionHandler conversionHandler;
     private final HubConfiguration hubConfig;
+    private final MessagePersistenceService persistenceService;
     private static final StructuredLogger structuredLog = new StructuredLogger(log);
 
     public Dispatcher(
@@ -92,7 +93,8 @@ public class Dispatcher {
             XmlMapper xmlMapper,
             ObjectMapper jsonMapper,
             ConversionHandler conversionHandler,
-            HubConfiguration hubConfig) {
+            HubConfiguration hubConfig,
+            MessagePersistenceService persistenceService) {
         this.messageHandler = messageHandler;
         this.rabbitTemplate = rabbitTemplate;
         this.edxlHandler = edxlHandler;
@@ -100,6 +102,7 @@ public class Dispatcher {
         this.jsonMapper = jsonMapper;
         this.conversionHandler = conversionHandler;
         this.hubConfig = hubConfig;
+        this.persistenceService = persistenceService;
         initReturnsCallback();
     }
 
@@ -240,6 +243,8 @@ public class Dispatcher {
                                 recipientId,
                                 LogConstants.MESSAGE_TYPE,
                                 messageType));
+                // Persist the original message if required by the use case and vhost direction
+                persistenceService.persistIfRequired(edxlMessage, hubConfig.getVhost());
                 // We MUST return here to exit the dispatch() function, otherwise the message will
                 // be published on the source Exchange as well
                 return;
