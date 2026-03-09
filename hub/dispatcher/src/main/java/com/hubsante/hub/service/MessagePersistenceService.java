@@ -47,13 +47,6 @@ public class MessagePersistenceService {
         this.objectMapper = objectMapper;
     }
 
-    /**
-     * Persists the message unconditionally. The caller is responsible for deciding whether
-     * persistence is required (e.g. via {@link MessagePersistencePolicy#shouldPersist}).
-     *
-     * @param edxlMessage message to persist (original, before any conversion)
-     * @param vhost source vhost, used for logging context
-     */
     public void persist(EdxlMessage edxlMessage, String vhost) throws Exception {
         String useCase = EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage());
 
