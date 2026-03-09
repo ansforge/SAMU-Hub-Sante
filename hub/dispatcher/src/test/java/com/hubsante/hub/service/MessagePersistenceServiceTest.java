@@ -15,6 +15,7 @@
  */
 package com.hubsante.hub.service;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
@@ -87,7 +88,7 @@ public class MessagePersistenceServiceTest {
                 "ErrorWrapper"
             })
     @DisplayName("should not persist non-RC-RI types when vhost is 15-nexsis")
-    void shouldNotPersistNonAllowedTypeFromNexsisVhost(String useCase) {
+    void shouldNotPersistNonAllowedTypeFromNexsisVhost(String useCase) throws Exception {
         try (MockedStatic<EdxlUtils> mockedEdxlUtils = mockStatic(EdxlUtils.class)) {
             mockedEdxlUtils.when(() -> EdxlUtils.getUseCaseFromMessage(any())).thenReturn(useCase);
 
@@ -144,7 +145,7 @@ public class MessagePersistenceServiceTest {
                 "ErrorWrapper"
             })
     @DisplayName("should not persist non-RS-RI/RS-SR types when vhost is 15-15_v*")
-    void shouldNotPersistNonAllowedTypeFromHealthVhost(String useCase) {
+    void shouldNotPersistNonAllowedTypeFromHealthVhost(String useCase) throws Exception {
         try (MockedStatic<EdxlUtils> mockedEdxlUtils = mockStatic(EdxlUtils.class)) {
             mockedEdxlUtils.when(() -> EdxlUtils.getUseCaseFromMessage(any())).thenReturn(useCase);
 
@@ -158,7 +159,7 @@ public class MessagePersistenceServiceTest {
 
     @Test
     @DisplayName("should not persist any message when vhost is unknown")
-    void shouldNotPersistFromUnknownVhost() {
+    void shouldNotPersistFromUnknownVhost() throws Exception {
         try (MockedStatic<EdxlUtils> mockedEdxlUtils = mockStatic(EdxlUtils.class)) {
             mockedEdxlUtils
                     .when(() -> EdxlUtils.getUseCaseFromMessage(any()))
@@ -172,7 +173,7 @@ public class MessagePersistenceServiceTest {
 
     @Test
     @DisplayName("should not persist when vhost is null")
-    void shouldNotPersistWhenVhostIsNull() {
+    void shouldNotPersistWhenVhostIsNull() throws Exception {
         try (MockedStatic<EdxlUtils> mockedEdxlUtils = mockStatic(EdxlUtils.class)) {
             mockedEdxlUtils
                     .when(() -> EdxlUtils.getUseCaseFromMessage(any()))
@@ -180,6 +181,48 @@ public class MessagePersistenceServiceTest {
 
             service.persistIfRequired(edxlMessage, null);
 
+            verify(repository, never()).save(any());
+        }
+    }
+
+    // ─── Error resilience ─────────────────────────────────────────────────────
+
+    @Test
+    @DisplayName("should throw when repository.save() fails")
+    void shouldThrowWhenRepositoryFails() throws Exception {
+        try (MockedStatic<EdxlUtils> mockedEdxlUtils = mockStatic(EdxlUtils.class)) {
+            mockedEdxlUtils
+                    .when(() -> EdxlUtils.getUseCaseFromMessage(any()))
+                    .thenReturn("ResourcesInfoCisuWrapper");
+            when(edxlHandler.serializeJsonEDXL(any())).thenReturn("{\"distributionID\":\"test\"}");
+            when(objectMapper.readValue(anyString(), any(TypeReference.class)))
+                    .thenReturn(Map.of());
+            doThrow(new RuntimeException("MongoDB unavailable")).when(repository).save(any());
+
+            assertThrows(
+                    RuntimeException.class,
+                    () -> service.persistIfRequired(edxlMessage, "15-nexsis_v1.9"));
+
+            // save() was attempted but failed
+            verify(repository, times(1)).save(any());
+        }
+    }
+
+    @Test
+    @DisplayName("should throw when serialization fails - save is never attempted")
+    void shouldThrowWhenSerializationFails() throws Exception {
+        try (MockedStatic<EdxlUtils> mockedEdxlUtils = mockStatic(EdxlUtils.class)) {
+            mockedEdxlUtils
+                    .when(() -> EdxlUtils.getUseCaseFromMessage(any()))
+                    .thenReturn("ResourcesInfoWrapper");
+            when(edxlHandler.serializeJsonEDXL(any()))
+                    .thenThrow(new RuntimeException("Serialization error"));
+
+            assertThrows(
+                    RuntimeException.class,
+                    () -> service.persistIfRequired(edxlMessage, "15-15_v2.1"));
+
+            // save() was never called because serialization failed before reaching it
             verify(repository, never()).save(any());
         }
     }
