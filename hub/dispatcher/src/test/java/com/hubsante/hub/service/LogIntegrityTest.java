@@ -58,6 +58,7 @@ public class LogIntegrityTest {
 
     private RabbitTemplate rabbitTemplate = mock(RabbitTemplate.class);
     private MessagePersistenceService persistenceService = mock(MessagePersistenceService.class);
+    private MessagePersistencePolicy persistencePolicy = mock(MessagePersistencePolicy.class);
     @Autowired private EdxlHandler edxlHandler;
     @Autowired private Validator validator;
     @Autowired private HubConfiguration hubConfiguration;
@@ -165,7 +166,8 @@ public class LogIntegrityTest {
                         jsonMapper,
                         conversionHandler,
                         hubConfiguration,
-                        persistenceService);
+                        persistenceService,
+                        persistencePolicy);
     }
 
     @Test
