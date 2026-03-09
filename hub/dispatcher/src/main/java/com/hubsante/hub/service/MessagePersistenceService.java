@@ -66,7 +66,7 @@ public class MessagePersistenceService {
     /**
      * Persists the original message if the (vhost, useCase) pair matches a defined persistence case
      */
-    public void persistIfRequired(EdxlMessage edxlMessage, String vhost) {
+    public void persistIfRequired(EdxlMessage edxlMessage, String vhost) throws Exception {
         String useCase = EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage());
 
         boolean shouldPersist = shouldPersist(vhost, useCase);
@@ -100,6 +100,7 @@ public class MessagePersistenceService {
                             LogConstants.MESSAGE_TYPE,
                             useCase),
                     e);
+            throw e;
         }
     }
 
