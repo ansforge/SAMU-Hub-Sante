@@ -219,7 +219,15 @@ public class Dispatcher {
 
             boolean isConversionRequired =
                     ConversionUtils.requiresConversion(hubConfig, edxlMessage);
+            boolean isCisuConversion =
+                    ConversionUtils.requiresCisuConversion(hubConfig, edxlMessage);
+            
             if (isConversionRequired) {
+                // Persist the original message if required by the use case and vhost direction
+                if (isCisuConversion) {
+                    persistenceService.persistIfRequired(edxlMessage, hubConfig.getVhost());
+                }
+
                 ConversionRulesCommand conversionRulesCommand =
                         new ConversionRulesCommand(edxlMessage, hubConfig);
                 List<String> convertedMessages =
@@ -243,8 +251,6 @@ public class Dispatcher {
                                 recipientId,
                                 LogConstants.MESSAGE_TYPE,
                                 messageType));
-                // Persist the original message if required by the use case and vhost direction
-                persistenceService.persistIfRequired(edxlMessage, hubConfig.getVhost());
                 // We MUST return here to exit the dispatch() function, otherwise the message will
                 // be published on the source Exchange as well
                 return;
