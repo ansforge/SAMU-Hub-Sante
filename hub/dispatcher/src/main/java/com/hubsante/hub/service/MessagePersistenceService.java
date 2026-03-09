@@ -64,10 +64,7 @@ public class MessagePersistenceService {
     }
 
     /**
-     * Persists the original message if the (vhost, useCase) pair matches a defined persistence case.
-     *
-     * @param edxlMessage original message (before conversion)
-     * @param vhost source vhost, used to determine the direction of circulation
+     * Persists the original message if the (vhost, useCase) pair matches a defined persistence case
      */
     public void persistIfRequired(EdxlMessage edxlMessage, String vhost) {
         String useCase = EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage());
@@ -108,10 +105,6 @@ public class MessagePersistenceService {
 
     /**
      * Determines if a message should be persisted based on vhost and useCase.
-     *
-     * @param vhost the vhost name
-     * @param useCase the use case extracted from the message
-     * @return true if the message should be persisted, false otherwise
      */
     private boolean shouldPersist(String vhost, String useCase) {
         if (NEXSIS_VHOST.equals(vhost)) {

@@ -76,21 +76,20 @@ public class MessagePersistenceServiceTest {
     }
 
     @ParameterizedTest(name = "should not persist {0} when vhost is 15-nexsis")
-    @ValueSource(strings = {
-        "CreateCaseWrapper",        // RC-EDA
-        "CreateCaseHealthWrapper",  // RS-EDA
-        "ResourcesInfoWrapper",     // RS-RI (health type, wrong direction)
-        "ResourcesStatusWrapper",   // RS-SR (health type, wrong direction)
-        "TechnicalNoreqWrapper",
-        "ReferenceWrapper",
-        "ErrorWrapper"
-    })
+    @ValueSource(
+            strings = {
+                "CreateCaseWrapper", // RC-EDA
+                "CreateCaseHealthWrapper", // RS-EDA
+                "ResourcesInfoWrapper", // RS-RI (health type, wrong direction)
+                "ResourcesStatusWrapper", // RS-SR (health type, wrong direction)
+                "TechnicalNoreqWrapper",
+                "ReferenceWrapper",
+                "ErrorWrapper"
+            })
     @DisplayName("should not persist non-RC-RI types when vhost is 15-nexsis")
     void shouldNotPersistNonAllowedTypeFromNexsisVhost(String useCase) {
         try (MockedStatic<EdxlUtils> mockedEdxlUtils = mockStatic(EdxlUtils.class)) {
-            mockedEdxlUtils
-                    .when(() -> EdxlUtils.getUseCaseFromMessage(any()))
-                    .thenReturn(useCase);
+            mockedEdxlUtils.when(() -> EdxlUtils.getUseCaseFromMessage(any())).thenReturn(useCase);
 
             service.persistIfRequired(edxlMessage, "15-nexsis_v1.9");
 
@@ -135,20 +134,19 @@ public class MessagePersistenceServiceTest {
     }
 
     @ParameterizedTest(name = "should not persist {0} when vhost is 15-15_v*")
-    @ValueSource(strings = {
-        "CreateCaseWrapper",          // RC-EDA
-        "CreateCaseHealthWrapper",    // RS-EDA
-        "ResourcesInfoCisuWrapper",   // RC-RI (nexsis type, wrong direction)
-        "TechnicalNoreqWrapper",
-        "ReferenceWrapper",
-        "ErrorWrapper"
-    })
+    @ValueSource(
+            strings = {
+                "CreateCaseWrapper", // RC-EDA
+                "CreateCaseHealthWrapper", // RS-EDA
+                "ResourcesInfoCisuWrapper", // RC-RI (nexsis type, wrong direction)
+                "TechnicalNoreqWrapper",
+                "ReferenceWrapper",
+                "ErrorWrapper"
+            })
     @DisplayName("should not persist non-RS-RI/RS-SR types when vhost is 15-15_v*")
     void shouldNotPersistNonAllowedTypeFromHealthVhost(String useCase) {
         try (MockedStatic<EdxlUtils> mockedEdxlUtils = mockStatic(EdxlUtils.class)) {
-            mockedEdxlUtils
-                    .when(() -> EdxlUtils.getUseCaseFromMessage(any()))
-                    .thenReturn(useCase);
+            mockedEdxlUtils.when(() -> EdxlUtils.getUseCaseFromMessage(any())).thenReturn(useCase);
 
             service.persistIfRequired(edxlMessage, "15-15_v2.1");
 
