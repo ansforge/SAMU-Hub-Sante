@@ -32,15 +32,13 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document(collection = "messages")
 public class Message {
 
-    @Id
-    private String id;
+    @Id private String id;
 
     /** Use case of the message (class name of ContentMessage). */
     private String type;
 
     /** Message arrival date, automatically populated by Spring Data auditing. */
-    @CreatedDate
-    private Instant arrivedAt;
+    @CreatedDate private Instant arrivedAt;
 
     /** Original message in JSON format (stored as a BSON sub-document). */
     private Map<String, Object> payload;

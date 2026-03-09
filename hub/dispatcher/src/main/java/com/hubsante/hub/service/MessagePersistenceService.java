@@ -82,17 +82,12 @@ public class MessagePersistenceService {
             Map<String, Object> payload =
                     objectMapper.readValue(jsonEdxl, new TypeReference<>() {});
 
-            Message doc =
-                    Message.builder()
-                            .type(useCase)
-                            .payload(payload)
-                            .build();
+            Message doc = Message.builder().type(useCase).payload(payload).build();
 
             repository.save(doc);
 
             structuredLog.info(
-                    String.format(
-                            "Message of type %s persisted from vhost %s", useCase, vhost),
+                    String.format("Message of type %s persisted from vhost %s", useCase, vhost),
                     Map.of(
                             LogConstants.DISTRIBUTION_ID,
                             edxlMessage.getDistributionID(),

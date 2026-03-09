@@ -79,7 +79,8 @@ import org.springframework.web.reactive.function.client.WebClient;
 public class DispatcherTest {
 
     private RabbitTemplate rabbitTemplate = Mockito.mock(RabbitTemplate.class);
-    private MessagePersistenceService persistenceService = Mockito.mock(MessagePersistenceService.class);
+    private MessagePersistenceService persistenceService =
+            Mockito.mock(MessagePersistenceService.class);
 
     @Autowired private EdxlHandler edxlHandler;
     @Autowired private HubConfiguration hubConfig;
