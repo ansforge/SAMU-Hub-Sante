@@ -84,6 +84,7 @@ public class Dispatcher {
     private final ConversionHandler conversionHandler;
     private final HubConfiguration hubConfig;
     private final MessagePersistenceService persistenceService;
+    private final MessagePersistencePolicy persistencePolicy;
     private static final StructuredLogger structuredLog = new StructuredLogger(log);
 
     public Dispatcher(
@@ -94,7 +95,8 @@ public class Dispatcher {
             ObjectMapper jsonMapper,
             ConversionHandler conversionHandler,
             HubConfiguration hubConfig,
-            MessagePersistenceService persistenceService) {
+            MessagePersistenceService persistenceService,
+            MessagePersistencePolicy persistencePolicy) {
         this.messageHandler = messageHandler;
         this.rabbitTemplate = rabbitTemplate;
         this.edxlHandler = edxlHandler;
@@ -103,6 +105,7 @@ public class Dispatcher {
         this.conversionHandler = conversionHandler;
         this.hubConfig = hubConfig;
         this.persistenceService = persistenceService;
+        this.persistencePolicy = persistencePolicy;
         initReturnsCallback();
     }
 
@@ -221,11 +224,16 @@ public class Dispatcher {
                     ConversionUtils.requiresConversion(hubConfig, edxlMessage);
             boolean isCisuConversion =
                     ConversionUtils.requiresCisuConversion(hubConfig, edxlMessage);
-            
+
             if (isConversionRequired) {
-                // Persist the original message if required by the use case and vhost direction
                 if (isCisuConversion) {
-                    persistenceService.persistIfRequired(edxlMessage, hubConfig.getVhost());
+                    String useCase =
+                            EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage());
+                    // Persist before conversion so the original message is saved even if conversion
+                    // fails
+                    if (persistencePolicy.shouldPersist(hubConfig.getVhost(), useCase)) {
+                        persistenceService.persist(edxlMessage, hubConfig.getVhost());
+                    }
                 }
 
                 ConversionRulesCommand conversionRulesCommand =

@@ -81,6 +81,8 @@ public class DispatcherTest {
     private RabbitTemplate rabbitTemplate = Mockito.mock(RabbitTemplate.class);
     private MessagePersistenceService persistenceService =
             Mockito.mock(MessagePersistenceService.class);
+    private MessagePersistencePolicy persistencePolicy =
+            Mockito.mock(MessagePersistencePolicy.class);
 
     @Autowired private EdxlHandler edxlHandler;
     @Autowired private HubConfiguration hubConfig;
@@ -150,7 +152,8 @@ public class DispatcherTest {
                         jsonMapper,
                         conversionHandler,
                         hubConfig,
-                        persistenceService);
+                        persistenceService,
+                        persistencePolicy);
     }
 
     @BeforeEach
@@ -726,7 +729,8 @@ public class DispatcherTest {
                                     jsonMapper,
                                     conversionHandler,
                                     hubConfig,
-                                    persistenceService));
+                                    persistenceService,
+                                    persistencePolicy));
 
             Message message = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
 
@@ -897,7 +901,8 @@ public class DispatcherTest {
                             jsonMapper,
                             conversionHandler,
                             hubConfig,
-                            persistenceService);
+                            persistenceService,
+                            persistencePolicy);
 
             Message receivedMessage = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
             EdxlMessage edxlMessage =
@@ -1014,7 +1019,8 @@ public class DispatcherTest {
                     jsonMapper,
                     conversionHandler,
                     hubConfig,
-                    persistenceService);
+                    persistenceService,
+                    persistencePolicy);
 
             assertDoesNotThrow(
                     () -> MessageUtils.checkMessageClassNameSupported(edxlMessage, hubConfig));
@@ -1050,7 +1056,8 @@ public class DispatcherTest {
                     jsonMapper,
                     conversionHandler,
                     hubConfig,
-                    persistenceService);
+                    persistenceService,
+                    persistencePolicy);
 
             UnroutableMessageException thrown =
                     assertThrows(
@@ -1102,7 +1109,8 @@ public class DispatcherTest {
                         jsonMapper,
                         conversionHandler,
                         hubConfigSpy,
-                        persistenceService);
+                        persistenceService,
+                        persistencePolicy);
 
         Message message = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
 
@@ -1159,7 +1167,8 @@ public class DispatcherTest {
                         jsonMapper,
                         conversionHandler,
                         hubConfigSpy,
-                        persistenceService);
+                        persistenceService,
+                        persistencePolicy);
 
         Message errorMessage = createMessage("hub-error-to-samuA", JSON, "fr.health.hub");
 
@@ -1208,7 +1217,8 @@ public class DispatcherTest {
                         jsonMapper,
                         conversionHandler,
                         hubConfigSpy,
-                        persistenceService);
+                        persistenceService,
+                        persistencePolicy);
 
         Message message = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
 
@@ -1302,6 +1312,8 @@ public class DispatcherTest {
                     .when(() -> ConversionUtils.requiresCisuConversion(any(), any()))
                     .thenReturn(true);
 
+            when(persistencePolicy.shouldPersist(anyString(), anyString())).thenReturn(true);
+
             doAnswer(invocation -> List.of(invocation.getArgument(0).toString()))
                     .when(conversionHandler)
                     .callConversionService(
@@ -1312,7 +1324,7 @@ public class DispatcherTest {
             // Verify ordering: persistence must happen before conversion
             InOrder inOrder = inOrder(persistenceService, conversionHandler);
             inOrder.verify(persistenceService, times(1))
-                    .persistIfRequired(any(EdxlMessage.class), anyString());
+                    .persist(any(EdxlMessage.class), anyString());
             inOrder.verify(conversionHandler, times(1))
                     .callConversionService(
                             anyString(), anyString(), anyString(), anyBoolean(), anyString());
@@ -1346,8 +1358,7 @@ public class DispatcherTest {
 
             dispatcher.dispatch(message);
 
-            verify(persistenceService, never())
-                    .persistIfRequired(any(EdxlMessage.class), anyString());
+            verify(persistenceService, never()).persist(any(EdxlMessage.class), anyString());
         }
     }
 
@@ -1381,6 +1392,8 @@ public class DispatcherTest {
                     .when(() -> ConversionUtils.requiresCisuConversion(any(), any()))
                     .thenReturn(true);
 
+            when(persistencePolicy.shouldPersist(anyString(), anyString())).thenReturn(true);
+
             doThrow(new RuntimeException("Conversion service unavailable"))
                     .when(conversionHandler)
                     .callConversionService(
@@ -1392,8 +1405,7 @@ public class DispatcherTest {
                     () -> dispatcher.dispatch(fromFireMessage));
 
             // But persistence was already called before the conversion attempt
-            verify(persistenceService, times(1))
-                    .persistIfRequired(any(EdxlMessage.class), anyString());
+            verify(persistenceService, times(1)).persist(any(EdxlMessage.class), anyString());
         }
     }
 
@@ -1418,8 +1430,7 @@ public class DispatcherTest {
             Message message = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
             dispatcher.dispatch(message);
 
-            verify(persistenceService, never())
-                    .persistIfRequired(any(EdxlMessage.class), anyString());
+            verify(persistenceService, never()).persist(any(EdxlMessage.class), anyString());
         }
     }
 
