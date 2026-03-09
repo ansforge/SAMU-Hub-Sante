@@ -32,8 +32,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -52,7 +50,7 @@ public class MessagePersistenceServiceTest {
     @BeforeEach
     void setUp() {
         service = new MessagePersistenceService(repository, edxlHandler, objectMapper);
-        // These stubs are not used in "should not persist" tests (early return), so lenient
+        // These stubs are not used in all tests, so lenient
         lenient().when(edxlMessage.getFirstContentMessage()).thenReturn(contentMessage);
         lenient().when(edxlMessage.getDistributionID()).thenReturn("test-distribution-id");
     }
@@ -70,31 +68,9 @@ public class MessagePersistenceServiceTest {
             when(objectMapper.readValue(anyString(), any(TypeReference.class)))
                     .thenReturn(Map.of());
 
-            service.persistIfRequired(edxlMessage, "15-nexsis_v1.9");
+            service.persist(edxlMessage, "15-nexsis_v1.9");
 
             verify(repository, times(1)).save(any(com.hubsante.hub.model.Message.class));
-        }
-    }
-
-    @ParameterizedTest(name = "should not persist {0} when vhost is 15-nexsis")
-    @ValueSource(
-            strings = {
-                "CreateCaseWrapper", // RC-EDA
-                "CreateCaseHealthWrapper", // RS-EDA
-                "ResourcesInfoWrapper", // RS-RI (health type, wrong direction)
-                "ResourcesStatusWrapper", // RS-SR (health type, wrong direction)
-                "TechnicalNoreqWrapper",
-                "ReferenceWrapper",
-                "ErrorWrapper"
-            })
-    @DisplayName("should not persist non-RC-RI types when vhost is 15-nexsis")
-    void shouldNotPersistNonAllowedTypeFromNexsisVhost(String useCase) throws Exception {
-        try (MockedStatic<EdxlUtils> mockedEdxlUtils = mockStatic(EdxlUtils.class)) {
-            mockedEdxlUtils.when(() -> EdxlUtils.getUseCaseFromMessage(any())).thenReturn(useCase);
-
-            service.persistIfRequired(edxlMessage, "15-nexsis_v1.9");
-
-            verify(repository, never()).save(any());
         }
     }
 
@@ -111,7 +87,7 @@ public class MessagePersistenceServiceTest {
             when(objectMapper.readValue(anyString(), any(TypeReference.class)))
                     .thenReturn(Map.of());
 
-            service.persistIfRequired(edxlMessage, "15-15_v2.1");
+            service.persist(edxlMessage, "15-15_v2.1");
 
             verify(repository, times(1)).save(any(com.hubsante.hub.model.Message.class));
         }
@@ -128,60 +104,9 @@ public class MessagePersistenceServiceTest {
             when(objectMapper.readValue(anyString(), any(TypeReference.class)))
                     .thenReturn(Map.of());
 
-            service.persistIfRequired(edxlMessage, "15-15_v1.5");
+            service.persist(edxlMessage, "15-15_v1.5");
 
             verify(repository, times(1)).save(any(com.hubsante.hub.model.Message.class));
-        }
-    }
-
-    @ParameterizedTest(name = "should not persist {0} when vhost is 15-15_v*")
-    @ValueSource(
-            strings = {
-                "CreateCaseWrapper", // RC-EDA
-                "CreateCaseHealthWrapper", // RS-EDA
-                "ResourcesInfoCisuWrapper", // RC-RI (nexsis type, wrong direction)
-                "TechnicalNoreqWrapper",
-                "ReferenceWrapper",
-                "ErrorWrapper"
-            })
-    @DisplayName("should not persist non-RS-RI/RS-SR types when vhost is 15-15_v*")
-    void shouldNotPersistNonAllowedTypeFromHealthVhost(String useCase) throws Exception {
-        try (MockedStatic<EdxlUtils> mockedEdxlUtils = mockStatic(EdxlUtils.class)) {
-            mockedEdxlUtils.when(() -> EdxlUtils.getUseCaseFromMessage(any())).thenReturn(useCase);
-
-            service.persistIfRequired(edxlMessage, "15-15_v2.1");
-
-            verify(repository, never()).save(any());
-        }
-    }
-
-    // ─── Unknown vhost ────────────────────────────────────────────────────────
-
-    @Test
-    @DisplayName("should not persist any message when vhost is unknown")
-    void shouldNotPersistFromUnknownVhost() throws Exception {
-        try (MockedStatic<EdxlUtils> mockedEdxlUtils = mockStatic(EdxlUtils.class)) {
-            mockedEdxlUtils
-                    .when(() -> EdxlUtils.getUseCaseFromMessage(any()))
-                    .thenReturn("ResourcesInfoCisuWrapper");
-
-            service.persistIfRequired(edxlMessage, "some-other-vhost");
-
-            verify(repository, never()).save(any());
-        }
-    }
-
-    @Test
-    @DisplayName("should not persist when vhost is null")
-    void shouldNotPersistWhenVhostIsNull() throws Exception {
-        try (MockedStatic<EdxlUtils> mockedEdxlUtils = mockStatic(EdxlUtils.class)) {
-            mockedEdxlUtils
-                    .when(() -> EdxlUtils.getUseCaseFromMessage(any()))
-                    .thenReturn("ResourcesInfoCisuWrapper");
-
-            service.persistIfRequired(edxlMessage, null);
-
-            verify(repository, never()).save(any());
         }
     }
 
@@ -200,8 +125,7 @@ public class MessagePersistenceServiceTest {
             doThrow(new RuntimeException("MongoDB unavailable")).when(repository).save(any());
 
             assertThrows(
-                    RuntimeException.class,
-                    () -> service.persistIfRequired(edxlMessage, "15-nexsis_v1.9"));
+                    RuntimeException.class, () -> service.persist(edxlMessage, "15-nexsis_v1.9"));
 
             // save() was attempted but failed
             verify(repository, times(1)).save(any());
@@ -218,9 +142,7 @@ public class MessagePersistenceServiceTest {
             when(edxlHandler.serializeJsonEDXL(any()))
                     .thenThrow(new RuntimeException("Serialization error"));
 
-            assertThrows(
-                    RuntimeException.class,
-                    () -> service.persistIfRequired(edxlMessage, "15-15_v2.1"));
+            assertThrows(RuntimeException.class, () -> service.persist(edxlMessage, "15-15_v2.1"));
 
             // save() was never called because serialization failed before reaching it
             verify(repository, never()).save(any());

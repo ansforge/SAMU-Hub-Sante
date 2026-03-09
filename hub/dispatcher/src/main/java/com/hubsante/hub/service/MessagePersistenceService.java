@@ -15,9 +15,6 @@
  */
 package com.hubsante.hub.service;
 
-import static com.hubsante.hub.config.Constants.HEALTH_VHOST_PREFIX;
-import static com.hubsante.hub.config.Constants.NEXSIS_VHOST;
-
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hubsante.hub.config.LogConstants;
@@ -28,7 +25,6 @@ import com.hubsante.hub.utils.EdxlUtils;
 import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.edxl.EdxlMessage;
 import java.util.Map;
-import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -36,18 +32,6 @@ import org.springframework.stereotype.Service;
 @Service
 @Slf4j
 public class MessagePersistenceService {
-
-    /**
-     * Messages to persist when circulating from 18 → 15 (vhost 15-nexsis).
-     */
-    private static final Set<String> NEXSIS_PERSISTED_USE_CASES =
-            Set.of("ResourcesInfoCisuWrapper");
-
-    /**
-     * Messages to persist when circulating from 15 → 18 (vhost 15-15_v*).
-     */
-    private static final Set<String> HEALTH_PERSISTED_USE_CASES =
-            Set.of("ResourcesInfoWrapper", "ResourcesStatusWrapper");
 
     private final MessageRepository repository;
     private final EdxlHandler edxlHandler;
@@ -64,15 +48,14 @@ public class MessagePersistenceService {
     }
 
     /**
-     * Persists the original message if the (vhost, useCase) pair matches a defined persistence case
+     * Persists the message unconditionally. The caller is responsible for deciding whether
+     * persistence is required (e.g. via {@link MessagePersistencePolicy#shouldPersist}).
+     *
+     * @param edxlMessage message to persist (original, before any conversion)
+     * @param vhost source vhost, used for logging context
      */
-    public void persistIfRequired(EdxlMessage edxlMessage, String vhost) throws Exception {
+    public void persist(EdxlMessage edxlMessage, String vhost) throws Exception {
         String useCase = EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage());
-
-        boolean shouldPersist = shouldPersist(vhost, useCase);
-        if (!shouldPersist) {
-            return;
-        }
 
         try {
             String jsonEdxl = edxlHandler.serializeJsonEDXL(edxlMessage);
@@ -102,18 +85,5 @@ public class MessagePersistenceService {
                     e);
             throw e;
         }
-    }
-
-    /**
-     * Determines if a message should be persisted based on vhost and useCase.
-     */
-    private boolean shouldPersist(String vhost, String useCase) {
-        if (NEXSIS_VHOST.equals(vhost)) {
-            return NEXSIS_PERSISTED_USE_CASES.contains(useCase);
-        }
-        if (vhost != null && vhost.startsWith(HEALTH_VHOST_PREFIX)) {
-            return HEALTH_PERSISTED_USE_CASES.contains(useCase);
-        }
-        return false;
     }
 }
