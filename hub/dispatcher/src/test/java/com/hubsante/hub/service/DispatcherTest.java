@@ -725,7 +725,8 @@ public class DispatcherTest {
                                     xmlMapper,
                                     jsonMapper,
                                     conversionHandler,
-                                    hubConfig));
+                                    hubConfig,
+                                    persistenceService));
 
             Message message = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
 
@@ -895,7 +896,8 @@ public class DispatcherTest {
                             xmlMapper,
                             jsonMapper,
                             conversionHandler,
-                            hubConfig);
+                            hubConfig,
+                            persistenceService);
 
             Message receivedMessage = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
             EdxlMessage edxlMessage =
@@ -1011,7 +1013,8 @@ public class DispatcherTest {
                     xmlMapper,
                     jsonMapper,
                     conversionHandler,
-                    hubConfig);
+                    hubConfig,
+                    persistenceService);
 
             assertDoesNotThrow(
                     () -> MessageUtils.checkMessageClassNameSupported(edxlMessage, hubConfig));
@@ -1046,7 +1049,8 @@ public class DispatcherTest {
                     xmlMapper,
                     jsonMapper,
                     conversionHandler,
-                    hubConfig);
+                    hubConfig,
+                    persistenceService);
 
             UnroutableMessageException thrown =
                     assertThrows(
@@ -1097,7 +1101,8 @@ public class DispatcherTest {
                         xmlMapper,
                         jsonMapper,
                         conversionHandler,
-                        hubConfigSpy);
+                        hubConfigSpy,
+                        persistenceService);
 
         Message message = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
 
@@ -1153,7 +1158,8 @@ public class DispatcherTest {
                         xmlMapper,
                         jsonMapper,
                         conversionHandler,
-                        hubConfigSpy);
+                        hubConfigSpy,
+                        persistenceService);
 
         Message errorMessage = createMessage("hub-error-to-samuA", JSON, "fr.health.hub");
 
@@ -1201,7 +1207,8 @@ public class DispatcherTest {
                         xmlMapper,
                         jsonMapper,
                         conversionHandler,
-                        hubConfigSpy);
+                        hubConfigSpy,
+                        persistenceService);
 
         Message message = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
 
@@ -1261,6 +1268,108 @@ public class DispatcherTest {
         // Cleanup
         logbackLogger.detachAppender(appender);
         logbackLogger.setLevel(originalLevel);
+    }
+
+    // ─── Persistence ─────────────────────────────────────────────────────────
+
+    @Test
+    @DisplayName("should call persistenceService after CISU conversion")
+    public void shouldCallPersistenceServiceAfterCisuConversion() throws IOException {
+        try (MockedStatic<ConversionUtils> mockedConversionUtils =
+                mockStatic(ConversionUtils.class)) {
+            // Build a message from a fire actor
+            Message baseFromSdis = createMessage("EDXL-DE", XML, SDIS_C_ROUTING_KEY);
+            EdxlMessage edxlMessageFromSdis =
+                    edxlHandler.deserializeXmlEDXL(
+                            new String(baseFromSdis.getBody(), StandardCharsets.UTF_8));
+            MessageTestUtils.setMessageConsistentWithRoutingKey(
+                    edxlMessageFromSdis, SDIS_C_ROUTING_KEY);
+            Message fromFireMessage =
+                    new Message(
+                            edxlHandler.serializeXmlEDXL(edxlMessageFromSdis).getBytes(),
+                            baseFromSdis.getMessageProperties());
+
+            mockedConversionUtils
+                    .when(() -> ConversionUtils.getSourceVHost(any()))
+                    .thenReturn("15-15_v1.5");
+            mockedConversionUtils
+                    .when(() -> ConversionUtils.getTargetVHosts(any(), any()))
+                    .thenReturn(new String[] {"15-nexsis_v1.9"});
+            mockedConversionUtils
+                    .when(() -> ConversionUtils.requiresConversion(any(), any()))
+                    .thenReturn(true);
+            mockedConversionUtils
+                    .when(() -> ConversionUtils.requiresCisuConversion(any(), any()))
+                    .thenReturn(true);
+
+            doAnswer(invocation -> List.of(invocation.getArgument(0).toString()))
+                    .when(conversionHandler)
+                    .callConversionService(
+                            anyString(), anyString(), anyString(), anyBoolean(), anyString());
+
+            dispatcher.dispatch(fromFireMessage);
+
+            verify(persistenceService, times(1))
+                    .persistIfRequired(any(EdxlMessage.class), anyString());
+        }
+    }
+
+    @Test
+    @DisplayName("should call persistenceService after version conversion")
+    public void shouldCallPersistenceServiceAfterVersionConversion() throws IOException {
+        try (MockedStatic<ConversionUtils> mockedConversionUtils =
+                mockStatic(ConversionUtils.class)) {
+            Message message = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
+
+            mockedConversionUtils
+                    .when(() -> ConversionUtils.getSourceVHost(any()))
+                    .thenReturn("15-15_v1.5");
+            mockedConversionUtils
+                    .when(() -> ConversionUtils.getTargetVHosts(any(), any()))
+                    .thenReturn(new String[] {"15-15_v2.0"});
+            mockedConversionUtils
+                    .when(() -> ConversionUtils.requiresConversion(any(), any()))
+                    .thenReturn(true);
+            mockedConversionUtils
+                    .when(() -> ConversionUtils.requiresCisuConversion(any(), any()))
+                    .thenReturn(false);
+
+            doAnswer(invocation -> List.of(invocation.getArgument(0).toString()))
+                    .when(conversionHandler)
+                    .callConversionService(
+                            anyString(), anyString(), anyString(), anyBoolean(), anyString());
+
+            dispatcher.dispatch(message);
+
+            verify(persistenceService, times(1))
+                    .persistIfRequired(any(EdxlMessage.class), anyString());
+        }
+    }
+
+    @Test
+    @DisplayName("should not call persistenceService when no conversion is required")
+    public void shouldNotCallPersistenceServiceForDirectDispatch() throws IOException {
+        try (MockedStatic<ConversionUtils> mockedConversionUtils =
+                mockStatic(ConversionUtils.class)) {
+            mockedConversionUtils
+                    .when(() -> ConversionUtils.requiresVersionConversion(any(), any()))
+                    .thenReturn(false);
+            mockedConversionUtils
+                    .when(() -> ConversionUtils.requiresConversion(any(), any()))
+                    .thenReturn(false);
+            mockedConversionUtils
+                    .when(() -> ConversionUtils.getSourceVHost(any()))
+                    .thenReturn("15-15_v1.5");
+            mockedConversionUtils
+                    .when(() -> ConversionUtils.getTargetVHosts(any(), any()))
+                    .thenReturn(new String[] {"15-15_v1.5"});
+
+            Message message = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
+            dispatcher.dispatch(message);
+
+            verify(persistenceService, never())
+                    .persistIfRequired(any(EdxlMessage.class), anyString());
+        }
     }
 
     @Test
