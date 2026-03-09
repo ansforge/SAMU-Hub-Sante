@@ -1273,8 +1273,8 @@ public class DispatcherTest {
     // ─── Persistence ─────────────────────────────────────────────────────────
 
     @Test
-    @DisplayName("should call persistenceService after CISU conversion")
-    public void shouldCallPersistenceServiceAfterCisuConversion() throws IOException {
+    @DisplayName("should call persistenceService before CISU conversion")
+    public void shouldCallPersistenceServiceBeforeCisuConversion() throws Exception {
         try (MockedStatic<ConversionUtils> mockedConversionUtils =
                 mockStatic(ConversionUtils.class)) {
             // Build a message from a fire actor
@@ -1309,14 +1309,19 @@ public class DispatcherTest {
 
             dispatcher.dispatch(fromFireMessage);
 
-            verify(persistenceService, times(1))
+            // Verify ordering: persistence must happen before conversion
+            InOrder inOrder = inOrder(persistenceService, conversionHandler);
+            inOrder.verify(persistenceService, times(1))
                     .persistIfRequired(any(EdxlMessage.class), anyString());
+            inOrder.verify(conversionHandler, times(1))
+                    .callConversionService(
+                            anyString(), anyString(), anyString(), anyBoolean(), anyString());
         }
     }
 
     @Test
-    @DisplayName("should call persistenceService after version conversion")
-    public void shouldCallPersistenceServiceAfterVersionConversion() throws IOException {
+    @DisplayName("should not call persistenceService for version-only conversion (not CISU)")
+    public void shouldNotCallPersistenceServiceForVersionConversion() throws Exception {
         try (MockedStatic<ConversionUtils> mockedConversionUtils =
                 mockStatic(ConversionUtils.class)) {
             Message message = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
@@ -1341,6 +1346,52 @@ public class DispatcherTest {
 
             dispatcher.dispatch(message);
 
+            verify(persistenceService, never())
+                    .persistIfRequired(any(EdxlMessage.class), anyString());
+        }
+    }
+
+    @Test
+    @DisplayName("should have persisted message even if CISU conversion fails")
+    public void shouldHavePersistedEvenIfCisuConversionFails() throws Exception {
+        try (MockedStatic<ConversionUtils> mockedConversionUtils =
+                mockStatic(ConversionUtils.class)) {
+            // Build a message from a fire actor
+            Message baseFromSdis = createMessage("EDXL-DE", XML, SDIS_C_ROUTING_KEY);
+            EdxlMessage edxlMessageFromSdis =
+                    edxlHandler.deserializeXmlEDXL(
+                            new String(baseFromSdis.getBody(), StandardCharsets.UTF_8));
+            MessageTestUtils.setMessageConsistentWithRoutingKey(
+                    edxlMessageFromSdis, SDIS_C_ROUTING_KEY);
+            Message fromFireMessage =
+                    new Message(
+                            edxlHandler.serializeXmlEDXL(edxlMessageFromSdis).getBytes(),
+                            baseFromSdis.getMessageProperties());
+
+            mockedConversionUtils
+                    .when(() -> ConversionUtils.getSourceVHost(any()))
+                    .thenReturn("15-15_v1.5");
+            mockedConversionUtils
+                    .when(() -> ConversionUtils.getTargetVHosts(any(), any()))
+                    .thenReturn(new String[] {"15-nexsis_v1.9"});
+            mockedConversionUtils
+                    .when(() -> ConversionUtils.requiresConversion(any(), any()))
+                    .thenReturn(true);
+            mockedConversionUtils
+                    .when(() -> ConversionUtils.requiresCisuConversion(any(), any()))
+                    .thenReturn(true);
+
+            doThrow(new RuntimeException("Conversion service unavailable"))
+                    .when(conversionHandler)
+                    .callConversionService(
+                            anyString(), anyString(), anyString(), anyBoolean(), anyString());
+
+            // The conversion failure causes the dispatch to reject the message
+            assertThrows(
+                    AmqpRejectAndDontRequeueException.class,
+                    () -> dispatcher.dispatch(fromFireMessage));
+
+            // But persistence was already called before the conversion attempt
             verify(persistenceService, times(1))
                     .persistIfRequired(any(EdxlMessage.class), anyString());
         }
@@ -1348,7 +1399,7 @@ public class DispatcherTest {
 
     @Test
     @DisplayName("should not call persistenceService when no conversion is required")
-    public void shouldNotCallPersistenceServiceForDirectDispatch() throws IOException {
+    public void shouldNotCallPersistenceServiceForDirectDispatch() throws Exception {
         try (MockedStatic<ConversionUtils> mockedConversionUtils =
                 mockStatic(ConversionUtils.class)) {
             mockedConversionUtils
