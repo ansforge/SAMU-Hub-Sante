@@ -27,26 +27,28 @@ import tnr.dto.MessageDTO;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 abstract class AMQPTestSupport {
-
     protected final Map<String, Collection<String>> config = new HashMap<>(Map.of(
             "15-15_v1.5", List.of("fr.health.tnr.samu1-v1", "fr.health.tnr.samu2-v1"),
             "15-15_v2.0", List.of("fr.health.tnr.samu1-v2", "fr.health.tnr.samu2-v2"),
             "15-15_v2.1", List.of("fr.health.tnr.samu1-v3", "fr.health.tnr.samu2-v3")
     ));
 
+    protected static final String BASE_URL = "https://raw.githubusercontent.com/ansforge/SAMU-Hub-Modeles/refs/tags";
+
     protected Map<String, Producer> producers = new HashMap<>();
     protected Collection<TestConsumer> consumers = new ArrayList<>();
 
     protected static final int RECEIVE_TIMEOUT_SECS = 10;
 
-    protected Dotenv dotenv;
+    protected Dotenv dotenv = Dotenv.load();
+
+    HttpClientWithCache httpClient = new HttpClientWithCache(dotenv.get("GITHUB_TOKEN"));
 
     // global message collector
     protected final MessageCollector inbox = new MessageCollector();
 
     @BeforeAll
     void setUpAll() throws Exception {
-        dotenv = Dotenv.load();
         TLSConf tlsConf = new TLSConf(
                 TLS_PROTOCOL_VERSION,
                 dotenv.get("KEY_PASSPHRASE"),
@@ -96,6 +98,11 @@ abstract class AMQPTestSupport {
         inbox.clear();
     }
 
+    protected String getUseCaseContentOnline(String tagRef, String fileRef) {
+        String refUrl = String.format("%s/%s/src/main/resources/sample/examples/%s", BASE_URL, tagRef, fileRef);
+        return httpClient.fetch(refUrl);
+    }
+
     protected MessageDTO awaitMessage(String distributionId) throws Exception {
         return inbox.awaitMessage(distributionId, RECEIVE_TIMEOUT_SECS, TimeUnit.SECONDS);
     }
@@ -128,6 +135,7 @@ abstract class AMQPTestSupport {
         c.connect(tlsConf);
         return c;
     }
+
 
     static class MessageCollector {
 
