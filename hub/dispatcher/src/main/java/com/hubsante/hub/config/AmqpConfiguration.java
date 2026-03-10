@@ -19,7 +19,7 @@ import com.rabbitmq.client.DefaultSaslConfig;
 import jakarta.annotation.PostConstruct;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.amqp.RabbitProperties;
+import org.springframework.boot.amqp.autoconfigure.RabbitProperties;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration

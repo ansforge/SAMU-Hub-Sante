@@ -48,7 +48,9 @@ echo "client_id;useXML" > dispatcher/src/main/resources/client.preferences.csv
 - Make sure you do not have a conflicting Java version already installed on your machine. You should be using Java 21.
 
 **Run the dispatcher:**
-- Add `GITHUB_ACTOR` & `GITHUB_TOKEN` environment variables in the configuration.
+- Add `GITHUB_ACTOR` & `GITHUB_TOKEN` environment variables in the configuration. 
+    You can also set them in a gradle.properties file project scoped, based on [this template](dispatcher/gradle.properties.tmpl) (git ignored)
+    or globally scoped, located at ~/.gradle/gradle.properties
 - Click "Apply" & "Ok"
 - Run the application
 
