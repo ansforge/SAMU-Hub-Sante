@@ -39,6 +39,7 @@ import com.hubsante.hub.exception.UnroutableMessageException;
 import com.hubsante.hub.service.utils.MessageTestUtils;
 import com.hubsante.hub.utils.ConversionRulesCommand;
 import com.hubsante.hub.utils.ConversionUtils;
+import com.hubsante.hub.utils.MessagePersistencePolicy;
 import com.hubsante.hub.utils.EdxlUtils;
 import com.hubsante.hub.utils.MessageUtils;
 import com.hubsante.model.EdxlHandler;

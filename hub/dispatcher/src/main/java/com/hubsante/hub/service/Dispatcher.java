@@ -29,6 +29,7 @@ import com.hubsante.hub.config.StructuredLogger;
 import com.hubsante.hub.exception.*;
 import com.hubsante.hub.utils.ConversionRulesCommand;
 import com.hubsante.hub.utils.ConversionUtils;
+import com.hubsante.hub.utils.MessagePersistencePolicy;
 import com.hubsante.hub.utils.EdxlUtils;
 import com.hubsante.hub.utils.MessageUtils;
 import com.hubsante.model.EdxlHandler;
