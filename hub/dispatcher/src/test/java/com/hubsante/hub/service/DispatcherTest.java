@@ -1288,8 +1288,10 @@ public class DispatcherTest {
     @Test
     @DisplayName("should call persistenceService before CISU conversion")
     public void shouldCallPersistenceServiceBeforeCisuConversion() throws Exception {
-        try (MockedStatic<ConversionUtils> mockedConversionUtils = mockStatic(ConversionUtils.class);
-             MockedStatic<MessagePersistencePolicy> mockedPersistencePolicy = mockStatic(MessagePersistencePolicy.class)) {
+        try (MockedStatic<ConversionUtils> mockedConversionUtils =
+                        mockStatic(ConversionUtils.class);
+                MockedStatic<MessagePersistencePolicy> mockedPersistencePolicy =
+                        mockStatic(MessagePersistencePolicy.class)) {
             // Build a message from a fire actor
             Message baseFromSdis = createMessage("EDXL-DE", XML, SDIS_C_ROUTING_KEY);
             EdxlMessage edxlMessageFromSdis =
@@ -1315,7 +1317,9 @@ public class DispatcherTest {
                     .when(() -> ConversionUtils.requiresCisuConversion(any(), any()))
                     .thenReturn(true);
 
-            mockedPersistencePolicy.when(() -> MessagePersistencePolicy.shouldPersist(anyString(), anyString())).thenReturn(true);
+            mockedPersistencePolicy
+                    .when(() -> MessagePersistencePolicy.shouldPersist(anyString(), anyString()))
+                    .thenReturn(true);
 
             doAnswer(invocation -> List.of(invocation.getArgument(0).toString()))
                     .when(conversionHandler)
@@ -1367,8 +1371,10 @@ public class DispatcherTest {
     @Test
     @DisplayName("should have persisted message even if CISU conversion fails")
     public void shouldHavePersistedEvenIfCisuConversionFails() throws Exception {
-        try (MockedStatic<ConversionUtils> mockedConversionUtils = mockStatic(ConversionUtils.class);
-             MockedStatic<MessagePersistencePolicy> mockedPersistencePolicy = mockStatic(MessagePersistencePolicy.class)) {
+        try (MockedStatic<ConversionUtils> mockedConversionUtils =
+                        mockStatic(ConversionUtils.class);
+                MockedStatic<MessagePersistencePolicy> mockedPersistencePolicy =
+                        mockStatic(MessagePersistencePolicy.class)) {
             // Build a message from a fire actor
             Message baseFromSdis = createMessage("EDXL-DE", XML, SDIS_C_ROUTING_KEY);
             EdxlMessage edxlMessageFromSdis =
@@ -1394,7 +1400,9 @@ public class DispatcherTest {
                     .when(() -> ConversionUtils.requiresCisuConversion(any(), any()))
                     .thenReturn(true);
 
-            mockedPersistencePolicy.when(() -> MessagePersistencePolicy.shouldPersist(anyString(), anyString())).thenReturn(true);
+            mockedPersistencePolicy
+                    .when(() -> MessagePersistencePolicy.shouldPersist(anyString(), anyString()))
+                    .thenReturn(true);
 
             // Conversion failure: persistence should occur, conversion throws
             doThrow(new RuntimeException("Conversion service unavailable"))
@@ -1415,8 +1423,10 @@ public class DispatcherTest {
     @Test
     @DisplayName("should wrap persistence exception in HubPersistenceException")
     public void shouldThrowPersistenceExceptionIfPersistenceFails() throws Exception {
-        try (MockedStatic<ConversionUtils> mockedConversionUtils = mockStatic(ConversionUtils.class);
-             MockedStatic<MessagePersistencePolicy> mockedPersistencePolicy = mockStatic(MessagePersistencePolicy.class)) {
+        try (MockedStatic<ConversionUtils> mockedConversionUtils =
+                        mockStatic(ConversionUtils.class);
+                MockedStatic<MessagePersistencePolicy> mockedPersistencePolicy =
+                        mockStatic(MessagePersistencePolicy.class)) {
             Message message = createMessage("EDXL-DE", XML, SDIS_C_ROUTING_KEY);
             EdxlMessage edxlMessage =
                     edxlHandler.deserializeXmlEDXL(
@@ -1440,7 +1450,9 @@ public class DispatcherTest {
                     .when(() -> ConversionUtils.requiresCisuConversion(any(), any()))
                     .thenReturn(true);
 
-            mockedPersistencePolicy.when(() -> MessagePersistencePolicy.shouldPersist(anyString(), anyString())).thenReturn(true);
+            mockedPersistencePolicy
+                    .when(() -> MessagePersistencePolicy.shouldPersist(anyString(), anyString()))
+                    .thenReturn(true);
 
             // persist() throws HubPersistenceException directly; Dispatcher lets it propagate to
             // handleError

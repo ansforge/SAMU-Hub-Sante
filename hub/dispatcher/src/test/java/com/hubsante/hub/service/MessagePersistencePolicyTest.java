@@ -30,7 +30,9 @@ public class MessagePersistencePolicyTest {
     @Test
     @DisplayName("should persist ResourcesInfoCisuWrapper (RC-RI) when vhost is 15-nexsis")
     void shouldPersistResourcesInfoCisuWrapperFromNexsisVhost() {
-        assertTrue(MessagePersistencePolicy.shouldPersist("15-nexsis_v1.9", "ResourcesInfoCisuWrapper"));
+        assertTrue(
+                MessagePersistencePolicy.shouldPersist(
+                        "15-nexsis_v1.9", "ResourcesInfoCisuWrapper"));
     }
 
     @ParameterizedTest(name = "should not persist {0} when vhost is 15-nexsis")
@@ -91,8 +93,11 @@ public class MessagePersistencePolicyTest {
     @Test
     @DisplayName("should not persist any message when vhost is unknown")
     void shouldNotPersistFromUnknownVhost() {
-        assertFalse(MessagePersistencePolicy.shouldPersist("some-other-vhost", "ResourcesInfoCisuWrapper"));
-        assertFalse(MessagePersistencePolicy.shouldPersist("some-other-vhost", "ResourcesInfoWrapper"));
+        assertFalse(
+                MessagePersistencePolicy.shouldPersist(
+                        "some-other-vhost", "ResourcesInfoCisuWrapper"));
+        assertFalse(
+                MessagePersistencePolicy.shouldPersist("some-other-vhost", "ResourcesInfoWrapper"));
     }
 
     @Test

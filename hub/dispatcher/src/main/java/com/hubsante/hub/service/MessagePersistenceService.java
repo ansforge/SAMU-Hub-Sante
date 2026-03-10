@@ -60,7 +60,8 @@ public class MessagePersistenceService {
             Map<String, Object> payload =
                     objectMapper.readValue(jsonEdxl, new TypeReference<>() {});
 
-            PersistedMessage doc = PersistedMessage.builder().type(useCase).payload(payload).build();
+            PersistedMessage doc =
+                    PersistedMessage.builder().type(useCase).payload(payload).build();
 
             repository.save(doc);
 
