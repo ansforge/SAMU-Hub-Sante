@@ -16,7 +16,6 @@
 package com.hubsante.hub.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hubsante.hub.config.LogConstants;
@@ -27,6 +26,7 @@ import com.hubsante.hub.utils.EdxlUtils;
 import com.hubsante.hub.utils.MessageUtils;
 import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.edxl.EdxlMessage;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -146,8 +146,11 @@ public class ConversionHandler {
                 return Collections.emptyList();
             }
 
-            return objectMapper.convertValue(
-                    convertedMessagesNode, new TypeReference<List<String>>() {});
+            List<String> result = new ArrayList<>(convertedMessagesNode.size());
+            for (JsonNode node : convertedMessagesNode) {
+                result.add(node.toString());
+            }
+            return result;
 
         } catch (WebClientResponseException e) {
             // Handle HTTP error responses from conversion service

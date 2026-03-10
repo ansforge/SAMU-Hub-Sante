@@ -30,6 +30,7 @@ import com.hubsante.hub.exception.*;
 import com.hubsante.hub.utils.ConversionRulesCommand;
 import com.hubsante.hub.utils.ConversionUtils;
 import com.hubsante.hub.utils.EdxlUtils;
+import com.hubsante.hub.utils.MessagePersistencePolicy;
 import com.hubsante.hub.utils.MessageUtils;
 import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.edxl.EdxlMessage;
@@ -83,6 +84,7 @@ public class Dispatcher {
 
     private final ConversionHandler conversionHandler;
     private final HubConfiguration hubConfig;
+    private final MessagePersistenceService persistenceService;
     private static final StructuredLogger structuredLog = new StructuredLogger(log);
 
     public Dispatcher(
@@ -92,7 +94,8 @@ public class Dispatcher {
             XmlMapper xmlMapper,
             ObjectMapper jsonMapper,
             ConversionHandler conversionHandler,
-            HubConfiguration hubConfig) {
+            HubConfiguration hubConfig,
+            MessagePersistenceService persistenceService) {
         this.messageHandler = messageHandler;
         this.rabbitTemplate = rabbitTemplate;
         this.edxlHandler = edxlHandler;
@@ -100,6 +103,7 @@ public class Dispatcher {
         this.jsonMapper = jsonMapper;
         this.conversionHandler = conversionHandler;
         this.hubConfig = hubConfig;
+        this.persistenceService = persistenceService;
         initReturnsCallback();
     }
 
@@ -214,9 +218,22 @@ public class Dispatcher {
                 checkDistributionIDFormat(edxlMessage);
             }
 
-            boolean isConversionRequired =
-                    ConversionUtils.requiresConversion(hubConfig, edxlMessage);
-            if (isConversionRequired) {
+            boolean isCisuConversion =
+                    ConversionUtils.requiresCisuConversion(hubConfig, edxlMessage);
+            boolean isVersionConversion =
+                    ConversionUtils.requiresVersionConversion(hubConfig, edxlMessage);
+
+            if (isCisuConversion || isVersionConversion) {
+                if (isCisuConversion) {
+                    String useCase =
+                            EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage());
+                    // Persist before conversion so the original message is saved even if conversion
+                    // fails
+                    if (MessagePersistencePolicy.shouldPersist(hubConfig.getVhost(), useCase)) {
+                        persistenceService.persist(edxlMessage);
+                    }
+                }
+
                 ConversionRulesCommand conversionRulesCommand =
                         new ConversionRulesCommand(edxlMessage, hubConfig);
                 List<String> convertedMessages =

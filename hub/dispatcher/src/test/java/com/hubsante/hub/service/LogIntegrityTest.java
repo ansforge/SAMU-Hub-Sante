@@ -57,6 +57,7 @@ import reactor.core.publisher.Mono;
 public class LogIntegrityTest {
 
     private RabbitTemplate rabbitTemplate = mock(RabbitTemplate.class);
+    private MessagePersistenceService persistenceService = mock(MessagePersistenceService.class);
     @Autowired private EdxlHandler edxlHandler;
     @Autowired private Validator validator;
     @Autowired private HubConfiguration hubConfiguration;
@@ -163,7 +164,8 @@ public class LogIntegrityTest {
                         xmlMapper,
                         jsonMapper,
                         conversionHandler,
-                        hubConfiguration);
+                        hubConfiguration,
+                        persistenceService);
     }
 
     @Test
