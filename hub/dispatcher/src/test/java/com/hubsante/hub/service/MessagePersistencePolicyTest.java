@@ -18,7 +18,6 @@ package com.hubsante.hub.service;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -26,19 +25,12 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 public class MessagePersistencePolicyTest {
 
-    private MessagePersistencePolicy policy;
-
-    @BeforeEach
-    void setUp() {
-        policy = new MessagePersistencePolicy();
-    }
-
     // ─── Nexsis vhost (18 → 15) ───────────────────────────────────────────────
 
     @Test
     @DisplayName("should persist ResourcesInfoCisuWrapper (RC-RI) when vhost is 15-nexsis")
     void shouldPersistResourcesInfoCisuWrapperFromNexsisVhost() {
-        assertTrue(policy.shouldPersist("15-nexsis_v1.9", "ResourcesInfoCisuWrapper"));
+        assertTrue(MessagePersistencePolicy.shouldPersist("15-nexsis_v1.9", "ResourcesInfoCisuWrapper"));
     }
 
     @ParameterizedTest(name = "should not persist {0} when vhost is 15-nexsis")
@@ -54,7 +46,7 @@ public class MessagePersistencePolicyTest {
             })
     @DisplayName("should not persist non-RC-RI types when vhost is 15-nexsis")
     void shouldNotPersistNonAllowedTypeFromNexsisVhost(String useCase) {
-        assertFalse(policy.shouldPersist("15-nexsis_v1.9", useCase));
+        assertFalse(MessagePersistencePolicy.shouldPersist("15-nexsis_v1.9", useCase));
     }
 
     // ─── Health vhost (15 → 18) ───────────────────────────────────────────────
@@ -62,13 +54,13 @@ public class MessagePersistencePolicyTest {
     @Test
     @DisplayName("should persist ResourcesInfoWrapper (RS-RI) when vhost is 15-15_v*")
     void shouldPersistResourcesInfoWrapperFromHealthVhost() {
-        assertTrue(policy.shouldPersist("15-15_v2.1", "ResourcesInfoWrapper"));
+        assertTrue(MessagePersistencePolicy.shouldPersist("15-15_v2.1", "ResourcesInfoWrapper"));
     }
 
     @Test
     @DisplayName("should persist ResourcesStatusWrapper (RS-SR) when vhost is 15-15_v*")
     void shouldPersistResourcesStatusWrapperFromHealthVhost() {
-        assertTrue(policy.shouldPersist("15-15_v1.5", "ResourcesStatusWrapper"));
+        assertTrue(MessagePersistencePolicy.shouldPersist("15-15_v1.5", "ResourcesStatusWrapper"));
     }
 
     @ParameterizedTest(name = "should not persist {0} when vhost is 15-15_v*")
@@ -83,15 +75,15 @@ public class MessagePersistencePolicyTest {
             })
     @DisplayName("should not persist non-RS-RI/RS-SR types when vhost is 15-15_v*")
     void shouldNotPersistNonAllowedTypeFromHealthVhost(String useCase) {
-        assertFalse(policy.shouldPersist("15-15_v2.1", useCase));
+        assertFalse(MessagePersistencePolicy.shouldPersist("15-15_v2.1", useCase));
     }
 
     @Test
     @DisplayName("should persist ResourcesInfoWrapper on any 15-15_v* version")
     void shouldPersistOnAnyHealthVhostVersion() {
-        assertTrue(policy.shouldPersist("15-15_v1.5", "ResourcesInfoWrapper"));
-        assertTrue(policy.shouldPersist("15-15_v2.0", "ResourcesInfoWrapper"));
-        assertTrue(policy.shouldPersist("15-15_v2.1", "ResourcesStatusWrapper"));
+        assertTrue(MessagePersistencePolicy.shouldPersist("15-15_v1.5", "ResourcesInfoWrapper"));
+        assertTrue(MessagePersistencePolicy.shouldPersist("15-15_v2.0", "ResourcesInfoWrapper"));
+        assertTrue(MessagePersistencePolicy.shouldPersist("15-15_v2.1", "ResourcesStatusWrapper"));
     }
 
     // ─── Unknown / null vhost ─────────────────────────────────────────────────
@@ -99,14 +91,14 @@ public class MessagePersistencePolicyTest {
     @Test
     @DisplayName("should not persist any message when vhost is unknown")
     void shouldNotPersistFromUnknownVhost() {
-        assertFalse(policy.shouldPersist("some-other-vhost", "ResourcesInfoCisuWrapper"));
-        assertFalse(policy.shouldPersist("some-other-vhost", "ResourcesInfoWrapper"));
+        assertFalse(MessagePersistencePolicy.shouldPersist("some-other-vhost", "ResourcesInfoCisuWrapper"));
+        assertFalse(MessagePersistencePolicy.shouldPersist("some-other-vhost", "ResourcesInfoWrapper"));
     }
 
     @Test
     @DisplayName("should not persist when vhost is null")
     void shouldNotPersistWhenVhostIsNull() {
-        assertFalse(policy.shouldPersist(null, "ResourcesInfoCisuWrapper"));
-        assertFalse(policy.shouldPersist(null, "ResourcesInfoWrapper"));
+        assertFalse(MessagePersistencePolicy.shouldPersist(null, "ResourcesInfoCisuWrapper"));
+        assertFalse(MessagePersistencePolicy.shouldPersist(null, "ResourcesInfoWrapper"));
     }
 }

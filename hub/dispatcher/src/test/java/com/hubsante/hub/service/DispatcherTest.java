@@ -82,8 +82,6 @@ public class DispatcherTest {
     private RabbitTemplate rabbitTemplate = Mockito.mock(RabbitTemplate.class);
     private MessagePersistenceService persistenceService =
             Mockito.mock(MessagePersistenceService.class);
-    private MessagePersistencePolicy persistencePolicy =
-            Mockito.mock(MessagePersistencePolicy.class);
 
     @Autowired private EdxlHandler edxlHandler;
     @Autowired private HubConfiguration hubConfig;
@@ -153,8 +151,7 @@ public class DispatcherTest {
                         jsonMapper,
                         conversionHandler,
                         hubConfig,
-                        persistenceService,
-                        persistencePolicy);
+                        persistenceService);
     }
 
     @BeforeEach
@@ -739,8 +736,7 @@ public class DispatcherTest {
                                     jsonMapper,
                                     conversionHandler,
                                     hubConfig,
-                                    persistenceService,
-                                    persistencePolicy));
+                                    persistenceService));
 
             Message message = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
 
@@ -914,8 +910,7 @@ public class DispatcherTest {
                             jsonMapper,
                             conversionHandler,
                             hubConfig,
-                            persistenceService,
-                            persistencePolicy);
+                            persistenceService);
 
             Message receivedMessage = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
             EdxlMessage edxlMessage =
@@ -1032,8 +1027,7 @@ public class DispatcherTest {
                     jsonMapper,
                     conversionHandler,
                     hubConfig,
-                    persistenceService,
-                    persistencePolicy);
+                    persistenceService);
 
             assertDoesNotThrow(
                     () -> MessageUtils.checkMessageClassNameSupported(edxlMessage, hubConfig));
@@ -1069,8 +1063,7 @@ public class DispatcherTest {
                     jsonMapper,
                     conversionHandler,
                     hubConfig,
-                    persistenceService,
-                    persistencePolicy);
+                    persistenceService);
 
             UnroutableMessageException thrown =
                     assertThrows(
@@ -1122,8 +1115,7 @@ public class DispatcherTest {
                         jsonMapper,
                         conversionHandler,
                         hubConfigSpy,
-                        persistenceService,
-                        persistencePolicy);
+                        persistenceService);
 
         Message message = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
 
@@ -1180,8 +1172,7 @@ public class DispatcherTest {
                         jsonMapper,
                         conversionHandler,
                         hubConfigSpy,
-                        persistenceService,
-                        persistencePolicy);
+                        persistenceService);
 
         Message errorMessage = createMessage("hub-error-to-samuA", JSON, "fr.health.hub");
 
@@ -1230,8 +1221,7 @@ public class DispatcherTest {
                         jsonMapper,
                         conversionHandler,
                         hubConfigSpy,
-                        persistenceService,
-                        persistencePolicy);
+                        persistenceService);
 
         Message message = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
 
@@ -1298,8 +1288,8 @@ public class DispatcherTest {
     @Test
     @DisplayName("should call persistenceService before CISU conversion")
     public void shouldCallPersistenceServiceBeforeCisuConversion() throws Exception {
-        try (MockedStatic<ConversionUtils> mockedConversionUtils =
-                mockStatic(ConversionUtils.class)) {
+        try (MockedStatic<ConversionUtils> mockedConversionUtils = mockStatic(ConversionUtils.class);
+             MockedStatic<MessagePersistencePolicy> mockedPersistencePolicy = mockStatic(MessagePersistencePolicy.class)) {
             // Build a message from a fire actor
             Message baseFromSdis = createMessage("EDXL-DE", XML, SDIS_C_ROUTING_KEY);
             EdxlMessage edxlMessageFromSdis =
@@ -1325,7 +1315,7 @@ public class DispatcherTest {
                     .when(() -> ConversionUtils.requiresCisuConversion(any(), any()))
                     .thenReturn(true);
 
-            when(persistencePolicy.shouldPersist(anyString(), anyString())).thenReturn(true);
+            mockedPersistencePolicy.when(() -> MessagePersistencePolicy.shouldPersist(anyString(), anyString())).thenReturn(true);
 
             doAnswer(invocation -> List.of(invocation.getArgument(0).toString()))
                     .when(conversionHandler)
@@ -1377,8 +1367,8 @@ public class DispatcherTest {
     @Test
     @DisplayName("should have persisted message even if CISU conversion fails")
     public void shouldHavePersistedEvenIfCisuConversionFails() throws Exception {
-        try (MockedStatic<ConversionUtils> mockedConversionUtils =
-                mockStatic(ConversionUtils.class)) {
+        try (MockedStatic<ConversionUtils> mockedConversionUtils = mockStatic(ConversionUtils.class);
+             MockedStatic<MessagePersistencePolicy> mockedPersistencePolicy = mockStatic(MessagePersistencePolicy.class)) {
             // Build a message from a fire actor
             Message baseFromSdis = createMessage("EDXL-DE", XML, SDIS_C_ROUTING_KEY);
             EdxlMessage edxlMessageFromSdis =
@@ -1404,7 +1394,7 @@ public class DispatcherTest {
                     .when(() -> ConversionUtils.requiresCisuConversion(any(), any()))
                     .thenReturn(true);
 
-            when(persistencePolicy.shouldPersist(anyString(), anyString())).thenReturn(true);
+            mockedPersistencePolicy.when(() -> MessagePersistencePolicy.shouldPersist(anyString(), anyString())).thenReturn(true);
 
             // Conversion failure: persistence should occur, conversion throws
             doThrow(new RuntimeException("Conversion service unavailable"))
@@ -1425,8 +1415,8 @@ public class DispatcherTest {
     @Test
     @DisplayName("should wrap persistence exception in HubPersistenceException")
     public void shouldThrowPersistenceExceptionIfPersistenceFails() throws Exception {
-        try (MockedStatic<ConversionUtils> mockedConversionUtils =
-                mockStatic(ConversionUtils.class)) {
+        try (MockedStatic<ConversionUtils> mockedConversionUtils = mockStatic(ConversionUtils.class);
+             MockedStatic<MessagePersistencePolicy> mockedPersistencePolicy = mockStatic(MessagePersistencePolicy.class)) {
             Message message = createMessage("EDXL-DE", XML, SDIS_C_ROUTING_KEY);
             EdxlMessage edxlMessage =
                     edxlHandler.deserializeXmlEDXL(
@@ -1450,7 +1440,7 @@ public class DispatcherTest {
                     .when(() -> ConversionUtils.requiresCisuConversion(any(), any()))
                     .thenReturn(true);
 
-            when(persistencePolicy.shouldPersist(anyString(), anyString())).thenReturn(true);
+            mockedPersistencePolicy.when(() -> MessagePersistencePolicy.shouldPersist(anyString(), anyString())).thenReturn(true);
 
             // persist() throws HubPersistenceException directly; Dispatcher lets it propagate to
             // handleError

@@ -84,7 +84,6 @@ public class Dispatcher {
     private final ConversionHandler conversionHandler;
     private final HubConfiguration hubConfig;
     private final MessagePersistenceService persistenceService;
-    private final MessagePersistencePolicy persistencePolicy;
     private static final StructuredLogger structuredLog = new StructuredLogger(log);
 
     public Dispatcher(
@@ -95,8 +94,7 @@ public class Dispatcher {
             ObjectMapper jsonMapper,
             ConversionHandler conversionHandler,
             HubConfiguration hubConfig,
-            MessagePersistenceService persistenceService,
-            MessagePersistencePolicy persistencePolicy) {
+            MessagePersistenceService persistenceService) {
         this.messageHandler = messageHandler;
         this.rabbitTemplate = rabbitTemplate;
         this.edxlHandler = edxlHandler;
@@ -105,7 +103,6 @@ public class Dispatcher {
         this.conversionHandler = conversionHandler;
         this.hubConfig = hubConfig;
         this.persistenceService = persistenceService;
-        this.persistencePolicy = persistencePolicy;
         initReturnsCallback();
     }
 
@@ -231,7 +228,7 @@ public class Dispatcher {
                             EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage());
                     // Persist before conversion so the original message is saved even if conversion
                     // fails
-                    if (persistencePolicy.shouldPersist(hubConfig.getVhost(), useCase)) {
+                    if (MessagePersistencePolicy.shouldPersist(hubConfig.getVhost(), useCase)) {
                         persistenceService.persist(edxlMessage);
                     }
                 }

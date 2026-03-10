@@ -19,13 +19,13 @@ import static com.hubsante.hub.config.Constants.HEALTH_VHOST_PREFIX;
 import static com.hubsante.hub.config.Constants.NEXSIS_VHOST;
 
 import java.util.Set;
-import org.springframework.stereotype.Component;
 
 /**
  * This class centralizes the persistence eligibility rules
  */
-@Component
-public class MessagePersistencePolicy {
+public final class MessagePersistencePolicy {
+
+    private MessagePersistencePolicy() {}
 
     /**
      * Message types to persist when circulating from 18 → 15 (vhost 15-nexsis).
@@ -45,7 +45,7 @@ public class MessagePersistencePolicy {
     /**
      * Returns true if the message with the given useCase from the given vhost should be persisted.
      */
-    public boolean shouldPersist(String vhost, String useCase) {
+    public static boolean shouldPersist(String vhost, String useCase) {
         if (NEXSIS_VHOST.equals(vhost)) {
             return NEXSIS_PERSISTED_USE_CASES.contains(useCase);
         }
