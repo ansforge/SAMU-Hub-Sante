@@ -49,7 +49,7 @@ echo "client_id;useXML" > dispatcher/src/main/resources/client.preferences.csv
 
 **Run the dispatcher:**
 - Add `GITHUB_ACTOR` & `GITHUB_TOKEN` environment variables in the configuration. 
-    You can also set them in a gradle.properties file project scoped, based on [this template](dispatcher/gradle.properties.tmpl)
+    You can also set them in a gradle.properties file project scoped, based on [this template](dispatcher/gradle.properties.tmpl) (git ignored)
     or globally scoped, located at ~/.gradle/gradle.properties
 - Click "Apply" & "Ok"
 - Run the application
