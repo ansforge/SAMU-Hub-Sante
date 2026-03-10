@@ -20,11 +20,14 @@ class SamuSamuTest extends AMQPTestSupport {
     protected static final String VHOST_15_15_V1_TAG = "15-15_v1.5";
     protected static final String VHOST_15_15_V2_TAG = "15-15_v2.0";
     protected static final String VHOST_15_15_V3_TAG = "15-15_v2.1";
-
+    protected static final String V3_TAG = "3.3.0";
+    protected static final String V2_TAG = "2.3.0";
+    protected static final String V1_TAG = "1.3.0";
+    protected static final String RS_EDA_REF = "RS-EDA/RS-EDA_partageDossier_DidierMorel.01a.json";
     @Test
     void messageFromSamu1V3ToSamu2V3() throws Exception {
 
-        String useCase = Files.readString(Path.of(dotenv.get("EDXL_EXAMPLE_FILE_PATH_V3")));
+        String useCase = getUseCaseContentOnline(V3_TAG,  RS_EDA_REF);
 
         String distributionId = Utils.generateDistributionId(SAMU1_V3_ID);
         String edxlJson = new MessageBuilder().buildMessage(
@@ -54,7 +57,7 @@ class SamuSamuTest extends AMQPTestSupport {
     @Test
     void messageFromSamu1V2ToSamu2V2() throws Exception {
 
-        String useCase = Files.readString(Path.of(dotenv.get("EDXL_EXAMPLE_FILE_PATH_V2")));
+        String useCase = getUseCaseContentOnline(V2_TAG,  RS_EDA_REF);
 
         String distributionId = Utils.generateDistributionId(SAMU1_V2_ID);
         String edxlJson = new MessageBuilder().buildMessage(
@@ -84,7 +87,7 @@ class SamuSamuTest extends AMQPTestSupport {
     @Test
     void messageFromSamu1V1ToSamu2V1() throws Exception {
 
-        String useCase = Files.readString(Path.of(dotenv.get("EDXL_EXAMPLE_FILE_PATH_V1")));
+        String useCase = getUseCaseContentOnline(V1_TAG,  RS_EDA_REF);
 
         String distributionId = Utils.generateDistributionId(SAMU1_V1_ID);
         String edxlJson = new MessageBuilder().buildMessage(
@@ -114,7 +117,8 @@ class SamuSamuTest extends AMQPTestSupport {
     @Test
     void messageFromSamu1V1ToSamu1V3() throws Exception {
 
-        String useCase = Files.readString(Path.of(dotenv.get("EDXL_EXAMPLE_FILE_PATH_V1")));
+        String useCase = getUseCaseContentOnline(V1_TAG,  RS_EDA_REF);
+
 
         String distributionId = Utils.generateDistributionId(SAMU1_V1_ID);
         String edxlJson = new MessageBuilder().buildMessage(
@@ -144,7 +148,7 @@ class SamuSamuTest extends AMQPTestSupport {
     @Test
     void messageFromSamu1V3ToSamu1V1() throws Exception {
 
-        String useCase = Files.readString(Path.of(dotenv.get("EDXL_EXAMPLE_FILE_PATH_V3")));
+        String useCase = getUseCaseContentOnline(V3_TAG,  RS_EDA_REF);
 
         String distributionId = Utils.generateDistributionId(SAMU1_V3_ID);
         String edxlJson = new MessageBuilder().buildMessage(
