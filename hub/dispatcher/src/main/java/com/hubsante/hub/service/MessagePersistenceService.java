@@ -17,6 +17,7 @@ package com.hubsante.hub.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hubsante.hub.config.HubConfiguration;
 import com.hubsante.hub.config.LogConstants;
 import com.hubsante.hub.config.StructuredLogger;
 import com.hubsante.hub.model.Message;
@@ -36,20 +37,23 @@ public class MessagePersistenceService {
     private final MessageRepository repository;
     private final EdxlHandler edxlHandler;
     private final ObjectMapper objectMapper;
+    private final HubConfiguration hubConfig;
     private static final StructuredLogger structuredLog = new StructuredLogger(log);
 
     public MessagePersistenceService(
             MessageRepository repository,
             EdxlHandler edxlHandler,
-            @Qualifier("jsonMapper") ObjectMapper objectMapper) {
+            @Qualifier("jsonMapper") ObjectMapper objectMapper,
+            HubConfiguration hubConfig) {
         this.repository = repository;
         this.edxlHandler = edxlHandler;
         this.objectMapper = objectMapper;
+        this.hubConfig = hubConfig;
     }
 
-    public void persist(EdxlMessage edxlMessage, String vhost) throws Exception {
+    public void persist(EdxlMessage edxlMessage) throws Exception {
         String useCase = EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage());
-
+        String vhost = hubConfig.getVhost();
         try {
             String jsonEdxl = edxlHandler.serializeJsonEDXL(edxlMessage);
             Map<String, Object> payload =

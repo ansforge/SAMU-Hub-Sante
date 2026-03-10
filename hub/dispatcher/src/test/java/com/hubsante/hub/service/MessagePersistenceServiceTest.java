@@ -23,6 +23,7 @@ import static org.mockito.Mockito.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hubsante.hub.repository.MessageRepository;
+import com.hubsante.hub.config.HubConfiguration;
 import com.hubsante.hub.utils.EdxlUtils;
 import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.edxl.ContentMessage;
@@ -46,10 +47,11 @@ public class MessagePersistenceServiceTest {
     @Mock private ContentMessage contentMessage;
 
     private MessagePersistenceService service;
+    @Mock private HubConfiguration hubConfig;
 
     @BeforeEach
     void setUp() {
-        service = new MessagePersistenceService(repository, edxlHandler, objectMapper);
+        service = new MessagePersistenceService(repository, edxlHandler, objectMapper, hubConfig);
         // These stubs are not used in all tests, so lenient
         lenient().when(edxlMessage.getFirstContentMessage()).thenReturn(contentMessage);
         lenient().when(edxlMessage.getDistributionID()).thenReturn("test-distribution-id");
@@ -60,6 +62,7 @@ public class MessagePersistenceServiceTest {
     @Test
     @DisplayName("should persist ResourcesInfoCisuWrapper when vhost is 15-nexsis")
     void shouldPersistResourcesInfoCisuWrapperFromNexsisVhost() throws Exception {
+        when(hubConfig.getVhost()).thenReturn("15-nexsis_v1.9");
         try (MockedStatic<EdxlUtils> mockedEdxlUtils = mockStatic(EdxlUtils.class)) {
             mockedEdxlUtils
                     .when(() -> EdxlUtils.getUseCaseFromMessage(any()))
@@ -68,7 +71,7 @@ public class MessagePersistenceServiceTest {
             when(objectMapper.readValue(anyString(), any(TypeReference.class)))
                     .thenReturn(Map.of());
 
-            service.persist(edxlMessage, "15-nexsis_v1.9");
+            service.persist(edxlMessage);
 
             verify(repository, times(1)).save(any(com.hubsante.hub.model.Message.class));
         }
@@ -79,6 +82,7 @@ public class MessagePersistenceServiceTest {
     @Test
     @DisplayName("should persist ResourcesInfoWrapper when vhost is 15-15_v*")
     void shouldPersistResourcesInfoWrapperFromHealthVhost() throws Exception {
+        when(hubConfig.getVhost()).thenReturn("15-15_v2.1");
         try (MockedStatic<EdxlUtils> mockedEdxlUtils = mockStatic(EdxlUtils.class)) {
             mockedEdxlUtils
                     .when(() -> EdxlUtils.getUseCaseFromMessage(any()))
@@ -87,7 +91,7 @@ public class MessagePersistenceServiceTest {
             when(objectMapper.readValue(anyString(), any(TypeReference.class)))
                     .thenReturn(Map.of());
 
-            service.persist(edxlMessage, "15-15_v2.1");
+            service.persist(edxlMessage);
 
             verify(repository, times(1)).save(any(com.hubsante.hub.model.Message.class));
         }
@@ -96,6 +100,7 @@ public class MessagePersistenceServiceTest {
     @Test
     @DisplayName("should persist ResourcesStatusWrapper when vhost is 15-15_v*")
     void shouldPersistResourcesStatusWrapperFromHealthVhost() throws Exception {
+        when(hubConfig.getVhost()).thenReturn("15-15_v1.5");
         try (MockedStatic<EdxlUtils> mockedEdxlUtils = mockStatic(EdxlUtils.class)) {
             mockedEdxlUtils
                     .when(() -> EdxlUtils.getUseCaseFromMessage(any()))
@@ -104,7 +109,7 @@ public class MessagePersistenceServiceTest {
             when(objectMapper.readValue(anyString(), any(TypeReference.class)))
                     .thenReturn(Map.of());
 
-            service.persist(edxlMessage, "15-15_v1.5");
+            service.persist(edxlMessage);
 
             verify(repository, times(1)).save(any(com.hubsante.hub.model.Message.class));
         }
@@ -115,6 +120,7 @@ public class MessagePersistenceServiceTest {
     @Test
     @DisplayName("should throw when repository.save() fails")
     void shouldThrowWhenRepositoryFails() throws Exception {
+        when(hubConfig.getVhost()).thenReturn("15-nexsis_v1.9");
         try (MockedStatic<EdxlUtils> mockedEdxlUtils = mockStatic(EdxlUtils.class)) {
             mockedEdxlUtils
                     .when(() -> EdxlUtils.getUseCaseFromMessage(any()))
@@ -124,8 +130,7 @@ public class MessagePersistenceServiceTest {
                     .thenReturn(Map.of());
             doThrow(new RuntimeException("MongoDB unavailable")).when(repository).save(any());
 
-            assertThrows(
-                    RuntimeException.class, () -> service.persist(edxlMessage, "15-nexsis_v1.9"));
+            assertThrows(RuntimeException.class, () -> service.persist(edxlMessage));
 
             // save() was attempted but failed
             verify(repository, times(1)).save(any());
@@ -135,6 +140,7 @@ public class MessagePersistenceServiceTest {
     @Test
     @DisplayName("should throw when serialization fails - save is never attempted")
     void shouldThrowWhenSerializationFails() throws Exception {
+        when(hubConfig.getVhost()).thenReturn("15-15_v2.1");
         try (MockedStatic<EdxlUtils> mockedEdxlUtils = mockStatic(EdxlUtils.class)) {
             mockedEdxlUtils
                     .when(() -> EdxlUtils.getUseCaseFromMessage(any()))
@@ -142,7 +148,7 @@ public class MessagePersistenceServiceTest {
             when(edxlHandler.serializeJsonEDXL(any()))
                     .thenThrow(new RuntimeException("Serialization error"));
 
-            assertThrows(RuntimeException.class, () -> service.persist(edxlMessage, "15-15_v2.1"));
+            assertThrows(RuntimeException.class, () -> service.persist(edxlMessage));
 
             // save() was never called because serialization failed before reaching it
             verify(repository, never()).save(any());

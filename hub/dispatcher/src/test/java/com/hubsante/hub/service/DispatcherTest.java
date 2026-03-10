@@ -1323,8 +1323,7 @@ public class DispatcherTest {
 
             // Verify ordering: persistence must happen before conversion
             InOrder inOrder = inOrder(persistenceService, conversionHandler);
-            inOrder.verify(persistenceService, times(1))
-                    .persist(any(EdxlMessage.class), anyString());
+            inOrder.verify(persistenceService, times(1)).persist(any(EdxlMessage.class));
             inOrder.verify(conversionHandler, times(1))
                     .callConversionService(
                             anyString(), anyString(), anyString(), anyBoolean(), anyString());
@@ -1358,7 +1357,7 @@ public class DispatcherTest {
 
             dispatcher.dispatch(message);
 
-            verify(persistenceService, never()).persist(any(EdxlMessage.class), anyString());
+            verify(persistenceService, never()).persist(any(EdxlMessage.class));
         }
     }
 
@@ -1405,7 +1404,7 @@ public class DispatcherTest {
                     () -> dispatcher.dispatch(fromFireMessage));
 
             // But persistence was already called before the conversion attempt
-            verify(persistenceService, times(1)).persist(any(EdxlMessage.class), anyString());
+            verify(persistenceService, times(1)).persist(any(EdxlMessage.class));
         }
     }
 
@@ -1430,7 +1429,7 @@ public class DispatcherTest {
             Message message = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
             dispatcher.dispatch(message);
 
-            verify(persistenceService, never()).persist(any(EdxlMessage.class), anyString());
+            verify(persistenceService, never()).persist(any(EdxlMessage.class));
         }
     }
 
