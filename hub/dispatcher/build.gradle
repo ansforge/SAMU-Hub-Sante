@@ -52,7 +52,7 @@ dependencies {
     implementation "com.hubsante:models:${project.ext.modelVersion}"
 
     // ===== Spring Boot =====
-    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-webmvc'
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
     implementation 'org.springframework.boot:spring-boot-starter-aspectj'
     implementation 'org.springframework.boot:spring-boot-starter-amqp'
