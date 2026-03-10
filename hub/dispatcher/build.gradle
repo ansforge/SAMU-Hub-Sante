@@ -67,6 +67,7 @@ dependencies {
 
     // ===== JSON / XML / CSV =====
     implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-xml"
+    implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310"
     implementation "com.networknt:json-schema-validator:${libs.versions.jsonSchemaValidator.get()}"
     implementation "net.logstash.logback:logstash-logback-encoder:${libs.versions.logstashEncoder.get()}"
     implementation "com.univocity:univocity-parsers:${libs.versions.univocityParsers.get()}"
