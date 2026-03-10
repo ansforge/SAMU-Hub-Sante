@@ -21,7 +21,7 @@ public class HubPersistenceException extends AbstractHubException {
     public HubPersistenceException(String message, String referencedDistributionId) {
         super(
                 "Error during internal call to Hub Santé persistence service: " + message,
-                ErrorCode.INVALID_MESSAGE,
+                ErrorCode.UNROUTABLE_MESSAGE,
                 referencedDistributionId);
     }
 
@@ -32,7 +32,7 @@ public class HubPersistenceException extends AbstractHubException {
             String messageType) {
         super(
                 "Error during internal call to Hub Santé persistence service: " + message,
-                ErrorCode.INVALID_MESSAGE,
+                ErrorCode.UNROUTABLE_MESSAGE,
                 referencedDistributionId,
                 recipientId,
                 messageType);
