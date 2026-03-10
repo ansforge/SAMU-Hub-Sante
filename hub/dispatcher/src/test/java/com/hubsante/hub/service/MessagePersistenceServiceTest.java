@@ -23,6 +23,7 @@ import static org.mockito.Mockito.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hubsante.hub.config.HubConfiguration;
+import com.hubsante.hub.model.PersistedMessage;
 import com.hubsante.hub.repository.MessageRepository;
 import com.hubsante.hub.utils.EdxlUtils;
 import com.hubsante.model.EdxlHandler;
@@ -73,7 +74,7 @@ public class MessagePersistenceServiceTest {
 
             service.persist(edxlMessage);
 
-            verify(repository, times(1)).save(any(com.hubsante.hub.model.Message.class));
+            verify(repository, times(1)).save(any(PersistedMessage.class));
         }
     }
 
@@ -93,7 +94,7 @@ public class MessagePersistenceServiceTest {
 
             service.persist(edxlMessage);
 
-            verify(repository, times(1)).save(any(com.hubsante.hub.model.Message.class));
+            verify(repository, times(1)).save(any(PersistedMessage.class));
         }
     }
 
@@ -111,7 +112,7 @@ public class MessagePersistenceServiceTest {
 
             service.persist(edxlMessage);
 
-            verify(repository, times(1)).save(any(com.hubsante.hub.model.Message.class));
+            verify(repository, times(1)).save(any(PersistedMessage.class));
         }
     }
 

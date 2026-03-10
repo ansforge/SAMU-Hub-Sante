@@ -30,7 +30,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @NoArgsConstructor
 @AllArgsConstructor
 @Document(collection = "messages")
-public class Message {
+public class PersistedMessage {
 
     @Id private String id;
 

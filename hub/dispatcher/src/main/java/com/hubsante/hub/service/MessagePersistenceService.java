@@ -21,7 +21,7 @@ import com.hubsante.hub.config.HubConfiguration;
 import com.hubsante.hub.config.LogConstants;
 import com.hubsante.hub.config.StructuredLogger;
 import com.hubsante.hub.exception.HubPersistenceException;
-import com.hubsante.hub.model.Message;
+import com.hubsante.hub.model.PersistedMessage;
 import com.hubsante.hub.repository.MessageRepository;
 import com.hubsante.hub.utils.EdxlUtils;
 import com.hubsante.model.EdxlHandler;
@@ -60,7 +60,7 @@ public class MessagePersistenceService {
             Map<String, Object> payload =
                     objectMapper.readValue(jsonEdxl, new TypeReference<>() {});
 
-            Message doc = Message.builder().type(useCase).payload(payload).build();
+            PersistedMessage doc = PersistedMessage.builder().type(useCase).payload(payload).build();
 
             repository.save(doc);
 
