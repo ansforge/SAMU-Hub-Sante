@@ -1,6 +1,16 @@
+def licenseYear = {
+    def currentYear = new Date().format('yyyy')
+    currentYear != "2023" ? "2023-${currentYear}" : "2023"
+}.call()
+
+def header = project.rootProject.file("LICENSE_HEADER.txt").text
+        .replace("\${year}", licenseYear)
+        .replace("\${company}", "Agence du Numerique en Sante (ANS)")
+
 spotless {
     java {
         googleJavaFormat(libs.versions.googleJavaFormat.get()).aosp().formatJavadoc(false)
         target 'src/**/*.java'
+        licenseHeader header, "package"
     }
 }
