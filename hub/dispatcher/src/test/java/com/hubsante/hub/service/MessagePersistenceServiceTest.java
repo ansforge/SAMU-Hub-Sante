@@ -24,7 +24,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hubsante.hub.config.HubConfiguration;
 import com.hubsante.hub.model.PersistedMessage;
-import com.hubsante.hub.repository.MessageRepository;
+import com.hubsante.hub.repository.PersistedMessageRepository;
 import com.hubsante.hub.utils.EdxlUtils;
 import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.edxl.ContentMessage;
@@ -41,7 +41,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 public class MessagePersistenceServiceTest {
 
-    @Mock private MessageRepository repository;
+    @Mock private PersistedMessageRepository repository;
     @Mock private EdxlHandler edxlHandler;
     @Mock private ObjectMapper objectMapper;
     @Mock private EdxlMessage edxlMessage;

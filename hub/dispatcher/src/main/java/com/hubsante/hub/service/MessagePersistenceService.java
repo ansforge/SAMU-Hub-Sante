@@ -22,7 +22,7 @@ import com.hubsante.hub.config.LogConstants;
 import com.hubsante.hub.config.StructuredLogger;
 import com.hubsante.hub.exception.HubPersistenceException;
 import com.hubsante.hub.model.PersistedMessage;
-import com.hubsante.hub.repository.MessageRepository;
+import com.hubsante.hub.repository.PersistedMessageRepository;
 import com.hubsante.hub.utils.EdxlUtils;
 import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.edxl.EdxlMessage;
@@ -35,14 +35,14 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class MessagePersistenceService {
 
-    private final MessageRepository repository;
+    private final PersistedMessageRepository repository;
     private final EdxlHandler edxlHandler;
     private final ObjectMapper objectMapper;
     private final HubConfiguration hubConfig;
     private static final StructuredLogger structuredLog = new StructuredLogger(log);
 
     public MessagePersistenceService(
-            MessageRepository repository,
+            PersistedMessageRepository repository,
             EdxlHandler edxlHandler,
             @Qualifier("jsonMapper") ObjectMapper objectMapper,
             HubConfiguration hubConfig) {
