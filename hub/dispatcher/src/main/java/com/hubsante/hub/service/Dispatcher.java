@@ -232,7 +232,12 @@ public class Dispatcher {
                     // Persist before conversion so the original message is saved even if conversion
                     // fails
                     if (persistencePolicy.shouldPersist(hubConfig.getVhost(), useCase)) {
-                        persistenceService.persist(edxlMessage);
+                        try {
+                            persistenceService.persist(edxlMessage);
+                        } catch (HubPersistenceException e) {
+                            messageHandler.handleError(e, message);
+                            return;
+                        }
                     }
                 }
 
