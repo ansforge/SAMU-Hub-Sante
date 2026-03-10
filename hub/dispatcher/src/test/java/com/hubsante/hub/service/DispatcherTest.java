@@ -33,6 +33,7 @@ import com.hubsante.hub.HubApplication;
 import com.hubsante.hub.config.HubConfiguration;
 import com.hubsante.hub.exception.ConversionException;
 import com.hubsante.hub.exception.ExpiredBeforeDispatchMessageException;
+import com.hubsante.hub.exception.HubPersistenceException;
 import com.hubsante.hub.exception.SchemaValidationException;
 import com.hubsante.hub.exception.UnroutableMessageException;
 import com.hubsante.hub.service.utils.MessageTestUtils;
@@ -1393,6 +1394,7 @@ public class DispatcherTest {
 
             when(persistencePolicy.shouldPersist(anyString(), anyString())).thenReturn(true);
 
+            // Conversion failure: persistence should occur, conversion throws
             doThrow(new RuntimeException("Conversion service unavailable"))
                     .when(conversionHandler)
                     .callConversionService(
@@ -1405,6 +1407,57 @@ public class DispatcherTest {
 
             // But persistence was already called before the conversion attempt
             verify(persistenceService, times(1)).persist(any(EdxlMessage.class));
+        }
+    }
+
+    @Test
+    @DisplayName("should wrap persistence exception in HubPersistenceException")
+    public void shouldThrowPersistenceExceptionIfPersistenceFails() throws Exception {
+        try (MockedStatic<ConversionUtils> mockedConversionUtils =
+                mockStatic(ConversionUtils.class)) {
+            Message message = createMessage("EDXL-DE", XML, SDIS_C_ROUTING_KEY);
+            EdxlMessage edxlMessage =
+                    edxlHandler.deserializeXmlEDXL(
+                            new String(message.getBody(), StandardCharsets.UTF_8));
+            MessageTestUtils.setMessageConsistentWithRoutingKey(edxlMessage, SDIS_C_ROUTING_KEY);
+            Message fromFireMessage =
+                    new Message(
+                            edxlHandler.serializeXmlEDXL(edxlMessage).getBytes(),
+                            message.getMessageProperties());
+
+            mockedConversionUtils
+                    .when(() -> ConversionUtils.getSourceVHost(any()))
+                    .thenReturn("15-15_v1.5");
+            mockedConversionUtils
+                    .when(() -> ConversionUtils.getTargetVHosts(any(), any()))
+                    .thenReturn(new String[] {"15-nexsis_v1.9"});
+            mockedConversionUtils
+                    .when(() -> ConversionUtils.requiresConversion(any(), any()))
+                    .thenReturn(true);
+            mockedConversionUtils
+                    .when(() -> ConversionUtils.requiresCisuConversion(any(), any()))
+                    .thenReturn(true);
+
+            when(persistencePolicy.shouldPersist(anyString(), anyString())).thenReturn(true);
+
+            // persist() throws HubPersistenceException directly; Dispatcher lets it propagate to
+            // handleError
+            doThrow(new HubPersistenceException("Persistence failed", "distributionId"))
+                    .when(persistenceService)
+                    .persist(any(EdxlMessage.class));
+
+            AmqpRejectAndDontRequeueException thrown =
+                    assertThrows(
+                            AmqpRejectAndDontRequeueException.class,
+                            () -> dispatcher.dispatch(fromFireMessage));
+
+            assertNotNull(thrown.getCause());
+            assertInstanceOf(HubPersistenceException.class, thrown.getCause());
+            assertTrue(thrown.getCause().getMessage().contains("Persistence failed"));
+            // Conversion must not be called if persistence fails
+            verify(conversionHandler, never())
+                    .callConversionService(
+                            anyString(), anyString(), anyString(), anyBoolean(), anyString());
         }
     }
 

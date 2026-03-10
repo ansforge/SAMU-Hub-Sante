@@ -22,8 +22,8 @@ import static org.mockito.Mockito.*;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hubsante.hub.repository.MessageRepository;
 import com.hubsante.hub.config.HubConfiguration;
+import com.hubsante.hub.repository.MessageRepository;
 import com.hubsante.hub.utils.EdxlUtils;
 import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.edxl.ContentMessage;

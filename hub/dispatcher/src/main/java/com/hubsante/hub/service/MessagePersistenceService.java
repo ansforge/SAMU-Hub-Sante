@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hubsante.hub.config.HubConfiguration;
 import com.hubsante.hub.config.LogConstants;
 import com.hubsante.hub.config.StructuredLogger;
+import com.hubsante.hub.exception.HubPersistenceException;
 import com.hubsante.hub.model.Message;
 import com.hubsante.hub.repository.MessageRepository;
 import com.hubsante.hub.utils.EdxlUtils;
@@ -51,7 +52,7 @@ public class MessagePersistenceService {
         this.hubConfig = hubConfig;
     }
 
-    public void persist(EdxlMessage edxlMessage) throws Exception {
+    public void persist(EdxlMessage edxlMessage) throws HubPersistenceException {
         String useCase = EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage());
         String vhost = hubConfig.getVhost();
         try {
@@ -80,7 +81,7 @@ public class MessagePersistenceService {
                             LogConstants.MESSAGE_TYPE,
                             useCase),
                     e);
-            throw e;
+            throw new HubPersistenceException(e.getMessage(), edxlMessage.getDistributionID());
         }
     }
 }
