@@ -176,7 +176,7 @@ public class DispatcherTest {
                     .when(() -> ConversionUtils.requiresVersionConversion(any(), any()))
                     .thenReturn(false);
             mockedConversionUtils
-                    .when(() -> ConversionUtils.requiresConversion(any(), any()))
+                    .when(() -> ConversionUtils.requiresCisuConversion(any(), any()))
                     .thenReturn(false);
             mockedConversionUtils
                     .when(() -> ConversionUtils.getSourceVHost(any()))
@@ -221,7 +221,7 @@ public class DispatcherTest {
                     .when(() -> ConversionUtils.requiresVersionConversion(any(), any()))
                     .thenReturn(false);
             mockedConversionUtils
-                    .when(() -> ConversionUtils.requiresConversion(any(), any()))
+                    .when(() -> ConversionUtils.requiresCisuConversion(any(), any()))
                     .thenReturn(false);
             mockedConversionUtils
                     .when(() -> ConversionUtils.getSourceVHost(any()))
@@ -267,7 +267,7 @@ public class DispatcherTest {
                     .when(() -> ConversionUtils.requiresVersionConversion(any(), any()))
                     .thenReturn(false);
             mockedConversionUtils
-                    .when(() -> ConversionUtils.requiresConversion(any(), any()))
+                    .when(() -> ConversionUtils.requiresCisuConversion(any(), any()))
                     .thenReturn(false);
             mockedConversionUtils
                     .when(() -> ConversionUtils.getSourceVHost(any()))
@@ -326,8 +326,8 @@ public class DispatcherTest {
 
             // Mock the ConversionUtils answer and the ConversionService
             mockedConversionUtils
-                    .when(() -> ConversionUtils.requiresConversion(any(), any()))
-                    .thenReturn(true);
+                    .when(() -> ConversionUtils.requiresVersionConversion(any(), any()))
+                    .thenReturn(false);
             mockedConversionUtils
                     .when(() -> ConversionUtils.requiresCisuConversion(any(), any()))
                     .thenReturn(true);
@@ -361,7 +361,7 @@ public class DispatcherTest {
                     .when(() -> ConversionUtils.getTargetVHosts(any(), any()))
                     .thenReturn(new String[] {"15-15_v2.0"});
             mockedConversionUtils
-                    .when(() -> ConversionUtils.requiresConversion(any(), any()))
+                    .when(() -> ConversionUtils.requiresVersionConversion(any(), any()))
                     .thenReturn(true);
             mockedConversionUtils
                     .when(() -> ConversionUtils.requiresCisuConversion(any(), any()))
@@ -388,6 +388,9 @@ public class DispatcherTest {
             mockedConversionUtils
                     .when(() -> ConversionUtils.requiresVersionConversion(any(), any()))
                     .thenReturn(false);
+            mockedConversionUtils
+                    .when(() -> ConversionUtils.requiresCisuConversion(any(), any()))
+                    .thenReturn(false);
             // Create a message from and to health
             Message message = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
 
@@ -408,6 +411,9 @@ public class DispatcherTest {
                 mockStatic(ConversionUtils.class)) {
             mockedConversionUtils
                     .when(() -> ConversionUtils.requiresVersionConversion(any(), any()))
+                    .thenReturn(false);
+            mockedConversionUtils
+                    .when(() -> ConversionUtils.requiresCisuConversion(any(), any()))
                     .thenReturn(false);
             // get message and override dateTimeExpires field with sooner value
             Message base = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
@@ -479,6 +485,9 @@ public class DispatcherTest {
                 mockStatic(ConversionUtils.class)) {
             mockedConversionUtils
                     .when(() -> ConversionUtils.requiresVersionConversion(any(), any()))
+                    .thenReturn(false);
+            mockedConversionUtils
+                    .when(() -> ConversionUtils.requiresCisuConversion(any(), any()))
                     .thenReturn(false);
             // Create a message and set an expiration property
             Message base = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
@@ -747,8 +756,11 @@ public class DispatcherTest {
                     .when(() -> ConversionUtils.getTargetVHosts(any(), any()))
                     .thenReturn(new String[] {"15-15_v2.0"});
             mockedConversionUtils
-                    .when(() -> ConversionUtils.requiresConversion(any(), any()))
+                    .when(() -> ConversionUtils.requiresVersionConversion(any(), any()))
                     .thenReturn(true);
+            mockedConversionUtils
+                    .when(() -> ConversionUtils.requiresCisuConversion(any(), any()))
+                    .thenReturn(false);
 
             doAnswer(invocation -> List.of(invocation.getArgument(0).toString()))
                     .when(conversionHandler)
@@ -918,8 +930,8 @@ public class DispatcherTest {
                     .when(() -> ConversionUtils.getTargetVHosts(any(), any()))
                     .thenReturn(new String[] {"15-15_v2.0"});
             mockedConversionUtils
-                    .when(() -> ConversionUtils.requiresConversion(any(), any()))
-                    .thenReturn(true);
+                    .when(() -> ConversionUtils.requiresVersionConversion(any(), any()))
+                    .thenReturn(false);
             mockedConversionUtils
                     .when(() -> ConversionUtils.requiresCisuConversion(any(), any()))
                     .thenReturn(true);
@@ -1307,8 +1319,8 @@ public class DispatcherTest {
                     .when(() -> ConversionUtils.getTargetVHosts(any(), any()))
                     .thenReturn(new String[] {"15-nexsis_v1.9"});
             mockedConversionUtils
-                    .when(() -> ConversionUtils.requiresConversion(any(), any()))
-                    .thenReturn(true);
+                    .when(() -> ConversionUtils.requiresVersionConversion(any(), any()))
+                    .thenReturn(false);
             mockedConversionUtils
                     .when(() -> ConversionUtils.requiresCisuConversion(any(), any()))
                     .thenReturn(true);
@@ -1345,7 +1357,7 @@ public class DispatcherTest {
                     .when(() -> ConversionUtils.getTargetVHosts(any(), any()))
                     .thenReturn(new String[] {"15-15_v2.0"});
             mockedConversionUtils
-                    .when(() -> ConversionUtils.requiresConversion(any(), any()))
+                    .when(() -> ConversionUtils.requiresVersionConversion(any(), any()))
                     .thenReturn(true);
             mockedConversionUtils
                     .when(() -> ConversionUtils.requiresCisuConversion(any(), any()))
@@ -1386,8 +1398,8 @@ public class DispatcherTest {
                     .when(() -> ConversionUtils.getTargetVHosts(any(), any()))
                     .thenReturn(new String[] {"15-nexsis_v1.9"});
             mockedConversionUtils
-                    .when(() -> ConversionUtils.requiresConversion(any(), any()))
-                    .thenReturn(true);
+                    .when(() -> ConversionUtils.requiresVersionConversion(any(), any()))
+                    .thenReturn(false);
             mockedConversionUtils
                     .when(() -> ConversionUtils.requiresCisuConversion(any(), any()))
                     .thenReturn(true);
@@ -1432,8 +1444,8 @@ public class DispatcherTest {
                     .when(() -> ConversionUtils.getTargetVHosts(any(), any()))
                     .thenReturn(new String[] {"15-nexsis_v1.9"});
             mockedConversionUtils
-                    .when(() -> ConversionUtils.requiresConversion(any(), any()))
-                    .thenReturn(true);
+                    .when(() -> ConversionUtils.requiresVersionConversion(any(), any()))
+                    .thenReturn(false);
             mockedConversionUtils
                     .when(() -> ConversionUtils.requiresCisuConversion(any(), any()))
                     .thenReturn(true);
@@ -1470,7 +1482,7 @@ public class DispatcherTest {
                     .when(() -> ConversionUtils.requiresVersionConversion(any(), any()))
                     .thenReturn(false);
             mockedConversionUtils
-                    .when(() -> ConversionUtils.requiresConversion(any(), any()))
+                    .when(() -> ConversionUtils.requiresCisuConversion(any(), any()))
                     .thenReturn(false);
             mockedConversionUtils
                     .when(() -> ConversionUtils.getSourceVHost(any()))
@@ -1505,7 +1517,7 @@ public class DispatcherTest {
                     .when(() -> ConversionUtils.getTargetVHosts(any(), any()))
                     .thenReturn(new String[] {"15-15_v2.0"});
             mockedConversionUtils
-                    .when(() -> ConversionUtils.requiresConversion(any(), any()))
+                    .when(() -> ConversionUtils.requiresVersionConversion(any(), any()))
                     .thenReturn(true);
             mockedConversionUtils
                     .when(() -> ConversionUtils.requiresCisuConversion(any(), any()))

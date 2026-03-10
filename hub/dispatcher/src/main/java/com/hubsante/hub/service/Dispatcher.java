@@ -220,12 +220,12 @@ public class Dispatcher {
                 checkDistributionIDFormat(edxlMessage);
             }
 
-            boolean isConversionRequired =
-                    ConversionUtils.requiresConversion(hubConfig, edxlMessage);
             boolean isCisuConversion =
                     ConversionUtils.requiresCisuConversion(hubConfig, edxlMessage);
+            boolean isVersionConversion =
+                    ConversionUtils.requiresVersionConversion(hubConfig, edxlMessage);
 
-            if (isConversionRequired) {
+            if (isCisuConversion || isVersionConversion) {
                 if (isCisuConversion) {
                     String useCase =
                             EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage());
