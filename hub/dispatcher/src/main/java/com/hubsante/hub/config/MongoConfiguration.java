@@ -23,6 +23,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.config.EnableMongoAuditing;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.index.Index;
+import org.springframework.data.mongodb.core.index.PartialIndexFilter;
+import org.springframework.data.mongodb.core.query.Criteria;
 
 @Configuration
 @EnableMongoAuditing
@@ -40,5 +42,29 @@ public class MongoConfiguration {
         indexOps.createIndex(
                 new Index().on("arrivedAt", Sort.Direction.ASC).expire(Duration.ofDays(3)));
         indexOps.createIndex(new Index().on("type", Sort.Direction.ASC));
+        indexOps.createIndex(
+                new Index()
+                        .on(
+                                "payload.content[0].jsonContent.embeddedJsonContent.message.resourcesInfo.caseId",
+                                Sort.Direction.ASC)
+                        .partial(
+                                PartialIndexFilter.of(
+                                        Criteria.where("type").is("ResourcesInfoWrapper"))));
+        indexOps.createIndex(
+                new Index()
+                        .on(
+                                "payload.content[0].jsonContent.embeddedJsonContent.message.resourcesStatus.caseId",
+                                Sort.Direction.ASC)
+                        .partial(
+                                PartialIndexFilter.of(
+                                        Criteria.where("type").is("ResourcesStatusWrapper"))));
+        indexOps.createIndex(
+                new Index()
+                        .on(
+                                "payload.content[0].jsonContent.embeddedJsonContent.message.resourcesInfoCisu.caseId",
+                                Sort.Direction.ASC)
+                        .partial(
+                                PartialIndexFilter.of(
+                                        Criteria.where("type").is("ResourcesInfoCisuWrapper"))));
     }
 }
