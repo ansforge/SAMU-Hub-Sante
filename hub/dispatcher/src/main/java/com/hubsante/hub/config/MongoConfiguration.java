@@ -39,5 +39,6 @@ public class MongoConfiguration {
         var indexOps = mongoTemplate.indexOps("messages");
         indexOps.createIndex(
                 new Index().on("arrivedAt", Sort.Direction.ASC).expire(Duration.ofDays(3)));
+        indexOps.createIndex(new Index().on("type", Sort.Direction.ASC));
     }
 }
