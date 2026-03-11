@@ -15,9 +15,29 @@
  */
 package com.hubsante.hub.config;
 
+import java.time.Duration;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.event.EventListener;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.config.EnableMongoAuditing;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.index.Index;
 
 @Configuration
 @EnableMongoAuditing
-public class MongoConfiguration {}
+public class MongoConfiguration {
+
+    private final MongoTemplate mongoTemplate;
+
+    public MongoConfiguration(MongoTemplate mongoTemplate) {
+        this.mongoTemplate = mongoTemplate;
+    }
+
+    @EventListener(ApplicationReadyEvent.class)
+    public void createIndexes() {
+        var indexOps = mongoTemplate.indexOps("messages");
+        indexOps.createIndex(
+                new Index().on("arrivedAt", Sort.Direction.ASC).expire(Duration.ofDays(3)));
+    }
+}
