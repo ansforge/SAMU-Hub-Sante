@@ -46,7 +46,7 @@ class SamuSamuTest extends AMQPTestSupport {
 
         MessageDTO matchedAck = awaitMessage(ackDistributionId);
 
-        String referencedDistributionID = Utils.getReferencedDistributionID(matchedAck.getPayload());
+        String referencedDistributionID = Utils.getReferencedDistributionID(matchedAck);
 
         assertNotNull(matchedAck, "Ack " + ackDistributionId + " not received within " + RECEIVE_TIMEOUT_SECS + "s");
         assertVhostEquals(matchedAck, VHOST_15_15_V3_TAG);
@@ -76,7 +76,7 @@ class SamuSamuTest extends AMQPTestSupport {
 
         MessageDTO matchedAck = awaitMessage(ackDistributionId);
 
-        String referencedDistributionID = Utils.getReferencedDistributionID(matchedAck.getPayload());
+        String referencedDistributionID = Utils.getReferencedDistributionID(matchedAck);
 
         assertNotNull(matchedAck, "Ack " + ackDistributionId + " not received within " + RECEIVE_TIMEOUT_SECS + "s");
         assertVhostEquals(matchedAck, VHOST_15_15_V2_TAG);
@@ -106,7 +106,7 @@ class SamuSamuTest extends AMQPTestSupport {
 
         MessageDTO matchedAck = awaitMessage(ackDistributionId);
 
-        String referencedDistributionID = Utils.getReferencedDistributionID(matchedAck.getPayload());
+        String referencedDistributionID = Utils.getReferencedDistributionID(matchedAck);
 
         assertNotNull(matchedAck, "Ack " + ackDistributionId + " not received within " + RECEIVE_TIMEOUT_SECS + "s");
         assertVhostEquals(matchedAck, VHOST_15_15_V1_TAG);
@@ -137,7 +137,7 @@ class SamuSamuTest extends AMQPTestSupport {
 
         MessageDTO matchedAck = awaitMessage(ackDistributionId);
 
-        String referencedDistributionID = Utils.getReferencedDistributionID(matchedAck.getPayload());
+        String referencedDistributionID = Utils.getReferencedDistributionID(matchedAck);
 
         assertNotNull(matchedAck, "Ack " + ackDistributionId + " not received within " + RECEIVE_TIMEOUT_SECS + "s");
         assertVhostEquals(matchedAck, VHOST_15_15_V1_TAG);
@@ -167,7 +167,7 @@ class SamuSamuTest extends AMQPTestSupport {
 
         MessageDTO matchedAck = awaitMessage(ackDistributionId);
 
-        String referencedDistributionID = Utils.getReferencedDistributionID(matchedAck.getPayload());
+        String referencedDistributionID = Utils.getReferencedDistributionID(matchedAck);
 
         assertNotNull(matchedAck, "Ack " + ackDistributionId + " not received within " + RECEIVE_TIMEOUT_SECS + "s");
         assertVhostEquals(matchedAck, VHOST_15_15_V3_TAG);

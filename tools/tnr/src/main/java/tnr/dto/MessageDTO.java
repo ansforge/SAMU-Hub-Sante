@@ -22,8 +22,8 @@ public class MessageDTO {
     public MessageDTO(String vhost, String queue, Delivery original) throws Exception {
         this.vhost = vhost;
         this.queue = queue;
-        this.payload = this.parsePayload(original);
         this.original = original;
+        this.payload = this.parsePayload(original);
         this.distributionId = this.extractDistributionId(payload);
     }
 
@@ -47,6 +47,10 @@ public class MessageDTO {
         return original;
     }
 
+    public boolean isXML() {
+        return (original.getProperties().getContentType().equals("application/xml"));
+    }
+
     private String extractDistributionId(ObjectNode payload) throws Exception {
         return payload.get("distributionID").asText();
     }
@@ -55,7 +59,7 @@ public class MessageDTO {
         String content = new String(original.getBody(), StandardCharsets.UTF_8).trim();
 
         JsonNode node;
-        if (isXML(original)) {
+        if (isXML()) {
             node = xmlMapper.readTree(content.getBytes(StandardCharsets.UTF_8));
         } else {
             node = jsonMapper.readTree(content);
@@ -68,7 +72,4 @@ public class MessageDTO {
         throw new IllegalArgumentException("Payload is not valid JSON/XML.");
     }
 
-    private static boolean isXML(Delivery original) {
-        return (original.getProperties().getContentType().equals("application/xml"));
-    }
 }
