@@ -6,6 +6,7 @@ import static tnr.DistributionAssertions.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.DisplayName;
 
 import tnr.dto.MessageDTO;
 
@@ -24,7 +25,9 @@ class SamuSamuTest extends AMQPTestSupport {
     protected static final String V2_TAG = "2.3.0";
     protected static final String V1_TAG = "1.3.0";
     protected static final String RS_EDA_REF = "RS-EDA/RS-EDA_partageDossier_DidierMorel.01a.json";
+
     @Test
+    @DisplayName("Send RS-EDA message from samu1_v3 to samu2_v3 without conversion, then send ack")
     void messageFromSamu1V3ToSamu2V3() throws Exception {
 
         String useCase = getUseCaseContentOnline(V3_TAG,  RS_EDA_REF);
@@ -55,6 +58,7 @@ class SamuSamuTest extends AMQPTestSupport {
     }
 
     @Test
+    @DisplayName("Send RS-EDA message from samu1_v2 to samu2_v2 without conversion, then send ack")
     void messageFromSamu1V2ToSamu2V2() throws Exception {
 
         String useCase = getUseCaseContentOnline(V2_TAG,  RS_EDA_REF);
@@ -85,6 +89,7 @@ class SamuSamuTest extends AMQPTestSupport {
     }
 
     @Test
+    @DisplayName("Send RS-EDA message from samu1_v1 to samu2_v1 without conversion, then send ack")
     void messageFromSamu1V1ToSamu2V1() throws Exception {
 
         String useCase = getUseCaseContentOnline(V1_TAG,  RS_EDA_REF);
@@ -115,6 +120,7 @@ class SamuSamuTest extends AMQPTestSupport {
     }
 
     @Test
+    @DisplayName("Send RS-EDA message from samu1_v1 to samu1_v3 with conversion, then send ack")
     void messageFromSamu1V1ToSamu1V3() throws Exception {
 
         String useCase = getUseCaseContentOnline(V1_TAG,  RS_EDA_REF);
@@ -146,6 +152,7 @@ class SamuSamuTest extends AMQPTestSupport {
     }
 
     @Test
+    @DisplayName("Send RS-EDA message from samu1_v3 to samu1_v1 with conversion, then send ack")
     void messageFromSamu1V3ToSamu1V1() throws Exception {
 
         String useCase = getUseCaseContentOnline(V3_TAG,  RS_EDA_REF);
