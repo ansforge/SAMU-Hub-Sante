@@ -42,6 +42,7 @@ public class MongoConfiguration {
         indexOps.createIndex(
                 new Index().on("arrivedAt", Sort.Direction.ASC).expire(Duration.ofDays(3)));
         indexOps.createIndex(new Index().on("type", Sort.Direction.ASC));
+        indexOps.createIndex(new Index().on("payload.distributionID", Sort.Direction.ASC));
         indexOps.createIndex(
                 new Index()
                         .on(
