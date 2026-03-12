@@ -3,8 +3,6 @@ package tnr;
 import java.util.Arrays;
 import java.util.UUID;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import tnr.dto.MessageDTO;
 
 public class Utils {
@@ -21,6 +19,15 @@ public class Utils {
     }
 
     public static boolean isMessageOfType(MessageDTO message, String type) {
+        if(message.isXML()){
+            return message.getPayload()
+                    .path("content")
+                    .path("contentObject")
+                    .path("contentXML")
+                    .path("embeddedXMLContent")
+                    .path("message")
+                    .has(type);
+        }
         return message.getPayload()
                 .path("content").path(0)
                 .path("jsonContent")
@@ -29,8 +36,19 @@ public class Utils {
                 .has(type);
     }
 
-    public static String getReferencedDistributionID(ObjectNode payload) {
-        return payload
+    public static String getReferencedDistributionID(MessageDTO message) {
+        if(message.isXML()){
+            return  message.getPayload()
+                    .path("content")
+                    .path("contentObject")
+                    .path("contentXML")
+                    .path("embeddedXMLContent")
+                    .path("message")
+                    .path("reference")
+                    .path("distributionID")
+                    .asText(null);
+        }
+        return message.getPayload()
                 .path("content").path(0)
                 .path("jsonContent")
                 .path("embeddedJsonContent")
