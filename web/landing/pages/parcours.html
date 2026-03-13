@@ -198,8 +198,6 @@
         <!-- Emplacement du Header -->
         <main class="main bg-drop bg-drop--reverse bg-white" role="main" id="main" tabindex="-1">
 
-
-
             <!-- SVG pour les formes/pétales. A ajouter seulement une fois dans la page -->
             <svg class="d-block" aria-hidden="true" focusable="false" height="0" width="0">
                 <defs>
@@ -271,561 +269,932 @@
                         Documentation </a>
                 </div>
             </div>
-    </div>
 
-    <!-- Etape 1 -->
-    <div class="container paragraph-space o-paragraph--parcours__wrapper" id="etape1">
-        <div class="o-paragraph--parcours has-number">
-            <div class="o-paragraph--parcours__petal">
-                <p><b>01</b></p>
-            </div>
-            <div class="o-paragraph--parcours__container">
-                <div class="o-paragraph--parcours__content">
-                    <h2>Accès au Slack éditeurs</h2>
+            <!-- Onglets -->
+            <div class="o-tabs js-tabs o-tabs--check">
+                <ul class="js-tablist" data-hx="h2">
+                    <li class="js-tablist__item">
+                        <a href="#tabs-check-01" class="js-tablist__link">Editeurs </a>
+                    </li>
 
-                    <div class="wysiwyg">
-                        <p>Un channel Slack dédié à chaque éditeur est disponible pour communiquer avec l'équipe du Hub
-                            Santé
-                            de manière fluide et sécurisée. Le lien ci-dessous vous permet de rejoindre le Slack, pensez
-                            à
-                            nous envoyer un email afin qu'on paramètre les accès à votre channel dédié.
-                        </p>
+                    <li class="js-tablist__item">
+                        <a href="#tabs-check-02" class="js-tablist__link">Entités de santé (SAMU, SMUR, ...)
+                        </a>
+                    </li>
+                </ul>
+                <div class="js-tabcontent--container">
+                    <div id="tabs-check-01" class="js-tabcontent">
+                        <!-- Contenu de l'onglet 01 -->
 
-                        <div class="container" style="display: flex; justify-content: space-evenly; flex-wrap: wrap;">
-                            <div class="paragraph--lien">
-                                <a href="https://contact-api-lrm.slack.com/join/shared_invite/zt-1lbpmutlh-vsq4ilHZ5ciNezo8Y35FlA"
-                                    target="_blank" class="btn btn--style1 btn--white">Rejoindre Slack</a>
-                            </div>
+                        <!-- Etape 1 -->
+                        <div class="container paragraph-space o-paragraph--parcours__wrapper" id="etape1">
+                            <div class="o-paragraph--parcours has-number">
+                                <div class="o-paragraph--parcours__petal">
+                                    <p><b>01</b></p>
+                                </div>
+                                <div class="o-paragraph--parcours__container">
+                                    <div class="o-paragraph--parcours__content">
+                                        <h2>Accès au Slack éditeurs</h2>
 
-                            <div class="paragraph--lien">
-                                <p></p>
-                            </div>
+                                        <div class="wysiwyg">
+                                            <p>Un channel Slack dédié à chaque éditeur est disponible pour communiquer
+                                                avec
+                                                l'équipe du Hub
+                                                Santé
+                                                de manière fluide et sécurisée. Le lien ci-dessous vous permet de
+                                                rejoindre le
+                                                Slack, pensez
+                                                à
+                                                nous envoyer un email afin qu'on paramètre les accès à votre channel
+                                                dédié.
+                                            </p>
 
-                            <div class="paragraph--lien">
-                                <a href=mailto:hubsante.contact@esante.gouv.fr
-                                    class="btn btn--style1 mailto-link btn--white">Demandez vos accès</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+                                            <div class="container"
+                                                style="display: flex; justify-content: space-evenly; flex-wrap: wrap;">
+                                                <div class="paragraph--lien">
+                                                    <a href="https://contact-api-lrm.slack.com/join/shared_invite/zt-1lbpmutlh-vsq4ilHZ5ciNezo8Y35FlA"
+                                                        target="_blank" class="btn btn--style1 btn--white">Rejoindre
+                                                        Slack</a>
+                                                </div>
 
-    <!-- Etape 2 -->
-    <div class="container paragraph-space o-paragraph--parcours__wrapper" id="etape2">
-        <div class="o-paragraph--parcours has-number">
-            <div class="o-paragraph--parcours__petal">
-                <p><b>02</b></p>
-            </div>
-            <div class="o-paragraph--parcours__container">
-                <div class="o-paragraph--parcours__content">
-                    <h2>Accès aux repositories GitHub</h2>
+                                                <div class="paragraph--lien">
+                                                    <p></p>
+                                                </div>
 
-                    <div class="wysiwyg">
-                        <p>Deux repositories liés au Hub Santé vous sont mis à disposition sur le GitHub de l'ANS.
-
-                        <h3>1 - Modèle de données (public)</h3>
-                        <p> Les <strong>modèles de données</strong> associés au Hub Santé sont disponibles sur un <a
-                                href="https://github.com/ansforge/SAMU-Hub-Modeles?tab=readme-ov-file#hub-sant%C3%A9---librairie-mod%C3%A8les"
-                                target="_blank"> <i>repository</i> GitHub public</a>.
-                            <br> Les <strong>schémas, exemples, diagrammes UML et documents détaillés</strong> y sont
-                            consultables; ainsi que des SDK Java et Ruby associés et directement utilisables dans votre
-                            code.
-                        </p>
-                        <h3>2 - Code applicatif Hub Santé (public)</h3>
-                        <p> Ce <a href="https://github.com/ansforge/SAMU-Hub-Sante/" target="_blank">
-                                <i>repository</i> GitHub public </a> permet de partager les travaux
-                            et les développements réalisés par l'équipe Hub Santé.
-                            Il contient notamment des <a
-                                href="https://github.com/ansforge/SAMU-Hub-Sante/tree/main/clients/src/main/java/com/tutorials#readme"
-                                target="_blank"> <i>tutoriels Java</i></a> pour l'utilisation de
-                            <a href="https://www.rabbitmq.com/tutorials" target="_blank"> <i> RabbitMQ</i></a>;
-                            ainsi que des <a
-                                href="https://github.com/ansforge/SAMU-Hub-Sante/tree/main/clients/src/main/java/com/hubsante/examples#readme"
-                                target="_blank">exemples de code de client AMQP</a> (pour lire et écrire dans les files
-                            ouvertes par le Hub Santé) en Java, Spring Boot et Python.
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Etape 3 -->
-    <div class="container paragraph-space o-paragraph--parcours__wrapper" id="etape3">
-        <div class="o-paragraph--parcours has-number">
-            <div class="o-paragraph--parcours__petal">
-                <p><b>03</b></p>
-            </div>
-            <div class="o-paragraph--parcours__container">
-                <div class="o-paragraph--parcours__content">
-                    <h2 class="mb-0">Accès au Hub Santé</h2>
-                    <h5 style="color: grey; font-style: italic; font-weight: 500;">Certificats IGC Santé (TEST et PROD)
-                        et demande de droits</h3>
-                        <!-- Warning-->
-                        <div
-                            class="o-paragraph--text-media__info bg-gray-100 rounded-sm border mt-4 py-2 px-1 text-center">
-                            <div class="col-md-10 col-lg-9 text-center mx-auto">
-                                <p class="title--icon justify-content-center align-items-center">
-                                    <svg class="svg-icon mt-0" aria-hidden="true" focusable="false">
-                                        <use xlink:href="/svg-icons/icon-sprite.svg#warning"></use>
-                                    </svg>
-                                    <span>Attention</span>
-                                </p>
-                                <div class="wysiwyg">
-                                    <p>La démarche d'obtention des certificats IGC Santé est
-                                        <strong>essentielle</strong> et peut prendre du temps.
-                                        <br><strong>Pensez à bien l'anticiper</strong> !
+                                                <div class="paragraph--lien">
+                                                    <a href=mailto:hubsante.contact@esante.gouv.fr
+                                                        class="btn btn--style1 mailto-link btn--white">Demandez vos
+                                                        accès</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="wysiwyg mt-2">
-                            <p> Les certificats <strong>IGC Santé</strong> permettent d'identifier les logiciels dans le
-                                cadre des échanges sur le Hub Santé.
-                            <ul>
-                                <li> Pour les éditeurs souhaitant raccorder leur environnement développement/usine sur
-                                    l'environnement <strong>bac-a-sable</strong> du Hub Santé, des certificats
-                                    <strong>IGC Santé TEST</strong> sont nécessaires.
-
-                                <li> Pour les SAMU et entités de Santé souhaitant raccorder leur logiciel en production
-                                    sur les environnements de <strong>pre-production</strong> et
-                                    <strong>production</strong>
-                                    du Hub Santé, des certificats <strong>IGC Santé PROD</strong> sont nécessaires.
-                            </ul>
-                        </div>
-
-                        <!-- droits admin -->
-                        <div class="wysiwyg mt-2" id="etape3.1">
-                            <p>
-                            <h3>1 - Commande de cartes CPX et obtention des droits d'administrateur technique</h3>
-                            Afin de pouvoir générer des certificats, vous devez obtenir des cartes CPX et
-                            des droits d'administrateur technique.
-                            </p>
-
-                            <p>
-                                Vous trouverez ci-dessous des templates à compléter pour remplir les formulaires
-                                de demande de cartes CPX et/ou de droits d'administrateur technique <strong>F413 et F414
-                                </strong> :
-                            </p>
-
-                            <div class="container"
-                                style="display: flex; justify-content: space-around; flex-wrap: wrap;">
-
-                                <div class="paragraph--lien">
-                                    <a href="/resources/Parcours/F414_Hub Sante_Template.pdf" target="_blank"
-                                        class="btn btn--style1 btn--white">Template F414 (TEST) </a>
+                        <!-- Etape 2 -->
+                        <div class="container paragraph-space o-paragraph--parcours__wrapper" id="etape2">
+                            <div class="o-paragraph--parcours has-number">
+                                <div class="o-paragraph--parcours__petal">
+                                    <p><b>02</b></p>
                                 </div>
+                                <div class="o-paragraph--parcours__container">
+                                    <div class="o-paragraph--parcours__content">
+                                        <h2>Accès aux repositories GitHub</h2>
 
-                                <div class="paragraph--lien">
-                                    <p></p>
-                                </div>
+                                        <div class="wysiwyg">
+                                            <p>Deux repositories liés au Hub Santé vous sont mis à disposition sur le
+                                                GitHub de
+                                                l'ANS.
 
-                                <div class="paragraph--lien">
-                                    <a href="/resources/Parcours/F413_Hub Sante_Template.pdf" target="_blank"
-                                        class="btn btn--style1 btn--white">Template F413 (PROD)</a>
+                                            <h3>1 - Modèle de données (public)</h3>
+                                            <p> Les <strong>modèles de données</strong> associés au Hub Santé sont
+                                                disponibles
+                                                sur un <a
+                                                    href="https://github.com/ansforge/SAMU-Hub-Modeles?tab=readme-ov-file#hub-sant%C3%A9---librairie-mod%C3%A8les"
+                                                    target="_blank"> <i>repository</i> GitHub public</a>.
+                                                <br> Les <strong>schémas, exemples, diagrammes UML et documents
+                                                    détaillés</strong> y sont
+                                                consultables; ainsi que des SDK Java et Ruby associés et directement
+                                                utilisables
+                                                dans votre
+                                                code.
+                                            </p>
+                                            <h3>2 - Code applicatif Hub Santé (public)</h3>
+                                            <p> Ce <a href="https://github.com/ansforge/SAMU-Hub-Sante/"
+                                                    target="_blank">
+                                                    <i>repository</i> GitHub public </a> permet de partager les travaux
+                                                et les développements réalisés par l'équipe Hub Santé.
+                                                Il contient notamment des <a
+                                                    href="https://github.com/ansforge/SAMU-Hub-Sante/tree/main/clients/src/main/java/com/tutorials#readme"
+                                                    target="_blank"> <i>tutoriels Java</i></a> pour l'utilisation de
+                                                <a href="https://www.rabbitmq.com/tutorials" target="_blank"> <i>
+                                                        RabbitMQ</i></a>;
+                                                ainsi que des <a
+                                                    href="https://github.com/ansforge/SAMU-Hub-Sante/tree/main/clients/src/main/java/com/hubsante/examples#readme"
+                                                    target="_blank">exemples de code de client AMQP</a> (pour lire et
+                                                écrire
+                                                dans les files
+                                                ouvertes par le Hub Santé) en Java, Spring Boot et Python.
+                                            </p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- lecture des cartes -->
-                        <div class="wysiwyg mt-2" id="etape3.2">
-                            <p>
-                            <h3>2 - Lecture des cartes CPX</h3>
-                            Afin de pouvoir générer les certificats via les cartes CPX et les droits d'administrateur
-                            technique obtenus précédemment,
-                            il est nécessaire de disposer d'un lecteur de carte à puce et de télécharger le driver
-                            correspondant à l'OS de votre poste.
-                            <ul>
-                                <li>Vous pouvez consulter le guide du socle technique sur la
-                                    <a href="https://industriels.esante.gouv.fr/produits-et-services/socle-technique-cps"
-                                        target="_blank">
-                                        <i>page dédiée de l'ANS</i>
-                                    </a>.
-                                </li>
-                                <li>Les drivers sont à télécharger <a
-                                        href="https://industriels.esante.gouv.fr/produits-et-services/socle-technique-cps#paragraph-id--564"
-                                        target="_blank"> <i>ici</i>
-                                    </a>.</li>
-                                <li>En cas de problème de lecture de carte ou de droits manquants une fois connecté,
-                                    n'hésitez pas à consulter le site <a
-                                        href="https://diagcps.eservices.esante.gouv.fr/" target="_blank">
-                                        <i>d'assistance et diagnostic</i>
-                                    </a> et à utiliser Chrome ou Firefox en navigation privée pour éviter les conflits
-                                    avec d'autres cartes et/ou problèmes de cache.</li>
-                            </ul>
-                            </p>
+                        <!-- Etape 3 -->
+                        <div class="container paragraph-space o-paragraph--parcours__wrapper" id="etape3">
+                            <div class="o-paragraph--parcours has-number">
+                                <div class="o-paragraph--parcours__petal">
+                                    <p><b>03</b></p>
+                                </div>
+                                <div class="o-paragraph--parcours__container">
+                                    <div class="o-paragraph--parcours__content">
+                                        <h2 class="mb-0">Accès au Hub Santé</h2>
+                                        <h5 style="color: grey; font-style: italic; font-weight: 500;">Certificats IGC
+                                            Santé TEST et demande de droits</h3>
+                                            <!-- Warning-->
+                                            <div
+                                                class="o-paragraph--text-media__info bg-gray-100 rounded-sm border mt-4 py-2 px-1 text-center">
+                                                <div class="col-md-10 col-lg-9 text-center mx-auto">
+                                                    <p class="title--icon justify-content-center align-items-center">
+                                                        <svg class="svg-icon mt-0" aria-hidden="true" focusable="false">
+                                                            <use xlink:href="/svg-icons/icon-sprite.svg#warning"></use>
+                                                        </svg>
+                                                        <span>Attention</span>
+                                                    </p>
+                                                    <div class="wysiwyg">
+                                                        <p>La démarche d'obtention des certificats IGC Santé est
+                                                            <strong>essentielle</strong> et peut prendre du temps.
+                                                            <br><strong>Pensez à bien l'anticiper</strong> !
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="wysiwyg mt-2">
+                                                <p> Les certificats <strong>IGC Santé</strong> permettent d'identifier
+                                                    les
+                                                    logiciels dans le
+                                                    cadre des échanges sur le Hub Santé.
+                                                </p>
+                                                <ul>
+                                                    <li> Pour les éditeurs souhaitant raccorder leur environnement
+                                                        développement/usine sur
+                                                        l'environnement <strong>bac-a-sable</strong> du Hub Santé, des
+                                                        certificats
+                                                        <strong>IGC Santé TEST</strong> sont nécessaires.
+
+                                                    <li> Pour les SAMU et entités de Santé souhaitant raccorder leur
+                                                        logiciel
+                                                        sur les environnements de <strong>pre-production</strong> et
+                                                        <strong>production</strong>
+                                                        du Hub Santé, des certificats <strong>IGC Santé PROD</strong>
+                                                        sont nécessaires. La génération de ces certificats est à la
+                                                        charge de l'entité concernée.
+                                                </ul>
+                                            </div>
+
+                                            <!-- droits admin -->
+                                            <div class="wysiwyg mt-2" id="etape3.1">
+                                                <p>
+                                                <h3>1 - Commande de cartes CPX et obtention des droits d'administrateur
+                                                    technique</h3>
+                                                Afin de pouvoir générer des certificats, vous devez obtenir des cartes
+                                                CPX et
+                                                des droits d'administrateur technique.
+                                                </p>
+
+                                                <p>
+                                                    Vous avez la possibilité de réaliser cette démarche via le portail
+                                                    mesHabilitations ou en utilisant le formulaire de demande de cartes
+                                                    CPX
+                                                    et/ou de
+                                                    droits d'administrateur technique
+                                                    <strong>F414
+                                                    </strong> :
+                                                </p>
+
+                                                <div class="container"
+                                                    style="display: flex; justify-content: space-around; flex-wrap: wrap;">
+
+                                                    <div class="paragraph--lien">
+                                                        <a href="https://meshabilitations.esante.gouv.fr"
+                                                            target="_blank" class="btn btn--style1 btn--white">
+                                                            Portail mesHabilitations</a>
+                                                    </div>
+
+                                                    <div class="paragraph--lien">
+                                                        <p></p>
+                                                    </div>
+
+                                                    <div class="paragraph--lien">
+                                                        <a href="/resources/Parcours/F414_Hub Sante_Template.pdf"
+                                                            target="_blank" class="btn btn--style1 btn--white">Template
+                                                            F414
+                                                            (TEST) </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- lecture des cartes -->
+                                            <div class="wysiwyg mt-2" id="etape3.2">
+                                                <p>
+                                                <h3>2 - Lecture des cartes CPX</h3>
+                                                Afin de pouvoir générer les certificats via les cartes CPX et les droits
+                                                d'administrateur
+                                                technique obtenus précédemment,
+                                                il est nécessaire de disposer d'un lecteur de carte à puce et de
+                                                télécharger le
+                                                driver
+                                                correspondant à l'OS de votre poste.
+                                                <ul>
+                                                    <li>Vous pouvez consulter le guide du socle technique sur la
+                                                        <a href="https://industriels.esante.gouv.fr/produits-et-services/socle-technique-cps"
+                                                            target="_blank">
+                                                            <i>page dédiée de l'ANS</i>
+                                                        </a>.
+                                                    </li>
+                                                    <li>Les drivers sont à télécharger <a
+                                                            href="https://industriels.esante.gouv.fr/produits-et-services/socle-technique-cps#paragraph-id--564"
+                                                            target="_blank"> <i>ici</i>
+                                                        </a>.</li>
+                                                    <li>En cas de problème de lecture de carte ou de droits manquants
+                                                        une fois
+                                                        connecté,
+                                                        n'hésitez pas à consulter le site <a
+                                                            href="https://diagcps.eservices.esante.gouv.fr/"
+                                                            target="_blank">
+                                                            <i>d'assistance et diagnostic</i>
+                                                        </a> et à utiliser Chrome ou Firefox en navigation privée pour
+                                                        éviter
+                                                        les conflits
+                                                        avec d'autres cartes et/ou problèmes de cache.</li>
+                                                </ul>
+                                                </p>
+                                            </div>
+
+                                            <!-- génération -->
+                                            <div class="wysiwyg mt-4" id="etape3.3">
+                                                <p>
+                                                <h3>3 - Génération des certificats </h3>
+                                                Une fois les cartes et droits d'administrateur technique obtenus et
+                                                lisibles par
+                                                un lecteur
+                                                de cartes,
+                                                il faut utiliser la plateforme IGC pour générer des certificats
+                                                SSL_SERV.
+                                                Le FQDN (domaine) utilisé est à votre main mais doit permettre
+                                                d'identifier
+                                                l'entité
+                                                concernée.
+                                                Le Hub Santé ne fera pas de requêtes vers ce domaine et n'y demande pas
+                                                l'exposition de
+                                                services (ni sur ce domaine ni sur tout autre domaine).
+                                                </p>
+
+                                                <div class="container mb-2"
+                                                    style="display: flex; justify-content: space-around; flex-wrap: wrap;">
+
+                                                    <div class="paragraph--lien">
+
+                                                        <a href="https://pfc.eservices.esante.gouv.fr/pfcng-ihm/authentication.xhtml"
+                                                            target="_blank" class="btn btn--style1 btn--white">
+                                                            Générer un certificat logiciel IGC Santé</a>
+                                                    </div>
+
+                                                </div>
+
+                                                <p>
+                                                    En cas de besoin, reportez-vous à la section 8.2. du <a
+                                                        href="https://industriels.esante.gouv.fr/sites/default/files/media/document/ANS_IGC-Sante_Guide-IHM_281122_v1.2.1.pdf"
+                                                        target="_blank"> <i>guide d'utilisation de la Plateforme IGC
+                                                            Santé</i>
+                                                    </a>.
+                                                    <br />
+                                                    <i><strong>Attention</strong> : pour la génération de certificats de
+                                                        TEST,
+                                                        seule la
+                                                        connexion par "Carte CPS" fonctionne
+                                                        (pas par "Pro Santé Connect" qui ne fonctionne que pour les
+                                                        certificats
+                                                        de
+                                                        PROD).</i>
+                                                </p>
+                                            </div>
+
+                                            <!-- enregistrement -->
+                                            <div class="wysiwyg mt-2" id="etape3.4">
+
+                                                <h3>4 - Enregistrement des certificats sur le Hub Santé </h3>
+                                                <p>Une fois les certificats obtenus, veuillez <strong>envoyer le
+                                                        certificat
+                                                        public à
+                                                        l'équipe Hub Santé</strong> (par Slack ou email) afin que vos
+                                                    accès,
+                                                    files et droits
+                                                    soient
+                                                    configurés.
+                                                </p>
+
+                                                <p>Afin d'<strong>extraire le certificat public</strong> du fichier p12
+                                                    généré
+                                                    sur la
+                                                    plateforme IGC, vous
+                                                    pouvez utiliser la commande suivante :
+                                                    <span
+                                                        style="display: inline-block; text-align: center; width: 100%; margin-top: 20px; margin-bottom: 20px;">
+                                                        openssl pkcs12 -in <span
+                                                            style="color: #1D71B8;"><i>cert.p12</i></span>
+                                                        -clcerts
+                                                        -nokeys -out <span style="color: #1D71B8;">
+                                                            <i>publicCert.crt</i></span></span>
+                                                    dans laquelle vous remplacerez <span
+                                                        style="color: #1D71B8;"><i>cert.p12</i></span> par
+                                                    le <u>nom du fichier p12</u>
+                                                    généré sur la plateforme IGC et <span
+                                                        style="color: #1D71B8;"><i>publicCert.crt</i></span> par le
+                                                    <u>nom du
+                                                        domaine
+                                                        utilisé.crt</u> (par exemple :
+                                                    test.chu-xxx.fr.crt).
+                                                </p>
+
+                                            </div>
+
+                                            <!-- truststore -->
+                                            <div class="wysiwyg mt-2" id="etape3.5">
+
+                                                <h3>5 - Chaîne de certification et truststore</h3>
+                                                <p>
+                                                    Les étapes précédentes permettent de générer un certificat SSL_SERV
+                                                    auprès
+                                                    de l'IGC
+                                                    Santé pour vous identifier lors de vos accès au Hub Santé.
+                                                    Les échanges étant en mTLS (mutual TLS), le Hub Santé présente
+                                                    également un
+                                                    certificat
+                                                    serveur.
+                                                    Afin que la connexion puisse s'établir correctement, vous devez
+                                                    également
+                                                    autoriser ce
+                                                    certificat de votre côté.
+                                                </p>
+                                                <p>
+                                                    Pour cela, il est recommandé d'autoriser plutôt les certificats de
+                                                    l'Autorité de
+                                                    Certification (AC, ou CA en anglais) qui constituent la chaine de
+                                                    certification du
+                                                    certificat pour que cette autorisation reste valable lorsque nous
+                                                    renouvelerons nos
+                                                    certificats.
+                                                    Les chaînes de certification sont les suivantes :
+                                                <ul>
+                                                    <li>TEST : nos certificats sont signés par <a
+                                                            href="https://igc-sante.esante.gouv.fr/AC%20TEST/ACI-EL-ORG-TEST.cer"
+                                                            target="_blank">TEST AC IGC-SANTE ELEMENTAIRE
+                                                            ORGANISATIONS</a>
+                                                        lui-même signé
+                                                        par le certificat racine <a
+                                                            href="https://igc-sante.esante.gouv.fr/AC%20TEST/ACR-EL-TEST.cer"
+                                                            target="_blank">TEST AC RACINE IGC-SANTE ELEMENTAIRE</a>.
+                                                    </li>
+                                                    <li>PROD : nos certificats sont signés par <a
+                                                            href="https://igc-sante.esante.gouv.fr/AC/ACI-EL-ORG.cer"
+                                                            target="_blank">AC
+                                                            IGC-SANTE ELEMENTAIRE ORGANISATIONS</a> lui-même signé par
+                                                        le
+                                                        certificat racine
+                                                        <a href="https://igc-sante.esante.gouv.fr/AC/ACR-EL.cer"
+                                                            target="_blank">AC RACINE
+                                                            IGC-SANTE ELEMENTAIRE</a>.
+                                                    </li>
+                                                </ul>
+                                                </p>
+
+                                            </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
-                        <!-- génération -->
-                        <div class="wysiwyg mt-4" id="etape3.3">
-                            <p>
-                            <h3>3 - Génération des certificats </h3>
-                            Une fois les cartes et droits d'administrateur technique obtenus et lisibles par un lecteur
-                            de cartes,
-                            il faut utiliser la plateforme IGC pour générer des certificats SSL_SERV.
-                            Le FQDN (domaine) utilisé est à votre main mais doit permettre d'identifier l'entité
-                            concernée.
-                            Le Hub Santé ne fera pas de requêtes vers ce domaine et n'y demande pas l'exposition de
-                            services (ni sur ce domaine ni sur tout autre domaine).
-                            </p>
+                        <!-- Etape 4 -->
+                        <div class="container paragraph-space o-paragraph--parcours__wrapper" id="etape4">
+                            <div class="o-paragraph--parcours has-number">
+                                <div class="o-paragraph--parcours__petal">
+                                    <p><b>04</b></p>
+                                </div>
+                                <div class="o-paragraph--parcours__container">
+                                    <div class="o-paragraph--parcours__content">
+                                        <h2>Raccordement au Hub Santé </h2>
 
-                            <div class="container mb-2"
-                                style="display: flex; justify-content: space-around; flex-wrap: wrap;">
+                                        <div class="wysiwyg">
+                                            <p>Le raccordement technique est le prérequis à l'implémentation d'échanges
+                                                fonctionnels
+                                                (15-15,
+                                                15-SMUR, etc.) tels
+                                                que décrits dans les
+                                                <a href="/pages/accompagnement.html#fonctionnel"
+                                                    target="_blank">Dossiers de
+                                                    Spécifications
+                                                    Fonctionnelles (DSF)</a>.
+                                            </p>
+                                            <p> Tous les <strong>détails techniques</strong> sont disponibles dans le
+                                                Dossier
+                                                des
+                                                Spécifications Techniques (DST).
+                                            </p>
+                                            <a href="/pages/accompagnement.html#technique" target="_blank"
+                                                class="btn btn--style1 btn--white">Dossier des Spécifications Techniques
+                                                (DST)</a>
 
-                                <div class="paragraph--lien">
+                                            <p>
+                                            <h3>1 - Messages asynchrones, AMQP et RabbitMQ.</h3>
+                                            Les échanges entre un Client et le Hub Santé se font via des opérations
+                                            d'envoi et
+                                            de
+                                            réception de messages en mode asynchrone.
+                                            La solution technique proposée est basée sur le protocole <a
+                                                href="/resources/Parcours/amqp0-9-1.pdf" target="_blank">
+                                                <i>AMQP 0-9-1</i></a> et son implémentation open-source <a
+                                                href="https://www.rabbitmq.com/" target="_blank"> <i>RabbitMQ</i></a>.
+                                            </p>
 
-                                    <a href="https://pfc.eservices.esante.gouv.fr/pfcng-ihm/authentication.xhtml"
-                                        target="_blank" class="btn btn--style1 btn--white">
-                                        Générer un certificat logiciel IGC Santé</a>
+
+                                            <p>
+                                            <h3>2 - Autorisations : acteurs et messages</h3>
+                                            La liste des Clients autorisés à échanger des messages sur le Hub Santé est
+                                            maintenue
+                                            par
+                                            l'ANS.
+                                            Les Clients auront le droit d'échanger uniquement avec les acteurs également
+                                            enregistrés.
+                                            Les échanges autorisés sont définis par les
+                                            <a href="/pages/accompagnement.html#fonctionnel" target="_blank">Dossiers de
+                                                Spécifications
+                                                Fonctionnelles (DSF)</a> ;
+                                            qui précise notamment les modèles de données attendus et contrôlés lors des
+                                            échanges
+                                            de
+                                            messages
+                                            par le Hub Santé.
+
+                                            </p>
+
+                                            <p>
+                                            <h3>3 - Communications : point à point, files fixées et nommage</h3>
+                                            Le mode de communication est basé sur un mode d'échange <strong> point à
+                                                point
+                                            </strong>.
+                                            <li>Un <strong>Client émetteur</strong> publie un message pour un unique
+                                                destinataire
+                                                sur
+                                                l'échangeur d'envoi.</li>
+                                            <li>Un <strong>Client destinataire </strong> reçoit ses messages sur des
+                                                files
+                                                d'écoute
+                                                dédiées.
+                                                Chaque Client dispose de 3 files d'écoute selon la typologie des
+                                                messages reçus
+                                                :
+                                                <ul>
+                                                    <li> <strong> message </strong> pour les échanges fonctionnels,</li>
+                                                    <li> <strong> ack </strong> pour les acquittements de réception
+                                                        finale,</li>
+                                                    <li> <strong> info </strong> pour les messages généraux
+                                                        d'information,
+                                                        alerte et
+                                                        erreur.
+                                                    </li>
+                                                </ul>
+                                            </li>
+                                            <p class="my-2">
+                                                Grace à un mécanisme de routage interne au Hub Santé, chaque message
+                                                publié sur
+                                                l'échangeur
+                                                d'envoi est transféré sur une file de messages accessible au
+                                                destinataire
+                                                (déterminé
+                                                avec
+                                                l'enveloppe du message).
+                                                Le message est ensuite récupéré par le Client destinataire pour traiter
+                                                ce
+                                                message
+                                                au
+                                                sein
+                                                de son système d'information.
+                                            </p>
+                                            <p>
+                                                Le schéma ci-dessous illustre les différentes étapes du transit d'un
+                                                message par
+                                                le
+                                                Hub
+                                                Santé ainsi que la configuration des différentes clés et attributs.
+
+                                            <div class="container border rounded-md align-center">
+                                                <img src="/img/crea/illustrations parcours/transitHub.png"
+                                                    loading="lazy">
+                                            </div>
+                                            </p>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Etape 5 -->
+                        <div class="container paragraph-space o-paragraph--parcours__wrapper" id="etape5">
+                            <div class="o-paragraph--parcours has-number">
+                                <div class="o-paragraph--parcours__petal">
+                                    <p><b>05</b></p>
+                                </div>
+                                <div class="o-paragraph--parcours__container">
+                                    <div class="o-paragraph--parcours__content">
+                                        <h2>Accès aux environnements </h2>
+
+                                        <div class="wysiwyg">
+                                            <p>Trois environnements du Hub Santé sont disponibles.
+                                            </p>
+
+
+                                            <h3>1 - Bac-à-sable : pour les travaux, tests et recettes éditeurs</h3>
+                                            <p>Cet environnement est à disposition des éditeurs souhaitant se raccorder
+                                                au Hub
+                                                Santé
+                                                et
+                                                réaliser les développements associés à l'implémentation de périmètres
+                                                fonctionnels
+                                                d'échanges du
+                                                Hub Santé (tels que définis dans les DSF). Il est également utilisé pour
+                                                réaliser
+                                                les
+                                                tests
+                                                puis
+                                                recettes des travaux des éditeurs en amont des déploiements sur les
+                                                environnements
+                                                de
+                                                production.</p>
+                                            Les URL sur l'environnement bac-à-sable sont :
+                                            <ul class="mt-1">
+                                                <li> Hub Santé :
+                                                    <strong>amqps://messaging.bac-a-sable.hub.esante.gouv.fr:5671</strong>
+                                                <li> LRM de test :
+                                                    <strong>https://bac-a-sable.hub.esante.gouv.fr/lrm/</strong>
+                                            </ul>
+
+                                            <h3>2 - Pré-production : pour les tests et formations métiers</h3>
+                                            <p>
+                                                Cet environnement, iso à la production, permet de réaliser les tests et
+                                                formations
+                                                sur
+                                                une
+                                                instance déployée chez le métier (au SAMU par exemple) en amont du
+                                                déploiement
+                                                d'un
+                                                lien
+                                                en
+                                                production.</p>
+
+                                            <h3>3 - Production</h3>
+                                            <p>
+                                                Cet environnement porte l'échange des messages en production.
+                                                L'enregistrement d'un Client sur la production se fait suite une recette
+                                                réussie
+                                                avec
+                                                l'éditeur sur l'environnement de bac-à-sable puis un déploiement réussi
+                                                sur
+                                                l'environnement
+                                                de pré-production.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Etape 6 -->
+                        <div class="container paragraph-space o-paragraph--parcours__wrapper" id="etape6">
+                            <div class="o-paragraph--parcours has-number">
+                                <div class="o-paragraph--parcours__petal">
+                                    <p><b>06</b></p>
+                                </div>
+                                <div class="o-paragraph--parcours__container">
+                                    <div class="o-paragraph--parcours__content">
+                                        <h2>Implémentation des messages fonctionnels </h2>
+
+                                        <div class="wysiwyg">
+                                            <p>Pour chaque périmètre, il est nécessaire d'implémenter et de tester les
+                                                messages
+                                                fonctionnels
+                                                associés.
+                                            </p>
+
+                                            <h3>1 - Implémentation des messages</h3>
+                                            <p> Les messages à implémenter pour chaque périmètre fonctionnel sont
+                                                décrits dans
+                                                la
+                                                documentation téléchargeable dans la rubrique
+                                                <a href="/pages/accompagnement.html#fonctionnel" target="_blank">
+                                                    Ressources éditeurs</a>.
+                                                <br> Une roadmap d'implémentation spécifique à chaque périmètre est
+                                                également
+                                                disponible :
+                                                dans les supports des
+                                                <a href="/pages/webinaires.html#projectathon8" target="_blank">
+                                                    Projectathons </a> et séparément sur demande.
+                                                <br> Nous mettons également à votre disposition un <a
+                                                    href="/pages/accompagnement.html#outils" target="_blank">
+                                                    LRM de test </a> , ainsi que des cahiers de recette
+                                                spécifiques à chaque périmètre, publiés dans le <a
+                                                    href="/pages/accompagnement.html#historique" target="_blank">
+                                                    bundle </a> de chaque version .
+                                            </p>
+                                            <h3>2 - Recette ANS </h3>
+                                            <p>
+                                                L'équipe du Hub Santé procède à une première recette avec chaque
+                                                éditeur, sur la
+                                                base des
+                                                cahiers de recette fournis, afin de valider l'implémentation des
+                                                messages par
+                                                rapport au
+                                                modèle publié.
+                                            </p>
+
+                                            <h3>3 - Recette fonctionnelle </h3>
+                                            <p>
+                                                Une fois la recette ANS validée, des tests de bout en bout sont réalisés
+                                                avec un
+                                                autre
+                                                éditeur. Puis, pour chaque première mise en production, des tests
+                                                utilisateurs
+                                                de
+                                                bout
+                                                en bout sont effectués au sein des SAMU pilotes.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Etape 7 -->
+                        <div class="container paragraph-space o-paragraph--parcours__wrapper" id="etape7">
+                            <div class="o-paragraph--parcours has-number">
+                                <div class="o-paragraph--parcours__petal">
+                                    <p><b>07</b></p>
+                                </div>
+                                <div class="o-paragraph--parcours__container">
+                                    <div class="o-paragraph--parcours__content">
+                                        <h2>Compatibilité Hub Santé</h2>
+
+                                        <div class="wysiwyg">
+                                            <p> Lorsque l'intégralité d'un périmètre fonctionnel a été implémenté et
+                                                validé en
+                                                recette, a
+                                                minima avec
+                                                l'équipe du Hub Santé (recette ANS), il est possible pour l'éditeur
+                                                d'utiliser
+                                                le
+                                                badge Hub
+                                                Santé
+                                                correspondant. La charte d'utilisation du badge
+                                                est téléchargeable ci-dessous.</p>
+                                        </div>
+
+                                        <div class="paragraph--lien">
+
+                                            <a href="/resources/Badges/PDF Badge A4.pdf" target="_blank"
+                                                class="btn btn--style1 btn--white">Badge Hub Santé (charte
+                                                d'utilisation)</a>
+                                        </div>
+                                        <div class="paragraph--lien"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Etape 8 -->
+                        <!-- <div class="container paragraph-space o-paragraph--parcours__wrapper" id="etape8">
+    <div class="o-paragraph--parcours has-number">
+        <div class="o-paragraph--parcours__petal">
+            <p><b>08</b></p>
+        </div>
+        <div class="o-paragraph--parcours__container">
+            <div class="o-paragraph--parcours__content">
+                <h2>Adhésion à la charte du Hub Santé</h2>
+
+                <div class="wysiwyg">
+                    <p> Avant de pouvoir échanger des messages sur l'environnement de production du Hub Santé,
+                        il
+                        est nécessaire de signer la charte d'adhésion. Vous trouverez ci-dessous le lien vers le
+                        téléchargement de cette charte et pouvez demander le lien YouSign à l'équipe Hub Santé
+                        en
+                        amont de votre déploiement.</p>
+                </div>
+
+                <div class="paragraph--lien">
+
+                    <a href="/pages/accompagnement.html#charte" target="_blank"
+                        class="btn btn--style1 btn--white">Charte d'adhésion</a>
+                </div>
+                <div class="paragraph--lien"></div>
+            </div>
+        </div>
+    </div>
+</div> -->
+
+                    </div>
+
+                    <div id="tabs-check-02" class="js-tabcontent">
+                        <!-- Contenu de l'onglet 02 -->
+
+                        <div class="container text-center paragraph-space o-paragraph--parcours__wrapper">
+                            <h2 class="mb-0">Accès au Hub Santé</h2>
+                            <h5 style="color: grey; font-style: italic; font-weight: 500;">
+                                Certificats IGC
+                                Santé
+                                et demande de droits</h3>
+
+                                <div class="wysiwyg mt-2">
+                                    <p> Les certificats <strong>IGC Santé</strong> permettent d'identifier les
+                                        logiciels dans le
+                                        cadre des échanges sur le Hub Santé.
+                                    </p>
+                                    <p>
+                                        Pour les SAMU et entités de Santé souhaitant raccorder leur logiciel en
+                                        production
+                                        sur les environnements de <strong>pre-production</strong> et
+                                        <strong>production</strong>
+                                        du Hub Santé, des certificats <strong>IGC Santé PROD</strong> sont
+                                        nécessaires.
+                                    </p>
                                 </div>
 
+                                <!-- Warning-->
+                                <div
+                                    class="o-paragraph--text-media__info bg-gray-100 rounded-sm border mt-4 py-2 px-1 text-center">
+                                    <div class="col-md-10 col-lg-9 text-center mx-auto">
+                                        <p class="title--icon justify-content-center align-items-center">
+                                            <svg class="svg-icon mt-0" aria-hidden="true" focusable="false">
+                                                <use xlink:href="/svg-icons/icon-sprite.svg#warning"></use>
+                                            </svg>
+                                            <span>Attention</span>
+                                        </p>
+                                        <div class="wysiwyg">
+                                            <p>La démarche d'obtention des certificats IGC Santé est
+                                                <strong>essentielle</strong> et peut prendre du temps.
+                                                <br><strong>Pensez à bien l'anticiper</strong> !
+                                        </div>
+                                    </div>
+                                </div>
+                        </div>
+
+                        <!-- Etape 1 -->
+                        <div class="container paragraph-space o-paragraph--parcours__wrapper" id="etape1">
+                            <div class="o-paragraph--parcours has-number">
+                                <div class="o-paragraph--parcours__petal">
+                                    <p><b>01</b></p>
+                                </div>
+                                <div class="o-paragraph--parcours__container">
+                                    <div class="o-paragraph--parcours__content">
+                                        <h2>Obtention des droits d'administrateur technique</h2>
+
+                                        <!-- droits admin -->
+                                        <div class="wysiwyg mt-2">
+                                            <p>
+                                                Afin de pouvoir générer des certificats <strong>logiciel
+                                                    SERVEUR</strong>, vous
+                                                devez obtenir des droits d'administrateur technique.
+                                            </p>
+
+                                            Vous avez la possibilité de réaliser cette démarche via le portail
+                                            mesHabilitations ou en utilisant le formulaire de demande de cartes CPX
+                                            et/ou de
+                                            droits d'administrateur technique
+                                            <strong>F413
+                                            </strong> :
+
+                                            <div class="container"
+                                                style="display: flex; justify-content: space-around; flex-wrap: wrap;">
+
+                                                <div class="paragraph--lien">
+                                                    <a href="https://meshabilitations.esante.gouv.fr" target="_blank"
+                                                        class="btn btn--style1 btn--white">
+                                                        Portail mesHabilitations</a>
+                                                </div>
+
+                                                <div class="paragraph--lien">
+                                                    <p></p>
+                                                </div>
+
+                                                <div class="paragraph--lien">
+                                                    <a href="/resources/Parcours/F413_Hub Sante_Template.pdf"
+                                                        target="_blank" class="btn btn--style1 btn--white">Template
+                                                        F413</a>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
                             </div>
-
-                            <p>
-                                En cas de besoin, reportez-vous à la section 8.2. du <a
-                                    href="https://industriels.esante.gouv.fr/sites/default/files/media/document/ANS_IGC-Sante_Guide-IHM_281122_v1.2.1.pdf"
-                                    target="_blank"> <i>guide d'utilisation de la Plateforme IGC Santé</i>
-                                </a>.
-                                <br />
-                                <i><strong>Attention</strong> : pour la génération de certificats de TEST, seule la
-                                    connexion par "Carte CPS" fonctionne
-                                    (pas par "Pro Santé Connect" qui ne fonctionne que pour les certificats de
-                                    PROD).</i>
-                            </p>
                         </div>
 
-                        <!-- enregistrement -->
-                        <div class="wysiwyg mt-2" id="etape3.4">
+                        <!-- Etape 2 -->
+                        <div class="container paragraph-space o-paragraph--parcours__wrapper" id="etape2">
+                            <div class="o-paragraph--parcours has-number">
+                                <div class="o-paragraph--parcours__petal">
+                                    <p><b>02</b></p>
+                                </div>
+                                <div class="o-paragraph--parcours__container">
+                                    <div class="o-paragraph--parcours__content">
+                                        <h2>Génération des certificats</h2>
 
-                            <h3>4 - Enregistrement des certificats sur le Hub Santé </h3>
-                            <p>Une fois les certificats obtenus, veuillez <strong>envoyer le certificat public à
-                                    l'équipe Hub Santé</strong> (par Slack ou email) afin que vos accès, files et droits
-                                soient
-                                configurés.
-                            </p>
+                                        <!-- génération -->
+                                        <div class="wysiwyg mt-4">
 
-                            <p>Afin d'<strong>extraire le certificat public</strong> du fichier p12 généré sur la
-                                plateforme IGC, vous
-                                pouvez utiliser la commande suivante :
-                                <span
-                                    style="display: inline-block; text-align: center; width: 100%; margin-top: 10px; margin-bottom: 10px;">
-                                    openssl pkcs12 -in <span style="color: #1D71B8;"><i>cert.p12</i></span> -clcerts
-                                    -nokeys -out <span style="color: #1D71B8;"> <i>publicCert.crt</i></span></span>
-                                dans laquelle vous remplacerez <span style="color: #1D71B8;"><i>cert.p12</i></span> par
-                                le <u>nom du fichier p12</u>
-                                généré sur la plateforme IGC et <span
-                                    style="color: #1D71B8;"><i>publicCert.crt</i></span> par le <u>nom du domaine
-                                    utilisé.crt</u> (par exemple :
-                                test.chu-xxx.fr.crt).
-                            </p>
+                                            Une fois les droits d'administrateur technique obtenus,
+                                            il faut utiliser la plateforme IGC pour générer des certificats SSL_SERV.
+                                            Le FQDN (domaine) utilisé est à votre main mais doit permettre d'identifier
+                                            l'entité
+                                            concernée.
+                                            Le Hub Santé ne fera pas de requêtes vers ce domaine et n'y demande pas
+                                            l'exposition de
+                                            services (ni sur ce domaine ni sur tout autre domaine).
 
+
+                                            <div class="container mb-2"
+                                                style="display: flex; justify-content: space-around; flex-wrap: wrap;">
+
+                                                <div class="paragraph--lien">
+
+                                                    <a href="https://pfc.eservices.esante.gouv.fr/pfcng-ihm/authentication.xhtml"
+                                                        target="_blank" class="btn btn--style1 btn--white">
+                                                        Générer un certificat logiciel IGC Santé</a>
+                                                </div>
+
+                                            </div>
+
+                                            <p>
+                                                En cas de besoin, reportez-vous à la section 8.2. du <a
+                                                    href="https://industriels.esante.gouv.fr/sites/default/files/media/document/ANS_IGC-Sante_Guide-IHM_281122_v1.2.1.pdf"
+                                                    target="_blank"> <i>guide d'utilisation de la Plateforme IGC
+                                                        Santé</i>
+                                                </a>.
+                                            </p>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
-                        <!-- truststore -->
-                        <div class="wysiwyg mt-2" id="etape3.5">
+                        <!-- Etape 3 -->
+                        <div class="container paragraph-space o-paragraph--parcours__wrapper" id="etape3">
+                            <div class="o-paragraph--parcours has-number">
+                                <div class="o-paragraph--parcours__petal">
+                                    <p><b>03</b></p>
+                                </div>
+                                <div class="o-paragraph--parcours__container">
+                                    <div class="o-paragraph--parcours__content">
+                                        <h2>Enregistrement des certificats sur le Hub Santé</h2>
 
-                            <h3>5 - Chaîne de certification et truststore</h3>
-                            <p>
-                                Les étapes précédentes permettent de générer un certificat SSL_SERV auprès de l'IGC
-                                Santé pour vous identifier lors de vos accès au Hub Santé.
-                                Les échanges étant en mTLS (mutual TLS), le Hub Santé présente également un certificat
-                                serveur.
-                                Afin que la connexion puisse s'établir correctement, vous devez également autoriser ce
-                                certificat de votre côté.
-                            </p>
-                            <p>
-                                Pour cela, il est recommandé d'autoriser plutôt les certificats de l'Autorité de
-                                Certification (AC, ou CA en anglais) qui constituent la chaine de certification du
-                                certificat pour que cette autorisation reste valable lorsque nous renouvelerons nos
-                                certificats.
-                                Les chaînes de certification sont les suivantes :
-                            <ul>
-                                <li>TEST : nos certificats sont signés par <a
-                                        href="https://igc-sante.esante.gouv.fr/AC%20TEST/ACI-EL-ORG-TEST.cer"
-                                        target="_blank">TEST AC IGC-SANTE ELEMENTAIRE ORGANISATIONS</a> lui-même signé
-                                    par le certificat racine <a
-                                        href="https://igc-sante.esante.gouv.fr/AC%20TEST/ACR-EL-TEST.cer"
-                                        target="_blank">TEST AC RACINE IGC-SANTE ELEMENTAIRE</a>.</li>
-                                <li>PROD : nos certificats sont signés par <a
-                                        href="https://igc-sante.esante.gouv.fr/AC/ACI-EL-ORG.cer" target="_blank">AC
-                                        IGC-SANTE ELEMENTAIRE ORGANISATIONS</a> lui-même signé par le certificat racine
-                                    <a href="https://igc-sante.esante.gouv.fr/AC/ACR-EL.cer" target="_blank">AC RACINE
-                                        IGC-SANTE ELEMENTAIRE</a>.
-                                </li>
-                            </ul>
-                            </p>
+                                        <!-- enregistrement -->
+                                        <div class="wysiwyg mt-2">
 
+                                            <p>Une fois les certificats obtenus, veuillez <strong>envoyer le certificat
+                                                    public à
+                                                    l'équipe Hub Santé</strong> (par Slack ou email) afin que vos accès,
+                                                files et droits
+                                                soient
+                                                configurés.
+                                            </p>
+
+                                            <p>Afin d'<strong>extraire le certificat public</strong> du fichier p12
+                                                généré
+                                                sur la
+                                                plateforme IGC, vous
+                                                pouvez utiliser la commande suivante :
+                                                <span
+                                                    style="display: inline-block; text-align: center; width: 100%; margin-top: 20px; margin-bottom: 20px;">
+                                                    openssl pkcs12 -in <span
+                                                        style="color: #1D71B8;"><i>cert.p12</i></span>
+                                                    -clcerts
+                                                    -nokeys -out <span style="color: #1D71B8;">
+                                                        <i>publicCert.crt</i></span></span>
+                                                dans laquelle vous remplacerez <span
+                                                    style="color: #1D71B8;"><i>cert.p12</i></span> par
+                                                le <u>nom du fichier p12</u>
+                                                généré sur la plateforme IGC et <span
+                                                    style="color: #1D71B8;"><i>publicCert.crt</i></span> par le <u>nom
+                                                    du
+                                                    domaine
+                                                    utilisé.crt</u> (par exemple :
+                                                test.chu-xxx.fr.crt).
+                                            </p>
+
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    </div>
-
-    <!-- Etape 4 -->
-    <div class="container paragraph-space o-paragraph--parcours__wrapper" id="etape4">
-        <div class="o-paragraph--parcours has-number">
-            <div class="o-paragraph--parcours__petal">
-                <p><b>04</b></p>
-            </div>
-            <div class="o-paragraph--parcours__container">
-                <div class="o-paragraph--parcours__content">
-                    <h2>Raccordement au Hub Santé </h2>
-
-                    <div class="wysiwyg">
-                        <p>Le raccordement technique est le prérequis à l'implémentation d'échanges fonctionnels
-                            (15-15,
-                            15-SMUR, etc.) tels
-                            que décrits dans les
-                            <a href="/pages/accompagnement.html#fonctionnel" target="_blank">Dossiers de
-                                Spécifications
-                                Fonctionnelles (DSF)</a>.
-                        </p>
-                        <p> Tous les <strong>détails techniques</strong> sont disponibles dans le Dossier des
-                            Spécifications Techniques (DST).
-                        </p>
-                        <a href="/pages/accompagnement.html#technique" target="_blank"
-                            class="btn btn--style1 btn--white">Dossier des Spécifications Techniques (DST)</a>
-
-                        <p>
-                        <h3>1 - Messages asynchrones, AMQP et RabbitMQ.</h3>
-                        Les échanges entre un Client et le Hub Santé se font via des opérations d'envoi et de
-                        réception de messages en mode asynchrone.
-                        La solution technique proposée est basée sur le protocole <a
-                            href="/resources/Parcours/amqp0-9-1.pdf" target="_blank">
-                            <i>AMQP 0-9-1</i></a> et son implémentation open-source <a href="https://www.rabbitmq.com/"
-                            target="_blank"> <i>RabbitMQ</i></a>.
-                        </p>
-
-
-                        <p>
-                        <h3>2 - Autorisations : acteurs et messages</h3>
-                        La liste des Clients autorisés à échanger des messages sur le Hub Santé est maintenue par
-                        l'ANS.
-                        Les Clients auront le droit d'échanger uniquement avec les acteurs également enregistrés.
-                        Les échanges autorisés sont définis par les
-                        <a href="/pages/accompagnement.html#fonctionnel" target="_blank">Dossiers de Spécifications
-                            Fonctionnelles (DSF)</a> ;
-                        qui précise notamment les modèles de données attendus et contrôlés lors des échanges de
-                        messages
-                        par le Hub Santé.
-
-                        </p>
-
-                        <p>
-                        <h3>3 - Communications : point à point, files fixées et nommage</h3>
-                        Le mode de communication est basé sur un mode d'échange <strong> point à point </strong>.
-                        <li>Un <strong>Client émetteur</strong> publie un message pour un unique destinataire sur
-                            l'échangeur d'envoi.</li>
-                        <li>Un <strong>Client destinataire </strong> reçoit ses messages sur des files d'écoute
-                            dédiées.
-                            Chaque Client dispose de 3 files d'écoute selon la typologie des messages reçus :
-                            <ul>
-                                <li> <strong> message </strong> pour les échanges fonctionnels,</li>
-                                <li> <strong> ack </strong> pour les acquittements de réception finale,</li>
-                                <li> <strong> info </strong> pour les messages généraux d'information, alerte et
-                                    erreur.
-                                </li>
-                            </ul>
-                        </li>
-                        <p class="my-2">
-                            Grace à un mécanisme de routage interne au Hub Santé, chaque message publié sur
-                            l'échangeur
-                            d'envoi est transféré sur une file de messages accessible au destinataire (déterminé
-                            avec
-                            l'enveloppe du message).
-                            Le message est ensuite récupéré par le Client destinataire pour traiter ce message au
-                            sein
-                            de son système d'information.
-                        </p>
-                        <p>
-                            Le schéma ci-dessous illustre les différentes étapes du transit d'un message par le Hub
-                            Santé ainsi que la configuration des différentes clés et attributs.
-
-                        <div class="container border rounded-md align-center">
-                            <img src="/img/crea/illustrations parcours/transitHub.png" loading="lazy">
-                        </div>
-                        </p>
-                        </p>
                     </div>
                 </div>
             </div>
-        </div>
+
+            <!-- scripts -->
+            <script type="text/javascript" src="/script/jquery-3.5.1.min.js"></script>
+            <script type="text/javascript" src="/script/vendor.js"></script>
+            <script type="text/javascript" src="/script/app.js"></script>
+            <script type="text/javascript" src="/script/tiny-slider.js"></script>
+            <script type="text/javascript" src="/script/bloc-o-remontees-diverses.js"></script>
+            <script type="text/javascript" src="/script/bloc-global-sliders.js"></script>
+        </main>
+
     </div>
-
-    <!-- Etape 5 -->
-    <div class="container paragraph-space o-paragraph--parcours__wrapper" id="etape5">
-        <div class="o-paragraph--parcours has-number">
-            <div class="o-paragraph--parcours__petal">
-                <p><b>05</b></p>
-            </div>
-            <div class="o-paragraph--parcours__container">
-                <div class="o-paragraph--parcours__content">
-                    <h2>Accès aux environnements </h2>
-
-                    <div class="wysiwyg">
-                        <p>Trois environnements du Hub Santé sont disponibles.
-                        </p>
-
-
-                        <h3>1 - Bac-à-sable : pour les travaux, tests et recettes éditeurs</h3>
-                        <p>Cet environnement est à disposition des éditeurs souhaitant se raccorder au Hub Santé et
-                            réaliser les développements associés à l'implémentation de périmètres fonctionnels
-                            d'échanges du
-                            Hub Santé (tels que définis dans les DSF). Il est également utilisé pour réaliser les
-                            tests
-                            puis
-                            recettes des travaux des éditeurs en amont des déploiements sur les environnements de
-                            production.</p>
-                        Les URL sur l'environnement bac-à-sable sont :
-                        <ul class="mt-1">
-                            <li> Hub Santé : <strong>amqps://messaging.bac-a-sable.hub.esante.gouv.fr:5671</strong>
-                            <li> LRM de test : <strong>https://bac-a-sable.hub.esante.gouv.fr/lrm/</strong>
-                        </ul>
-
-                        <h3>2 - Pré-production : pour les tests et formations métiers</h3>
-                        <p>
-                            Cet environnement, iso à la production, permet de réaliser les tests et formations sur
-                            une
-                            instance déployée chez le métier (au SAMU par exemple) en amont du déploiement d'un lien
-                            en
-                            production.</p>
-
-                        <h3>3 - Production</h3>
-                        <p>
-                            Cet environnement porte l'échange des messages en production.
-                            L'enregistrement d'un Client sur la production se fait suite une recette réussie avec
-                            l'éditeur sur l'environnement de bac-à-sable puis un déploiement réussi sur
-                            l'environnement
-                            de pré-production.
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Etape 6 -->
-    <div class="container paragraph-space o-paragraph--parcours__wrapper" id="etape6">
-        <div class="o-paragraph--parcours has-number">
-            <div class="o-paragraph--parcours__petal">
-                <p><b>06</b></p>
-            </div>
-            <div class="o-paragraph--parcours__container">
-                <div class="o-paragraph--parcours__content">
-                    <h2>Implémentation des messages fonctionnels </h2>
-
-                    <div class="wysiwyg">
-                        <p>Pour chaque périmètre, il est nécessaire d'implémenter et de tester les messages fonctionnels
-                            associés.
-                        </p>
-
-                        <h3>1 - Implémentation des messages</h3>
-                        <p> Les messages à implémenter pour chaque périmètre fonctionnel sont décrits dans la
-                            documentation téléchargeable dans la rubrique
-                            <a href="/pages/accompagnement.html#fonctionnel" target="_blank">
-                                Ressources éditeurs</a>.
-                            <br> Une roadmap d'implémentation spécifique à chaque périmètre est également disponible :
-                            dans les supports des
-                            <a href="/pages/webinaires.html#projectathon8" target="_blank">
-                                Projectathons </a> et séparément sur demande.
-                            <br> Nous mettons également à votre disposition un <a
-                                href="/pages/accompagnement.html#outils" target="_blank">
-                                LRM de test </a> , ainsi que des cahiers de recette
-                            spécifiques à chaque périmètre, publiés dans le <a
-                                href="/pages/accompagnement.html#historique" target="_blank">
-                                bundle </a> de chaque version .
-                        </p>
-                        <h3>2 - Recette ANS </h3>
-                        <p>
-                            L'équipe du Hub Santé procède à une première recette avec chaque éditeur, sur la base des
-                            cahiers de recette fournis, afin de valider l'implémentation des messages par rapport au
-                            modèle publié.
-                        </p>
-
-                        <h3>3 - Recette fonctionnelle </h3>
-                        <p>
-                            Une fois la recette ANS validée, des tests de bout en bout sont réalisés avec un autre
-                            éditeur. Puis, pour chaque première mise en production, des tests utilisateurs de bout
-                            en bout sont effectués au sein des SAMU pilotes.
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Etape 7 -->
-    <div class="container paragraph-space o-paragraph--parcours__wrapper" id="etape7">
-        <div class="o-paragraph--parcours has-number">
-            <div class="o-paragraph--parcours__petal">
-                <p><b>07</b></p>
-            </div>
-            <div class="o-paragraph--parcours__container">
-                <div class="o-paragraph--parcours__content">
-                    <h2>Compatibilité Hub Santé</h2>
-
-                    <div class="wysiwyg">
-                        <p> Lorsque l'intégralité d'un périmètre fonctionnel a été implémenté et validé en recette, a
-                            minima avec
-                            l'équipe du Hub Santé (recette ANS), il est possible pour l'éditeur d'utiliser le badge Hub
-                            Santé
-                            correspondant. La charte d'utilisation du badge
-                            est téléchargeable ci-dessous.</p>
-                    </div>
-
-                    <div class="paragraph--lien">
-
-                        <a href="/resources/Badges/PDF Badge A4.pdf" target="_blank"
-                            class="btn btn--style1 btn--white">Badge Hub Santé (charte d'utilisation)</a>
-                    </div>
-                    <div class="paragraph--lien"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Etape 8 -->
-    <!-- <div class="container paragraph-space o-paragraph--parcours__wrapper" id="etape8">
-        <div class="o-paragraph--parcours has-number">
-            <div class="o-paragraph--parcours__petal">
-                <p><b>08</b></p>
-            </div>
-            <div class="o-paragraph--parcours__container">
-                <div class="o-paragraph--parcours__content">
-                    <h2>Adhésion à la charte du Hub Santé</h2>
-
-                    <div class="wysiwyg">
-                        <p> Avant de pouvoir échanger des messages sur l'environnement de production du Hub Santé,
-                            il
-                            est nécessaire de signer la charte d'adhésion. Vous trouverez ci-dessous le lien vers le
-                            téléchargement de cette charte et pouvez demander le lien YouSign à l'équipe Hub Santé
-                            en
-                            amont de votre déploiement.</p>
-                    </div>
-
-                    <div class="paragraph--lien">
-
-                        <a href="/pages/accompagnement.html#charte" target="_blank"
-                            class="btn btn--style1 btn--white">Charte d'adhésion</a>
-                    </div>
-                    <div class="paragraph--lien"></div>
-                </div>
-            </div>
-        </div>
-    </div> -->
-
-
-
-    <!-- scripts -->
-    <script type="text/javascript" src="/script/jquery-3.5.1.min.js"></script>
-    <script type="text/javascript" src="/script/vendor.js"></script>
-    <script type="text/javascript" src="/script/app.js"></script>
-    <script type="text/javascript" src="/script/tiny-slider.js"></script>
-    <script type="text/javascript" src="/script/bloc-o-remontees-diverses.js"></script>
-    <script type="text/javascript" src="/script/bloc-global-sliders.js"></script>
 
 </body>
 
