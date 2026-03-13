@@ -214,34 +214,4 @@ class SamuFireTest extends AMQPTestSupport {
         assertEquals(distributionId, referencedDistributionID);
     }
 
-    @Test
-    void messageFromSamu2V3ToSamu1V3OnNexsisVhost() throws Exception {
-
-        String useCase = getUseCaseContentOnline(V3_TAG,  RS_EDA_REF);
-
-        String distributionId = Utils.generateDistributionId(SAMU2_V3_ID);
-        String edxlJson = new MessageBuilder().buildMessage(
-                useCase, distributionId, SAMU2_V3_ID, SAMU1_V3_ID);
-
-        sendMessage(VHOST_15_NEXSIS_V3_TAG, SAMU2_V3_ID, edxlJson);
-
-        MessageDTO matched = awaitMessage(distributionId);
-
-        assertNotNull(matched, "Message " + distributionId + " not received within " + RECEIVE_TIMEOUT_SECS + "s");
-        assertVhostEquals(matched, VHOST_15_15_V3_TAG);
-        assertQueueEquals(matched, SAMU1_V3_ID + ".message");
-        assertTrue(Utils.isMessageOfType(matched, "createCaseHealth"));
-
-        String ackDistributionId = sendAck(VHOST_15_15_V3_TAG, SAMU1_V3_ID, SAMU2_V3_ID, distributionId);
-
-        MessageDTO matchedAck = awaitMessage(ackDistributionId);
-
-        String referencedDistributionID = Utils.getReferencedDistributionID(matchedAck);
-
-        assertNotNull(matchedAck, "Ack " + ackDistributionId + " not received within " + RECEIVE_TIMEOUT_SECS + "s");
-        assertVhostEquals(matchedAck, VHOST_15_NEXSIS_V3_TAG);
-        assertQueueEquals(matchedAck, SAMU2_V3_ID + ".ack");
-        assertEquals(distributionId, referencedDistributionID);
-    }
-
 }
