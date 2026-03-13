@@ -30,7 +30,8 @@ abstract class AMQPTestSupport {
     protected final Map<String, Collection<String>> config = new HashMap<>(Map.of(
             "15-15_v1.5", List.of("fr.health.tnr.samu1-v1", "fr.health.tnr.samu2-v1"),
             "15-15_v2.0", List.of("fr.health.tnr.samu1-v2", "fr.health.tnr.samu2-v2"),
-            "15-15_v2.1", List.of("fr.health.tnr.samu1-v3", "fr.health.tnr.samu2-v3")
+            "15-15_v2.1", List.of("fr.health.tnr.samu1-v3", "fr.health.tnr.samu2-v3"),
+            "15-nexsis_v1.9", List.of("fr.health.fire", "fr.health.tnr.samu2-v3")
     ));
 
     protected static final String BASE_URL = "https://raw.githubusercontent.com/ansforge/SAMU-Hub-Modeles/refs/tags";
