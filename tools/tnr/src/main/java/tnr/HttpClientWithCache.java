@@ -2,6 +2,8 @@ package tnr;
 
 import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -13,6 +15,8 @@ public class HttpClientWithCache {
 
     private final String token;
     private final HttpClient httpClient;
+
+    private static final Logger logger = LoggerFactory.getLogger(HttpClientWithCache.class);
 
     private final LoadingCache<String, String> cache;
 
@@ -27,13 +31,13 @@ public class HttpClientWithCache {
     }
 
     public String fetch(String url) {
-        System.out.println("Trying to reuse cache for "+ url);
+        logger.debug("Trying to reuse cache for {}", url);
         return cache.get(url);
     }
 
     private String download(String url) {
         try {
-            System.out.println("Fetching uncached "+ url);
+            logger.debug("Fetching uncached {}", url);
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(url))
                     .header("Authorization", "Bearer " + token)

@@ -13,6 +13,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import static tnr.Constants.TLS_PROTOCOL_VERSION;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -27,6 +30,9 @@ import tnr.dto.MessageDTO;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 abstract class AMQPTestSupport {
+
+    private static final Logger logger = LoggerFactory.getLogger(AMQPTestSupport.class);
+
     protected final Map<String, Collection<String>> config = new HashMap<>(Map.of(
             "15-15_v1.5", List.of("fr.health.tnr.samu1-v1", "fr.health.tnr.samu2-v1"),
             "15-15_v2.0", List.of("fr.health.tnr.samu1-v2", "fr.health.tnr.samu2-v2"),
@@ -82,14 +88,14 @@ abstract class AMQPTestSupport {
             try {
                 consumer.close();
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.warn("Could not tear down consumer {}: {}", consumer.getClientId(), e.getMessage());
             }
         });
         producers.values().forEach(producer -> {
             try {
                 producer.close();
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.warn("Could not tear down producer {}: {}", producer.getVhost(), e.getMessage());
             }
         });
     }
@@ -121,7 +127,8 @@ abstract class AMQPTestSupport {
     String sendAck(String vhost, String routingKey, String recipientId, String referencedDistributionId) throws Exception {
         String ackDistributionId = Utils.generateDistributionId(routingKey);
         String refMessage = new AckBuilder().buildAck(routingKey, recipientId, ackDistributionId, referencedDistributionId);
-        sendMessage(vhost, routingKey, refMessage);
+        logger.info("[{}] Sending ack on routingKey {} to {}, referencing {}", vhost, routingKey, recipientId, referencedDistributionId);
+        send(vhost, routingKey, refMessage);
         return ackDistributionId;
     }
 
@@ -130,14 +137,20 @@ abstract class AMQPTestSupport {
     }
 
     private Producer createProducer(String host, int port, String vhost, String exchange, TLSConf tlsConf) throws Exception {
+        logger.info("Creating producer on vhost {}", vhost);
+        logger.debug("host:{}, vhost:{}, port:{}, exchange: {}", host, vhost, port, exchange);
         Producer p = new Producer(host, port, vhost, exchange);
+        logger.info("[{}] Connecting producer to rabbitmq.", vhost);
         p.connect(tlsConf);
         return p;
     }
 
     private TestConsumer createConsumer(String host, int port, String vhost, String exchange,
             String clientId, String queueName, MessageCollector inbox, TLSConf tlsConf) throws Exception {
+        logger.info("Creating consumer on queue {}", queueName);
+        logger.debug("host:{}, vhost:{}, port:{}, exchange:{}, clientId:{}, queueName:{}", host, vhost, port, exchange, clientId, queueName);
         TestConsumer c = new TestConsumer(host, port, vhost, exchange, queueName, clientId, inbox);
+        logger.info("[queue {}] Connecting consumer to rabbitmq.", queueName);
         c.connect(tlsConf);
         return c;
     }
@@ -194,7 +207,8 @@ abstract class AMQPTestSupport {
                 } finally {
                     lock.unlock();
                 }
-                throw new Exception("Could not receive message that matched " + distributionId);
+                logger.error("Could not receive message that matched " + distributionId);
+                throw e;
             }
         }
 

@@ -119,11 +119,11 @@ public abstract class Consumer {
                 String body = new String(message.getBody(), StandardCharsets.UTF_8);
                 try {
                     EdxlMessage edxlMessage = edxlHandler.deserializeJsonEDXL(body);
-                    logger.info("Received message from sender: {}", edxlMessage.getSenderID());
+                    logger.info("Received message from sender: {} with distributionId {}", edxlMessage.getSenderID(), edxlMessage.getDistributionID());
                 } catch (JsonProcessingException e) {
-                    logger.warn("Could not parse sender ID from message: {}", e.getMessage());
+                    logger.error("Could not parse sender ID from message: {}", e.getMessage());
                 }
-                logger.info("Message body: {}", body);
+                logger.debug("Message body: {}", body);
                 deliverCallback(consumerTag, message);
             }, consumerTag -> {
             });
