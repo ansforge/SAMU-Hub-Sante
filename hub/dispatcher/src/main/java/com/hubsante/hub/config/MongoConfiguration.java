@@ -15,6 +15,7 @@
  */
 package com.hubsante.hub.config;
 
+import com.hubsante.hub.model.PersistedMessage;
 import java.time.Duration;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -42,7 +43,7 @@ public class MongoConfiguration {
 
     @EventListener(ApplicationReadyEvent.class)
     public void createIndexes() {
-        var indexOps = mongoTemplate.indexOps("messages");
+        var indexOps = mongoTemplate.indexOps(PersistedMessage.COLLECTION_NAME);
         indexOps.createIndex(
                 new Index()
                         .named("idx_arrivedAt_ttl")
