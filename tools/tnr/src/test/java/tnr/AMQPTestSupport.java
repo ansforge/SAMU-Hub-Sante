@@ -108,9 +108,14 @@ abstract class AMQPTestSupport {
         return inbox.awaitMessage(distributionId, RECEIVE_TIMEOUT_SECS, TimeUnit.SECONDS);
     }
 
-    protected void sendMessage(String vhost, String routingKey, String message) throws Exception {
+    protected void send(String vhost, String routingKey, String message) throws Exception {
         Producer producer = getProducer(vhost);
         producer.publish(routingKey, message.getBytes());
+    }
+
+    protected void sendMessage(String vhost, String routingKey, String message) throws Exception {
+        logger.info("[{}] Sending message on routingKey %s", vhost, routingKey);
+        send(vhost, routingKey, message);
     }
 
     String sendAck(String vhost, String routingKey, String recipientId, String referencedDistributionId) throws Exception {
