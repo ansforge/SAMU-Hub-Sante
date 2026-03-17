@@ -16,6 +16,7 @@
 package com.hubsante.hub.config;
 
 import java.time.Duration;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
@@ -32,6 +33,9 @@ public class MongoConfiguration {
 
     private final MongoTemplate mongoTemplate;
 
+    @Value("${persistence.arrivedAt.expiresDurationDays}")
+    private int expiresDurationDays;
+
     public MongoConfiguration(MongoTemplate mongoTemplate) {
         this.mongoTemplate = mongoTemplate;
     }
@@ -40,7 +44,9 @@ public class MongoConfiguration {
     public void createIndexes() {
         var indexOps = mongoTemplate.indexOps("messages");
         indexOps.createIndex(
-                new Index().on("arrivedAt", Sort.Direction.ASC).expire(Duration.ofDays(3)));
+                new Index()
+                        .on("arrivedAt", Sort.Direction.ASC)
+                        .expire(Duration.ofDays(expiresDurationDays)));
         indexOps.createIndex(new Index().on("type", Sort.Direction.ASC));
         indexOps.createIndex(new Index().on("payload.distributionID", Sort.Direction.ASC));
         indexOps.createIndex(
