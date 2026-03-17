@@ -129,6 +129,10 @@ public abstract class Consumer {
             });
 
         }
+
+    }
+    public String getClientId(){
+        return clientId;
     }
 
     /**
