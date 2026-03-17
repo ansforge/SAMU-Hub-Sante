@@ -46,7 +46,7 @@ public class MongoConfiguration {
         indexOps.createIndex(
                 new Index()
                         .on(
-                                "payload.content[0].jsonContent.embeddedJsonContent.message.resourcesInfo.caseId",
+                                "payload.content.jsonContent.embeddedJsonContent.message.resourcesInfo.caseId",
                                 Sort.Direction.ASC)
                         .partial(
                                 PartialIndexFilter.of(
@@ -54,7 +54,7 @@ public class MongoConfiguration {
         indexOps.createIndex(
                 new Index()
                         .on(
-                                "payload.content[0].jsonContent.embeddedJsonContent.message.resourcesStatus.caseId",
+                                "payload.content.jsonContent.embeddedJsonContent.message.resourcesStatus.caseId",
                                 Sort.Direction.ASC)
                         .partial(
                                 PartialIndexFilter.of(
@@ -62,7 +62,15 @@ public class MongoConfiguration {
         indexOps.createIndex(
                 new Index()
                         .on(
-                                "payload.content[0].jsonContent.embeddedJsonContent.message.resourcesInfoCisu.caseId",
+                                "payload.content.jsonContent.embeddedJsonContent.message.resourcesStatus.resourceId",
+                                Sort.Direction.ASC)
+                        .partial(
+                                PartialIndexFilter.of(
+                                        Criteria.where("type").is("ResourcesStatusWrapper"))));
+        indexOps.createIndex(
+                new Index()
+                        .on(
+                                "payload.content.jsonContent.embeddedJsonContent.message.resourcesInfoCisu.caseId",
                                 Sort.Direction.ASC)
                         .partial(
                                 PartialIndexFilter.of(
