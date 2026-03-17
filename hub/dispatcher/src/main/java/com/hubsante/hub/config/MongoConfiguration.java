@@ -45,12 +45,17 @@ public class MongoConfiguration {
         var indexOps = mongoTemplate.indexOps("messages");
         indexOps.createIndex(
                 new Index()
+                        .named("idx_arrivedAt_ttl")
                         .on("arrivedAt", Sort.Direction.ASC)
                         .expire(Duration.ofDays(expiresDurationDays)));
-        indexOps.createIndex(new Index().on("type", Sort.Direction.ASC));
-        indexOps.createIndex(new Index().on("payload.distributionID", Sort.Direction.ASC));
+        indexOps.createIndex(new Index().named("idx_message_type").on("type", Sort.Direction.ASC));
         indexOps.createIndex(
                 new Index()
+                        .named("idx_distributionID")
+                        .on("payload.distributionID", Sort.Direction.ASC));
+        indexOps.createIndex(
+                new Index()
+                        .named("idx_resourcesInfo_caseId")
                         .on(
                                 "payload.content.jsonContent.embeddedJsonContent.message.resourcesInfo.caseId",
                                 Sort.Direction.ASC)
@@ -59,6 +64,7 @@ public class MongoConfiguration {
                                         Criteria.where("type").is("ResourcesInfoWrapper"))));
         indexOps.createIndex(
                 new Index()
+                        .named("idx_resourcesStatus_caseId")
                         .on(
                                 "payload.content.jsonContent.embeddedJsonContent.message.resourcesStatus.caseId",
                                 Sort.Direction.ASC)
@@ -67,6 +73,7 @@ public class MongoConfiguration {
                                         Criteria.where("type").is("ResourcesStatusWrapper"))));
         indexOps.createIndex(
                 new Index()
+                        .named("idx_resourcesStatus_resourceId")
                         .on(
                                 "payload.content.jsonContent.embeddedJsonContent.message.resourcesStatus.resourceId",
                                 Sort.Direction.ASC)
@@ -75,6 +82,7 @@ public class MongoConfiguration {
                                         Criteria.where("type").is("ResourcesStatusWrapper"))));
         indexOps.createIndex(
                 new Index()
+                        .named("idx_resourcesInfoCisu_caseId")
                         .on(
                                 "payload.content.jsonContent.embeddedJsonContent.message.resourcesInfoCisu.caseId",
                                 Sort.Direction.ASC)
