@@ -29,8 +29,10 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Document(collection = "messages")
+@Document(collection = PersistedMessage.COLLECTION_NAME)
 public class PersistedMessage {
+
+    public static final String COLLECTION_NAME = "messages";
 
     @Id private String id;
 

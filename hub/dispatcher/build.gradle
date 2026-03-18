@@ -89,6 +89,8 @@ dependencies {
     testImplementation 'org.testcontainers:junit-jupiter'
     testImplementation 'org.testcontainers:rabbitmq'
 
+    testImplementation "de.flapdoodle.embed:de.flapdoodle.embed.mongo.spring3x:${libs.versions.embedMongo.get()}"
+
 }
 
 configurations {
