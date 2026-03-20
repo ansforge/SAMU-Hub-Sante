@@ -47,7 +47,7 @@ abstract class AMQPTestSupport {
 
     protected static final int RECEIVE_TIMEOUT_SECS = 10;
 
-    protected Dotenv dotenv = Dotenv.load();
+    protected Dotenv dotenv = Dotenv.configure().ignoreIfMissing().load();
 
     HttpClientWithCache httpClient = new HttpClientWithCache(dotenv.get("GITHUB_TOKEN"));
 
