@@ -13,7 +13,7 @@ on:
           - "bac-a-sable"
       gradle_test_args:
         description: "Arguments gradle"
-        required: true
+        required: false
         default: ""
         type: string
 
