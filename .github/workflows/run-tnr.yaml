@@ -1,0 +1,77 @@
+name: Run TNR
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_env:
+        description: "Environment à cibler"
+        required: true
+        type: choice
+        default: "qualification"
+        options:
+          - "qualification"
+          - "bac-a-sable"
+      gradle_test_args:
+        description: "Arguments gradle"
+        required: true
+        default: ""
+        type: string
+
+run-name: "TNR - ${{ inputs.target_env }} - @${{ github.actor }}"
+
+jobs:
+  tnr:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: read
+
+    env:
+      JAVA_VERSION: 21
+      HUB_HOSTNAME: messaging.${{ inputs.target_env }}.hub.esante.gouv.fr
+      HUB_PORT: 5671
+      EXCHANGE_NAME: "hubsante"
+      CERTIFICATE_PATH: ${{ github.workspace }}/certificate.p12
+      TRUST_STORE_PATH: ${{ github.workspace }}/truststore.jks
+      TNR_CERTIFICATE_PASSPHRASE: ${{ secrets.TNR_CERTIFICATE_PASSPHRASE }}
+      TRUST_STORE_PASSWORD: ${{ secrets.TRUST_STORE_PASSWORD }}
+      KEY_PASSPHRASE: ${{ secrets.TNR_CERTIFICATE_PASSPHRASE }}
+      GITHUB_ACTOR: ${{ github.actor }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v5
+
+      - name: Make gradlew executable
+        working-directory: tools/tnr
+        run: chmod +x ./gradlew
+
+      - name: Restore certificate
+        shell: bash
+        run: |
+          echo "${{ secrets.TNR_CERTIFICATE_P12 }}" | base64 -d > "$CERTIFICATE_PATH"
+
+      - name: Restore truststore
+        shell: bash
+        run: |
+          echo "${{ secrets.TRUSTSTORE }}" | base64 -d > "$TRUST_STORE_PATH"
+
+      - name: Run TNR
+        working-directory: tools/tnr
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./gradlew test ${{ inputs.gradle_test_args }}
+
+      - name: Cleanup sensitive files
+        if: ${{ always() }}
+        run: rm -rf "$CERTIFICATE_PATH" "$TRUST_STORE_PATH"
