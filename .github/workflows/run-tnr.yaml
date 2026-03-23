@@ -70,7 +70,7 @@ jobs:
         working-directory: tools/tnr
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./gradlew test ${{ inputs.gradle_test_args }}
+        run: ./gradlew clean test --rerun-tasks --no-configuration-cache ${{ inputs.gradle_test_args }}
 
       - name: Cleanup sensitive files
         if: ${{ always() }}
