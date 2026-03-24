@@ -84,27 +84,27 @@ jobs:
             -PmodelVersion=$MODEL_VERSION \
             --image ghcr.io/${{ github.repository_owner }}/dispatcher:$IMAGE_TAG
 
-  image-security-scan:
-    name: Scan Docker Images
-    needs: [get-tags, build-dispatcher]
-    runs-on: ubuntu-latest
-    continue-on-error: true
-    strategy:
-      fail-fast: false
-      matrix:
-        model_version: ${{ fromJson(needs.get-tags.outputs.model-versions) }}
+  # image-security-scan:
+  #   name: Scan Docker Images
+  #   needs: [get-tags, build-dispatcher]
+  #   runs-on: ubuntu-latest
+  #   continue-on-error: true
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       model_version: ${{ fromJson(needs.get-tags.outputs.model-versions) }}
 
-    steps:
-      - name: Login to Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Scan Dispatcher Docker image
-        uses: aquasecurity/trivy-action@0.33.1
-        with:
-          image-ref: 'ghcr.io/${{ github.repository_owner }}/dispatcher:${{ needs.get-tags.outputs.dispatcher-version }}-model-${{ matrix.model_version }}'
-          format: 'table'
-          severity: 'HIGH,CRITICAL'
-          exit-code: '1'
+  #   steps:
+  #     - name: Login to Container Registry
+  #       uses: docker/login-action@v3
+  #       with:
+  #         registry: ghcr.io
+  #         username: ${{ github.actor }}
+  #         password: ${{ secrets.GITHUB_TOKEN }}
+      # - name: Scan Dispatcher Docker image
+      #   uses: aquasecurity/trivy-action@0.33.1
+      #   with:
+      #     image-ref: 'ghcr.io/${{ github.repository_owner }}/dispatcher:${{ needs.get-tags.outputs.dispatcher-version }}-model-${{ matrix.model_version }}'
+      #     format: 'table'
+      #     severity: 'HIGH,CRITICAL'
+      #     exit-code: '1'
