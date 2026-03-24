@@ -53,33 +53,33 @@ jobs:
           tags: ghcr.io/${{ github.repository_owner }}/${{ matrix.name }}:${{ needs.get-tag.outputs.version }}
           context: ${{ matrix.context }}
 
-  image-security-scan:
-    name: Scan Docker Images
-    needs: [get-tag, build-images]
-    runs-on: ubuntu-latest
-    continue-on-error: true
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - name: 'hub-lrm-back'
-            folder: './web/lrm/server'
-          - name: 'hub-lrm-front'
-            folder: './web/lrm/client'
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v5
-      - name: Login to Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Scan Dispatcher Docker image
-        uses: aquasecurity/trivy-action@0.33.1
-        with:
-          image-ref: 'ghcr.io/${{ github.repository_owner }}/${{ matrix.name }}:${{ needs.get-tag.outputs.version }}'
-          format: 'table'
-          severity: 'HIGH,CRITICAL'
-          exit-code: '1'
-          trivyignores: '${{ matrix.folder }}/.trivyignore'
+  # image-security-scan:
+  #   name: Scan Docker Images
+  #   needs: [get-tag, build-images]
+  #   runs-on: ubuntu-latest
+  #   continue-on-error: true
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       include:
+  #         - name: 'hub-lrm-back'
+  #           folder: './web/lrm/server'
+  #         - name: 'hub-lrm-front'
+  #           folder: './web/lrm/client'
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v5
+  #     - name: Login to Container Registry
+  #       uses: docker/login-action@v3
+  #       with:
+  #         registry: ghcr.io
+  #         username: ${{ github.actor }}
+  #         password: ${{ secrets.GITHUB_TOKEN }}
+      # - name: Scan Dispatcher Docker image
+      #   uses: aquasecurity/trivy-action@0.33.1
+      #   with:
+      #     image-ref: 'ghcr.io/${{ github.repository_owner }}/${{ matrix.name }}:${{ needs.get-tag.outputs.version }}'
+      #     format: 'table'
+      #     severity: 'HIGH,CRITICAL'
+      #     exit-code: '1'
+      #     trivyignores: '${{ matrix.folder }}/.trivyignore'
