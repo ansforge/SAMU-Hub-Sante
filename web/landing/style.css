@@ -65,3 +65,24 @@ h3 {
 html {
     scroll-padding-top: 113px;
 }
+
+/* Tableau des versions */
+
+/* Décommissionnée */
+.deprecated {
+    text-align: center;
+    color: #c5c8da;
+    text-decoration: line-through;
+}
+
+/* Active */
+.active {
+    text-align: center;
+    background-color: #f0f6e4 !important;
+}
+
+/* Fin de vie planifiée */
+.eol-planned {
+    text-align: center;
+    background-color: #fdf3e3 !important;
+}
