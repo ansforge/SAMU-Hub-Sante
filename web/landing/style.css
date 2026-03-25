@@ -69,20 +69,20 @@ html {
 /* Tableau des versions */
 
 /* Décommissionnée */
-.deprecated {
+#table-versions .deprecated {
     text-align: center;
     color: #c5c8da;
     text-decoration: line-through;
 }
 
 /* Active */
-.active {
+#table-versions .active {
     text-align: center;
     background-color: #f0f6e4 !important;
 }
 
 /* Fin de vie planifiée */
-.eol-planned {
+#table-versions .eol-planned {
     text-align: center;
     background-color: #fdf3e3 !important;
 }
