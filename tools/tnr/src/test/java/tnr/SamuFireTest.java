@@ -3,8 +3,6 @@ package tnr;
 import static org.junit.jupiter.api.Assertions.*;
 import static tnr.DistributionAssertions.*;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.UUID;
 
 import org.junit.jupiter.api.DisplayName;
@@ -20,10 +18,11 @@ class SamuFireTest extends AMQPTestSupport {
     protected static final String VHOST_15_15_V1_TAG = "15-15_v1.5";
     protected static final String VHOST_15_15_V3_TAG = "15-15_v2.1";
     protected static final String V1_TAG = "1.3.0";
-    protected static final String V3_TAG = "3.3.0";
+    protected static final String V3_TAG = "3.4.0-rc.3";
     protected static final String RS_EDA_REF = "RS-EDA/RS-EDA_partageDossier_DidierMorel.01a.json";
     protected static final String RC_EDA_REF = "RC-EDA/RC-EDA-DouleurThoracique-PierreLegrand.json";
     protected static final String RC_RI_REF = "RC-RI/RC-RI_Incendie_RaymondeLECCIA.02.json";
+    protected static final String RC_RI_UPDATE_REF = "RC-RI/RC-RI_Incendie_RaymondeLECCIA.03.json";
     protected static final String RC_RI_RESOURCE_ID = "fr.fire.sisXXX.cga-XXX.resource.VSR268";
     // specific for nexsis
     protected static final String TNR_SDIS_CLIENT_ID = "fr.fire.tnr.sdisZ";
@@ -271,6 +270,75 @@ class SamuFireTest extends AMQPTestSupport {
         assertVhostEquals(matchedAck, VHOST_15_NEXSIS_V3_TAG);
         assertQueueEquals(matchedAck, HUB_NEXSIS_USER_CLIENT_ID + ".ack");
         assertEquals(distributionId, Utils.getReferencedDistributionID(matchedAck));
+    }
+
+    @Test
+    @DisplayName("Send RC-RI update (resource 1 status DEPART - Raymonde LECCIA) from sdisZ to samu1_v3, then check RS-SR only (no position) + ack")
+    void messageRcRiUpdateStatusFromSdisZToSamu1V3() throws Exception {
+
+        // Single unique caseId shared across both messages to simulate the same ongoing case
+        String uniqueCaseId = "fr.fire.tnr.test." + UUID.randomUUID().toString().replace("-", "").substring(0, 12);
+
+        // Step 1: establish MongoDB baseline with the initial RC-RI (Raymonde LECCIA.02)
+        String useCaseInitialRaw = getUseCaseContentOnline(V3_TAG, RC_RI_REF);
+        String useCaseInitial = useCaseInitialRaw.replaceFirst(
+                "\"caseId\"\\s*:\\s*\"[^\"]+\"",
+                "\"caseId\": \"" + uniqueCaseId + "\"");
+
+        String initialDistributionId = Utils.generateDistributionId(TNR_SDIS_CLIENT_ID);
+        sendMessage(VHOST_15_NEXSIS_V3_TAG, NEXSIS_SHOVEL_ROUTING_KEY,
+                new MessageBuilder().buildMessage(useCaseInitial, initialDistributionId, TNR_SDIS_CLIENT_ID, SAMU1_V3_ID));
+
+        // Drain the RS-RI and RS-SR produced by the first reception before the update
+        awaitMessage(initialDistributionId);
+        awaitMessageOfType("resourcesStatus");
+
+        // Step 2: send update RC-RI (Raymonde LECCIA.03) — same caseId, status DEPART, position present
+        // The .03 fixture carries a position field; the RS-SR must not propagate it (transcoding suppression)
+        String useCaseUpdateRaw = getUseCaseContentOnline(V3_TAG, RC_RI_UPDATE_REF);
+        String useCaseUpdate = useCaseUpdateRaw.replaceFirst(
+                "\"caseId\"\\s*:\\s*\"[^\"]+\"",
+                "\"caseId\": \"" + uniqueCaseId + "\"");
+
+        String updateDistributionId = Utils.generateDistributionId(TNR_SDIS_CLIENT_ID);
+        sendMessage(VHOST_15_NEXSIS_V3_TAG, NEXSIS_SHOVEL_ROUTING_KEY,
+                new MessageBuilder().buildMessage(useCaseUpdate, updateDistributionId, TNR_SDIS_CLIENT_ID, SAMU1_V3_ID));
+
+        // Only RS-SR expected: resource list unchanged (no RS-RI), but status changed
+        MessageDTO matchedRsSr = awaitMessageOfType("resourcesStatus");
+
+        assertNotNull(matchedRsSr, "RS-SR not received within " + RECEIVE_TIMEOUT_SECS + "s");
+        assertVhostEquals(matchedRsSr, VHOST_15_15_V3_TAG);
+        assertQueueEquals(matchedRsSr, SAMU1_V3_ID + ".message");
+        assertTrue(Utils.isMessageOfType(matchedRsSr, "resourcesStatus"), "Expected message type 'resourcesStatus'");
+        assertEquals(uniqueCaseId,
+                matchedRsSr.getPayload()
+                        .path("content").path(0)
+                        .path("jsonContent").path("embeddedJsonContent").path("message")
+                        .path("resourcesStatus").path("caseId").asText(),
+                "RS-SR caseId should match the RC-RI caseId");
+        assertEquals(RC_RI_RESOURCE_ID,
+                matchedRsSr.getPayload()
+                        .path("content").path(0)
+                        .path("jsonContent").path("embeddedJsonContent").path("message")
+                        .path("resourcesStatus").path("resourceId").asText(),
+                "RS-SR resourceId should match the resource from the original RC-RI");
+        assertFalse(
+                matchedRsSr.getPayload()
+                        .path("content").path(0)
+                        .path("jsonContent").path("embeddedJsonContent").path("message")
+                        .path("resourcesStatus").has("position"),
+                "RS-SR should not contain a 'position' field (transcoding suppression)");
+
+        // Ack sent by SAMU1 v3 back to sdisZ, referencing the update message
+        String ackDistributionId = sendAck(VHOST_15_15_V3_TAG, SAMU1_V3_ID, TNR_SDIS_CLIENT_ID, updateDistributionId);
+
+        MessageDTO matchedAck = awaitMessage(ackDistributionId);
+
+        assertNotNull(matchedAck, "Ack " + ackDistributionId + " not received within " + RECEIVE_TIMEOUT_SECS + "s");
+        assertVhostEquals(matchedAck, VHOST_15_NEXSIS_V3_TAG);
+        assertQueueEquals(matchedAck, HUB_NEXSIS_USER_CLIENT_ID + ".ack");
+        assertEquals(updateDistributionId, Utils.getReferencedDistributionID(matchedAck));
     }
 
 }
