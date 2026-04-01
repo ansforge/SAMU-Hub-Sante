@@ -114,6 +114,10 @@ abstract class AMQPTestSupport {
         return inbox.awaitMessage(distributionId, RECEIVE_TIMEOUT_SECS, TimeUnit.SECONDS);
     }
 
+    protected MessageDTO awaitMessageOfType(String messageType) throws Exception {
+        return inbox.awaitMessageOfType(messageType, RECEIVE_TIMEOUT_SECS, TimeUnit.SECONDS);
+    }
+
     protected void send(String vhost, String routingKey, String message) throws Exception {
         Producer producer = getProducer(vhost);
         producer.publish(routingKey, message.getBytes());
@@ -209,6 +213,30 @@ abstract class AMQPTestSupport {
                 }
                 logger.error("Could not receive message that matched " + distributionId);
                 throw e;
+            }
+        }
+
+        MessageDTO awaitMessageOfType(String messageType, long timeout, TimeUnit unit) throws Exception {
+            long deadlineNanos = System.nanoTime() + unit.toNanos(timeout);
+            while (true) {
+                lock.lock();
+                try {
+                    for (Iterator<MessageDTO> it = buffer.iterator(); it.hasNext();) {
+                        MessageDTO message = it.next();
+                        if (Utils.isMessageOfType(message, messageType)) {
+                            it.remove();
+                            return message;
+                        }
+                    }
+                } finally {
+                    lock.unlock();
+                }
+                long remainingNanos = deadlineNanos - System.nanoTime();
+                if (remainingNanos <= 0) {
+                    logger.error("Could not receive message of type " + messageType);
+                    throw new TimeoutException("No message of type '" + messageType + "' received within timeout");
+                }
+                Thread.sleep(Math.min(200, TimeUnit.NANOSECONDS.toMillis(remainingNanos) + 1));
             }
         }
 
