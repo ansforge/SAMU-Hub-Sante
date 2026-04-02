@@ -231,45 +231,43 @@ class SamuFireTest extends AMQPTestSupport {
 
         String uniqueCaseId = "fr.fire.tnr.test." + UUID.randomUUID().toString().replace("-", "").substring(0, 12);
 
-        // -- Step 2: first reception (.02) — RS-RI + RS-SR(VSR268) + ack --
+        // Step 2: first reception — RS-RI + RS-SR
         String step2DistId = sendRcRi(RC_RI_REF, uniqueCaseId);
         assertRsRi(step2DistId);
         assertRsSr(1, uniqueCaseId, Set.of(RC_RI_RESOURCE_ID));
         sendAndAssertAck(step2DistId);
 
-        // -- Step 3: resource 1 status DECLENCHE→DEPART (.03) — RS-SR(VSR268) only + ack --
+        // Step 3: resource 1 status update — RS-SR only
         String step3DistId = sendRcRi(RC_RI_STATUS1_REF, uniqueCaseId);
         assertRsSr(1, uniqueCaseId, Set.of(RC_RI_RESOURCE_ID));
         sendAndAssertAck(step3DistId);
 
-        // -- Step 5: add resource 2 VSAV1 (.05) — RS-RI + RS-SR(VSAV1 new, VSR268 unchanged) + ack --
+        // Step 5: add resource 2 — RS-RI + RS-SR for new resource only
         String step5DistId = sendRcRi(RC_RI_ADD_RES2_REF, uniqueCaseId);
         assertRsRi(step5DistId);
         assertRsSr(1, uniqueCaseId, Set.of(RC_RI_RESOURCE2_ID));
         sendAndAssertAck(step5DistId);
 
-        // -- Step 6: resource 1 status DEPART→ARRIVEE (.06) — RS-SR(VSR268) only + ack --
+        // Step 6: resource 1 status update — RS-SR only
         String step6DistId = sendRcRi(RC_RI_STATUS2_REF, uniqueCaseId);
         assertRsSr(1, uniqueCaseId, Set.of(RC_RI_RESOURCE_ID));
         sendAndAssertAck(step6DistId);
 
-        // -- Step 7: add VSAV2 + VSAV1 DECLENCHE→ARRIVEE (.07) — RS-RI + RS-SR(VSAV1, VSAV2) + ack --
+        // Step 7: add resource 3 + resource 2 status update — RS-RI + 2×RS-SR
         String step7DistId = sendRcRi(RC_RI_ADD_RES3_REF, uniqueCaseId);
         assertRsRi(step7DistId);
         assertRsSr(2, uniqueCaseId, Set.of(RC_RI_RESOURCE2_ID, RC_RI_RESOURCE3_ID));
         sendAndAssertAck(step7DistId);
 
-        // -- Step 8: all 3 statuses changed (.08) — 3 RS-SR + ack --
+        // Step 8: all resources status update — 3×RS-SR
         String step8DistId = sendRcRi(RC_RI_ALL_STATUS_REF, uniqueCaseId);
         assertRsSr(3, uniqueCaseId, Set.of(RC_RI_RESOURCE_ID, RC_RI_RESOURCE2_ID, RC_RI_RESOURCE3_ID));
         sendAndAssertAck(step8DistId);
 
-        // -- Step 9: same message (.08), no status change — no output --
+        // Step 9: no change — no output
         sendRcRi(RC_RI_ALL_STATUS_REF, uniqueCaseId);
         assertNoMessageReceived();
     }
-
-    // -- helpers --
 
     private String sendRcRi(String fixtureRef, String caseId) throws Exception {
         String useCase = getUseCaseContentOnline(V3_TAG, fixtureRef)
