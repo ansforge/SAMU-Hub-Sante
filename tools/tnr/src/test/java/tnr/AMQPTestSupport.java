@@ -1,6 +1,7 @@
 package tnr;
 
 import java.io.IOException;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -12,6 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Predicate;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -118,7 +120,7 @@ abstract class AMQPTestSupport {
         return inbox.awaitMessageOfType(messageType, RECEIVE_TIMEOUT_SECS, TimeUnit.SECONDS);
     }
 
-    protected void assertNoMessageReceived() throws InterruptedException {
+    protected void assertNoMessageReceived() throws Exception {
         inbox.assertNoPendingMessages(3, TimeUnit.SECONDS);
     }
 
@@ -167,6 +169,7 @@ abstract class AMQPTestSupport {
     static class MessageCollector {
 
         private final ConcurrentHashMap<String, CompletableFuture<MessageDTO>> pending = new ConcurrentHashMap<>();
+        private final List<Map.Entry<Predicate<MessageDTO>, CompletableFuture<MessageDTO>>> predicatePending = new ArrayList<>();
         private final List<MessageDTO> buffer = new ArrayList<>();
         private final ReentrantLock lock = new ReentrantLock();
         ObjectMapper mapper = new ObjectMapper();
@@ -177,6 +180,14 @@ abstract class AMQPTestSupport {
                 for (Iterator<Map.Entry<String, CompletableFuture<MessageDTO>>> it = pending.entrySet().iterator(); it.hasNext();) {
                     Map.Entry<String, CompletableFuture<MessageDTO>> entry = it.next();
                     if (delivery.getDistributionId().equals(entry.getKey())) {
+                        it.remove();
+                        entry.getValue().complete(delivery);
+                        return;
+                    }
+                }
+                for (Iterator<Map.Entry<Predicate<MessageDTO>, CompletableFuture<MessageDTO>>> it = predicatePending.iterator(); it.hasNext();) {
+                    Map.Entry<Predicate<MessageDTO>, CompletableFuture<MessageDTO>> entry = it.next();
+                    if (entry.getKey().test(delivery)) {
                         it.remove();
                         entry.getValue().complete(delivery);
                         return;
@@ -221,45 +232,61 @@ abstract class AMQPTestSupport {
         }
 
         MessageDTO awaitMessageOfType(String messageType, long timeout, TimeUnit unit) throws Exception {
-            long deadlineNanos = System.nanoTime() + unit.toNanos(timeout);
-            while (true) {
+            CompletableFuture<MessageDTO> future;
+            lock.lock();
+            try {
+                for (Iterator<MessageDTO> it = buffer.iterator(); it.hasNext();) {
+                    MessageDTO message = it.next();
+                    if (Utils.isMessageOfType(message, messageType)) {
+                        it.remove();
+                        return message;
+                    }
+                }
+                future = new CompletableFuture<>();
+                predicatePending.add(new AbstractMap.SimpleEntry<>(
+                        msg -> Utils.isMessageOfType(msg, messageType), future));
+            } finally {
+                lock.unlock();
+            }
+            try {
+                return future.get(timeout, unit);
+            } catch (TimeoutException e) {
                 lock.lock();
                 try {
-                    for (Iterator<MessageDTO> it = buffer.iterator(); it.hasNext();) {
-                        MessageDTO message = it.next();
-                        if (Utils.isMessageOfType(message, messageType)) {
-                            it.remove();
-                            return message;
-                        }
-                    }
+                    predicatePending.removeIf(entry -> entry.getValue() == future);
                 } finally {
                     lock.unlock();
                 }
-                long remainingNanos = deadlineNanos - System.nanoTime();
-                if (remainingNanos <= 0) {
-                    logger.error("Could not receive message of type " + messageType);
-                    throw new TimeoutException("No message of type '" + messageType + "' received within timeout");
-                }
-                Thread.sleep(Math.min(200, TimeUnit.NANOSECONDS.toMillis(remainingNanos) + 1));
+                logger.error("Could not receive message of type " + messageType);
+                throw new TimeoutException("No message of type '" + messageType + "' received within timeout");
             }
         }
 
-        void assertNoPendingMessages(long timeout, TimeUnit unit) throws InterruptedException {
-            long deadlineNanos = System.nanoTime() + unit.toNanos(timeout);
-            while (true) {
+        void assertNoPendingMessages(long timeout, TimeUnit unit) throws Exception {
+            CompletableFuture<MessageDTO> anyMessage = new CompletableFuture<>();
+            lock.lock();
+            try {
+                if (!buffer.isEmpty()) {
+                    throw new AssertionError(
+                            "Expected no message but received one with distributionId: "
+                                    + buffer.get(0).getDistributionId());
+                }
+                predicatePending.add(new AbstractMap.SimpleEntry<>(msg -> true, anyMessage));
+            } finally {
+                lock.unlock();
+            }
+            try {
+                MessageDTO unexpected = anyMessage.get(timeout, unit);
+                throw new AssertionError(
+                        "Expected no message but received: " + unexpected.getDistributionId());
+            } catch (TimeoutException e) {
+                // Good — no message arrived within the timeout
                 lock.lock();
                 try {
-                    if (!buffer.isEmpty()) {
-                        throw new AssertionError(
-                                "Expected no message but received one with distributionId: "
-                                        + buffer.get(0).getDistributionId());
-                    }
+                    predicatePending.removeIf(entry -> entry.getValue() == anyMessage);
                 } finally {
                     lock.unlock();
                 }
-                long remainingNanos = deadlineNanos - System.nanoTime();
-                if (remainingNanos <= 0) return;
-                Thread.sleep(Math.min(200, TimeUnit.NANOSECONDS.toMillis(remainingNanos) + 1));
             }
         }
 
@@ -271,6 +298,10 @@ abstract class AMQPTestSupport {
                     f.cancel(false);
                 }
                 pending.clear();
+                for (Map.Entry<Predicate<MessageDTO>, CompletableFuture<MessageDTO>> entry : predicatePending) {
+                    entry.getValue().cancel(false);
+                }
+                predicatePending.clear();
             } finally {
                 lock.unlock();
             }

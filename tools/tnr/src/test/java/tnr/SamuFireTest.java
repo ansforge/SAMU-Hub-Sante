@@ -232,34 +232,34 @@ class SamuFireTest extends AMQPTestSupport {
         // -- Step 2: first reception (.02) — RS-RI + RS-SR(VSR268) + ack --
         String step2DistId = sendRcRi(RC_RI_REF, uniqueCaseId);
         assertRsRi(step2DistId);
-        assertRsSr(uniqueCaseId, RC_RI_RESOURCE_ID);
+        assertRsSr(1, uniqueCaseId, Set.of(RC_RI_RESOURCE_ID));
         sendAndAssertAck(step2DistId);
 
         // -- Step 3: resource 1 status DECLENCHE→DEPART (.03) — RS-SR(VSR268) only + ack --
         String step3DistId = sendRcRi(RC_RI_STATUS1_REF, uniqueCaseId);
-        assertRsSr(uniqueCaseId, RC_RI_RESOURCE_ID);
+        assertRsSr(1, uniqueCaseId, Set.of(RC_RI_RESOURCE_ID));
         sendAndAssertAck(step3DistId);
 
         // -- Step 5: add resource 2 VSAV1 (.05) — RS-RI + RS-SR(VSAV1 new, VSR268 unchanged) + ack --
         String step5DistId = sendRcRi(RC_RI_ADD_RES2_REF, uniqueCaseId);
         assertRsRi(step5DistId);
-        assertRsSr(uniqueCaseId, RC_RI_RESOURCE2_ID);
+        assertRsSr(1, uniqueCaseId, Set.of(RC_RI_RESOURCE2_ID));
         sendAndAssertAck(step5DistId);
 
         // -- Step 6: resource 1 status DEPART→ARRIVEE (.06) — RS-SR(VSR268) only + ack --
         String step6DistId = sendRcRi(RC_RI_STATUS2_REF, uniqueCaseId);
-        assertRsSr(uniqueCaseId, RC_RI_RESOURCE_ID);
+        assertRsSr(1, uniqueCaseId, Set.of(RC_RI_RESOURCE_ID));
         sendAndAssertAck(step6DistId);
 
         // -- Step 7: add VSAV2 + VSAV1 DECLENCHE→ARRIVEE (.07) — RS-RI + RS-SR(VSAV1, VSAV2) + ack --
         String step7DistId = sendRcRi(RC_RI_ADD_RES3_REF, uniqueCaseId);
         assertRsRi(step7DistId);
-        assertRsSrSet(2, uniqueCaseId, Set.of(RC_RI_RESOURCE2_ID, RC_RI_RESOURCE3_ID));
+        assertRsSr(2, uniqueCaseId, Set.of(RC_RI_RESOURCE2_ID, RC_RI_RESOURCE3_ID));
         sendAndAssertAck(step7DistId);
 
         // -- Step 8: all 3 statuses changed (.08) — 3 RS-SR + ack --
         String step8DistId = sendRcRi(RC_RI_ALL_STATUS_REF, uniqueCaseId);
-        assertRsSrSet(3, uniqueCaseId, Set.of(RC_RI_RESOURCE_ID, RC_RI_RESOURCE2_ID, RC_RI_RESOURCE3_ID));
+        assertRsSr(3, uniqueCaseId, Set.of(RC_RI_RESOURCE_ID, RC_RI_RESOURCE2_ID, RC_RI_RESOURCE3_ID));
         sendAndAssertAck(step8DistId);
 
         // -- Step 9: same message (.08), no status change — no output --
@@ -286,32 +286,21 @@ class SamuFireTest extends AMQPTestSupport {
         assertTrue(Utils.isMessageOfType(rsRi, "resourcesInfo"), "Expected message type 'resourcesInfo'");
     }
 
-    private void assertRsSr(String expectedCaseId, String expectedResourceId) throws Exception {
-        MessageDTO rsSr = awaitMessageOfType("resourcesStatus");
-        assertNotNull(rsSr, "RS-SR not received within " + RECEIVE_TIMEOUT_SECS + "s");
-        assertVhostEquals(rsSr, VHOST_15_15_V3_TAG);
-        assertQueueEquals(rsSr, SAMU1_V3_ID + ".message");
-        assertTrue(Utils.isMessageOfType(rsSr, "resourcesStatus"), "Expected message type 'resourcesStatus'");
-        com.fasterxml.jackson.databind.JsonNode rsNode = rsSr.getPayload()
-                .path("content").path(0)
-                .path("jsonContent").path("embeddedJsonContent").path("message")
-                .path("resourcesStatus");
-        assertEquals(expectedCaseId, rsNode.path("caseId").asText(), "RS-SR caseId mismatch");
-        if (expectedResourceId != null) {
-            assertEquals(expectedResourceId, rsNode.path("resourceId").asText(), "RS-SR resourceId mismatch");
-        }
-        assertFalse(rsNode.has("position"), "RS-SR should not contain a 'position' field (transcoding suppression)");
-    }
-
-    private void assertRsSrSet(int count, String expectedCaseId, Set<String> expectedResourceIds) throws Exception {
+    private void assertRsSr(int count, String expectedCaseId, Set<String> expectedResourceIds) throws Exception {
         java.util.Set<String> received = new java.util.HashSet<>();
         for (int i = 0; i < count; i++) {
             MessageDTO rsSr = awaitMessageOfType("resourcesStatus");
-            assertRsSr(rsSr, expectedCaseId, null);
-            received.add(rsSr.getPayload()
+            assertNotNull(rsSr, "RS-SR not received within " + RECEIVE_TIMEOUT_SECS + "s");
+            assertVhostEquals(rsSr, VHOST_15_15_V3_TAG);
+            assertQueueEquals(rsSr, SAMU1_V3_ID + ".message");
+            assertTrue(Utils.isMessageOfType(rsSr, "resourcesStatus"), "Expected message type 'resourcesStatus'");
+            com.fasterxml.jackson.databind.JsonNode rsNode = rsSr.getPayload()
                     .path("content").path(0)
                     .path("jsonContent").path("embeddedJsonContent").path("message")
-                    .path("resourcesStatus").path("resourceId").asText());
+                    .path("resourcesStatus");
+            assertEquals(expectedCaseId, rsNode.path("caseId").asText(), "RS-SR caseId mismatch");
+            assertFalse(rsNode.has("position"), "RS-SR should not contain a 'position' field (transcoding suppression)");
+            received.add(rsNode.path("resourceId").asText());
         }
         assertEquals(expectedResourceIds, received, "RS-SR resource IDs mismatch");
     }
