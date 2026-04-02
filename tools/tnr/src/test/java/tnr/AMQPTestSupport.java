@@ -9,7 +9,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.ReentrantLock;
@@ -168,8 +167,7 @@ abstract class AMQPTestSupport {
 
     static class MessageCollector {
 
-        private final ConcurrentHashMap<String, CompletableFuture<MessageDTO>> pending = new ConcurrentHashMap<>();
-        private final List<Map.Entry<Predicate<MessageDTO>, CompletableFuture<MessageDTO>>> predicatePending = new ArrayList<>();
+        private final List<Map.Entry<Predicate<MessageDTO>, CompletableFuture<MessageDTO>>> pending = new ArrayList<>();
         private final List<MessageDTO> buffer = new ArrayList<>();
         private final ReentrantLock lock = new ReentrantLock();
         ObjectMapper mapper = new ObjectMapper();
@@ -177,15 +175,7 @@ abstract class AMQPTestSupport {
         void add(MessageDTO delivery) {
             lock.lock();
             try {
-                for (Iterator<Map.Entry<String, CompletableFuture<MessageDTO>>> it = pending.entrySet().iterator(); it.hasNext();) {
-                    Map.Entry<String, CompletableFuture<MessageDTO>> entry = it.next();
-                    if (delivery.getDistributionId().equals(entry.getKey())) {
-                        it.remove();
-                        entry.getValue().complete(delivery);
-                        return;
-                    }
-                }
-                for (Iterator<Map.Entry<Predicate<MessageDTO>, CompletableFuture<MessageDTO>>> it = predicatePending.iterator(); it.hasNext();) {
+                for (Iterator<Map.Entry<Predicate<MessageDTO>, CompletableFuture<MessageDTO>>> it = pending.iterator(); it.hasNext();) {
                     Map.Entry<Predicate<MessageDTO>, CompletableFuture<MessageDTO>> entry = it.next();
                     if (entry.getKey().test(delivery)) {
                         it.remove();
@@ -213,7 +203,8 @@ abstract class AMQPTestSupport {
                     }
                 }
                 future = new CompletableFuture<>();
-                pending.put(distributionId, future);
+                pending.add(new AbstractMap.SimpleEntry<>(
+                        msg -> msg.getDistributionId().equals(distributionId), future));
             } finally {
                 lock.unlock();
             }
@@ -222,7 +213,7 @@ abstract class AMQPTestSupport {
             } catch (TimeoutException e) {
                 lock.lock();
                 try {
-                    pending.remove(distributionId, future);
+                    pending.removeIf(entry -> entry.getValue() == future);
                 } finally {
                     lock.unlock();
                 }
@@ -243,7 +234,7 @@ abstract class AMQPTestSupport {
                     }
                 }
                 future = new CompletableFuture<>();
-                predicatePending.add(new AbstractMap.SimpleEntry<>(
+                pending.add(new AbstractMap.SimpleEntry<>(
                         msg -> Utils.isMessageOfType(msg, messageType), future));
             } finally {
                 lock.unlock();
@@ -253,7 +244,7 @@ abstract class AMQPTestSupport {
             } catch (TimeoutException e) {
                 lock.lock();
                 try {
-                    predicatePending.removeIf(entry -> entry.getValue() == future);
+                    pending.removeIf(entry -> entry.getValue() == future);
                 } finally {
                     lock.unlock();
                 }
@@ -271,7 +262,7 @@ abstract class AMQPTestSupport {
                             "Expected no message but received one with distributionId: "
                                     + buffer.get(0).getDistributionId());
                 }
-                predicatePending.add(new AbstractMap.SimpleEntry<>(msg -> true, anyMessage));
+                pending.add(new AbstractMap.SimpleEntry<>(msg -> true, anyMessage));
             } finally {
                 lock.unlock();
             }
@@ -283,7 +274,7 @@ abstract class AMQPTestSupport {
                 // Good — no message arrived within the timeout
                 lock.lock();
                 try {
-                    predicatePending.removeIf(entry -> entry.getValue() == anyMessage);
+                    pending.removeIf(entry -> entry.getValue() == anyMessage);
                 } finally {
                     lock.unlock();
                 }
@@ -294,14 +285,10 @@ abstract class AMQPTestSupport {
             lock.lock();
             try {
                 buffer.clear();
-                for (CompletableFuture<MessageDTO> f : pending.values()) {
-                    f.cancel(false);
-                }
-                pending.clear();
-                for (Map.Entry<Predicate<MessageDTO>, CompletableFuture<MessageDTO>> entry : predicatePending) {
+                for (Map.Entry<Predicate<MessageDTO>, CompletableFuture<MessageDTO>> entry : pending) {
                     entry.getValue().cancel(false);
                 }
-                predicatePending.clear();
+                pending.clear();
             } finally {
                 lock.unlock();
             }
