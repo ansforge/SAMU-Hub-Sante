@@ -120,8 +120,8 @@ abstract class AMQPTestSupport {
         return inbox.awaitMessageOfType(messageType, RECEIVE_TIMEOUT_SECS, TimeUnit.SECONDS);
     }
 
-    protected void assertNoMessageReceived() throws Exception {
-        inbox.assertNoPendingMessages(3, TimeUnit.SECONDS);
+    protected void assertNoMessageReceived(Predicate<MessageDTO> scope) throws Exception {
+        inbox.assertNoPendingMessages(scope, 3, TimeUnit.SECONDS);
     }
 
     protected void send(String vhost, String routingKey, String message) throws Exception {
@@ -254,16 +254,16 @@ abstract class AMQPTestSupport {
             }
         }
 
-        void assertNoPendingMessages(long timeout, TimeUnit unit) throws Exception {
+        void assertNoPendingMessages(Predicate<MessageDTO> scope, long timeout, TimeUnit unit) throws Exception {
             CompletableFuture<MessageDTO> anyMessage = new CompletableFuture<>();
             lock.lock();
             try {
-                if (!buffer.isEmpty()) {
+                if (buffer.stream().anyMatch(scope)) {
                     throw new AssertionError(
                             "Expected no message but received one with distributionId: "
-                                    + buffer.get(0).getDistributionId());
+                                    + buffer.stream().filter(scope).findFirst().get().getDistributionId());
                 }
-                pending.add(new AbstractMap.SimpleEntry<>(msg -> true, anyMessage));
+                pending.add(new AbstractMap.SimpleEntry<>(scope, anyMessage));
             } finally {
                 lock.unlock();
             }
