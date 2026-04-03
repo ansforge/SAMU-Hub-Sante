@@ -115,7 +115,7 @@ abstract class AMQPTestSupport {
         return inbox.awaitMessageByDistributionId(distributionId, RECEIVE_TIMEOUT_SECS, TimeUnit.SECONDS);
     }
 
-    protected MessageDTO awaitMessageOfType(String messageType) throws Exception {
+    protected MessageDTO awaitMessageOfType(MessageType messageType) throws Exception {
         return inbox.awaitMessageOfType(messageType, RECEIVE_TIMEOUT_SECS, TimeUnit.SECONDS);
     }
 
@@ -229,7 +229,7 @@ abstract class AMQPTestSupport {
             }
         }
 
-        MessageDTO awaitMessageOfType(String messageType, long timeout, TimeUnit unit) throws Exception {
+        MessageDTO awaitMessageOfType(MessageType messageType, long timeout, TimeUnit unit) throws Exception {
             try {
                 return awaitMatching(msg -> Utils.isMessageOfType(msg, messageType), timeout, unit);
             } catch (TimeoutException e) {

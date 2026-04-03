@@ -7,6 +7,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Predicate;
 
+import tnr.MessageType;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -55,7 +57,7 @@ class SamuFireTest extends AMQPTestSupport {
         assertNotNull(matched, "Message " + distributionId + " not received within " + RECEIVE_TIMEOUT_SECS + "s");
         assertVhostEquals(matched, VHOST_15_NEXSIS_V3_TAG);
         assertQueueEquals(matched, HUB_NEXSIS_USER_CLIENT_ID + ".message");
-        assertTrue(Utils.isMessageOfType(matched, "createCase"));
+        assertTrue(Utils.isMessageOfType(matched, MessageType.CREATE_CASE));
 
         String ackDistributionId = sendAck(VHOST_15_NEXSIS_V3_TAG, NEXSIS_SHOVEL_ROUTING_KEY, SAMU1_V1_ID, distributionId);
 
@@ -86,7 +88,7 @@ class SamuFireTest extends AMQPTestSupport {
         assertNotNull(matched, "Message " + distributionId + " not received within " + RECEIVE_TIMEOUT_SECS + "s");
         assertVhostEquals(matched, VHOST_15_NEXSIS_V3_TAG);
         assertQueueEquals(matched, HUB_NEXSIS_USER_CLIENT_ID + ".message");
-        assertTrue(Utils.isMessageOfType(matched, "createCase"));
+        assertTrue(Utils.isMessageOfType(matched, MessageType.CREATE_CASE));
 
         String ackDistributionId = sendAck(VHOST_15_NEXSIS_V3_TAG, NEXSIS_SHOVEL_ROUTING_KEY, SAMU1_V3_ID, distributionId);
 
@@ -117,7 +119,7 @@ class SamuFireTest extends AMQPTestSupport {
         assertNotNull(matched, "Message " + distributionId + " not received within " + RECEIVE_TIMEOUT_SECS + "s");
         assertVhostEquals(matched, VHOST_15_NEXSIS_V3_TAG);
         assertQueueEquals(matched, HUB_NEXSIS_USER_CLIENT_ID + ".message");
-        assertTrue(Utils.isMessageOfType(matched, "createCase"));
+        assertTrue(Utils.isMessageOfType(matched, MessageType.CREATE_CASE));
 
         String ackDistributionId = sendAck(VHOST_15_NEXSIS_V3_TAG, NEXSIS_SHOVEL_ROUTING_KEY, SAMU2_V3_ID, distributionId);
 
@@ -148,7 +150,7 @@ class SamuFireTest extends AMQPTestSupport {
         assertNotNull(matched, "Message " + distributionId + " not received within " + RECEIVE_TIMEOUT_SECS + "s");
         assertVhostEquals(matched, VHOST_15_15_V3_TAG);
         assertQueueEquals(matched, SAMU1_V3_ID + ".message");
-        assertTrue(Utils.isMessageOfType(matched, "createCaseHealth"));
+        assertTrue(Utils.isMessageOfType(matched, MessageType.CREATE_CASE_HEALTH));
 
         String ackDistributionId = sendAck(VHOST_15_15_V3_TAG, SAMU1_V3_ID, TNR_SDIS_CLIENT_ID, distributionId);
 
@@ -179,7 +181,7 @@ class SamuFireTest extends AMQPTestSupport {
         assertNotNull(matched, "Message " + distributionId + " not received within " + RECEIVE_TIMEOUT_SECS + "s");
         assertVhostEquals(matched, VHOST_15_15_V1_TAG);
         assertQueueEquals(matched, SAMU1_V1_ID + ".message");
-        assertTrue(Utils.isMessageOfType(matched, "createCaseHealth"));
+        assertTrue(Utils.isMessageOfType(matched, MessageType.CREATE_CASE_HEALTH));
 
         String ackDistributionId = sendAck(VHOST_15_15_V1_TAG, SAMU1_V1_ID, TNR_SDIS_CLIENT_ID, distributionId);
 
@@ -210,7 +212,7 @@ class SamuFireTest extends AMQPTestSupport {
         assertNotNull(matched, "Message " + distributionId + " not received within " + RECEIVE_TIMEOUT_SECS + "s");
         assertVhostEquals(matched, VHOST_15_NEXSIS_V3_TAG);
         assertQueueEquals(matched, SAMU2_V3_ID + ".message");
-        assertTrue(Utils.isMessageOfType(matched, "createCase"));
+        assertTrue(Utils.isMessageOfType(matched, MessageType.CREATE_CASE));
 
         String ackDistributionId = sendAck(VHOST_15_NEXSIS_V3_TAG, SAMU2_V3_ID, TNR_SDIS_CLIENT_ID, distributionId);
 
@@ -282,21 +284,21 @@ class SamuFireTest extends AMQPTestSupport {
         assertNotNull(rsRi, "RS-RI " + distributionId + " not received within " + RECEIVE_TIMEOUT_SECS + "s");
         assertVhostEquals(rsRi, VHOST_15_15_V3_TAG);
         assertQueueEquals(rsRi, SAMU1_V3_ID + ".message");
-        assertTrue(Utils.isMessageOfType(rsRi, "resourcesInfo"), "Expected message type 'resourcesInfo'");
+        assertTrue(Utils.isMessageOfType(rsRi, MessageType.RESOURCES_INFO), "Expected message type '%s'".formatted(MessageType.RESOURCES_INFO));
     }
 
     private void assertRsSr(int count, String expectedCaseId, Set<String> expectedResourceIds) throws Exception {
         java.util.Set<String> received = new java.util.HashSet<>();
         for (int i = 0; i < count; i++) {
-            MessageDTO rsSr = awaitMessageOfType("resourcesStatus");
+            MessageDTO rsSr = awaitMessageOfType(MessageType.RESOURCES_STATUS);
             assertNotNull(rsSr, "RS-SR not received within " + RECEIVE_TIMEOUT_SECS + "s");
             assertVhostEquals(rsSr, VHOST_15_15_V3_TAG);
             assertQueueEquals(rsSr, SAMU1_V3_ID + ".message");
-            assertTrue(Utils.isMessageOfType(rsSr, "resourcesStatus"), "Expected message type 'resourcesStatus'");
+            assertTrue(Utils.isMessageOfType(rsSr, MessageType.RESOURCES_STATUS), "Expected message type '%s'".formatted(MessageType.RESOURCES_STATUS));
             com.fasterxml.jackson.databind.JsonNode rsNode = rsSr.getPayload()
                     .path("content").path(0)
                     .path("jsonContent").path("embeddedJsonContent").path("message")
-                    .path("resourcesStatus");
+                    .path(MessageType.RESOURCES_STATUS.value());
             assertEquals(expectedCaseId, rsNode.path("caseId").asText(), "RS-SR caseId mismatch");
             assertFalse(rsNode.has("position"), "RS-SR should not contain a 'position' field (transcoding suppression)");
             received.add(rsNode.path("resourceId").asText());
