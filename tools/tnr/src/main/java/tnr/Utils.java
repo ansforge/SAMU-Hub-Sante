@@ -18,7 +18,7 @@ public class Utils {
         return String.join(".", Arrays.copyOfRange(parts, 2, parts.length));
     }
 
-    public static boolean isMessageOfType(MessageDTO message, String type) {
+    public static boolean isMessageOfType(MessageDTO message, MessageType type) {
         if(message.isXML()){
             return message.getPayload()
                     .path("content")
@@ -26,14 +26,14 @@ public class Utils {
                     .path("contentXML")
                     .path("embeddedXMLContent")
                     .path("message")
-                    .has(type);
+                    .has(type.value());
         }
         return message.getPayload()
                 .path("content").path(0)
                 .path("jsonContent")
                 .path("embeddedJsonContent")
                 .path("message")
-                .has(type);
+                .has(type.value());
     }
 
     public static String getReferencedDistributionID(MessageDTO message) {

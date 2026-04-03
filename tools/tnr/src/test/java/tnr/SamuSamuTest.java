@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 
 import tnr.dto.MessageDTO;
+import tnr.MessageType;
 
 class SamuSamuTest extends AMQPTestSupport {
 
@@ -43,7 +44,7 @@ class SamuSamuTest extends AMQPTestSupport {
         assertNotNull(matched, "Message " + distributionId + " not received within " + RECEIVE_TIMEOUT_SECS + "s");
         assertVhostEquals(matched, VHOST_15_15_V3_TAG);
         assertQueueEquals(matched, SAMU2_V3_ID + ".message");
-        assertTrue(Utils.isMessageOfType(matched, "createCaseHealth"));
+        assertTrue(Utils.isMessageOfType(matched, MessageType.CREATE_CASE_HEALTH));
 
         String ackDistributionId = sendAck(VHOST_15_15_V3_TAG, SAMU2_V3_ID, SAMU1_V3_ID, distributionId);
 
@@ -74,7 +75,7 @@ class SamuSamuTest extends AMQPTestSupport {
         assertNotNull(matched, "Message " + distributionId + " not received within " + RECEIVE_TIMEOUT_SECS + "s");
         assertVhostEquals(matched, VHOST_15_15_V2_TAG);
         assertQueueEquals(matched, SAMU2_V2_ID + ".message");
-        assertTrue(Utils.isMessageOfType(matched, "createCaseHealth"));
+        assertTrue(Utils.isMessageOfType(matched, MessageType.CREATE_CASE_HEALTH));
 
         String ackDistributionId = sendAck(VHOST_15_15_V2_TAG, SAMU2_V2_ID, SAMU1_V2_ID, distributionId);
 
@@ -105,7 +106,7 @@ class SamuSamuTest extends AMQPTestSupport {
         assertNotNull(matched, "Message " + distributionId + " not received within " + RECEIVE_TIMEOUT_SECS + "s");
         assertVhostEquals(matched, VHOST_15_15_V1_TAG);
         assertQueueEquals(matched, SAMU2_V1_ID + ".message");
-        assertTrue(Utils.isMessageOfType(matched, "createCaseHealth"));
+        assertTrue(Utils.isMessageOfType(matched, MessageType.CREATE_CASE_HEALTH));
 
         String ackDistributionId = sendAck(VHOST_15_15_V1_TAG, SAMU2_V1_ID, SAMU1_V1_ID, distributionId);
 
@@ -137,7 +138,7 @@ class SamuSamuTest extends AMQPTestSupport {
         assertNotNull(matched, "Message " + distributionId + " not received within " + RECEIVE_TIMEOUT_SECS + "s");
         assertVhostEquals(matched, VHOST_15_15_V3_TAG);
         assertQueueEquals(matched, SAMU1_V3_ID + ".message");
-        assertTrue(Utils.isMessageOfType(matched, "createCaseHealth"));
+        assertTrue(Utils.isMessageOfType(matched, MessageType.CREATE_CASE_HEALTH));
 
         String ackDistributionId = sendAck(VHOST_15_15_V3_TAG, SAMU1_V3_ID, SAMU1_V1_ID, distributionId);
 
@@ -168,7 +169,7 @@ class SamuSamuTest extends AMQPTestSupport {
         assertNotNull(matched, "Message " + distributionId + " not received within " + RECEIVE_TIMEOUT_SECS + "s");
         assertVhostEquals(matched, VHOST_15_15_V1_TAG);
         assertQueueEquals(matched, SAMU1_V1_ID + ".message");
-        assertTrue(Utils.isMessageOfType(matched, "createCaseHealth"));
+        assertTrue(Utils.isMessageOfType(matched, MessageType.CREATE_CASE_HEALTH));
 
         String ackDistributionId = sendAck(VHOST_15_15_V1_TAG, SAMU1_V1_ID, SAMU1_V3_ID, distributionId);
 
