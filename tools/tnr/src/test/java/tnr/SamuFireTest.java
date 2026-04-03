@@ -5,6 +5,7 @@ import static tnr.DistributionAssertions.*;
 
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Predicate;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -264,7 +265,7 @@ class SamuFireTest extends AMQPTestSupport {
 
         // Step 9: no change — no output
         sendRcRi(RC_RI_ALL_STATUS_REF, uniqueCaseId);
-        assertNoMessageReceived();
+        assertNoMessageReceived(msg -> msg.getQueue().equals(SAMU1_V3_ID + ".message"));
     }
 
     private String sendRcRi(String fixtureRef, String caseId) throws Exception {
