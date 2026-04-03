@@ -112,8 +112,8 @@ abstract class AMQPTestSupport {
         return httpClient.fetch(refUrl);
     }
 
-    protected MessageDTO awaitMessage(String distributionId) throws Exception {
-        return inbox.awaitMessage(distributionId, RECEIVE_TIMEOUT_SECS, TimeUnit.SECONDS);
+    protected MessageDTO awaitMessageByDistributionId(String distributionId) throws Exception {
+        return inbox.awaitMessageByDistributionId(distributionId, RECEIVE_TIMEOUT_SECS, TimeUnit.SECONDS);
     }
 
     protected MessageDTO awaitMessageOfType(String messageType) throws Exception {
@@ -192,20 +192,19 @@ abstract class AMQPTestSupport {
             }
         }
 
-        MessageDTO awaitMessage(String distributionId, long timeout, TimeUnit unit) throws Exception {
+        private MessageDTO awaitMatching(Predicate<MessageDTO> matcher, long timeout, TimeUnit unit) throws Exception {
             CompletableFuture<MessageDTO> future;
             lock.lock();
             try {
                 for (Iterator<MessageDTO> it = buffer.iterator(); it.hasNext();) {
                     MessageDTO message = it.next();
-                    if (message.getDistributionId().equals(distributionId)) {
+                    if (matcher.test(message)) {
                         it.remove();
                         return message;
                     }
                 }
                 future = new CompletableFuture<>();
-                pending.add(new AbstractMap.SimpleEntry<>(
-                        msg -> msg.getDistributionId().equals(distributionId), future));
+                pending.add(new AbstractMap.SimpleEntry<>(matcher, future));
             } finally {
                 lock.unlock();
             }
@@ -218,38 +217,24 @@ abstract class AMQPTestSupport {
                 } finally {
                     lock.unlock();
                 }
-                logger.error("Could not receive message that matched " + distributionId);
+                throw e;
+            }
+        }
+
+        MessageDTO awaitMessageByDistributionId(String distributionId, long timeout, TimeUnit unit) throws Exception {
+            try {
+                return awaitMatching(msg -> msg.getDistributionId().equals(distributionId), timeout, unit);
+            } catch (TimeoutException e) {
+                logger.error("Could not receive message that matched distributionId: " + distributionId);
                 throw e;
             }
         }
 
         MessageDTO awaitMessageOfType(String messageType, long timeout, TimeUnit unit) throws Exception {
-            CompletableFuture<MessageDTO> future;
-            lock.lock();
             try {
-                for (Iterator<MessageDTO> it = buffer.iterator(); it.hasNext();) {
-                    MessageDTO message = it.next();
-                    if (Utils.isMessageOfType(message, messageType)) {
-                        it.remove();
-                        return message;
-                    }
-                }
-                future = new CompletableFuture<>();
-                pending.add(new AbstractMap.SimpleEntry<>(
-                        msg -> Utils.isMessageOfType(msg, messageType), future));
-            } finally {
-                lock.unlock();
-            }
-            try {
-                return future.get(timeout, unit);
+                return awaitMatching(msg -> Utils.isMessageOfType(msg, messageType), timeout, unit);
             } catch (TimeoutException e) {
-                lock.lock();
-                try {
-                    pending.removeIf(entry -> entry.getValue() == future);
-                } finally {
-                    lock.unlock();
-                }
-                logger.error("Could not receive message of type " + messageType);
+                logger.error("Could not receive message of type: " + messageType);
                 throw new TimeoutException("No message of type '" + messageType + "' received within timeout");
             }
         }
