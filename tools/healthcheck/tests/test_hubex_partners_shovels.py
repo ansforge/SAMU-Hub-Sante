@@ -90,7 +90,7 @@ class TestFunctionalHubexPartnersShovels(unittest.TestCase):
         new_callable=mock_open,
         read_data="vhost1;queue1\n",
     )
-    @patch("checks.hubex_partners_shovels.requests.get")
+    @patch("http_client.http_session.get")
     def test_metric_set_to_1_on_success(self, mock_get, mock_file):
         # Mock the response from requests.get
         mock_response = MagicMock()
@@ -131,7 +131,7 @@ class TestFunctionalHubexPartnersShovels(unittest.TestCase):
         new_callable=mock_open,
         read_data="vhost1;queue1,queue2\n",
     )
-    @patch("checks.hubex_partners_shovels.requests.get")
+    @patch("http_client.http_session.get")
     def test_status_up_for_healthy_components_when_a_failure_occurs(
         self, mock_get, mock_file
     ):
