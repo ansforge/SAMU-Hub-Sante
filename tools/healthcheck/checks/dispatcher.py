@@ -1,5 +1,6 @@
 import logging
 import os
+from concurrent.futures import ThreadPoolExecutor
 
 import requests
 from prometheus_client import Gauge
@@ -28,10 +29,13 @@ class DispatchersHealthcheck(IChecker):
     def perform_checks(self):
         logging.info(f"Checking health of dispatcher instances: {DISPATCHER_INSTANCES}")
         result = {}
-        for dispatcher_instance in DISPATCHER_INSTANCES:
-            result[dispatcher_instance] = self.single_dispatcher_healthcheck(
-                dispatcher_instance
-            )
+        with ThreadPoolExecutor() as executor:
+            futures = [
+                (instance, executor.submit(self.single_dispatcher_healthcheck, instance))
+                for instance in DISPATCHER_INSTANCES
+            ]
+            for instance, future in futures:
+                result[instance] = future.result()
         return result
 
     def check_failure_fallback(self):
