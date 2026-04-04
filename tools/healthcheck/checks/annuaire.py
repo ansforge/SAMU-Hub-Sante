@@ -1,9 +1,8 @@
-import requests
 from prometheus_client import Gauge
 
 from checks.checker import IChecker
 from checks.status import Status
-from config import HTTP_TIMEOUT
+from http_client import http_session
 
 ANNUAIRE_HEALTH_URL = (
     "http://annuaire-service.annuaire.svc.cluster.local/annuaire/health"
@@ -16,7 +15,7 @@ class AnnuaireHealthcheck(IChecker):
     )
 
     def perform_checks(self):
-        response = requests.get(ANNUAIRE_HEALTH_URL, timeout=HTTP_TIMEOUT)
+        response = http_session.get(ANNUAIRE_HEALTH_URL)
         response.raise_for_status()
         data = response.json()
         status = data.get("status", Status.UNKNOWN.value)

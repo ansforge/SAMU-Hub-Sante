@@ -1,12 +1,13 @@
-import requests
 import logging
 import os
+
+import requests
 from prometheus_client import Gauge
 from collections import OrderedDict
 
 from checks.checker import IChecker
 from checks.status import Status
-from config import HTTP_TIMEOUT
+from http_client import http_session
 
 DISPATCHER_INSTANCES_ENV_VAR = os.getenv("DISPATCHER_INSTANCES")
 DISPATCHER_INSTANCES = (
@@ -45,7 +46,7 @@ class DispatchersHealthcheck(IChecker):
             dispatcher_health_url = (
                 f"http://{app_name}.app.svc.cluster.local:8080/actuator/health"
             )
-            response = requests.get(dispatcher_health_url, timeout=HTTP_TIMEOUT)
+            response = http_session.get(dispatcher_health_url)
             response.raise_for_status()
             data = response.json()
             status = data.get("status", Status.UNKNOWN.value)
