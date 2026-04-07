@@ -90,10 +90,6 @@ class HubexPartnersHealthcheck(IChecker):
                 ).set(0)
 
     def perform_checks(self):
-        logging.info(
-            f"Checking health of hubex partners connexions: {self.SHOVELS_MAP}"
-        )
-
         response = http_session.get(
             SHOVEL_STATUS_URL,
             auth=(RABBITMQ_MONITORING_USERNAME, RABBITMQ_MONITORING_PASSWORD),
@@ -104,6 +100,9 @@ class HubexPartnersHealthcheck(IChecker):
         result = {}
         for vhost, shovels_list in self.SHOVELS_MAP.items():
             for shovel in shovels_list:
+                logging.info(
+                    f"Checking health of hubex partner connection for vhost {vhost} and shovel {shovel}"
+                )
                 shovel_status = check_shovel_response(data, vhost, shovel)
                 shovel_label = f"{vhost}-{shovel}"
                 result[shovel_label] = shovel_status

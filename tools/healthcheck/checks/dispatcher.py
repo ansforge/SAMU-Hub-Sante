@@ -27,7 +27,6 @@ class DispatchersHealthcheck(IChecker):
             self.dispatcher_status_metric.labels(dispatcher=dispatcher).set(0)
 
     def perform_checks(self):
-        logging.info(f"Checking health of dispatcher instances: {DISPATCHER_INSTANCES}")
         result = {}
         with ThreadPoolExecutor() as executor:
             futures = [
@@ -46,6 +45,7 @@ class DispatchersHealthcheck(IChecker):
         return result
 
     def single_dispatcher_healthcheck(self, app_name):
+        logging.info(f"Checking health of dispatcher instance: {app_name}")
         try:
             dispatcher_health_url = (
                 f"http://{app_name}.app.svc.cluster.local:8080/actuator/health"
