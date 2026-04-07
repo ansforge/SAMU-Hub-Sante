@@ -120,7 +120,7 @@ abstract class AMQPTestSupport {
     }
 
     protected void sendMessage(String vhost, String routingKey, String message) throws Exception {
-        logger.info("[{}] Sending message on routingKey %s", vhost, routingKey);
+        logger.info("[{}] Sending message on routingKey {}", vhost, routingKey);
         send(vhost, routingKey, message);
     }
 
