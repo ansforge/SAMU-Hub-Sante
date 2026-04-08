@@ -2,6 +2,7 @@ package tnr;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static tnr.DistributionAssertions.*;
+import static tnr.TestConstants.*;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -13,25 +14,11 @@ import tnr.MessageType;
 
 class SamuSamuTest extends AMQPTestSupport {
 
-    protected static final String SAMU1_V1_ID = "fr.health.tnr.samu1-v1";
-    protected static final String SAMU2_V1_ID = "fr.health.tnr.samu2-v1";
-    protected static final String SAMU1_V2_ID = "fr.health.tnr.samu1-v2";
-    protected static final String SAMU2_V2_ID = "fr.health.tnr.samu2-v2";
-    protected static final String SAMU1_V3_ID = "fr.health.tnr.samu1-v3";
-    protected static final String SAMU2_V3_ID = "fr.health.tnr.samu2-v3";
-    protected static final String VHOST_15_15_V1_TAG = "15-15_v1.5";
-    protected static final String VHOST_15_15_V2_TAG = "15-15_v2.0";
-    protected static final String VHOST_15_15_V3_TAG = "15-15_v2.1";
-    protected static final String V3_TAG = "3.3.0";
-    protected static final String V2_TAG = "2.3.0";
-    protected static final String V1_TAG = "1.3.0";
-    protected static final String RS_EDA_REF = "RS-EDA/RS-EDA_partageDossier_DidierMorel.01a.json";
-
     @Test
     @DisplayName("Send RS-EDA message from samu1_v3 to samu2_v3 without conversion, then send ack")
     void messageFromSamu1V3ToSamu2V3() throws Exception {
 
-        String useCase = getUseCaseContentOnline(V3_TAG,  RS_EDA_REF);
+        String useCase = getUseCaseContentOnline(V3_SAMU_TAG,  RS_EDA_REF);
 
         String distributionId = Utils.generateDistributionId(SAMU1_V3_ID);
         String edxlJson = new MessageBuilder().buildMessage(
@@ -156,7 +143,7 @@ class SamuSamuTest extends AMQPTestSupport {
     @DisplayName("Send RS-EDA message from samu1_v3 to samu1_v1 with conversion, then send ack")
     void messageFromSamu1V3ToSamu1V1() throws Exception {
 
-        String useCase = getUseCaseContentOnline(V3_TAG,  RS_EDA_REF);
+        String useCase = getUseCaseContentOnline(V3_SAMU_TAG,  RS_EDA_REF);
 
         String distributionId = Utils.generateDistributionId(SAMU1_V3_ID);
         String edxlJson = new MessageBuilder().buildMessage(

@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static tnr.Constants.TLS_PROTOCOL_VERSION;
+import static tnr.TestConstants.RECEIVE_TIMEOUT_SECS;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -45,8 +46,6 @@ abstract class AMQPTestSupport {
 
     protected Map<String, Producer> producers = new HashMap<>();
     protected Collection<TestConsumer> consumers = new ArrayList<>();
-
-    protected static final int RECEIVE_TIMEOUT_SECS = 10;
 
     protected Dotenv dotenv = Dotenv.configure().ignoreIfMissing().load();
 

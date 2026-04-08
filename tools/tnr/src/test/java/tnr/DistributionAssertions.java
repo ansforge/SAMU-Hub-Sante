@@ -1,12 +1,11 @@
 package tnr;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static tnr.TestConstants.RECEIVE_TIMEOUT_SECS;
 
 import tnr.dto.MessageDTO;
 
 public final class DistributionAssertions {
-
-    protected static final int RECEIVE_TIMEOUT_SECS = 10;
 
     private DistributionAssertions() {
     }
