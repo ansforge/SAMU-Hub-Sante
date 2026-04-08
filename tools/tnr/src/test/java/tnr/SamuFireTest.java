@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static tnr.DistributionAssertions.*;
 import static tnr.TestConstants.*;
 
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Predicate;
@@ -211,35 +212,38 @@ class SamuFireTest extends AMQPTestSupport {
 
         // Step 2: first reception — RS-RI + RS-SR
         String step2DistId = sendRcRi(RC_RI_REF, uniqueCaseId);
-        assertRsRi(step2DistId);
-        assertRsSr(1, uniqueCaseId, Set.of(RC_RI_RESOURCE_ID));
+        MessageDTO step2RsRi = awaitMessageByDistributionId(step2DistId);
+        assertRsRi(step2RsRi, step2DistId);
+        assertRsSr(List.of(awaitMessageOfType(MessageType.RESOURCES_STATUS)), uniqueCaseId, Set.of(RC_RI_RESOURCE_ID));
         sendAndAssertAck(step2DistId);
 
         // Step 3: resource 1 status update — RS-SR only
         String step3DistId = sendRcRi(RC_RI_STATUS1_REF, uniqueCaseId);
-        assertRsSr(1, uniqueCaseId, Set.of(RC_RI_RESOURCE_ID));
+        assertRsSr(List.of(awaitMessageOfType(MessageType.RESOURCES_STATUS)), uniqueCaseId, Set.of(RC_RI_RESOURCE_ID));
         sendAndAssertAck(step3DistId);
 
         // Step 5: add resource 2 — RS-RI + RS-SR for new resource only
         String step5DistId = sendRcRi(RC_RI_ADD_RES2_REF, uniqueCaseId);
-        assertRsRi(step5DistId);
-        assertRsSr(1, uniqueCaseId, Set.of(RC_RI_RESOURCE2_ID));
+        MessageDTO step5RsRi = awaitMessageByDistributionId(step5DistId);
+        assertRsRi(step5RsRi, step5DistId);
+        assertRsSr(List.of(awaitMessageOfType(MessageType.RESOURCES_STATUS)), uniqueCaseId, Set.of(RC_RI_RESOURCE2_ID));
         sendAndAssertAck(step5DistId);
 
         // Step 6: resource 1 status update — RS-SR only
         String step6DistId = sendRcRi(RC_RI_STATUS2_REF, uniqueCaseId);
-        assertRsSr(1, uniqueCaseId, Set.of(RC_RI_RESOURCE_ID));
+        assertRsSr(List.of(awaitMessageOfType(MessageType.RESOURCES_STATUS)), uniqueCaseId, Set.of(RC_RI_RESOURCE_ID));
         sendAndAssertAck(step6DistId);
 
         // Step 7: add resource 3 + resource 2 status update — RS-RI + 2×RS-SR
         String step7DistId = sendRcRi(RC_RI_ADD_RES3_REF, uniqueCaseId);
-        assertRsRi(step7DistId);
-        assertRsSr(2, uniqueCaseId, Set.of(RC_RI_RESOURCE2_ID, RC_RI_RESOURCE3_ID));
+        MessageDTO step7RsRi = awaitMessageByDistributionId(step7DistId);
+        assertRsRi(step7RsRi, step7DistId);
+        assertRsSr(List.of(awaitMessageOfType(MessageType.RESOURCES_STATUS), awaitMessageOfType(MessageType.RESOURCES_STATUS)), uniqueCaseId, Set.of(RC_RI_RESOURCE2_ID, RC_RI_RESOURCE3_ID));
         sendAndAssertAck(step7DistId);
 
         // Step 8: all resources status update — 3×RS-SR
         String step8DistId = sendRcRi(RC_RI_ALL_STATUS_REF, uniqueCaseId);
-        assertRsSr(3, uniqueCaseId, Set.of(RC_RI_RESOURCE_ID, RC_RI_RESOURCE2_ID, RC_RI_RESOURCE3_ID));
+        assertRsSr(List.of(awaitMessageOfType(MessageType.RESOURCES_STATUS), awaitMessageOfType(MessageType.RESOURCES_STATUS), awaitMessageOfType(MessageType.RESOURCES_STATUS)), uniqueCaseId, Set.of(RC_RI_RESOURCE_ID, RC_RI_RESOURCE2_ID, RC_RI_RESOURCE3_ID));
         sendAndAssertAck(step8DistId);
 
         // Step 9: no change — no output
@@ -254,33 +258,6 @@ class SamuFireTest extends AMQPTestSupport {
         sendMessage(VHOST_15_NEXSIS_V3_TAG, NEXSIS_SHOVEL_ROUTING_KEY,
                 new MessageBuilder().buildMessage(useCase, distributionId, TNR_SDIS_CLIENT_ID, SAMU1_V3_ID));
         return distributionId;
-    }
-
-    private void assertRsRi(String distributionId) throws Exception {
-        MessageDTO rsRi = awaitMessageByDistributionId(distributionId);
-        assertNotNull(rsRi, "RS-RI " + distributionId + " not received within " + RECEIVE_TIMEOUT_SECS + "s");
-        assertVhostEquals(rsRi, VHOST_15_15_V3_TAG);
-        assertQueueEquals(rsRi, SAMU1_V3_ID + ".message");
-        assertTrue(Utils.isMessageOfType(rsRi, MessageType.RESOURCES_INFO), "Expected message type '%s'".formatted(MessageType.RESOURCES_INFO));
-    }
-
-    private void assertRsSr(int count, String expectedCaseId, Set<String> expectedResourceIds) throws Exception {
-        java.util.Set<String> received = new java.util.HashSet<>();
-        for (int i = 0; i < count; i++) {
-            MessageDTO rsSr = awaitMessageOfType(MessageType.RESOURCES_STATUS);
-            assertNotNull(rsSr, "RS-SR not received within " + RECEIVE_TIMEOUT_SECS + "s");
-            assertVhostEquals(rsSr, VHOST_15_15_V3_TAG);
-            assertQueueEquals(rsSr, SAMU1_V3_ID + ".message");
-            assertTrue(Utils.isMessageOfType(rsSr, MessageType.RESOURCES_STATUS), "Expected message type '%s'".formatted(MessageType.RESOURCES_STATUS));
-            com.fasterxml.jackson.databind.JsonNode rsNode = rsSr.getPayload()
-                    .path("content").path(0)
-                    .path("jsonContent").path("embeddedJsonContent").path("message")
-                    .path(MessageType.RESOURCES_STATUS.value());
-            assertEquals(expectedCaseId, rsNode.path("caseId").asText(), "RS-SR caseId mismatch");
-            assertFalse(rsNode.has("position"), "RS-SR should not contain a 'position' field (transcoding suppression)");
-            received.add(rsNode.path("resourceId").asText());
-        }
-        assertEquals(expectedResourceIds, received, "RS-SR resource IDs mismatch");
     }
 
     private void sendAndAssertAck(String referencedDistributionId) throws Exception {
