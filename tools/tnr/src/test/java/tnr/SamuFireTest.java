@@ -2,6 +2,7 @@ package tnr;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static tnr.DistributionAssertions.*;
+import static tnr.TestConstants.*;
 
 import java.util.Set;
 import java.util.UUID;
@@ -15,32 +16,6 @@ import org.junit.jupiter.api.Test;
 import tnr.dto.MessageDTO;
 
 class SamuFireTest extends AMQPTestSupport {
-
-    protected static final String SAMU1_V1_ID = "fr.health.tnr.samu1-v1";
-    protected static final String SAMU1_V3_ID = "fr.health.tnr.samu1-v3";
-    protected static final String SAMU2_V3_ID = "fr.health.tnr.samu2-v3";
-    protected static final String VHOST_15_15_V1_TAG = "15-15_v1.5";
-    protected static final String VHOST_15_15_V3_TAG = "15-15_v2.1";
-    protected static final String V1_TAG = "1.3.0";
-    protected static final String V3_TAG = "3.4.0-rc.3";
-    protected static final String RS_EDA_REF = "RS-EDA/RS-EDA_partageDossier_DidierMorel.01a.json";
-    protected static final String RC_EDA_REF = "RC-EDA/RC-EDA-DouleurThoracique-PierreLegrand.json";
-    protected static final String RC_RI_REF           = "RC-RI/RC-RI_Incendie_RaymondeLECCIA.02.json"; // first reception
-    protected static final String RC_RI_STATUS1_REF    = "RC-RI/RC-RI_Incendie_RaymondeLECCIA.03.json"; // resource 1 status update
-    protected static final String RC_RI_ADD_RES2_REF   = "RC-RI/RC-RI_Incendie_RaymondeLECCIA.05.json"; // add resource 2
-    protected static final String RC_RI_STATUS2_REF    = "RC-RI/RC-RI_Incendie_RaymondeLECCIA.06.json"; // resource 1 status update
-    protected static final String RC_RI_ADD_RES3_REF   = "RC-RI/RC-RI_Incendie_RaymondeLECCIA.07.json"; // add resource 3 + resource 2 status
-    protected static final String RC_RI_ALL_STATUS_REF = "RC-RI/RC-RI_Incendie_RaymondeLECCIA.08.json"; // all statuses updated
-    protected static final String RC_RI_RESOURCE_ID  = "fr.fire.sisXXX.cga-XXX.resource.VSR268";
-    protected static final String RC_RI_RESOURCE2_ID = "fr.fire.sisXXX.cga-XXX.resource.VSAV1";
-    protected static final String RC_RI_RESOURCE3_ID = "fr.fire.sisXXX.cga-XXX.resource.VSAV2";
-    // specific for nexsis
-    protected static final String TNR_SDIS_CLIENT_ID = "fr.fire.tnr.sdisZ";
-    protected static final String HUB_NEXSIS_USER_CLIENT_ID = "fr.health.fire";
-    protected static final String NEXSIS_SHOVEL_ROUTING_KEY = "fr.fire.sga";
-    protected static final String VHOST_15_NEXSIS_V3_TAG = "15-nexsis_v1.9";
-    protected static final String VHOST_15_NEXSIS_VACTIVE_TAG = "15-nexsis_vactive";
-
 
     @Test
     @DisplayName("Send RS-EDA message from samu1_v1 to sdisZ with conversion & transcoding, then send ack")
@@ -77,7 +52,7 @@ class SamuFireTest extends AMQPTestSupport {
     @DisplayName("Send RS-EDA message from samu1_v3 to sdisZ with transcoding, then send ack")
     void messageFromSamu1V3ToNexsis() throws Exception {
 
-        String useCase = getUseCaseContentOnline(V3_TAG,  RS_EDA_REF);
+        String useCase = getUseCaseContentOnline(V3_FIRE_TAG,  RS_EDA_REF);
 
         String distributionId = Utils.generateDistributionId(SAMU1_V3_ID);
         String edxlJson = new MessageBuilder().buildMessage(
@@ -108,7 +83,7 @@ class SamuFireTest extends AMQPTestSupport {
     @DisplayName("Send RC-EDA message from samu2_v3 to sdisZ without conversion nor transcoding, then send ack")
     void messageFromSamu2V3ToNexsis() throws Exception {
 
-        String useCase = getUseCaseContentOnline(V3_TAG,  RC_EDA_REF);
+        String useCase = getUseCaseContentOnline(V3_FIRE_TAG,  RC_EDA_REF);
 
         String distributionId = Utils.generateDistributionId(SAMU2_V3_ID);
         String edxlJson = new MessageBuilder().buildMessage(
@@ -139,7 +114,7 @@ class SamuFireTest extends AMQPTestSupport {
     @DisplayName("Send RC-EDA message from sdisZ to samu1_v3 with transcoding, then send ack")
     void messageFromNexsisToSamu1V3() throws Exception {
 
-        String useCase = getUseCaseContentOnline(V3_TAG,  RC_EDA_REF);
+        String useCase = getUseCaseContentOnline(V3_FIRE_TAG,  RC_EDA_REF);
 
         String distributionId = Utils.generateDistributionId(TNR_SDIS_CLIENT_ID);
         String edxlJson = new MessageBuilder().buildMessage(
@@ -170,7 +145,7 @@ class SamuFireTest extends AMQPTestSupport {
     @DisplayName("Send RC-EDA message from sdisZ to samu1_v1 with conversion & transcoding, then send ack")
     void messageFromNexsisToSamu1V1() throws Exception {
 
-        String useCase = getUseCaseContentOnline(V3_TAG,  RC_EDA_REF);
+        String useCase = getUseCaseContentOnline(V3_FIRE_TAG,  RC_EDA_REF);
 
         String distributionId = Utils.generateDistributionId(TNR_SDIS_CLIENT_ID);
         String edxlJson = new MessageBuilder().buildMessage(
@@ -201,7 +176,7 @@ class SamuFireTest extends AMQPTestSupport {
     @DisplayName("Send RC-EDA message from sdisZ to samu2_v3 without conversion nor transcoding, then send ack")
     void messageFromNexsisToSamu2V3() throws Exception {
 
-        String useCase = getUseCaseContentOnline(V3_TAG,  RC_EDA_REF);
+        String useCase = getUseCaseContentOnline(V3_FIRE_TAG,  RC_EDA_REF);
 
         String distributionId = Utils.generateDistributionId(TNR_SDIS_CLIENT_ID);
         String edxlJson = new MessageBuilder().buildMessage(
@@ -273,7 +248,7 @@ class SamuFireTest extends AMQPTestSupport {
     }
 
     private String sendRcRi(String fixtureRef, String caseId) throws Exception {
-        String useCase = getUseCaseContentOnline(V3_TAG, fixtureRef)
+        String useCase = getUseCaseContentOnline(V3_FIRE_TAG, fixtureRef)
                 .replaceFirst("\"caseId\"\\s*:\\s*\"[^\"]+\"", "\"caseId\": \"" + caseId + "\"");
         String distributionId = Utils.generateDistributionId(TNR_SDIS_CLIENT_ID);
         sendMessage(VHOST_15_NEXSIS_V3_TAG, NEXSIS_SHOVEL_ROUTING_KEY,
