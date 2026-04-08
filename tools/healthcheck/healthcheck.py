@@ -58,8 +58,13 @@ def compute_globale_status(custom_checkers):
 @app.before_request
 def update_metrics_before_scrapping():
     if request.path == METRICS_ENDPOINT:
-        for checker in internal_checkers:
-            checker.check_wrapper()
+        with ThreadPoolExecutor() as executor:
+            futures = [
+                executor.submit(checker.check_wrapper)
+                for checker in internal_checkers
+            ]
+            for future in futures:
+                future.result()
 
 
 @app.route(HEALTH_EXTERNAL_ENDPOINT, methods=["GET"])
