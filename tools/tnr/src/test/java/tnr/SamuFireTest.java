@@ -213,37 +213,48 @@ class SamuFireTest extends AMQPTestSupport {
         // Step 2: first reception — RS-RI + RS-SR
         String step2DistId = sendRcRi(RC_RI_REF, uniqueCaseId);
         MessageDTO step2RsRi = awaitMessageByDistributionId(step2DistId);
+        List<MessageDTO> step2RsSr = List.of(awaitMessageOfType(MessageType.RESOURCES_STATUS));
         assertRsRi(step2RsRi, step2DistId);
-        assertRsSr(List.of(awaitMessageOfType(MessageType.RESOURCES_STATUS)), uniqueCaseId, Set.of(RC_RI_RESOURCE_ID));
+        assertRsSr(step2RsSr, uniqueCaseId, Set.of(RC_RI_RESOURCE_ID));
         sendAndAssertAck(step2DistId);
 
         // Step 3: resource 1 status update — RS-SR only
         String step3DistId = sendRcRi(RC_RI_STATUS1_REF, uniqueCaseId);
-        assertRsSr(List.of(awaitMessageOfType(MessageType.RESOURCES_STATUS)), uniqueCaseId, Set.of(RC_RI_RESOURCE_ID));
+        List<MessageDTO> step3RsSr = List.of(awaitMessageOfType(MessageType.RESOURCES_STATUS));
+        assertRsSr(step3RsSr, uniqueCaseId, Set.of(RC_RI_RESOURCE_ID));
         sendAndAssertAck(step3DistId);
 
         // Step 5: add resource 2 — RS-RI + RS-SR for new resource only
         String step5DistId = sendRcRi(RC_RI_ADD_RES2_REF, uniqueCaseId);
         MessageDTO step5RsRi = awaitMessageByDistributionId(step5DistId);
+        List<MessageDTO> step5RsSr = List.of(awaitMessageOfType(MessageType.RESOURCES_STATUS));
         assertRsRi(step5RsRi, step5DistId);
-        assertRsSr(List.of(awaitMessageOfType(MessageType.RESOURCES_STATUS)), uniqueCaseId, Set.of(RC_RI_RESOURCE2_ID));
+        assertRsSr(step5RsSr, uniqueCaseId, Set.of(RC_RI_RESOURCE2_ID));
         sendAndAssertAck(step5DistId);
 
         // Step 6: resource 1 status update — RS-SR only
         String step6DistId = sendRcRi(RC_RI_STATUS2_REF, uniqueCaseId);
-        assertRsSr(List.of(awaitMessageOfType(MessageType.RESOURCES_STATUS)), uniqueCaseId, Set.of(RC_RI_RESOURCE_ID));
+        List<MessageDTO> step6RsSr = List.of(awaitMessageOfType(MessageType.RESOURCES_STATUS));
+        assertRsSr(step6RsSr, uniqueCaseId, Set.of(RC_RI_RESOURCE_ID));
         sendAndAssertAck(step6DistId);
 
         // Step 7: add resource 3 + resource 2 status update — RS-RI + 2×RS-SR
         String step7DistId = sendRcRi(RC_RI_ADD_RES3_REF, uniqueCaseId);
         MessageDTO step7RsRi = awaitMessageByDistributionId(step7DistId);
         assertRsRi(step7RsRi, step7DistId);
-        assertRsSr(List.of(awaitMessageOfType(MessageType.RESOURCES_STATUS), awaitMessageOfType(MessageType.RESOURCES_STATUS)), uniqueCaseId, Set.of(RC_RI_RESOURCE2_ID, RC_RI_RESOURCE3_ID));
+        List<MessageDTO> step7RsSr = List.of(
+                awaitMessageOfType(MessageType.RESOURCES_STATUS),
+                awaitMessageOfType(MessageType.RESOURCES_STATUS));
+        assertRsSr(step7RsSr, uniqueCaseId, Set.of(RC_RI_RESOURCE2_ID, RC_RI_RESOURCE3_ID));
         sendAndAssertAck(step7DistId);
 
         // Step 8: all resources status update — 3×RS-SR
         String step8DistId = sendRcRi(RC_RI_ALL_STATUS_REF, uniqueCaseId);
-        assertRsSr(List.of(awaitMessageOfType(MessageType.RESOURCES_STATUS), awaitMessageOfType(MessageType.RESOURCES_STATUS), awaitMessageOfType(MessageType.RESOURCES_STATUS)), uniqueCaseId, Set.of(RC_RI_RESOURCE_ID, RC_RI_RESOURCE2_ID, RC_RI_RESOURCE3_ID));
+        List<MessageDTO> step8RsSr = List.of(
+                awaitMessageOfType(MessageType.RESOURCES_STATUS),
+                awaitMessageOfType(MessageType.RESOURCES_STATUS),
+                awaitMessageOfType(MessageType.RESOURCES_STATUS));
+        assertRsSr(step8RsSr, uniqueCaseId, Set.of(RC_RI_RESOURCE_ID, RC_RI_RESOURCE2_ID, RC_RI_RESOURCE3_ID));
         sendAndAssertAck(step8DistId);
 
         // Step 9: no change — no output
