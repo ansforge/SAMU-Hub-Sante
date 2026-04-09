@@ -26,6 +26,7 @@ public class Constants {
     public static final String CLIENT_ID_TAG = "sender";
     public static final String VHOST_TAG = "vhost";
     public static final String EDITOR_TAG = "editor";
+    public static final String RECIPIENT_ID_TAG = "recipient";
     public static final String METRIC_MESSAGE_PROCESSING = "message.processing";
     public static final String OPERATION = "operation";
     public static final String DISTRIBUTION_ID_UNAVAILABLE =

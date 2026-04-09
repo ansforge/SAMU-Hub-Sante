@@ -652,11 +652,14 @@ public class MessageHandler {
         String sender = getSenderFromRoutingKey(amqpMessage);
         String useCase = getUseCaseFromMessage(edxlMessage.getFirstContentMessage());
         String editor = getEditorFromSender(sender);
+        String recipient = getRecipientID(edxlMessage);
 
         registry.counter(
                         DISPATCHED_MESSAGE,
                         CLIENT_ID_TAG,
                         sender,
+                        RECIPIENT_ID_TAG,
+                        recipient,
                         VHOST_TAG,
                         sanitizeVhostForProm(hubConfig.getVhost()),
                         USE_CASE_TAG,
