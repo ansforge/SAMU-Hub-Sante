@@ -60,8 +60,7 @@ def update_metrics_before_scrapping():
     if request.path == METRICS_ENDPOINT:
         with ThreadPoolExecutor() as executor:
             futures = [
-                executor.submit(checker.check_wrapper)
-                for checker in internal_checkers
+                executor.submit(checker.check_wrapper) for checker in internal_checkers
             ]
             for future in futures:
                 future.result()

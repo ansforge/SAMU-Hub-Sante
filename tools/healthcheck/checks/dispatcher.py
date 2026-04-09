@@ -30,7 +30,10 @@ class DispatchersHealthcheck(IChecker):
         result = {}
         with ThreadPoolExecutor() as executor:
             futures = [
-                (instance, executor.submit(self.single_dispatcher_healthcheck, instance))
+                (
+                    instance,
+                    executor.submit(self.single_dispatcher_healthcheck, instance),
+                )
                 for instance in DISPATCHER_INSTANCES
             ]
             for instance, future in futures:

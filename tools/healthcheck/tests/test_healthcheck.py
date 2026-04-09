@@ -394,7 +394,8 @@ class HealthCheckTestCase(unittest.TestCase):
         mock_get.side_effect = side_effect
 
         with patch(
-            "checks.dispatcher.DISPATCHER_INSTANCES", [dispatcher1_name, dispatcher2_name]
+            "checks.dispatcher.DISPATCHER_INSTANCES",
+            [dispatcher1_name, dispatcher2_name],
         ):
             with app.test_client() as client:
                 response = client.get(HEALTH_INTERNAL_ENDPOINT)
