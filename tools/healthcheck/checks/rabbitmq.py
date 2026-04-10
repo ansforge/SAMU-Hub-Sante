@@ -1,10 +1,9 @@
-import requests
 from prometheus_client import Gauge
 
 from checks.checker import IChecker
 from checks.status import Status
+from http_client import http_session
 from config import (
-    HTTP_TIMEOUT,
     RABBITMQ_URL,
     RABBITMQ_MONITORING_USERNAME,
     RABBITMQ_MONITORING_PASSWORD,
@@ -20,11 +19,10 @@ class RabbitMQHealthcheck(IChecker):
     )
 
     def perform_checks(self):
-        response = requests.get(
+        response = http_session.get(
             RABBITMQ_HEALTH_URL,
             auth=(RABBITMQ_MONITORING_USERNAME, RABBITMQ_MONITORING_PASSWORD),
             verify=RABBITMQ_CA_CERT_PATH,
-            timeout=HTTP_TIMEOUT,
         )
         response.raise_for_status()
         status = response.json().get("status", Status.UNKNOWN.value)

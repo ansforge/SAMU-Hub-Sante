@@ -13,6 +13,8 @@ import logging
 with patch("checks.hubex_partners_shovels.open", mock_open(read_data="vhost1;queue1")):
     from healthcheck import HEALTH_INTERNAL_ENDPOINT, HEALTH_EXTERNAL_ENDPOINT, app
 
+MOCK_TARGET = "http_client.http_session.get"
+
 
 class HealthCheckTestCase(unittest.TestCase):
     def setUp(self):
@@ -91,18 +93,16 @@ class HealthCheckTestCase(unittest.TestCase):
     @parameterized.expand(
         [
             (
+                {"status": "ok"},
+                {"status": "UP", "components": {}},
+                {"status": "UP"},
+                {"status": "UP"},
                 [
-                    {"status": "ok"},
-                    {"status": "UP", "components": {}},
-                    {"status": "UP"},
-                    {"status": "UP"},
-                    [
-                        {
-                            "vhost": "vhost1",
-                            "src_queue": "queue1",
-                            "blocked_status": "running",
-                        },
-                    ],
+                    {
+                        "vhost": "vhost1",
+                        "src_queue": "queue1",
+                        "blocked_status": "running",
+                    },
                 ],
                 "UP",
                 "UP",
@@ -112,18 +112,16 @@ class HealthCheckTestCase(unittest.TestCase):
                 "UP",
             ),
             (
+                {"status": "down"},
+                {"status": "UP", "components": {}},
+                {"status": "UP"},
+                {"status": "UP"},
                 [
-                    {"status": "down"},
-                    {"status": "UP", "components": {}},
-                    {"status": "UP"},
-                    {"status": "UP"},
-                    [
-                        {
-                            "vhost": "vhost1",
-                            "src_queue": "queue1",
-                            "blocked_status": "running",
-                        },
-                    ],
+                    {
+                        "vhost": "vhost1",
+                        "src_queue": "queue1",
+                        "blocked_status": "running",
+                    },
                 ],
                 "DOWN",
                 "DOWN",
@@ -133,18 +131,16 @@ class HealthCheckTestCase(unittest.TestCase):
                 "UP",
             ),
             (
+                {"status": "ok"},
+                {"status": "DOWN", "components": {}},
+                {"status": "DOWN"},
+                {"status": "DOWN"},
                 [
-                    {"status": "ok"},
-                    {"status": "DOWN", "components": {}},
-                    {"status": "DOWN"},
-                    {"status": "DOWN"},
-                    [
-                        {
-                            "vhost": "vhost1",
-                            "src_queue": "queue1",
-                            "blocked_status": "running",
-                        },
-                    ],
+                    {
+                        "vhost": "vhost1",
+                        "src_queue": "queue1",
+                        "blocked_status": "running",
+                    },
                 ],
                 "DOWN",
                 "UP",
@@ -154,18 +150,16 @@ class HealthCheckTestCase(unittest.TestCase):
                 "UP",
             ),
             (
+                {"status": "down"},
+                {"status": "DOWN", "components": {}},
+                {"status": "DOWN"},
+                {"status": "DOWN"},
                 [
-                    {"status": "down"},
-                    {"status": "DOWN", "components": {}},
-                    {"status": "DOWN"},
-                    {"status": "DOWN"},
-                    [
-                        {
-                            "vhost": "vhost1",
-                            "src_queue": "queue1",
-                            "blocked_status": "not_running",
-                        },
-                    ],
+                    {
+                        "vhost": "vhost1",
+                        "src_queue": "queue1",
+                        "blocked_status": "not_running",
+                    },
                 ],
                 "DOWN",
                 "DOWN",
@@ -176,10 +170,14 @@ class HealthCheckTestCase(unittest.TestCase):
             ),
         ]
     )
-    @patch("requests.get")
+    @patch(MOCK_TARGET)
     def test_health_check(
         self,
-        side_effect,
+        rabbitmq_response,
+        dispatcher_response,
+        converter_response,
+        annuaire_response,
+        shovel_status_response,
         global_status,
         rabbitmq_status,
         dispatcher_status,
@@ -188,8 +186,13 @@ class HealthCheckTestCase(unittest.TestCase):
         shovel_status,
         mock_get,
     ):
-        mock_get.return_value.status_code = 200
-        mock_get.return_value.json.side_effect = side_effect
+        mock_get.side_effect = self.create_mock_side_effect(
+            rabbitmq_response=rabbitmq_response,
+            dispatcher_response=dispatcher_response,
+            converter_response=converter_response,
+            annuaire_response=annuaire_response,
+            shovel_status_response=shovel_status_response,
+        )
 
         with patch("checks.dispatcher.DISPATCHER_INSTANCES", ["dispatcher1"]):
             with app.test_client() as client:
@@ -213,7 +216,7 @@ class HealthCheckTestCase(unittest.TestCase):
                     data["components"]["vhost1-queue1"]["status"], shovel_status
                 )
 
-    @patch("requests.get")
+    @patch(MOCK_TARGET)
     def test_rabbitmq_healthcheck_error(
         self,
         mock_get,
@@ -230,7 +233,7 @@ class HealthCheckTestCase(unittest.TestCase):
                 data["components"]["rabbitmq_server"]["status"], Status.DOWN.value
             )
 
-    @patch("requests.get")
+    @patch(MOCK_TARGET)
     def test_converter_healthcheck_error(
         self,
         mock_get,
@@ -254,7 +257,7 @@ class HealthCheckTestCase(unittest.TestCase):
             (Status.UNKNOWN.value, Status.DOWN.value, Status.DOWN.value),
         ]
     )
-    @patch("requests.get")
+    @patch(MOCK_TARGET)
     def test_converter_healthcheck_status(
         self,
         converter_status,
@@ -276,7 +279,7 @@ class HealthCheckTestCase(unittest.TestCase):
                     data["components"]["converter"]["status"], expected_converter_status
                 )
 
-    @patch("requests.get")
+    @patch(MOCK_TARGET)
     def test_annuaire_healthcheck_error(
         self,
         mock_get,
@@ -300,7 +303,7 @@ class HealthCheckTestCase(unittest.TestCase):
             (Status.UNKNOWN.value, Status.DOWN.value, Status.DOWN.value),
         ]
     )
-    @patch("requests.get")
+    @patch(MOCK_TARGET)
     def test_annuaire_healthcheck_status(
         self,
         annuaire_status,
@@ -325,20 +328,10 @@ class HealthCheckTestCase(unittest.TestCase):
     @parameterized.expand(
         [
             (
-                [
-                    {"status": "ok"},
-                    {"status": "UP", "components": {}},
-                    {"status": "UP", "components": {}},
-                    {"status": "UP"},
-                    {"status": "UP"},
-                    [
-                        {
-                            "vhost": "vhost1",
-                            "src_queue": "queue1",
-                            "blocked_status": "running",
-                        },
-                    ],
-                ],
+                {"status": "UP", "components": {}},
+                {"status": "UP", "components": {}},
+                {"status": "UP"},
+                {"status": "UP"},
                 "UP",
                 "UP",
                 "UP",
@@ -348,20 +341,10 @@ class HealthCheckTestCase(unittest.TestCase):
                 "UP",
             ),
             (
-                [
-                    {"status": "ok"},
-                    {"status": "UP", "components": {}},
-                    {"status": "DOWN", "components": {}},
-                    {"status": "DOWN"},
-                    {"status": "DOWN"},
-                    [
-                        {
-                            "vhost": "vhost1",
-                            "src_queue": "queue1",
-                            "blocked_status": "running",
-                        },
-                    ],
-                ],
+                {"status": "UP", "components": {}},
+                {"status": "DOWN", "components": {}},
+                {"status": "DOWN"},
+                {"status": "DOWN"},
                 "DOWN",
                 "UP",
                 "UP",
@@ -372,10 +355,13 @@ class HealthCheckTestCase(unittest.TestCase):
             ),
         ]
     )
-    @patch("requests.get")
+    @patch(MOCK_TARGET)
     def test_health_check_with_multiple_dispatchers(
         self,
-        side_effect,
+        dispatcher1_response,
+        dispatcher2_response,
+        converter_response,
+        annuaire_response,
         global_status,
         rabbitmq_status,
         dispatcher1_status,
@@ -385,11 +371,31 @@ class HealthCheckTestCase(unittest.TestCase):
         shovel_status,
         mock_get,
     ):
-        mock_get.return_value.status_code = 200
-        mock_get.return_value.json.side_effect = side_effect
+        dispatcher1_name = "dispatcher1"
+        dispatcher2_name = "dispatcher2"
+
+        dispatcher_responses = {
+            dispatcher1_name: dispatcher1_response,
+            dispatcher2_name: dispatcher2_response,
+        }
+
+        def side_effect(url, **kwargs):
+            for name, resp_data in dispatcher_responses.items():
+                if name in url:
+                    mock_response = requests.Response()
+                    mock_response.status_code = 200
+                    mock_response._content = json.dumps(resp_data).encode()
+                    return mock_response
+            return self.create_mock_side_effect(
+                converter_response=converter_response,
+                annuaire_response=annuaire_response,
+            )(url, **kwargs)
+
+        mock_get.side_effect = side_effect
 
         with patch(
-            "checks.dispatcher.DISPATCHER_INSTANCES", ["dispatcher1", "dispatcher2"]
+            "checks.dispatcher.DISPATCHER_INSTANCES",
+            [dispatcher1_name, dispatcher2_name],
         ):
             with app.test_client() as client:
                 response = client.get(HEALTH_INTERNAL_ENDPOINT)
@@ -400,10 +406,10 @@ class HealthCheckTestCase(unittest.TestCase):
                     data["components"]["rabbitmq_server"]["status"], rabbitmq_status
                 )
                 self.assertEqual(
-                    data["components"]["dispatcher1"]["status"], dispatcher1_status
+                    data["components"][dispatcher1_name]["status"], dispatcher1_status
                 )
                 self.assertEqual(
-                    data["components"]["dispatcher2"]["status"], dispatcher2_status
+                    data["components"][dispatcher2_name]["status"], dispatcher2_status
                 )
                 self.assertEqual(
                     data["components"]["converter"]["status"], converter_status
@@ -415,7 +421,7 @@ class HealthCheckTestCase(unittest.TestCase):
                     data["components"]["vhost1-queue1"]["status"], shovel_status
                 )
 
-    @patch("requests.get")
+    @patch(MOCK_TARGET)
     def test_external_health_check(
         self,
         mock_get,
@@ -444,13 +450,12 @@ class HealthCheckTestCase(unittest.TestCase):
                 )
                 self.assertNotIn("annuaire", data["components"].keys())
 
-    @patch("requests.get")
+    @patch(MOCK_TARGET)
     def test_update_metrics_before_scrapping_requests_are_made(
         self,
         mock_get,
     ):
-        mock_get.return_value.status_code = 200
-        mock_get.return_value.json.return_value = {"status": Status.UP.value}
+        mock_get.side_effect = self.create_mock_side_effect()
 
         with patch(
             "checks.dispatcher.DISPATCHER_INSTANCES", ["dispatcher1", "dispatcher2"]

@@ -1,5 +1,7 @@
 import json
 import logging
+from concurrent.futures import ThreadPoolExecutor
+
 from flask import Flask, Response, request
 from collections import OrderedDict
 from prometheus_flask_exporter import PrometheusMetrics
@@ -37,12 +39,17 @@ def compute_globale_status(custom_checkers):
     global_status = Status.UP.value
     components = OrderedDict()
 
-    for checker in custom_checkers:
-        health_statuses = checker.check_wrapper()
-        for component, status in health_statuses.items():
-            components[component] = status
-            if status["status"] == Status.DOWN.value:
-                global_status = Status.DOWN.value
+    with ThreadPoolExecutor() as executor:
+        futures = [
+            (checker, executor.submit(checker.check_wrapper))
+            for checker in custom_checkers
+        ]
+        for _, future in futures:
+            health_statuses = future.result()
+            for component, status in health_statuses.items():
+                components[component] = status
+                if status["status"] == Status.DOWN.value:
+                    global_status = Status.DOWN.value
 
     result = OrderedDict([("status", global_status), ("components", components)])
     return remove_error_keys(result)
@@ -51,8 +58,12 @@ def compute_globale_status(custom_checkers):
 @app.before_request
 def update_metrics_before_scrapping():
     if request.path == METRICS_ENDPOINT:
-        for checker in internal_checkers:
-            checker.check_wrapper()
+        with ThreadPoolExecutor() as executor:
+            futures = [
+                executor.submit(checker.check_wrapper) for checker in internal_checkers
+            ]
+            for future in futures:
+                future.result()
 
 
 @app.route(HEALTH_EXTERNAL_ENDPOINT, methods=["GET"])

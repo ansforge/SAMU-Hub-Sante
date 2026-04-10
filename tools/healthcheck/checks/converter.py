@@ -1,9 +1,8 @@
-import requests
 from prometheus_client import Gauge
 
 from checks.checker import IChecker
 from checks.status import Status
-from config import HTTP_TIMEOUT
+from http_client import http_session
 
 CONVERTER_HEALTH_URL = "http://converter.app.svc.cluster.local:8080/health"
 
@@ -14,7 +13,7 @@ class ConverterHealthcheck(IChecker):
     )
 
     def perform_checks(self):
-        response = requests.get(CONVERTER_HEALTH_URL, timeout=HTTP_TIMEOUT)
+        response = http_session.get(CONVERTER_HEALTH_URL)
         response.raise_for_status()
         data = response.json()
         status = data.get("status", Status.UNKNOWN.value)
