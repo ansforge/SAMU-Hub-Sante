@@ -21,8 +21,6 @@ Les tests de non régression valident le cycle complet de bout en bout : un `Pro
 | `KEY_PASSPHRASE` | Mot de passe du certificat client |
 | `TRUST_STORE_PATH` | Chemin vers le trust store JKS |
 | `TRUST_STORE_PASSWORD` | Mot de passe du trust store |
-| `EDXL_EXAMPLE_FILE_PATH_V1` | Chemin vers un fichier JSON EDXL au format v1 (ex. `data/edxl-v1.json`) |
-| `EDXL_EXAMPLE_FILE_PATH_V3` | Chemin vers un fichier JSON EDXL au format v3 (ex. `data/edxl-v3.json`) |
 
 ## Lancement
 

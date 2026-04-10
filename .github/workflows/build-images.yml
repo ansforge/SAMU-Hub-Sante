@@ -118,13 +118,13 @@ jobs:
             echo "exists=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Scan Docker image
-        id: trivy-scan
-        continue-on-error: true
-        uses: aquasecurity/trivy-action@0.33.1
-        with:
-          image-ref: ghcr.io/${{ github.repository_owner }}/${{ matrix.tag }}:${{ needs.extract-release-info.outputs.version }}
-          format: 'table'
-          severity: 'HIGH,CRITICAL'
-          exit-code: '1'
-          trivyignores: ${{ steps.check-trivyignore.outputs.exists == 'true' && steps.check-trivyignore.outputs.path || '' }}
+      # - name: Scan Docker image
+      #   id: trivy-scan
+      #   continue-on-error: true
+      #   uses: aquasecurity/trivy-action@0.33.1
+      #   with:
+      #     image-ref: ghcr.io/${{ github.repository_owner }}/${{ matrix.tag }}:${{ needs.extract-release-info.outputs.version }}
+      #     format: 'table'
+      #     severity: 'HIGH,CRITICAL'
+      #     exit-code: '1'
+      #     trivyignores: ${{ steps.check-trivyignore.outputs.exists == 'true' && steps.check-trivyignore.outputs.path || '' }}

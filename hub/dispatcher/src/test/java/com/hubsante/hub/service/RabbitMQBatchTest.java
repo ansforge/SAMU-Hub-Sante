@@ -79,10 +79,10 @@ public class RabbitMQBatchTest extends RabbitIntegrationAbstract {
         Container.ExecResult batchOutput = publishBatch(1000);
         OffsetDateTime batchEndTime = OffsetDateTime.now();
 
-        int published =
+        long published =
                 Objects.requireNonNull(amqpAdmin.getQueueInfo(SAMU_B_MESSAGE_QUEUE))
                         .getMessageCount();
-        int rejected =
+        long rejected =
                 Objects.requireNonNull(amqpAdmin.getQueueInfo(SAMU_A_INFO_QUEUE)).getMessageCount();
 
         assertEquals(900, published);

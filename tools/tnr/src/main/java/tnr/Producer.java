@@ -32,6 +32,10 @@ public class Producer {
         this.exchangeName = exchangeName;
     }
 
+    public String getVhost(){
+        return this.vhost;
+    }
+
     public void connect(TLSConf tlsConf) throws IOException, TimeoutException {
         final ConnectionFactory factory = new ConnectionFactory();
 

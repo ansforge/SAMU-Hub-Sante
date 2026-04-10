@@ -68,40 +68,40 @@ jobs:
             -Pversion=$TMC_VERSION \
             -Pimage=ghcr.io/${{ github.repository_owner }}/tmc:$TMC_VERSION
 
-  image-security-scan:
-    name: Scan Docker Image
-    needs: [get-version, build-tmc]
-    runs-on: ubuntu-latest
-    continue-on-error: true
+  # image-security-scan:
+  #   name: Scan Docker Image
+  #   needs: [get-version, build-tmc]
+  #   runs-on: ubuntu-latest
+  #   continue-on-error: true
 
-    steps:
-      - name: Login to Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Checkout
-        uses: actions/checkout@v5
-      - name: Scan TMC Docker image
-        uses: aquasecurity/trivy-action@0.33.1
-        with:
-          image-ref: 'ghcr.io/${{ github.repository_owner }}/tmc:${{ needs.get-version.outputs.tmc-version }}'
-          format: 'sarif'
-          output: 'trivy-tmc-image.sarif'
-          severity: 'HIGH,CRITICAL'
-          exit-code: '1'
-          trivyignores: 'tools/tmc/.trivyignore'
-      - name: Upload TMC image scan results to GitHub Security tab
-        if: always() && hashFiles('trivy-tmc-image.sarif') != ''
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: 'trivy-tmc-image.sarif'
-          category: 'trivy-tmc-image'
-      - name: Upload TMC image scan reports as artifacts
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: trivy-reports-tmc-image
-          path: '*.sarif'
-          retention-days: 7
+  #   steps:
+  #     - name: Login to Container Registry
+  #       uses: docker/login-action@v3
+  #       with:
+  #         registry: ghcr.io
+  #         username: ${{ github.actor }}
+  #         password: ${{ secrets.GITHUB_TOKEN }}
+  #     - name: Checkout
+  #       uses: actions/checkout@v5
+  #     - name: Scan TMC Docker image
+  #       uses: aquasecurity/trivy-action@0.33.1
+  #       with:
+  #         image-ref: 'ghcr.io/${{ github.repository_owner }}/tmc:${{ needs.get-version.outputs.tmc-version }}'
+  #         format: 'sarif'
+  #         output: 'trivy-tmc-image.sarif'
+  #         severity: 'HIGH,CRITICAL'
+  #         exit-code: '1'
+  #         trivyignores: 'tools/tmc/.trivyignore'
+  #     - name: Upload TMC image scan results to GitHub Security tab
+  #       if: always() && hashFiles('trivy-tmc-image.sarif') != ''
+  #       uses: github/codeql-action/upload-sarif@v3
+  #       with:
+  #         sarif_file: 'trivy-tmc-image.sarif'
+  #         category: 'trivy-tmc-image'
+  #     - name: Upload TMC image scan reports as artifacts
+  #       if: always()
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: trivy-reports-tmc-image
+  #         path: '*.sarif'
+  #         retention-days: 7

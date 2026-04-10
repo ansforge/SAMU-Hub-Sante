@@ -13,6 +13,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import static tnr.Constants.TLS_PROTOCOL_VERSION;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -28,25 +31,31 @@ import tnr.dto.MessageDTO;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 abstract class AMQPTestSupport {
 
+    private static final Logger logger = LoggerFactory.getLogger(AMQPTestSupport.class);
+
     protected final Map<String, Collection<String>> config = new HashMap<>(Map.of(
-            "15-15_v1.5", List.of("fr.health.test.samu1-v1", "fr.health.test.samu2-v1"),
-            "15-15_v2.1", List.of("fr.health.test.samu-v3"),
-            "15-nexsis_v1.9", List.of("fr.fire.nexsis.sdisZ")
+            "15-15_v1.5", List.of("fr.health.tnr.samu1-v1", "fr.health.tnr.samu2-v1"),
+            "15-15_v2.0", List.of("fr.health.tnr.samu1-v2", "fr.health.tnr.samu2-v2"),
+            "15-15_v2.1", List.of("fr.health.tnr.samu1-v3", "fr.health.tnr.samu2-v3"),
+            "15-nexsis_v1.9", List.of("fr.health.fire", "fr.health.tnr.samu2-v3")
     ));
+
+    protected static final String BASE_URL = "https://raw.githubusercontent.com/ansforge/SAMU-Hub-Modeles/refs/tags";
 
     protected Map<String, Producer> producers = new HashMap<>();
     protected Collection<TestConsumer> consumers = new ArrayList<>();
 
     protected static final int RECEIVE_TIMEOUT_SECS = 10;
 
-    protected Dotenv dotenv;
+    protected Dotenv dotenv = Dotenv.configure().ignoreIfMissing().load();
+
+    HttpClientWithCache httpClient = new HttpClientWithCache(dotenv.get("GITHUB_TOKEN"));
 
     // global message collector
     protected final MessageCollector inbox = new MessageCollector();
 
     @BeforeAll
     void setUpAll() throws Exception {
-        dotenv = Dotenv.load();
         TLSConf tlsConf = new TLSConf(
                 TLS_PROTOCOL_VERSION,
                 dotenv.get("KEY_PASSPHRASE"),
@@ -79,14 +88,14 @@ abstract class AMQPTestSupport {
             try {
                 consumer.close();
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.warn("Could not tear down consumer {}: {}", consumer.getClientId(), e.getMessage());
             }
         });
         producers.values().forEach(producer -> {
             try {
                 producer.close();
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.warn("Could not tear down producer {}: {}", producer.getVhost(), e.getMessage());
             }
         });
     }
@@ -96,19 +105,30 @@ abstract class AMQPTestSupport {
         inbox.clear();
     }
 
+    protected String getUseCaseContentOnline(String tagRef, String fileRef) {
+        String refUrl = String.format("%s/%s/src/main/resources/sample/examples/%s", BASE_URL, tagRef, fileRef);
+        return httpClient.fetch(refUrl);
+    }
+
     protected MessageDTO awaitMessage(String distributionId) throws Exception {
         return inbox.awaitMessage(distributionId, RECEIVE_TIMEOUT_SECS, TimeUnit.SECONDS);
     }
 
-    protected void sendMessage(String vhost, String routingKey, String message) throws Exception {
+    protected void send(String vhost, String routingKey, String message) throws Exception {
         Producer producer = getProducer(vhost);
         producer.publish(routingKey, message.getBytes());
+    }
+
+    protected void sendMessage(String vhost, String routingKey, String message) throws Exception {
+        logger.info("[{}] Sending message on routingKey {}", vhost, routingKey);
+        send(vhost, routingKey, message);
     }
 
     String sendAck(String vhost, String routingKey, String recipientId, String referencedDistributionId) throws Exception {
         String ackDistributionId = Utils.generateDistributionId(routingKey);
         String refMessage = new AckBuilder().buildAck(routingKey, recipientId, ackDistributionId, referencedDistributionId);
-        sendMessage(vhost, routingKey, refMessage);
+        logger.info("[{}] Sending ack on routingKey {} to {}, referencing {}", vhost, routingKey, recipientId, referencedDistributionId);
+        send(vhost, routingKey, refMessage);
         return ackDistributionId;
     }
 
@@ -117,17 +137,24 @@ abstract class AMQPTestSupport {
     }
 
     private Producer createProducer(String host, int port, String vhost, String exchange, TLSConf tlsConf) throws Exception {
+        logger.info("Creating producer on vhost {}", vhost);
+        logger.debug("host:{}, vhost:{}, port:{}, exchange: {}", host, vhost, port, exchange);
         Producer p = new Producer(host, port, vhost, exchange);
+        logger.info("[{}] Connecting producer to rabbitmq.", vhost);
         p.connect(tlsConf);
         return p;
     }
 
     private TestConsumer createConsumer(String host, int port, String vhost, String exchange,
             String clientId, String queueName, MessageCollector inbox, TLSConf tlsConf) throws Exception {
+        logger.info("Creating consumer on queue {}", queueName);
+        logger.debug("host:{}, vhost:{}, port:{}, exchange:{}, clientId:{}, queueName:{}", host, vhost, port, exchange, clientId, queueName);
         TestConsumer c = new TestConsumer(host, port, vhost, exchange, queueName, clientId, inbox);
+        logger.info("[queue {}] Connecting consumer to rabbitmq.", queueName);
         c.connect(tlsConf);
         return c;
     }
+
 
     static class MessageCollector {
 
@@ -180,7 +207,8 @@ abstract class AMQPTestSupport {
                 } finally {
                     lock.unlock();
                 }
-                throw new Exception("Could not receive message that matched " + distributionId);
+                logger.error("Could not receive message that matched " + distributionId);
+                throw e;
             }
         }
 

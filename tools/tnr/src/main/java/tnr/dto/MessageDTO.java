@@ -2,15 +2,16 @@ package tnr.dto;
 
 import java.nio.charset.StandardCharsets;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.rabbitmq.client.Delivery;
 
 public class MessageDTO {
 
-    ObjectMapper mapper = new ObjectMapper();
+    private static final ObjectMapper jsonMapper = new ObjectMapper();
+    private static final XmlMapper xmlMapper = new XmlMapper();
 
     private final String vhost;
     private final String queue;
@@ -21,8 +22,8 @@ public class MessageDTO {
     public MessageDTO(String vhost, String queue, Delivery original) throws Exception {
         this.vhost = vhost;
         this.queue = queue;
-        this.payload = this.parsePayload(original);
         this.original = original;
+        this.payload = this.parsePayload(original);
         this.distributionId = this.extractDistributionId(payload);
     }
 
@@ -46,13 +47,29 @@ public class MessageDTO {
         return original;
     }
 
+    public boolean isXML() {
+        return (original.getProperties().getContentType().equals("application/xml"));
+    }
+
     private String extractDistributionId(ObjectNode payload) throws Exception {
         return payload.get("distributionID").asText();
     }
 
-    private ObjectNode parsePayload(Delivery original) throws JsonMappingException, JsonProcessingException {
-        String content = new String(original.getBody(), StandardCharsets.UTF_8);
-        return mapper.readValue(content, ObjectNode.class);
+    private ObjectNode parsePayload(Delivery original) throws Exception {
+        String content = new String(original.getBody(), StandardCharsets.UTF_8).trim();
+
+        JsonNode node;
+        if (isXML()) {
+            node = xmlMapper.readTree(content.getBytes(StandardCharsets.UTF_8));
+        } else {
+            node = jsonMapper.readTree(content);
+        }
+
+        if (node instanceof ObjectNode objectNode) {
+            return objectNode;
+        }
+
+        throw new IllegalArgumentException("Payload is not valid JSON/XML.");
     }
 
 }
