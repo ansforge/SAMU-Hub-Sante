@@ -44,6 +44,23 @@ public final class DistributionAssertions {
                 "Expected message type '%s'".formatted(MessageType.RESOURCES_INFO));
     }
 
+    public static void assertRcRi(MessageDTO rcRi, String distributionId) {
+        assertNotNull(rcRi, "RC-RI " + distributionId + " not received within " + RECEIVE_TIMEOUT_SECS + "s");
+        assertVhostEquals(rcRi, VHOST_15_NEXSIS_V3_TAG);
+        assertQueueEquals(rcRi, HUB_NEXSIS_USER_CLIENT_ID + ".message");
+        assertTrue(Utils.isMessageOfType(rcRi, MessageType.RESOURCES_INFO_CISU),
+                "Expected message type '%s'".formatted(MessageType.RESOURCES_INFO_CISU));
+    }
+
+    public static void assertRcRiResourceVehicleType(MessageDTO rcRi, String expectedVehicleType) {
+        JsonNode rcRiNode = rcRi.getPayload()
+                .path("content").path(0)
+                .path("jsonContent").path("embeddedJsonContent").path("message")
+                .path(MessageType.RESOURCES_INFO_CISU.value());
+        assertEquals(expectedVehicleType, rcRiNode.path("resource").path(0).path("vehicleType").asText(),
+                "RC-RI vehicle type mismatch (transcoding check)");
+    }
+
     public static void assertAck(MessageDTO matchedAck, String ackDistributionId, String expectedVhost, String expectedQueue, String expectedReferencedDistributionId) {
         assertNotNull(matchedAck, "Ack " + ackDistributionId + " not received within " + RECEIVE_TIMEOUT_SECS + "s");
         assertVhostEquals(matchedAck, expectedVhost);
