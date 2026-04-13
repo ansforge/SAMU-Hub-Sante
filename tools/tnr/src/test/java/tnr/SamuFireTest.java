@@ -274,10 +274,7 @@ class SamuFireTest extends AMQPTestSupport {
     private void sendAndAssertAck(String referencedDistributionId) throws Exception {
         String ackDistributionId = sendAck(VHOST_15_15_V3_TAG, SAMU1_V3_ID, TNR_SDIS_CLIENT_ID, referencedDistributionId);
         MessageDTO matchedAck = awaitMessageByDistributionId(ackDistributionId);
-        assertNotNull(matchedAck, "Ack " + ackDistributionId + " not received within " + RECEIVE_TIMEOUT_SECS + "s");
-        assertVhostEquals(matchedAck, VHOST_15_NEXSIS_V3_TAG);
-        assertQueueEquals(matchedAck, HUB_NEXSIS_USER_CLIENT_ID + ".ack");
-        assertEquals(referencedDistributionId, Utils.getReferencedDistributionID(matchedAck));
+        assertAck(matchedAck, ackDistributionId, VHOST_15_NEXSIS_V3_TAG, HUB_NEXSIS_USER_CLIENT_ID + ".ack", referencedDistributionId);
     }
 
 }
