@@ -277,4 +277,66 @@ class SamuFireTest extends AMQPTestSupport {
         assertAck(matchedAck, ackDistributionId, VHOST_15_NEXSIS_V3_TAG, HUB_NEXSIS_USER_CLIENT_ID + ".ack", referencedDistributionId);
     }
 
+    @Test
+    @DisplayName("RS-RI then RS-SR lifecycle (Alice & Grégoire NORMAND): SMUR resource engagement with status, then status update (tests n°2–3)")
+    void rsRiWithStatusThenRsSrNormandLifecycle() throws Exception {
+
+        String uniqueCaseId = "fr.health.tnr.test." + UUID.randomUUID().toString().replace("-", "").substring(0, 12);
+
+        // Test n°2: RS-RI with SMUR resource and status → RC-RI with transcoded vehicle type
+        String step2DistId = sendSamuMessage(RS_RI_NORMAND_REF, uniqueCaseId);
+        MessageDTO step2RcRi = awaitMessageByDistributionId(step2DistId);
+        assertRcRi(step2RcRi, step2DistId);
+        assertRcRiResourceVehicleType(step2RcRi, "SMUR");
+        sendAndAssertAckFromNexsis(step2DistId);
+
+        // Test n°3: RS-SR status update → RC-RI (distributionId from persisted RS-RI envelope)
+        sendSamuMessage(RS_SR_NORMAND_REF, uniqueCaseId);
+        MessageDTO step3RcRi = awaitMessageOfType(MessageType.RESOURCES_INFO_CISU);
+        assertRcRi(step3RcRi, step3RcRi.getDistributionId());
+        sendAndAssertAckFromNexsis(step3RcRi.getDistributionId());
+    }
+
+    @Test
+    @DisplayName("RS-RI without status then RS-SR lifecycle (Robert VERMANDE): resource without status ignored, then RC-RI on status addition (tests n°6–7)")
+    void rsRiWithoutStatusThenRsSrVermandeLifecycle() throws Exception {
+
+        String uniqueCaseId = "fr.health.tnr.test." + UUID.randomUUID().toString().replace("-", "").substring(0, 12);
+
+        // Test n°6: RS-RI without status → no output, no ack
+        sendSamuMessage(RS_RI_VERMANDE_REF, uniqueCaseId);
+        assertNoMessageReceived(msg -> msg.getQueue().equals(HUB_NEXSIS_USER_CLIENT_ID + ".message"));
+
+        // Test n°7: RS-SR adds status → RC-RI (distributionId from persisted RS-RI envelope)
+        sendSamuMessage(RS_SR_VERMANDE_REF, uniqueCaseId);
+        MessageDTO step7RcRi = awaitMessageOfType(MessageType.RESOURCES_INFO_CISU);
+        assertRcRi(step7RcRi, step7RcRi.getDistributionId());
+        sendAndAssertAckFromNexsis(step7RcRi.getDistributionId());
+    }
+
+    @Test
+    @DisplayName("RS-RI non-SMUR resource ignored (Monsieur X): TSU resource with status produces no output (test n°8)")
+    void rsRiNonSmurResourceIgnored() throws Exception {
+
+        String uniqueCaseId = "fr.health.tnr.test." + UUID.randomUUID().toString().replace("-", "").substring(0, 12);
+
+        sendSamuMessage(RS_RI_MONSIEUR_X_REF, uniqueCaseId);
+        assertNoMessageReceived(msg -> msg.getQueue().equals(HUB_NEXSIS_USER_CLIENT_ID + ".message"));
+    }
+
+    private String sendSamuMessage(String fixtureRef, String caseId) throws Exception {
+        String useCase = getUseCaseContentOnline(V3_SAMU_TAG, fixtureRef)
+                .replaceFirst("\"caseId\"\\s*:\\s*\"[^\"]+\"", "\"caseId\": \"" + caseId + "\"");
+        String distributionId = Utils.generateDistributionId(SAMU1_V3_ID);
+        sendMessage(VHOST_15_15_V3_TAG, SAMU1_V3_ID,
+                new MessageBuilder().buildMessage(useCase, distributionId, SAMU1_V3_ID, TNR_SDIS_CLIENT_ID));
+        return distributionId;
+    }
+
+    private void sendAndAssertAckFromNexsis(String referencedDistributionId) throws Exception {
+        String ackDistributionId = sendAck(VHOST_15_NEXSIS_V3_TAG, NEXSIS_SHOVEL_ROUTING_KEY, SAMU1_V3_ID, referencedDistributionId);
+        MessageDTO matchedAck = awaitMessageByDistributionId(ackDistributionId);
+        assertAck(matchedAck, ackDistributionId, VHOST_15_15_V3_TAG, SAMU1_V3_ID + ".ack", referencedDistributionId);
+    }
+
 }

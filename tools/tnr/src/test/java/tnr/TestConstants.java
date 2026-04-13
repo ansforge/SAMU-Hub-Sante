@@ -53,4 +53,19 @@ public final class TestConstants {
 
     // specific for nexsis
     protected static final String VHOST_15_NEXSIS_VACTIVE_TAG = "15-nexsis_vactive";
+    
+    // Use case references — RS-RI/RS-SR (Alice & Grégoire NORMAND FuiteDeGaz lifecycle)
+    public static final String RS_RI_NORMAND_REF = "RS-RI/RS-RI_FuiteDeGaz_AliceGregoireNORMAND.03.json"; // SMUR resource with status
+    public static final String RS_SR_NORMAND_REF = "RS-SR/RS-SR_FuiteDeGaz_AliceGregoireNORMAND.04.json"; // status update
+
+    // Use case references — RS-RI/RS-SR (Robert VERMANDE lifecycle)
+    public static final String RS_RI_VERMANDE_REF = "RS-RI/RS-RI_Secondaire_RobertVermande.03.json"; // SMUR resource without status
+    public static final String RS_SR_VERMANDE_REF = "RS-SR/RS-SR_Secondaire_RobertVermande.06.json"; // adds status
+
+    // Use case references — RS-RI (Monsieur X non-SMUR)
+    public static final String RS_RI_MONSIEUR_X_REF = "RS-RI/RS-RI_partageRessources_MonsieurX.03.json"; // TSU resource with status
+
+    // Resource IDs — RS-RI
+    public static final String RS_RI_NORMAND_RESOURCE_ID  = "fr.health.samu440.resource.VLM2";
+    public static final String RS_RI_VERMANDE_RESOURCE_ID = "fr.health.samu680.resource.AR1";
 }
