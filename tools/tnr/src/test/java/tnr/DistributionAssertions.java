@@ -44,6 +44,13 @@ public final class DistributionAssertions {
                 "Expected message type '%s'".formatted(MessageType.RESOURCES_INFO));
     }
 
+    public static void assertAck(MessageDTO matchedAck, String ackDistributionId, String expectedVhost, String expectedQueue, String expectedReferencedDistributionId) {
+        assertNotNull(matchedAck, "Ack " + ackDistributionId + " not received within " + RECEIVE_TIMEOUT_SECS + "s");
+        assertVhostEquals(matchedAck, expectedVhost);
+        assertQueueEquals(matchedAck, expectedQueue);
+        assertEquals(expectedReferencedDistributionId, Utils.getReferencedDistributionID(matchedAck));
+    }
+
     public static void assertRsSr(List<MessageDTO> messages, String expectedCaseId, Set<String> expectedResourceIds) {
         Set<String> received = new HashSet<>();
         for (MessageDTO rsSr : messages) {
