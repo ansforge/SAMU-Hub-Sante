@@ -53,12 +53,10 @@ public final class DistributionAssertions {
     }
 
     public static void assertRcRiResourceVehicleType(MessageDTO rcRi, String expectedVehicleType) {
-        JsonNode rcRiNode = rcRi.getPayload()
-                .path("content").path(0)
-                .path("jsonContent").path("embeddedJsonContent").path("message")
-                .path(MessageType.RESOURCES_INFO_CISU.value());
-        assertEquals(expectedVehicleType, rcRiNode.path("resource").path(0).path("vehicleType").asText(),
-                "RC-RI vehicle type mismatch (transcoding check)");
+        JsonNode rcRiNode = Utils.getUseCaseNode(rcRi, MessageType.RESOURCES_INFO_CISU);
+        JsonNode resourceNode = rcRiNode.path("resource");
+        JsonNode firstResource = resourceNode.isArray() ? resourceNode.path(0) : resourceNode;
+        assertEquals(expectedVehicleType, firstResource.path("vehicleType").asText(), "RC-RI vehicle type mismatch (transcoding check)");
     }
 
     public static void assertAck(MessageDTO matchedAck, String ackDistributionId, String expectedVhost, String expectedQueue, String expectedReferencedDistributionId) {
@@ -74,12 +72,8 @@ public final class DistributionAssertions {
             assertNotNull(rsSr, "RS-SR not received within " + RECEIVE_TIMEOUT_SECS + "s");
             assertVhostEquals(rsSr, VHOST_15_15_V3_TAG);
             assertQueueEquals(rsSr, SAMU1_V3_ID + ".message");
-            assertTrue(Utils.isMessageOfType(rsSr, MessageType.RESOURCES_STATUS),
-                    "Expected message type '%s'".formatted(MessageType.RESOURCES_STATUS));
-            JsonNode rsNode = rsSr.getPayload()
-                    .path("content").path(0)
-                    .path("jsonContent").path("embeddedJsonContent").path("message")
-                    .path(MessageType.RESOURCES_STATUS.value());
+            assertTrue(Utils.isMessageOfType(rsSr, MessageType.RESOURCES_STATUS), "Expected message type '%s'".formatted(MessageType.RESOURCES_STATUS));
+            JsonNode rsNode = Utils.getUseCaseNode(rsSr, MessageType.RESOURCES_STATUS);
             assertEquals(expectedCaseId, rsNode.path("caseId").asText(), "RS-SR caseId mismatch");
             assertFalse(rsNode.has("position"), "RS-SR should not contain a 'position' field (transcoding suppression)");
             received.add(rsNode.path("resourceId").asText());
