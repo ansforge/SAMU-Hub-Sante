@@ -30,19 +30,17 @@ def gitRefs() {
             println("Release commit hash: " + releaseCommitHash)
         }
 
-        new ByteArrayOutputStream().withStream { os ->
-            exec {
-                commandLine 'git', 'rev-parse', '--short=7', 'HEAD'
-                standardOutput = os
-            }
-            def currentCommitHash = os.toString().trim()
-            println("Current commit hash: " + currentCommitHash)
+        def result = project.providers.exec {
+            commandLine 'git', 'rev-parse', '--short=7', 'HEAD'
+        }
 
-            if (currentCommitHash == releaseCommitHash) {
-                return ['latest', currentCommitHash, tagName]
-            } else {
-                return [currentCommitHash]
-            }
+        def currentCommitHash = result.standardOutput.asText.get().trim()
+        println("Current commit hash: " + currentCommitHash)
+
+        if (currentCommitHash == releaseCommitHash) {
+            return ['latest', currentCommitHash, tagName]
+        } else {
+            return [currentCommitHash]
         }
     } catch (Exception e) {
         throw new GradleException('Failed to retrieve Git commit hash.', e)

@@ -4,14 +4,13 @@ plugins {
     id 'io.spring.dependency-management' version '1.1.0'
     id 'com.google.cloud.tools.jib' version '3.4.0'
     id 'jacoco'
-    id 'com.github.hierynomus.license' version '0.16.1'
     id 'com.diffplug.spotless' version '8.1.0'
 }
 
 group = 'com.hubsante'
 
 ext {
-    modelVersion = project.hasProperty('modelVersion') ? project.getProperty('modelVersion') : '3.1'
+    modelVersion = project.hasProperty('modelVersion') ? project.getProperty('modelVersion') : '3.3.2'
 }
 
 java {
@@ -35,8 +34,8 @@ repositories {
     maven {
         url = uri("https://maven.pkg.github.com/ansforge/SAMU-Hub-Modeles")
         credentials {
-            username = System.getenv('GITHUB_ACTOR')
-            password = System.getenv('GITHUB_TOKEN')
+            username = providers.gradleProperty("gpr.user").orNull ?: System.getenv("GITHUB_ACTOR")
+            password = providers.gradleProperty("gpr.token").orNull ?: System.getenv("GITHUB_TOKEN")
         }
     }
 }
@@ -53,9 +52,9 @@ dependencies {
     implementation "com.hubsante:models:${project.ext.modelVersion}"
 
     // ===== Spring Boot =====
-    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-webmvc'
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
-    implementation 'org.springframework.boot:spring-boot-starter-aop'
+    implementation 'org.springframework.boot:spring-boot-starter-aspectj'
     implementation 'org.springframework.boot:spring-boot-starter-amqp'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
@@ -70,6 +69,7 @@ dependencies {
 
     // ===== JSON / XML / CSV =====
     implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-xml"
+    implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310"
     implementation "com.networknt:json-schema-validator:${libs.versions.jsonSchemaValidator.get()}"
     implementation "net.logstash.logback:logstash-logback-encoder:${libs.versions.logstashEncoder.get()}"
     implementation "com.univocity:univocity-parsers:${libs.versions.univocityParsers.get()}"
@@ -89,7 +89,7 @@ dependencies {
     testImplementation 'org.testcontainers:junit-jupiter'
     testImplementation 'org.testcontainers:rabbitmq'
 
-    testImplementation "de.flapdoodle.embed:de.flapdoodle.embed.mongo.spring3x:${libs.versions.embedMongo.get()}"
+    testImplementation "de.flapdoodle.embed:de.flapdoodle.embed.mongo.spring4x:${libs.versions.embedMongo.get()}"
 
 }
 
@@ -110,6 +110,5 @@ allprojects {
 }
 
 apply from: 'gradle/tests.gradle'
-apply from: 'gradle/license.gradle'
 apply from: 'gradle/spotless.gradle'
 apply from: 'gradle/jib.gradle'
