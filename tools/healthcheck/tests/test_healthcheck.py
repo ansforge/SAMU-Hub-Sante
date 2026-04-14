@@ -14,6 +14,7 @@ with patch("checks.hubex_partners_shovels.open", mock_open(read_data="vhost1;que
     from healthcheck import HEALTH_INTERNAL_ENDPOINT, HEALTH_EXTERNAL_ENDPOINT, app
 
 
+@patch("checks.mongo.mongo_client")
 class HealthCheckTestCase(unittest.TestCase):
     def setUp(self):
         # Prevent logging errors when the mocks throw exceptions.
@@ -110,6 +111,7 @@ class HealthCheckTestCase(unittest.TestCase):
                 "UP",
                 "UP",
                 "UP",
+                "UP",
             ),
             (
                 [
@@ -127,6 +129,7 @@ class HealthCheckTestCase(unittest.TestCase):
                 ],
                 "DOWN",
                 "DOWN",
+                "UP",
                 "UP",
                 "UP",
                 "UP",
@@ -152,6 +155,7 @@ class HealthCheckTestCase(unittest.TestCase):
                 "DOWN",
                 "DOWN",
                 "UP",
+                "UP",
             ),
             (
                 [
@@ -173,6 +177,7 @@ class HealthCheckTestCase(unittest.TestCase):
                 "DOWN",
                 "DOWN",
                 "DOWN",
+                "UP",
             ),
         ]
     )
@@ -186,7 +191,9 @@ class HealthCheckTestCase(unittest.TestCase):
         converter_status,
         annuaire_status,
         shovel_status,
+        mongodb_status,
         mock_get,
+        mock_mongo_client,
     ):
         mock_get.return_value.status_code = 200
         mock_get.return_value.json.side_effect = side_effect
@@ -212,11 +219,15 @@ class HealthCheckTestCase(unittest.TestCase):
                 self.assertEqual(
                     data["components"]["vhost1-queue1"]["status"], shovel_status
                 )
+                self.assertEqual(
+                    data["components"]["mongodb"]["status"], mongodb_status
+                )
 
     @patch("requests.get")
     def test_rabbitmq_healthcheck_error(
         self,
         mock_get,
+        mock_mongo_client,
     ):
         mock_get.side_effect = self.create_mock_side_effect(rabbitmq_error=True)
 
@@ -234,6 +245,7 @@ class HealthCheckTestCase(unittest.TestCase):
     def test_converter_healthcheck_error(
         self,
         mock_get,
+        mock_mongo_client,
     ):
         mock_get.side_effect = self.create_mock_side_effect(converter_error=True)
 
@@ -261,6 +273,7 @@ class HealthCheckTestCase(unittest.TestCase):
         expected_converter_status,
         expected_global_status,
         mock_get,
+        mock_mongo_client,
     ):
         mock_get.side_effect = self.create_mock_side_effect(
             converter_response={"status": converter_status}
@@ -280,6 +293,7 @@ class HealthCheckTestCase(unittest.TestCase):
     def test_annuaire_healthcheck_error(
         self,
         mock_get,
+        mock_mongo_client,
     ):
         mock_get.side_effect = self.create_mock_side_effect(annuaire_error=True)
 
@@ -307,6 +321,7 @@ class HealthCheckTestCase(unittest.TestCase):
         expected_annuaire_status,
         expected_global_status,
         mock_get,
+        mock_mongo_client,
     ):
         mock_get.side_effect = self.create_mock_side_effect(
             annuaire_response={"status": annuaire_status}
@@ -346,6 +361,7 @@ class HealthCheckTestCase(unittest.TestCase):
                 "UP",
                 "UP",
                 "UP",
+                "UP",
             ),
             (
                 [
@@ -369,6 +385,7 @@ class HealthCheckTestCase(unittest.TestCase):
                 "DOWN",
                 "DOWN",
                 "UP",
+                "UP",
             ),
         ]
     )
@@ -383,7 +400,9 @@ class HealthCheckTestCase(unittest.TestCase):
         converter_status,
         annuaire_status,
         shovel_status,
+        mongodb_status,
         mock_get,
+        mock_mongo_client,
     ):
         mock_get.return_value.status_code = 200
         mock_get.return_value.json.side_effect = side_effect
@@ -414,11 +433,15 @@ class HealthCheckTestCase(unittest.TestCase):
                 self.assertEqual(
                     data["components"]["vhost1-queue1"]["status"], shovel_status
                 )
+                self.assertEqual(
+                    data["components"]["mongodb"]["status"], mongodb_status
+                )
 
     @patch("requests.get")
     def test_external_health_check(
         self,
         mock_get,
+        mock_mongo_client,
     ):
         mock_get.side_effect = self.create_mock_side_effect()
 
@@ -428,7 +451,7 @@ class HealthCheckTestCase(unittest.TestCase):
                 self.assertEqual(response.status_code, 200)
                 data = json.loads(response.data)
                 self.assertEqual(data["status"], Status.UP.value)
-                self.assertEqual(len(data["components"]), 4)
+                self.assertEqual(len(data["components"]), 5)
                 self.assertEqual(
                     data["components"]["rabbitmq_server"]["status"], Status.UP.value
                 )
@@ -442,12 +465,16 @@ class HealthCheckTestCase(unittest.TestCase):
                 self.assertEqual(
                     data["components"]["vhost1-queue1"]["status"], Status.UP.value
                 )
+                self.assertEqual(
+                    data["components"]["mongodb"]["status"], Status.UP.value
+                )
                 self.assertNotIn("annuaire", data["components"].keys())
 
     @patch("requests.get")
     def test_update_metrics_before_scrapping_requests_are_made(
         self,
         mock_get,
+        mock_mongo_client,
     ):
         mock_get.return_value.status_code = 200
         mock_get.return_value.json.return_value = {"status": Status.UP.value}
@@ -475,6 +502,44 @@ class HealthCheckTestCase(unittest.TestCase):
                 "http://dispatcher2.app.svc.cluster.local:8080/actuator/health",
                 called_urls,
             )
+
+
+    @patch("requests.get")
+    def test_mongodb_healthcheck_up(
+        self,
+        mock_get,
+        mock_mongo_client,
+    ):
+        mock_get.side_effect = self.create_mock_side_effect()
+
+        with patch("checks.dispatcher.DISPATCHER_INSTANCES", ["dispatcher_instance"]):
+            with app.test_client() as client:
+                response = client.get(HEALTH_INTERNAL_ENDPOINT)
+                self.assertEqual(response.status_code, 200)
+                data = json.loads(response.data)
+                self.assertEqual(
+                    data["components"]["mongodb"]["status"], Status.UP.value
+                )
+                mock_mongo_client.admin.command.assert_called_with("ping")
+
+    @patch("requests.get")
+    def test_mongodb_healthcheck_error(
+        self,
+        mock_get,
+        mock_mongo_client,
+    ):
+        mock_get.side_effect = self.create_mock_side_effect()
+        mock_mongo_client.admin.command.side_effect = Exception("MongoDB Error")
+
+        with patch("checks.dispatcher.DISPATCHER_INSTANCES", ["dispatcher_instance"]):
+            with app.test_client() as client:
+                response = client.get(HEALTH_INTERNAL_ENDPOINT)
+                self.assertEqual(response.status_code, 200)
+                data = json.loads(response.data)
+                self.assertEqual(data["status"], Status.DOWN.value)
+                self.assertEqual(
+                    data["components"]["mongodb"]["status"], Status.DOWN.value
+                )
 
 
 if __name__ == "__main__":
