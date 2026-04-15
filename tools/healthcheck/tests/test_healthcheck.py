@@ -503,7 +503,6 @@ class HealthCheckTestCase(unittest.TestCase):
                 called_urls,
             )
 
-
     @patch("requests.get")
     def test_mongodb_healthcheck_up(
         self,
