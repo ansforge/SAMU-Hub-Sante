@@ -61,6 +61,9 @@ dependencies {
 
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
 
+    // ===== MongoDB =====
+    implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
+
     // ===== Observabilité =====
     runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
 
@@ -85,6 +88,8 @@ dependencies {
 
     testImplementation 'org.testcontainers:junit-jupiter'
     testImplementation 'org.testcontainers:rabbitmq'
+
+    testImplementation "de.flapdoodle.embed:de.flapdoodle.embed.mongo.spring4x:${libs.versions.embedMongo.get()}"
 
 }
 

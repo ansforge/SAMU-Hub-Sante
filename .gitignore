@@ -23,9 +23,9 @@ python/templates/4. tls/cert/
 #certs/
 
 # personal application.properties
-hub/dispatcher/src/main/resources/*.properties
+hub/dispatcher/src/main/resources/application-*.yaml
 !hub/dispatcher/src/main/resources/application.properties
-!hub/dispatcher/src/main/resources/application-local.properties
+!hub/dispatcher/src/main/resources/application-local*
 
 # Needed as GitHub action for AsyncAPI generation installs npm packages
 node_modules/

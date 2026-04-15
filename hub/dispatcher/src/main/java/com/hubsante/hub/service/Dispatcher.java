@@ -30,6 +30,7 @@ import com.hubsante.hub.exception.*;
 import com.hubsante.hub.utils.ConversionRulesCommand;
 import com.hubsante.hub.utils.ConversionUtils;
 import com.hubsante.hub.utils.EdxlUtils;
+import com.hubsante.hub.utils.MessagePersistencePolicy;
 import com.hubsante.hub.utils.MessageUtils;
 import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.edxl.EdxlMessage;
@@ -39,6 +40,7 @@ import io.micrometer.core.annotation.Timed;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.AmqpRejectAndDontRequeueException;
@@ -82,6 +84,7 @@ public class Dispatcher {
 
     private final ConversionHandler conversionHandler;
     private final HubConfiguration hubConfig;
+    private final MessagePersistenceService persistenceService;
     private static final StructuredLogger structuredLog = new StructuredLogger(log);
 
     public Dispatcher(
@@ -91,7 +94,8 @@ public class Dispatcher {
             XmlMapper xmlMapper,
             ObjectMapper jsonMapper,
             ConversionHandler conversionHandler,
-            HubConfiguration hubConfig) {
+            HubConfiguration hubConfig,
+            MessagePersistenceService persistenceService) {
         this.messageHandler = messageHandler;
         this.rabbitTemplate = rabbitTemplate;
         this.edxlHandler = edxlHandler;
@@ -99,6 +103,7 @@ public class Dispatcher {
         this.jsonMapper = jsonMapper;
         this.conversionHandler = conversionHandler;
         this.hubConfig = hubConfig;
+        this.persistenceService = persistenceService;
         initReturnsCallback();
     }
 
@@ -213,19 +218,36 @@ public class Dispatcher {
                 checkDistributionIDFormat(edxlMessage);
             }
 
-            boolean isConversionRequired =
-                    ConversionUtils.requiresConversion(hubConfig, edxlMessage);
-            if (isConversionRequired) {
+            boolean isCisuConversion =
+                    ConversionUtils.requiresCisuConversion(hubConfig, edxlMessage);
+            boolean isVersionConversion =
+                    ConversionUtils.requiresVersionConversion(hubConfig, edxlMessage);
+
+            if (isCisuConversion || isVersionConversion) {
+                if (isCisuConversion) {
+                    String useCase =
+                            EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage());
+                    // Persist before conversion so the original message is saved even if conversion
+                    // fails
+                    if (MessagePersistencePolicy.shouldPersist(hubConfig.getVhost(), useCase)) {
+                        persistenceService.persist(edxlMessage);
+                    }
+                }
+
                 ConversionRulesCommand conversionRulesCommand =
                         new ConversionRulesCommand(edxlMessage, hubConfig);
-                String convertedMessage =
+                List<String> convertedMessages =
                         conversionHandler.applyConversionRules(conversionRulesCommand);
-                sendToTransferExchange(convertedMessage, message, conversionRulesCommand);
+                for (String convertedMessage : convertedMessages) {
+                    sendToTransferExchange(convertedMessage, message, conversionRulesCommand);
+                }
                 String recipientId = MessageUtils.getRecipientID(edxlMessage);
                 String messageType =
                         EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage());
                 structuredLog.debug(
-                        "The converted message has been sent to the exchange to reach the recipient's vhost.",
+                        String.format(
+                                "The converted messages (%d) have been sent to the exchange to reach the recipient's vhost.",
+                                convertedMessages.size()),
                         Map.of(
                                 LogConstants.DISTRIBUTION_ID,
                                 edxlMessage.getDistributionID(),
