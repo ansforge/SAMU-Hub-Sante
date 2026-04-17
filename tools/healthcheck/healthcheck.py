@@ -13,6 +13,7 @@ from checks.rabbitmq import RabbitMQHealthcheck
 from checks.dispatcher import DispatchersHealthcheck
 from checks.annuaire import AnnuaireHealthcheck
 from checks.hubex_partners_shovels import HubexPartnersHealthcheck
+from checks.mongo import MongoDBHealthcheck
 
 app = Flask(__name__)
 metrics = PrometheusMetrics(app)
@@ -22,9 +23,17 @@ dispatcher = DispatchersHealthcheck()
 converter = ConverterHealthcheck()
 annuaire = AnnuaireHealthcheck()
 hubex_partners = HubexPartnersHealthcheck()
+mongodb = MongoDBHealthcheck()
 
-external_checkers = [rabbitmq_server, dispatcher, converter, hubex_partners]
-internal_checkers = [rabbitmq_server, dispatcher, converter, annuaire, hubex_partners]
+external_checkers = [rabbitmq_server, dispatcher, converter, hubex_partners, mongodb]
+internal_checkers = [
+    rabbitmq_server,
+    dispatcher,
+    converter,
+    annuaire,
+    hubex_partners,
+    mongodb,
+]
 
 logging.basicConfig(level=logging.INFO)
 
