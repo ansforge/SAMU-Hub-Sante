@@ -16,7 +16,7 @@ with patch("checks.hubex_partners_shovels.open", mock_open(read_data="vhost1;que
 MOCK_TARGET = "http_client.http_session.get"
 
 
-@patch("checks.mongo.mongo_client")
+@patch("checks.mongo.MongoClient")
 class HealthCheckTestCase(unittest.TestCase):
     def setUp(self):
         # Prevent logging errors when the mocks throw exceptions.
@@ -524,7 +524,10 @@ class HealthCheckTestCase(unittest.TestCase):
                 self.assertEqual(
                     data["components"]["mongodb"]["status"], Status.UP.value
                 )
-                mock_mongo_client.admin.command.assert_called_with("ping")
+                self.assertEqual(
+                    mock_mongo_client.return_value.admin.command.called, True
+                )
+                mock_mongo_client.return_value.admin.command.assert_called_with("ping")
 
     @patch("requests.get")
     def test_mongodb_healthcheck_error(
@@ -533,7 +536,7 @@ class HealthCheckTestCase(unittest.TestCase):
         mock_mongo_client,
     ):
         mock_get.side_effect = self.create_mock_side_effect()
-        mock_mongo_client.admin.command.side_effect = Exception("MongoDB Error")
+        mock_mongo_client.return_value.admin.command.side_effect = Exception("MongoDB Error")
 
         with patch("checks.dispatcher.DISPATCHER_INSTANCES", ["dispatcher_instance"]):
             with app.test_client() as client:
