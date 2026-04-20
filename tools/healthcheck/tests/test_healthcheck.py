@@ -536,7 +536,9 @@ class HealthCheckTestCase(unittest.TestCase):
         mock_mongo_client,
     ):
         mock_get.side_effect = self.create_mock_side_effect()
-        mock_mongo_client.return_value.admin.command.side_effect = Exception("MongoDB Error")
+        mock_mongo_client.return_value.admin.command.side_effect = Exception(
+            "MongoDB Error"
+        )
 
         with patch("checks.dispatcher.DISPATCHER_INSTANCES", ["dispatcher_instance"]):
             with app.test_client() as client:
