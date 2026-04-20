@@ -42,7 +42,10 @@ jobs:
       - name: Run tests & generate HTML coverage report
         # TODO: try to mock the env variables in the tests directly
         env:
-          RABBITMQ_URL: "foo"
+          RABBITMQ_HEALTH_URL: "foo_rabbitmq"
+          SHOVEL_STATUS_URL: "foo_shovel"
+          ANNUAIRE_HEALTH_URL: "foo_annuaire"
+          CONVERTER_HEALTH_URL: "foo_converter"
           RABBITMQ_MONITORING_USERNAME: "foo"
           RABBITMQ_MONITORING_PASSWORD: "bar"
           DISPATCHER_INSTANCES: "bar"
