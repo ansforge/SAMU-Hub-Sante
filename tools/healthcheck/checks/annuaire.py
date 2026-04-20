@@ -4,9 +4,7 @@ from checks.checker import IChecker
 from checks.status import Status
 from http_client import http_session
 
-ANNUAIRE_HEALTH_URL = (
-    "http://annuaire-service.annuaire.svc.cluster.local/annuaire/health"
-)
+from config import ANNUAIRE_HEALTH_URL
 
 
 class AnnuaireHealthcheck(IChecker):

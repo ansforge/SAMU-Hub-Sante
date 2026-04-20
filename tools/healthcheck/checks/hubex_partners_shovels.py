@@ -8,13 +8,12 @@ from checks.checker import IChecker
 from checks.status import Status
 from http_client import http_session
 from config import (
-    RABBITMQ_URL,
+    SHOVEL_STATUS_URL,
     RABBITMQ_MONITORING_USERNAME,
     RABBITMQ_MONITORING_PASSWORD,
     RABBITMQ_CA_CERT_PATH,
 )
 
-SHOVEL_STATUS_URL = f"{RABBITMQ_URL}/rabbitmq/api/shovels"
 MONITORED_SHOVEL_CONFIG_FILE_NAME = "monitored_partners_shovels.txt"
 EXPECTED_SHOVEL_STATUS = "running"
 
