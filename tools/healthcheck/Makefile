@@ -12,7 +12,14 @@ ruff-format: ## Run ruff to format code files
 	uv run ruff format
 
 test: ## Run tests with coverage
-	RABBITMQ_URL=http://test RABBITMQ_MONITORING_USERNAME=test RABBITMQ_MONITORING_PASSWORD=test DISPATCHER_INSTANCES=dispatcher_instance uv run coverage run -m unittest tests/*.py
+	RABBITMQ_HEALTH_URL=http://test \
+	SHOVEL_STATUS_URL=http://shovel_test \
+	ANNUAIRE_HEALTH_URL=http://annuaire_test \
+	CONVERTER_HEALTH_URL=http://converter_test \
+	RABBITMQ_MONITORING_USERNAME=test \
+	RABBITMQ_MONITORING_PASSWORD=test \
+	DISPATCHER_INSTANCES=dispatcher_instance \
+	uv run coverage run -m unittest tests/*.py
 
 show-coverage: ## Display coverage report
 	uv run coverage report -m
