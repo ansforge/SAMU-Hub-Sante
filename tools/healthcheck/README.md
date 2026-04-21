@@ -15,6 +15,22 @@ source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 uv sync
 ```
 
+## Run healthcheck locally
+
+you can run:
+
+```
+make run-local
+#> RABBITMQ_HEALTH_URL=http://localhost:15672/api/health/checks/alarms \
+#> SHOVEL_STATUS_URL=http://shovel_test \
+#> ANNUAIRE_HEALTH_URL=http://annuaire_test \
+#> CONVERTER_HEALTH_URL=http://localhost:8083/health \
+#> RABBITMQ_MONITORING_USERNAME=admin \
+#> RABBITMQ_MONITORING_PASSWORD=admin \
+#> DISPATCHER_CONFIG_FILE_PATH=dispatchers_config_file_path_example.txt \
+#> uv run healthcheck.py --port 8085
+```
+
 ## Tests
 
 To run the tests: 
