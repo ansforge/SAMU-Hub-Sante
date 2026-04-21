@@ -23,3 +23,13 @@ test: ## Run tests with coverage
 
 show-coverage: ## Display coverage report
 	uv run coverage report -m
+
+run-local:
+	RABBITMQ_HEALTH_URL=http://localhost:15672/api/health/checks/alarms \
+	SHOVEL_STATUS_URL=http://localhost:15672/api/shovels \
+	ANNUAIRE_HEALTH_URL=http://annuaire_test \
+	CONVERTER_HEALTH_URL=http://localhost:8083/health \
+	RABBITMQ_MONITORING_USERNAME=admin \
+	RABBITMQ_MONITORING_PASSWORD=admin \
+	DISPATCHER_CONFIG_FILE_PATH=dispatchers_config_file_path_example.txt \
+	uv run healthcheck.py --port 8085
