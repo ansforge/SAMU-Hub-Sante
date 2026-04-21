@@ -126,9 +126,9 @@ export function setCaseId(message, caseId, localCaseId) {
   }
 }
 
-export function buildAck({ distributionID, senderID }) {
+export function buildAck({ distributionID, senderID, refused = false }) {
   return buildMessage(
-    { reference: { distributionID } },
+    { reference: { distributionID, refused } },
     { distributionKind: 'Ack', recipientId: senderID }
   );
 }

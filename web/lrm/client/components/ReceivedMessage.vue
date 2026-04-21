@@ -68,9 +68,20 @@
               variant="text"
               size="x-small"
               :color="acked ? 'accent' : 'primary'"
+              :disabled="!!acked"
               @click="sendAck"
             >
               <v-icon size="24">mdi-check-all</v-icon>
+            </v-btn>
+            <v-btn
+              icon
+              variant="text"
+              size="x-small"
+              :color="acked ? 'accent' : 'error'"
+              :disabled="!!acked"
+              @click="sendRefusedAck"
+            >
+              <v-icon size="24">mdi-close-circle</v-icon>
             </v-btn>
           </div>
           <v-btn
@@ -199,6 +210,7 @@ const acked = computed(() => {
     );
 });
 
+
 const sendAck = () => {
   try {
     const distributionID = props.body.distributionID;
@@ -215,6 +227,30 @@ const sendAck = () => {
     isAcked.value = true;
   } catch (error) {
     consola.error("Erreur lors de l'envoi de l'acquittement", error);
+  }
+};
+
+const sendRefusedAck = () => {
+  try {
+    const distributionID = props.body.distributionID;
+    const senderID = props.body.senderID;
+
+    if (getMessageType({ body: props.body }) !== 'message') {
+      return;
+    }
+
+    if (senderID.includes(INTERNAL_HUB_USER)) {
+      consola.warn(
+        `Refused ack not sent: ${INTERNAL_HUB_USER} is not a valid client`
+      );
+      return;
+    }
+
+    const msg = buildAck({ distributionID, senderID, refused: true });
+    sendMessage(msg, props.vhost);
+    isAcked.value = true;
+  } catch (error) {
+    consola.error("Erreur lors de l'envoi de l'acquittement refusé", error);
   }
 };
 

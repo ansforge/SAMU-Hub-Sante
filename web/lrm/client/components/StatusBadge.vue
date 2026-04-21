@@ -1,13 +1,13 @@
 <template>
   <v-badge
     v-if="isOut(direction)"
-    :color="acked ? 'green' : 'orange'"
-    :content="acked ? 'Acquitté' : 'En envoi'"
+    :color="acked ? (isRefused() ? 'red' : 'green') : 'orange'"
+    :content="acked ? (isRefused() ? 'Refusé' : 'Acquitté') : 'En envoi'"
   />
   <v-badge
     v-else
-    :color="acked ? 'green' : 'orange'"
-    :content="acked ? 'Acquitté' : 'Délivré'"
+    :color="acked ? (isRefused() ? 'red' : 'green') : 'orange'"
+    :content="acked ? (isRefused() ? 'Refusé' : 'Acquitté') : 'Délivré'"
   />
 </template>
 
@@ -34,6 +34,12 @@ export default {
     isOut(direction) {
       return direction === DIRECTIONS.OUT;
     },
+    isRefused() {
+      return (
+        this.acked?.body?.content?.[0]?.jsonContent?.embeddedJsonContent?.message
+        ?.reference?.refused === true
+      );
+      }
   },
 };
 </script>
