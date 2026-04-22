@@ -176,12 +176,7 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
                 });
         Thread.sleep(DISPATCHER_PROCESS_TIME);
         assertRecipientDidNotReceive("samuB", SAMU_B_MESSAGE_QUEUE);
-        assertErrorHasBeenReceived(
-                samuA_publisher,
-                SAMU_A_INFO_QUEUE,
-                ErrorCode.DEAD_LETTER_QUEUED,
-                "fr.health.samuA_2608323d-507d-4cbf-bf74-52007f8124ea",
-                "rejected");
+        assertRecipientDidNotReceive("samuA", SAMU_A_INFO_QUEUE);
     }
 
     private void assertRecipientDidNotReceive(String client, String queueName) throws Exception {

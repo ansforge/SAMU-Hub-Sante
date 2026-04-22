@@ -332,19 +332,27 @@ public class Dispatcher {
                 return;
             }
             EdxlMessage edxlMessage = messageHandler.extractMessage(message);
+            String dlqReason = message.getMessageProperties().getHeader(DLQ_REASON);
             // log message & error
             String errorCause =
                     "Message "
                             + edxlMessage.getDistributionID()
                             + " has been read from dead-letter-queue; reason was "
-                            + message.getMessageProperties().getHeader(DLQ_REASON);
+                            + dlqReason;
             String messageType =
                     EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage());
             String recipientId = MessageUtils.getRecipientID(edxlMessage);
+
             DeadLetteredMessageException exception =
                     new DeadLetteredMessageException(
                             errorCause, edxlMessage.getDistributionID(), recipientId, messageType);
-            messageHandler.handleError(exception, message);
+            if (dlqReason.equals(DLQ_EXPIRED_REASON)) {
+
+                messageHandler.handleError(exception, message);
+            } else {
+                throw new AmqpRejectAndDontRequeueException(exception);
+            }
+
         } catch (Exception e) {
             // We don't want to log again the error if it has been thrown by handleError
             // We just log the unexpected errors

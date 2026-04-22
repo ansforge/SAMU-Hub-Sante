@@ -31,6 +31,7 @@ public class AmqpConfiguration {
     public static final String DISPATCH_DLQ_NAME = "dispatch.dlq";
     public static final String DISTRIBUTION_DLX = "distribution.dlx";
     public static final String DLQ_REASON = "x-first-death-reason";
+    public static final String DLQ_EXPIRED_REASON = "expired";
     public static final String ORIGINAL_ROUTING_KEY = "x-original-routing-key";
     public static final String DISPATCHER_CONNECTION_NAME = "dispatcher";
 
