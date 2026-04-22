@@ -535,7 +535,7 @@ public class DispatcherTest {
     public void handleDLQRejectedMessage() throws Exception {
         // we test that a rejected message received on the DLQ listener does not trigger a RS-ERROR
         Message originalMessage = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
-        Message dlqMessage = applyRabbitmqDLQHeaders(originalMessage, "rejected");
+        Message dlqMessage = applyRabbitmqDLQHeaders(originalMessage, DLQ_REJECTED_REASON);
         ArgumentCaptor<Message> argCaptor = ArgumentCaptor.forClass(Message.class);
         assertThrows(
                 AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatchDLQ(dlqMessage));
