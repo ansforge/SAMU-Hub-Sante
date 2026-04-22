@@ -14,6 +14,7 @@ from checks.dispatcher import DispatchersHealthcheck
 from checks.annuaire import AnnuaireHealthcheck
 from checks.hubex_partners_shovels import HubexPartnersHealthcheck
 from checks.mongo import MongoDBHealthcheck
+import argparse
 
 app = Flask(__name__)
 metrics = PrometheusMetrics(app)
@@ -88,4 +89,7 @@ def health_internal():
 
 
 if __name__ == "__main__":
-    app.run(host=DEFAULT_FLASK_HOST, port=DEFAULT_FLASK_PORT)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--port", type=int, default=DEFAULT_FLASK_PORT)
+    args = parser.parse_args()
+    app.run(host=DEFAULT_FLASK_HOST, port=args.port)
