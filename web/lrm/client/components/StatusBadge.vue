@@ -1,13 +1,7 @@
 <template>
   <v-badge
-    v-if="isOut(direction)"
-    :color="acked ? (isRefused() ? 'red' : 'green') : 'orange'"
-    :content="acked ? (isRefused() ? 'Refusé' : 'Acquitté') : 'En envoi'"
-  />
-  <v-badge
-    v-else
-    :color="acked ? (isRefused() ? 'red' : 'green') : 'orange'"
-    :content="acked ? (isRefused() ? 'Refusé' : 'Acquitté') : 'Délivré'"
+    :color="getBadgeColor()"
+    :content="getBadgeWording()"
   />
 </template>
 
@@ -31,15 +25,23 @@ export default {
     };
   },
   methods: {
-    isOut(direction) {
-      return direction === DIRECTIONS.OUT;
+    getBadgeColor() {
+      if (!this.acked) return 'orange';
+      if (this.isRefused()) return 'red';
+      return 'green';
+    },
+    getBadgeWording() {
+      if (!this.acked) {
+        return this.direction === DIRECTIONS.OUT ? 'En envoi' : 'Délivré';
+      }
+      return this.isRefused() ? 'Refusé' : 'Acquitté';
     },
     isRefused() {
       return (
         this.acked?.body?.content?.[0]?.jsonContent?.embeddedJsonContent?.message
-        ?.reference?.refused === true
+          ?.reference?.refused === true
       );
-      }
+    },
   },
 };
 </script>
