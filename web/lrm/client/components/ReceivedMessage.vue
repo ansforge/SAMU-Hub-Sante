@@ -68,8 +68,7 @@
               variant="text"
               size="x-small"
               :color="acked ? 'accent' : 'primary'"
-              :disabled="!!acked"
-              @click="sendAck"
+              @click="sendAck()"
             >
               <v-icon size="24">mdi-check-all</v-icon>
             </v-btn>
@@ -78,8 +77,7 @@
               variant="text"
               size="x-small"
               :color="acked ? 'accent' : 'error'"
-              :disabled="!!acked"
-              @click="sendRefusedAck"
+              @click="sendAck(true)"
             >
               <v-icon size="24">mdi-close-circle</v-icon>
             </v-btn>
@@ -210,19 +208,18 @@ const acked = computed(() => {
     );
 });
 
-
-const sendAck = () => {
+const sendAck = (refused = false) => {
   try {
     const distributionID = props.body.distributionID;
     const senderID = props.body.senderID;
-    if (getMessageType({ body: props.body }) !== 'message') {
-      return;
-    }
+
+    if (getMessageType({ body: props.body }) !== 'message') return;
+
     if (senderID.includes(INTERNAL_HUB_USER)) {
       consola.warn(`Ack not sent: ${INTERNAL_HUB_USER} is not a valid client`);
       return;
     }
-    const msg = buildAck({ distributionID, senderID });
+    const msg = buildAck({ distributionID, senderID, refused });
     sendMessage(msg, props.vhost);
     isAcked.value = true;
   } catch (error) {
@@ -230,29 +227,6 @@ const sendAck = () => {
   }
 };
 
-const sendRefusedAck = () => {
-  try {
-    const distributionID = props.body.distributionID;
-    const senderID = props.body.senderID;
-
-    if (getMessageType({ body: props.body }) !== 'message') {
-      return;
-    }
-
-    if (senderID.includes(INTERNAL_HUB_USER)) {
-      consola.warn(
-        `Refused ack not sent: ${INTERNAL_HUB_USER} is not a valid client`
-      );
-      return;
-    }
-
-    const msg = buildAck({ distributionID, senderID, refused: true });
-    sendMessage(msg, props.vhost);
-    isAcked.value = true;
-  } catch (error) {
-    consola.error("Erreur lors de l'envoi de l'acquittement refusé", error);
-  }
-};
 
 //on mounted, send ack if autoAckConfig is enabled
 onMounted(() => {
