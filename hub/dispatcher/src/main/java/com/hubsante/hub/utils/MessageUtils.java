@@ -15,7 +15,7 @@
  */
 package com.hubsante.hub.utils;
 
-import static com.hubsante.hub.config.AmqpConfiguration.ORIGINAL_ROUTING_KEY;
+import static com.hubsante.hub.config.AmqpConfiguration.*;
 import static com.hubsante.hub.config.Constants.DISTRIBUTION_ID_UNAVAILABLE;
 
 import com.hubsante.hub.config.Constants;
@@ -341,5 +341,10 @@ public class MessageUtils {
 
     public static String stringifyBody(Message message) {
         return new String(message.getBody(), StandardCharsets.UTF_8);
+    }
+
+    public static boolean isInhibitedErrorMessage(Message message) {
+        return message.getMessageProperties().getHeader(DLQ_REASON) != null
+                && !message.getMessageProperties().getHeader(DLQ_REASON).equals(DLQ_EXPIRED_REASON);
     }
 }

@@ -517,7 +517,7 @@ public class DispatcherTest {
     public void handleDLQMessage() throws Exception {
         // we test that an expired message has been rejected after the DLQ listener has been called
         Message originalMessage = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
-        Message dlqMessage = applyRabbitmqDLQHeaders(originalMessage, "expired");
+        Message dlqMessage = applyRabbitmqDLQHeaders(originalMessage, DLQ_EXPIRED_REASON);
         assertThrows(
                 AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatchDLQ(dlqMessage));
 
@@ -531,7 +531,7 @@ public class DispatcherTest {
     }
 
     @Test
-    @DisplayName("should send info to sender of DLQed message - expiration")
+    @DisplayName("should send info to sender of DLQed message - rejection")
     public void handleDLQRejectedMessage() throws Exception {
         // we test that a rejected message received on the DLQ listener does not trigger a RS-ERROR
         Message originalMessage = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
