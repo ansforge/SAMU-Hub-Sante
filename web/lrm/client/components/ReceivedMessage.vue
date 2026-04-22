@@ -68,9 +68,18 @@
               variant="text"
               size="x-small"
               :color="acked ? 'accent' : 'primary'"
-              @click="sendAck"
+              @click="sendAck()"
             >
               <v-icon size="24">mdi-check-all</v-icon>
+            </v-btn>
+            <v-btn
+              icon
+              variant="text"
+              size="x-small"
+              :color="acked ? 'accent' : 'error'"
+              @click="sendAck(true)"
+            >
+              <v-icon size="24">mdi-close-circle</v-icon>
             </v-btn>
           </div>
           <v-btn
@@ -199,18 +208,18 @@ const acked = computed(() => {
     );
 });
 
-const sendAck = () => {
+const sendAck = (refused = false) => {
   try {
     const distributionID = props.body.distributionID;
     const senderID = props.body.senderID;
-    if (getMessageType({ body: props.body }) !== 'message') {
-      return;
-    }
+
+    if (getMessageType({ body: props.body }) !== 'message') return;
+
     if (senderID.includes(INTERNAL_HUB_USER)) {
       consola.warn(`Ack not sent: ${INTERNAL_HUB_USER} is not a valid client`);
       return;
     }
-    const msg = buildAck({ distributionID, senderID });
+    const msg = buildAck({ distributionID, senderID, refused });
     sendMessage(msg, props.vhost);
     isAcked.value = true;
   } catch (error) {
