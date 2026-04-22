@@ -132,6 +132,7 @@ import { useMainStore } from '~/store';
 import { useAuthStore } from '@/store/auth';
 import {
   buildAck,
+  buildError,
   sendMessage,
   INTERNAL_HUB_USER,
   getMessageType,
@@ -214,12 +215,26 @@ const sendAck = (refused = false) => {
     const senderID = props.body.senderID;
 
     if (getMessageType({ body: props.body }) !== 'message') return;
+    if (senderID.includes(INTERNAL_HUB_USER)) return;
 
-    if (senderID.includes(INTERNAL_HUB_USER)) {
-      consola.warn(`Ack not sent: ${INTERNAL_HUB_USER} is not a valid client`);
-      return;
+    let errorDistributionId = null;
+
+    if (refused) {
+      const errorMsg = buildError({
+        distributionID,
+        senderID,
+        sourceMessage: props.body,
+      });
+      sendMessage(errorMsg, props.vhost);
+      errorDistributionId = errorMsg.distributionID;
     }
-    const msg = buildAck({ distributionID, senderID, refused });
+
+    const msg = buildAck({
+      distributionID,
+      senderID,
+      refused,
+      errorDistributionId,
+    });
     sendMessage(msg, props.vhost);
     isAcked.value = true;
   } catch (error) {

@@ -126,13 +126,43 @@ export function setCaseId(message, caseId, localCaseId) {
   }
 }
 
-export function buildAck({ distributionID, senderID, refused = false }) {
+export function buildAck({
+  distributionID,
+  senderID,
+  refused = false,
+  errorDistributionId = null,
+}) {
   return buildMessage(
-    { reference: { distributionID, ...(refused && { refused }) } },
+    {
+      reference: {
+        distributionID,
+        ...(refused && { refused }),
+        ...(errorDistributionId && {
+          errorDistributionID: errorDistributionId,
+        }),
+      },
+    },
     { distributionKind: 'Ack', recipientId: senderID }
   );
 }
 
+export function buildError({ distributionID, senderID, sourceMessage }) {
+  const msg = buildMessage(
+    {
+      error: {
+        errorCode: { statusCode: 700, statusString: 'INTERNAL_CLIENT_ERROR' },
+        errorCause: 'This message was rejected by the recipient.',
+        referencedDistributionID: distributionID,
+        sourceMessage: sourceMessage,
+      },
+    },
+    { distributionKind: 'Error', recipientId: senderID }
+  );
+  msg.content[0].jsonContent.embeddedJsonContent.message = {
+    error: msg.content[0].jsonContent.embeddedJsonContent.message.error,
+  };
+  return msg;
+}
 export function buildMessage(
   innerMessage,
   { distributionKind, recipientId } = {
