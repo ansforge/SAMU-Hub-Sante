@@ -1,8 +1,5 @@
 <template>
-  <v-badge
-    :color="getBadgeColor()"
-    :content="getBadgeWording()"
-  />
+  <v-badge :color="getBadgeColor()" :content="getBadgeWording()" />
 </template>
 
 <script>
@@ -38,8 +35,8 @@ export default {
     },
     isRefused() {
       return (
-        this.acked?.body?.content?.[0]?.jsonContent?.embeddedJsonContent?.message
-          ?.reference?.refused === true
+        this.acked?.body?.content?.[0]?.jsonContent?.embeddedJsonContent
+          ?.message?.reference?.refused === true
       );
     },
   },

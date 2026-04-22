@@ -227,7 +227,6 @@ const sendAck = (refused = false) => {
   }
 };
 
-
 //on mounted, send ack if autoAckConfig is enabled
 onMounted(() => {
   if (autoAckConfig.value) {
