@@ -13,9 +13,22 @@ from config import (
 import logging
 
 with patch("checks.hubex_partners_shovels.open", mock_open(read_data="vhost1;queue1")):
-    from healthcheck import HEALTH_INTERNAL_ENDPOINT, HEALTH_EXTERNAL_ENDPOINT, app
+    from healthcheck import (
+        HEALTH_INTERNAL_ENDPOINT,
+        HEALTH_EXTERNAL_ENDPOINT,
+        app,
+        dispatcher,
+    )
 
 MOCK_TARGET = "http_client.http_session.get"
+
+
+def _dispatcher_url(name: str) -> str:
+    return f"http://{name}/actuator/health"
+
+
+def _dispatchers_config(*names: str) -> dict:
+    return {name: _dispatcher_url(name) for name in names}
 
 
 @patch("checks.mongo.MongoClient")
@@ -203,7 +216,11 @@ class HealthCheckTestCase(unittest.TestCase):
             shovel_status_response=shovel_status_response,
         )
 
-        with patch("checks.dispatcher.DISPATCHER_INSTANCES", ["dispatcher1"]):
+        with patch.object(
+            dispatcher,
+            "dispatcher_instances",
+            _dispatchers_config("dispatcher1"),
+        ):
             with app.test_client() as client:
                 response = client.get(HEALTH_INTERNAL_ENDPOINT)
                 self.assertEqual(response.status_code, 200)
@@ -254,7 +271,11 @@ class HealthCheckTestCase(unittest.TestCase):
     ):
         mock_get.side_effect = self.create_mock_side_effect(converter_error=True)
 
-        with patch("checks.dispatcher.DISPATCHER_INSTANCES", ["dispatcher_instance"]):
+        with patch.object(
+            dispatcher,
+            "dispatcher_instances",
+            _dispatchers_config("dispatcher_instance"),
+        ):
             with app.test_client() as client:
                 response = client.get(HEALTH_INTERNAL_ENDPOINT)
                 self.assertEqual(response.status_code, 200)
@@ -284,7 +305,11 @@ class HealthCheckTestCase(unittest.TestCase):
             converter_response={"status": converter_status}
         )
 
-        with patch("checks.dispatcher.DISPATCHER_INSTANCES", ["dispatcher_instance"]):
+        with patch.object(
+            dispatcher,
+            "dispatcher_instances",
+            _dispatchers_config("dispatcher_instance"),
+        ):
             with app.test_client() as client:
                 response = client.get(HEALTH_INTERNAL_ENDPOINT)
                 self.assertEqual(response.status_code, 200)
@@ -302,7 +327,11 @@ class HealthCheckTestCase(unittest.TestCase):
     ):
         mock_get.side_effect = self.create_mock_side_effect(annuaire_error=True)
 
-        with patch("checks.dispatcher.DISPATCHER_INSTANCES", ["dispatcher_instance"]):
+        with patch.object(
+            dispatcher,
+            "dispatcher_instances",
+            _dispatchers_config("dispatcher_instance"),
+        ):
             with app.test_client() as client:
                 response = client.get(HEALTH_INTERNAL_ENDPOINT)
                 self.assertEqual(response.status_code, 200)
@@ -332,7 +361,11 @@ class HealthCheckTestCase(unittest.TestCase):
             annuaire_response={"status": annuaire_status}
         )
 
-        with patch("checks.dispatcher.DISPATCHER_INSTANCES", ["dispatcher_instance"]):
+        with patch.object(
+            dispatcher,
+            "dispatcher_instances",
+            _dispatchers_config("dispatcher_instance"),
+        ):
             with app.test_client() as client:
                 response = client.get(HEALTH_INTERNAL_ENDPOINT)
                 self.assertEqual(response.status_code, 200)
@@ -414,9 +447,10 @@ class HealthCheckTestCase(unittest.TestCase):
 
         mock_get.side_effect = side_effect
 
-        with patch(
-            "checks.dispatcher.DISPATCHER_INSTANCES",
-            [dispatcher1_name, dispatcher2_name],
+        with patch.object(
+            dispatcher,
+            "dispatcher_instances",
+            _dispatchers_config(dispatcher1_name, dispatcher2_name),
         ):
             with app.test_client() as client:
                 response = client.get(HEALTH_INTERNAL_ENDPOINT)
@@ -453,7 +487,11 @@ class HealthCheckTestCase(unittest.TestCase):
     ):
         mock_get.side_effect = self.create_mock_side_effect()
 
-        with patch("checks.dispatcher.DISPATCHER_INSTANCES", ["dispatcher_instance"]):
+        with patch.object(
+            dispatcher,
+            "dispatcher_instances",
+            _dispatchers_config("dispatcher_instance"),
+        ):
             with app.test_client() as client:
                 response = client.get(HEALTH_EXTERNAL_ENDPOINT)
                 self.assertEqual(response.status_code, 200)
@@ -486,8 +524,10 @@ class HealthCheckTestCase(unittest.TestCase):
     ):
         mock_get.side_effect = self.create_mock_side_effect()
 
-        with patch(
-            "checks.dispatcher.DISPATCHER_INSTANCES", ["dispatcher1", "dispatcher2"]
+        with patch.object(
+            dispatcher,
+            "dispatcher_instances",
+            _dispatchers_config("dispatcher1", "dispatcher2"),
         ):
             with app.test_client() as client:
                 client.get("/metrics")
@@ -501,14 +541,8 @@ class HealthCheckTestCase(unittest.TestCase):
             self.assertIn(CONVERTER_HEALTH_URL, called_urls)
             self.assertIn(ANNUAIRE_HEALTH_URL, called_urls)
             self.assertIn(SHOVEL_STATUS_URL, called_urls)
-            self.assertIn(
-                "http://dispatcher1.app.svc.cluster.local:8080/actuator/health",
-                called_urls,
-            )
-            self.assertIn(
-                "http://dispatcher2.app.svc.cluster.local:8080/actuator/health",
-                called_urls,
-            )
+            self.assertIn(_dispatcher_url("dispatcher1"), called_urls)
+            self.assertIn(_dispatcher_url("dispatcher2"), called_urls)
 
     @patch("requests.get")
     def test_mongodb_healthcheck_up(
@@ -518,16 +552,17 @@ class HealthCheckTestCase(unittest.TestCase):
     ):
         mock_get.side_effect = self.create_mock_side_effect()
 
-        with patch("checks.dispatcher.DISPATCHER_INSTANCES", ["dispatcher_instance"]):
+        with patch.object(
+            dispatcher,
+            "dispatcher_instances",
+            _dispatchers_config("dispatcher_instance"),
+        ):
             with app.test_client() as client:
                 response = client.get(HEALTH_INTERNAL_ENDPOINT)
                 self.assertEqual(response.status_code, 200)
                 data = json.loads(response.data)
                 self.assertEqual(
                     data["components"]["mongodb"]["status"], Status.UP.value
-                )
-                self.assertEqual(
-                    mock_mongo_client.return_value.admin.command.called, True
                 )
                 mock_mongo_client.return_value.admin.command.assert_called_with("ping")
 
@@ -542,7 +577,11 @@ class HealthCheckTestCase(unittest.TestCase):
             "MongoDB Error"
         )
 
-        with patch("checks.dispatcher.DISPATCHER_INSTANCES", ["dispatcher_instance"]):
+        with patch.object(
+            dispatcher,
+            "dispatcher_instances",
+            _dispatchers_config("dispatcher_instance"),
+        ):
             with app.test_client() as client:
                 response = client.get(HEALTH_INTERNAL_ENDPOINT)
                 self.assertEqual(response.status_code, 200)

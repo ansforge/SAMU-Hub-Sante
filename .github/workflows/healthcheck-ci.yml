@@ -48,7 +48,7 @@ jobs:
           CONVERTER_HEALTH_URL: "foo_converter"
           RABBITMQ_MONITORING_USERNAME: "foo"
           RABBITMQ_MONITORING_PASSWORD: "bar"
-          DISPATCHER_INSTANCES: "bar"
+          DISPATCHER_CONFIG_FILE_PATH: "dispatchers_config_file_path_example.txt"
         run: |
           uv run coverage run -m unittest tests/*.py
           uv run coverage report -m

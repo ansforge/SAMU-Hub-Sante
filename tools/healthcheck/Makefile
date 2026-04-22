@@ -18,7 +18,7 @@ test: ## Run tests with coverage
 	CONVERTER_HEALTH_URL=http://converter_test \
 	RABBITMQ_MONITORING_USERNAME=test \
 	RABBITMQ_MONITORING_PASSWORD=test \
-	DISPATCHER_INSTANCES=dispatcher_instance \
+	DISPATCHER_CONFIG_FILE_PATH=dispatchers_config_file_path_example.txt \
 	uv run coverage run -m unittest tests/*.py
 
 show-coverage: ## Display coverage report

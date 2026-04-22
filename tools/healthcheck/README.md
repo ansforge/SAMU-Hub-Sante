@@ -17,7 +17,18 @@ uv sync
 
 ## Tests
 
-To run the tests: `RABBITMQ_HEALTH_URL=http://test SHOVEL_STATUS_URL=http://shovel_test ANNUAIRE_HEALTH_URL=http://annuaire_test CONVERTER_HEALTH_URL=http://converter_test RABBITMQ_MONITORING_USERNAME=test RABBITMQ_MONITORING_PASSWORD=test DISPATCHER_INSTANCES=dispatcher_instance uv run python -m unittest tests/*.py -v`
+To run the tests: 
+
+```
+RABBITMQ_HEALTH_URL=http://test \
+SHOVEL_STATUS_URL=http://shovel_test  \
+ANNUAIRE_HEALTH_URL=http://annuaire_test  \
+CONVERTER_HEALTH_URL=http://converter_test  \
+RABBITMQ_MONITORING_USERNAME=test  \
+RABBITMQ_MONITORING_PASSWORD=test  \
+DISPATCHER_CONFIG_FILE_PATH=dispatchers_config_file_path_example.txt  \
+uv run python -m unittest tests/*.py -v
+```
 
 To run the tests and generate a coverage report: `make test`
 
