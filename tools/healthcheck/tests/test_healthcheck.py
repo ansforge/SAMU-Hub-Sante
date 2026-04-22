@@ -4,10 +4,12 @@ from parameterized import parameterized
 import json
 import requests
 from checks.status import Status
-from checks.annuaire import ANNUAIRE_HEALTH_URL
-from checks.rabbitmq import RABBITMQ_HEALTH_URL
-from checks.converter import CONVERTER_HEALTH_URL
-from checks.hubex_partners_shovels import SHOVEL_STATUS_URL
+from config import (
+    ANNUAIRE_HEALTH_URL,
+    RABBITMQ_HEALTH_URL,
+    CONVERTER_HEALTH_URL,
+    SHOVEL_STATUS_URL,
+)
 import logging
 
 with patch("checks.hubex_partners_shovels.open", mock_open(read_data="vhost1;queue1")):

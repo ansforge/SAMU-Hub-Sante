@@ -4,13 +4,11 @@ from checks.checker import IChecker
 from checks.status import Status
 from http_client import http_session
 from config import (
-    RABBITMQ_URL,
+    RABBITMQ_HEALTH_URL,
     RABBITMQ_MONITORING_USERNAME,
     RABBITMQ_MONITORING_PASSWORD,
     RABBITMQ_CA_CERT_PATH,
 )
-
-RABBITMQ_HEALTH_URL = f"{RABBITMQ_URL}/rabbitmq/api/health/checks/alarms"
 
 
 class RabbitMQHealthcheck(IChecker):

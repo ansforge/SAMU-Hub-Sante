@@ -4,7 +4,7 @@ from checks.checker import IChecker
 from checks.status import Status
 from http_client import http_session
 
-CONVERTER_HEALTH_URL = "http://converter.app.svc.cluster.local:8080/health"
+from config import CONVERTER_HEALTH_URL
 
 
 class ConverterHealthcheck(IChecker):
