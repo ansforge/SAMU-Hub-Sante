@@ -344,7 +344,7 @@ public class MessageUtils {
     }
 
     public static boolean isInhibitedErrorMessage(Message message) {
-        return message.getMessageProperties().getHeader(DLQ_REASON) != null
-                && !message.getMessageProperties().getHeader(DLQ_REASON).equals(DLQ_EXPIRED_REASON);
+        String dlqReasonHeader = message.getMessageProperties().getHeader(DLQ_REASON);
+        return dlqReasonHeader != null && !dlqReasonHeader.equals(DLQ_EXPIRED_REASON);
     }
 }

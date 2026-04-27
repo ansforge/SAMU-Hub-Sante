@@ -131,11 +131,16 @@ public class MessageHandler {
         logErrorMessage(error, distributionId, senderClientId, recipientId, messageType);
         // currently, we do not handle error messages on other hubex, and inhibit DLQ messages other
         // than the "expired" ones
-        if (senderClientId.startsWith(FR_HEALTH_PREFIX) && !isInhibitedErrorMessage(message)) {
+        boolean isSenderInHealthPerimeter = senderClientId.startsWith(FR_HEALTH_PREFIX);
+        if (isSenderInHealthPerimeter && !isInhibitedErrorMessage(message)) {
             sendErrorReport(error, senderClientId);
         } else {
+            String errorLog =
+                    isSenderInHealthPerimeter
+                            ? "Error message not sent as it is not a health perimeter"
+                            : "Error message not sent as it has been dead-letter-queued for an other reason than expiration";
             structuredLog.info(
-                    "Error message not sent as it is not a health perimeter",
+                    errorLog,
                     Map.of(
                             LogConstants.SENDER_ID,
                             senderClientId,
