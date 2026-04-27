@@ -150,7 +150,7 @@ export function buildError({ distributionID, senderID, sourceMessage }) {
   const msg = buildMessage(
     {
       error: {
-        errorCode: { statusCode: 700, statusString: 'INTERNAL_CLIENT_ERROR' },
+        errorCode: { statusCode: 501, statusString: 'UNROUTABLE_MESSAGE' },
         errorCause: 'This message was rejected by the recipient.',
         referencedDistributionID: distributionID,
         sourceMessage,
