@@ -137,8 +137,8 @@ public class MessageHandler {
         } else {
             String errorLog =
                     isSenderInHealthPerimeter
-                            ? "Error message not sent as it is not a health perimeter"
-                            : "Error message not sent as it has been dead-letter-queued for an other reason than expiration";
+                            ? "Error message not sent as it has been dead-letter-queued for an other reason than expiration"
+                            : "Error message not sent as it is not a health perimeter";
             structuredLog.info(
                     errorLog,
                     Map.of(
