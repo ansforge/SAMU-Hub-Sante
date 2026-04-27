@@ -138,7 +138,7 @@ export function buildAck({
         distributionID,
         ...(refused && { refused }),
         ...(errorDistributionID && {
-          errorDistributionID: errorDistributionID,
+          errorDistributionID,
         }),
       },
     },
@@ -153,7 +153,7 @@ export function buildError({ distributionID, senderID, sourceMessage }) {
         errorCode: { statusCode: 700, statusString: 'INTERNAL_CLIENT_ERROR' },
         errorCause: 'This message was rejected by the recipient.',
         referencedDistributionID: distributionID,
-        sourceMessage: sourceMessage,
+        sourceMessage,
       },
     },
     { distributionKind: 'Error', recipientId: senderID }
