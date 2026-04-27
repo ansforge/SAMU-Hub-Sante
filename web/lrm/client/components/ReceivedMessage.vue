@@ -217,7 +217,7 @@ const sendAck = (refused = false) => {
     if (getMessageType({ body: props.body }) !== 'message') return;
     if (senderID.includes(INTERNAL_HUB_USER)) return;
 
-    let errorDistributionId = null;
+    let errorDistributionID = null;
 
     if (refused) {
       const errorMsg = buildError({
@@ -226,14 +226,14 @@ const sendAck = (refused = false) => {
         sourceMessage: props.body,
       });
       sendMessage(errorMsg, props.vhost);
-      errorDistributionId = errorMsg.distributionID;
+      errorDistributionID = errorMsg.distributionID;
     }
 
     const msg = buildAck({
       distributionID,
       senderID,
       refused,
-      errorDistributionId,
+      errorDistributionID,
     });
     sendMessage(msg, props.vhost);
     isAcked.value = true;
@@ -267,6 +267,7 @@ export default {
   },
 };
 </script>
+
 <style lang="scss">
 // Ref.: https://github.com/chenfengjw163/vue-json-viewer/tree/master#theming
 // values are default one from jv-light template

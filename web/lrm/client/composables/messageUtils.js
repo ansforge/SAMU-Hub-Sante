@@ -130,15 +130,15 @@ export function buildAck({
   distributionID,
   senderID,
   refused = false,
-  errorDistributionId = null,
+  errorDistributionID = null,
 }) {
   return buildMessage(
     {
       reference: {
         distributionID,
         ...(refused && { refused }),
-        ...(errorDistributionId && {
-          errorDistributionID: errorDistributionId,
+        ...(errorDistributionID && {
+          errorDistributionID: errorDistributionID,
         }),
       },
     },
