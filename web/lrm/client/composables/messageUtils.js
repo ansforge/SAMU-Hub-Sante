@@ -147,27 +147,25 @@ export function buildAck({
 }
 
 export function buildError({ distributionID, senderID, sourceMessage }) {
-  const msg = buildMessage(
+  return buildMessage(
     {
       error: {
         errorCode: { statusCode: 501, statusString: 'UNROUTABLE_MESSAGE' },
         errorCause: 'This message was rejected by the recipient.',
-        referencedDistributionID: distributionID,
         sourceMessage,
+        referencedDistributionID: distributionID,
       },
     },
-    { distributionKind: 'Error', recipientId: senderID }
+    { distributionKind: 'Error', recipientId: senderID, includeRCDE: false }
   );
-  msg.content[0].jsonContent.embeddedJsonContent.message = {
-    error: msg.content[0].jsonContent.embeddedJsonContent.message.error,
-  };
-  return msg;
 }
+
 export function buildMessage(
   innerMessage,
-  { distributionKind, recipientId } = {
+  { distributionKind, recipientId, includeRCDE = true } = {
     distributionKind: 'Report',
     recipientId: null,
+    includeRCDE: true,
   }
 ) {
   // InnerMessage should only have one key, as we do not support multiple use cases in the same message.
@@ -184,12 +182,8 @@ export function buildMessage(
   } else {
     message.descriptor.keyword[0].value = useCase;
   }
+
   const formattedInnerMessage = formatIdsInMessage(innerMessage);
-  message.content[0].jsonContent.embeddedJsonContent.message = {
-    ...message.content[0].jsonContent.embeddedJsonContent.message,
-    ...formattedInnerMessage,
-  };
-  const name = clientInfos().name;
   const targetId = recipientId ?? authStore.user.targetId;
   const sentAt = moment().format();
   message.distributionID = `${authStore.user.clientId}_${uuidv4()}`;
@@ -197,21 +191,32 @@ export function buildMessage(
   message.senderID = authStore.user.clientId;
   message.dateTimeSent = sentAt;
   message.descriptor.explicitAddress.explicitAddressValue = targetId;
-  message.content[0].jsonContent.embeddedJsonContent.message.messageId =
-    message.distributionID;
-  message.content[0].jsonContent.embeddedJsonContent.message.kind =
-    message.distributionKind;
-  message.content[0].jsonContent.embeddedJsonContent.message.sender = {
-    name,
-    URI: `hubex:${authStore.user.clientId}`,
-  };
-  message.content[0].jsonContent.embeddedJsonContent.message.sentAt = sentAt;
-  message.content[0].jsonContent.embeddedJsonContent.message.recipient = [
-    {
-      name: clientInfos(targetId).name,
-      URI: `hubex:${targetId}`,
-    },
-  ];
+
+  if (includeRCDE) {
+    const name = clientInfos().name;
+    message.content[0].jsonContent.embeddedJsonContent.message = {
+      ...message.content[0].jsonContent.embeddedJsonContent.message,
+      ...formattedInnerMessage,
+      messageId: message.distributionID,
+      kind: message.distributionKind,
+      sender: {
+        name,
+        URI: `hubex:${authStore.user.clientId}`,
+      },
+      sentAt,
+      recipient: [
+        {
+          name: clientInfos(targetId).name,
+          URI: `hubex:${targetId}`,
+        },
+      ],
+    };
+  } else {
+    message.content[0].jsonContent.embeddedJsonContent.message = {
+      ...formattedInnerMessage,
+    };
+  }
+
   return trimEmptyValues(message);
 }
 
