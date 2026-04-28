@@ -515,9 +515,9 @@ public class DispatcherTest {
     @Test
     @DisplayName("should send info to sender of DLQed message - expiration")
     public void handleDLQMessage() throws Exception {
-        // we test that the message has been rejected after the DLQ listener has been called
+        // we test that an expired message has been rejected after the DLQ listener has been called
         Message originalMessage = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
-        Message dlqMessage = applyRabbitmqDLQHeaders(originalMessage, "expired");
+        Message dlqMessage = applyRabbitmqDLQHeaders(originalMessage, DLQ_EXPIRED_REASON);
         assertThrows(
                 AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatchDLQ(dlqMessage));
 
@@ -528,6 +528,21 @@ public class DispatcherTest {
                 SAMU_A_DISTRIBUTION_ID,
                 "fr.health.samuA_2608323d-507d-4cbf-bf74-52007f8124ea",
                 "has been read from dead-letter-queue; reason was expired");
+    }
+
+    @Test
+    @DisplayName("should send info to sender of DLQed message - rejection")
+    public void handleDLQRejectedMessage() throws Exception {
+        // we test that a rejected message received on the DLQ listener does not trigger a RS-ERROR
+        Message originalMessage = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
+        Message dlqMessage = applyRabbitmqDLQHeaders(originalMessage, DLQ_REJECTED_REASON);
+        ArgumentCaptor<Message> argCaptor = ArgumentCaptor.forClass(Message.class);
+        assertThrows(
+                AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatchDLQ(dlqMessage));
+
+        // No message has been published on sender info queue
+        Mockito.verify(rabbitTemplate, times(0))
+                .send(eq(DISTRIBUTION_EXCHANGE), eq(SAMU_A_INFO_QUEUE), argCaptor.capture());
     }
 
     @Test
