@@ -213,7 +213,14 @@ export function buildMessage(
     };
   } else {
     message.content[0].jsonContent.embeddedJsonContent.message = {
+      ...message.content[0].jsonContent.embeddedJsonContent.message,
       ...formattedInnerMessage,
+      messageId: undefined,
+      kind: undefined,
+      sender: undefined,
+      sentAt: undefined,
+      recipient: undefined,
+      status: undefined,
     };
   }
 
