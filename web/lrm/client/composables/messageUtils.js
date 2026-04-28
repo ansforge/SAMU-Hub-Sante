@@ -2,7 +2,7 @@ import moment from 'moment/moment';
 import { v4 as uuidv4 } from 'uuid';
 import { consola } from 'consola';
 import { clientInfos } from './userUtils';
-import { EDXL_ENVELOPE, DIRECTIONS } from '@/constants';
+import { EDXL_ENVELOPE, DIRECTIONS, RC_DE } from '@/constants';
 import { useMainStore } from '~/store';
 import { useAuthStore } from '~/store/auth';
 
@@ -196,6 +196,7 @@ export function buildMessage(
     const name = clientInfos().name;
     message.content[0].jsonContent.embeddedJsonContent.message = {
       ...message.content[0].jsonContent.embeddedJsonContent.message,
+      ...RC_DE,
       ...formattedInnerMessage,
       messageId: message.distributionID,
       kind: message.distributionKind,
@@ -215,12 +216,6 @@ export function buildMessage(
     message.content[0].jsonContent.embeddedJsonContent.message = {
       ...message.content[0].jsonContent.embeddedJsonContent.message,
       ...formattedInnerMessage,
-      messageId: undefined,
-      kind: undefined,
-      sender: undefined,
-      sentAt: undefined,
-      recipient: undefined,
-      status: undefined,
     };
   }
 
