@@ -132,6 +132,7 @@ import { useMainStore } from '~/store';
 import { useAuthStore } from '@/store/auth';
 import {
   buildAck,
+  buildError,
   sendMessage,
   INTERNAL_HUB_USER,
   getMessageType,
@@ -213,13 +214,32 @@ const sendAck = (refused = false) => {
     const distributionID = props.body.distributionID;
     const senderID = props.body.senderID;
 
-    if (getMessageType({ body: props.body }) !== 'message') return;
-
+    if (getMessageType({ body: props.body }) !== 'message') {
+      return;
+    }
     if (senderID.includes(INTERNAL_HUB_USER)) {
       consola.warn(`Ack not sent: ${INTERNAL_HUB_USER} is not a valid client`);
       return;
     }
-    const msg = buildAck({ distributionID, senderID, refused });
+
+    let errorDistributionID = null;
+
+    if (refused) {
+      const errorMsg = buildError({
+        distributionID,
+        senderID,
+        sourceMessage: props.body,
+      });
+      sendMessage(errorMsg, props.vhost);
+      errorDistributionID = errorMsg.distributionID;
+    }
+
+    const msg = buildAck({
+      distributionID,
+      senderID,
+      refused,
+      errorDistributionID,
+    });
     sendMessage(msg, props.vhost);
     isAcked.value = true;
   } catch (error) {
@@ -252,6 +272,7 @@ export default {
   },
 };
 </script>
+
 <style lang="scss">
 // Ref.: https://github.com/chenfengjw163/vue-json-viewer/tree/master#theming
 // values are default one from jv-light template

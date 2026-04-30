@@ -2,7 +2,7 @@ import moment from 'moment/moment';
 import { v4 as uuidv4 } from 'uuid';
 import { consola } from 'consola';
 import { clientInfos } from './userUtils';
-import { EDXL_ENVELOPE, DIRECTIONS } from '@/constants';
+import { EDXL_ENVELOPE, DIRECTIONS, RC_DE } from '@/constants';
 import { useMainStore } from '~/store';
 import { useAuthStore } from '~/store/auth';
 
@@ -126,18 +126,46 @@ export function setCaseId(message, caseId, localCaseId) {
   }
 }
 
-export function buildAck({ distributionID, senderID, refused = false }) {
+export function buildAck({
+  distributionID,
+  senderID,
+  refused = false,
+  errorDistributionID = null,
+}) {
   return buildMessage(
-    { reference: { distributionID, ...(refused && { refused }) } },
+    {
+      reference: {
+        distributionID,
+        ...(refused && { refused }),
+        ...(errorDistributionID && {
+          errorDistributionID,
+        }),
+      },
+    },
     { distributionKind: 'Ack', recipientId: senderID }
+  );
+}
+
+export function buildError({ distributionID, senderID, sourceMessage }) {
+  return buildMessage(
+    {
+      error: {
+        errorCode: { statusCode: 501, statusString: 'UNROUTABLE_MESSAGE' },
+        errorCause: 'This message was rejected by the recipient.',
+        sourceMessage,
+        referencedDistributionID: distributionID,
+      },
+    },
+    { distributionKind: 'Error', recipientId: senderID, includeRCDE: false }
   );
 }
 
 export function buildMessage(
   innerMessage,
-  { distributionKind, recipientId } = {
+  { distributionKind, recipientId, includeRCDE = true } = {
     distributionKind: 'Report',
     recipientId: null,
+    includeRCDE: true,
   }
 ) {
   // InnerMessage should only have one key, as we do not support multiple use cases in the same message.
@@ -154,12 +182,8 @@ export function buildMessage(
   } else {
     message.descriptor.keyword[0].value = useCase;
   }
+
   const formattedInnerMessage = formatIdsInMessage(innerMessage);
-  message.content[0].jsonContent.embeddedJsonContent.message = {
-    ...message.content[0].jsonContent.embeddedJsonContent.message,
-    ...formattedInnerMessage,
-  };
-  const name = clientInfos().name;
   const targetId = recipientId ?? authStore.user.targetId;
   const sentAt = moment().format();
   message.distributionID = `${authStore.user.clientId}_${uuidv4()}`;
@@ -167,21 +191,34 @@ export function buildMessage(
   message.senderID = authStore.user.clientId;
   message.dateTimeSent = sentAt;
   message.descriptor.explicitAddress.explicitAddressValue = targetId;
-  message.content[0].jsonContent.embeddedJsonContent.message.messageId =
-    message.distributionID;
-  message.content[0].jsonContent.embeddedJsonContent.message.kind =
-    message.distributionKind;
-  message.content[0].jsonContent.embeddedJsonContent.message.sender = {
-    name,
-    URI: `hubex:${authStore.user.clientId}`,
-  };
-  message.content[0].jsonContent.embeddedJsonContent.message.sentAt = sentAt;
-  message.content[0].jsonContent.embeddedJsonContent.message.recipient = [
-    {
-      name: clientInfos(targetId).name,
-      URI: `hubex:${targetId}`,
-    },
-  ];
+
+  if (includeRCDE) {
+    const name = clientInfos().name;
+    message.content[0].jsonContent.embeddedJsonContent.message = {
+      ...message.content[0].jsonContent.embeddedJsonContent.message,
+      ...RC_DE,
+      ...formattedInnerMessage,
+      messageId: message.distributionID,
+      kind: message.distributionKind,
+      sender: {
+        name,
+        URI: `hubex:${authStore.user.clientId}`,
+      },
+      sentAt,
+      recipient: [
+        {
+          name: clientInfos(targetId).name,
+          URI: `hubex:${targetId}`,
+        },
+      ],
+    };
+  } else {
+    message.content[0].jsonContent.embeddedJsonContent.message = {
+      ...message.content[0].jsonContent.embeddedJsonContent.message,
+      ...formattedInnerMessage,
+    };
+  }
+
   return trimEmptyValues(message);
 }
 
