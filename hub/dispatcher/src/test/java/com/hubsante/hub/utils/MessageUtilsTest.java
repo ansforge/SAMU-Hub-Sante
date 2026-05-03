@@ -16,8 +16,7 @@
 package com.hubsante.hub.utils;
 
 import static com.hubsante.hub.utils.MessageUtils.checkMessageNotInhibited;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 import com.hubsante.hub.exception.UnroutableMessageException;
 import java.util.List;
@@ -41,7 +40,7 @@ public class MessageUtilsTest {
     @Test
     @DisplayName("should throw if message is inhibited for restricted client")
     public void shouldThrowIfMessageIsInhibited() {
-        assertThrows(
+        UnroutableMessageException thrown = assertThrows(
                 UnroutableMessageException.class,
                 () ->
                         checkMessageNotInhibited(
@@ -49,6 +48,10 @@ public class MessageUtilsTest {
                                 INHIBITED_MESSAGE,
                                 inhibitedMessagesByClient,
                                 DISTRIBUTION_ID));
+
+        assertEquals(
+                "Use case " + INHIBITED_MESSAGE + " is not supported for client " + LIMITED_CLIENT,
+                thrown.getMessage());
     }
 
     @Test
