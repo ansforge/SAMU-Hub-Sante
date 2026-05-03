@@ -38,7 +38,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 @Configuration
 public class HubConfiguration {
 
-    private static final int ROW_LENGTH = 9;
+    private static final int ROW_LENGTH = 10;
     private static final String DATA_DIVIDER = ",";
     private static final String COLUMN_DIVIDER = ";";
 
