@@ -40,14 +40,15 @@ public class MessageUtilsTest {
     @Test
     @DisplayName("should throw if message is inhibited for restricted client")
     public void shouldThrowIfMessageIsInhibited() {
-        UnroutableMessageException thrown = assertThrows(
-                UnroutableMessageException.class,
-                () ->
-                        checkMessageNotInhibited(
-                                LIMITED_CLIENT,
-                                INHIBITED_MESSAGE,
-                                inhibitedMessagesByClient,
-                                DISTRIBUTION_ID));
+        UnroutableMessageException thrown =
+                assertThrows(
+                        UnroutableMessageException.class,
+                        () ->
+                                checkMessageNotInhibited(
+                                        LIMITED_CLIENT,
+                                        INHIBITED_MESSAGE,
+                                        inhibitedMessagesByClient,
+                                        DISTRIBUTION_ID));
 
         assertEquals(
                 "Use case " + INHIBITED_MESSAGE + " is not supported for client " + LIMITED_CLIENT,
