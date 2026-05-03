@@ -155,6 +155,26 @@ public class MessageUtils {
         }
     }
 
+    public static void checkMessageNotInhibited(
+            String recipientId,
+            String useCase,
+            Map<String, List<String>> inhibitedMessagesByClient,
+            String distributionId) {
+
+        List<String> blockedUseCases =
+                inhibitedMessagesByClient.getOrDefault(recipientId, List.of());
+
+        boolean isInhibited = blockedUseCases.contains(useCase);
+
+        if (isInhibited) {
+            String errorMessage =
+                    String.format(
+                            "Use case %s is not supported for client %s", useCase, recipientId);
+            throw new UnroutableMessageException(
+                    errorMessage, distributionId, recipientId, useCase);
+        }
+    }
+
     public static String getInfoQueueNameFromClientId(String clientId) {
         return clientId + ".info";
     }

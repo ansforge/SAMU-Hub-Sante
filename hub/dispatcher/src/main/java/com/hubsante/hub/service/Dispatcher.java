@@ -201,6 +201,8 @@ public class Dispatcher {
             EdxlMessage edxlMessage = messageHandler.extractMessage(message);
             // check message type is allowed on the current vhost
             checkMessageClassNameSupported(edxlMessage, hubConfig);
+            // check message is allowed for its recipient
+            messageHandler.inhibitMessageIfNeeded(edxlMessage);
             // reject the message if no health actor is involved (as sender or recipient)
             checkHealthActorIsInvolved(edxlMessage);
             // ToDo: see how hubConfig should be made available to the Dispatcher (and remove getter
