@@ -16,14 +16,14 @@
             <v-form ref="form" action="#" @submit.prevent="">
               <v-select
                 v-model="form.clientId"
-                label="ID du système utilisé"
+                label="Se connecter en tant que"
                 :items="[...clientIds.keys()]"
                 :rules="[rules.required]"
               />
               <v-icon class="mb-4" @click="swap"> mdi-swap-vertical </v-icon>
               <v-combobox
                 v-model="form.targetId"
-                label="ID du système cible"
+                label="Échanger des messages avec"
                 :items="targetClientIds"
                 :rules="[rules.required, rules.testTargetId]"
               />
