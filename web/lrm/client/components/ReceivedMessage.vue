@@ -105,17 +105,36 @@
                 : 'mdi-magnify-minus-outline'
             }}</v-icon>
           </v-btn>
+          <v-btn
+            icon
+            variant="text"
+            size="x-small"
+            color="primary"
+            @click="expandAll"
+          >
+            <v-icon size="24">mdi-unfold-more-vertical</v-icon>
+          </v-btn>
+          <v-btn
+            icon
+            variant="text"
+            size="x-small"
+            color="primary"
+            @click="collapseAll"
+          >
+            <v-icon size="24">mdi-unfold-less-vertical</v-icon>
+          </v-btn>
         </span>
       </v-row>
 
       <json-viewer
         v-if="!dense"
+        :key="jsonViewerKey"
         :value="
           showFullMessage
             ? body
             : body.content[0].jsonContent.embeddedJsonContent.message
         "
-        :expand-depth="jsonDepth"
+        :expand-depth="jsonDepthLocal"
         :copyable="{ copyText: 'Copier', copiedText: 'Copié !', timeout: 1000 }"
         expanded
         theme="json-theme"
@@ -245,6 +264,19 @@ const sendAck = (refused = false) => {
   } catch (error) {
     consola.error("Erreur lors de l'envoi de l'acquittement", error);
   }
+};
+
+const jsonViewerKey = ref(0);
+const jsonDepthLocal = ref(props.jsonDepth);
+
+const expandAll = () => {
+  jsonDepthLocal.value = 99;
+  jsonViewerKey.value++;
+};
+
+const collapseAll = () => {
+  jsonDepthLocal.value = 1;
+  jsonViewerKey.value++;
 };
 
 //on mounted, send ack if autoAckConfig is enabled
