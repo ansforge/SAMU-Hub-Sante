@@ -75,6 +75,7 @@ dependencies {
     implementation "com.univocity:univocity-parsers:${libs.versions.univocityParsers.get()}"
     implementation "org.codehaus.groovy:groovy-json:${libs.versions.groovyJson.get()}"
     implementation "org.json:json:${libs.versions.orgJson.get()}"
+    implementation "org.apache.commons:commons-csv:${libs.versions.apacheCommonsCsv.get()}"
 
     // ===== Lombok =====
     compileOnly 'org.projectlombok:lombok'

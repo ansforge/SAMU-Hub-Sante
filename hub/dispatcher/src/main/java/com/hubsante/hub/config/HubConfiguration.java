@@ -26,9 +26,13 @@ import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.annotation.PostConstruct;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.*;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -38,9 +42,11 @@ import org.springframework.web.reactive.function.client.WebClient;
 @Configuration
 public class HubConfiguration {
 
-    private static final int ROW_LENGTH = 9;
+    private static final int ROW_LENGTH = 11;
     private static final String DATA_DIVIDER = ",";
     private static final String COLUMN_DIVIDER = ";";
+    private static final String CLIENT_ID_HEADER = "client_id";
+    private static final String INHIBITED_USE_CASES_HEADER = "inhibited_use_cases";
 
     @Value("${client.preferences.file}")
     private File configFile;
@@ -60,6 +66,7 @@ public class HubConfiguration {
     private HashMap<String, Boolean> directCisuPreferences = new HashMap<>();
     private HashMap<String, String> clientsEditorMap = new HashMap<>();
     private Map<String, Map<String, String>> clientsPerimeterAndVersions = new HashMap<>();
+    private Map<String, List<String>> clientsInhibitedMessages = new HashMap<>();
     private List<String> supportedMessages;
 
     @PostConstruct
@@ -100,6 +107,7 @@ public class HubConfiguration {
             CsvParser parser = new CsvParser(parserSettings);
             parser.parse(new BufferedReader(new FileReader(configFile, StandardCharsets.UTF_8)));
             clientsPerimeterAndVersions = loadClientsPerimetersAndVersions();
+            clientsInhibitedMessages = loadClientsInhibitedMessages();
             supportedMessages = loadSupportedMessages(vhost);
         } catch (Exception e) {
             throw new Exception("Could not read config file " + configFile.getAbsolutePath(), e);
@@ -187,6 +195,44 @@ public class HubConfiguration {
         return supportedMessages;
     }
 
+    private Map<String, List<String>> loadClientsInhibitedMessages() throws IOException {
+        Map<String, List<String>> result = new HashMap<>();
+
+        try (Reader reader = Files.newBufferedReader(configFile.toPath());
+                CSVParser parser =
+                        CSVFormat.DEFAULT
+                                .builder()
+                                .setDelimiter(';')
+                                .setHeader()
+                                .setSkipHeaderRecord(true)
+                                .setTrim(true)
+                                .build()
+                                .parse(reader)) {
+            boolean hasUseCasesColumn =
+                    parser.getHeaderMap().containsKey(INHIBITED_USE_CASES_HEADER);
+
+            for (CSVRecord record : parser) {
+
+                String clientId = record.get(CLIENT_ID_HEADER);
+                List<String> useCases;
+
+                if (hasUseCasesColumn) {
+                    useCases =
+                            Arrays.stream(record.get(INHIBITED_USE_CASES_HEADER).split(","))
+                                    .map(String::trim)
+                                    .filter(s -> !s.isEmpty())
+                                    .toList();
+                } else {
+                    useCases = List.of();
+                }
+
+                result.put(clientId, useCases);
+            }
+        }
+
+        return Collections.unmodifiableMap(result);
+    }
+
     public List<String> getSupportedMessages() {
         return supportedMessages;
     }
@@ -201,6 +247,10 @@ public class HubConfiguration {
 
     public HashMap<String, String> getClientsEditorMap() {
         return clientsEditorMap;
+    }
+
+    public Map<String, List<String>> getClientsInhibitedMessages() {
+        return clientsInhibitedMessages;
     }
 
     public long getDefaultTTL() {

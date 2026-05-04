@@ -33,6 +33,7 @@ import com.hubsante.hub.config.StructuredLogger;
 import com.hubsante.hub.exception.*;
 import com.hubsante.hub.utils.ConversionRulesCommand;
 import com.hubsante.hub.utils.ConversionUtils;
+import com.hubsante.hub.utils.EdxlUtils;
 import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.Validator;
 import com.hubsante.model.builders.ErrorWrapperBuilder;
@@ -596,6 +597,14 @@ public class MessageHandler {
                         distributionId));
 
         return fwdMessage;
+    }
+
+    protected void inhibitMessageIfNeeded(EdxlMessage edxlMessage) {
+        checkMessageNotInhibited(
+                getRecipientID(edxlMessage),
+                EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage()),
+                hubConfig.getClientsInhibitedMessages(),
+                edxlMessage.getDistributionID());
     }
 
     private void logMessage(Message message, EdxlMessage edxlMessage, String receivedEdxl) {

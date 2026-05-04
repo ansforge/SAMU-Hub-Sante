@@ -8,6 +8,7 @@ groovyJson = "3.0.9"
 orgJson = "20231013"
 googleJavaFormat = "1.29.0"
 embedMongo = "4.24.0"
+apacheCommonsCsv = "1.14.1"
 
 [plugins]
 spring-boot = { id = "org.springframework.boot", version.ref = "springBoot" }
