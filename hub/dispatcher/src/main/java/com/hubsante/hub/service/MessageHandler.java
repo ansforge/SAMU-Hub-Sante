@@ -81,8 +81,6 @@ public class MessageHandler {
     private final ConversionHandler conversionHandler;
     private static final StructuredLogger structuredLog = new StructuredLogger(log);
 
-    private static final boolean DEFAULT_USE_XML_PREFERENCE = false;
-
     public MessageHandler(
             RabbitTemplate rabbitTemplate,
             EdxlHandler edxlHandler,
@@ -202,11 +200,7 @@ public class MessageHandler {
             String routingKey = infoQueueName;
 
             Message errorAmqpMessage;
-            if (convertToXML(
-                    sender,
-                    hubConfig
-                            .getUseXmlPreferences()
-                            .getOrDefault(sender, DEFAULT_USE_XML_PREFERENCE))) {
+            if (convertToXML(sender, hubConfig.getUseXmlPreferences().get(sender))) {
                 errorAmqpMessage =
                         new Message(
                                 edxlHandler.serializeXmlEDXL(errorEdxlMessage).getBytes(),
@@ -504,11 +498,7 @@ public class MessageHandler {
         String messageType = getUseCaseFromMessage(edxlMessage.getFirstContentMessage());
 
         try {
-            if (convertToXML(
-                    recipientId,
-                    hubConfig
-                            .getUseXmlPreferences()
-                            .getOrDefault(recipientId, DEFAULT_USE_XML_PREFERENCE))) {
+            if (convertToXML(recipientId, hubConfig.getUseXmlPreferences().get(recipientId))) {
                 edxlString = edxlHandler.serializeXmlEDXL(edxlMessage);
                 fwdAmqpProperties.setContentType(MessageProperties.CONTENT_TYPE_XML);
             } else {

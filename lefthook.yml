@@ -9,7 +9,3 @@ pre-commit:
       root: "hub/dispatcher/"
       run: ./gradlew spotlessApply
       stage_fixed: true
-    dispatcher-license-format:
-      root: "hub/dispatcher/"
-      run: "./gradlew licenseFormat"
-      stage_fixed: true

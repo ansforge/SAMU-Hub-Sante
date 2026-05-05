@@ -47,9 +47,6 @@ public class MessageUtils {
     private static final StructuredLogger structuredLog = new StructuredLogger(log);
 
     static final String HEALTH_PREFIX = "fr.health";
-    private static final String CISU_LRM_USER = "fr.cisu.sdisY";
-
-    private static final String SDISZ_LRM_USER = "fr.fire.nexsis.sdisZ";
 
     public static String getSenderFromRoutingKey(Message message) {
         String receivedRoutingKey = message.getMessageProperties().getReceivedRoutingKey();
@@ -204,14 +201,15 @@ public class MessageUtils {
     }
 
     public static boolean convertToXML(String recipientId, Boolean useXML) {
-        // sending message to outer hubex is always XML
-        if (!(recipientId.startsWith(HEALTH_PREFIX)
-                || recipientId.equals(CISU_LRM_USER)
-                || recipientId.equals(SDISZ_LRM_USER))) {
+        if (useXML != null) {
+            return useXML;
+        }
+        // Handle cross hubex communication with NexSIS
+        if (recipientId.matches("^fr\\.fire.*")) {
             return true;
         }
-        // sending message to health clients is based on client preference (default to JSON)
-        return useXML != null && useXML;
+        // Default to JSON
+        return false;
     }
 
     public static boolean isJSON(Message message) {

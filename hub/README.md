@@ -86,11 +86,8 @@ To format it, run the following command in the `hub/dispatcher` folder:
 
 ### Format license headers
 
-The license headers are managed using the [Gradle License Plugin](https://github.com/hierynomus/license-gradle-plugin).
-To format it, run the following command in the `hub/dispatcher` folder:
-```bash
-./gradlew licenseFormat
-```
+The license headers are managed by Spotless (configured in [./dispatcher/gradle/spotless.gradle](./dispatcher/gradle/spotless.gradle))
+They are applied when running `./gradlew spotlessApply`.
 
 ### Message Integrity Testing
 
