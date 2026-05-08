@@ -195,7 +195,7 @@ var tns = function () {
 	Object.keys || (Object.keys = function (t) {
 		var e = [];
 		for (var n in t)
-			Object.prototype.hasOwnProperty.call(t, n) && e.push(n);
+			Object.hasOwn(t, n) && e.push(n);
 		return e
 	}
 	),
@@ -349,7 +349,7 @@ var tns = function () {
 			}
 		}
 		)),
-			!(t.container.children.length < 1)) {
+			t.container.children.length >= 1) {
 			var it = t.responsive
 				, at = t.nested
 				, rt = "carousel" === t.mode;
@@ -638,10 +638,10 @@ var tns = function () {
 			}
 				: function () {
 					if (ge < he)
-						for (; ye + wt <= he;)
+						while (ye + wt <= he)
 							he -= wt;
 					else if (he < ye)
-						for (; he <= ge - wt;)
+						while (he <= ge - wt)
 							he += wt
 				}
 				: function () {
@@ -1469,8 +1469,7 @@ var tns = function () {
 			if (rt || we) {
 				if (Te.emit("transitionEnd", ia(t)),
 					!rt && 0 < re.length)
-					for (var e = 0; e < re.length; e++) {
-						var n = re[e];
+					for (var n of re) {
 						n.style.left = "",
 							_ && J && (n.style[_] = "",
 								n.style[J] = ""),
