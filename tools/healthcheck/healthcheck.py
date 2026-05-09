@@ -41,7 +41,6 @@ logging.basicConfig(level=logging.INFO)
 METRICS_ENDPOINT = "/metrics"
 HEALTH_EXTERNAL_ENDPOINT = "/health"
 HEALTH_INTERNAL_ENDPOINT = "/internal/health"
-DEFAULT_FLASK_HOST = "0.0.0.0"
 DEFAULT_FLASK_PORT = 8080
 
 
@@ -51,10 +50,10 @@ def compute_globale_status(custom_checkers):
 
     with ThreadPoolExecutor() as executor:
         futures = [
-            (checker, executor.submit(checker.check_wrapper))
+            executor.submit(checker.check_wrapper)
             for checker in custom_checkers
         ]
-        for _, future in futures:
+        for future in futures:
             health_statuses = future.result()
             for component, status in health_statuses.items():
                 components[component] = status
@@ -92,4 +91,4 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--port", type=int, default=DEFAULT_FLASK_PORT)
     args = parser.parse_args()
-    app.run(host=DEFAULT_FLASK_HOST, port=args.port)
+    app.run(host="0.0.0.0", port=args.port)

@@ -121,7 +121,8 @@ export default {
         const authStore = useAuthStore();
         await authStore.login(this.form);
         navigateTo(target);
-      } catch {
+      } catch (error) {
+        console.error('Login failed:', error);
         alert.value = {
           show: true,
           type: 'error',

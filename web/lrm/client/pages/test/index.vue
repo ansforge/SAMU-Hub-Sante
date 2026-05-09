@@ -126,7 +126,8 @@ async function reloadTestCases() {
     await fetchGeneratedTestCases();
     await loadTestCases();
     loadingTestCases.value = false;
-  } catch {
+  } catch (err) {
+    console.error(err);
     loadingTestCases.value = false;
   }
 }

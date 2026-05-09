@@ -292,7 +292,8 @@ export default {
       try {
         this.ajv.validate(this.currentMessageType.schema.title, json);
         return this.ajv.errors;
-      } catch {
+      } catch (error) {
+        console.error('Error during message validation:', error);
         return [
           {
             instancePath: '',
