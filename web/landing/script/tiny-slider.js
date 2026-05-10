@@ -32,7 +32,7 @@ var tns = function () {
 		if (i)
 			try {
 				t.setItem(e, n)
-			} catch (t) { }
+			} catch (t) { console.warn("tiny-slider: failed to setItem in storage", t) }
 		return n
 	}
 	function u() {
@@ -152,7 +152,7 @@ var tns = function () {
 			}
 		});
 		window.addEventListener("test", null, S)
-	} catch (t) { }
+	} catch (t) { console.warn("tns: passive event listener detection failed:", t) }
 	var H = !!B && {
 		passive: !0
 	};
@@ -276,7 +276,8 @@ var tns = function () {
 					x.removeItem(H)) : B = !1,
 					B || (x = {})
 			} catch (S) {
-				B = !1
+				B = !1;
+				console.warn("tns: localStorage is not available:", S)
 			}
 			B && (x.tnsApp && x.tnsApp !== S && ["tC", "tPL", "tMQ", "tTf", "t3D", "tTDu", "tTDe", "tADu", "tADe", "tTE", "tAE"].forEach((function (t) {
 				x.removeItem(t)
@@ -299,7 +300,7 @@ var tns = function () {
 						a = r.replace(o, "");
 						break
 					}
-			} catch (t) { }
+			} catch (t) { console.warn("tns: CSS calc detection failed:", t) }
 			return e.fake ? c(e, n) : i.remove(),
 				a
 		}(), B), G = x.tPL ? r(x.tPL) : o(x, "tPL", function () {
@@ -1616,9 +1617,10 @@ var tns = function () {
 		function Zi(t) {
 			if (Ln) {
 				var n = Xi(t);
-				An.x = n.clientX,
-					An.y = n.clientY,
-					rt ? En || (En = e((function () {
+				An.x = n.clientX;
+				An.y = n.clientY;
+				if (rt) {
+					En || (En = e((function () {
 						!function t(n) {
 							if (Ce) {
 								if (i(En),
@@ -1631,7 +1633,12 @@ var tns = function () {
 									!Ke && Ki(n) && (Ke = !0);
 									try {
 										n.type && Te.emit(Ki(n) ? "touchMove" : "dragMove", ia(n))
-									} catch (t) { }
+									} catch (t) {
+										// Errors from event emission during touch/drag move are non-critical
+										if (typeof console !== "undefined" && console.warn) {
+											console.warn("Error during touch/drag move event emission:", t);
+										}
+									}
 									var a = Tn
 										, r = Bn(An, Nn);
 									if (!ht || Dt || Ot)
@@ -1646,9 +1653,12 @@ var tns = function () {
 								Ln = !1
 						}(t)
 					}
-					))) : ("?" === Ce && (Ce = Ui()),
-						Ce && (Ke = !0)),
-					("boolean" != typeof t.cancelable || t.cancelable) && Ke && t.preventDefault()
+					)));
+				} else {
+					if ("?" === Ce) { Ce = Ui(); }
+					if (Ce) { Ke = !0; }
+				}
+				if (("boolean" != typeof t.cancelable || t.cancelable) && Ke) { t.preventDefault(); }
 			}
 		}
 		function $i(n) {
