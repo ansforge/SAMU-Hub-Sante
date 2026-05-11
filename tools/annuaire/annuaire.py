@@ -30,7 +30,7 @@ def load_clients(path: str) -> list[dict]:
         raise
     except Exception as e:
         logging.error(f"Failed to load clients from {path}: {e}")
-        raise
+        raise RuntimeError(f"Failed to load clients from {path}: {e}") from e
 
 
 def build_client_entry(c: dict) -> dict:

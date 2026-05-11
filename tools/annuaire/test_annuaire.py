@@ -76,6 +76,15 @@ class AnnuaireTestCase(unittest.TestCase):
                 load_clients("/nonexistent/path/values.yaml")
         self.assertTrue(any("not found" in line for line in cm.output))
 
+    def test_load_clients_invalid_structure(self):
+        path = os.path.join(self.tempdir.name, "bad.yaml")
+        with open(path, "w") as f:
+            f.write("wrong-key:\n  clients: []\n")
+        with self.assertLogs(level="ERROR") as cm:
+            with self.assertRaises(RuntimeError):
+                load_clients(path)
+        self.assertTrue(any("Failed to load" in line for line in cm.output))
+
 
 if __name__ == "__main__":
     unittest.main()
