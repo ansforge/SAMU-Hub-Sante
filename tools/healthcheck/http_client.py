@@ -11,7 +11,8 @@ class TimeoutSession(requests.Session):
         retry = Retry(
             total=1,
             connect=1,
-            read=0,
+            read=1,
+            other=1,
             status=0,
             allowed_methods={"GET"},
             backoff_factor=0,
