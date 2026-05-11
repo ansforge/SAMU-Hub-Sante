@@ -122,7 +122,8 @@ class AnnuaireTestCase(unittest.TestCase):
         self.assertIn(CSV_NOT_FOUND_MSG, cm.output[0])
 
     def test_api(self):
-        with mock.patch(FOLDER_NAME_PATCH_PATH, self.tempdir.name):
+        path = self._write_temp_yaml(YAML_FIXTURE)
+        with mock.patch(VALUES_DIR_PATCH_PATH, self.tempdir.name):
             app = annuaire.create_app()
             client = app.test_client()
             response = client.get(API_ENDPOINT)
@@ -178,7 +179,8 @@ class AnnuaireTestCase(unittest.TestCase):
                 self.assertEqual(set(row.keys()), set(HEADERS_COLUMNS_TO_KEEP))
 
     def test_healthcheck(self):
-        with mock.patch(FOLDER_NAME_PATCH_PATH, self.tempdir.name):
+        path = self._write_temp_yaml(YAML_FIXTURE)
+        with mock.patch(VALUES_DIR_PATCH_PATH, self.tempdir.name):
             app = annuaire.create_app()
             client = app.test_client()
             response = client.get(HEALTH_ENDPOINT)
