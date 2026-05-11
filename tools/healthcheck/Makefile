@@ -32,4 +32,5 @@ run-local:
 	RABBITMQ_MONITORING_USERNAME=admin \
 	RABBITMQ_MONITORING_PASSWORD=admin \
 	DISPATCHER_CONFIG_FILE_PATH=dispatchers_config_file_path_example.txt \
+	MONGODB_URI=mongodb://host.docker.internal:27017 \
 	uv run healthcheck.py --port 8085
