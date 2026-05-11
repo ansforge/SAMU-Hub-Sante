@@ -1,6 +1,5 @@
 import logging
 from flask import Flask, jsonify
-import csv
 import os
 import argparse
 import yaml
@@ -12,10 +11,8 @@ VALUES_FILE_PATH = os.environ.get(
     "VALUES_FILE_PATH", "/config/rabbitmq.clients-configuration.csv"
 )
 
-CSV_DATA_KEY = "CSV_DATA"
 API_ENDPOINT = "/annuaire/api"
 HEALTH_ENDPOINT = "/annuaire/health"
-CSV_NOT_FOUND_MSG = "Fichier CSV introuvable"
 
 VALUES_DIR = "/config/topology"
 VALUES_FILENAME = "values.yaml"
@@ -27,16 +24,6 @@ TOPOLOGY_TO_LEGACY_KEY = {
     "cisuPerimeterVersions": "P: 15-nexsis",
     "gpsPerimeterVersions":  "P: 15-gps",
 }
-
-HEADERS_COLUMNS_TO_KEEP = [
-    "client_id",
-    "editor",
-    "P: 15-15",
-    "P: 15-smur",
-    "P: 15-nexsis",
-    "P: 15-gps",
-    "directCISU",
-]
 
 
 def load_clients(path: str) -> list[dict]:
@@ -64,30 +51,6 @@ def create_app():
     clients = load_clients(path)
     app.config[DATA_KEY] = [build_client_entry(c) for c in clients]
     return app
-
-
-def parse_csv(filename):
-    path = VALUES_FILE_PATH
-    if not os.path.exists(path):
-        logging.error(f"Fichier CSV introuvable : {path}")
-        raise FileNotFoundError(f"{CSV_NOT_FOUND_MSG} : {filename}")
-    try:
-        with open(path, newline="", encoding="utf-8") as csvfile:
-            reader = csv.DictReader(csvfile, delimiter=";")
-            return list(reader)
-    except Exception as e:
-        logging.error(f"Erreur lors de la lecture du fichier CSV '{filename}': {e}")
-        raise RuntimeError(f"Erreur lors de la lecture du CSV: {e}")
-
-
-def select_columns(data: list[dict]) -> list[dict]:
-    data_updated = []
-    for row in data:
-        row_updated = {
-            key: value for key, value in row.items() if key in HEADERS_COLUMNS_TO_KEEP
-        }
-        data_updated.append(row_updated)
-    return data_updated
 
 
 def register_routes(app):
