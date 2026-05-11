@@ -60,12 +60,9 @@ def build_client_entry(c: dict) -> dict:
 def create_app():
     app = Flask(__name__)
     register_routes(app)
-    csv_data = parse_csv(VALUES_FILE_PATH)
-    if csv_data is None:
-        raise RuntimeError(
-            "Erreur : impossible de charger le fichier CSV au démarrage."
-        )
-    app.config[CSV_DATA_KEY] = select_columns(csv_data)
+    path = os.path.join(VALUES_DIR, VALUES_FILENAME)
+    clients = load_clients(path)
+    app.config[DATA_KEY] = [build_client_entry(c) for c in clients]
     return app
 
 
@@ -96,7 +93,7 @@ def select_columns(data: list[dict]) -> list[dict]:
 def register_routes(app):
     @app.get(API_ENDPOINT)
     def get_json():
-        return jsonify(app.config[CSV_DATA_KEY])
+        return jsonify(app.config[DATA_KEY])
 
     @app.get(HEALTH_ENDPOINT)
     def health_check():
