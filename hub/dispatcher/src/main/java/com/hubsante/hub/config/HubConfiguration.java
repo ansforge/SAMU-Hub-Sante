@@ -159,7 +159,7 @@ public class HubConfiguration {
         Map<String, String> clientPerimeterDefinition =
                 clientsPerimeterAndVersions.getOrDefault(clientId, null);
         if (clientPerimeterDefinition == null) {
-            log.debug(
+            log.warn(
                     "ClientId was not found in clientsPerimeterAndVersions, or the variable is not initialized.");
             return null;
         }

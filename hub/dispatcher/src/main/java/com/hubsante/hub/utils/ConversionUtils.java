@@ -68,7 +68,7 @@ public class ConversionUtils {
         String senderId = edxlMessage.getSenderID();
         String sourceVhost = hubConfig.getVhost(); // ex '15-15_v1.5'
         String sourcePerimeter = trimVersionSuffix(sourceVhost); // ex '15-15'
-        String[] targetVersionsOnSourcePerimeter = new String[] {};
+        String[] targetVersionsOnTargetPerimeter = new String[] {};
 
         // CISU conversion case - recipient and sender are on different vhosts
         boolean isNexsisRecipient =
@@ -78,20 +78,16 @@ public class ConversionUtils {
         }
         boolean isCisuSender = !senderId.startsWith(FR_HEALTH_PREFIX);
         boolean isDirectCisu = isDirectCisuForHealthActor(hubConfig, edxlMessage);
-        if (isCisuSender && !isDirectCisu) {
-            String perimeter15_15 = "15-15";
-            targetVersionsOnSourcePerimeter =
-                    hubConfig.getClientVersionsForPerimeter(
-                            recipientId, perimeter15_15); // ex ['1.5, 2.0']
-            return formatVersionToVhosts(targetVersionsOnSourcePerimeter, perimeter15_15);
-        }
 
-        targetVersionsOnSourcePerimeter =
+        String targetPerimeter =
+                (isCisuSender && !isDirectCisu) ? Perimeter.HEALTH.getName() : sourcePerimeter;
+
+        targetVersionsOnTargetPerimeter =
                 hubConfig.getClientVersionsForPerimeter(
-                        recipientId, sourcePerimeter); // ex ['1.5, 2.0']
+                        recipientId, targetPerimeter); // ex ['1.5, 2.0']
         return formatVersionToVhosts(
-                targetVersionsOnSourcePerimeter,
-                sourcePerimeter); // ex ["15-15_v1.5", "15-15_v2.0"]
+                targetVersionsOnTargetPerimeter,
+                targetPerimeter); // ex ["15-15_v1.5", "15-15_v2.0"]
     }
 
     public static String[] formatVersionToVhosts(String[] versions, String sourcePerimeter) {
