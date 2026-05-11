@@ -1,7 +1,7 @@
 import unittest
 import tempfile
+import shutil
 import os
-import yaml
 import annuaire
 from unittest import mock
 from annuaire import (
@@ -11,45 +11,19 @@ from annuaire import (
     HEALTH_ENDPOINT,
 )
 
-YAML_FIXTURE = {
-    "hubsante-topology": {
-        "clients": [
-            {
-                "client_id": "fr.health.samu750",
-                "editor": "Editeur A",
-                "lrmPerimeterVersions": ["2.1"],
-                "cisuPerimeterVersions": ["1.9"],
-                "directCISU": False,
-            },
-            {
-                "client_id": "fr.health.smur",
-                "editor": "Editeur B",
-                "smurPerimeterVersions": ["1.7"],
-                "directCISU": False,
-            },
-        ]
-    }
-}
-
-FOLDER_NAME_PATCH_PATH = "annuaire.VALUES_DIR"
+FIXTURE_PATH = os.path.join(os.path.dirname(__file__), "fixtures", "topology.yaml")
 VALUES_DIR_PATCH_PATH = "annuaire.VALUES_DIR"
 
 
 class AnnuaireTestCase(unittest.TestCase):
     def setUp(self):
         self.tempdir = tempfile.TemporaryDirectory()
+        shutil.copy(FIXTURE_PATH, os.path.join(self.tempdir.name, "values.yaml"))
 
     def tearDown(self):
         self.tempdir.cleanup()
 
-    def _write_temp_yaml(self, data):
-        path = os.path.join(self.tempdir.name, "values.yaml")
-        with open(path, "w") as f:
-            yaml.dump(data, f)
-        return path
-
     def test_api(self):
-        path = self._write_temp_yaml(YAML_FIXTURE)
         with mock.patch(VALUES_DIR_PATCH_PATH, self.tempdir.name):
             app = annuaire.create_app()
             client = app.test_client()
@@ -58,7 +32,6 @@ class AnnuaireTestCase(unittest.TestCase):
             self.assertIsInstance(response.json, list)
 
     def test_healthcheck(self):
-        path = self._write_temp_yaml(YAML_FIXTURE)
         with mock.patch(VALUES_DIR_PATCH_PATH, self.tempdir.name):
             app = annuaire.create_app()
             client = app.test_client()
@@ -69,7 +42,7 @@ class AnnuaireTestCase(unittest.TestCase):
             )
 
     def test_load_clients(self):
-        path = self._write_temp_yaml(YAML_FIXTURE)
+        path = os.path.join(self.tempdir.name, "values.yaml")
         clients = load_clients(path)
         self.assertEqual(len(clients), 2)
         self.assertEqual(clients[0]["client_id"], "fr.health.samu750")
