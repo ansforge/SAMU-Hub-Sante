@@ -2,6 +2,7 @@ import logging
 from flask import Flask, jsonify
 import csv
 import os
+import yaml
 
 ENVIRONMENT = os.environ.get("ENVIRONMENT")
 
@@ -12,6 +13,17 @@ API_ENDPOINT = "/annuaire/api"
 HEALTH_ENDPOINT = "/annuaire/health"
 CSV_NOT_FOUND_MSG = "Fichier CSV introuvable"
 
+VALUES_DIR = "/config/topology"
+VALUES_FILENAME = "values.yaml"
+DATA_KEY = "DATA"
+
+TOPOLOGY_TO_LEGACY_KEY = {
+    "lrmPerimeterVersions":  "P: 15-15",
+    "smurPerimeterVersions": "P: 15-smur",
+    "cisuPerimeterVersions": "P: 15-nexsis",
+    "gpsPerimeterVersions":  "P: 15-gps",
+}
+
 HEADERS_COLUMNS_TO_KEEP = [
     "client_id",
     "editor",
@@ -21,6 +33,24 @@ HEADERS_COLUMNS_TO_KEEP = [
     "P: 15-gps",
     "directCISU",
 ]
+
+
+def load_clients(path: str) -> list[dict]:
+    with open(path) as f:
+        data = yaml.safe_load(f)
+    return data["hubsante-topology"]["clients"]
+
+
+def build_client_entry(c: dict) -> dict:
+    entry = {
+        "client_id":  c["client_id"],
+        "editor":     c.get("editor", ""),
+        "directCISU": c.get("directCISU", False),
+    }
+    for topo_key, legacy_key in TOPOLOGY_TO_LEGACY_KEY.items():
+        if topo_key in c:
+            entry[legacy_key] = c[topo_key]
+    return entry
 
 
 def create_app():
