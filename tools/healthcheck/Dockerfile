@@ -1,45 +1,41 @@
-# Use an official Python runtime as a parent image
-FROM python:3.14-alpine
+# Build stage: the -dev image includes tools needed to install packages.
+FROM dhi.io/python:3.14-alpine3.23-dev AS builder
 
 # Set environment variables
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    UV_CACHE_DIR=/opt/uv-cache \
-    UV_LINK_MODE=copy
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 
 # Install system dependencies and uv
-RUN apk add --no-cache \
-    curl \
-    ca-certificates \
-    && curl -LsSf https://astral.sh/uv/install.sh | sh \
-    && mv /root/.local/bin/uv /usr/local/bin/uv \
-    && mv /root/.local/bin/uvx /usr/local/bin/uvx
+RUN pip install --quiet --root-user-action=ignore uv
+# Use copy mode since the cache and build filesystem are on different volumes.
+ENV UV_LINK_MODE=copy
 
-# Create a non-root user and group
-RUN addgroup -g 1000 healthcheck && adduser -D -u 1000 -G healthcheck healthcheck
-
-# Set the working directory in the container
 WORKDIR /app
 
-# Create UV cache directory with proper permissions and set ownership of working directory
-RUN mkdir -p $UV_CACHE_DIR && \
-    chown -R healthcheck:healthcheck $UV_CACHE_DIR && \
-    chown -R healthcheck:healthcheck /app
+# Install dependencies into a virtual environment using cache and bind mounts
+# so neither uv nor the lock files need to be copied into the image.
+RUN --mount=type=cache,target=/root/.cache/uv \
+    --mount=type=bind,source=uv.lock,target=uv.lock \
+    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+    uv sync --frozen --no-dev --no-install-project
 
-# Switch to the non-root user
-USER healthcheck
+# Runtime stage: minimal DHI image with no shell or package manager,
+# already runs as the nonroot user.
+FROM dhi.io/python:3.14-alpine3.23
 
-# Copy dependency files first for better layer caching
-COPY --chown=healthcheck:healthcheck pyproject.toml uv.lock ./
+# Prevent Python from buffering stdout/stderr so logs appear immediately.
+ENV PYTHONUNBUFFERED=1
+# Activate the virtual environment copied from the build stage.
+ENV PATH="/app/.venv/bin:$PATH"
 
-# Install dependencies
-RUN uv sync --frozen --no-dev
+WORKDIR /app
 
-# Copy the current directory contents into the container at /app
-COPY --chown=healthcheck:healthcheck . .
+# Copy the pre-built virtual environment and application source code.
+COPY --from=builder /app/.venv /app/.venv
+COPY . .
 
 # Make port 8080 available to the world outside this container
 EXPOSE 8080
 
 # Use Gunicorn to serve the Flask app
-CMD ["uv", "run", "gunicorn", "-w", "2", "-b", "0.0.0.0:8080", "healthcheck:app", "--timeout", "300", "--log-level=debug"]
+CMD ["gunicorn", "-w", "2", "-b", "0.0.0.0:8080", "healthcheck:app", "--timeout", "300", "--log-level=debug"]
