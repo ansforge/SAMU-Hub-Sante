@@ -70,6 +70,12 @@ class AnnuaireTestCase(unittest.TestCase):
         entry = build_client_entry(client)
         self.assertNotIn("P: 15-smur", entry)
 
+    def test_load_clients_file_not_found(self):
+        with self.assertLogs(level="ERROR") as cm:
+            with self.assertRaises(FileNotFoundError):
+                load_clients("/nonexistent/path/values.yaml")
+        self.assertTrue(any("not found" in line for line in cm.output))
+
 
 if __name__ == "__main__":
     unittest.main()

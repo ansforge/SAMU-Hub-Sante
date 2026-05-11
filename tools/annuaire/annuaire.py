@@ -21,9 +21,16 @@ TOPOLOGY_TO_LEGACY_KEY = {
 
 
 def load_clients(path: str) -> list[dict]:
-    with open(path) as f:
-        data = yaml.safe_load(f)
-    return data["hubsante-topology"]["clients"]
+    try:
+        with open(path) as f:
+            data = yaml.safe_load(f)
+        return data["hubsante-topology"]["clients"]
+    except FileNotFoundError:
+        logging.error(f"Values file not found: {path}")
+        raise
+    except Exception as e:
+        logging.error(f"Failed to load clients from {path}: {e}")
+        raise
 
 
 def build_client_entry(c: dict) -> dict:
