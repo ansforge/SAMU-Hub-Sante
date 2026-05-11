@@ -1,0 +1,11 @@
+hubsante-topology:
+  clients:
+    - client_id: fr.health.samu750
+      editor: Editeur A
+      lrmPerimeterVersions: ["2.1"]
+      cisuPerimeterVersions: ["1.9"]
+      directCISU: false
+    - client_id: fr.health.smur
+      editor: Editeur B
+      smurPerimeterVersions: ["1.7"]
+      directCISU: false
