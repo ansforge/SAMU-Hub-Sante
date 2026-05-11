@@ -19,10 +19,10 @@ VALUES_FILENAME = "values.yaml"
 DATA_KEY = "DATA"
 
 TOPOLOGY_TO_LEGACY_KEY = {
-    "lrmPerimeterVersions":  "P: 15-15",
+    "lrmPerimeterVersions": "P: 15-15",
     "smurPerimeterVersions": "P: 15-smur",
     "cisuPerimeterVersions": "P: 15-nexsis",
-    "gpsPerimeterVersions":  "P: 15-gps",
+    "gpsPerimeterVersions": "P: 15-gps",
 }
 
 
@@ -34,8 +34,8 @@ def load_clients(path: str) -> list[dict]:
 
 def build_client_entry(c: dict) -> dict:
     entry = {
-        "client_id":  c["client_id"],
-        "editor":     c.get("editor", ""),
+        "client_id": c["client_id"],
+        "editor": c.get("editor", ""),
         "directCISU": c.get("directCISU", False),
     }
     for topo_key, legacy_key in TOPOLOGY_TO_LEGACY_KEY.items():
