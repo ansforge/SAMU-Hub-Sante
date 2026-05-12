@@ -41,23 +41,23 @@ def load_clients(path: str) -> list[dict]:
     except FileNotFoundError:
         logging.error(f"Values file not found: {path}")
         raise
-    except RuntimeError:
-        logging.error(f"Failed to load clients from {path}: invalid structure")
+    except RuntimeError as e:
+        logging.error(f"Failed to load clients from {path}: {e}")
         raise
     except Exception as e:
         logging.error(f"Failed to load clients from {path}: {e}")
         raise RuntimeError(f"Failed to load clients from {path}: {e}") from e
 
 
-def build_client_entry(c: dict) -> dict:
+def build_client_entry(client: dict) -> dict:
     entry = {
-        "client_id": c["client_id"],
-        "editor": c.get("editor", ""),
-        "directCISU": c.get("directCISU", False),
+        "client_id": client["client_id"],
+        "editor":    client.get("editor", ""),
+        "directCISU": client.get("directCISU", False),
     }
     for topo_key, legacy_key in TOPOLOGY_TO_LEGACY_KEY.items():
-        if topo_key in c:
-            entry[legacy_key] = c[topo_key]
+        if topo_key in client:
+            entry[legacy_key] = client[topo_key]
     return entry
 
 
