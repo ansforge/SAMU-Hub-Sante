@@ -61,14 +61,6 @@ def build_client_entry(client: dict) -> dict:
     return entry
 
 
-def create_app():
-    app = Flask(__name__)
-    register_routes(app)
-    clients = load_clients(VALUES_PATH)
-    app.config[CLIENTS_DATA_KEY] = [build_client_entry(c) for c in clients]
-    return app
-
-
 def register_routes(app):
     @app.get(API_ENDPOINT)
     def get_json():
@@ -77,6 +69,14 @@ def register_routes(app):
     @app.get(HEALTH_ENDPOINT)
     def health_check():
         return jsonify({"status": "UP", "service": "SAMU Hub Annuaire"}), 200
+
+
+def create_app():
+    app = Flask(__name__)
+    register_routes(app)
+    clients = load_clients(VALUES_PATH)
+    app.config[CLIENTS_DATA_KEY] = [build_client_entry(c) for c in clients]
+    return app
 
 
 if ENVIRONMENT == "production":
