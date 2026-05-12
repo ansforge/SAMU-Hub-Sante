@@ -9,47 +9,59 @@ uv venv
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 ```
 
-2. Install the package in development mode:
+2. Install dependencies:
 
 ```bash
 uv sync
 ```
 
+3. Create your local `.env` from the committed template, then adjust values if needed:
+
+```bash
+cp .env.example .env
+```
+
+The `.env` file is gitignored and only consumed by local commands (via `uv run --env-file .env`). In production the container receives env vars from the orchestration layer, so `.env` is also excluded from the Docker image via `.dockerignore`.
+
 ## Run healthcheck locally
 
-you can run:
-
-```
-make run-local
-#> RABBITMQ_HEALTH_URL=http://localhost:15672/api/health/checks/alarms \
-#> SHOVEL_STATUS_URL=http://shovel_test \
-#> ANNUAIRE_HEALTH_URL=http://annuaire_test \
-#> CONVERTER_HEALTH_URL=http://localhost:8083/health \
-#> RABBITMQ_MONITORING_USERNAME=admin \
-#> RABBITMQ_MONITORING_PASSWORD=admin \
-#> DISPATCHER_CONFIG_FILE_PATH=dispatchers_config_file_path_example.txt \
-#> uv run healthcheck.py --port 8085
+```bash
+uv run --env-file .env healthcheck.py --port 8085
 ```
 
 ## Tests
 
-To run the tests: 
+Run the tests:
 
-```
-RABBITMQ_HEALTH_URL=http://test \
-SHOVEL_STATUS_URL=http://shovel_test  \
-ANNUAIRE_HEALTH_URL=http://annuaire_test  \
-CONVERTER_HEALTH_URL=http://converter_test  \
-RABBITMQ_MONITORING_USERNAME=test  \
-RABBITMQ_MONITORING_PASSWORD=test  \
-DISPATCHER_CONFIG_FILE_PATH=dispatchers_config_file_path_example.txt  \
-uv run python -m unittest tests/*.py -v
+```bash
+uv run --env-file .env.test -m unittest tests/*.py -v
 ```
 
-To run the tests and generate a coverage report: `make test`
+Tests use placeholder URLs that only need to satisfy `config.py` validation — they are intentionally kept inline rather than in `.env` so they cannot be confused with real local infra values.
 
-To display the coverage report summary in the terminal: `make show-coverage`
+Run the tests with coverage:
 
-To generate a html report from an existing report: `uv run coverage html` & open [htmlcov/index.html](htmlcov/index.html) in a browser.
+```bash
+uv run --env-file .env.test coverage run -m unittest tests/*.py
+```
 
-Coverage doc available [here](https://coverage.readthedocs.io/en/7.8.0/)
+Display the coverage report summary in the terminal:
+
+```bash
+uv run coverage report -m
+```
+
+Generate an HTML coverage report (open [htmlcov/index.html](htmlcov/index.html) afterwards):
+
+```bash
+uv run coverage html
+```
+
+Coverage doc available [here](https://coverage.readthedocs.io/en/7.8.0/).
+
+## Lint and format
+
+```bash
+uv run ruff check --fix
+uv run ruff format
+```
