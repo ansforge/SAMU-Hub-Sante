@@ -1,7 +1,7 @@
 import logging
-from flask import Flask, jsonify
 import os
-import argparse
+
+from flask import Flask, jsonify
 import yaml
 
 DEFAULT_FLASK_HOST = "0.0.0.0"
