@@ -66,14 +66,6 @@ def build_client_entry(client: dict) -> dict:
     return entry
 
 
-def create_app():
-    app = Flask(__name__)
-    register_routes(app)
-    clients = load_clients(VALUES_PATH)
-    app.config[CLIENTS_DATA_KEY] = [build_client_entry(c) for c in clients]
-    return app
-
-
 def register_routes(app):
     @app.get(API_ENDPOINT)
     def get_json():
@@ -84,9 +76,13 @@ def register_routes(app):
         return jsonify({"status": "UP", "service": "SAMU Hub Annuaire"}), 200
 
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--port", type=int, default=DEFAULT_FLASK_PORT)
-    args = parser.parse_args()
+def create_app():
+    app = Flask(__name__)
+    register_routes(app)
+    clients = load_clients(VALUES_PATH)
+    app.config[CLIENTS_DATA_KEY] = [build_client_entry(c) for c in clients]
+    return app
+
+
+if ENVIRONMENT == "production":
     app = create_app()
-    app.run(host=DEFAULT_FLASK_HOST, port=args.port)
