@@ -1,6 +1,7 @@
 import logging
-from flask import Flask, jsonify
 import os
+
+from flask import Flask, jsonify
 import yaml
 
 ENVIRONMENT = os.environ.get("ENVIRONMENT")

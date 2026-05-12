@@ -1,9 +1,10 @@
-import unittest
-import tempfile
-import shutil
 import os
-import annuaire
+import shutil
+import tempfile
+import unittest
 from unittest import mock
+
+import annuaire
 from annuaire import (
     load_clients,
     build_client_entry,
