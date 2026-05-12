@@ -14,10 +14,15 @@ VALUES_FILE_PATH = os.environ.get(
 API_ENDPOINT = "/annuaire/api"
 HEALTH_ENDPOINT = "/annuaire/health"
 
+VALUES_DEFAULT_DIR = "/config/topology"
+VALUES_FILENAME = "values.yaml"
 VALUES_PATH = os.path.join(
-    os.environ.get("VALUES_DIR", "/config/topology"), "values.yaml"
+    os.environ.get("VALUES_DIR", VALUES_DEFAULT_DIR), VALUES_FILENAME
 )
 CLIENTS_DATA_KEY = "CLIENTS_DATA"
+
+TOPOLOGY_ROOT_KEY = "hubsante-topology"
+TOPOLOGY_CLIENTS_KEY = "clients"
 
 TOPOLOGY_TO_LEGACY_KEY = {
     "lrmPerimeterVersions": "P: 15-15",
@@ -31,11 +36,11 @@ def load_clients(path: str) -> list[dict]:
     try:
         with open(path, encoding="utf-8") as f:
             data = yaml.safe_load(f)
-        if "hubsante-topology" not in data or "clients" not in data["hubsante-topology"]:
+        if TOPOLOGY_ROOT_KEY not in data or TOPOLOGY_CLIENTS_KEY not in data[TOPOLOGY_ROOT_KEY]:
             raise RuntimeError(
-                f"Missing 'hubsante-topology.clients' key in {path}"
+                f"Missing '{TOPOLOGY_ROOT_KEY}.{TOPOLOGY_CLIENTS_KEY}' key in {path}"
             )
-        return data["hubsante-topology"]["clients"]
+        return data[TOPOLOGY_ROOT_KEY][TOPOLOGY_CLIENTS_KEY]
     except FileNotFoundError:
         logging.error(f"Values file not found: {path}")
         raise
