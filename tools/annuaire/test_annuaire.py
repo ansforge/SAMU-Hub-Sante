@@ -96,6 +96,16 @@ class AnnuaireTestCase(unittest.TestCase):
         self.assertIn("hubsante-topology.clients", str(ctx.exception))
         self.assertTrue(any("Failed to load" in line for line in cm.output))
 
+    def test_load_clients_yaml_parse_error(self):
+        path = os.path.join(self.tempdir.name, "broken.yaml")
+        with open(path, "w") as f:
+            f.write("key: [\nunot closed\n")
+        with self.assertLogs(level="ERROR") as cm:
+            with self.assertRaises(RuntimeError) as ctx:
+                load_clients(path)
+        self.assertIn("Failed to load clients from", str(ctx.exception))
+        self.assertTrue(any("Failed to load" in line for line in cm.output))
+
 
 if __name__ == "__main__":
     unittest.main()
