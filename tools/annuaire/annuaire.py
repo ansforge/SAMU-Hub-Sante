@@ -8,9 +8,10 @@ ENVIRONMENT = os.environ.get("ENVIRONMENT")
 API_ENDPOINT = "/annuaire/api"
 HEALTH_ENDPOINT = "/annuaire/health"
 
-VALUES_DIR = "/config/topology"
-VALUES_FILENAME = "values.yaml"
-DATA_KEY = "DATA"
+VALUES_PATH = os.path.join(
+    os.environ.get("VALUES_DIR", "/config/topology"), "values.yaml"
+)
+CLIENTS_DATA_KEY = "CLIENTS_DATA"
 
 TOPOLOGY_TO_LEGACY_KEY = {
     "lrmPerimeterVersions": "P: 15-15",
@@ -55,16 +56,15 @@ def build_client_entry(c: dict) -> dict:
 def create_app():
     app = Flask(__name__)
     register_routes(app)
-    path = os.path.join(VALUES_DIR, VALUES_FILENAME)
-    clients = load_clients(path)
-    app.config[DATA_KEY] = [build_client_entry(c) for c in clients]
+    clients = load_clients(VALUES_PATH)
+    app.config[CLIENTS_DATA_KEY] = [build_client_entry(c) for c in clients]
     return app
 
 
 def register_routes(app):
     @app.get(API_ENDPOINT)
     def get_json():
-        return jsonify(app.config[DATA_KEY])
+        return jsonify(app.config[CLIENTS_DATA_KEY])
 
     @app.get(HEALTH_ENDPOINT)
     def health_check():
