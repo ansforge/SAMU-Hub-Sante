@@ -70,9 +70,11 @@ class AnnuaireTestCase(unittest.TestCase):
             "client_id": "fr.health.fire",
             "editor": "NexSIS",
             "directCISU": True,
+            "cisuPerimeterVersions": ["1.9"],
         }
         entry = build_client_entry(client)
         self.assertTrue(entry["directCISU"])
+        self.assertEqual(entry["P: 15-nexsis"], ["1.9"])
 
     def test_load_clients_file_not_found(self):
         missing_path = os.path.join(self.tempdir.name, "nonexistent.yaml")
