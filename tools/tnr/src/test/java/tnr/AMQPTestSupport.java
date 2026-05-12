@@ -1,6 +1,7 @@
 package tnr;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -22,7 +23,9 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestInstance;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.rabbitmq.client.Delivery;
 
 import io.github.cdimascio.dotenv.Dotenv;
@@ -51,8 +54,14 @@ abstract class AMQPTestSupport {
 
     HttpClientWithCache httpClient = new HttpClientWithCache(dotenv.get("GITHUB_TOKEN"));
 
+    // latency metrics across all sends/receives in this test class
+    protected final TestMetrics metrics = new TestMetrics();
+
     // global message collector
-    protected final MessageCollector inbox = new MessageCollector();
+    protected final MessageCollector inbox = new MessageCollector(metrics);
+
+    private static final ObjectMapper jsonMapper = new ObjectMapper();
+    private static final XmlMapper xmlMapper = new XmlMapper();
 
     @BeforeAll
     void setUpAll() throws Exception {
@@ -98,6 +107,7 @@ abstract class AMQPTestSupport {
                 logger.warn("Could not tear down producer {}: {}", producer.getVhost(), e.getMessage());
             }
         });
+        metrics.logSummary(logger);
     }
 
     @BeforeEach
@@ -116,7 +126,25 @@ abstract class AMQPTestSupport {
 
     protected void send(String vhost, String routingKey, String message) throws Exception {
         Producer producer = getProducer(vhost);
+        String distributionId = extractDistributionId(message);
+        if (distributionId != null) {
+            metrics.recordSent(distributionId, vhost);
+        }
         producer.publish(routingKey, message.getBytes());
+    }
+
+    private String extractDistributionId(String message) {
+        try {
+            JsonNode node = jsonMapper.readTree(message);
+            JsonNode d = node.get("distributionID");
+            if (d != null) return d.asText();
+        } catch (Exception ignored) { }
+        try {
+            JsonNode node = xmlMapper.readTree(message.getBytes(StandardCharsets.UTF_8));
+            JsonNode d = node.get("distributionID");
+            if (d != null) return d.asText();
+        } catch (Exception ignored) { }
+        return null;
     }
 
     protected void sendMessage(String vhost, String routingKey, String message) throws Exception {
@@ -162,8 +190,16 @@ abstract class AMQPTestSupport {
         private final List<MessageDTO> buffer = new ArrayList<>();
         private final ReentrantLock lock = new ReentrantLock();
         ObjectMapper mapper = new ObjectMapper();
+        private final TestMetrics metrics;
+
+        MessageCollector(TestMetrics metrics) {
+            this.metrics = metrics;
+        }
 
         void add(MessageDTO delivery) {
+            if (metrics != null) {
+                metrics.recordReceived(delivery.getDistributionId(), delivery.getVhost());
+            }
             lock.lock();
             try {
                 for (Iterator<Map.Entry<String, CompletableFuture<MessageDTO>>> it = pending.entrySet().iterator(); it.hasNext();) {
@@ -251,6 +287,86 @@ abstract class AMQPTestSupport {
         void close() throws IOException {
             if (consumeChannel != null && consumeChannel.isOpen()) {
                 consumeChannel.getConnection().close();
+            }
+        }
+    }
+
+    static class TestMetrics {
+
+        private static class SentInfo {
+            final long sendNanos;
+            SentInfo(long sendNanos) {
+                this.sendNanos = sendNanos;
+            }
+        }
+
+        private static class Stats {
+            long count = 0;
+            long min = Long.MAX_VALUE;
+            long max = Long.MIN_VALUE;
+            long sumNanos = 0;
+            void add(long ns) {
+                count++;
+                sumNanos += ns;
+                if (ns < min) min = ns;
+                if (ns > max) max = ns;
+            }
+        }
+
+        private final ConcurrentHashMap<String, SentInfo> sent = new ConcurrentHashMap<>();
+        private final Map<String, Stats> perReceiveVhost = new ConcurrentHashMap<>();
+        private final java.util.Set<String> sendVhosts = ConcurrentHashMap.newKeySet();
+        private final Stats global = new Stats();
+        private final Object globalLock = new Object();
+
+        void recordSent(String distributionId, String vhost) {
+            sent.put(distributionId, new SentInfo(System.nanoTime()));
+            sendVhosts.add(vhost);
+        }
+
+        void recordReceived(String distributionId, String receiveVhost) {
+            SentInfo info = sent.remove(distributionId);
+            if (info == null) return;
+            long latency = System.nanoTime() - info.sendNanos;
+            synchronized (globalLock) {
+                global.add(latency);
+            }
+            perReceiveVhost.compute(receiveVhost, (k, v) -> {
+                Stats s = (v == null) ? new Stats() : v;
+                synchronized (s) { s.add(latency); }
+                return s;
+            });
+        }
+
+        void logSummary(Logger logger) {
+            synchronized (globalLock) {
+                if (global.count == 0) {
+                    logger.info("=== TNR latency metrics === no samples collected.");
+                    return;
+                }
+                double avgMs = (global.sumNanos / (double) global.count) / 1_000_000.0;
+                double minMs = global.min / 1_000_000.0;
+                double maxMs = global.max / 1_000_000.0;
+                logger.info("=== TNR latency metrics ===");
+                logger.info("Samples: {}", global.count);
+                logger.info("Avg latency: {} ms", String.format("%.2f", avgMs));
+                logger.info("Min latency: {} ms", String.format("%.2f", minMs));
+                logger.info("Max latency: {} ms", String.format("%.2f", maxMs));
+                logger.info("Send vhosts: {}", sendVhosts);
+                logger.info("Receive vhosts:");
+                perReceiveVhost.forEach((vhost, s) -> {
+                    synchronized (s) {
+                        double a = (s.sumNanos / (double) s.count) / 1_000_000.0;
+                        logger.info("  - {} : count={}, avg={} ms, min={} ms, max={} ms",
+                                vhost, s.count,
+                                String.format("%.2f", a),
+                                String.format("%.2f", s.min / 1_000_000.0),
+                                String.format("%.2f", s.max / 1_000_000.0));
+                    }
+                });
+                if (!sent.isEmpty()) {
+                    logger.warn("Unreceived messages: {}", sent.keySet());
+                }
             }
         }
     }
