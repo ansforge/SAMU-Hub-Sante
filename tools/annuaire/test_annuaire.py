@@ -4,6 +4,8 @@ import tempfile
 import unittest
 from unittest import mock
 
+import yaml
+
 import annuaire
 from annuaire import (
     load_clients,
@@ -81,7 +83,7 @@ class AnnuaireTestCase(unittest.TestCase):
     def test_load_clients_missing_root_key(self):
         path = os.path.join(self.tempdir.name, "bad.yaml")
         with open(path, "w") as f:
-            f.write("wrong-key:\n  clients: []\n")
+            yaml.dump({"wrong-key": {"clients": []}}, f)
         with self.assertLogs(level="ERROR") as cm:
             with self.assertRaises(RuntimeError) as ctx:
                 load_clients(path)
@@ -91,7 +93,7 @@ class AnnuaireTestCase(unittest.TestCase):
     def test_load_clients_missing_clients_key(self):
         path = os.path.join(self.tempdir.name, "no_clients.yaml")
         with open(path, "w") as f:
-            f.write("hubsante-topology:\n  other-key: []\n")
+            yaml.dump({"hubsante-topology": {"other-key": []}}, f)
         with self.assertLogs(level="ERROR") as cm:
             with self.assertRaises(RuntimeError) as ctx:
                 load_clients(path)
