@@ -30,7 +30,9 @@ def load_clients(path: str) -> list[dict]:
     try:
         with open(path, encoding="utf-8") as f:
             data = yaml.safe_load(f)
-        if TOPOLOGY_ROOT_KEY not in data or TOPOLOGY_CLIENTS_KEY not in data[TOPOLOGY_ROOT_KEY]:
+        if TOPOLOGY_ROOT_KEY not in data:
+            raise RuntimeError(f"Missing '{TOPOLOGY_ROOT_KEY}' key in {path}")
+        if TOPOLOGY_CLIENTS_KEY not in data[TOPOLOGY_ROOT_KEY]:
             raise RuntimeError(
                 f"Missing '{TOPOLOGY_ROOT_KEY}.{TOPOLOGY_CLIENTS_KEY}' key in {path}"
             )
