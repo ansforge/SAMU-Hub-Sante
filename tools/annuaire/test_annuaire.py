@@ -9,7 +9,6 @@ from annuaire import (
     build_client_entry,
     API_ENDPOINT,
     HEALTH_ENDPOINT,
-    VALUES_PATH,
 )
 
 FIXTURE_PATH = os.path.join(os.path.dirname(__file__), "fixtures", "topology.yaml")
