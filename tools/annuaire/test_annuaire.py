@@ -60,15 +60,14 @@ class AnnuaireTestCase(unittest.TestCase):
         self.assertNotIn("P: 15-smur", entry)
         self.assertNotIn("P: 15-nexsis", entry)
 
-    def test_build_client_entry_without_smur(self):
+    def test_build_client_entry_direct_cisu(self):
         client = {
-            "client_id": "fr.health.samu750",
-            "editor": "Editeur A",
-            "lrmPerimeterVersions": ["2.1"],
-            "directCISU": False,
+            "client_id": "fr.health.fire",
+            "editor": "NexSIS",
+            "directCISU": True,
         }
         entry = build_client_entry(client)
-        self.assertNotIn("P: 15-smur", entry)
+        self.assertTrue(entry["directCISU"])
 
     def test_load_clients_file_not_found(self):
         with self.assertLogs(level="ERROR") as cm:
