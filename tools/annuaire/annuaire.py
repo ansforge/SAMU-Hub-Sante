@@ -30,9 +30,16 @@ def load_clients(path: str) -> list[dict]:
     try:
         with open(path, encoding="utf-8") as f:
             data = yaml.safe_load(f)
+        if "hubsante-topology" not in data or "clients" not in data["hubsante-topology"]:
+            raise RuntimeError(
+                f"Missing 'hubsante-topology.clients' key in {path}"
+            )
         return data["hubsante-topology"]["clients"]
     except FileNotFoundError:
         logging.error(f"Values file not found: {path}")
+        raise
+    except RuntimeError:
+        logging.error(f"Failed to load clients from {path}: invalid structure")
         raise
     except Exception as e:
         logging.error(f"Failed to load clients from {path}: {e}")
