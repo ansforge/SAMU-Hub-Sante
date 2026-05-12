@@ -48,6 +48,8 @@ public class HubConfiguration {
     private static final String CLIENT_ID_HEADER = "client_id";
     private static final String INHIBITED_USE_CASES_HEADER = "inhibited_use_cases";
 
+    private static final StructuredLogger structuredLog = new StructuredLogger(log);
+
     @Value("${client.preferences.file}")
     private File configFile;
 
@@ -159,8 +161,9 @@ public class HubConfiguration {
         Map<String, String> clientPerimeterDefinition =
                 clientsPerimeterAndVersions.getOrDefault(clientId, null);
         if (clientPerimeterDefinition == null) {
-            log.warn(
-                    "ClientId was not found in clientsPerimeterAndVersions, or the variable is not initialized.");
+            structuredLog.warn(
+                    "ClientId was not found in clientsPerimeterAndVersions, or the variable is not initialized.",
+                    Map.of(LogConstants.RECIPIENT_ID, clientId));
             return null;
         }
         String versions = clientPerimeterDefinition.getOrDefault(perimeterName, null);
