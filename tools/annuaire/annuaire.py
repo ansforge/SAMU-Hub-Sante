@@ -16,7 +16,7 @@ VALUES_PATH = os.path.join(
 )
 CLIENTS_DATA_KEY = "CLIENTS_DATA"
 
-TOPOLOGY_ROOT_KEY = "hubsante-topology"
+TOPOLOGY_ROOT_KEY = "annuaire"
 TOPOLOGY_CLIENTS_KEY = "clients"
 
 TOPOLOGY_TO_LEGACY_KEY = {

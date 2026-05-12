@@ -96,7 +96,7 @@ class AnnuaireTestCase(unittest.TestCase):
     def test_load_clients_missing_clients_key(self):
         path = os.path.join(self.tempdir.name, "no_clients.yaml")
         with open(path, "w") as f:
-            yaml.dump({"hubsante-topology": {"other-key": []}}, f)
+            yaml.dump({TOPOLOGY_ROOT_KEY: {"other-key": []}}, f)
         with self.assertLogs(level="ERROR") as cm:
             with self.assertRaises(RuntimeError) as ctx:
                 load_clients(path)
