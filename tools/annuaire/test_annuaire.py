@@ -9,22 +9,24 @@ from annuaire import (
     build_client_entry,
     API_ENDPOINT,
     HEALTH_ENDPOINT,
+    VALUES_PATH,
 )
 
 FIXTURE_PATH = os.path.join(os.path.dirname(__file__), "fixtures", "topology.yaml")
-VALUES_DIR_PATCH_PATH = "annuaire.VALUES_DIR"
+VALUES_PATH_PATCH = "annuaire.VALUES_PATH"
 
 
 class AnnuaireTestCase(unittest.TestCase):
     def setUp(self):
         self.tempdir = tempfile.TemporaryDirectory()
-        shutil.copy(FIXTURE_PATH, os.path.join(self.tempdir.name, "values.yaml"))
+        self.values_path = os.path.join(self.tempdir.name, "values.yaml")
+        shutil.copy(FIXTURE_PATH, self.values_path)
 
     def tearDown(self):
         self.tempdir.cleanup()
 
     def test_api(self):
-        with mock.patch(VALUES_DIR_PATCH_PATH, self.tempdir.name):
+        with mock.patch(VALUES_PATH_PATCH, self.values_path):
             app = annuaire.create_app()
             client = app.test_client()
             response = client.get(API_ENDPOINT)
@@ -32,7 +34,7 @@ class AnnuaireTestCase(unittest.TestCase):
             self.assertIsInstance(response.json, list)
 
     def test_healthcheck(self):
-        with mock.patch(VALUES_DIR_PATCH_PATH, self.tempdir.name):
+        with mock.patch(VALUES_PATH_PATCH, self.values_path):
             app = annuaire.create_app()
             client = app.test_client()
             response = client.get(HEALTH_ENDPOINT)
@@ -42,8 +44,7 @@ class AnnuaireTestCase(unittest.TestCase):
             )
 
     def test_load_clients(self):
-        path = os.path.join(self.tempdir.name, "values.yaml")
-        clients = load_clients(path)
+        clients = load_clients(self.values_path)
         self.assertEqual(len(clients), 2)
         self.assertEqual(clients[0]["client_id"], "fr.health.samu750")
         self.assertEqual(clients[1]["client_id"], "fr.health.smur")
