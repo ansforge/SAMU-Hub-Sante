@@ -10,6 +10,8 @@ from annuaire import (
     build_client_entry,
     API_ENDPOINT,
     HEALTH_ENDPOINT,
+    TOPOLOGY_ROOT_KEY,
+    TOPOLOGY_CLIENTS_KEY,
 )
 
 FIXTURE_PATH = os.path.join(os.path.dirname(__file__), "fixtures", "topology.yaml")
@@ -83,7 +85,7 @@ class AnnuaireTestCase(unittest.TestCase):
         with self.assertLogs(level="ERROR") as cm:
             with self.assertRaises(RuntimeError) as ctx:
                 load_clients(path)
-        self.assertIn("hubsante-topology", str(ctx.exception))
+        self.assertIn(TOPOLOGY_ROOT_KEY, str(ctx.exception))
         self.assertTrue(any("Failed to load" in line for line in cm.output))
 
     def test_load_clients_missing_clients_key(self):
@@ -93,7 +95,7 @@ class AnnuaireTestCase(unittest.TestCase):
         with self.assertLogs(level="ERROR") as cm:
             with self.assertRaises(RuntimeError) as ctx:
                 load_clients(path)
-        self.assertIn("hubsante-topology.clients", str(ctx.exception))
+        self.assertIn(f"{TOPOLOGY_ROOT_KEY}.{TOPOLOGY_CLIENTS_KEY}", str(ctx.exception))
         self.assertTrue(any("Failed to load" in line for line in cm.output))
 
     def test_load_clients_yaml_parse_error(self):
