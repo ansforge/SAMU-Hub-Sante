@@ -28,7 +28,7 @@ TOPOLOGY_TO_LEGACY_KEY = {
 
 def load_clients(path: str) -> list[dict]:
     try:
-        with open(path) as f:
+        with open(path, encoding="utf-8") as f:
             data = yaml.safe_load(f)
         return data["hubsante-topology"]["clients"]
     except FileNotFoundError:
