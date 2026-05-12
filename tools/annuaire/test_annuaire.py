@@ -75,9 +75,10 @@ class AnnuaireTestCase(unittest.TestCase):
         self.assertTrue(entry["directCISU"])
 
     def test_load_clients_file_not_found(self):
+        missing_path = os.path.join(self.tempdir.name, "nonexistent.yaml")
         with self.assertLogs(level="ERROR") as cm:
             with self.assertRaises(FileNotFoundError):
-                load_clients("/nonexistent/path/values.yaml")
+                load_clients(missing_path)
         self.assertTrue(any("not found" in line for line in cm.output))
 
     def test_load_clients_missing_root_key(self):
