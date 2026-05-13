@@ -28,7 +28,7 @@ jobs:
         uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
-          python-version: "3.11"
+          python-version: "3.14"
 
       - name: Install dependencies
         run: uv sync
@@ -40,17 +40,8 @@ jobs:
         run: uv run ruff check .
 
       - name: Run tests & generate HTML coverage report
-        # TODO: try to mock the env variables in the tests directly
-        env:
-          RABBITMQ_HEALTH_URL: "foo_rabbitmq"
-          SHOVEL_STATUS_URL: "foo_shovel"
-          ANNUAIRE_HEALTH_URL: "foo_annuaire"
-          CONVERTER_HEALTH_URL: "foo_converter"
-          RABBITMQ_MONITORING_USERNAME: "foo"
-          RABBITMQ_MONITORING_PASSWORD: "bar"
-          DISPATCHER_CONFIG_FILE_PATH: "dispatchers_config_file_path_example.txt"
         run: |
-          uv run coverage run -m unittest tests/*.py
+          uv run --env-file .env.test coverage run -m unittest tests/*.py
           uv run coverage report -m
           uv run coverage html
 

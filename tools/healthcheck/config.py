@@ -20,7 +20,7 @@ if missing_vars:
     )
 
 HTTP_TIMEOUT = int(
-    os.getenv("HTTP_TIMEOUT", 5)
+    os.getenv("HTTP_TIMEOUT", 4)
 )  # Timeout in seconds, configurable via environment variable
 RABBITMQ_HEALTH_URL = os.getenv("RABBITMQ_HEALTH_URL")
 SHOVEL_STATUS_URL = os.getenv("SHOVEL_STATUS_URL")
