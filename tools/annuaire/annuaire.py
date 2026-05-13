@@ -57,7 +57,7 @@ def load_clients(path: str) -> list[dict]:
 def build_client_entry(client: dict) -> dict:
     entry = {
         "client_id": client["client_id"],
-        "editor":    client.get("editor", ""),
+        "editor": client.get("editor", ""),
         "directCISU": client.get("directCISU", False),
     }
     for topo_key, legacy_key in TOPOLOGY_TO_LEGACY_KEY.items():
