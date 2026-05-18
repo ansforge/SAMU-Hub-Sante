@@ -1,5 +1,4 @@
 import os
-import shutil
 import tempfile
 import unittest
 from unittest import mock
@@ -16,21 +15,20 @@ from annuaire import (
     TOPOLOGY_CLIENTS_KEY,
 )
 
-FIXTURE_PATH = os.path.join(os.path.dirname(__file__), "fixtures", "topology.yaml")
+FIXTURE_DIR = os.path.join(os.path.dirname(__file__), "fixtures")
+FIXTURE_PATH = os.path.join(FIXTURE_DIR, "values.yaml")
 VALUES_PATH_PATCH = "annuaire.VALUES_PATH"
 
 
 class AnnuaireTestCase(unittest.TestCase):
     def setUp(self):
         self.tempdir = tempfile.TemporaryDirectory()
-        self.values_path = os.path.join(self.tempdir.name, "values.yaml")
-        shutil.copy(FIXTURE_PATH, self.values_path)
 
     def tearDown(self):
         self.tempdir.cleanup()
 
     def test_api(self):
-        with mock.patch(VALUES_PATH_PATCH, self.values_path):
+        with mock.patch(VALUES_PATH_PATCH, FIXTURE_PATH):
             app = annuaire.create_app()
             client = app.test_client()
             response = client.get(API_ENDPOINT)
@@ -60,7 +58,7 @@ class AnnuaireTestCase(unittest.TestCase):
             self.assertEqual(samuC["P: 15-nexsis"], ["1.9"])
 
     def test_healthcheck(self):
-        with mock.patch(VALUES_PATH_PATCH, self.values_path):
+        with mock.patch(VALUES_PATH_PATCH, FIXTURE_PATH):
             app = annuaire.create_app()
             client = app.test_client()
             response = client.get(HEALTH_ENDPOINT)
@@ -70,7 +68,7 @@ class AnnuaireTestCase(unittest.TestCase):
             )
 
     def test_load_clients(self):
-        clients = load_clients(self.values_path)
+        clients = load_clients(FIXTURE_PATH)
         self.assertEqual(len(clients), 4)
         self.assertEqual(clients[0]["client_id"], "fr.health.samu750")
         self.assertEqual(clients[1]["client_id"], "fr.health.test.samuv1")
