@@ -40,7 +40,7 @@ class AnnuaireTestCase(unittest.TestCase):
             self.assertEqual(len(data), 4)
             ids = [entry["client_id"] for entry in data]
             self.assertIn("fr.health.samu750", ids)
-            self.assertIn("fr.health.smur", ids)
+            self.assertIn("fr.health.test.samuv1", ids)
             self.assertIn("fr.health.fire", ids)
             self.assertIn("fr.health.test.samuC", ids)
             # full-perimeter client
@@ -73,7 +73,7 @@ class AnnuaireTestCase(unittest.TestCase):
         clients = load_clients(self.values_path)
         self.assertEqual(len(clients), 4)
         self.assertEqual(clients[0]["client_id"], "fr.health.samu750")
-        self.assertEqual(clients[1]["client_id"], "fr.health.smur")
+        self.assertEqual(clients[1]["client_id"], "fr.health.test.samuv1")
         self.assertEqual(clients[2]["client_id"], "fr.health.fire")
         self.assertEqual(clients[3]["client_id"], "fr.health.test.samuC")
 

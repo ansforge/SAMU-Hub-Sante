@@ -8,10 +8,10 @@ annuaire:
       smurPerimeterVersions: ["1.7"]
       gpsPerimeterVersions: ["1.3"]
       directCISU: false
-    # client with SMUR only (partial perimeters, no directCISU)
-    - client_id: fr.health.smur
-      editor: Editeur B
-      smurPerimeterVersions: ["1.7"]
+    # client with LRM only (partial perimeters, no directCISU)
+    - client_id: fr.health.test.samuv1
+      editor: ANS
+      lrmPerimeterVersions: ["1.5"]
       directCISU: false
     # client with CISU + directCISU (NexSIS-type)
     - client_id: fr.health.fire
