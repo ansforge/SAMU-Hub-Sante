@@ -9,11 +9,7 @@ ENVIRONMENT = os.environ.get("ENVIRONMENT")
 API_ENDPOINT = "/annuaire/api"
 HEALTH_ENDPOINT = "/annuaire/health"
 
-VALUES_DEFAULT_DIR = "/config/topology"
-VALUES_FILENAME = "values.yaml"
-VALUES_PATH = os.path.join(
-    os.environ.get("VALUES_DIR", VALUES_DEFAULT_DIR), VALUES_FILENAME
-)
+VALUES_PATH = os.environ.get("VALUES_PATH", "/config/topology/values.yaml")
 CLIENTS_DATA_KEY = "CLIENTS_DATA"
 
 TOPOLOGY_ROOT_KEY = "annuaire"
