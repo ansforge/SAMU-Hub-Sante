@@ -37,21 +37,27 @@ class AnnuaireTestCase(unittest.TestCase):
             self.assertEqual(response.status_code, 200)
             data = response.json
             self.assertIsInstance(data, list)
-            self.assertEqual(len(data), 3)
+            self.assertEqual(len(data), 4)
             ids = [entry["client_id"] for entry in data]
             self.assertIn("fr.health.samu750", ids)
             self.assertIn("fr.health.smur", ids)
             self.assertIn("fr.health.fire", ids)
+            self.assertIn("fr.health.test.samuC", ids)
             # full-perimeter client
             samu = next(e for e in data if e["client_id"] == "fr.health.samu750")
             self.assertEqual(samu["P: 15-15"], ["2.1"])
             self.assertEqual(samu["P: 15-nexsis"], ["1.9"])
             self.assertFalse(samu["directCISU"])
-            # directCISU client
+            # directCISU client (CISU only)
             fire = next(e for e in data if e["client_id"] == "fr.health.fire")
             self.assertTrue(fire["directCISU"])
             self.assertEqual(fire["P: 15-nexsis"], ["1.9"])
             self.assertNotIn("P: 15-15", fire)
+            # full-perimeter client with directCISU
+            samuC = next(e for e in data if e["client_id"] == "fr.health.test.samuC")
+            self.assertTrue(samuC["directCISU"])
+            self.assertEqual(samuC["P: 15-15"], ["1.5", "2.0", "2.1"])
+            self.assertEqual(samuC["P: 15-nexsis"], ["1.9"])
 
     def test_healthcheck(self):
         with mock.patch(VALUES_PATH_PATCH, self.values_path):
@@ -65,10 +71,11 @@ class AnnuaireTestCase(unittest.TestCase):
 
     def test_load_clients(self):
         clients = load_clients(self.values_path)
-        self.assertEqual(len(clients), 3)
+        self.assertEqual(len(clients), 4)
         self.assertEqual(clients[0]["client_id"], "fr.health.samu750")
         self.assertEqual(clients[1]["client_id"], "fr.health.smur")
         self.assertEqual(clients[2]["client_id"], "fr.health.fire")
+        self.assertEqual(clients[3]["client_id"], "fr.health.test.samuC")
 
     def test_build_client_entry_with_lrm(self):
         client = {
