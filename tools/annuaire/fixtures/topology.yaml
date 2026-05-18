@@ -1,11 +1,20 @@
 annuaire:
   clients:
+    # client with LRM + CISU + SMUR + GPS (full perimeters, no directCISU)
     - client_id: fr.health.samu750
       editor: Editeur A
       lrmPerimeterVersions: ["2.1"]
       cisuPerimeterVersions: ["1.9"]
+      smurPerimeterVersions: ["1.7"]
+      gpsPerimeterVersions: ["1.3"]
       directCISU: false
+    # client with SMUR only (partial perimeters, no directCISU)
     - client_id: fr.health.smur
       editor: Editeur B
       smurPerimeterVersions: ["1.7"]
       directCISU: false
+    # client with CISU + directCISU (NexSIS-type)
+    - client_id: fr.health.fire
+      editor: NexSIS
+      cisuPerimeterVersions: ["1.9"]
+      directCISU: true
