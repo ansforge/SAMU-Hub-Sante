@@ -164,4 +164,8 @@ public class MessageTestUtils {
         edxlMessage.setSenderID(routingKey);
         edxlMessage.setDistributionID(routingKey + "_2608323d-507d-4cbf-bf74-52007f8124ea");
     }
+
+    public static void setMessageRecipient(EdxlMessage edxlMessage, String recipientId) {
+        edxlMessage.getDescriptor().getExplicitAddress().setExplicitAddressValue(recipientId);
+    }
 }

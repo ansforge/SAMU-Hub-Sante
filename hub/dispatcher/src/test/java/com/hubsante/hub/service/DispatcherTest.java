@@ -38,7 +38,6 @@ import com.hubsante.hub.exception.SchemaValidationException;
 import com.hubsante.hub.exception.UnroutableMessageException;
 import com.hubsante.hub.service.utils.MessageTestUtils;
 import com.hubsante.hub.utils.ConversionRulesCommand;
-import com.hubsante.hub.utils.ConversionUtils;
 import com.hubsante.hub.utils.EdxlUtils;
 import com.hubsante.hub.utils.MessagePersistencePolicy;
 import com.hubsante.hub.utils.MessageUtils;
@@ -72,6 +71,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.web.reactive.function.client.WebClient;
 
 @SpringBootTest
@@ -85,7 +85,7 @@ public class DispatcherTest {
             Mockito.mock(MessagePersistenceService.class);
 
     @Autowired private EdxlHandler edxlHandler;
-    @Autowired private HubConfiguration hubConfig;
+    @MockitoSpyBean private HubConfiguration hubConfig;
     @Autowired private Validator validator;
     private MessageHandler messageHandler;
     private ConversionHandler conversionHandler;
@@ -97,16 +97,14 @@ public class DispatcherTest {
     private final String SAMU_B_ROUTING_KEY = "fr.health.samuB";
     private final String SAMU_B_MESSAGE_QUEUE = SAMU_B_ROUTING_KEY + ".message";
     private final String SAMU_B_INFO_QUEUE = SAMU_B_ROUTING_KEY + ".info";
-    private final String SAMU_B_ERROR_QUEUE = SAMU_B_ROUTING_KEY + ".error";
     private final String SAMU_A_ROUTING_KEY = "fr.health.samuA";
     private final String SAMU_A_MESSAGE_QUEUE = SAMU_A_ROUTING_KEY + ".message";
     private final String SAMU_A_INFO_QUEUE = SAMU_A_ROUTING_KEY + ".info";
-    private final String SAMU_A_ERROR_QUEUE = SAMU_A_ROUTING_KEY + ".error";
     private final String SAMU_A_DISTRIBUTION_ID =
             "fr.health.samuA_2608323d-507d-4cbf-bf74-52007f8124ea";
     private final String SDIS_C_ROUTING_KEY = "fr.fire.sdisC";
+    private final String SAMU_V1_ROUTING_KEY = "fr.health.samuV1";
 
-    private final String TEST_VHOST = "default-vhost";
     private final String TEST_EDITOR = "default-editor";
     private final String INCONSISTENT_ROUTING_KEY = "fr.health.no-samu";
     private final String JSON = MessageProperties.CONTENT_TYPE_JSON;
@@ -132,6 +130,7 @@ public class DispatcherTest {
 
     @PostConstruct
     public void init() {
+        conversionHandler = Mockito.spy(new ConversionHandler(conversionWebClient, edxlHandler));
         messageHandler =
                 new MessageHandler(
                         rabbitTemplate,
@@ -142,7 +141,6 @@ public class DispatcherTest {
                         xmlMapper,
                         jsonMapper,
                         conversionHandler);
-        conversionHandler = Mockito.spy(new ConversionHandler(conversionWebClient, edxlHandler));
         dispatcher =
                 new Dispatcher(
                         messageHandler,
@@ -156,360 +154,245 @@ public class DispatcherTest {
     }
 
     @BeforeEach
-    public void cleanMetrics() {
+    public void resetTestState() {
         registry.forEachMeter(
                 meter -> {
                     if (meter.getId().getName().equalsIgnoreCase(DISPATCH_ERROR)) {
                         registry.remove(meter);
                     }
                 });
+        Mockito.reset(rabbitTemplate, persistenceService, conversionWebClient, hubConfig);
+        Mockito.clearInvocations(conversionHandler);
     }
 
     @Test
     @DisplayName("should send json message to the right exchange and routing key")
     public void shouldDispatchJsonToRightExchange() throws IOException {
-        try (MockedStatic<ConversionUtils> mockedConversionUtils =
-                mockStatic(ConversionUtils.class)) {
-            mockedConversionUtils
-                    .when(() -> ConversionUtils.requiresVersionConversion(any(), any()))
-                    .thenReturn(false);
-            mockedConversionUtils
-                    .when(() -> ConversionUtils.requiresCisuConversion(any(), any()))
-                    .thenReturn(false);
-            mockedConversionUtils
-                    .when(() -> ConversionUtils.getSourceVHost(any()))
-                    .thenReturn("15-15_v1.5");
-            mockedConversionUtils
-                    .when(() -> ConversionUtils.getTargetVHosts(any(), any()))
-                    .thenReturn(new String[] {"15-15_v1.5"});
+        // generate input message and check that it has the expected content type
+        Message receivedMessage = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
+        assertEquals(JSON, receivedMessage.getMessageProperties().getContentType());
+        // dispatch message
+        dispatcher.dispatch(receivedMessage);
+        ArgumentCaptor<Message> argCaptor = ArgumentCaptor.forClass(Message.class);
+        // assert that the message was sent to the right exchange with the right routing key
+        // exactly 1 time
+        Mockito.verify(rabbitTemplate, times(1))
+                .send(eq(DISTRIBUTION_EXCHANGE), eq(SAMU_B_MESSAGE_QUEUE), argCaptor.capture());
+        // assert that the message has been converted according to the recipient preferences
+        Message sentMessage = argCaptor.getValue();
+        assertEquals(XML, sentMessage.getMessageProperties().getContentType());
+        // assert that the message has the same content as the original one
+        EdxlMessage publishedJSON =
+                edxlHandler.deserializeJsonEDXL(
+                        new String(receivedMessage.getBody(), StandardCharsets.UTF_8));
+        EdxlMessage sentXML =
+                edxlHandler.deserializeXmlEDXL(
+                        new String(sentMessage.getBody(), StandardCharsets.UTF_8));
+        assertEquals(publishedJSON, sentXML);
 
-            // generate input message and check that it has the expected content type
-            Message receivedMessage = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
-            assertEquals(JSON, receivedMessage.getMessageProperties().getContentType());
-            // dispatch message
-            dispatcher.dispatch(receivedMessage);
-            ArgumentCaptor<Message> argCaptor = ArgumentCaptor.forClass(Message.class);
-            // assert that the message was sent to the right exchange with the right routing key
-            // exactly 1 time
-            Mockito.verify(rabbitTemplate, times(1))
-                    .send(eq(DISTRIBUTION_EXCHANGE), eq(SAMU_B_MESSAGE_QUEUE), argCaptor.capture());
-            // assert that the message has been converted according to the recipient preferences
-            Message sentMessage = argCaptor.getValue();
-            assertEquals(XML, sentMessage.getMessageProperties().getContentType());
-            // assert that the message has the same content as the original one
-            EdxlMessage publishedJSON =
-                    edxlHandler.deserializeJsonEDXL(
-                            new String(receivedMessage.getBody(), StandardCharsets.UTF_8));
-            EdxlMessage sentXML =
-                    edxlHandler.deserializeXmlEDXL(
-                            new String(sentMessage.getBody(), StandardCharsets.UTF_8));
-            assertEquals(publishedJSON, sentXML);
-
-            TechnicalNoreqWrapper custom = (TechnicalNoreqWrapper) sentXML.getFirstContentMessage();
-            assertEquals("value", custom.getTechnicalNoreq().getOptionalStringField());
-        }
+        TechnicalNoreqWrapper custom = (TechnicalNoreqWrapper) sentXML.getFirstContentMessage();
+        assertEquals("value", custom.getTechnicalNoreq().getOptionalStringField());
     }
 
     @Test
     @DisplayName("should send xml message to the right exchange and routing key")
     public void shouldDispatchXmlToRightExchange() throws IOException {
-        try (MockedStatic<ConversionUtils> mockedConversionUtils =
-                mockStatic(ConversionUtils.class)) {
-            mockedConversionUtils
-                    .when(() -> ConversionUtils.requiresVersionConversion(any(), any()))
-                    .thenReturn(false);
-            mockedConversionUtils
-                    .when(() -> ConversionUtils.requiresCisuConversion(any(), any()))
-                    .thenReturn(false);
-            mockedConversionUtils
-                    .when(() -> ConversionUtils.getSourceVHost(any()))
-                    .thenReturn("15-15_v1.5");
-            mockedConversionUtils
-                    .when(() -> ConversionUtils.getTargetVHosts(any(), any()))
-                    .thenReturn(new String[] {"15-15_v1.5"});
+        // generate input message and check that it has the expected content type
+        Message receivedMessage = createMessage("EDXL-DE", XML, SAMU_B_ROUTING_KEY);
+        assertEquals(XML, receivedMessage.getMessageProperties().getContentType());
+        // dispatch message
+        dispatcher.dispatch(receivedMessage);
+        ArgumentCaptor<Message> argCaptor = ArgumentCaptor.forClass(Message.class);
+        // assert that the message was sent to the right exchange with the right routing key
+        // exactly 1 time
+        Mockito.verify(rabbitTemplate, times(1))
+                .send(eq(DISTRIBUTION_EXCHANGE), eq(SAMU_A_MESSAGE_QUEUE), argCaptor.capture());
+        // assert that the message has been converted according to the recipient preferences
+        Message sentMessage = argCaptor.getValue();
+        assertEquals(JSON, sentMessage.getMessageProperties().getContentType());
+        // assert that the message has the same content as the original one
+        EdxlMessage publishedXML =
+                edxlHandler.deserializeXmlEDXL(
+                        new String(receivedMessage.getBody(), StandardCharsets.UTF_8));
+        EdxlMessage sentJSON =
+                edxlHandler.deserializeJsonEDXL(
+                        new String(sentMessage.getBody(), StandardCharsets.UTF_8));
+        assertEquals(publishedXML, sentJSON);
 
-            // generate input message and check that it has the expected content type
-            Message receivedMessage = createMessage("EDXL-DE", XML, SAMU_B_ROUTING_KEY);
-            assertEquals(XML, receivedMessage.getMessageProperties().getContentType());
-            // dispatch message
-            dispatcher.dispatch(receivedMessage);
-            ArgumentCaptor<Message> argCaptor = ArgumentCaptor.forClass(Message.class);
-            // assert that the message was sent to the right exchange with the right routing key
-            // exactly 1 time
-            Mockito.verify(rabbitTemplate, times(1))
-                    .send(eq(DISTRIBUTION_EXCHANGE), eq(SAMU_A_MESSAGE_QUEUE), argCaptor.capture());
-            // assert that the message has been converted according to the recipient preferences
-            Message sentMessage = argCaptor.getValue();
-            assertEquals(JSON, sentMessage.getMessageProperties().getContentType());
-            // assert that the message has the same content as the original one
-            EdxlMessage publishedXML =
-                    edxlHandler.deserializeXmlEDXL(
-                            new String(receivedMessage.getBody(), StandardCharsets.UTF_8));
-            EdxlMessage sentJSON =
-                    edxlHandler.deserializeJsonEDXL(
-                            new String(sentMessage.getBody(), StandardCharsets.UTF_8));
-            assertEquals(publishedXML, sentJSON);
-
-            TechnicalNoreqWrapper custom =
-                    (TechnicalNoreqWrapper) sentJSON.getFirstContentMessage();
-            assertEquals("value", custom.getTechnicalNoreq().getOptionalStringField());
-        }
+        TechnicalNoreqWrapper custom = (TechnicalNoreqWrapper) sentJSON.getFirstContentMessage();
+        assertEquals("value", custom.getTechnicalNoreq().getOptionalStringField());
     }
 
     @Test
     @DisplayName("should convert messages according to client preferences")
     public void shouldConvertMessageAccordingToUseXmlPreferences() throws IOException {
-        try (MockedStatic<ConversionUtils> mockedConversionUtils =
-                mockStatic(ConversionUtils.class)) {
-            mockedConversionUtils
-                    .when(() -> ConversionUtils.requiresVersionConversion(any(), any()))
-                    .thenReturn(false);
-            mockedConversionUtils
-                    .when(() -> ConversionUtils.requiresCisuConversion(any(), any()))
-                    .thenReturn(false);
-            mockedConversionUtils
-                    .when(() -> ConversionUtils.getSourceVHost(any()))
-                    .thenReturn("15-15_v1.5");
-            mockedConversionUtils
-                    .when(() -> ConversionUtils.getTargetVHosts(any(), any()))
-                    .thenReturn(new String[] {"15-15_v1.5"});
+        // JSON -> XML direction
+        Message receivedJsonMessage = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
+        assertEquals(JSON, receivedJsonMessage.getMessageProperties().getContentType());
 
-            // JSON -> XML direction
-            Message receivedJsonMessage = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
-            assertEquals(JSON, receivedJsonMessage.getMessageProperties().getContentType());
+        dispatcher.dispatch(receivedJsonMessage);
 
-            dispatcher.dispatch(receivedJsonMessage);
+        ArgumentCaptor<Message> argCaptor = ArgumentCaptor.forClass(Message.class);
+        Mockito.verify(rabbitTemplate, times(1))
+                .send(eq(DISTRIBUTION_EXCHANGE), eq(SAMU_B_MESSAGE_QUEUE), argCaptor.capture());
+        Message sentXmlMessage = argCaptor.getValue();
+        assertEquals(XML, sentXmlMessage.getMessageProperties().getContentType());
 
-            ArgumentCaptor<Message> argCaptor = ArgumentCaptor.forClass(Message.class);
-            Mockito.verify(rabbitTemplate, times(1))
-                    .send(eq(DISTRIBUTION_EXCHANGE), eq(SAMU_B_MESSAGE_QUEUE), argCaptor.capture());
-            Message sentXmlMessage = argCaptor.getValue();
-            assertEquals(XML, sentXmlMessage.getMessageProperties().getContentType());
+        // XML -> JSON direction
+        Message receivedXMLMessage = createMessage("EDXL-DE", XML, SAMU_B_ROUTING_KEY);
+        assertEquals(XML, receivedXMLMessage.getMessageProperties().getContentType());
 
-            // XML -> JSON direction
-            Message receivedXMLMessage = createMessage("EDXL-DE", XML, SAMU_B_ROUTING_KEY);
-            assertEquals(XML, receivedXMLMessage.getMessageProperties().getContentType());
+        dispatcher.dispatch(receivedXMLMessage);
 
-            dispatcher.dispatch(receivedXMLMessage);
-
-            Mockito.verify(rabbitTemplate, times(1))
-                    .send(eq(DISTRIBUTION_EXCHANGE), eq(SAMU_A_MESSAGE_QUEUE), argCaptor.capture());
-            assertEquals(JSON, argCaptor.getValue().getMessageProperties().getContentType());
-        }
+        Mockito.verify(rabbitTemplate, times(1))
+                .send(eq(DISTRIBUTION_EXCHANGE), eq(SAMU_A_MESSAGE_QUEUE), argCaptor.capture());
+        assertEquals(JSON, argCaptor.getValue().getMessageProperties().getContentType());
     }
 
     @Test
     @DisplayName("should call conversion service for cisu messages")
     public void shouldCallConversionServiceForCisuMessages() throws IOException {
-        try (MockedStatic<ConversionUtils> mockedConversionUtils =
-                mockStatic(ConversionUtils.class)) {
-            mockedConversionUtils
-                    .when(() -> ConversionUtils.getSourceVHost(any()))
-                    .thenReturn("15-15_v1.5");
-            mockedConversionUtils
-                    .when(() -> ConversionUtils.getTargetVHosts(any(), any()))
-                    .thenReturn(new String[] {"15-15_v1.5"});
+        // CISU bridge fires only when the hub sits on the NEXSIS vhost AND the health recipient is
+        // not flagged directCISU. samuA satisfies the latter (directCISU=false in the test CSV).
+        doReturn(NEXSIS_VHOST).when(hubConfig).getVhost();
 
-            // Create a message from SDIS
-            Message baseFromSdis = createMessage("EDXL-DE", XML, SDIS_C_ROUTING_KEY);
-            EdxlMessage edxlMessageFromSdis =
-                    edxlHandler.deserializeXmlEDXL(
-                            new String(baseFromSdis.getBody(), StandardCharsets.UTF_8));
-            MessageTestUtils.setMessageConsistentWithRoutingKey(
-                    edxlMessageFromSdis, SDIS_C_ROUTING_KEY);
-            Message fromFireMessage =
-                    new Message(
-                            edxlHandler.serializeXmlEDXL(edxlMessageFromSdis).getBytes(),
-                            baseFromSdis.getMessageProperties());
+        Message baseFromSdis = createMessage("EDXL-DE", XML, SDIS_C_ROUTING_KEY);
+        EdxlMessage edxlMessageFromSdis =
+                edxlHandler.deserializeXmlEDXL(
+                        new String(baseFromSdis.getBody(), StandardCharsets.UTF_8));
+        MessageTestUtils.setMessageConsistentWithRoutingKey(
+                edxlMessageFromSdis, SDIS_C_ROUTING_KEY);
+        MessageTestUtils.setMessageRecipient(edxlMessageFromSdis, SAMU_A_ROUTING_KEY);
+        Message fromFireMessage =
+                new Message(
+                        edxlHandler.serializeXmlEDXL(edxlMessageFromSdis).getBytes(),
+                        baseFromSdis.getMessageProperties());
 
-            // Mock the ConversionUtils answer and the ConversionService
-            mockedConversionUtils
-                    .when(() -> ConversionUtils.requiresVersionConversion(any(), any()))
-                    .thenReturn(false);
-            mockedConversionUtils
-                    .when(() -> ConversionUtils.requiresCisuConversion(any(), any()))
-                    .thenReturn(true);
+        doAnswer(invocation -> List.of(invocation.getArgument(0).toString()))
+                .when(conversionHandler)
+                .callConversionService(
+                        anyString(), anyString(), anyString(), anyBoolean(), anyString());
 
-            doAnswer(invocation -> List.of(invocation.getArgument(0).toString()))
-                    .when(conversionHandler)
-                    .callConversionService(
-                            anyString(), anyString(), anyString(), anyBoolean(), anyString());
+        dispatcher.dispatch(fromFireMessage);
 
-            // Test message from SDIS
-            dispatcher.dispatch(fromFireMessage);
-
-            // Verify cisu conversion was called
-            verify(conversionHandler, times(1))
-                    .callConversionService(
-                            anyString(), anyString(), anyString(), eq(true), anyString());
-        }
+        verify(conversionHandler, times(1))
+                .callConversionService(
+                        anyString(), anyString(), anyString(), eq(true), anyString());
     }
 
     @Test
     @DisplayName("should call conversion service for messages which need version conversion")
     public void shouldCallConversionServiceForVersionConvertedMessages() throws IOException {
-        try (MockedStatic<ConversionUtils> mockedConversionUtils =
-                mockStatic(ConversionUtils.class)) {
-            Message message = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
+        // Default hub vhost is 15-15_v2.1 but samuV1 only declares 1.5 in the test CSV, so the real
+        // CSV-driven routing detects a version mismatch and triggers conversion.
+        Message message = buildMessageToRecipient(SAMU_A_ROUTING_KEY, SAMU_V1_ROUTING_KEY, JSON);
 
-            mockedConversionUtils
-                    .when(() -> ConversionUtils.getSourceVHost(any()))
-                    .thenReturn("15-15_v1.5");
-            mockedConversionUtils
-                    .when(() -> ConversionUtils.getTargetVHosts(any(), any()))
-                    .thenReturn(new String[] {"15-15_v2.0"});
-            mockedConversionUtils
-                    .when(() -> ConversionUtils.requiresVersionConversion(any(), any()))
-                    .thenReturn(true);
-            mockedConversionUtils
-                    .when(() -> ConversionUtils.requiresCisuConversion(any(), any()))
-                    .thenReturn(false);
+        doAnswer(invocation -> List.of(invocation.getArgument(0).toString()))
+                .when(conversionHandler)
+                .callConversionService(
+                        anyString(), anyString(), anyString(), anyBoolean(), anyString());
 
-            doAnswer(invocation -> List.of(invocation.getArgument(0).toString()))
-                    .when(conversionHandler)
-                    .callConversionService(
-                            anyString(), anyString(), anyString(), anyBoolean(), anyString());
+        dispatcher.dispatch(message);
 
-            dispatcher.dispatch(message);
-
-            verify(conversionHandler, times(1))
-                    .callConversionService(
-                            anyString(), anyString(), anyString(), eq(false), anyString());
-        }
+        verify(conversionHandler, times(1))
+                .callConversionService(
+                        anyString(), anyString(), anyString(), eq(false), anyString());
     }
 
     @Test
     @DisplayName("should not call conversion service for health messages")
     public void shouldNotCallConversionServiceForHealthMessages() throws IOException {
-        try (MockedStatic<ConversionUtils> mockedConversionUtils =
-                mockStatic(ConversionUtils.class)) {
-            mockedConversionUtils
-                    .when(() -> ConversionUtils.requiresVersionConversion(any(), any()))
-                    .thenReturn(false);
-            mockedConversionUtils
-                    .when(() -> ConversionUtils.requiresCisuConversion(any(), any()))
-                    .thenReturn(false);
-            // Create a message from and to health
-            Message message = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
+        // samuA -> samuB on the default v2.1 vhost: both declare v2.1, no conversion needed.
+        Message message = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
 
-            // Dispatch the message
-            dispatcher.dispatch(message);
+        dispatcher.dispatch(message);
 
-            // Verify that conversion service was never called
-            verify(conversionHandler, never())
-                    .callConversionService(
-                            anyString(), anyString(), anyString(), anyBoolean(), anyString());
-        }
+        verify(conversionHandler, never())
+                .callConversionService(
+                        anyString(), anyString(), anyString(), anyBoolean(), anyString());
     }
 
     @Test
     @DisplayName("should reset TTL if edxl dateTimeExpires is lower")
     public void shouldResetTTL() throws IOException {
-        try (MockedStatic<ConversionUtils> mockedConversionUtils =
-                mockStatic(ConversionUtils.class)) {
-            mockedConversionUtils
-                    .when(() -> ConversionUtils.requiresVersionConversion(any(), any()))
-                    .thenReturn(false);
-            mockedConversionUtils
-                    .when(() -> ConversionUtils.requiresCisuConversion(any(), any()))
-                    .thenReturn(false);
-            // get message and override dateTimeExpires field with sooner value
-            Message base = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
-            EdxlMessage edxlMessage =
-                    edxlHandler.deserializeJsonEDXL(
-                            new String(base.getBody(), StandardCharsets.UTF_8));
-            setCustomExpirationDate(edxlMessage, 2);
-            Message customTTLMessage =
-                    new Message(
-                            edxlHandler.serializeJsonEDXL(edxlMessage).getBytes(),
-                            base.getMessageProperties());
+        // get message and override dateTimeExpires field with sooner value
+        Message base = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
+        EdxlMessage edxlMessage =
+                edxlHandler.deserializeJsonEDXL(new String(base.getBody(), StandardCharsets.UTF_8));
+        setCustomExpirationDate(edxlMessage, 2);
+        Message customTTLMessage =
+                new Message(
+                        edxlHandler.serializeJsonEDXL(edxlMessage).getBytes(),
+                        base.getMessageProperties());
 
-            // before dispatch, the message has no expiration set
-            assertNull(customTTLMessage.getMessageProperties().getExpiration());
-            // method call
-            dispatcher.dispatch(customTTLMessage);
-            // we capture the forwarded message to ensure that it has been overwritten
-            ArgumentCaptor<Message> argument = ArgumentCaptor.forClass(Message.class);
-            Mockito.verify(rabbitTemplate, times(1))
-                    .send(eq(DISTRIBUTION_EXCHANGE), eq(SAMU_B_MESSAGE_QUEUE), argument.capture());
+        // before dispatch, the message has no expiration set
+        assertNull(customTTLMessage.getMessageProperties().getExpiration());
+        // method call
+        dispatcher.dispatch(customTTLMessage);
+        // we capture the forwarded message to ensure that it has been overwritten
+        ArgumentCaptor<Message> argument = ArgumentCaptor.forClass(Message.class);
+        Mockito.verify(rabbitTemplate, times(1))
+                .send(eq(DISTRIBUTION_EXCHANGE), eq(SAMU_B_MESSAGE_QUEUE), argument.capture());
 
-            // when calling rabbitTemplate.send(), the message has new expiration set
-            assertNotNull(argument.getValue().getMessageProperties().getExpiration());
-        }
+        // when calling rabbitTemplate.send(), the message has new expiration set
+        assertNotNull(argument.getValue().getMessageProperties().getExpiration());
     }
 
     @Test
     @DisplayName("should send error message if the custom dateTimeExpires is in the past")
     public void shouldThrowExpiredBeforeDispatchMessageException() throws IOException {
-        try (MockedStatic<ConversionUtils> mockedConversionUtils =
-                mockStatic(ConversionUtils.class)) {
-            mockedConversionUtils
-                    .when(() -> ConversionUtils.requiresVersionConversion(any(), any()))
-                    .thenReturn(false);
-            // get message and override dateTimeExpires field with a value in the past
-            Message base = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
-            EdxlMessage edxlMessage =
-                    edxlHandler.deserializeJsonEDXL(
-                            new String(base.getBody(), StandardCharsets.UTF_8));
-            setCustomExpirationDate(edxlMessage, -2);
-            Message customTTLMessage =
-                    new Message(
-                            edxlHandler.serializeJsonEDXL(edxlMessage).getBytes(),
-                            base.getMessageProperties());
+        // get message and override dateTimeExpires field with a value in the past
+        Message base = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
+        EdxlMessage edxlMessage =
+                edxlHandler.deserializeJsonEDXL(new String(base.getBody(), StandardCharsets.UTF_8));
+        setCustomExpirationDate(edxlMessage, -2);
+        Message customTTLMessage =
+                new Message(
+                        edxlHandler.serializeJsonEDXL(edxlMessage).getBytes(),
+                        base.getMessageProperties());
 
-            // before dispatch, the message has no expiration set
-            assertNull(customTTLMessage.getMessageProperties().getExpiration());
+        // before dispatch, the message has no expiration set
+        assertNull(customTTLMessage.getMessageProperties().getExpiration());
 
-            AmqpRejectAndDontRequeueException ex =
-                    assertThrows(
-                            AmqpRejectAndDontRequeueException.class,
-                            () -> dispatcher.dispatch(customTTLMessage));
-            assertNotNull(ex.getCause());
-            assertInstanceOf(
-                    ExpiredBeforeDispatchMessageException.class,
-                    ex.getCause(),
-                    "Cause should be ExpiredBeforeDispatchMessageException");
+        AmqpRejectAndDontRequeueException ex =
+                assertThrows(
+                        AmqpRejectAndDontRequeueException.class,
+                        () -> dispatcher.dispatch(customTTLMessage));
+        assertNotNull(ex.getCause());
+        assertInstanceOf(
+                ExpiredBeforeDispatchMessageException.class,
+                ex.getCause(),
+                "Cause should be ExpiredBeforeDispatchMessageException");
 
-            ArgumentCaptor<Message> argument = ArgumentCaptor.forClass(Message.class);
-            Mockito.verify(rabbitTemplate, times(1))
-                    .send(eq(DISTRIBUTION_EXCHANGE), eq(SAMU_A_INFO_QUEUE), argument.capture());
-        }
+        ArgumentCaptor<Message> argument = ArgumentCaptor.forClass(Message.class);
+        Mockito.verify(rabbitTemplate, times(1))
+                .send(eq(DISTRIBUTION_EXCHANGE), eq(SAMU_A_INFO_QUEUE), argument.capture());
     }
 
     @Test
     @DisplayName("should reset expiration AMQP property expiration to null before dispatching")
     public void shouldResetExpirationPropertyToNullBeforeDispatch() throws IOException {
-        try (MockedStatic<ConversionUtils> mockedConversionUtils =
-                mockStatic(ConversionUtils.class)) {
-            mockedConversionUtils
-                    .when(() -> ConversionUtils.requiresVersionConversion(any(), any()))
-                    .thenReturn(false);
-            mockedConversionUtils
-                    .when(() -> ConversionUtils.requiresCisuConversion(any(), any()))
-                    .thenReturn(false);
-            // Create a message and set an expiration property
-            Message base = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
-            MessageProperties props = base.getMessageProperties();
-            props.setExpiration("1000");
-            EdxlMessage edxlMessage =
-                    edxlHandler.deserializeJsonEDXL(
-                            new String(base.getBody(), StandardCharsets.UTF_8));
-            Message customTTLMessage =
-                    new Message(edxlHandler.serializeJsonEDXL(edxlMessage).getBytes(), props);
+        // Create a message and set an expiration property
+        Message base = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
+        MessageProperties props = base.getMessageProperties();
+        props.setExpiration("1000");
+        EdxlMessage edxlMessage =
+                edxlHandler.deserializeJsonEDXL(new String(base.getBody(), StandardCharsets.UTF_8));
+        Message customTTLMessage =
+                new Message(edxlHandler.serializeJsonEDXL(edxlMessage).getBytes(), props);
 
-            // Ensure the expiration property is set before dispatch
-            assertEquals("1000", customTTLMessage.getMessageProperties().getExpiration());
+        // Ensure the expiration property is set before dispatch
+        assertEquals("1000", customTTLMessage.getMessageProperties().getExpiration());
 
-            // Dispatch the message
-            dispatcher.dispatch(customTTLMessage);
+        // Dispatch the message
+        dispatcher.dispatch(customTTLMessage);
 
-            // Capture the forwarded message and check that expiration is null (reset)
-            ArgumentCaptor<Message> argument = ArgumentCaptor.forClass(Message.class);
-            Mockito.verify(rabbitTemplate, times(1))
-                    .send(eq(DISTRIBUTION_EXCHANGE), eq(SAMU_B_MESSAGE_QUEUE), argument.capture());
-            Message sentMessage = argument.getValue();
-            assertNull(sentMessage.getMessageProperties().getExpiration());
-        }
+        // Capture the forwarded message and check that expiration is null (reset)
+        ArgumentCaptor<Message> argument = ArgumentCaptor.forClass(Message.class);
+        Mockito.verify(rabbitTemplate, times(1))
+                .send(eq(DISTRIBUTION_EXCHANGE), eq(SAMU_B_MESSAGE_QUEUE), argument.capture());
+        Message sentMessage = argument.getValue();
+        assertNull(sentMessage.getMessageProperties().getExpiration());
     }
 
     @Test
@@ -634,160 +517,109 @@ public class DispatcherTest {
     @Test
     @DisplayName("outer routing key inconsistent with sender ID")
     public void outerRoutingKeyInconsistentWithSenderId() throws IOException {
-        try (MockedStatic<ConversionUtils> mockedConversionUtils =
-                mockStatic(ConversionUtils.class)) {
-            mockedConversionUtils
-                    .when(() -> ConversionUtils.requiresVersionConversion(any(), any()))
-                    .thenReturn(false);
-            // we test that the message has been rejected if the sender ID is not consistent with
-            // the outer routing key
-            Message receivedMessage = createMessage("EDXL-DE", JSON, INCONSISTENT_ROUTING_KEY);
-            assertThrows(
-                    AmqpRejectAndDontRequeueException.class,
-                    () -> dispatcher.dispatch(receivedMessage));
+        // we test that the message has been rejected if the sender ID is not consistent with the
+        // outer routing key
+        Message receivedMessage = createMessage("EDXL-DE", JSON, INCONSISTENT_ROUTING_KEY);
+        assertThrows(
+                AmqpRejectAndDontRequeueException.class,
+                () -> dispatcher.dispatch(receivedMessage));
 
-            // we test that an error report has been sent with the correct error code
-            assertErrorHasBeenSent(
-                    INCONSISTENT_ROUTING_KEY + ".info",
-                    ErrorCode.SENDER_INCONSISTENCY,
-                    SAMU_A_DISTRIBUTION_ID,
-                    "message sender is fr.health.samuA",
-                    "received routing key is fr.health.no-samu");
-        }
+        assertErrorHasBeenSent(
+                INCONSISTENT_ROUTING_KEY + ".info",
+                ErrorCode.SENDER_INCONSISTENCY,
+                SAMU_A_DISTRIBUTION_ID,
+                "message sender is fr.health.samuA",
+                "received routing key is fr.health.no-samu");
     }
 
     @Test
     @DisplayName("should reject message without persistent delivery mode")
     public void rejectMessageWithoutPersistentDeliveryMode() throws IOException {
-        try (MockedStatic<ConversionUtils> mockedConversionUtils =
-                mockStatic(ConversionUtils.class)) {
-            mockedConversionUtils
-                    .when(() -> ConversionUtils.requiresVersionConversion(any(), any()))
-                    .thenReturn(false);
-            Message receivedMessage = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
-            receivedMessage
-                    .getMessageProperties()
-                    .setReceivedDeliveryMode(MessageDeliveryMode.NON_PERSISTENT);
-            assertThrows(
-                    AmqpRejectAndDontRequeueException.class,
-                    () -> dispatcher.dispatch(receivedMessage));
+        Message receivedMessage = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
+        receivedMessage
+                .getMessageProperties()
+                .setReceivedDeliveryMode(MessageDeliveryMode.NON_PERSISTENT);
+        assertThrows(
+                AmqpRejectAndDontRequeueException.class,
+                () -> dispatcher.dispatch(receivedMessage));
 
-            // we test that an error report has been sent with the correct error code
-            assertErrorHasBeenSent(
-                    SAMU_A_INFO_QUEUE,
-                    ErrorCode.DELIVERY_MODE_INCONSISTENCY,
-                    SAMU_A_DISTRIBUTION_ID,
-                    "fr.health.samuA_2608323d-507d-4cbf-bf74-52007f8124ea",
-                    "non-persistent delivery mode");
-        }
+        assertErrorHasBeenSent(
+                SAMU_A_INFO_QUEUE,
+                ErrorCode.DELIVERY_MODE_INCONSISTENCY,
+                SAMU_A_DISTRIBUTION_ID,
+                "fr.health.samuA_2608323d-507d-4cbf-bf74-52007f8124ea",
+                "non-persistent delivery mode");
     }
 
     @Test
     @DisplayName("should reject message with invalid json EDXL envelope")
     public void invalidJsonEDXLFails() throws IOException {
-        try (MockedStatic<ConversionUtils> mockedConversionUtils =
-                mockStatic(ConversionUtils.class)) {
-            mockedConversionUtils
-                    .when(() -> ConversionUtils.requiresVersionConversion(any(), any()))
-                    .thenReturn(false);
-            Message receivedMessage =
-                    createInvalidMessage(
-                            "EDXL-DE/missing-EDXL-required-field.json", SAMU_A_ROUTING_KEY);
-            assertThrows(
-                    AmqpRejectAndDontRequeueException.class,
-                    () -> dispatcher.dispatch(receivedMessage));
+        Message receivedMessage =
+                createInvalidMessage(
+                        "EDXL-DE/missing-EDXL-required-field.json", SAMU_A_ROUTING_KEY);
+        assertThrows(
+                AmqpRejectAndDontRequeueException.class,
+                () -> dispatcher.dispatch(receivedMessage));
 
-            assertErrorHasBeenSent(
-                    SAMU_A_INFO_QUEUE,
-                    ErrorCode.INVALID_MESSAGE,
-                    DISTRIBUTION_ID_UNAVAILABLE,
-                    "distributionID: is missing but it is required",
-                    "descriptor.explicitAddress.explicitAddressValue: is missing but it is required");
-        }
+        assertErrorHasBeenSent(
+                SAMU_A_INFO_QUEUE,
+                ErrorCode.INVALID_MESSAGE,
+                DISTRIBUTION_ID_UNAVAILABLE,
+                "distributionID: is missing but it is required",
+                "descriptor.explicitAddress.explicitAddressValue: is missing but it is required");
     }
 
     @Test
     @DisplayName("should send version converted message to transfer exchange")
     public void sendToTransferExchange() throws IOException {
-        try (MockedStatic<ConversionUtils> mockedConversionUtils =
-                mockStatic(ConversionUtils.class)) {
-            Message message = createMessage("EDXL-DE", XML, SAMU_A_ROUTING_KEY);
-            EdxlMessage edxlMessage =
-                    edxlHandler.deserializeXmlEDXL(
-                            new String(message.getBody(), StandardCharsets.UTF_8));
-            String queueName = "fr.health.samuA";
-            String exchangeName = "transfer_15-15_v1.5_to_15-15_v2.0";
+        // Default hub vhost = 15-15_v2.1; samuV1 only declares 1.5 in the test CSV, so a message
+        // routed to samuV1 yields a real source=v2.1 / target=v1.5 transfer exchange name.
+        Message message = buildMessageToRecipient(SAMU_A_ROUTING_KEY, SAMU_V1_ROUTING_KEY, XML);
+        EdxlMessage edxlMessage =
+                edxlHandler.deserializeXmlEDXL(
+                        new String(message.getBody(), StandardCharsets.UTF_8));
+        String queueName = SAMU_A_ROUTING_KEY;
+        String exchangeName = "transfer_15-15_v2.1_to_15-15_v1.5";
 
-            mockedConversionUtils
-                    .when(() -> ConversionUtils.buildExchangeDestination(any(), any()))
-                    .thenReturn(exchangeName);
-            mockedConversionUtils
-                    .when(() -> ConversionUtils.getTargetVHosts(hubConfig, edxlMessage))
-                    .thenReturn(new String[] {"15-15_v2.0"});
-            mockedConversionUtils
-                    .when(() -> ConversionUtils.getSourceVHost(hubConfig))
-                    .thenReturn("15-15_v1.5");
+        ConversionRulesCommand conversionRulesCommand =
+                new ConversionRulesCommand(edxlMessage, hubConfig);
 
-            ConversionRulesCommand conversionRulesCommand =
-                    new ConversionRulesCommand(edxlMessage, hubConfig);
+        dispatcher.sendToTransferExchange(message.toString(), message, conversionRulesCommand);
 
-            dispatcher.sendToTransferExchange(message.toString(), message, conversionRulesCommand);
-
-            verify(rabbitTemplate).send(eq(exchangeName), eq(queueName), any(Message.class));
-        }
+        verify(rabbitTemplate).send(eq(exchangeName), eq(queueName), any(Message.class));
     }
 
     @Test
     @DisplayName("should call sendToTransferExchange when there is a version conversion")
     public void transferToOtherVhost() throws IOException {
-        try (MockedStatic<ConversionUtils> mockedConversionUtils =
-                mockStatic(ConversionUtils.class)) {
-            Dispatcher dispatcher =
-                    spy(
-                            new Dispatcher(
-                                    messageHandler,
-                                    rabbitTemplate,
-                                    edxlHandler,
-                                    xmlMapper,
-                                    jsonMapper,
-                                    conversionHandler,
-                                    hubConfig,
-                                    persistenceService));
+        Dispatcher dispatcher =
+                spy(
+                        new Dispatcher(
+                                messageHandler,
+                                rabbitTemplate,
+                                edxlHandler,
+                                xmlMapper,
+                                jsonMapper,
+                                conversionHandler,
+                                hubConfig,
+                                persistenceService));
 
-            Message message = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
+        // samuA -> samuV1 forces version conversion (hub on v2.1, samuV1 only declares v1.5).
+        Message message = buildMessageToRecipient(SAMU_A_ROUTING_KEY, SAMU_V1_ROUTING_KEY, JSON);
 
-            String exchangeName = "transfer_15-15_v1.5_to_15-15_v2.0";
+        doAnswer(invocation -> List.of(invocation.getArgument(0).toString()))
+                .when(conversionHandler)
+                .callConversionService(
+                        anyString(), anyString(), anyString(), anyBoolean(), anyString());
 
-            mockedConversionUtils
-                    .when(() -> ConversionUtils.buildExchangeDestination(any(), any()))
-                    .thenReturn(exchangeName);
-            mockedConversionUtils
-                    .when(() -> ConversionUtils.getSourceVHost(any()))
-                    .thenReturn("15-15_v1.5");
-            mockedConversionUtils
-                    .when(() -> ConversionUtils.getTargetVHosts(any(), any()))
-                    .thenReturn(new String[] {"15-15_v2.0"});
-            mockedConversionUtils
-                    .when(() -> ConversionUtils.requiresVersionConversion(any(), any()))
-                    .thenReturn(true);
-            mockedConversionUtils
-                    .when(() -> ConversionUtils.requiresCisuConversion(any(), any()))
-                    .thenReturn(false);
+        dispatcher.dispatch(message);
 
-            doAnswer(invocation -> List.of(invocation.getArgument(0).toString()))
-                    .when(conversionHandler)
-                    .callConversionService(
-                            anyString(), anyString(), anyString(), anyBoolean(), anyString());
+        verify(dispatcher, times(1)).sendToTransferExchange(anyString(), any(), any());
 
-            dispatcher.dispatch(message);
-
-            verify(dispatcher, times(1)).sendToTransferExchange(anyString(), any(), any());
-
-            // we must also check that the message has not been published on the source target
-            ArgumentCaptor<Message> argument = ArgumentCaptor.forClass(Message.class);
-            Mockito.verify(rabbitTemplate, times(0))
-                    .send(eq(DISTRIBUTION_EXCHANGE), eq(SAMU_B_MESSAGE_QUEUE), argument.capture());
-        }
+        // the message must NOT have been published on the source target queue
+        ArgumentCaptor<Message> argument = ArgumentCaptor.forClass(Message.class);
+        Mockito.verify(rabbitTemplate, times(0))
+                .send(eq(DISTRIBUTION_EXCHANGE), eq(SAMU_B_MESSAGE_QUEUE), argument.capture());
     }
 
     @Test
@@ -913,70 +745,51 @@ public class DispatcherTest {
     @Test
     @DisplayName("should handle conversion service error correctly")
     public void shouldHandleConversionServiceError() throws IOException {
-        try (MockedStatic<ConversionUtils> mockedConversionUtils =
-                mockStatic(ConversionUtils.class)) {
-            // Create a spy of the messageHandler for this test only
-            MessageHandler messageHandlerSpy = spy(messageHandler);
-            Dispatcher testDispatcher =
-                    new Dispatcher(
-                            messageHandlerSpy,
-                            rabbitTemplate,
-                            edxlHandler,
-                            xmlMapper,
-                            jsonMapper,
-                            conversionHandler,
-                            hubConfig,
-                            persistenceService);
+        // Route a fire message via the NEXSIS vhost so the real CISU-bridge predicate fires
+        // (recipient samuA has directCISU=false in the test CSV).
+        doReturn(NEXSIS_VHOST).when(hubConfig).getVhost();
 
-            Message receivedMessage = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
-            EdxlMessage edxlMessage =
-                    edxlHandler.deserializeJsonEDXL(
-                            new String(receivedMessage.getBody(), StandardCharsets.UTF_8));
+        MessageHandler messageHandlerSpy = spy(messageHandler);
+        Dispatcher testDispatcher =
+                new Dispatcher(
+                        messageHandlerSpy,
+                        rabbitTemplate,
+                        edxlHandler,
+                        xmlMapper,
+                        jsonMapper,
+                        conversionHandler,
+                        hubConfig,
+                        persistenceService);
 
-            // Mock ConversionUtils to require CISU conversion
-            mockedConversionUtils
-                    .when(() -> ConversionUtils.getSourceVHost(any()))
-                    .thenReturn("15-15_v1.5");
-            mockedConversionUtils
-                    .when(() -> ConversionUtils.getTargetVHosts(any(), any()))
-                    .thenReturn(new String[] {"15-15_v2.0"});
-            mockedConversionUtils
-                    .when(() -> ConversionUtils.requiresVersionConversion(any(), any()))
-                    .thenReturn(false);
-            mockedConversionUtils
-                    .when(() -> ConversionUtils.requiresCisuConversion(any(), any()))
-                    .thenReturn(true);
+        Message receivedMessage =
+                buildMessageToRecipient(SDIS_C_ROUTING_KEY, SAMU_A_ROUTING_KEY, JSON);
+        EdxlMessage edxlMessage =
+                edxlHandler.deserializeJsonEDXL(
+                        new String(receivedMessage.getBody(), StandardCharsets.UTF_8));
 
-            // Mock conversion service to throw exception with error message from conversion service
-            String conversionErrorMessage = "Conversion service error message";
-            doThrow(
-                            new ConversionException(
-                                    conversionErrorMessage, edxlMessage.getDistributionID()))
-                    .when(conversionHandler)
-                    .callConversionService(
-                            anyString(), anyString(), anyString(), anyBoolean(), anyString());
+        String conversionErrorMessage = "Conversion service error message";
+        doThrow(new ConversionException(conversionErrorMessage, edxlMessage.getDistributionID()))
+                .when(conversionHandler)
+                .callConversionService(
+                        anyString(), anyString(), anyString(), anyBoolean(), anyString());
 
-            // Test that dispatching throws AmqpRejectAndDontRequeueException
-            assertThrows(
-                    AmqpRejectAndDontRequeueException.class,
-                    () -> testDispatcher.dispatch(receivedMessage));
+        assertThrows(
+                AmqpRejectAndDontRequeueException.class,
+                () -> testDispatcher.dispatch(receivedMessage));
 
-            // Verify handleError was called with correct ConversionException
-            ArgumentCaptor<ConversionException> exceptionCaptor =
-                    ArgumentCaptor.forClass(ConversionException.class);
-            ArgumentCaptor<Message> messageCaptor = ArgumentCaptor.forClass(Message.class);
+        ArgumentCaptor<ConversionException> exceptionCaptor =
+                ArgumentCaptor.forClass(ConversionException.class);
+        ArgumentCaptor<Message> messageCaptor = ArgumentCaptor.forClass(Message.class);
 
-            verify(messageHandlerSpy)
-                    .handleError(exceptionCaptor.capture(), messageCaptor.capture());
+        verify(messageHandlerSpy).handleError(exceptionCaptor.capture(), messageCaptor.capture());
 
-            ConversionException thrownException = exceptionCaptor.getValue();
-            assertEquals(
-                    edxlMessage.getDistributionID(), thrownException.getReferencedDistributionID());
-            assertTrue(thrownException.getMessage().contains(conversionErrorMessage));
+        ConversionException thrownException = exceptionCaptor.getValue();
+        assertEquals(
+                edxlMessage.getDistributionID(), thrownException.getReferencedDistributionID());
+        assertTrue(thrownException.getMessage().contains(conversionErrorMessage));
 
-            Message handledMessage = messageCaptor.getValue();
-            assertEquals(receivedMessage, handledMessage);
-        }
+        Message handledMessage = messageCaptor.getValue();
+        assertEquals(receivedMessage, handledMessage);
     }
 
     // disabling until we restore info message sending to outer hubex
@@ -994,6 +807,29 @@ public class DispatcherTest {
                 ErrorCode.UNROUTABLE_MESSAGE,
                 "fr.police.random_2608323d-507d-4cbf-bf74-52007f8124ea",
                 "Unable to route message with id fr.police.random_2608323d-507d-4cbf-bf74-52007f8124ea, no health actor involved.");
+    }
+
+    /**
+     * Builds an EDXL-DE message overriding sender (routing key + body) and recipient (body). Lets a
+     * test target a specific CSV client without stubbing CSV-backed getters.
+     */
+    private Message buildMessageToRecipient(
+            String senderRoutingKey, String recipientId, String contentType) throws IOException {
+        Message base = createMessage("EDXL-DE", contentType, senderRoutingKey);
+        boolean isXml = XML.equals(contentType);
+        EdxlMessage edxl =
+                isXml
+                        ? edxlHandler.deserializeXmlEDXL(
+                                new String(base.getBody(), StandardCharsets.UTF_8))
+                        : edxlHandler.deserializeJsonEDXL(
+                                new String(base.getBody(), StandardCharsets.UTF_8));
+        MessageTestUtils.setMessageConsistentWithRoutingKey(edxl, senderRoutingKey);
+        MessageTestUtils.setMessageRecipient(edxl, recipientId);
+        byte[] body =
+                isXml
+                        ? edxlHandler.serializeXmlEDXL(edxl).getBytes(StandardCharsets.UTF_8)
+                        : edxlHandler.serializeJsonEDXL(edxl).getBytes(StandardCharsets.UTF_8);
+        return new Message(body, base.getMessageProperties());
     }
 
     private void assertErrorHasBeenSent(
@@ -1096,14 +932,9 @@ public class DispatcherTest {
     @Test
     @DisplayName("should transfer to another vhost when an error is raised after message transfer")
     public void transferErrorToOtherVhost() throws IOException, ValidationException {
-        HubConfiguration hubConfigSpy = Mockito.spy(hubConfig);
-        doReturn("15-15_v2.0").when(hubConfigSpy).getVhost();
-        doReturn(new HashMap<>(Map.of(SAMU_A_ROUTING_KEY, false)))
-                .when(hubConfigSpy)
-                .getUseXmlPreferences();
-        doReturn(new String[] {"1.5"})
-                .when(hubConfigSpy)
-                .getClientVersionsForPerimeter(SAMU_A_ROUTING_KEY, "15-15");
+        // Stub the hub vhost to v2.0 so that an error sent back to samuV1 (CSV declares only 1.5)
+        // triggers a v2.0 -> v1.5 transfer-exchange route.
+        doReturn("15-15_v2.0").when(hubConfig).getVhost();
 
         Validator validatorMock = Mockito.mock(Validator.class);
         Mockito.doThrow(
@@ -1116,7 +947,7 @@ public class DispatcherTest {
                 new MessageHandler(
                         rabbitTemplate,
                         edxlHandler,
-                        hubConfigSpy,
+                        hubConfig,
                         validatorMock,
                         registry,
                         xmlMapper,
@@ -1130,10 +961,10 @@ public class DispatcherTest {
                         xmlMapper,
                         jsonMapper,
                         conversionHandler,
-                        hubConfigSpy,
+                        hubConfig,
                         persistenceService);
 
-        Message message = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
+        Message message = buildMessageToRecipient(SAMU_V1_ROUTING_KEY, SAMU_A_ROUTING_KEY, JSON);
 
         String exchangeName = "transfer_15-15_v2.0_to_15-15_v1.5";
 
@@ -1146,9 +977,7 @@ public class DispatcherTest {
         AmqpRejectAndDontRequeueException errorThrown =
                 assertThrows(
                         AmqpRejectAndDontRequeueException.class,
-                        () -> {
-                            dispatcherSpy.dispatch(message);
-                        });
+                        () -> dispatcherSpy.dispatch(message));
 
         assertEquals("Mock schema validation error", errorThrown.getCause().getMessage());
 
@@ -1160,39 +989,13 @@ public class DispatcherTest {
     @Test
     @DisplayName("should forward error message directly when error is received after conversion")
     public void sendErrorMessageToSameVhost() throws IOException {
-        HubConfiguration hubConfigSpy = Mockito.spy(hubConfig);
-        doReturn("15-15_v1.5").when(hubConfigSpy).getVhost();
-        doReturn(new HashMap<>(Map.of(SAMU_A_ROUTING_KEY, false)))
-                .when(hubConfigSpy)
-                .getUseXmlPreferences();
-        doReturn(new String[] {"1.5"})
-                .when(hubConfigSpy)
-                .getClientVersionsForPerimeter(SAMU_A_ROUTING_KEY, "15-15");
-
-        MessageHandler messageHandlerSpy =
-                new MessageHandler(
-                        rabbitTemplate,
-                        edxlHandler,
-                        hubConfigSpy,
-                        validator,
-                        registry,
-                        xmlMapper,
-                        jsonMapper,
-                        conversionHandler);
-        Dispatcher dispatcherSpy =
-                new Dispatcher(
-                        messageHandlerSpy,
-                        rabbitTemplate,
-                        edxlHandler,
-                        xmlMapper,
-                        jsonMapper,
-                        conversionHandler,
-                        hubConfigSpy,
-                        persistenceService);
+        // Stub hub vhost to v1.5: samuA declares v1.5 in the CSV, so no version conversion is
+        // needed and the error is forwarded directly to samuA's info queue.
+        doReturn("15-15_v1.5").when(hubConfig).getVhost();
 
         Message errorMessage = createMessage("hub-error-to-samuA", JSON, "fr.health.hub");
 
-        dispatcherSpy.dispatch(errorMessage);
+        dispatcher.dispatch(errorMessage);
 
         ArgumentCaptor<Message> argument = ArgumentCaptor.forClass(Message.class);
         Mockito.verify(rabbitTemplate, times(1))
@@ -1202,15 +1005,8 @@ public class DispatcherTest {
     @Test
     @DisplayName("should send error message to sender info queue when error is raised")
     public void sendErrorMessageWhenErrorIsRaised() throws IOException, ValidationException {
-        HubConfiguration hubConfigSpy = Mockito.spy(hubConfig);
-        doReturn("15-15_v1.5").when(hubConfigSpy).getVhost();
-        doReturn(new HashMap<>(Map.of(SAMU_A_ROUTING_KEY, false)))
-                .when(hubConfigSpy)
-                .getUseXmlPreferences();
-        doReturn(new String[] {"1.5"})
-                .when(hubConfigSpy)
-                .getClientVersionsForPerimeter(SAMU_A_ROUTING_KEY, "15-15");
-
+        // Default hub vhost is v2.1 and samuA declares v2.1: validation error is forwarded directly
+        // to samuA's info queue without any conversion.
         Validator validatorMock = Mockito.mock(Validator.class);
         Mockito.doThrow(
                         new SchemaValidationException(
@@ -1222,7 +1018,7 @@ public class DispatcherTest {
                 new MessageHandler(
                         rabbitTemplate,
                         edxlHandler,
-                        hubConfigSpy,
+                        hubConfig,
                         validatorMock,
                         registry,
                         xmlMapper,
@@ -1236,7 +1032,7 @@ public class DispatcherTest {
                         xmlMapper,
                         jsonMapper,
                         conversionHandler,
-                        hubConfigSpy,
+                        hubConfig,
                         persistenceService);
 
         Message message = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
@@ -1244,9 +1040,7 @@ public class DispatcherTest {
         AmqpRejectAndDontRequeueException errorThrown =
                 assertThrows(
                         AmqpRejectAndDontRequeueException.class,
-                        () -> {
-                            dispatcherSpy.dispatch(message);
-                        });
+                        () -> dispatcherSpy.dispatch(message));
 
         assertEquals("Mock schema validation error", errorThrown.getCause().getMessage());
 
@@ -1304,34 +1098,12 @@ public class DispatcherTest {
     @Test
     @DisplayName("should call persistenceService before CISU conversion")
     public void shouldCallPersistenceServiceBeforeCisuConversion() throws Exception {
-        try (MockedStatic<ConversionUtils> mockedConversionUtils =
-                        mockStatic(ConversionUtils.class);
-                MockedStatic<MessagePersistencePolicy> mockedPersistencePolicy =
-                        mockStatic(MessagePersistencePolicy.class)) {
-            // Build a message from a fire actor
-            Message baseFromSdis = createMessage("EDXL-DE", XML, SDIS_C_ROUTING_KEY);
-            EdxlMessage edxlMessageFromSdis =
-                    edxlHandler.deserializeXmlEDXL(
-                            new String(baseFromSdis.getBody(), StandardCharsets.UTF_8));
-            MessageTestUtils.setMessageConsistentWithRoutingKey(
-                    edxlMessageFromSdis, SDIS_C_ROUTING_KEY);
-            Message fromFireMessage =
-                    new Message(
-                            edxlHandler.serializeXmlEDXL(edxlMessageFromSdis).getBytes(),
-                            baseFromSdis.getMessageProperties());
+        try (MockedStatic<MessagePersistencePolicy> mockedPersistencePolicy =
+                mockStatic(MessagePersistencePolicy.class)) {
+            doReturn(NEXSIS_VHOST).when(hubConfig).getVhost();
 
-            mockedConversionUtils
-                    .when(() -> ConversionUtils.getSourceVHost(any()))
-                    .thenReturn("15-15_v1.5");
-            mockedConversionUtils
-                    .when(() -> ConversionUtils.getTargetVHosts(any(), any()))
-                    .thenReturn(new String[] {"15-nexsis_v1.9"});
-            mockedConversionUtils
-                    .when(() -> ConversionUtils.requiresVersionConversion(any(), any()))
-                    .thenReturn(false);
-            mockedConversionUtils
-                    .when(() -> ConversionUtils.requiresCisuConversion(any(), any()))
-                    .thenReturn(true);
+            Message fromFireMessage =
+                    buildMessageToRecipient(SDIS_C_ROUTING_KEY, SAMU_A_ROUTING_KEY, XML);
 
             mockedPersistencePolicy
                     .when(() -> MessagePersistencePolicy.shouldPersist(anyString(), anyString()))
@@ -1356,65 +1128,29 @@ public class DispatcherTest {
     @Test
     @DisplayName("should not call persistenceService for version-only conversion (not CISU)")
     public void shouldNotCallPersistenceServiceForVersionConversion() throws Exception {
-        try (MockedStatic<ConversionUtils> mockedConversionUtils =
-                mockStatic(ConversionUtils.class)) {
-            Message message = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
+        // samuA -> samuV1 forces a HEALTH version conversion (no CISU), so persistence must stay
+        // untouched.
+        Message message = buildMessageToRecipient(SAMU_A_ROUTING_KEY, SAMU_V1_ROUTING_KEY, JSON);
 
-            mockedConversionUtils
-                    .when(() -> ConversionUtils.getSourceVHost(any()))
-                    .thenReturn("15-15_v1.5");
-            mockedConversionUtils
-                    .when(() -> ConversionUtils.getTargetVHosts(any(), any()))
-                    .thenReturn(new String[] {"15-15_v2.0"});
-            mockedConversionUtils
-                    .when(() -> ConversionUtils.requiresVersionConversion(any(), any()))
-                    .thenReturn(true);
-            mockedConversionUtils
-                    .when(() -> ConversionUtils.requiresCisuConversion(any(), any()))
-                    .thenReturn(false);
+        doAnswer(invocation -> List.of(invocation.getArgument(0).toString()))
+                .when(conversionHandler)
+                .callConversionService(
+                        anyString(), anyString(), anyString(), anyBoolean(), anyString());
 
-            doAnswer(invocation -> List.of(invocation.getArgument(0).toString()))
-                    .when(conversionHandler)
-                    .callConversionService(
-                            anyString(), anyString(), anyString(), anyBoolean(), anyString());
+        dispatcher.dispatch(message);
 
-            dispatcher.dispatch(message);
-
-            verify(persistenceService, never()).persist(any(EdxlMessage.class));
-        }
+        verify(persistenceService, never()).persist(any(EdxlMessage.class));
     }
 
     @Test
     @DisplayName("should have persisted message even if CISU conversion fails")
     public void shouldHavePersistedEvenIfCisuConversionFails() throws Exception {
-        try (MockedStatic<ConversionUtils> mockedConversionUtils =
-                        mockStatic(ConversionUtils.class);
-                MockedStatic<MessagePersistencePolicy> mockedPersistencePolicy =
-                        mockStatic(MessagePersistencePolicy.class)) {
-            // Build a message from a fire actor
-            Message baseFromSdis = createMessage("EDXL-DE", XML, SDIS_C_ROUTING_KEY);
-            EdxlMessage edxlMessageFromSdis =
-                    edxlHandler.deserializeXmlEDXL(
-                            new String(baseFromSdis.getBody(), StandardCharsets.UTF_8));
-            MessageTestUtils.setMessageConsistentWithRoutingKey(
-                    edxlMessageFromSdis, SDIS_C_ROUTING_KEY);
-            Message fromFireMessage =
-                    new Message(
-                            edxlHandler.serializeXmlEDXL(edxlMessageFromSdis).getBytes(),
-                            baseFromSdis.getMessageProperties());
+        try (MockedStatic<MessagePersistencePolicy> mockedPersistencePolicy =
+                mockStatic(MessagePersistencePolicy.class)) {
+            doReturn(NEXSIS_VHOST).when(hubConfig).getVhost();
 
-            mockedConversionUtils
-                    .when(() -> ConversionUtils.getSourceVHost(any()))
-                    .thenReturn("15-15_v1.5");
-            mockedConversionUtils
-                    .when(() -> ConversionUtils.getTargetVHosts(any(), any()))
-                    .thenReturn(new String[] {"15-nexsis_v1.9"});
-            mockedConversionUtils
-                    .when(() -> ConversionUtils.requiresVersionConversion(any(), any()))
-                    .thenReturn(false);
-            mockedConversionUtils
-                    .when(() -> ConversionUtils.requiresCisuConversion(any(), any()))
-                    .thenReturn(true);
+            Message fromFireMessage =
+                    buildMessageToRecipient(SDIS_C_ROUTING_KEY, SAMU_A_ROUTING_KEY, XML);
 
             mockedPersistencePolicy
                     .when(() -> MessagePersistencePolicy.shouldPersist(anyString(), anyString()))
@@ -1439,32 +1175,12 @@ public class DispatcherTest {
     @Test
     @DisplayName("should wrap persistence exception in HubPersistenceException")
     public void shouldThrowPersistenceExceptionIfPersistenceFails() throws Exception {
-        try (MockedStatic<ConversionUtils> mockedConversionUtils =
-                        mockStatic(ConversionUtils.class);
-                MockedStatic<MessagePersistencePolicy> mockedPersistencePolicy =
-                        mockStatic(MessagePersistencePolicy.class)) {
-            Message message = createMessage("EDXL-DE", XML, SDIS_C_ROUTING_KEY);
-            EdxlMessage edxlMessage =
-                    edxlHandler.deserializeXmlEDXL(
-                            new String(message.getBody(), StandardCharsets.UTF_8));
-            MessageTestUtils.setMessageConsistentWithRoutingKey(edxlMessage, SDIS_C_ROUTING_KEY);
-            Message fromFireMessage =
-                    new Message(
-                            edxlHandler.serializeXmlEDXL(edxlMessage).getBytes(),
-                            message.getMessageProperties());
+        try (MockedStatic<MessagePersistencePolicy> mockedPersistencePolicy =
+                mockStatic(MessagePersistencePolicy.class)) {
+            doReturn(NEXSIS_VHOST).when(hubConfig).getVhost();
 
-            mockedConversionUtils
-                    .when(() -> ConversionUtils.getSourceVHost(any()))
-                    .thenReturn("15-15_v1.5");
-            mockedConversionUtils
-                    .when(() -> ConversionUtils.getTargetVHosts(any(), any()))
-                    .thenReturn(new String[] {"15-nexsis_v1.9"});
-            mockedConversionUtils
-                    .when(() -> ConversionUtils.requiresVersionConversion(any(), any()))
-                    .thenReturn(false);
-            mockedConversionUtils
-                    .when(() -> ConversionUtils.requiresCisuConversion(any(), any()))
-                    .thenReturn(true);
+            Message fromFireMessage =
+                    buildMessageToRecipient(SDIS_C_ROUTING_KEY, SAMU_A_ROUTING_KEY, XML);
 
             mockedPersistencePolicy
                     .when(() -> MessagePersistencePolicy.shouldPersist(anyString(), anyString()))
@@ -1494,72 +1210,40 @@ public class DispatcherTest {
     @Test
     @DisplayName("should not call persistenceService when no conversion is required")
     public void shouldNotCallPersistenceServiceForDirectDispatch() throws Exception {
-        try (MockedStatic<ConversionUtils> mockedConversionUtils =
-                mockStatic(ConversionUtils.class)) {
-            mockedConversionUtils
-                    .when(() -> ConversionUtils.requiresVersionConversion(any(), any()))
-                    .thenReturn(false);
-            mockedConversionUtils
-                    .when(() -> ConversionUtils.requiresCisuConversion(any(), any()))
-                    .thenReturn(false);
-            mockedConversionUtils
-                    .when(() -> ConversionUtils.getSourceVHost(any()))
-                    .thenReturn("15-15_v1.5");
-            mockedConversionUtils
-                    .when(() -> ConversionUtils.getTargetVHosts(any(), any()))
-                    .thenReturn(new String[] {"15-15_v1.5"});
+        // samuA -> samuB on the default v2.1 vhost requires no conversion, so persistence stays
+        // untouched.
+        Message message = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
+        dispatcher.dispatch(message);
 
-            Message message = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
-            dispatcher.dispatch(message);
-
-            verify(persistenceService, never()).persist(any(EdxlMessage.class));
-        }
+        verify(persistenceService, never()).persist(any(EdxlMessage.class));
     }
 
     @Test
     @DisplayName("should transfer all messages received from converter as array")
     public void transferMultipleMessagedFromConverter() throws IOException {
-        try (MockedStatic<ConversionUtils> mockedConversionUtils =
-                mockStatic(ConversionUtils.class)) {
-            Message message = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
-            String exchangeName = "transfer_15-15_v1.5_to_15-15_v2.0";
+        // samuA -> samuV1 forces a v2.1 -> v1.5 version conversion via the real CSV.
+        Message message = buildMessageToRecipient(SAMU_A_ROUTING_KEY, SAMU_V1_ROUTING_KEY, JSON);
+        String exchangeName = "transfer_15-15_v2.1_to_15-15_v1.5";
 
-            mockedConversionUtils
-                    .when(() -> ConversionUtils.buildExchangeDestination(any(), any()))
-                    .thenReturn(exchangeName);
+        // Returns a list of 2 converted messages
+        doAnswer(
+                        invocation ->
+                                List.of(
+                                        invocation.getArgument(0).toString(),
+                                        invocation.getArgument(0).toString()))
+                .when(conversionHandler)
+                .callConversionService(
+                        anyString(), anyString(), anyString(), anyBoolean(), anyString());
 
-            mockedConversionUtils
-                    .when(() -> ConversionUtils.getSourceVHost(any()))
-                    .thenReturn("15-15_v1.5");
-            mockedConversionUtils
-                    .when(() -> ConversionUtils.getTargetVHosts(any(), any()))
-                    .thenReturn(new String[] {"15-15_v2.0"});
-            mockedConversionUtils
-                    .when(() -> ConversionUtils.requiresVersionConversion(any(), any()))
-                    .thenReturn(true);
-            mockedConversionUtils
-                    .when(() -> ConversionUtils.requiresCisuConversion(any(), any()))
-                    .thenReturn(false);
-            // Returns a list of 2 converted messages
-            doAnswer(
-                            invocation ->
-                                    List.of(
-                                            invocation.getArgument(0).toString(),
-                                            invocation.getArgument(0).toString()))
-                    .when(conversionHandler)
-                    .callConversionService(
-                            anyString(), anyString(), anyString(), anyBoolean(), anyString());
+        dispatcher.dispatch(message);
 
-            dispatcher.dispatch(message);
+        verify(conversionHandler, times(1))
+                .callConversionService(
+                        anyString(), anyString(), anyString(), eq(false), anyString());
 
-            verify(conversionHandler, times(1))
-                    .callConversionService(
-                            anyString(), anyString(), anyString(), eq(false), anyString());
+        ArgumentCaptor<Message> argCaptor = ArgumentCaptor.forClass(Message.class);
 
-            ArgumentCaptor<Message> argCaptor = ArgumentCaptor.forClass(Message.class);
-
-            Mockito.verify(rabbitTemplate, times(2))
-                    .send(eq(exchangeName), eq(SAMU_A_ROUTING_KEY), argCaptor.capture());
-        }
+        Mockito.verify(rabbitTemplate, times(2))
+                .send(eq(exchangeName), eq(SAMU_A_ROUTING_KEY), argCaptor.capture());
     }
 }
