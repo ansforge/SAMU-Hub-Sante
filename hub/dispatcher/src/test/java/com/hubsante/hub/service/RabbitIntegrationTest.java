@@ -46,7 +46,7 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
     @DisplayName(
             "message dispatched to exchange is received by a consumer listening to the right queue")
     public void dispatchTest() throws Exception {
-        Message published = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
+        Message published = createMessage("EDXL-DE", JSON);
         RabbitTemplate samuA_publisher =
                 getCustomRabbitTemplate(
                         classLoader.getResource("config/certs/samuA/samuA.p12").getPath(), "samuA");
@@ -81,7 +81,7 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
                     }
                 });
 
-        Message published = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
+        Message published = createMessage("EDXL-DE", JSON);
         samuA_publisher.send(HUBSANTE_EXCHANGE, SAMU_B_ROUTING_KEY, published);
         Thread.sleep(DISPATCHER_PROCESS_TIME);
 
@@ -133,7 +133,7 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
     @Test
     @DisplayName("expired message should be rejected")
     public void rejectExpiredMessage() throws Exception {
-        Message published = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
+        Message published = createMessage("EDXL-DE", JSON);
         RabbitTemplate samuA_publisher =
                 getCustomRabbitTemplate(
                         classLoader.getResource("config/certs/samuA/samuA.p12").getPath(), "samuA");
@@ -153,7 +153,7 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
     @Test
     @DisplayName("message rejected by client is DLQ handled")
     public void clientRejectsMessageToDLQ() throws Exception {
-        Message published = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
+        Message published = createMessage("EDXL-DE", JSON);
         RabbitTemplate samuA_publisher =
                 getCustomRabbitTemplate(
                         classLoader.getResource("config/certs/samuA/samuA.p12").getPath(), "samuA");

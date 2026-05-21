@@ -36,7 +36,6 @@ import com.hubsante.hub.exception.ExpiredBeforeDispatchMessageException;
 import com.hubsante.hub.exception.HubPersistenceException;
 import com.hubsante.hub.exception.SchemaValidationException;
 import com.hubsante.hub.exception.UnroutableMessageException;
-import com.hubsante.hub.service.utils.MessageTestUtils;
 import com.hubsante.hub.utils.ConversionRulesCommand;
 import com.hubsante.hub.utils.EdxlUtils;
 import com.hubsante.hub.utils.MessagePersistencePolicy;
@@ -104,6 +103,7 @@ public class DispatcherTest {
             "fr.health.samuA_2608323d-507d-4cbf-bf74-52007f8124ea";
     private final String SDIS_C_ROUTING_KEY = "fr.fire.sdisC";
     private final String SAMU_V1_ROUTING_KEY = "fr.health.samuV1";
+    private final String SAMU_V3_ROUTING_KEY = "fr.health.samuV3";
 
     private final String TEST_EDITOR = "default-editor";
     private final String INCONSISTENT_ROUTING_KEY = "fr.health.no-samu";
@@ -169,7 +169,7 @@ public class DispatcherTest {
     @DisplayName("should send json message to the right exchange and routing key")
     public void shouldDispatchJsonToRightExchange() throws IOException {
         // generate input message and check that it has the expected content type
-        Message receivedMessage = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
+        Message receivedMessage = createMessage("EDXL-DE", JSON);
         assertEquals(JSON, receivedMessage.getMessageProperties().getContentType());
         // dispatch message
         dispatcher.dispatch(receivedMessage);
@@ -227,7 +227,7 @@ public class DispatcherTest {
     @DisplayName("should convert messages according to client preferences")
     public void shouldConvertMessageAccordingToUseXmlPreferences() throws IOException {
         // JSON -> XML direction
-        Message receivedJsonMessage = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
+        Message receivedJsonMessage = createMessage("EDXL-DE", JSON);
         assertEquals(JSON, receivedJsonMessage.getMessageProperties().getContentType());
 
         dispatcher.dispatch(receivedJsonMessage);
@@ -256,17 +256,8 @@ public class DispatcherTest {
         // not flagged directCISU. samuA satisfies the latter (directCISU=false in the test CSV).
         doReturn(NEXSIS_VHOST).when(hubConfig).getVhost();
 
-        Message baseFromSdis = createMessage("EDXL-DE", XML, SDIS_C_ROUTING_KEY);
-        EdxlMessage edxlMessageFromSdis =
-                edxlHandler.deserializeXmlEDXL(
-                        new String(baseFromSdis.getBody(), StandardCharsets.UTF_8));
-        MessageTestUtils.setMessageConsistentWithRoutingKey(
-                edxlMessageFromSdis, SDIS_C_ROUTING_KEY);
-        MessageTestUtils.setMessageRecipient(edxlMessageFromSdis, SAMU_A_ROUTING_KEY);
         Message fromFireMessage =
-                new Message(
-                        edxlHandler.serializeXmlEDXL(edxlMessageFromSdis).getBytes(),
-                        baseFromSdis.getMessageProperties());
+                createMessage("EDXL-DE", XML, SDIS_C_ROUTING_KEY, SAMU_A_ROUTING_KEY);
 
         doAnswer(invocation -> List.of(invocation.getArgument(0).toString()))
                 .when(conversionHandler)
@@ -283,9 +274,8 @@ public class DispatcherTest {
     @Test
     @DisplayName("should call conversion service for messages which need version conversion")
     public void shouldCallConversionServiceForVersionConvertedMessages() throws IOException {
-        // Default hub vhost is 15-15_v2.1 but samuV1 only declares 1.5 in the test CSV, so the real
-        // CSV-driven routing detects a version mismatch and triggers conversion.
-        Message message = buildMessageToRecipient(SAMU_A_ROUTING_KEY, SAMU_V1_ROUTING_KEY, JSON);
+        // samuA -> samuV1 on the default vhost 15-15_v2.1 => conversion triggered
+        Message message = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY, SAMU_V1_ROUTING_KEY);
 
         doAnswer(invocation -> List.of(invocation.getArgument(0).toString()))
                 .when(conversionHandler)
@@ -302,8 +292,8 @@ public class DispatcherTest {
     @Test
     @DisplayName("should not call conversion service for health messages")
     public void shouldNotCallConversionServiceForHealthMessages() throws IOException {
-        // samuA -> samuB on the default v2.1 vhost: both declare v2.1, no conversion needed.
-        Message message = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
+        // samuA -> samuV3 on the default vhost 15-15_v2.1 => no conversion needed.
+        Message message = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY, SAMU_V3_ROUTING_KEY);
 
         dispatcher.dispatch(message);
 
@@ -316,7 +306,7 @@ public class DispatcherTest {
     @DisplayName("should reset TTL if edxl dateTimeExpires is lower")
     public void shouldResetTTL() throws IOException {
         // get message and override dateTimeExpires field with sooner value
-        Message base = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
+        Message base = createMessage("EDXL-DE", JSON);
         EdxlMessage edxlMessage =
                 edxlHandler.deserializeJsonEDXL(new String(base.getBody(), StandardCharsets.UTF_8));
         setCustomExpirationDate(edxlMessage, 2);
@@ -342,7 +332,7 @@ public class DispatcherTest {
     @DisplayName("should send error message if the custom dateTimeExpires is in the past")
     public void shouldThrowExpiredBeforeDispatchMessageException() throws IOException {
         // get message and override dateTimeExpires field with a value in the past
-        Message base = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
+        Message base = createMessage("EDXL-DE", JSON);
         EdxlMessage edxlMessage =
                 edxlHandler.deserializeJsonEDXL(new String(base.getBody(), StandardCharsets.UTF_8));
         setCustomExpirationDate(edxlMessage, -2);
@@ -373,7 +363,7 @@ public class DispatcherTest {
     @DisplayName("should reset expiration AMQP property expiration to null before dispatching")
     public void shouldResetExpirationPropertyToNullBeforeDispatch() throws IOException {
         // Create a message and set an expiration property
-        Message base = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
+        Message base = createMessage("EDXL-DE", JSON);
         MessageProperties props = base.getMessageProperties();
         props.setExpiration("1000");
         EdxlMessage edxlMessage =
@@ -399,7 +389,7 @@ public class DispatcherTest {
     @DisplayName("should send info to sender of DLQed message - expiration")
     public void handleDLQMessage() throws Exception {
         // we test that an expired message has been rejected after the DLQ listener has been called
-        Message originalMessage = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
+        Message originalMessage = createMessage("EDXL-DE", JSON);
         Message dlqMessage = applyRabbitmqDLQHeaders(originalMessage, DLQ_EXPIRED_REASON);
         assertThrows(
                 AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatchDLQ(dlqMessage));
@@ -417,7 +407,7 @@ public class DispatcherTest {
     @DisplayName("should send info to sender of DLQed message - rejection")
     public void handleDLQRejectedMessage() throws Exception {
         // we test that a rejected message received on the DLQ listener does not trigger a RS-ERROR
-        Message originalMessage = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
+        Message originalMessage = createMessage("EDXL-DE", JSON);
         Message dlqMessage = applyRabbitmqDLQHeaders(originalMessage, DLQ_REJECTED_REASON);
         ArgumentCaptor<Message> argCaptor = ArgumentCaptor.forClass(Message.class);
         assertThrows(
@@ -461,7 +451,7 @@ public class DispatcherTest {
     @DisplayName("message without content-type is rejected ")
     public void rejectMessageWithoutContentType() throws IOException {
         // we test that the message has been rejected if the content-type is not set
-        Message receivedMessage = createMessage("EDXL-DE", null, SAMU_A_ROUTING_KEY);
+        Message receivedMessage = createMessage("EDXL-DE", null);
         assertThrows(
                 AmqpRejectAndDontRequeueException.class,
                 () -> dispatcher.dispatch(receivedMessage));
@@ -478,9 +468,7 @@ public class DispatcherTest {
     @DisplayName("message with unhandled content-type is rejected")
     public void rejectMessageWithUnhandledContentType() throws IOException {
         // we test that the message has been rejected if the content-type is neither json nor xml
-        Message receivedMessage =
-                createMessage(
-                        "EDXL-DE", MessageProperties.DEFAULT_CONTENT_TYPE, SAMU_A_ROUTING_KEY);
+        Message receivedMessage = createMessage("EDXL-DE", MessageProperties.DEFAULT_CONTENT_TYPE);
         assertThrows(
                 AmqpRejectAndDontRequeueException.class,
                 () -> dispatcher.dispatch(receivedMessage));
@@ -497,7 +485,7 @@ public class DispatcherTest {
     @DisplayName("message body inconsistent with content-type is rejected")
     public void rejectMessageWithInconsistentBody() throws IOException {
         // We create the AMQP message from the JSON file
-        Message receivedMessage = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
+        Message receivedMessage = createMessage("EDXL-DE", JSON);
         // We override the content type to XML
         receivedMessage.getMessageProperties().setContentType(XML);
         // we test that the message has been rejected if the body is not consistent with the
@@ -518,8 +506,9 @@ public class DispatcherTest {
     @DisplayName("outer routing key inconsistent with sender ID")
     public void outerRoutingKeyInconsistentWithSenderId() throws IOException {
         // we test that the message has been rejected if the sender ID is not consistent with the
-        // outer routing key
-        Message receivedMessage = createMessage("EDXL-DE", JSON, INCONSISTENT_ROUTING_KEY);
+        // outer routing key.
+        Message receivedMessage = createMessage("EDXL-DE", JSON);
+        receivedMessage.getMessageProperties().setReceivedRoutingKey(INCONSISTENT_ROUTING_KEY);
         assertThrows(
                 AmqpRejectAndDontRequeueException.class,
                 () -> dispatcher.dispatch(receivedMessage));
@@ -535,7 +524,7 @@ public class DispatcherTest {
     @Test
     @DisplayName("should reject message without persistent delivery mode")
     public void rejectMessageWithoutPersistentDeliveryMode() throws IOException {
-        Message receivedMessage = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
+        Message receivedMessage = createMessage("EDXL-DE", JSON);
         receivedMessage
                 .getMessageProperties()
                 .setReceivedDeliveryMode(MessageDeliveryMode.NON_PERSISTENT);
@@ -572,9 +561,8 @@ public class DispatcherTest {
     @Test
     @DisplayName("should send version converted message to transfer exchange")
     public void sendToTransferExchange() throws IOException {
-        // Default hub vhost = 15-15_v2.1; samuV1 only declares 1.5 in the test CSV, so a message
-        // routed to samuV1 yields a real source=v2.1 / target=v1.5 transfer exchange name.
-        Message message = buildMessageToRecipient(SAMU_A_ROUTING_KEY, SAMU_V1_ROUTING_KEY, XML);
+        // samuA -> samuV1 on default vhost 15-15_v2.1; conversion triggered
+        Message message = createMessage("EDXL-DE", XML, SAMU_A_ROUTING_KEY, SAMU_V1_ROUTING_KEY);
         EdxlMessage edxlMessage =
                 edxlHandler.deserializeXmlEDXL(
                         new String(message.getBody(), StandardCharsets.UTF_8));
@@ -604,8 +592,7 @@ public class DispatcherTest {
                                 hubConfig,
                                 persistenceService));
 
-        // samuA -> samuV1 forces version conversion (hub on v2.1, samuV1 only declares v1.5).
-        Message message = buildMessageToRecipient(SAMU_A_ROUTING_KEY, SAMU_V1_ROUTING_KEY, JSON);
+        Message message = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY, SAMU_V1_ROUTING_KEY);
 
         doAnswer(invocation -> List.of(invocation.getArgument(0).toString()))
                 .when(conversionHandler)
@@ -694,7 +681,7 @@ public class DispatcherTest {
         assertNull(errorDeliveryModeSamuA.counter());
 
         // message without content type sent by SamuA
-        Message noContentTypeMessageSamuA = createMessage("EDXL-DE", null, SAMU_A_ROUTING_KEY);
+        Message noContentTypeMessageSamuA = createMessage("EDXL-DE", null);
         assertThrows(
                 AmqpRejectAndDontRequeueException.class,
                 () -> dispatcher.dispatch(noContentTypeMessageSamuA));
@@ -707,7 +694,7 @@ public class DispatcherTest {
         assertEquals(1, getOverallCounterForClient(registry, SAMU_A_ROUTING_KEY));
 
         // same sender, different error
-        Message nonPersistentMessageSamuA = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
+        Message nonPersistentMessageSamuA = createMessage("EDXL-DE", JSON);
         nonPersistentMessageSamuA
                 .getMessageProperties()
                 .setReceivedDeliveryMode(MessageDeliveryMode.NON_PERSISTENT);
@@ -745,8 +732,7 @@ public class DispatcherTest {
     @Test
     @DisplayName("should handle conversion service error correctly")
     public void shouldHandleConversionServiceError() throws IOException {
-        // Route a fire message via the NEXSIS vhost so the real CISU-bridge predicate fires
-        // (recipient samuA has directCISU=false in the test CSV).
+        // sdisC -> samuA on vhost 15-nexsis_v1.9 => transcoding triggered
         doReturn(NEXSIS_VHOST).when(hubConfig).getVhost();
 
         MessageHandler messageHandlerSpy = spy(messageHandler);
@@ -762,7 +748,7 @@ public class DispatcherTest {
                         persistenceService);
 
         Message receivedMessage =
-                buildMessageToRecipient(SDIS_C_ROUTING_KEY, SAMU_A_ROUTING_KEY, JSON);
+                createMessage("EDXL-DE", JSON, SDIS_C_ROUTING_KEY, SAMU_A_ROUTING_KEY);
         EdxlMessage edxlMessage =
                 edxlHandler.deserializeJsonEDXL(
                         new String(receivedMessage.getBody(), StandardCharsets.UTF_8));
@@ -809,29 +795,6 @@ public class DispatcherTest {
                 "Unable to route message with id fr.police.random_2608323d-507d-4cbf-bf74-52007f8124ea, no health actor involved.");
     }
 
-    /**
-     * Builds an EDXL-DE message overriding sender (routing key + body) and recipient (body). Lets a
-     * test target a specific CSV client without stubbing CSV-backed getters.
-     */
-    private Message buildMessageToRecipient(
-            String senderRoutingKey, String recipientId, String contentType) throws IOException {
-        Message base = createMessage("EDXL-DE", contentType, senderRoutingKey);
-        boolean isXml = XML.equals(contentType);
-        EdxlMessage edxl =
-                isXml
-                        ? edxlHandler.deserializeXmlEDXL(
-                                new String(base.getBody(), StandardCharsets.UTF_8))
-                        : edxlHandler.deserializeJsonEDXL(
-                                new String(base.getBody(), StandardCharsets.UTF_8));
-        MessageTestUtils.setMessageConsistentWithRoutingKey(edxl, senderRoutingKey);
-        MessageTestUtils.setMessageRecipient(edxl, recipientId);
-        byte[] body =
-                isXml
-                        ? edxlHandler.serializeXmlEDXL(edxl).getBytes(StandardCharsets.UTF_8)
-                        : edxlHandler.serializeJsonEDXL(edxl).getBytes(StandardCharsets.UTF_8);
-        return new Message(body, base.getMessageProperties());
-    }
-
     private void assertErrorHasBeenSent(
             String infoQueueName,
             ErrorCode errorCode,
@@ -855,7 +818,7 @@ public class DispatcherTest {
     @Test
     @DisplayName("should not throw when message class is supported")
     public void checkMessageClassNameSupportedDoesNotThrow() throws Exception {
-        Message message = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
+        Message message = createMessage("EDXL-DE", JSON);
         EdxlMessage edxlMessage =
                 edxlHandler.deserializeJsonEDXL(
                         new String(message.getBody(), StandardCharsets.UTF_8));
@@ -889,7 +852,7 @@ public class DispatcherTest {
     @Test
     @DisplayName("should throw UnroutableMessageException when message class is not supported")
     public void checkMessageClassNameSupportedThrowsException() throws Exception {
-        Message message = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
+        Message message = createMessage("EDXL-DE", JSON);
         EdxlMessage edxlMessage =
                 edxlHandler.deserializeJsonEDXL(
                         new String(message.getBody(), StandardCharsets.UTF_8));
@@ -932,10 +895,6 @@ public class DispatcherTest {
     @Test
     @DisplayName("should transfer to another vhost when an error is raised after message transfer")
     public void transferErrorToOtherVhost() throws IOException, ValidationException {
-        // Stub the hub vhost to v2.0 so that an error sent back to samuV1 (CSV declares only 1.5)
-        // triggers a v2.0 -> v1.5 transfer-exchange route.
-        doReturn("15-15_v2.0").when(hubConfig).getVhost();
-
         Validator validatorMock = Mockito.mock(Validator.class);
         Mockito.doThrow(
                         new SchemaValidationException(
@@ -964,9 +923,9 @@ public class DispatcherTest {
                         hubConfig,
                         persistenceService);
 
-        Message message = buildMessageToRecipient(SAMU_V1_ROUTING_KEY, SAMU_A_ROUTING_KEY, JSON);
+        Message message = createMessage("EDXL-DE", JSON, SAMU_V1_ROUTING_KEY, SAMU_A_ROUTING_KEY);
 
-        String exchangeName = "transfer_15-15_v2.0_to_15-15_v1.5";
+        String exchangeName = "transfer_15-15_v2.1_to_15-15_v1.5";
 
         // Mock call to converter (return same payload for error message)
         doAnswer(invocation -> List.of(invocation.getArgument(0).toString()))
@@ -989,11 +948,7 @@ public class DispatcherTest {
     @Test
     @DisplayName("should forward error message directly when error is received after conversion")
     public void sendErrorMessageToSameVhost() throws IOException {
-        // Stub hub vhost to v1.5: samuA declares v1.5 in the CSV, so no version conversion is
-        // needed and the error is forwarded directly to samuA's info queue.
-        doReturn("15-15_v1.5").when(hubConfig).getVhost();
-
-        Message errorMessage = createMessage("hub-error-to-samuA", JSON, "fr.health.hub");
+        Message errorMessage = createMessage("hub-error-to-samuA", JSON);
 
         dispatcher.dispatch(errorMessage);
 
@@ -1035,7 +990,7 @@ public class DispatcherTest {
                         hubConfig,
                         persistenceService);
 
-        Message message = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
+        Message message = createMessage("EDXL-DE", JSON);
 
         AmqpRejectAndDontRequeueException errorThrown =
                 assertThrows(
@@ -1052,7 +1007,7 @@ public class DispatcherTest {
     @Test
     @DisplayName("should log referencedDistributionID for ACK ReferenceWrapper")
     public void shouldLogReferencedDistributionIdForAckReferenceWrapper() throws Exception {
-        Message message = createMessage("rc-ref", JSON, SAMU_A_ROUTING_KEY);
+        Message message = createMessage("rc-ref", JSON);
 
         // Log capturing setup
         org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(MessageHandler.class);
@@ -1102,8 +1057,7 @@ public class DispatcherTest {
                 mockStatic(MessagePersistencePolicy.class)) {
             doReturn(NEXSIS_VHOST).when(hubConfig).getVhost();
 
-            Message fromFireMessage =
-                    buildMessageToRecipient(SDIS_C_ROUTING_KEY, SAMU_A_ROUTING_KEY, XML);
+            Message fromFireMessage = createMessage("EDXL-DE", XML, SDIS_C_ROUTING_KEY);
 
             mockedPersistencePolicy
                     .when(() -> MessagePersistencePolicy.shouldPersist(anyString(), anyString()))
@@ -1128,9 +1082,7 @@ public class DispatcherTest {
     @Test
     @DisplayName("should not call persistenceService for version-only conversion (not CISU)")
     public void shouldNotCallPersistenceServiceForVersionConversion() throws Exception {
-        // samuA -> samuV1 forces a HEALTH version conversion (no CISU), so persistence must stay
-        // untouched.
-        Message message = buildMessageToRecipient(SAMU_A_ROUTING_KEY, SAMU_V1_ROUTING_KEY, JSON);
+        Message message = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY, SAMU_V1_ROUTING_KEY);
 
         doAnswer(invocation -> List.of(invocation.getArgument(0).toString()))
                 .when(conversionHandler)
@@ -1149,8 +1101,7 @@ public class DispatcherTest {
                 mockStatic(MessagePersistencePolicy.class)) {
             doReturn(NEXSIS_VHOST).when(hubConfig).getVhost();
 
-            Message fromFireMessage =
-                    buildMessageToRecipient(SDIS_C_ROUTING_KEY, SAMU_A_ROUTING_KEY, XML);
+            Message fromFireMessage = createMessage("EDXL-DE", XML, SDIS_C_ROUTING_KEY);
 
             mockedPersistencePolicy
                     .when(() -> MessagePersistencePolicy.shouldPersist(anyString(), anyString()))
@@ -1179,8 +1130,7 @@ public class DispatcherTest {
                 mockStatic(MessagePersistencePolicy.class)) {
             doReturn(NEXSIS_VHOST).when(hubConfig).getVhost();
 
-            Message fromFireMessage =
-                    buildMessageToRecipient(SDIS_C_ROUTING_KEY, SAMU_A_ROUTING_KEY, XML);
+            Message fromFireMessage = createMessage("EDXL-DE", XML, SDIS_C_ROUTING_KEY);
 
             mockedPersistencePolicy
                     .when(() -> MessagePersistencePolicy.shouldPersist(anyString(), anyString()))
@@ -1210,9 +1160,7 @@ public class DispatcherTest {
     @Test
     @DisplayName("should not call persistenceService when no conversion is required")
     public void shouldNotCallPersistenceServiceForDirectDispatch() throws Exception {
-        // samuA -> samuB on the default v2.1 vhost requires no conversion, so persistence stays
-        // untouched.
-        Message message = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
+        Message message = createMessage("EDXL-DE", JSON);
         dispatcher.dispatch(message);
 
         verify(persistenceService, never()).persist(any(EdxlMessage.class));
@@ -1221,8 +1169,7 @@ public class DispatcherTest {
     @Test
     @DisplayName("should transfer all messages received from converter as array")
     public void transferMultipleMessagedFromConverter() throws IOException {
-        // samuA -> samuV1 forces a v2.1 -> v1.5 version conversion via the real CSV.
-        Message message = buildMessageToRecipient(SAMU_A_ROUTING_KEY, SAMU_V1_ROUTING_KEY, JSON);
+        Message message = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY, SAMU_V1_ROUTING_KEY);
         String exchangeName = "transfer_15-15_v2.1_to_15-15_v1.5";
 
         // Returns a list of 2 converted messages

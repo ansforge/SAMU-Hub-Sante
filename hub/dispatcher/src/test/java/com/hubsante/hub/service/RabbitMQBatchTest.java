@@ -98,7 +98,7 @@ public class RabbitMQBatchTest extends RabbitIntegrationAbstract {
 
     private Container.ExecResult publishBatch(int batchSize)
             throws IOException, InterruptedException {
-        String valid = new String(createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY).getBody());
+        String valid = new String(createMessage("EDXL-DE", JSON).getBody());
         String invalid =
                 new String(
                         createInvalidMessage(
