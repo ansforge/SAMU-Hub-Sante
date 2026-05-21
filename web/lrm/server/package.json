@@ -11,7 +11,8 @@
     "test": "vitest run",
     "build": "tsc",
     "lint": "eslint 'src/**/*.ts'",
-    "lint:fix": "eslint 'src/**/*.ts' --fix"
+    "lint:fix": "eslint 'src/**/*.ts' --fix",
+    "check-types": "tsc --noEmit"
   },
   "keywords": [],
   "author": "",
