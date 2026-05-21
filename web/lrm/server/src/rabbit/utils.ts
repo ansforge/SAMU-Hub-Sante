@@ -1,13 +1,13 @@
 import { join } from 'path';
 import { readFileSync } from 'fs';
-import amqp, { credentials, Channel, Connection } from 'amqplib/callback_api';
+import amqp, { credentials, Channel, Connection, SocketOptions } from 'amqplib/callback_api';
 import { logger } from '../logger';
 import { Config } from '../config';
-import { Logger } from "winston";
+import { Logger } from 'winston';
 
 export class RabbitMQConnector {
   private config: Config;
-  private connectionOptions: unknown;
+  private connectionOptions: SocketOptions;
   private readonly logger: Logger;
 
   constructor(config: Config) {
