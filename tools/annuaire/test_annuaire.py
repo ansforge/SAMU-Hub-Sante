@@ -1,154 +1,64 @@
-import unittest
-import tempfile
 import os
-import annuaire
+import tempfile
+import unittest
 from unittest import mock
+
+import yaml
+
+import annuaire
 from annuaire import (
-    parse_csv,
-    select_columns,
+    load_clients,
+    build_client_entry,
     API_ENDPOINT,
     HEALTH_ENDPOINT,
-    CSV_FILENAME,
-    HEADERS_COLUMNS_TO_KEEP,
-    CSV_NOT_FOUND_MSG,
+    TOPOLOGY_ROOT_KEY,
+    TOPOLOGY_CLIENTS_KEY,
 )
 
-FOLDER_NAME_PATCH_PATH = "annuaire.CSV_DIR"
+FIXTURE_DIR = os.path.join(os.path.dirname(__file__), "fixtures")
+FIXTURE_PATH = os.path.join(FIXTURE_DIR, "values.yaml")
+VALUES_PATH_PATCH = "annuaire.VALUES_PATH"
 
 
 class AnnuaireTestCase(unittest.TestCase):
     def setUp(self):
         self.tempdir = tempfile.TemporaryDirectory()
-        self.csv_path = os.path.join(self.tempdir.name, CSV_FILENAME)
-        self._write_temp_csv(
-            [
-                [
-                    "client_id",
-                    "CommonName",
-                    "editor",
-                    "P: 15-15",
-                    "P: 15-smur",
-                    "P: 15-nexsis",
-                    "P: 15-gps",
-                    "useXML",
-                    "directCISU",
-                    "additionalPermissions",
-                    "lrm_test",
-                ],
-                [
-                    "fr.health.lrm",
-                    "lrm.messaging.bac-a-sable.hub.esante.gouv.fr",
-                    "ANS",
-                    "1.5,2.0,2.1",
-                    "1.7",
-                    "1.9",
-                    "1.3",
-                    "",
-                    "",
-                    "",
-                    "true",
-                ],
-                [
-                    "fr.health.test.samuC",
-                    "fr.health.test.samuC",
-                    "ANS",
-                    "1.5,2.0,2.1",
-                    "1.7",
-                    "1.9",
-                    "1.3",
-                    "",
-                    "true",
-                    "",
-                    "true",
-                ],
-                [
-                    "fr.health.test.samuv1",
-                    "fr.health.test.samuv1",
-                    "ANS",
-                    "1.5",
-                    "",
-                    "",
-                    "",
-                    "",
-                    "",
-                    "",
-                    "true",
-                ],
-            ]
-        )
 
     def tearDown(self):
         self.tempdir.cleanup()
 
-    def _write_temp_csv(self, rows):
-        with open(self.csv_path, "w", encoding="utf-8", newline="") as f:
-            for row in rows:
-                f.write(";".join(row) + "\n")
-
-    def test_parse_csv_file_not_found(self):
-        with self.assertLogs(level="ERROR") as cm:
-            with self.assertRaises(FileNotFoundError):
-                parse_csv("non_existent.csv")
-        self.assertIn(CSV_NOT_FOUND_MSG, cm.output[0])
-
     def test_api(self):
-        with mock.patch(FOLDER_NAME_PATCH_PATH, self.tempdir.name):
+        with mock.patch(VALUES_PATH_PATCH, FIXTURE_PATH):
             app = annuaire.create_app()
             client = app.test_client()
             response = client.get(API_ENDPOINT)
             self.assertEqual(response.status_code, 200)
-            self.assertIsInstance(response.json, list)
-
-    def test_parse_csv_valid(self):
-        with mock.patch(FOLDER_NAME_PATCH_PATH, self.tempdir.name):
-            data = parse_csv(CSV_FILENAME)
-
-            expected_rows = [
-                {
-                    "client_id": "fr.health.lrm",
-                    "editor": "ANS",
-                    "P: 15-15": "1.5,2.0,2.1",
-                    "P: 15-smur": "1.7",
-                    "P: 15-nexsis": "1.9",
-                    "P: 15-gps": "1.3",
-                },
-                {
-                    "client_id": "fr.health.test.samuC",
-                    "editor": "ANS",
-                    "P: 15-15": "1.5,2.0,2.1",
-                    "P: 15-smur": "1.7",
-                    "P: 15-nexsis": "1.9",
-                    "P: 15-gps": "1.3",
-                },
-                {
-                    "client_id": "fr.health.test.samuv1",
-                    "editor": "ANS",
-                    "P: 15-15": "1.5",
-                    "P: 15-smur": "",
-                    "P: 15-nexsis": "",
-                    "P: 15-gps": "",
-                },
-            ]
-
-        for i, expected_row in enumerate(expected_rows):
-            for key, expected_value in expected_row.items():
-                actual_value = data[i].get(key)
-                self.assertEqual(
-                    actual_value,
-                    expected_value,
-                    f"Erreur sur la ligne {i + 1}, colonne '{key}': "
-                    f"attendu '{expected_value}', obtenu '{actual_value}'",
-                )
-
-    def test_select_columns(self):
-        with mock.patch(FOLDER_NAME_PATCH_PATH, self.tempdir.name):
-            data = parse_csv(CSV_FILENAME)
-            result = select_columns(data)
-            for row in result:
-                self.assertEqual(set(row.keys()), set(HEADERS_COLUMNS_TO_KEEP))
+            data = response.json
+            self.assertIsInstance(data, list)
+            self.assertEqual(len(data), 4)
+            ids = [entry["client_id"] for entry in data]
+            self.assertIn("fr.health.samu750", ids)
+            self.assertIn("fr.health.test.samuv1", ids)
+            self.assertIn("fr.health.fire", ids)
+            self.assertIn("fr.health.test.samuC", ids)
+            # full-perimeter client
+            samu = next(e for e in data if e["client_id"] == "fr.health.samu750")
+            self.assertEqual(samu["P: 15-15"], ["2.1"])
+            self.assertEqual(samu["P: 15-nexsis"], ["1.9"])
+            self.assertFalse(samu["directCISU"])
+            # directCISU client (CISU only)
+            fire = next(e for e in data if e["client_id"] == "fr.health.fire")
+            self.assertTrue(fire["directCISU"])
+            self.assertEqual(fire["P: 15-nexsis"], ["1.9"])
+            self.assertNotIn("P: 15-15", fire)
+            # full-perimeter client with directCISU
+            samuC = next(e for e in data if e["client_id"] == "fr.health.test.samuC")
+            self.assertTrue(samuC["directCISU"])
+            self.assertEqual(samuC["P: 15-15"], ["1.5", "2.0", "2.1"])
+            self.assertEqual(samuC["P: 15-nexsis"], ["1.9"])
 
     def test_healthcheck(self):
-        with mock.patch(FOLDER_NAME_PATCH_PATH, self.tempdir.name):
+        with mock.patch(VALUES_PATH_PATCH, FIXTURE_PATH):
             app = annuaire.create_app()
             client = app.test_client()
             response = client.get(HEALTH_ENDPOINT)
@@ -156,6 +66,74 @@ class AnnuaireTestCase(unittest.TestCase):
             self.assertEqual(
                 response.json, {"status": "UP", "service": "SAMU Hub Annuaire"}
             )
+
+    def test_load_clients(self):
+        clients = load_clients(FIXTURE_PATH)
+        self.assertEqual(len(clients), 4)
+        self.assertEqual(clients[0]["client_id"], "fr.health.samu750")
+        self.assertEqual(clients[1]["client_id"], "fr.health.test.samuv1")
+        self.assertEqual(clients[2]["client_id"], "fr.health.fire")
+        self.assertEqual(clients[3]["client_id"], "fr.health.test.samuC")
+
+    def test_build_client_entry_with_lrm(self):
+        client = {
+            "client_id": "fr.health.samu750",
+            "editor": "Editeur A",
+            "lrmPerimeterVersions": ["2.1"],
+            "directCISU": False,
+        }
+        entry = build_client_entry(client)
+        self.assertEqual(entry["P: 15-15"], ["2.1"])
+        self.assertNotIn("P: 15-smur", entry)
+        self.assertNotIn("P: 15-nexsis", entry)
+
+    def test_build_client_entry_direct_cisu(self):
+        client = {
+            "client_id": "fr.health.fire",
+            "editor": "NexSIS",
+            "directCISU": True,
+            "cisuPerimeterVersions": ["1.9"],
+        }
+        entry = build_client_entry(client)
+        self.assertTrue(entry["directCISU"])
+        self.assertEqual(entry["P: 15-nexsis"], ["1.9"])
+
+    def test_load_clients_file_not_found(self):
+        missing_path = os.path.join(self.tempdir.name, "nonexistent.yaml")
+        with self.assertLogs(level="ERROR") as cm:
+            with self.assertRaises(FileNotFoundError):
+                load_clients(missing_path)
+        self.assertTrue(any("not found" in line for line in cm.output))
+
+    def test_load_clients_missing_root_key(self):
+        path = os.path.join(self.tempdir.name, "bad.yaml")
+        with open(path, "w") as f:
+            yaml.dump({"wrong-key": {"clients": []}}, f)
+        with self.assertLogs(level="ERROR") as cm:
+            with self.assertRaises(RuntimeError) as ctx:
+                load_clients(path)
+        self.assertIn(TOPOLOGY_ROOT_KEY, str(ctx.exception))
+        self.assertTrue(any("Failed to load" in line for line in cm.output))
+
+    def test_load_clients_missing_clients_key(self):
+        path = os.path.join(self.tempdir.name, "no_clients.yaml")
+        with open(path, "w") as f:
+            yaml.dump({TOPOLOGY_ROOT_KEY: {"other-key": []}}, f)
+        with self.assertLogs(level="ERROR") as cm:
+            with self.assertRaises(RuntimeError) as ctx:
+                load_clients(path)
+        self.assertIn(f"{TOPOLOGY_ROOT_KEY}.{TOPOLOGY_CLIENTS_KEY}", str(ctx.exception))
+        self.assertTrue(any("Failed to load" in line for line in cm.output))
+
+    def test_load_clients_yaml_parse_error(self):
+        path = os.path.join(self.tempdir.name, "broken.yaml")
+        with open(path, "w") as f:
+            f.write("key: [\nunot closed\n")
+        with self.assertLogs(level="ERROR") as cm:
+            with self.assertRaises(RuntimeError) as ctx:
+                load_clients(path)
+        self.assertIn("Failed to load clients from", str(ctx.exception))
+        self.assertTrue(any("Failed to load" in line for line in cm.output))
 
 
 if __name__ == "__main__":

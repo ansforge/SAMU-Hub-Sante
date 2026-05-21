@@ -1,0 +1,28 @@
+annuaire:
+  clients:
+    # client with LRM + CISU + SMUR + GPS (full perimeters, no directCISU)
+    - client_id: fr.health.samu750
+      editor: Editeur A
+      lrmPerimeterVersions: ["2.1"]
+      cisuPerimeterVersions: ["1.9"]
+      smurPerimeterVersions: ["1.7"]
+      gpsPerimeterVersions: ["1.3"]
+      directCISU: false
+    # client with LRM only (partial perimeters, no directCISU)
+    - client_id: fr.health.test.samuv1
+      editor: ANS
+      lrmPerimeterVersions: ["1.5"]
+      directCISU: false
+    # client with CISU + directCISU (NexSIS-type)
+    - client_id: fr.health.fire
+      editor: NexSIS
+      cisuPerimeterVersions: ["1.9"]
+      directCISU: true
+    # client with all 4 perimeters + directCISU
+    - client_id: fr.health.test.samuC
+      editor: ANS
+      lrmPerimeterVersions: ["1.5", "2.0", "2.1"]
+      smurPerimeterVersions: ["1.7"]
+      cisuPerimeterVersions: ["1.9"]
+      gpsPerimeterVersions: ["1.3"]
+      directCISU: true

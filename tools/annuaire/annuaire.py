@@ -1,72 +1,78 @@
 import logging
-from flask import Flask, jsonify
-import csv
 import os
+
+from flask import Flask, jsonify
+import yaml
 
 ENVIRONMENT = os.environ.get("ENVIRONMENT")
 
-CSV_DIR = "/config"
-CSV_DATA_KEY = "CSV_DATA"
-CSV_FILENAME = "rabbitmq.clients-configuration.csv"
 API_ENDPOINT = "/annuaire/api"
 HEALTH_ENDPOINT = "/annuaire/health"
-CSV_NOT_FOUND_MSG = "Fichier CSV introuvable"
 
-HEADERS_COLUMNS_TO_KEEP = [
-    "client_id",
-    "editor",
-    "P: 15-15",
-    "P: 15-smur",
-    "P: 15-nexsis",
-    "P: 15-gps",
-    "directCISU",
-]
+VALUES_PATH = os.environ.get("VALUES_PATH", "/config/topology/values.yaml")
+CLIENTS_DATA_KEY = "CLIENTS_DATA"
 
+TOPOLOGY_ROOT_KEY = "annuaire"
+TOPOLOGY_CLIENTS_KEY = "clients"
 
-def create_app():
-    app = Flask(__name__)
-    register_routes(app)
-    csv_data = parse_csv(CSV_FILENAME)
-    if csv_data is None:
-        raise RuntimeError(
-            "Erreur : impossible de charger le fichier CSV au démarrage."
-        )
-    app.config[CSV_DATA_KEY] = select_columns(csv_data)
-    return app
+TOPOLOGY_TO_LEGACY_KEY = {
+    "lrmPerimeterVersions": "P: 15-15",
+    "smurPerimeterVersions": "P: 15-smur",
+    "cisuPerimeterVersions": "P: 15-nexsis",
+    "gpsPerimeterVersions": "P: 15-gps",
+}
 
 
-def parse_csv(filename):
-    path = os.path.join(CSV_DIR, filename)
-    if not os.path.exists(path):
-        logging.error(f"Fichier CSV introuvable : {path}")
-        raise FileNotFoundError(f"{CSV_NOT_FOUND_MSG} : {filename}")
+def load_clients(path: str) -> list[dict]:
     try:
-        with open(path, newline="", encoding="utf-8") as csvfile:
-            reader = csv.DictReader(csvfile, delimiter=";")
-            return list(reader)
+        with open(path, encoding="utf-8") as f:
+            data = yaml.safe_load(f)
+        if TOPOLOGY_ROOT_KEY not in data:
+            raise RuntimeError(f"Missing '{TOPOLOGY_ROOT_KEY}' key in {path}")
+        if TOPOLOGY_CLIENTS_KEY not in data[TOPOLOGY_ROOT_KEY]:
+            raise RuntimeError(
+                f"Missing '{TOPOLOGY_ROOT_KEY}.{TOPOLOGY_CLIENTS_KEY}' key in {path}"
+            )
+        return data[TOPOLOGY_ROOT_KEY][TOPOLOGY_CLIENTS_KEY]
+    except FileNotFoundError:
+        logging.error(f"Values file not found: {path}")
+        raise
+    except RuntimeError as e:
+        logging.error(f"Failed to load clients from {path}: {e}")
+        raise
     except Exception as e:
-        logging.error(f"Erreur lors de la lecture du fichier CSV '{filename}': {e}")
-        raise RuntimeError(f"Erreur lors de la lecture du CSV: {e}")
+        logging.error(f"Failed to load clients from {path}: {e}")
+        raise RuntimeError(f"Failed to load clients from {path}: {e}") from e
 
 
-def select_columns(data: list[dict]) -> list[dict]:
-    data_updated = []
-    for row in data:
-        row_updated = {
-            key: value for key, value in row.items() if key in HEADERS_COLUMNS_TO_KEEP
-        }
-        data_updated.append(row_updated)
-    return data_updated
+def build_client_entry(client: dict) -> dict:
+    entry = {
+        "client_id": client["client_id"],
+        "editor": client.get("editor", ""),
+        "directCISU": client.get("directCISU", False),
+    }
+    for topo_key, legacy_key in TOPOLOGY_TO_LEGACY_KEY.items():
+        if topo_key in client:
+            entry[legacy_key] = client[topo_key]
+    return entry
 
 
 def register_routes(app):
     @app.get(API_ENDPOINT)
     def get_json():
-        return jsonify(app.config[CSV_DATA_KEY])
+        return jsonify(app.config[CLIENTS_DATA_KEY])
 
     @app.get(HEALTH_ENDPOINT)
     def health_check():
         return jsonify({"status": "UP", "service": "SAMU Hub Annuaire"}), 200
+
+
+def create_app():
+    app = Flask(__name__)
+    register_routes(app)
+    clients = load_clients(VALUES_PATH)
+    app.config[CLIENTS_DATA_KEY] = [build_client_entry(c) for c in clients]
+    return app
 
 
 if ENVIRONMENT == "production":
