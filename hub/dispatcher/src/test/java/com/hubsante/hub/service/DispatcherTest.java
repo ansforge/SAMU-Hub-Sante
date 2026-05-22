@@ -102,8 +102,10 @@ public class DispatcherTest {
     private final String SAMU_A_DISTRIBUTION_ID =
             "fr.health.samuA_2608323d-507d-4cbf-bf74-52007f8124ea";
     private final String SDIS_C_ROUTING_KEY = "fr.fire.sdisC";
+    private final String SDIS_C_MESSAGE_QUEUE = SDIS_C_ROUTING_KEY + ".message";
     private final String SAMU_V1_ROUTING_KEY = "fr.health.samuV1";
     private final String SAMU_V3_ROUTING_KEY = "fr.health.samuV3";
+    private final String FIRE_ROUTING_KEY = "fr.fire.sga";
 
     private final String TEST_EDITOR = "default-editor";
     private final String INCONSISTENT_ROUTING_KEY = "fr.health.no-samu";
@@ -269,6 +271,98 @@ public class DispatcherTest {
         verify(conversionHandler, times(1))
                 .callConversionService(
                         anyString(), anyString(), anyString(), eq(true), anyString());
+    }
+
+    @Test
+    @DisplayName("should call conversion service for messages from health to CISU on health vhost")
+    public void cisuTranscodingFromHealthToCisuOnHealthVhost() throws IOException {
+        Message messageToFire =
+                createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY, SDIS_C_ROUTING_KEY);
+
+        doAnswer(invocation -> List.of(invocation.getArgument(0).toString()))
+                .when(conversionHandler)
+                .callConversionService(
+                        anyString(), anyString(), anyString(), anyBoolean(), anyString());
+
+        dispatcher.dispatch(messageToFire);
+
+        verify(conversionHandler, times(1))
+                .callConversionService(
+                        anyString(), anyString(), anyString(), eq(true), anyString());
+
+        String expectedTargetExchangeName = "transfer_15-15_v2.1_to_15-nexsis_v1.9";
+
+        ArgumentCaptor<Message> argument = ArgumentCaptor.forClass(Message.class);
+        Mockito.verify(rabbitTemplate, times(1))
+                .send(eq(expectedTargetExchangeName), eq(SAMU_A_ROUTING_KEY), argument.capture());
+    }
+
+    @Test
+    @DisplayName(
+            "should not call conversion service for messages from health to CISU on nexsis vhost")
+    public void cisuTranscodingFromHealthToCisuOnNexsisVhost() throws IOException {
+        doReturn(NEXSIS_VHOST).when(hubConfig).getVhost();
+        Message messageToFire =
+                createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY, SDIS_C_ROUTING_KEY);
+
+        dispatcher.dispatch(messageToFire);
+
+        verify(conversionHandler, never())
+                .callConversionService(
+                        anyString(), anyString(), anyString(), anyBoolean(), anyString());
+
+        ArgumentCaptor<Message> argument = ArgumentCaptor.forClass(Message.class);
+        Mockito.verify(rabbitTemplate, times(1))
+                .send(eq(DISTRIBUTION_EXCHANGE), eq(SDIS_C_MESSAGE_QUEUE), argument.capture());
+    }
+
+    @Test
+    @DisplayName("should call conversion service for messages from CISU to health on nexsis vhost")
+    public void cisuTranscodingFromCisuToHealthOnNexsisVhost() throws IOException {
+        doReturn(NEXSIS_VHOST).when(hubConfig).getVhost();
+        Message messageFromFire =
+                createMessage("EDXL-DE", JSON, SDIS_C_ROUTING_KEY, SAMU_A_ROUTING_KEY);
+        // Manually override the received routing key to put fr.fire.sga as per the hubex partner
+        // shovel configuration
+        messageFromFire.getMessageProperties().setReceivedRoutingKey(FIRE_ROUTING_KEY);
+
+        doAnswer(invocation -> List.of(invocation.getArgument(0).toString()))
+                .when(conversionHandler)
+                .callConversionService(
+                        anyString(), anyString(), anyString(), anyBoolean(), anyString());
+
+        dispatcher.dispatch(messageFromFire);
+
+        verify(conversionHandler, times(1))
+                .callConversionService(
+                        anyString(), anyString(), anyString(), eq(true), anyString());
+
+        String expectedTargetExchangeName = "transfer_15-nexsis_v1.9_to_15-15_v2.1";
+
+        ArgumentCaptor<Message> argument = ArgumentCaptor.forClass(Message.class);
+        Mockito.verify(rabbitTemplate, times(1))
+                .send(eq(expectedTargetExchangeName), eq(FIRE_ROUTING_KEY), argument.capture());
+    }
+
+    @Test
+    @DisplayName(
+            "should not call conversion service for messages from CISU to health on health vhost")
+    public void cisuTranscodingFromCisuToHealthOnHealthVhost() throws IOException {
+        Message messageFromFire =
+                createMessage("EDXL-DE", JSON, SDIS_C_ROUTING_KEY, SAMU_A_ROUTING_KEY);
+        // Manually override the received routing key to put fr.fire.sga as per the hubex partner
+        // shovel configuration
+        messageFromFire.getMessageProperties().setReceivedRoutingKey("fr.fire.sga");
+
+        dispatcher.dispatch(messageFromFire);
+
+        verify(conversionHandler, never())
+                .callConversionService(
+                        anyString(), anyString(), anyString(), anyBoolean(), anyString());
+
+        ArgumentCaptor<Message> argument = ArgumentCaptor.forClass(Message.class);
+        Mockito.verify(rabbitTemplate, times(1))
+                .send(eq(DISTRIBUTION_EXCHANGE), eq(SAMU_A_MESSAGE_QUEUE), argument.capture());
     }
 
     @Test
