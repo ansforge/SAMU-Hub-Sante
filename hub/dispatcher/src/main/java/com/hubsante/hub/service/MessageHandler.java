@@ -235,12 +235,7 @@ public class MessageHandler {
                             forwardedStringMessage(convertedMessages.getFirst(), errorAmqpMessage);
                     destinationExchange =
                             ConversionUtils.buildExchangeDestination(
-                                    ConversionUtils.formatPerimeterVersionToVhost(
-                                            conversionParameters.sourceVersion(),
-                                            Perimeter.HEALTH.getName()),
-                                    ConversionUtils.formatPerimeterVersionToVhost(
-                                            conversionParameters.targetVersion(),
-                                            Perimeter.HEALTH.getName()));
+                                    hubConfig.getVhost(), conversionParameters.targetVhost());
                     routingKey = HUB_ID;
                     structuredLog.info(
                             String.format(

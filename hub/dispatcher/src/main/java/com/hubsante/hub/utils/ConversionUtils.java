@@ -88,6 +88,10 @@ public class ConversionUtils {
                         formatPerimeterVersionListToVhosts(
                                 targetVersionsOnHealthPerimeter, Perimeter.HEALTH.getName());
 
+                if (availableHealthVhosts == null) {
+                    return null;
+                }
+
                 boolean isConversionNeeded =
                         !Arrays.asList(availableHealthVhosts).contains(currentVhost);
 
@@ -116,6 +120,10 @@ public class ConversionUtils {
                             formatPerimeterVersionListToVhosts(
                                     targetVersionsOnHealthPerimeter2, Perimeter.HEALTH.getName());
 
+                    if (availableHealthVhosts2 == null) {
+                        return null;
+                    }
+
                     boolean isConversionNeeded2 =
                             !Arrays.asList(availableHealthVhosts2).contains(currentVhost);
 
@@ -135,6 +143,11 @@ public class ConversionUtils {
                 String[] availableCISUVhosts =
                         formatPerimeterVersionListToVhosts(
                                 targetVersionsOnCISUPerimeter, Perimeter.CISU.getName());
+
+                if (availableCISUVhosts == null) {
+                    return null;
+                }
+
                 boolean isConversionNeeded2 =
                         !Arrays.asList(availableCISUVhosts).contains(currentVhost);
 

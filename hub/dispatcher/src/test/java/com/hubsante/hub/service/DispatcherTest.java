@@ -644,7 +644,6 @@ public class DispatcherTest {
         // outer routing key.
         Message receivedMessage = createMessage("EDXL-DE", JSON);
         receivedMessage.getMessageProperties().setReceivedRoutingKey(INCONSISTENT_ROUTING_KEY);
-
         assertThrows(
                 AmqpRejectAndDontRequeueException.class,
                 () -> dispatcher.dispatch(receivedMessage));
