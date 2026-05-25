@@ -21,7 +21,6 @@ import static com.hubsante.hub.service.utils.MessageTestUtils.*;
 import static com.hubsante.hub.service.utils.MetricsUtils.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
@@ -262,13 +261,21 @@ public class DispatcherTest {
         doAnswer(invocation -> List.of(invocation.getArgument(0).toString()))
                 .when(conversionHandler)
                 .callConversionService(
-                        anyString(), anyString(), anyString(), anyBoolean(), anyString());
+                        anyString(),
+                        anyString(),
+                        anyString(),
+                        any(ConversionUtils.ConversionType.class),
+                        anyString());
 
         dispatcher.dispatch(fromFireMessage);
 
         verify(conversionHandler, times(1))
                 .callConversionService(
-                        anyString(), anyString(), anyString(), eq(true), anyString());
+                        anyString(),
+                        anyString(),
+                        anyString(),
+                        eq(ConversionUtils.ConversionType.CISU_TRANSCODING),
+                        anyString());
     }
 
     @Test
@@ -280,15 +287,23 @@ public class DispatcherTest {
         doAnswer(invocation -> List.of(invocation.getArgument(0).toString()))
                 .when(conversionHandler)
                 .callConversionService(
-                        anyString(), anyString(), anyString(), anyBoolean(), anyString());
+                        anyString(),
+                        anyString(),
+                        anyString(),
+                        any(ConversionUtils.ConversionType.class),
+                        anyString());
 
         dispatcher.dispatch(messageToFire);
 
         verify(conversionHandler, times(1))
                 .callConversionService(
-                        anyString(), anyString(), anyString(), eq(true), anyString());
+                        anyString(),
+                        anyString(),
+                        anyString(),
+                        eq(ConversionUtils.ConversionType.CISU_TRANSCODING),
+                        anyString());
 
-        String expectedTargetExchangeName = "transfer_15-15_v2.1_to_15-nexsis_v1.9";
+        String expectedTargetExchangeName = "transfer_15-15_v2.1_to_15-nexsis_vactive";
 
         ArgumentCaptor<Message> argument = ArgumentCaptor.forClass(Message.class);
         Mockito.verify(rabbitTemplate, times(1))
@@ -307,7 +322,11 @@ public class DispatcherTest {
 
         verify(conversionHandler, never())
                 .callConversionService(
-                        anyString(), anyString(), anyString(), anyBoolean(), anyString());
+                        anyString(),
+                        anyString(),
+                        anyString(),
+                        any(ConversionUtils.ConversionType.class),
+                        anyString());
 
         ArgumentCaptor<Message> argument = ArgumentCaptor.forClass(Message.class);
         Mockito.verify(rabbitTemplate, times(1))
@@ -327,15 +346,23 @@ public class DispatcherTest {
         doAnswer(invocation -> List.of(invocation.getArgument(0).toString()))
                 .when(conversionHandler)
                 .callConversionService(
-                        anyString(), anyString(), anyString(), anyBoolean(), anyString());
+                        anyString(),
+                        anyString(),
+                        anyString(),
+                        any(ConversionUtils.ConversionType.class),
+                        anyString());
 
         dispatcher.dispatch(messageFromFire);
 
         verify(conversionHandler, times(1))
                 .callConversionService(
-                        anyString(), anyString(), anyString(), eq(true), anyString());
+                        anyString(),
+                        anyString(),
+                        anyString(),
+                        any(ConversionUtils.ConversionType.class),
+                        anyString());
 
-        String expectedTargetExchangeName = "transfer_15-nexsis_v1.9_to_15-15_v2.1";
+        String expectedTargetExchangeName = "transfer_15-nexsis_vactive_to_15-15_v2.1";
 
         ArgumentCaptor<Message> argument = ArgumentCaptor.forClass(Message.class);
         Mockito.verify(rabbitTemplate, times(1))
@@ -356,7 +383,11 @@ public class DispatcherTest {
 
         verify(conversionHandler, never())
                 .callConversionService(
-                        anyString(), anyString(), anyString(), anyBoolean(), anyString());
+                        anyString(),
+                        anyString(),
+                        anyString(),
+                        eq(ConversionUtils.ConversionType.CISU_TRANSCODING),
+                        anyString());
 
         ArgumentCaptor<Message> argument = ArgumentCaptor.forClass(Message.class);
         Mockito.verify(rabbitTemplate, times(1))
@@ -372,13 +403,21 @@ public class DispatcherTest {
         doAnswer(invocation -> List.of(invocation.getArgument(0).toString()))
                 .when(conversionHandler)
                 .callConversionService(
-                        anyString(), anyString(), anyString(), anyBoolean(), anyString());
+                        anyString(),
+                        anyString(),
+                        anyString(),
+                        any(ConversionUtils.ConversionType.class),
+                        anyString());
 
         dispatcher.dispatch(message);
 
         verify(conversionHandler, times(1))
                 .callConversionService(
-                        anyString(), anyString(), anyString(), eq(false), anyString());
+                        anyString(),
+                        anyString(),
+                        anyString(),
+                        eq(ConversionUtils.ConversionType.HEALTH_VERSION_CONVERSION),
+                        anyString());
     }
 
     @Test
@@ -391,7 +430,11 @@ public class DispatcherTest {
 
         verify(conversionHandler, never())
                 .callConversionService(
-                        anyString(), anyString(), anyString(), anyBoolean(), anyString());
+                        anyString(),
+                        anyString(),
+                        anyString(),
+                        any(ConversionUtils.ConversionType.class),
+                        anyString());
     }
 
     @Test
@@ -660,10 +703,7 @@ public class DispatcherTest {
                         new String(message.getBody(), StandardCharsets.UTF_8));
         String exchangeName = "transfer_15-15_v2.1_to_15-15_v1.5";
 
-        ConversionRulesCommand conversionRulesCommand =
-                new ConversionRulesCommand(edxlMessage, hubConfig);
-
-        dispatcher.sendToTransferExchange(message.toString(), message, conversionRulesCommand);
+        dispatcher.sendToTransferExchange(message.toString(), message, "15-15_v1.5");
 
         verify(rabbitTemplate).send(eq(exchangeName), eq(SAMU_A_ROUTING_KEY), any(Message.class));
     }
@@ -688,7 +728,11 @@ public class DispatcherTest {
         doAnswer(invocation -> List.of(invocation.getArgument(0).toString()))
                 .when(conversionHandler)
                 .callConversionService(
-                        anyString(), anyString(), anyString(), anyBoolean(), anyString());
+                        anyString(),
+                        anyString(),
+                        anyString(),
+                        any(ConversionUtils.ConversionType.class),
+                        anyString());
 
         dispatcher.dispatch(message);
 
@@ -848,7 +892,11 @@ public class DispatcherTest {
         doThrow(new ConversionException(conversionErrorMessage, edxlMessage.getDistributionID()))
                 .when(conversionHandler)
                 .callConversionService(
-                        anyString(), anyString(), anyString(), anyBoolean(), anyString());
+                        anyString(),
+                        anyString(),
+                        anyString(),
+                        any(ConversionUtils.ConversionType.class),
+                        anyString());
 
         assertThrows(
                 AmqpRejectAndDontRequeueException.class,
@@ -1022,7 +1070,11 @@ public class DispatcherTest {
         doAnswer(invocation -> List.of(invocation.getArgument(0).toString()))
                 .when(conversionHandler)
                 .callConversionService(
-                        anyString(), anyString(), anyString(), anyBoolean(), anyString());
+                        anyString(),
+                        anyString(),
+                        anyString(),
+                        any(ConversionUtils.ConversionType.class),
+                        anyString());
 
         AmqpRejectAndDontRequeueException errorThrown =
                 assertThrows(
@@ -1158,7 +1210,11 @@ public class DispatcherTest {
             doAnswer(invocation -> List.of(invocation.getArgument(0).toString()))
                     .when(conversionHandler)
                     .callConversionService(
-                            anyString(), anyString(), anyString(), anyBoolean(), anyString());
+                            anyString(),
+                            anyString(),
+                            anyString(),
+                            any(ConversionUtils.ConversionType.class),
+                            anyString());
 
             dispatcher.dispatch(fromFireMessage);
 
@@ -1167,7 +1223,11 @@ public class DispatcherTest {
             inOrder.verify(persistenceService, times(1)).persist(any(EdxlMessage.class));
             inOrder.verify(conversionHandler, times(1))
                     .callConversionService(
-                            anyString(), anyString(), anyString(), anyBoolean(), anyString());
+                            anyString(),
+                            anyString(),
+                            anyString(),
+                            any(ConversionUtils.ConversionType.class),
+                            anyString());
         }
     }
 
@@ -1179,7 +1239,11 @@ public class DispatcherTest {
         doAnswer(invocation -> List.of(invocation.getArgument(0).toString()))
                 .when(conversionHandler)
                 .callConversionService(
-                        anyString(), anyString(), anyString(), anyBoolean(), anyString());
+                        anyString(),
+                        anyString(),
+                        anyString(),
+                        any(ConversionUtils.ConversionType.class),
+                        anyString());
 
         dispatcher.dispatch(message);
 
@@ -1204,7 +1268,11 @@ public class DispatcherTest {
             doThrow(new RuntimeException("Conversion service unavailable"))
                     .when(conversionHandler)
                     .callConversionService(
-                            anyString(), anyString(), anyString(), anyBoolean(), anyString());
+                            anyString(),
+                            anyString(),
+                            anyString(),
+                            any(ConversionUtils.ConversionType.class),
+                            anyString());
 
             // The conversion failure causes the dispatch to reject the message
             assertThrows(
@@ -1247,7 +1315,11 @@ public class DispatcherTest {
             // Conversion must not be called if persistence fails
             verify(conversionHandler, never())
                     .callConversionService(
-                            anyString(), anyString(), anyString(), anyBoolean(), anyString());
+                            anyString(),
+                            anyString(),
+                            anyString(),
+                            any(ConversionUtils.ConversionType.class),
+                            anyString());
         }
     }
 
@@ -1274,13 +1346,21 @@ public class DispatcherTest {
                                         invocation.getArgument(0).toString()))
                 .when(conversionHandler)
                 .callConversionService(
-                        anyString(), anyString(), anyString(), anyBoolean(), anyString());
+                        anyString(),
+                        anyString(),
+                        anyString(),
+                        any(ConversionUtils.ConversionType.class),
+                        anyString());
 
         dispatcher.dispatch(message);
 
         verify(conversionHandler, times(1))
                 .callConversionService(
-                        anyString(), anyString(), anyString(), eq(false), anyString());
+                        anyString(),
+                        anyString(),
+                        anyString(),
+                        eq(ConversionUtils.ConversionType.HEALTH_VERSION_CONVERSION),
+                        anyString());
 
         ArgumentCaptor<Message> argCaptor = ArgumentCaptor.forClass(Message.class);
 
