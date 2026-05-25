@@ -3,4 +3,5 @@ fr.health.samuA;false;false;default-editor;false;1.5,2.0,2.1;1.9;1.7;2.0
 fr.health.samuB;true;true;default-editor;false;1.5,2.0,2.1;1.9;1.7;2.0
 fr.health.samuV1;false;false;default-editor;false;1.5;1.9;1.7;2.0
 fr.health.samuV2;false;false;default-editor;false;2.0;1.9;1.7;2.0
-fr.health.samuV3;false;false;default-editor;false;2.1;1.9;1.7;2.0
+fr.health.samuV3;false;false;default-editor;false;2.1;;1.7;2.0
+fr.health.samuV3-nexsis;true;false;default-editor;false;;1.9;;
