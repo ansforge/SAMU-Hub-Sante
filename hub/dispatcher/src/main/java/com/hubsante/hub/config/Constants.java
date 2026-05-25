@@ -20,8 +20,6 @@ import java.util.Map;
 public class Constants {
 
     public static final String DISPATCH_ERROR = "dispatch.error";
-    public static final String DISPATCH_TIMED_METRIC = "overall.dispatch.time";
-    public static final String DLQ_TIMED_METRIC = "dlq.overall.dispatch.time";
     public static final String REASON_TAG = "reason";
     public static final String CLIENT_ID_TAG = "sender";
     public static final String VHOST_TAG = "vhost";
@@ -36,8 +34,7 @@ public class Constants {
     public static final String UNKNOWN = "unknown";
     public static final String FR_HEALTH_PREFIX = "fr.health";
     public static final String FR_FIRE_PREFIX = "fr.fire";
-    public static final String FR_CISU_PREFIX = "fr.cisu";
-    public static final String NEXSIS_VHOST = "15-nexsis_v1.9";
+    public static final String NEXSIS_VHOST = "15-nexsis_vactive";
     public static final String HEALTH_VHOST_PREFIX = "15-15_v";
     public static final Map<String, String> CONVERSION_VHOST_MODEL =
             Map.of(

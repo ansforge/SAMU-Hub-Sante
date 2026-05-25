@@ -303,7 +303,7 @@ public class DispatcherTest {
                         eq(ConversionUtils.ConversionType.CISU_TRANSCODING),
                         anyString());
 
-        String expectedTargetExchangeName = "transfer_15-15_v2.1_to_15-nexsis_v1.9";
+        String expectedTargetExchangeName = "transfer_15-15_v2.1_to_15-nexsis_vactive";
 
         ArgumentCaptor<Message> argument = ArgumentCaptor.forClass(Message.class);
         Mockito.verify(rabbitTemplate, times(1))
@@ -362,7 +362,7 @@ public class DispatcherTest {
                         any(ConversionUtils.ConversionType.class),
                         anyString());
 
-        String expectedTargetExchangeName = "transfer_15-nexsis_v1.9_to_15-15_v2.1";
+        String expectedTargetExchangeName = "transfer_15-nexsis_vactive_to_15-15_v2.1";
 
         ArgumentCaptor<Message> argument = ArgumentCaptor.forClass(Message.class);
         Mockito.verify(rabbitTemplate, times(1))
