@@ -31,7 +31,6 @@ import com.hubsante.hub.config.HubConfiguration;
 import com.hubsante.hub.config.LogConstants;
 import com.hubsante.hub.config.StructuredLogger;
 import com.hubsante.hub.exception.*;
-import com.hubsante.hub.utils.ConversionRulesCommand;
 import com.hubsante.hub.utils.ConversionUtils;
 import com.hubsante.hub.utils.EdxlUtils;
 import com.hubsante.model.EdxlHandler;
@@ -215,14 +214,14 @@ public class MessageHandler {
                                         .setContentType(MessageProperties.CONTENT_TYPE_JSON)
                                         .build());
 
-                boolean isVersionConversion =
-                        ConversionUtils.requiresVersionConversion(hubConfig, errorEdxlMessage);
+                ConversionUtils.ConversionParametersDTO conversionParameters =
+                        ConversionUtils.determineConversionParameters(hubConfig, errorEdxlMessage);
 
-                if (isVersionConversion) {
-                    ConversionRulesCommand conversionRulesCommand =
-                            new ConversionRulesCommand(errorEdxlMessage, hubConfig);
+                if (conversionParameters != null
+                        && conversionParameters.conversionType()
+                                == ConversionUtils.ConversionType.HEALTH_VERSION_CONVERSION) {
                     List<String> convertedMessages =
-                            conversionHandler.applyConversionRules(conversionRulesCommand);
+                            conversionHandler.applyConversionRules(conversionParameters);
                     if (convertedMessages.size() > 1) {
                         structuredLog.info(
                                 "convertedMessages has more than one message: %s",
@@ -236,8 +235,7 @@ public class MessageHandler {
                             forwardedStringMessage(convertedMessages.getFirst(), errorAmqpMessage);
                     destinationExchange =
                             ConversionUtils.buildExchangeDestination(
-                                    conversionRulesCommand.getSourceVHost(),
-                                    conversionRulesCommand.getTargetVHost());
+                                    hubConfig.getVhost(), conversionParameters.targetVhost());
                     routingKey = HUB_ID;
                     structuredLog.info(
                             String.format(
