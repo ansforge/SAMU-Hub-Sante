@@ -21,7 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hubsante.hub.config.LogConstants;
 import com.hubsante.hub.config.StructuredLogger;
 import com.hubsante.hub.exception.ConversionException;
-import com.hubsante.hub.utils.ConversionRulesCommand;
+import com.hubsante.hub.utils.ConversionUtils;
 import com.hubsante.hub.utils.EdxlUtils;
 import com.hubsante.hub.utils.MessageUtils;
 import com.hubsante.model.EdxlHandler;
@@ -50,12 +50,13 @@ public class ConversionHandler {
         this.edxlHandler = edxlHandler;
     }
 
-    protected List<String> applyConversionRules(ConversionRulesCommand applyConversionRulesCommand)
+    protected List<String> applyConversionRules(
+            ConversionUtils.ConversionParametersDTO conversionParametersDTO)
             throws JsonProcessingException {
-        String sourceModelVersion = applyConversionRulesCommand.getSourceModelVersion();
-        String targetModelVersion = applyConversionRulesCommand.getTargetModelVersion();
-        Boolean isCisuConversion = applyConversionRulesCommand.getCisuConversion();
-        EdxlMessage edxlMessage = applyConversionRulesCommand.getEdxlMessage();
+        String sourceModelVersion = conversionParametersDTO.sourceVersion();
+        String targetModelVersion = conversionParametersDTO.targetVersion();
+        ConversionUtils.ConversionType type = conversionParametersDTO.conversionType();
+        EdxlMessage edxlMessage = conversionParametersDTO.edxlMessage();
         String distributionId = edxlMessage.getDistributionID();
         String senderId = edxlMessage.getSenderID();
         String recipientId = MessageUtils.getRecipientID(edxlMessage);
@@ -66,8 +67,8 @@ public class ConversionHandler {
         try {
             structuredLog.debug(
                     String.format(
-                            "Starting conversion from %s to %s, isCisu ? %s",
-                            sourceModelVersion, targetModelVersion, isCisuConversion),
+                            "Starting conversion of type %s from %s to %s",
+                            type, sourceModelVersion, targetModelVersion),
                     Map.of(
                             LogConstants.DISTRIBUTION_ID,
                             distributionId,
@@ -82,7 +83,7 @@ public class ConversionHandler {
                             jsonEdxlString,
                             sourceModelVersion,
                             targetModelVersion,
-                            isCisuConversion,
+                            type,
                             distributionId);
             structuredLog.debug(
                     "Message(s) converted successfully: " + convertedJsonList.toString(),
@@ -120,13 +121,13 @@ public class ConversionHandler {
             String jsonEdxlString,
             String sourceVersion,
             String targetVersion,
-            boolean cisuConversion,
+            ConversionUtils.ConversionType type,
             String distributionId) {
         // Create request body with all required parameters
         String requestBody =
                 String.format(
-                        "{\"edxl\": %s, \"sourceVersion\": \"%s\", \"targetVersion\": \"%s\", \"cisuConversion\": %s}",
-                        jsonEdxlString, sourceVersion, targetVersion, cisuConversion);
+                        "{\"edxl\": %s, \"sourceVersion\": \"%s\", \"targetVersion\": \"%s\", \"type\": \"%s\"}",
+                        jsonEdxlString, sourceVersion, targetVersion, type.getType());
 
         try {
             String response =

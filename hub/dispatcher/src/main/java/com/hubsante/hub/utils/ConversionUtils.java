@@ -29,83 +29,187 @@ public class ConversionUtils {
 
     private static final boolean DEFAULT_DIRECT_CISU_PREFERENCE = false;
 
+    public enum ConversionType {
+        HEALTH_VERSION_CONVERSION("HealthVersionConversion"),
+        CISU_VERSION_CONVERSION("CISUVersionConversion"),
+        CISU_TRANSCODING("CISUTranscoding");
+
+        private final String type;
+
+        ConversionType(String name) {
+            this.type = name;
+        }
+
+        public String getType() {
+            return type;
+        }
+    }
+
+    public enum RoutingType {
+        SAMU_TO_SAMU("SamuToSamu"),
+        CISU_TO_SAMU("CisuToSamu"),
+        SAMU_TO_CISU("SamuToCisu");
+
+        private final String type;
+
+        RoutingType(String name) {
+            this.type = name;
+        }
+
+        public String getType() {
+            return type;
+        }
+    }
+
+    public record ConversionParametersDTO(
+            EdxlMessage edxlMessage,
+            String sourceVersion,
+            String targetVersion,
+            String targetVhost,
+            ConversionType conversionType) {}
+
     public static String buildExchangeDestination(String sourceVHost, String targetVHost) {
         return TRANSFER_EXCHANGE_PREFIX + sourceVHost + "_to_" + targetVHost;
     }
 
-    public static boolean requiresConversion(HubConfiguration hubConfig, EdxlMessage edxlMessage) {
-        boolean isCisuConversion = requiresCisuConversion(hubConfig, edxlMessage);
-        boolean isVersionConversion = requiresVersionConversion(hubConfig, edxlMessage);
-
-        return isVersionConversion || isCisuConversion;
-    }
-
-    public static boolean requiresVersionConversion(
+    public static ConversionParametersDTO determineConversionParameters(
             HubConfiguration hubConfig, EdxlMessage edxlMessage) {
-        String sourceVHost = getSourceVHost(hubConfig);
-        String[] targetVHosts = getTargetVHosts(hubConfig, edxlMessage);
+        RoutingType routingType = determineRoutingType(edxlMessage);
 
-        if (targetVHosts == null || sourceVHost == null || targetVHosts.length == 0) {
-            return false;
-        }
-        if (!isConversionAvailable(sourceVHost)) {
-            return false;
-        }
-
-        return !Arrays.asList(targetVHosts).contains(sourceVHost);
-    }
-
-    public static boolean isConversionAvailable(String vhost) {
-        return CONVERSION_VHOST_MODEL.get(vhost) != null;
-    }
-
-    public static String getSourceVHost(HubConfiguration hubConfig) {
-        return hubConfig.getVhost();
-    }
-
-    public static String[] getTargetVHosts(HubConfiguration hubConfig, EdxlMessage edxlMessage) {
         String recipientId = getRecipientID(edxlMessage);
-        String senderId = edxlMessage.getSenderID();
-        String sourceVhost = hubConfig.getVhost(); // ex '15-15_v1.5'
-        String sourcePerimeter = trimVersionSuffix(sourceVhost); // ex '15-15'
-        String[] targetVersionsOnTargetPerimeter = new String[] {};
+        String currentVhost = hubConfig.getVhost();
 
-        // CISU conversion case - recipient and sender are on different vhosts
-        boolean isNexsisRecipient =
-                recipientId.startsWith(FR_FIRE_PREFIX) || recipientId.startsWith(FR_CISU_PREFIX);
-        if (isNexsisRecipient) {
-            return new String[] {NEXSIS_VHOST}; // ["15-nexsis_v1.9"]
+        switch (routingType) {
+            case SAMU_TO_SAMU:
+                String[] targetVersionsOnHealthPerimeter =
+                        hubConfig.getClientVersionsForPerimeter(
+                                recipientId, Perimeter.HEALTH.getName());
+                String[] availableHealthVhosts =
+                        formatPerimeterVersionListToVhosts(
+                                targetVersionsOnHealthPerimeter, Perimeter.HEALTH.getName());
+
+                boolean isConversionNeeded =
+                        !Arrays.asList(availableHealthVhosts).contains(currentVhost);
+
+                if (!isConversionNeeded) {
+                    return null;
+                }
+
+                return new ConversionParametersDTO(
+                        edxlMessage,
+                        getVHostMatchingModelVersion(currentVhost),
+                        getVHostMatchingModelVersion(
+                                availableHealthVhosts[availableHealthVhosts.length - 1]),
+                        availableHealthVhosts[availableHealthVhosts.length - 1],
+                        ConversionType.HEALTH_VERSION_CONVERSION);
+            case CISU_TO_SAMU:
+                String[] targetVersionsOnCISUPerimeter =
+                        hubConfig.getClientVersionsForPerimeter(
+                                recipientId, Perimeter.CISU.getName());
+
+                if (targetVersionsOnCISUPerimeter == null
+                        || targetVersionsOnCISUPerimeter.length == 0) {
+                    String[] targetVersionsOnHealthPerimeter2 =
+                            hubConfig.getClientVersionsForPerimeter(
+                                    recipientId, Perimeter.HEALTH.getName());
+                    String[] availableHealthVhosts2 =
+                            formatPerimeterVersionListToVhosts(
+                                    targetVersionsOnHealthPerimeter2, Perimeter.HEALTH.getName());
+
+                    boolean isConversionNeeded2 =
+                            !Arrays.asList(availableHealthVhosts2).contains(currentVhost);
+
+                    if (!isConversionNeeded2) {
+                        return null;
+                    }
+
+                    return new ConversionParametersDTO(
+                            edxlMessage,
+                            getVHostMatchingModelVersion(currentVhost),
+                            getVHostMatchingModelVersion(
+                                    availableHealthVhosts2[availableHealthVhosts2.length - 1]),
+                            availableHealthVhosts2[availableHealthVhosts2.length - 1],
+                            ConversionType.CISU_TRANSCODING);
+                }
+
+                String[] availableCISUVhosts =
+                        formatPerimeterVersionListToVhosts(
+                                targetVersionsOnCISUPerimeter, Perimeter.CISU.getName());
+                boolean isConversionNeeded2 =
+                        !Arrays.asList(availableCISUVhosts).contains(currentVhost);
+
+                if (!isConversionNeeded2) {
+                    return null;
+                }
+
+                return new ConversionParametersDTO(
+                        edxlMessage,
+                        getVHostMatchingModelVersion(currentVhost),
+                        getVHostMatchingModelVersion(
+                                availableCISUVhosts[availableCISUVhosts.length - 1]),
+                        availableCISUVhosts[availableCISUVhosts.length - 1],
+                        ConversionType.CISU_VERSION_CONVERSION);
+            case SAMU_TO_CISU:
+                if (currentVhost.startsWith(Perimeter.HEALTH.getName())) {
+                    return new ConversionParametersDTO(
+                            edxlMessage,
+                            getVHostMatchingModelVersion(currentVhost),
+                            getVHostMatchingModelVersion(NEXSIS_VHOST),
+                            NEXSIS_VHOST,
+                            ConversionType.CISU_TRANSCODING);
+                }
+                if (currentVhost.startsWith(Perimeter.CISU.getName())) {
+                    if (currentVhost.equals(NEXSIS_VHOST)) {
+                        return null;
+                    }
+                    return new ConversionParametersDTO(
+                            edxlMessage,
+                            getVHostMatchingModelVersion(currentVhost),
+                            getVHostMatchingModelVersion(NEXSIS_VHOST),
+                            NEXSIS_VHOST,
+                            ConversionType.CISU_VERSION_CONVERSION);
+                }
+                throw new RuntimeException("OF THE FUCK DID THIS MESSAGE ENDED UP HERE ?????");
+            default:
+                throw new RuntimeException("WTF IS THIS CONVERSION TYPE ?????");
         }
-        boolean isCisuSender = !senderId.startsWith(FR_HEALTH_PREFIX);
-        boolean isDirectCisu = isDirectCisuForHealthActor(hubConfig, edxlMessage);
-
-        String targetPerimeter =
-                (isCisuSender && !isDirectCisu) ? Perimeter.HEALTH.getName() : sourcePerimeter;
-
-        targetVersionsOnTargetPerimeter =
-                hubConfig.getClientVersionsForPerimeter(
-                        recipientId, targetPerimeter); // ex ['1.5, 2.0']
-        return formatVersionToVhosts(
-                targetVersionsOnTargetPerimeter,
-                targetPerimeter); // ex ["15-15_v1.5", "15-15_v2.0"]
     }
 
-    public static String[] formatVersionToVhosts(String[] versions, String sourcePerimeter) {
+    private static RoutingType determineRoutingType(EdxlMessage edxlMessage) {
+        String senderId = edxlMessage.getSenderID();
+        String recipientId = getRecipientID(edxlMessage);
+
+        if (senderId.startsWith(FR_HEALTH_PREFIX)) {
+            if (recipientId.startsWith(FR_HEALTH_PREFIX)) {
+                return RoutingType.SAMU_TO_SAMU;
+            } else if (recipientId.startsWith(FR_FIRE_PREFIX)) {
+                return RoutingType.SAMU_TO_CISU;
+            }
+        } else if (senderId.startsWith(FR_FIRE_PREFIX)) {
+            if (recipientId.startsWith(FR_HEALTH_PREFIX)) {
+                return RoutingType.CISU_TO_SAMU;
+            }
+        }
+        throw new RuntimeException(
+                String.format(
+                        "Cannot determine routing type from %s to %s", senderId, recipientId));
+    }
+
+    public static String[] formatPerimeterVersionListToVhosts(
+            String[] versions, String sourcePerimeter) {
         if (versions != null) {
             return Arrays.stream(versions)
-                    .map(version -> sourcePerimeter + "_v" + version)
+                    .map(version -> formatPerimeterVersionToVhost(version, sourcePerimeter))
                     .toArray(String[]::new);
         }
         return null;
     }
 
-    public static boolean requiresCisuConversion(
-            HubConfiguration hubConfig, EdxlMessage edxlMessage) {
-        return isOneCisuHubexInvolved(edxlMessage)
-                && !isAlreadyCisuConverted(
-                        hubConfig.getVhost(),
-                        edxlMessage.getDescriptor().getExplicitAddress().getExplicitAddressValue())
-                && !isDirectCisuForHealthActor(hubConfig, edxlMessage);
+    public static String formatPerimeterVersionToVhost(String version, String perimeter) {
+        if (version != null) {
+            return perimeter + "_v" + version;
+        }
+        return null;
     }
 
     public static String trimVersionSuffix(String input) {
@@ -115,30 +219,12 @@ public class ConversionUtils {
         return input.replaceFirst(VERSION_SUFFIX_REGEX, "");
     }
 
-    public static boolean isAlreadyCisuConverted(String currentVHost, String recipient) {
-        if (recipient.startsWith(FR_HEALTH_PREFIX)) {
-            return currentVHost.startsWith(HEALTH_VHOST_PREFIX);
-        } else {
-            return currentVHost.startsWith(NEXSIS_VHOST);
+    public static String getVHostMatchingModelVersion(String vHost) {
+        String modelVersion = CONVERSION_VHOST_MODEL.get(vHost);
+        if (modelVersion == null) {
+            throw new IllegalArgumentException(
+                    "There is no model version associated with the host " + vHost);
         }
-    }
-
-    public static boolean isOneCisuHubexInvolved(EdxlMessage edxlMessage) {
-        String recipientId = getRecipientID(edxlMessage);
-        String senderId = edxlMessage.getSenderID();
-        return !(recipientId.startsWith(HEALTH_PREFIX) && senderId.startsWith(HEALTH_PREFIX));
-    }
-
-    public static boolean isDirectCisuForHealthActor(
-            HubConfiguration hubConfig, EdxlMessage edxlMessage) {
-        // Checks if the health actor is direct CISU
-        String recipientId = getRecipientID(edxlMessage);
-        String senderId = edxlMessage.getSenderID();
-        String healthActor = senderId.startsWith(HEALTH_PREFIX) ? senderId : recipientId;
-        Boolean directCisuPreference =
-                hubConfig
-                        .getDirectCisuPreferences()
-                        .getOrDefault(healthActor, DEFAULT_DIRECT_CISU_PREFERENCE);
-        return directCisuPreference != null && directCisuPreference;
+        return modelVersion;
     }
 }
