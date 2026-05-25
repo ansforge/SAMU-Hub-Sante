@@ -36,10 +36,7 @@ import com.hubsante.hub.exception.ExpiredBeforeDispatchMessageException;
 import com.hubsante.hub.exception.HubPersistenceException;
 import com.hubsante.hub.exception.SchemaValidationException;
 import com.hubsante.hub.exception.UnroutableMessageException;
-import com.hubsante.hub.utils.ConversionRulesCommand;
-import com.hubsante.hub.utils.EdxlUtils;
-import com.hubsante.hub.utils.MessagePersistencePolicy;
-import com.hubsante.hub.utils.MessageUtils;
+import com.hubsante.hub.utils.*;
 import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.Validator;
 import com.hubsante.model.edxl.EdxlMessage;
@@ -105,6 +102,7 @@ public class DispatcherTest {
     private final String SDIS_C_MESSAGE_QUEUE = SDIS_C_ROUTING_KEY + ".message";
     private final String SAMU_V1_ROUTING_KEY = "fr.health.samuV1";
     private final String SAMU_V3_ROUTING_KEY = "fr.health.samuV3";
+    private final String SAMU_V3_MESSAGE_QUEUE = SAMU_V3_ROUTING_KEY + ".message";
     private final String FIRE_ROUTING_KEY = "fr.fire.sga";
 
     private final String TEST_EDITOR = "default-editor";
@@ -259,7 +257,7 @@ public class DispatcherTest {
         doReturn(NEXSIS_VHOST).when(hubConfig).getVhost();
 
         Message fromFireMessage =
-                createMessage("EDXL-DE", XML, SDIS_C_ROUTING_KEY, SAMU_A_ROUTING_KEY);
+                createMessage("EDXL-DE", XML, SDIS_C_ROUTING_KEY, SAMU_V3_ROUTING_KEY);
 
         doAnswer(invocation -> List.of(invocation.getArgument(0).toString()))
                 .when(conversionHandler)
@@ -321,7 +319,7 @@ public class DispatcherTest {
     public void cisuTranscodingFromCisuToHealthOnNexsisVhost() throws IOException {
         doReturn(NEXSIS_VHOST).when(hubConfig).getVhost();
         Message messageFromFire =
-                createMessage("EDXL-DE", JSON, SDIS_C_ROUTING_KEY, SAMU_A_ROUTING_KEY);
+                createMessage("EDXL-DE", JSON, SDIS_C_ROUTING_KEY, SAMU_V3_ROUTING_KEY);
         // Manually override the received routing key to put fr.fire.sga as per the hubex partner
         // shovel configuration
         messageFromFire.getMessageProperties().setReceivedRoutingKey(FIRE_ROUTING_KEY);
@@ -349,7 +347,7 @@ public class DispatcherTest {
             "should not call conversion service for messages from CISU to health on health vhost")
     public void cisuTranscodingFromCisuToHealthOnHealthVhost() throws IOException {
         Message messageFromFire =
-                createMessage("EDXL-DE", JSON, SDIS_C_ROUTING_KEY, SAMU_A_ROUTING_KEY);
+                createMessage("EDXL-DE", JSON, SDIS_C_ROUTING_KEY, SAMU_V3_ROUTING_KEY);
         // Manually override the received routing key to put fr.fire.sga as per the hubex partner
         // shovel configuration
         messageFromFire.getMessageProperties().setReceivedRoutingKey("fr.fire.sga");
@@ -362,7 +360,7 @@ public class DispatcherTest {
 
         ArgumentCaptor<Message> argument = ArgumentCaptor.forClass(Message.class);
         Mockito.verify(rabbitTemplate, times(1))
-                .send(eq(DISTRIBUTION_EXCHANGE), eq(SAMU_A_MESSAGE_QUEUE), argument.capture());
+                .send(eq(DISTRIBUTION_EXCHANGE), eq(SAMU_V3_MESSAGE_QUEUE), argument.capture());
     }
 
     @Test
@@ -660,7 +658,6 @@ public class DispatcherTest {
         EdxlMessage edxlMessage =
                 edxlHandler.deserializeXmlEDXL(
                         new String(message.getBody(), StandardCharsets.UTF_8));
-        String queueName = SAMU_A_ROUTING_KEY;
         String exchangeName = "transfer_15-15_v2.1_to_15-15_v1.5";
 
         ConversionRulesCommand conversionRulesCommand =
@@ -668,7 +665,7 @@ public class DispatcherTest {
 
         dispatcher.sendToTransferExchange(message.toString(), message, conversionRulesCommand);
 
-        verify(rabbitTemplate).send(eq(exchangeName), eq(queueName), any(Message.class));
+        verify(rabbitTemplate).send(eq(exchangeName), eq(SAMU_A_ROUTING_KEY), any(Message.class));
     }
 
     @Test
@@ -826,7 +823,7 @@ public class DispatcherTest {
     @Test
     @DisplayName("should handle conversion service error correctly")
     public void shouldHandleConversionServiceError() throws IOException {
-        // sdisC -> samuA on vhost 15-nexsis_v1.9 => transcoding triggered
+        // sdisC -> samuV3 on vhost 15-nexsis_v1.9 => transcoding triggered
         doReturn(NEXSIS_VHOST).when(hubConfig).getVhost();
 
         MessageHandler messageHandlerSpy = spy(messageHandler);
@@ -842,7 +839,7 @@ public class DispatcherTest {
                         persistenceService);
 
         Message receivedMessage =
-                createMessage("EDXL-DE", JSON, SDIS_C_ROUTING_KEY, SAMU_A_ROUTING_KEY);
+                createMessage("EDXL-DE", JSON, SDIS_C_ROUTING_KEY, SAMU_V3_ROUTING_KEY);
         EdxlMessage edxlMessage =
                 edxlHandler.deserializeJsonEDXL(
                         new String(receivedMessage.getBody(), StandardCharsets.UTF_8));
@@ -1151,7 +1148,8 @@ public class DispatcherTest {
                 mockStatic(MessagePersistencePolicy.class)) {
             doReturn(NEXSIS_VHOST).when(hubConfig).getVhost();
 
-            Message fromFireMessage = createMessage("EDXL-DE", XML, SDIS_C_ROUTING_KEY);
+            Message fromFireMessage =
+                    createMessage("EDXL-DE", XML, SDIS_C_ROUTING_KEY, SAMU_V3_ROUTING_KEY);
 
             mockedPersistencePolicy
                     .when(() -> MessagePersistencePolicy.shouldPersist(anyString(), anyString()))
@@ -1195,7 +1193,8 @@ public class DispatcherTest {
                 mockStatic(MessagePersistencePolicy.class)) {
             doReturn(NEXSIS_VHOST).when(hubConfig).getVhost();
 
-            Message fromFireMessage = createMessage("EDXL-DE", XML, SDIS_C_ROUTING_KEY);
+            Message fromFireMessage =
+                    createMessage("EDXL-DE", XML, SDIS_C_ROUTING_KEY, SAMU_V3_ROUTING_KEY);
 
             mockedPersistencePolicy
                     .when(() -> MessagePersistencePolicy.shouldPersist(anyString(), anyString()))
@@ -1224,7 +1223,8 @@ public class DispatcherTest {
                 mockStatic(MessagePersistencePolicy.class)) {
             doReturn(NEXSIS_VHOST).when(hubConfig).getVhost();
 
-            Message fromFireMessage = createMessage("EDXL-DE", XML, SDIS_C_ROUTING_KEY);
+            Message fromFireMessage =
+                    createMessage("EDXL-DE", XML, SDIS_C_ROUTING_KEY, SAMU_V3_ROUTING_KEY);
 
             mockedPersistencePolicy
                     .when(() -> MessagePersistencePolicy.shouldPersist(anyString(), anyString()))
