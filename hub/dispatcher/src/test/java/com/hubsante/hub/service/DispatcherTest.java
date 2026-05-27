@@ -165,6 +165,15 @@ public class DispatcherTest {
                 });
         Mockito.reset(rabbitTemplate, persistenceService, conversionWebClient, hubConfig);
         Mockito.clearInvocations(conversionHandler);
+
+        doAnswer(invocation -> List.of(invocation.getArgument(0).toString()))
+                .when(conversionHandler)
+                .callConversionService(
+                        anyString(),
+                        anyString(),
+                        anyString(),
+                        any(ConversionUtils.ConversionType.class),
+                        anyString());
     }
 
     @Test
@@ -261,15 +270,6 @@ public class DispatcherTest {
         Message fromFireMessage =
                 createMessage("EDXL-DE", XML, SDIS_C_ROUTING_KEY, SAMU_V3_ROUTING_KEY);
 
-        doAnswer(invocation -> List.of(invocation.getArgument(0).toString()))
-                .when(conversionHandler)
-                .callConversionService(
-                        anyString(),
-                        anyString(),
-                        anyString(),
-                        any(ConversionUtils.ConversionType.class),
-                        anyString());
-
         dispatcher.dispatch(fromFireMessage);
 
         verify(conversionHandler, times(1))
@@ -286,15 +286,6 @@ public class DispatcherTest {
     public void cisuTranscodingFromHealthToCisuOnHealthVhost() throws IOException {
         Message messageToFire =
                 createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY, SDIS_C_ROUTING_KEY);
-
-        doAnswer(invocation -> List.of(invocation.getArgument(0).toString()))
-                .when(conversionHandler)
-                .callConversionService(
-                        anyString(),
-                        anyString(),
-                        anyString(),
-                        any(ConversionUtils.ConversionType.class),
-                        anyString());
 
         dispatcher.dispatch(messageToFire);
 
@@ -346,15 +337,6 @@ public class DispatcherTest {
         // shovel configuration
         messageFromFire.getMessageProperties().setReceivedRoutingKey(FIRE_ROUTING_KEY);
 
-        doAnswer(invocation -> List.of(invocation.getArgument(0).toString()))
-                .when(conversionHandler)
-                .callConversionService(
-                        anyString(),
-                        anyString(),
-                        anyString(),
-                        any(ConversionUtils.ConversionType.class),
-                        anyString());
-
         dispatcher.dispatch(messageFromFire);
 
         verify(conversionHandler, times(1))
@@ -403,15 +385,6 @@ public class DispatcherTest {
         // samuA -> samuV1 on the default vhost 15-15_v2.1 => conversion triggered
         Message message = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY, SAMU_V1_ROUTING_KEY);
 
-        doAnswer(invocation -> List.of(invocation.getArgument(0).toString()))
-                .when(conversionHandler)
-                .callConversionService(
-                        anyString(),
-                        anyString(),
-                        anyString(),
-                        any(ConversionUtils.ConversionType.class),
-                        anyString());
-
         dispatcher.dispatch(message);
 
         verify(conversionHandler, times(1))
@@ -449,15 +422,6 @@ public class DispatcherTest {
                 createMessage("EDXL-DE", JSON, SAMU_V3_DIRECT_CISU_ROUTING_KEY, SDIS_C_ROUTING_KEY);
 
         doReturn("15-nexsis_v1.9").when(hubConfig).getVhost();
-        doAnswer(invocation -> List.of(invocation.getArgument(0).toString()))
-                .when(conversionHandler)
-                .callConversionService(
-                        anyString(),
-                        anyString(),
-                        anyString(),
-                        any(ConversionUtils.ConversionType.class),
-                        anyString());
-
         dispatcher.dispatch(message);
 
         verify(conversionHandler, times(1))
@@ -490,15 +454,6 @@ public class DispatcherTest {
         messageFromFire.getMessageProperties().setReceivedRoutingKey(FIRE_ROUTING_KEY);
 
         doReturn(NEXSIS_VHOST).when(hubConfig).getVhost();
-        doAnswer(invocation -> List.of(invocation.getArgument(0).toString()))
-                .when(conversionHandler)
-                .callConversionService(
-                        anyString(),
-                        anyString(),
-                        anyString(),
-                        any(ConversionUtils.ConversionType.class),
-                        anyString());
-
         dispatcher.dispatch(messageFromFire);
 
         verify(conversionHandler, times(1))
@@ -803,15 +758,6 @@ public class DispatcherTest {
                                 persistenceService));
 
         Message message = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY, SAMU_V1_ROUTING_KEY);
-
-        doAnswer(invocation -> List.of(invocation.getArgument(0).toString()))
-                .when(conversionHandler)
-                .callConversionService(
-                        anyString(),
-                        anyString(),
-                        anyString(),
-                        any(ConversionUtils.ConversionType.class),
-                        anyString());
 
         dispatcher.dispatch(message);
 
@@ -1146,15 +1092,6 @@ public class DispatcherTest {
         String exchangeName = "transfer_15-15_v2.1_to_15-15_v1.5";
 
         // Mock call to converter (return same payload for error message)
-        doAnswer(invocation -> List.of(invocation.getArgument(0).toString()))
-                .when(conversionHandler)
-                .callConversionService(
-                        anyString(),
-                        anyString(),
-                        anyString(),
-                        any(ConversionUtils.ConversionType.class),
-                        anyString());
-
         AmqpRejectAndDontRequeueException errorThrown =
                 assertThrows(
                         AmqpRejectAndDontRequeueException.class,
@@ -1286,15 +1223,6 @@ public class DispatcherTest {
                     .when(() -> MessagePersistencePolicy.shouldPersist(anyString(), anyString()))
                     .thenReturn(true);
 
-            doAnswer(invocation -> List.of(invocation.getArgument(0).toString()))
-                    .when(conversionHandler)
-                    .callConversionService(
-                            anyString(),
-                            anyString(),
-                            anyString(),
-                            any(ConversionUtils.ConversionType.class),
-                            anyString());
-
             dispatcher.dispatch(fromFireMessage);
 
             // Verify ordering: persistence must happen before conversion
@@ -1314,15 +1242,6 @@ public class DispatcherTest {
     @DisplayName("should not call persistenceService for version-only conversion (not CISU)")
     public void shouldNotCallPersistenceServiceForVersionConversion() throws Exception {
         Message message = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY, SAMU_V1_ROUTING_KEY);
-
-        doAnswer(invocation -> List.of(invocation.getArgument(0).toString()))
-                .when(conversionHandler)
-                .callConversionService(
-                        anyString(),
-                        anyString(),
-                        anyString(),
-                        any(ConversionUtils.ConversionType.class),
-                        anyString());
 
         dispatcher.dispatch(message);
 
