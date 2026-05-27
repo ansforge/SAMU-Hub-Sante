@@ -102,6 +102,9 @@ public class DispatcherTest {
     private final String SAMU_V1_ROUTING_KEY = "fr.health.samuV1";
     private final String SAMU_V3_ROUTING_KEY = "fr.health.samuV3";
     private final String SAMU_V3_MESSAGE_QUEUE = SAMU_V3_ROUTING_KEY + ".message";
+    private final String SAMU_V3_DIRECT_CISU_ROUTING_KEY = "fr.health.samuV3-nexsis";
+    private final String SAMU_V3_DIRECT_CISU_MESSAGE_QUEUE =
+            SAMU_V3_DIRECT_CISU_ROUTING_KEY + ".message";
     private final String FIRE_ROUTING_KEY = "fr.fire.sga";
 
     private final String TEST_EDITOR = "default-editor";
@@ -435,6 +438,82 @@ public class DispatcherTest {
                         anyString(),
                         any(ConversionUtils.ConversionType.class),
                         anyString());
+    }
+
+    @Test
+    @DisplayName(
+            "should call conversion service for messages from SAMU which need CISU version conversion")
+    public void shouldCallConversionServiceForCISUVersionConvertedMessagesFromSamu()
+            throws IOException {
+        Message message =
+                createMessage("EDXL-DE", JSON, SAMU_V3_DIRECT_CISU_ROUTING_KEY, SDIS_C_ROUTING_KEY);
+
+        doReturn("15-nexsis_v1.9").when(hubConfig).getVhost();
+        doAnswer(invocation -> List.of(invocation.getArgument(0).toString()))
+                .when(conversionHandler)
+                .callConversionService(
+                        anyString(),
+                        anyString(),
+                        anyString(),
+                        any(ConversionUtils.ConversionType.class),
+                        anyString());
+
+        dispatcher.dispatch(message);
+
+        verify(conversionHandler, times(1))
+                .callConversionService(
+                        anyString(),
+                        anyString(),
+                        anyString(),
+                        eq(ConversionUtils.ConversionType.CISU_VERSION_CONVERSION),
+                        anyString());
+
+        String expectedTargetExchangeName = "transfer_15-nexsis_v1.9_to_15-nexsis_vactive";
+
+        ArgumentCaptor<Message> argument = ArgumentCaptor.forClass(Message.class);
+        Mockito.verify(rabbitTemplate, times(1))
+                .send(
+                        eq(expectedTargetExchangeName),
+                        eq(SAMU_V3_DIRECT_CISU_ROUTING_KEY),
+                        argument.capture());
+    }
+
+    @Test
+    @DisplayName(
+            "should call conversion service for messages from NexSIS which need CISU version conversion")
+    public void shouldCallConversionServiceForCISUVersionConvertedMessagesFromNexsis()
+            throws IOException {
+        Message messageFromFire =
+                createMessage("EDXL-DE", JSON, SDIS_C_ROUTING_KEY, SAMU_V3_DIRECT_CISU_ROUTING_KEY);
+        // Manually override the received routing key to put fr.fire.sga as per the hubex partner
+        // shovel configuration
+        messageFromFire.getMessageProperties().setReceivedRoutingKey(FIRE_ROUTING_KEY);
+
+        doReturn(NEXSIS_VHOST).when(hubConfig).getVhost();
+        doAnswer(invocation -> List.of(invocation.getArgument(0).toString()))
+                .when(conversionHandler)
+                .callConversionService(
+                        anyString(),
+                        anyString(),
+                        anyString(),
+                        any(ConversionUtils.ConversionType.class),
+                        anyString());
+
+        dispatcher.dispatch(messageFromFire);
+
+        verify(conversionHandler, times(1))
+                .callConversionService(
+                        anyString(),
+                        anyString(),
+                        anyString(),
+                        eq(ConversionUtils.ConversionType.CISU_VERSION_CONVERSION),
+                        anyString());
+
+        String expectedTargetExchangeName = "transfer_15-nexsis_vactive_to_15-nexsis_v1.9";
+
+        ArgumentCaptor<Message> argument = ArgumentCaptor.forClass(Message.class);
+        Mockito.verify(rabbitTemplate, times(1))
+                .send(eq(expectedTargetExchangeName), eq(FIRE_ROUTING_KEY), argument.capture());
     }
 
     @Test
