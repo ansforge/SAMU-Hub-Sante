@@ -2,12 +2,16 @@ import logging
 from flask import Flask, jsonify
 import csv
 import os
+import argparse
 
-ENVIRONMENT = os.environ.get("ENVIRONMENT")
+DEFAULT_FLASK_HOST = "0.0.0.0"
+DEFAULT_FLASK_PORT = 8080
 
-CSV_DIR = "/config"
+VALUES_FILE_PATH = os.environ.get(
+    "VALUES_FILE_PATH", "/config/rabbitmq.clients-configuration.csv"
+)
+
 CSV_DATA_KEY = "CSV_DATA"
-CSV_FILENAME = "rabbitmq.clients-configuration.csv"
 API_ENDPOINT = "/annuaire/api"
 HEALTH_ENDPOINT = "/annuaire/health"
 CSV_NOT_FOUND_MSG = "Fichier CSV introuvable"
@@ -26,7 +30,7 @@ HEADERS_COLUMNS_TO_KEEP = [
 def create_app():
     app = Flask(__name__)
     register_routes(app)
-    csv_data = parse_csv(CSV_FILENAME)
+    csv_data = parse_csv(VALUES_FILE_PATH)
     if csv_data is None:
         raise RuntimeError(
             "Erreur : impossible de charger le fichier CSV au démarrage."
@@ -36,7 +40,7 @@ def create_app():
 
 
 def parse_csv(filename):
-    path = os.path.join(CSV_DIR, filename)
+    path = VALUES_FILE_PATH
     if not os.path.exists(path):
         logging.error(f"Fichier CSV introuvable : {path}")
         raise FileNotFoundError(f"{CSV_NOT_FOUND_MSG} : {filename}")
@@ -69,5 +73,9 @@ def register_routes(app):
         return jsonify({"status": "UP", "service": "SAMU Hub Annuaire"}), 200
 
 
-if ENVIRONMENT == "production":
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--port", type=int, default=DEFAULT_FLASK_PORT)
+    args = parser.parse_args()
     app = create_app()
+    app.run(host=DEFAULT_FLASK_HOST, port=args.port)

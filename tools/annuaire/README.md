@@ -21,11 +21,16 @@ This project uses [uv](https://docs.astral.sh/uv/) for dependency management.
    uv sync
    ```
 
+3. Create .env file
+   ```bash
+   cp .env.template .env
+   ```
+
 ### Running the API
 
 Development mode:
 ```bash
-uv run python annuaire.py
+uv run --env-file .env python annuaire.py
 ```
 
 Production mode with Gunicorn:
