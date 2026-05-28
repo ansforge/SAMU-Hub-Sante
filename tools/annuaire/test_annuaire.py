@@ -8,18 +8,19 @@ from annuaire import (
     select_columns,
     API_ENDPOINT,
     HEALTH_ENDPOINT,
-    CSV_FILENAME,
     HEADERS_COLUMNS_TO_KEEP,
     CSV_NOT_FOUND_MSG,
 )
 
-FOLDER_NAME_PATCH_PATH = "annuaire.CSV_DIR"
+VALUES_FILE_PATH_PATCH = "annuaire.VALUES_FILE_PATH"
 
 
 class AnnuaireTestCase(unittest.TestCase):
     def setUp(self):
         self.tempdir = tempfile.TemporaryDirectory()
-        self.csv_path = os.path.join(self.tempdir.name, CSV_FILENAME)
+        self.csv_path = os.path.join(
+            self.tempdir.name, "rabbitmq.clients-configuration.csv"
+        )
         self._write_temp_csv(
             [
                 [
@@ -86,13 +87,15 @@ class AnnuaireTestCase(unittest.TestCase):
                 f.write(";".join(row) + "\n")
 
     def test_parse_csv_file_not_found(self):
-        with self.assertLogs(level="ERROR") as cm:
-            with self.assertRaises(FileNotFoundError):
-                parse_csv("non_existent.csv")
+        missing_path = os.path.join(self.tempdir.name, "non_existent.csv")
+        with mock.patch(VALUES_FILE_PATH_PATCH, missing_path):
+            with self.assertLogs(level="ERROR") as cm:
+                with self.assertRaises(FileNotFoundError):
+                    parse_csv(missing_path)
         self.assertIn(CSV_NOT_FOUND_MSG, cm.output[0])
 
     def test_api(self):
-        with mock.patch(FOLDER_NAME_PATCH_PATH, self.tempdir.name):
+        with mock.patch(VALUES_FILE_PATH_PATCH, self.csv_path):
             app = annuaire.create_app()
             client = app.test_client()
             response = client.get(API_ENDPOINT)
@@ -100,8 +103,8 @@ class AnnuaireTestCase(unittest.TestCase):
             self.assertIsInstance(response.json, list)
 
     def test_parse_csv_valid(self):
-        with mock.patch(FOLDER_NAME_PATCH_PATH, self.tempdir.name):
-            data = parse_csv(CSV_FILENAME)
+        with mock.patch(VALUES_FILE_PATH_PATCH, self.csv_path):
+            data = parse_csv(self.csv_path)
 
             expected_rows = [
                 {
@@ -141,14 +144,14 @@ class AnnuaireTestCase(unittest.TestCase):
                 )
 
     def test_select_columns(self):
-        with mock.patch(FOLDER_NAME_PATCH_PATH, self.tempdir.name):
-            data = parse_csv(CSV_FILENAME)
+        with mock.patch(VALUES_FILE_PATH_PATCH, self.csv_path):
+            data = parse_csv(self.csv_path)
             result = select_columns(data)
             for row in result:
                 self.assertEqual(set(row.keys()), set(HEADERS_COLUMNS_TO_KEEP))
 
     def test_healthcheck(self):
-        with mock.patch(FOLDER_NAME_PATCH_PATH, self.tempdir.name):
+        with mock.patch(VALUES_FILE_PATH_PATCH, self.csv_path):
             app = annuaire.create_app()
             client = app.test_client()
             response = client.get(HEALTH_ENDPOINT)
