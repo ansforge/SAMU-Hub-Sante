@@ -86,3 +86,66 @@ html {
     text-align: center;
     background-color: #fdf3e3 !important;
 }
+
+ 
+/* Map */
+#div-map .department {
+  fill: var(--gray-400);
+  stroke: var(--white);
+  cursor: pointer;
+  stroke-width: 0.6;
+}
+ 
+#div-map .department:hover {
+  fill: var(--gray-500);
+  cursor: "pointer";
+}
+ 
+#div-map .department.selected {
+  fill: var(--gray-500);
+  transition: fill 0.3s ease;
+}
+ 
+#div-map .department.prod {
+  fill: var(--primary);
+}
+ 
+#div-map .department.prod:hover {
+  fill: var(--primary-darker);
+}
+ 
+#div-map .department.prod.selected {
+  fill: var(--primary-darker);
+  transition: fill 0.3s ease;
+}
+ 
+ /* Tableau des éditeurs */
+
+#table-editeurs td {
+  padding-left: 0.8rem;
+  padding-right: 0.8rem;
+}
+
+/* Tests ANS validés */
+#table-editeurs .test {
+  text-align: center;
+  background-color: #FFF2F9;
+  padding: 2px 6px; 
+  border-radius: 3px;
+}
+
+/* En production */
+#table-editeurs .active {
+  text-align: center;
+  background-color: #f0f6e4 !important;
+  padding: 2px 6px; 
+  border-radius: 3px;
+}
+
+/* En développement */
+#table-editeurs .dev {
+  text-align: center;
+  background-color: #fdf3e3 !important;
+  padding: 2px 6px; 
+  border-radius: 3px;
+}
