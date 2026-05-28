@@ -71,14 +71,11 @@ Install development dependencies:
 uv sync --group dev
 ```
 
-Format code:
-```bash
-uv run black .
-```
+Lint and format
 
-Lint code:
 ```bash
-uv run flake8 .
+uv run ruff check --fix
+uv run ruff format
 ```
 
 ### Docker
