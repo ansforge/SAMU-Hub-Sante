@@ -1,5 +1,5 @@
 [versions]
-springBoot = "4.0.3"
+springBoot = "4.0.6"
 testcontainers = "1.21.4"
 jsonSchemaValidator = "1.0.87"
 logstashEncoder = "9.0"
