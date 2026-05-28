@@ -1,3 +1,12 @@
+// Docker Hardened Images (dhi.io) ship layers compressed with Zstandard.
+// Jib relies on Apache Commons Compress, which needs zstd-jni on the build
+// classpath to read those layers. Without it: "Zstandard compression is not available".
+buildscript {
+    dependencies {
+        classpath 'com.github.luben:zstd-jni:1.5.6-9'
+    }
+}
+
 plugins {
     id 'java'
     alias(libs.plugins.spring.boot)

@@ -1,6 +1,6 @@
 jib {
     from {
-        image 'eclipse-temurin:21-jre'
+        image 'dhi.io/eclipse-temurin:21-alpine3.23'
     }
     to {
         image "ghcr.io/${System.getenv('GITHUB_REPOSITORY_OWNER')}/dispatcher"
