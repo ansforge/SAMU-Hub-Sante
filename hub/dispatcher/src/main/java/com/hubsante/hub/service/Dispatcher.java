@@ -220,7 +220,7 @@ public class Dispatcher {
             }
 
             ConversionUtils.ConversionParametersDTO conversionParameters =
-                    ConversionUtils.determineConversionParameters(hubConfig, edxlMessage);
+                    ConversionUtils.resolveConversionParameters(hubConfig, edxlMessage);
             boolean isConversionNeeded = conversionParameters != null;
 
             if (isConversionNeeded) {
@@ -294,7 +294,7 @@ public class Dispatcher {
         Message forwardedMsg = messageHandler.forwardedStringMessage(convertedMessage, message);
 
         String transferExchangeName =
-                ConversionUtils.buildExchangeDestination(hubConfig.getVhost(), targetVhost);
+                ConversionUtils.buildTransferExchangeName(hubConfig.getVhost(), targetVhost);
 
         String routingKey = message.getMessageProperties().getReceivedRoutingKey();
         String distributionId = extractDistributionId(stringifyBody(message));

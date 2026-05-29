@@ -62,9 +62,9 @@ public class ConversionUtilsTest {
     void testBuildExchange() {
         assertEquals(
                 "transfer_15-15_v1.5_to_15-15_v2.0",
-                ConversionUtils.buildExchangeDestination("15-15_v1.5", "15-15_v2.0"));
+                ConversionUtils.buildTransferExchangeName("15-15_v1.5", "15-15_v2.0"));
         assertEquals(
-                "transfer_toto_to_titi", ConversionUtils.buildExchangeDestination("toto", "titi"));
+                "transfer_toto_to_titi", ConversionUtils.buildTransferExchangeName("toto", "titi"));
     }
 
     @Test
