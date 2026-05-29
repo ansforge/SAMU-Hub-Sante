@@ -21,9 +21,9 @@ group = 'com.hubsante'
 ext {
     modelVersion = project.hasProperty('modelVersion') ? project.getProperty('modelVersion') : '3.3.2'
     // Pin transitive libs ahead of the Spring Boot 4.0.6 BOM to clear remaining CVEs
-    set('tomcat.version', '11.0.22')
-    set('netty.version', '4.2.13.Final')
-    set('jackson-bom.version', '3.1.1')
+    set('tomcat.version', libs.versions.tomcat.get())
+    set('netty.version', libs.versions.netty.get())
+    set('jackson-bom.version', libs.versions.jacksonBom.get())
 }
 
 java {
