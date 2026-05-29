@@ -1,5 +1,5 @@
 [versions]
-springBoot = "4.0.3"
+springBoot = "4.0.6"
 testcontainers = "1.21.4"
 jsonSchemaValidator = "1.0.87"
 logstashEncoder = "9.0"
@@ -9,6 +9,9 @@ orgJson = "20231013"
 googleJavaFormat = "1.29.0"
 embedMongo = "4.24.0"
 apacheCommonsCsv = "1.14.1"
+tomcat = "11.0.22"
+netty = "4.2.13.Final"
+jacksonBom = "3.1.1"
 
 [plugins]
 spring-boot = { id = "org.springframework.boot", version.ref = "springBoot" }
