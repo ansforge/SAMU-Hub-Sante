@@ -23,43 +23,31 @@ import com.hubsante.hub.config.HubConfiguration;
 import com.hubsante.hub.exception.UnroutableMessageException;
 import com.hubsante.model.edxl.EdxlMessage;
 import java.util.Arrays;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class ConversionUtils {
 
-    private static final boolean DEFAULT_DIRECT_CISU_PREFERENCE = false;
-
+    @Getter
+    @RequiredArgsConstructor
     public enum ConversionType {
         HEALTH_VERSION_CONVERSION("HealthVersionConversion"),
         CISU_VERSION_CONVERSION("CISUVersionConversion"),
         CISU_TRANSCODING("CISUTranscoding");
 
         private final String type;
-
-        ConversionType(String name) {
-            this.type = name;
-        }
-
-        public String getType() {
-            return type;
-        }
     }
 
+    @Getter
+    @RequiredArgsConstructor
     public enum RoutingType {
         SAMU_TO_SAMU("SamuToSamu"),
         CISU_TO_SAMU("CisuToSamu"),
         SAMU_TO_CISU("SamuToCisu");
 
         private final String type;
-
-        RoutingType(String name) {
-            this.type = name;
-        }
-
-        public String getType() {
-            return type;
-        }
     }
 
     public record ConversionParametersDTO(
@@ -67,9 +55,23 @@ public class ConversionUtils {
             String sourceVersion,
             String targetVersion,
             String targetVhost,
-            ConversionType conversionType) {}
+            ConversionType conversionType) {
 
-    public static String buildExchangeDestination(String sourceVHost, String targetVHost) {
+        static ConversionParametersDTO forVhostConversion(
+                EdxlMessage edxlMessage,
+                String sourceVhost,
+                String targetVhost,
+                ConversionType conversionType) {
+            return new ConversionParametersDTO(
+                    edxlMessage,
+                    getVHostMatchingModelVersion(sourceVhost),
+                    getVHostMatchingModelVersion(targetVhost),
+                    targetVhost,
+                    conversionType);
+        }
+    }
+
+    public static String buildTransferExchangeName(String sourceVHost, String targetVHost) {
         return TRANSFER_EXCHANGE_PREFIX + sourceVHost + "_to_" + targetVHost;
     }
 
@@ -110,100 +112,95 @@ public class ConversionUtils {
         return availableVhosts[availableVhosts.length - 1];
     }
 
-    public static Boolean isConversionNeeded(String currentVhost, String[] availableVhosts) {
+    public static boolean isConversionNeeded(String currentVhost, String[] availableVhosts) {
         return !Arrays.asList(availableVhosts).contains(currentVhost);
     }
 
-    public static ConversionParametersDTO determineConversionParameters(
+    public static ConversionParametersDTO resolveConversionParameters(
             HubConfiguration hubConfig, EdxlMessage edxlMessage) {
-        RoutingType routingType = determineRoutingType(edxlMessage);
+        return switch (determineRoutingType(edxlMessage)) {
+            case SAMU_TO_SAMU -> resolveSamuToSamu(hubConfig, edxlMessage);
+            case CISU_TO_SAMU -> resolveCisuToSamu(hubConfig, edxlMessage);
+            case SAMU_TO_CISU -> resolveSamuToCisu(hubConfig, edxlMessage);
+        };
+    }
 
+    private static ConversionParametersDTO resolveSamuToSamu(
+            HubConfiguration hubConfig, EdxlMessage edxlMessage) {
+        String recipientId = getRecipientID(edxlMessage);
+        String targetVhost =
+                determineTargetVhostByPerimeter(hubConfig, recipientId, Perimeter.HEALTH);
+
+        if (targetVhost == null) {
+            return null;
+        }
+
+        return ConversionParametersDTO.forVhostConversion(
+                edxlMessage,
+                hubConfig.getVhost(),
+                targetVhost,
+                ConversionType.HEALTH_VERSION_CONVERSION);
+    }
+
+    private static ConversionParametersDTO resolveCisuToSamu(
+            HubConfiguration hubConfig, EdxlMessage edxlMessage) {
         String recipientId = getRecipientID(edxlMessage);
         String currentVhost = hubConfig.getVhost();
 
-        switch (routingType) {
-            case SAMU_TO_SAMU:
-                String targetVhost =
-                        determineTargetVhostByPerimeter(hubConfig, recipientId, Perimeter.HEALTH);
+        String[] availableCisuVhosts =
+                extractAvailableVhostsByPerimeter(hubConfig, recipientId, Perimeter.CISU);
 
-                if (targetVhost == null) {
-                    return null;
-                }
+        if (availableCisuVhosts != null && availableCisuVhosts.length > 0) {
+            if (!isConversionNeeded(currentVhost, availableCisuVhosts)) {
+                return null;
+            }
 
-                return new ConversionParametersDTO(
-                        edxlMessage,
-                        getVHostMatchingModelVersion(currentVhost),
-                        getVHostMatchingModelVersion(targetVhost),
-                        targetVhost,
-                        ConversionType.HEALTH_VERSION_CONVERSION);
-            case CISU_TO_SAMU:
-                String[] availableCISUVhosts =
-                        extractAvailableVhostsByPerimeter(hubConfig, recipientId, Perimeter.CISU);
-
-                if (availableCISUVhosts != null && availableCISUVhosts.length > 0) {
-                    if (!isConversionNeeded(currentVhost, availableCISUVhosts)) {
-                        return null;
-                    }
-
-                    return new ConversionParametersDTO(
-                            edxlMessage,
-                            getVHostMatchingModelVersion(currentVhost),
-                            getVHostMatchingModelVersion(
-                                    availableCISUVhosts[availableCISUVhosts.length - 1]),
-                            availableCISUVhosts[availableCISUVhosts.length - 1],
-                            ConversionType.CISU_VERSION_CONVERSION);
-                }
-
-                String targetHealthVhost =
-                        determineTargetVhostByPerimeter(hubConfig, recipientId, Perimeter.HEALTH);
-
-                if (targetHealthVhost == null) {
-                    return null;
-                }
-
-                return new ConversionParametersDTO(
-                        edxlMessage,
-                        getVHostMatchingModelVersion(currentVhost),
-                        getVHostMatchingModelVersion(targetHealthVhost),
-                        targetHealthVhost,
-                        ConversionType.CISU_TRANSCODING);
-            case SAMU_TO_CISU:
-                if (isNexsisVhost(currentVhost)) {
-                    return null;
-                }
-                if (isCisuVhost(currentVhost)) {
-                    return new ConversionParametersDTO(
-                            edxlMessage,
-                            getVHostMatchingModelVersion(currentVhost),
-                            getVHostMatchingModelVersion(NEXSIS_VHOST),
-                            NEXSIS_VHOST,
-                            ConversionType.CISU_VERSION_CONVERSION);
-                }
-                if (isHealthVhost(currentVhost)) {
-                    return new ConversionParametersDTO(
-                            edxlMessage,
-                            getVHostMatchingModelVersion(currentVhost),
-                            getVHostMatchingModelVersion(NEXSIS_VHOST),
-                            NEXSIS_VHOST,
-                            ConversionType.CISU_TRANSCODING);
-                }
-                throw new UnroutableMessageException(
-                        "Cannot route message to Nexsis from vhost " + currentVhost,
-                        edxlMessage.getDistributionID(),
-                        recipientId,
-                        EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage()));
-            default:
-                throw new UnroutableMessageException(
-                        "Unable to route message from "
-                                + edxlMessage.getSenderID()
-                                + " to "
-                                + recipientId
-                                + " on vhost "
-                                + currentVhost,
-                        edxlMessage.getDistributionID(),
-                        recipientId,
-                        EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage()));
+            String latestCisuVhost = availableCisuVhosts[availableCisuVhosts.length - 1];
+            return ConversionParametersDTO.forVhostConversion(
+                    edxlMessage,
+                    currentVhost,
+                    latestCisuVhost,
+                    ConversionType.CISU_VERSION_CONVERSION);
         }
+
+        String targetHealthVhost =
+                determineTargetVhostByPerimeter(hubConfig, recipientId, Perimeter.HEALTH);
+
+        if (targetHealthVhost == null) {
+            return null;
+        }
+
+        return ConversionParametersDTO.forVhostConversion(
+                edxlMessage, currentVhost, targetHealthVhost, ConversionType.CISU_TRANSCODING);
+    }
+
+    private static ConversionParametersDTO resolveSamuToCisu(
+            HubConfiguration hubConfig, EdxlMessage edxlMessage) {
+        String currentVhost = hubConfig.getVhost();
+
+        if (isNexsisVhost(currentVhost)) {
+            return null;
+        }
+        if (isCisuVhost(currentVhost)) {
+            return ConversionParametersDTO.forVhostConversion(
+                    edxlMessage,
+                    currentVhost,
+                    NEXSIS_VHOST,
+                    ConversionType.CISU_VERSION_CONVERSION);
+        }
+        if (isHealthVhost(currentVhost)) {
+            return ConversionParametersDTO.forVhostConversion(
+                    edxlMessage, currentVhost, NEXSIS_VHOST, ConversionType.CISU_TRANSCODING);
+        }
+        throw unroutable(edxlMessage, "Cannot route message to Nexsis from vhost " + currentVhost);
+    }
+
+    private static UnroutableMessageException unroutable(EdxlMessage edxlMessage, String reason) {
+        return new UnroutableMessageException(
+                reason,
+                edxlMessage.getDistributionID(),
+                getRecipientID(edxlMessage),
+                EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage()));
     }
 
     private static RoutingType determineRoutingType(EdxlMessage edxlMessage) {

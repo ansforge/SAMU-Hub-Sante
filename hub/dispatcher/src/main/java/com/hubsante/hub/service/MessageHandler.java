@@ -215,7 +215,7 @@ public class MessageHandler {
                                         .build());
 
                 ConversionUtils.ConversionParametersDTO conversionParameters =
-                        ConversionUtils.determineConversionParameters(hubConfig, errorEdxlMessage);
+                        ConversionUtils.resolveConversionParameters(hubConfig, errorEdxlMessage);
 
                 if (conversionParameters != null
                         && conversionParameters.conversionType()
@@ -234,7 +234,7 @@ public class MessageHandler {
                     errorAmqpMessage =
                             forwardedStringMessage(convertedMessages.getFirst(), errorAmqpMessage);
                     destinationExchange =
-                            ConversionUtils.buildExchangeDestination(
+                            ConversionUtils.buildTransferExchangeName(
                                     hubConfig.getVhost(), conversionParameters.targetVhost());
                     routingKey = HUB_ID;
                     structuredLog.info(
