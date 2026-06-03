@@ -219,8 +219,9 @@ class AnnuaireClientsApiTestCase(unittest.TestCase):
         samu = next(entry for entry in data if entry["client_id"] == "fr.health.samu750")
         self.assertEqual(samu["client_name"], "SAMU 750")
         self.assertEqual(samu["client_type"], "SAMU")
-        self.assertFalse(samu["directCISU"])
-        self.assertFalse(samu["isLinkedToNexsis"])
+        self.assertNotIn("editor", samu)
+        self.assertNotIn("directCISU", samu)
+        self.assertNotIn("isLinkedToNexsis", samu)
         self.assertEqual(
             samu["perimeters"],
             {
@@ -247,8 +248,8 @@ class AnnuaireClientsApiTestCase(unittest.TestCase):
                 "15-gps": False,
             },
         )
-        self.assertTrue(sdis["directCISU"])
-        self.assertTrue(sdis["isLinkedToNexsis"])
+        self.assertNotIn("directCISU", sdis)
+        self.assertNotIn("isLinkedToNexsis", sdis)
 
     def test_clients_api_exposes_false_for_not_implemented_perimeters(self):
         data = self.http.get(CLIENTS_ENDPOINT).json

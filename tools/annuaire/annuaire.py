@@ -88,9 +88,6 @@ def build_annuaire_client_entry(client: dict) -> dict:
         "client_id": client.get("client_id", ""),
         "client_name": client.get("client_name", ""),
         "client_type": client.get("client_type", ""),
-        "editor": client.get("editor", ""),
-        "directCISU": bool(client.get("directCISU", False)),
-        "isLinkedToNexsis": bool(client.get("isLinkedToNexsis", False)),
         "perimeters": resolve_perimeters(client),
     }
 
