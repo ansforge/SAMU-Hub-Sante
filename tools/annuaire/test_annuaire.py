@@ -216,7 +216,9 @@ class AnnuaireClientsApiTestCase(unittest.TestCase):
         ids = [entry["client_id"] for entry in data]
         self.assertEqual(ids, ["fr.health.samu750", "fr.fire.sdis750"])
 
-        samu = next(entry for entry in data if entry["client_id"] == "fr.health.samu750")
+        samu = next(
+            entry for entry in data if entry["client_id"] == "fr.health.samu750"
+        )
         self.assertEqual(samu["client_name"], "SAMU 750")
         self.assertEqual(samu["client_type"], "SAMU")
         self.assertNotIn("editor", samu)
