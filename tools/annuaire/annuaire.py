@@ -59,7 +59,7 @@ def load_clients(path: str) -> list[dict]:
 
 def build_client_entry(client: dict) -> dict:
     entry = {
-        "client_id": client["client_id"],
+        "client_id": client.get("client_id", ""),
         "editor": client.get("editor", ""),
         "directCISU": client.get("directCISU", False),
     }
@@ -83,7 +83,7 @@ def resolve_perimeters(client: dict) -> dict:
 
 def build_annuaire_client_entry(client: dict) -> dict:
     return {
-        "client_id": client["client_id"],
+        "client_id": client.get("client_id", ""),
         "client_name": client.get("client_name", ""),
         "client_type": client.get("client_type", ""),
         "editor": client.get("editor", ""),
