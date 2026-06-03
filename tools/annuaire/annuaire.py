@@ -88,7 +88,7 @@ def register_routes(app):
     @app.get(f"{CLIENTS_ENDPOINT}/<perimeter>")
     def get_clients_by_perimeter(perimeter):
         if perimeter not in VALID_PERIMETERS:
-            return jsonify({"error": "Invalid perimeter"}), 400
+            return jsonify({"error": "Invalid perimeter", "valid_perimeters": sorted(VALID_PERIMETERS)}), 400
         filtered = [
             client
             for client in app.config[ANNUAIRE_CLIENTS_DATA_KEY]

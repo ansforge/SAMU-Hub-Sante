@@ -222,6 +222,8 @@ class AnnuaireClientsApiTestCase(unittest.TestCase):
         response_unknown = self.http.get(f"{CLIENTS_ENDPOINT}/inconnu")
         self.assertEqual(response_unknown.status_code, 400)
         self.assertIn("error", response_unknown.json)
+        self.assertIn("valid_perimeters", response_unknown.json)
+        self.assertIsInstance(response_unknown.json["valid_perimeters"], list)
 
     def test_clients_filter_rejects_all_unknown_perimeters(self):
         for invalid in ["unknown", "P: 15-15", "injection-attempt"]:
