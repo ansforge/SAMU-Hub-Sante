@@ -160,7 +160,9 @@ class AnnuaireClientsApiTestCase(unittest.TestCase):
 
     def test_clients_api_response_shape(self):
         data = self.http.get(CLIENTS_ENDPOINT).json
-        samu = next(entry for entry in data if entry["client_id"] == "fr.health.samu750")
+        samu = next(
+            entry for entry in data if entry["client_id"] == "fr.health.samu750"
+        )
         self.assertEqual(samu["client_name"], "SAMU 750")
         self.assertEqual(samu["client_type"], "SAMU")
         self.assertNotIn("editor", samu)
