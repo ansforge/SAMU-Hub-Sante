@@ -101,11 +101,7 @@ def build_annuaire_client_entry(client: dict) -> dict:
 
 
 def build_annuaire_clients(clients: list[dict]) -> list[dict]:
-    annuaire_clients = []
-    for client in clients:
-        if isinstance(client.get("annuaire"), dict):
-            annuaire_clients.append(build_annuaire_client_entry(client))
-    return annuaire_clients
+    return [build_annuaire_client_entry(c) for c in clients if isinstance(c.get("annuaire"), dict)]
 
 
 def register_routes(app):
