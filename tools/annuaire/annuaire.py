@@ -39,6 +39,8 @@ ANNUAIRE_TO_PERIMETER_KEY = {
     "gps": "15-gps",
 }
 
+VALID_PERIMETERS = frozenset(ANNUAIRE_TO_PERIMETER_KEY.values())
+
 
 def load_clients(path: str) -> list[dict]:
     try:
@@ -117,6 +119,8 @@ def register_routes(app):
 
     @app.get(f"{CLIENTS_ENDPOINT}/<perimeter>")
     def get_clients_by_perimeter(perimeter):
+        if perimeter not in VALID_PERIMETERS:
+            return jsonify({"error": "Invalid perimeter"}), 400
         filtered = [
             client
             for client in app.config[ANNUAIRE_CLIENTS_DATA_KEY]

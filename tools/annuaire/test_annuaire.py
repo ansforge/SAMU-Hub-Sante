@@ -217,8 +217,20 @@ class AnnuaireTestCase(unittest.TestCase):
             self.assertEqual(len(response_nexsis.json), 2)
 
             response_unknown = client.get(f"{CLIENTS_ENDPOINT}/inconnu")
-            self.assertEqual(response_unknown.status_code, 200)
-            self.assertEqual(response_unknown.json, [])
+            self.assertEqual(response_unknown.status_code, 400)
+            self.assertIn("error", response_unknown.json)
+
+    def test_clients_filter_rejects_all_unknown_perimeters(self):
+        with mock.patch(VALUES_PATH_PATCH, ANNULAIRE_API_FIXTURE_PATH):
+            app = annuaire.create_app()
+            client = app.test_client()
+            for invalid in ["unknown", "P: 15-15", "injection-attempt"]:
+                response = client.get(f"{CLIENTS_ENDPOINT}/{invalid}")
+                self.assertEqual(
+                    response.status_code,
+                    400,
+                    msg=f"Expected 400 for perimeter '{invalid}'",
+                )
 
     def test_resolve_perimeters_missing_topology_key(self):
         client = {
