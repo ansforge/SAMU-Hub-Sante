@@ -11,18 +11,10 @@ CLIENTS_ENDPOINT = f"{API_ENDPOINT}/clients"
 HEALTH_ENDPOINT = "/annuaire/health"
 
 VALUES_PATH = os.environ.get("VALUES_PATH", "/config/topology/values.yaml")
-CLIENTS_DATA_KEY = "CLIENTS_DATA"
 ANNUAIRE_CLIENTS_DATA_KEY = "ANNUAIRE_CLIENTS_DATA"
 
 TOPOLOGY_ROOT_KEY = "annuaire"
 TOPOLOGY_CLIENTS_KEY = "clients"
-
-TOPOLOGY_TO_LEGACY_KEY = {
-    "lrmPerimeterVersions": "P: 15-15",
-    "smurPerimeterVersions": "P: 15-smur",
-    "cisuPerimeterVersions": "P: 15-nexsis",
-    "gpsPerimeterVersions": "P: 15-gps",
-}
 
 ANNUAIRE_TO_PERIMETER_KEY = {
     "lrm": "15-15",
@@ -59,18 +51,6 @@ def load_clients(path: str) -> list[dict]:
         raise RuntimeError(f"Failed to load clients from {path}: {e}") from e
 
 
-def build_client_entry(client: dict) -> dict:
-    entry = {
-        "client_id": client.get("client_id", ""),
-        "editor": client.get("editor", ""),
-        "directCISU": client.get("directCISU", False),
-    }
-    for topo_key, legacy_key in TOPOLOGY_TO_LEGACY_KEY.items():
-        if topo_key in client:
-            entry[legacy_key] = client[topo_key]
-    return entry
-
-
 def resolve_perimeters(client: dict) -> dict:
     annuaire = client.get("annuaire")
     if not isinstance(annuaire, dict):
@@ -101,10 +81,6 @@ def build_annuaire_clients(clients: list[dict]) -> list[dict]:
 
 
 def register_routes(app):
-    @app.get(API_ENDPOINT)
-    def get_json():
-        return jsonify(app.config[CLIENTS_DATA_KEY])
-
     @app.get(CLIENTS_ENDPOINT)
     def get_clients():
         return jsonify(app.config[ANNUAIRE_CLIENTS_DATA_KEY])
@@ -129,7 +105,6 @@ def create_app():
     app = Flask(__name__)
     register_routes(app)
     clients = load_clients(VALUES_PATH)
-    app.config[CLIENTS_DATA_KEY] = [build_client_entry(c) for c in clients]
     app.config[ANNUAIRE_CLIENTS_DATA_KEY] = build_annuaire_clients(clients)
     return app
 
