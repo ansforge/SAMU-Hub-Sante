@@ -7,10 +7,12 @@ import yaml
 ENVIRONMENT = os.environ.get("ENVIRONMENT")
 
 API_ENDPOINT = "/annuaire/api"
+CLIENTS_ENDPOINT = f"{API_ENDPOINT}/clients"
 HEALTH_ENDPOINT = "/annuaire/health"
 
 VALUES_PATH = os.environ.get("VALUES_PATH", "/config/topology/values.yaml")
 CLIENTS_DATA_KEY = "CLIENTS_DATA"
+ANNUAIRE_CLIENTS_DATA_KEY = "ANNUAIRE_CLIENTS_DATA"
 
 TOPOLOGY_ROOT_KEY = "annuaire"
 TOPOLOGY_CLIENTS_KEY = "clients"
@@ -20,6 +22,16 @@ TOPOLOGY_TO_LEGACY_KEY = {
     "smurPerimeterVersions": "P: 15-smur",
     "cisuPerimeterVersions": "P: 15-nexsis",
     "gpsPerimeterVersions": "P: 15-gps",
+}
+
+ANNUAIRE_TO_PERIMETER_KEY = {
+    "lrm": ("15-15", "lrmPerimeterVersions"),
+    "cap": ("15-cap", "lrmPerimeterVersions"),
+    "portail": ("15-portail", "lrmPerimeterVersions"),
+    "cnr114": ("15-cnr114", "cnr114PerimeterVersions"),
+    "cisu": ("15-nexsis", "cisuPerimeterVersions"),
+    "smur": ("15-smur", "smurPerimeterVersions"),
+    "gps": ("15-gps", "gpsPerimeterVersions"),
 }
 
 
@@ -57,10 +69,62 @@ def build_client_entry(client: dict) -> dict:
     return entry
 
 
+def resolve_perimeters(client: dict) -> dict:
+    annuaire = client.get("annuaire")
+    if not isinstance(annuaire, dict):
+        return {}
+
+    perimeters = {}
+    for annuaire_key, (perimeter_key, topology_key) in ANNUAIRE_TO_PERIMETER_KEY.items():
+        if not annuaire.get(annuaire_key):
+            continue
+
+        versions = client.get(topology_key, [])
+        if isinstance(versions, list) and versions:
+            perimeters[perimeter_key] = versions[0]
+        elif isinstance(versions, str) and versions:
+            perimeters[perimeter_key] = versions
+
+    return perimeters
+
+
+def build_annuaire_client_entry(client: dict) -> dict:
+    return {
+        "client_id": client["client_id"],
+        "client_name": client.get("client_name", ""),
+        "client_type": client.get("client_type", ""),
+        "editor": client.get("editor", ""),
+        "directCISU": bool(client.get("directCISU", False)),
+        "isLinkedToNexsis": bool(client.get("isLinkedToNexsis", False)),
+        "perimeters": resolve_perimeters(client),
+    }
+
+
+def build_annuaire_clients(clients: list[dict]) -> list[dict]:
+    annuaire_clients = []
+    for client in clients:
+        if isinstance(client.get("annuaire"), dict):
+            annuaire_clients.append(build_annuaire_client_entry(client))
+    return annuaire_clients
+
+
 def register_routes(app):
     @app.get(API_ENDPOINT)
     def get_json():
         return jsonify(app.config[CLIENTS_DATA_KEY])
+
+    @app.get(CLIENTS_ENDPOINT)
+    def get_clients():
+        return jsonify(app.config[ANNUAIRE_CLIENTS_DATA_KEY])
+
+    @app.get(f"{CLIENTS_ENDPOINT}/<perimeter>")
+    def get_clients_by_perimeter(perimeter):
+        filtered = [
+            client
+            for client in app.config[ANNUAIRE_CLIENTS_DATA_KEY]
+            if perimeter in client["perimeters"]
+        ]
+        return jsonify(filtered)
 
     @app.get(HEALTH_ENDPOINT)
     def health_check():
@@ -72,6 +136,7 @@ def create_app():
     register_routes(app)
     clients = load_clients(VALUES_PATH)
     app.config[CLIENTS_DATA_KEY] = [build_client_entry(c) for c in clients]
+    app.config[ANNUAIRE_CLIENTS_DATA_KEY] = build_annuaire_clients(clients)
     return app
 
 
