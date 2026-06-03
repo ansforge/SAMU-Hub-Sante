@@ -9,7 +9,10 @@ import annuaire
 from annuaire import (
     load_clients,
     build_client_entry,
+    resolve_perimeters,
+    build_annuaire_clients,
     API_ENDPOINT,
+    CLIENTS_ENDPOINT,
     HEALTH_ENDPOINT,
     TOPOLOGY_ROOT_KEY,
     TOPOLOGY_CLIENTS_KEY,
@@ -17,6 +20,7 @@ from annuaire import (
 
 FIXTURE_DIR = os.path.join(os.path.dirname(__file__), "fixtures")
 FIXTURE_PATH = os.path.join(FIXTURE_DIR, "values.yaml")
+ANNULAIRE_API_FIXTURE_PATH = os.path.join(FIXTURE_DIR, "values_annuaire_api.yaml")
 VALUES_PATH_PATCH = "annuaire.VALUES_PATH"
 
 
@@ -134,6 +138,98 @@ class AnnuaireTestCase(unittest.TestCase):
                 load_clients(path)
         self.assertIn("Failed to load clients from", str(ctx.exception))
         self.assertTrue(any("Failed to load" in line for line in cm.output))
+
+    def test_clients_api_returns_only_clients_with_annuaire(self):
+        with mock.patch(VALUES_PATH_PATCH, ANNULAIRE_API_FIXTURE_PATH):
+            app = annuaire.create_app()
+            client = app.test_client()
+            response = client.get(CLIENTS_ENDPOINT)
+            self.assertEqual(response.status_code, 200)
+            data = response.json
+
+            self.assertEqual(len(data), 2)
+            ids = [entry["client_id"] for entry in data]
+            self.assertEqual(ids, ["fr.health.samu750", "fr.fire.sdis750"])
+
+            samu = next(entry for entry in data if entry["client_id"] == "fr.health.samu750")
+            self.assertEqual(samu["client_name"], "SAMU 750")
+            self.assertEqual(samu["client_type"], "SAMU")
+            self.assertFalse(samu["directCISU"])
+            self.assertFalse(samu["isLinkedToNexsis"])
+            self.assertEqual(
+                samu["perimeters"],
+                {"15-15": "2.1", "15-cap": "2.1", "15-nexsis": "1.9"},
+            )
+
+            sdis = next(entry for entry in data if entry["client_id"] == "fr.fire.sdis750")
+            self.assertEqual(sdis["perimeters"], {"15-nexsis": "1.9"})
+            self.assertTrue(sdis["directCISU"])
+            self.assertTrue(sdis["isLinkedToNexsis"])
+
+    def test_clients_api_omits_perimeter_without_version(self):
+        with mock.patch(VALUES_PATH_PATCH, ANNULAIRE_API_FIXTURE_PATH):
+            app = annuaire.create_app()
+            client = app.test_client()
+            response = client.get(CLIENTS_ENDPOINT)
+            self.assertEqual(response.status_code, 200)
+            data = response.json
+
+            sdis = next(entry for entry in data if entry["client_id"] == "fr.fire.sdis750")
+            self.assertNotIn("15-15", sdis["perimeters"])
+            self.assertNotIn("15-cap", sdis["perimeters"])
+
+    def test_clients_api_filter_by_perimeter(self):
+        with mock.patch(VALUES_PATH_PATCH, ANNULAIRE_API_FIXTURE_PATH):
+            app = annuaire.create_app()
+            client = app.test_client()
+
+            response_1515 = client.get(f"{CLIENTS_ENDPOINT}/15-15")
+            self.assertEqual(response_1515.status_code, 200)
+            self.assertEqual(len(response_1515.json), 1)
+            self.assertEqual(response_1515.json[0]["client_id"], "fr.health.samu750")
+
+            response_cap = client.get(f"{CLIENTS_ENDPOINT}/15-cap")
+            self.assertEqual(response_cap.status_code, 200)
+            self.assertEqual(len(response_cap.json), 1)
+            self.assertEqual(response_cap.json[0]["client_id"], "fr.health.samu750")
+
+            response_nexsis = client.get(f"{CLIENTS_ENDPOINT}/15-nexsis")
+            self.assertEqual(response_nexsis.status_code, 200)
+            self.assertEqual(len(response_nexsis.json), 2)
+
+            response_unknown = client.get(f"{CLIENTS_ENDPOINT}/inconnu")
+            self.assertEqual(response_unknown.status_code, 200)
+            self.assertEqual(response_unknown.json, [])
+
+    def test_resolve_perimeters_missing_topology_key(self):
+        client = {
+            "client_id": "fr.health.cap-only",
+            "annuaire": {"lrm": True, "cap": True},
+            "editor": "ANS",
+        }
+        perimeters = resolve_perimeters(client)
+        self.assertEqual(perimeters, {})
+
+    def test_build_annuaire_clients(self):
+        clients = [
+            {
+                "client_id": "fr.health.samu750",
+                "client_name": "SAMU 750",
+                "client_type": "SAMU",
+                "editor": "Editeur A",
+                "lrmPerimeterVersions": ["2.1"],
+                "annuaire": {"lrm": True},
+            },
+            {
+                "client_id": "fr.health.ignore",
+                "editor": "ANS",
+            },
+        ]
+
+        result = build_annuaire_clients(clients)
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0]["client_id"], "fr.health.samu750")
+        self.assertEqual(result[0]["perimeters"], {"15-15": "2.1"})
 
 
 if __name__ == "__main__":
