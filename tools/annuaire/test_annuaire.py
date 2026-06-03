@@ -139,108 +139,6 @@ class AnnuaireTestCase(unittest.TestCase):
         self.assertIn("Failed to load clients from", str(ctx.exception))
         self.assertTrue(any("Failed to load" in line for line in cm.output))
 
-    def test_clients_without_annuaire_key_are_excluded(self):
-        with mock.patch(VALUES_PATH_PATCH, ANNULAIRE_API_FIXTURE_PATH):
-            app = annuaire.create_app()
-            client = app.test_client()
-            response = client.get(CLIENTS_ENDPOINT)
-            self.assertEqual(response.status_code, 200)
-            ids = [entry["client_id"] for entry in response.json]
-            self.assertNotIn("fr.health.fire", ids)
-
-    def test_clients_api_returns_only_clients_with_annuaire(self):
-        with mock.patch(VALUES_PATH_PATCH, ANNULAIRE_API_FIXTURE_PATH):
-            app = annuaire.create_app()
-            client = app.test_client()
-            response = client.get(CLIENTS_ENDPOINT)
-            self.assertEqual(response.status_code, 200)
-            data = response.json
-
-            self.assertEqual(len(data), 2)
-            ids = [entry["client_id"] for entry in data]
-            self.assertEqual(ids, ["fr.health.samu750", "fr.fire.sdis750"])
-
-            samu = next(entry for entry in data if entry["client_id"] == "fr.health.samu750")
-            self.assertEqual(samu["client_name"], "SAMU 750")
-            self.assertEqual(samu["client_type"], "SAMU")
-            self.assertFalse(samu["directCISU"])
-            self.assertFalse(samu["isLinkedToNexsis"])
-            self.assertEqual(
-                samu["perimeters"],
-                {
-                    "15-15": True,
-                    "15-cap": True,
-                    "15-portail": False,
-                    "15-cnr114": False,
-                    "15-nexsis": True,
-                    "15-smur": False,
-                    "15-gps": False,
-                },
-            )
-
-            sdis = next(entry for entry in data if entry["client_id"] == "fr.fire.sdis750")
-            self.assertEqual(
-                sdis["perimeters"],
-                {
-                    "15-15": False,
-                    "15-cap": False,
-                    "15-portail": False,
-                    "15-cnr114": False,
-                    "15-nexsis": True,
-                    "15-smur": False,
-                    "15-gps": False,
-                },
-            )
-            self.assertTrue(sdis["directCISU"])
-            self.assertTrue(sdis["isLinkedToNexsis"])
-
-    def test_clients_api_exposes_false_for_not_implemented_perimeters(self):
-        with mock.patch(VALUES_PATH_PATCH, ANNULAIRE_API_FIXTURE_PATH):
-            app = annuaire.create_app()
-            client = app.test_client()
-            response = client.get(CLIENTS_ENDPOINT)
-            self.assertEqual(response.status_code, 200)
-            data = response.json
-
-            sdis = next(entry for entry in data if entry["client_id"] == "fr.fire.sdis750")
-            self.assertFalse(sdis["perimeters"]["15-15"])
-            self.assertFalse(sdis["perimeters"]["15-cap"])
-
-    def test_clients_api_filter_by_perimeter(self):
-        with mock.patch(VALUES_PATH_PATCH, ANNULAIRE_API_FIXTURE_PATH):
-            app = annuaire.create_app()
-            client = app.test_client()
-
-            response_1515 = client.get(f"{CLIENTS_ENDPOINT}/15-15")
-            self.assertEqual(response_1515.status_code, 200)
-            self.assertEqual(len(response_1515.json), 1)
-            self.assertEqual(response_1515.json[0]["client_id"], "fr.health.samu750")
-
-            response_cap = client.get(f"{CLIENTS_ENDPOINT}/15-cap")
-            self.assertEqual(response_cap.status_code, 200)
-            self.assertEqual(len(response_cap.json), 1)
-            self.assertEqual(response_cap.json[0]["client_id"], "fr.health.samu750")
-
-            response_nexsis = client.get(f"{CLIENTS_ENDPOINT}/15-nexsis")
-            self.assertEqual(response_nexsis.status_code, 200)
-            self.assertEqual(len(response_nexsis.json), 2)
-
-            response_unknown = client.get(f"{CLIENTS_ENDPOINT}/inconnu")
-            self.assertEqual(response_unknown.status_code, 400)
-            self.assertIn("error", response_unknown.json)
-
-    def test_clients_filter_rejects_all_unknown_perimeters(self):
-        with mock.patch(VALUES_PATH_PATCH, ANNULAIRE_API_FIXTURE_PATH):
-            app = annuaire.create_app()
-            client = app.test_client()
-            for invalid in ["unknown", "P: 15-15", "injection-attempt"]:
-                response = client.get(f"{CLIENTS_ENDPOINT}/{invalid}")
-                self.assertEqual(
-                    response.status_code,
-                    400,
-                    msg=f"Expected 400 for perimeter '{invalid}'",
-                )
-
     def test_resolve_perimeters_missing_topology_key(self):
         client = {
             "client_id": "fr.health.cap-only",
@@ -292,6 +190,99 @@ class AnnuaireTestCase(unittest.TestCase):
                 "15-gps": False,
             },
         )
+
+
+class AnnuaireClientsApiTestCase(unittest.TestCase):
+    def setUp(self):
+        self.patcher = mock.patch(VALUES_PATH_PATCH, ANNULAIRE_API_FIXTURE_PATH)
+        self.patcher.start()
+        self.http = annuaire.create_app().test_client()
+
+    def tearDown(self):
+        self.patcher.stop()
+
+    def test_clients_without_annuaire_key_are_excluded(self):
+        response = self.http.get(CLIENTS_ENDPOINT)
+        self.assertEqual(response.status_code, 200)
+        ids = [entry["client_id"] for entry in response.json]
+        self.assertNotIn("fr.health.fire", ids)
+
+    def test_clients_api_returns_only_clients_with_annuaire(self):
+        response = self.http.get(CLIENTS_ENDPOINT)
+        self.assertEqual(response.status_code, 200)
+        data = response.json
+
+        self.assertEqual(len(data), 2)
+        ids = [entry["client_id"] for entry in data]
+        self.assertEqual(ids, ["fr.health.samu750", "fr.fire.sdis750"])
+
+        samu = next(entry for entry in data if entry["client_id"] == "fr.health.samu750")
+        self.assertEqual(samu["client_name"], "SAMU 750")
+        self.assertEqual(samu["client_type"], "SAMU")
+        self.assertFalse(samu["directCISU"])
+        self.assertFalse(samu["isLinkedToNexsis"])
+        self.assertEqual(
+            samu["perimeters"],
+            {
+                "15-15": True,
+                "15-cap": True,
+                "15-portail": False,
+                "15-cnr114": False,
+                "15-nexsis": True,
+                "15-smur": False,
+                "15-gps": False,
+            },
+        )
+
+        sdis = next(entry for entry in data if entry["client_id"] == "fr.fire.sdis750")
+        self.assertEqual(
+            sdis["perimeters"],
+            {
+                "15-15": False,
+                "15-cap": False,
+                "15-portail": False,
+                "15-cnr114": False,
+                "15-nexsis": True,
+                "15-smur": False,
+                "15-gps": False,
+            },
+        )
+        self.assertTrue(sdis["directCISU"])
+        self.assertTrue(sdis["isLinkedToNexsis"])
+
+    def test_clients_api_exposes_false_for_not_implemented_perimeters(self):
+        data = self.http.get(CLIENTS_ENDPOINT).json
+        sdis = next(entry for entry in data if entry["client_id"] == "fr.fire.sdis750")
+        self.assertFalse(sdis["perimeters"]["15-15"])
+        self.assertFalse(sdis["perimeters"]["15-cap"])
+
+    def test_clients_api_filter_by_perimeter(self):
+        response_1515 = self.http.get(f"{CLIENTS_ENDPOINT}/15-15")
+        self.assertEqual(response_1515.status_code, 200)
+        self.assertEqual(len(response_1515.json), 1)
+        self.assertEqual(response_1515.json[0]["client_id"], "fr.health.samu750")
+
+        response_cap = self.http.get(f"{CLIENTS_ENDPOINT}/15-cap")
+        self.assertEqual(response_cap.status_code, 200)
+        self.assertEqual(len(response_cap.json), 1)
+        self.assertEqual(response_cap.json[0]["client_id"], "fr.health.samu750")
+
+        response_nexsis = self.http.get(f"{CLIENTS_ENDPOINT}/15-nexsis")
+        self.assertEqual(response_nexsis.status_code, 200)
+        self.assertEqual(len(response_nexsis.json), 2)
+
+        response_unknown = self.http.get(f"{CLIENTS_ENDPOINT}/inconnu")
+        self.assertEqual(response_unknown.status_code, 400)
+        self.assertIn("error", response_unknown.json)
+
+    def test_clients_filter_rejects_all_unknown_perimeters(self):
+        for invalid in ["unknown", "P: 15-15", "injection-attempt"]:
+            response = self.http.get(f"{CLIENTS_ENDPOINT}/{invalid}")
+            self.assertEqual(
+                response.status_code,
+                400,
+                msg=f"Expected 400 for perimeter '{invalid}'",
+            )
 
 
 if __name__ == "__main__":
