@@ -30,13 +30,13 @@ TOPOLOGY_TO_LEGACY_KEY = {
 }
 
 ANNUAIRE_TO_PERIMETER_KEY = {
-    "lrm": ("15-15", "lrmPerimeterVersions"),
-    "cap": ("15-cap", "lrmPerimeterVersions"),
-    "portail": ("15-portail", "lrmPerimeterVersions"),
-    "cnr114": ("15-cnr114", "cnr114PerimeterVersions"),
-    "cisu": ("15-nexsis", "cisuPerimeterVersions"),
-    "smur": ("15-smur", "smurPerimeterVersions"),
-    "gps": ("15-gps", "gpsPerimeterVersions"),
+    "lrm": "15-15",
+    "cap": "15-cap",
+    "portail": "15-portail",
+    "cnr114": "15-cnr114",
+    "cisu": "15-nexsis",
+    "smur": "15-smur",
+    "gps": "15-gps",
 }
 
 
@@ -80,15 +80,8 @@ def resolve_perimeters(client: dict) -> dict:
         return {}
 
     perimeters = {}
-    for annuaire_key, (perimeter_key, topology_key) in ANNUAIRE_TO_PERIMETER_KEY.items():
-        if not annuaire.get(annuaire_key):
-            continue
-
-        versions = client.get(topology_key, [])
-        if isinstance(versions, list) and versions:
-            perimeters[perimeter_key] = versions[0]
-        elif isinstance(versions, str) and versions:
-            perimeters[perimeter_key] = versions
+    for annuaire_key, perimeter_key in ANNUAIRE_TO_PERIMETER_KEY.items():
+        perimeters[perimeter_key] = bool(annuaire.get(annuaire_key, False))
 
     return perimeters
 
@@ -127,7 +120,7 @@ def register_routes(app):
         filtered = [
             client
             for client in app.config[ANNUAIRE_CLIENTS_DATA_KEY]
-            if perimeter in client["perimeters"]
+            if client["perimeters"].get(perimeter) is True
         ]
         return jsonify(filtered)
 

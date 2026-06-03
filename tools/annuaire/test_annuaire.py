@@ -158,15 +158,34 @@ class AnnuaireTestCase(unittest.TestCase):
             self.assertFalse(samu["isLinkedToNexsis"])
             self.assertEqual(
                 samu["perimeters"],
-                {"15-15": "2.1", "15-cap": "2.1", "15-nexsis": "1.9"},
+                {
+                    "15-15": True,
+                    "15-cap": True,
+                    "15-portail": False,
+                    "15-cnr114": False,
+                    "15-nexsis": True,
+                    "15-smur": False,
+                    "15-gps": False,
+                },
             )
 
             sdis = next(entry for entry in data if entry["client_id"] == "fr.fire.sdis750")
-            self.assertEqual(sdis["perimeters"], {"15-nexsis": "1.9"})
+            self.assertEqual(
+                sdis["perimeters"],
+                {
+                    "15-15": False,
+                    "15-cap": False,
+                    "15-portail": False,
+                    "15-cnr114": False,
+                    "15-nexsis": True,
+                    "15-smur": False,
+                    "15-gps": False,
+                },
+            )
             self.assertTrue(sdis["directCISU"])
             self.assertTrue(sdis["isLinkedToNexsis"])
 
-    def test_clients_api_omits_perimeter_without_version(self):
+    def test_clients_api_exposes_false_for_not_implemented_perimeters(self):
         with mock.patch(VALUES_PATH_PATCH, ANNULAIRE_API_FIXTURE_PATH):
             app = annuaire.create_app()
             client = app.test_client()
@@ -175,8 +194,8 @@ class AnnuaireTestCase(unittest.TestCase):
             data = response.json
 
             sdis = next(entry for entry in data if entry["client_id"] == "fr.fire.sdis750")
-            self.assertNotIn("15-15", sdis["perimeters"])
-            self.assertNotIn("15-cap", sdis["perimeters"])
+            self.assertFalse(sdis["perimeters"]["15-15"])
+            self.assertFalse(sdis["perimeters"]["15-cap"])
 
     def test_clients_api_filter_by_perimeter(self):
         with mock.patch(VALUES_PATH_PATCH, ANNULAIRE_API_FIXTURE_PATH):
@@ -208,7 +227,18 @@ class AnnuaireTestCase(unittest.TestCase):
             "editor": "ANS",
         }
         perimeters = resolve_perimeters(client)
-        self.assertEqual(perimeters, {})
+        self.assertEqual(
+            perimeters,
+            {
+                "15-15": True,
+                "15-cap": True,
+                "15-portail": False,
+                "15-cnr114": False,
+                "15-nexsis": False,
+                "15-smur": False,
+                "15-gps": False,
+            },
+        )
 
     def test_build_annuaire_clients(self):
         clients = [
@@ -229,7 +259,18 @@ class AnnuaireTestCase(unittest.TestCase):
         result = build_annuaire_clients(clients)
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0]["client_id"], "fr.health.samu750")
-        self.assertEqual(result[0]["perimeters"], {"15-15": "2.1"})
+        self.assertEqual(
+            result[0]["perimeters"],
+            {
+                "15-15": True,
+                "15-cap": False,
+                "15-portail": False,
+                "15-cnr114": False,
+                "15-nexsis": False,
+                "15-smur": False,
+                "15-gps": False,
+            },
+        )
 
 
 if __name__ == "__main__":
