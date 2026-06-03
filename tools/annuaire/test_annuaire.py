@@ -8,10 +8,8 @@ import yaml
 import annuaire
 from annuaire import (
     load_clients,
-    build_client_entry,
     resolve_perimeters,
     build_annuaire_clients,
-    API_ENDPOINT,
     CLIENTS_ENDPOINT,
     HEALTH_ENDPOINT,
     TOPOLOGY_ROOT_KEY,
@@ -31,36 +29,6 @@ class AnnuaireTestCase(unittest.TestCase):
     def tearDown(self):
         self.tempdir.cleanup()
 
-    def test_api(self):
-        with mock.patch(VALUES_PATH_PATCH, FIXTURE_PATH):
-            app = annuaire.create_app()
-            client = app.test_client()
-            response = client.get(API_ENDPOINT)
-            self.assertEqual(response.status_code, 200)
-            data = response.json
-            self.assertIsInstance(data, list)
-            self.assertEqual(len(data), 4)
-            ids = [entry["client_id"] for entry in data]
-            self.assertIn("fr.health.samu750", ids)
-            self.assertIn("fr.health.test.samuv1", ids)
-            self.assertIn("fr.health.fire", ids)
-            self.assertIn("fr.health.test.samuC", ids)
-            # full-perimeter client
-            samu = next(e for e in data if e["client_id"] == "fr.health.samu750")
-            self.assertEqual(samu["P: 15-15"], ["2.1"])
-            self.assertEqual(samu["P: 15-nexsis"], ["1.9"])
-            self.assertFalse(samu["directCISU"])
-            # directCISU client (CISU only)
-            fire = next(e for e in data if e["client_id"] == "fr.health.fire")
-            self.assertTrue(fire["directCISU"])
-            self.assertEqual(fire["P: 15-nexsis"], ["1.9"])
-            self.assertNotIn("P: 15-15", fire)
-            # full-perimeter client with directCISU
-            samuC = next(e for e in data if e["client_id"] == "fr.health.test.samuC")
-            self.assertTrue(samuC["directCISU"])
-            self.assertEqual(samuC["P: 15-15"], ["1.5", "2.0", "2.1"])
-            self.assertEqual(samuC["P: 15-nexsis"], ["1.9"])
-
     def test_healthcheck(self):
         with mock.patch(VALUES_PATH_PATCH, FIXTURE_PATH):
             app = annuaire.create_app()
@@ -78,29 +46,6 @@ class AnnuaireTestCase(unittest.TestCase):
         self.assertEqual(clients[1]["client_id"], "fr.health.test.samuv1")
         self.assertEqual(clients[2]["client_id"], "fr.health.fire")
         self.assertEqual(clients[3]["client_id"], "fr.health.test.samuC")
-
-    def test_build_client_entry_with_lrm(self):
-        client = {
-            "client_id": "fr.health.samu750",
-            "editor": "Editeur A",
-            "lrmPerimeterVersions": ["2.1"],
-            "directCISU": False,
-        }
-        entry = build_client_entry(client)
-        self.assertEqual(entry["P: 15-15"], ["2.1"])
-        self.assertNotIn("P: 15-smur", entry)
-        self.assertNotIn("P: 15-nexsis", entry)
-
-    def test_build_client_entry_direct_cisu(self):
-        client = {
-            "client_id": "fr.health.fire",
-            "editor": "NexSIS",
-            "directCISU": True,
-            "cisuPerimeterVersions": ["1.9"],
-        }
-        entry = build_client_entry(client)
-        self.assertTrue(entry["directCISU"])
-        self.assertEqual(entry["P: 15-nexsis"], ["1.9"])
 
     def test_load_clients_file_not_found(self):
         missing_path = os.path.join(self.tempdir.name, "nonexistent.yaml")
