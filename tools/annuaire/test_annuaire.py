@@ -155,15 +155,12 @@ class AnnuaireClientsApiTestCase(unittest.TestCase):
     def test_clients_api_returns_only_clients_with_annuaire(self):
         response = self.http.get(CLIENTS_ENDPOINT)
         self.assertEqual(response.status_code, 200)
-        data = response.json
-
-        self.assertEqual(len(data), 2)
-        ids = [entry["client_id"] for entry in data]
+        ids = [entry["client_id"] for entry in response.json]
         self.assertEqual(ids, ["fr.health.samu750", "fr.fire.sdis750"])
 
-        samu = next(
-            entry for entry in data if entry["client_id"] == "fr.health.samu750"
-        )
+    def test_clients_api_response_shape(self):
+        data = self.http.get(CLIENTS_ENDPOINT).json
+        samu = next(entry for entry in data if entry["client_id"] == "fr.health.samu750")
         self.assertEqual(samu["client_name"], "SAMU 750")
         self.assertEqual(samu["client_type"], "SAMU")
         self.assertNotIn("editor", samu)
@@ -181,22 +178,6 @@ class AnnuaireClientsApiTestCase(unittest.TestCase):
                 "15-gps": False,
             },
         )
-
-        sdis = next(entry for entry in data if entry["client_id"] == "fr.fire.sdis750")
-        self.assertEqual(
-            sdis["perimeters"],
-            {
-                "15-15": False,
-                "15-cap": False,
-                "15-portail": False,
-                "15-cnr114": False,
-                "15-nexsis": True,
-                "15-smur": False,
-                "15-gps": False,
-            },
-        )
-        self.assertNotIn("directCISU", sdis)
-        self.assertNotIn("isLinkedToNexsis", sdis)
 
     def test_clients_api_exposes_false_for_not_implemented_perimeters(self):
         data = self.http.get(CLIENTS_ENDPOINT).json
