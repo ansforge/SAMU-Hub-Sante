@@ -139,6 +139,15 @@ class AnnuaireTestCase(unittest.TestCase):
         self.assertIn("Failed to load clients from", str(ctx.exception))
         self.assertTrue(any("Failed to load" in line for line in cm.output))
 
+    def test_clients_without_annuaire_key_are_excluded(self):
+        with mock.patch(VALUES_PATH_PATCH, ANNULAIRE_API_FIXTURE_PATH):
+            app = annuaire.create_app()
+            client = app.test_client()
+            response = client.get(CLIENTS_ENDPOINT)
+            self.assertEqual(response.status_code, 200)
+            ids = [entry["client_id"] for entry in response.json]
+            self.assertNotIn("fr.health.fire", ids)
+
     def test_clients_api_returns_only_clients_with_annuaire(self):
         with mock.patch(VALUES_PATH_PATCH, ANNULAIRE_API_FIXTURE_PATH):
             app = annuaire.create_app()
