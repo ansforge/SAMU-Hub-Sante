@@ -34,6 +34,7 @@ public class Constants {
     public static final String UNKNOWN = "unknown";
     public static final String FR_HEALTH_PREFIX = "fr.health";
     public static final String FR_FIRE_PREFIX = "fr.fire";
+    public static final String FR_CISU_PREFIX = "fr.cisu";
     public static final String NEXSIS_VHOST = "15-nexsis_vactive";
     public static final String HEALTH_VHOST_PREFIX = "15-15_v";
     public static final Map<String, String> CONVERSION_VHOST_MODEL =

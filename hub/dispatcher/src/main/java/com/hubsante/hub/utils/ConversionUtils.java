@@ -207,20 +207,28 @@ public class ConversionUtils {
         String senderId = edxlMessage.getSenderID();
         String recipientId = getRecipientID(edxlMessage);
 
-        if (senderId.startsWith(FR_HEALTH_PREFIX)) {
-            if (recipientId.startsWith(FR_HEALTH_PREFIX)) {
+        if (isHealthActor(senderId)) {
+            if (isHealthActor(recipientId)) {
                 return RoutingType.SAMU_TO_SAMU;
-            } else if (recipientId.startsWith(FR_FIRE_PREFIX)) {
+            } else if (isNexsisActor(recipientId)) {
                 return RoutingType.SAMU_TO_CISU;
             }
-        } else if (senderId.startsWith(FR_FIRE_PREFIX)) {
-            if (recipientId.startsWith(FR_HEALTH_PREFIX)) {
+        } else if (isNexsisActor(senderId)) {
+            if (isHealthActor(recipientId)) {
                 return RoutingType.CISU_TO_SAMU;
             }
         }
         throw new RuntimeException(
                 String.format(
                         "Cannot determine routing type from %s to %s", senderId, recipientId));
+    }
+
+    private static boolean isHealthActor(String actorId) {
+        return actorId.startsWith(FR_HEALTH_PREFIX);
+    }
+
+    private static boolean isNexsisActor(String actorId) {
+        return actorId.startsWith(FR_FIRE_PREFIX) || actorId.startsWith(FR_CISU_PREFIX);
     }
 
     public static String[] formatPerimeterVersionListToVhosts(
