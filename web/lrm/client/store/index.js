@@ -8,12 +8,20 @@ export const useMainStore = defineStore('main', {
   state: () => ({
     vhostMap: Object.keys(useRuntimeConfig().public.vhostMap).map((vhost) => ({
       vhost,
-      modelVersion: useRuntimeConfig().public.vhostMap[vhost],
+      modelVersion:
+        useRuntimeConfig().public.vhostMap[vhost]?.model_lib_version ||
+        useRuntimeConfig().public.vhostMap[vhost],
+      supported_messages:
+        useRuntimeConfig().public.vhostMap[vhost]?.supported_messages || [],
     })),
     selectedVhost: Object.keys(useRuntimeConfig().public.vhostMap).map(
       (vhost) => ({
         vhost,
-        modelVersion: useRuntimeConfig().public.vhostMap[vhost],
+        modelVersion:
+          useRuntimeConfig().public.vhostMap[vhost]?.model_lib_version ||
+          useRuntimeConfig().public.vhostMap[vhost],
+        supported_messages:
+          useRuntimeConfig().public.vhostMap[vhost]?.supported_messages || [],
       })
     )[0],
     socket: null,
@@ -100,7 +108,9 @@ export const useMainStore = defineStore('main', {
     },
 
     messageTypes(state) {
-      return state._messageTypes;
+      const allowed = state.selectedVhost?.supported_messages;
+      if (!allowed || allowed.length === 0) return state._messageTypes;
+      return state._messageTypes.filter((mt) => allowed.includes(mt.label));
     },
     currentMessageLoaded(state) {
       return !!state.currentMessage?.senderCaseId;
@@ -171,7 +181,7 @@ export const useMainStore = defineStore('main', {
     loadSchemas(source) {
       source = source || 'schemas/json-schema/';
       return Promise.all(
-        this.messageTypes.map(async ({ schemaName }, index) => {
+        this._messageTypes.map(async ({ schemaName }, index) => {
           // eslint-disable-next-line no-undef
           const response = await $fetch(source + schemaName);
           const schema = await JSON.parse(response);
@@ -218,7 +228,7 @@ export const useMainStore = defineStore('main', {
           // }
           // Add schema to already message type infos
           updatedMessageTypes[index] = {
-            ...this.messageTypes[index],
+            ...this._messageTypes[index],
             schema,
           };
         });
