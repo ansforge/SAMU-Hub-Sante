@@ -4,13 +4,6 @@ import os
 from flask import Flask, jsonify
 import yaml
 
-DEFAULT_FLASK_HOST = "0.0.0.0"
-DEFAULT_FLASK_PORT = 8080
-
-VALUES_FILE_PATH = os.environ.get(
-    "VALUES_FILE_PATH", "/config/rabbitmq.clients-configuration.csv"
-)
-
 API_ENDPOINT = "/annuaire/api"
 CLIENTS_ENDPOINT = f"{API_ENDPOINT}/clients"
 HEALTH_ENDPOINT = "/annuaire/health"
