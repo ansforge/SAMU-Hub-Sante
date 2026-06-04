@@ -54,6 +54,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.*;
 import org.springframework.amqp.AmqpRejectAndDontRequeueException;
 import org.springframework.amqp.core.Message;
@@ -469,6 +471,28 @@ public class DispatcherTest {
         ArgumentCaptor<Message> argument = ArgumentCaptor.forClass(Message.class);
         Mockito.verify(rabbitTemplate, times(1))
                 .send(eq(expectedTargetExchangeName), eq(FIRE_ROUTING_KEY), argument.capture());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"15-sas_v1.0", "15-smur_v1.7", "15-gps_v2.0", "15-notexisting_v1.0"})
+    @DisplayName("should send message to current vhost")
+    public void testSendMessageToCurrentVhost(String vhost) throws IOException {
+        Message message = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY, SAMU_V3_ROUTING_KEY);
+
+        doReturn(vhost).when(hubConfig).getVhost();
+        dispatcher.dispatch(message);
+
+        verify(conversionHandler, never())
+                .callConversionService(
+                        anyString(),
+                        anyString(),
+                        anyString(),
+                        any(ConversionUtils.ConversionType.class),
+                        anyString());
+
+        ArgumentCaptor<Message> argument = ArgumentCaptor.forClass(Message.class);
+        Mockito.verify(rabbitTemplate, times(1))
+                .send(eq(DISTRIBUTION_EXCHANGE), eq(SAMU_V3_MESSAGE_QUEUE), argument.capture());
     }
 
     @Test
