@@ -4,8 +4,6 @@ import os
 from flask import Flask, jsonify
 import yaml
 
-ENVIRONMENT = os.environ.get("ENVIRONMENT")
-
 DEFAULT_FLASK_HOST = "0.0.0.0"
 DEFAULT_FLASK_PORT = 8080
 
@@ -119,7 +117,3 @@ def create_app():
     clients = load_clients(VALUES_PATH)
     app.config[ANNUAIRE_CLIENTS_DATA_KEY] = build_annuaire_clients(clients)
     return app
-
-
-if ENVIRONMENT == "production":
-    app = create_app()
