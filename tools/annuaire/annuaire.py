@@ -4,6 +4,8 @@ import os
 from flask import Flask, jsonify
 import yaml
 
+ENVIRONMENT = os.environ.get("ENVIRONMENT")
+
 DEFAULT_FLASK_HOST = "0.0.0.0"
 DEFAULT_FLASK_PORT = 8080
 
