@@ -17,8 +17,7 @@ from annuaire import (
 )
 
 FIXTURE_DIR = os.path.join(os.path.dirname(__file__), "fixtures")
-FIXTURE_PATH = os.path.join(FIXTURE_DIR, "values.yaml")
-ANNULAIRE_API_FIXTURE_PATH = os.path.join(FIXTURE_DIR, "values_annuaire_api.yaml")
+FIXTURE_PATH = os.path.join(FIXTURE_DIR, "values_annuaire_api.yaml")
 VALUES_PATH_PATCH = "annuaire.VALUES_PATH"
 
 
@@ -41,11 +40,10 @@ class AnnuaireTestCase(unittest.TestCase):
 
     def test_load_clients(self):
         clients = load_clients(FIXTURE_PATH)
-        self.assertEqual(len(clients), 4)
+        self.assertEqual(len(clients), 3)
         self.assertEqual(clients[0]["client_id"], "fr.health.samu750")
-        self.assertEqual(clients[1]["client_id"], "fr.health.test.samuv1")
+        self.assertEqual(clients[1]["client_id"], "fr.fire.sdis750")
         self.assertEqual(clients[2]["client_id"], "fr.health.fire")
-        self.assertEqual(clients[3]["client_id"], "fr.health.test.samuC")
 
     def test_load_clients_file_not_found(self):
         missing_path = os.path.join(self.tempdir.name, "nonexistent.yaml")
@@ -139,7 +137,7 @@ class AnnuaireTestCase(unittest.TestCase):
 
 class AnnuaireClientsApiTestCase(unittest.TestCase):
     def setUp(self):
-        self.patcher = mock.patch(VALUES_PATH_PATCH, ANNULAIRE_API_FIXTURE_PATH)
+        self.patcher = mock.patch(VALUES_PATH_PATCH, FIXTURE_PATH)
         self.patcher.start()
         self.http = annuaire.create_app().test_client()
 
