@@ -126,6 +126,10 @@ public class DispatcherTest {
                 () ->
                         Objects.requireNonNull(
                                 classLoader.getResource("config/client.preferences.csv")));
+        propertiesRegistry.add(
+                "client.configuration.file",
+                () -> Objects.requireNonNull(classLoader.getResource("config/clients.yaml"))
+        );
         propertiesRegistry.add("hubsante.default.message.ttl", () -> 5);
         propertiesRegistry.add("spring.rabbitmq.virtual-host", () -> "15-15_v2.1");
     }
