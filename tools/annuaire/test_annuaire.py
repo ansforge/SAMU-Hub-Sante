@@ -12,13 +12,12 @@ from annuaire import (
     build_annuaire_clients,
     CLIENTS_ENDPOINT,
     HEALTH_ENDPOINT,
-    TOPOLOGY_ROOT_KEY,
-    TOPOLOGY_CLIENTS_KEY,
+    ANNUAIRE_ROOT_KEY,
+    ANNUAIRE_CLIENTS_KEY,
 )
 
 FIXTURE_DIR = os.path.join(os.path.dirname(__file__), "fixtures")
-FIXTURE_PATH = os.path.join(FIXTURE_DIR, "values.yaml")
-ANNULAIRE_API_FIXTURE_PATH = os.path.join(FIXTURE_DIR, "values_annuaire_api.yaml")
+FIXTURE_PATH = os.path.join(FIXTURE_DIR, "values_annuaire_api.yaml")
 VALUES_PATH_PATCH = "annuaire.VALUES_PATH"
 
 
@@ -41,11 +40,10 @@ class AnnuaireTestCase(unittest.TestCase):
 
     def test_load_clients(self):
         clients = load_clients(FIXTURE_PATH)
-        self.assertEqual(len(clients), 4)
+        self.assertEqual(len(clients), 3)
         self.assertEqual(clients[0]["client_id"], "fr.health.samu750")
-        self.assertEqual(clients[1]["client_id"], "fr.health.test.samuv1")
+        self.assertEqual(clients[1]["client_id"], "fr.fire.sdis750")
         self.assertEqual(clients[2]["client_id"], "fr.health.fire")
-        self.assertEqual(clients[3]["client_id"], "fr.health.test.samuC")
 
     def test_load_clients_file_not_found(self):
         missing_path = os.path.join(self.tempdir.name, "nonexistent.yaml")
@@ -61,17 +59,17 @@ class AnnuaireTestCase(unittest.TestCase):
         with self.assertLogs(level="ERROR") as cm:
             with self.assertRaises(RuntimeError) as ctx:
                 load_clients(path)
-        self.assertIn(TOPOLOGY_ROOT_KEY, str(ctx.exception))
+        self.assertIn(ANNUAIRE_ROOT_KEY, str(ctx.exception))
         self.assertTrue(any("Failed to load" in line for line in cm.output))
 
     def test_load_clients_missing_clients_key(self):
         path = os.path.join(self.tempdir.name, "no_clients.yaml")
         with open(path, "w") as f:
-            yaml.dump({TOPOLOGY_ROOT_KEY: {"other-key": []}}, f)
+            yaml.dump({ANNUAIRE_ROOT_KEY: {"other-key": []}}, f)
         with self.assertLogs(level="ERROR") as cm:
             with self.assertRaises(RuntimeError) as ctx:
                 load_clients(path)
-        self.assertIn(f"{TOPOLOGY_ROOT_KEY}.{TOPOLOGY_CLIENTS_KEY}", str(ctx.exception))
+        self.assertIn(f"{ANNUAIRE_ROOT_KEY}.{ANNUAIRE_CLIENTS_KEY}", str(ctx.exception))
         self.assertTrue(any("Failed to load" in line for line in cm.output))
 
     def test_load_clients_yaml_parse_error(self):
@@ -139,7 +137,7 @@ class AnnuaireTestCase(unittest.TestCase):
 
 class AnnuaireClientsApiTestCase(unittest.TestCase):
     def setUp(self):
-        self.patcher = mock.patch(VALUES_PATH_PATCH, ANNULAIRE_API_FIXTURE_PATH)
+        self.patcher = mock.patch(VALUES_PATH_PATCH, FIXTURE_PATH)
         self.patcher.start()
         self.http = annuaire.create_app().test_client()
 

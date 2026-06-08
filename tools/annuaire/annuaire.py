@@ -8,11 +8,11 @@ API_ENDPOINT = "/annuaire/api"
 CLIENTS_ENDPOINT = f"{API_ENDPOINT}/clients"
 HEALTH_ENDPOINT = "/annuaire/health"
 
-VALUES_PATH = os.environ.get("VALUES_PATH", "/config/topology/values.yaml")
+VALUES_PATH = os.environ.get("VALUES_PATH", "/config/clients/values.yaml")
 ANNUAIRE_CLIENTS_DATA_KEY = "ANNUAIRE_CLIENTS_DATA"
 
-TOPOLOGY_ROOT_KEY = "annuaire"
-TOPOLOGY_CLIENTS_KEY = "clients"
+ANNUAIRE_ROOT_KEY = "annuaire"
+ANNUAIRE_CLIENTS_KEY = "clients"
 
 ANNUAIRE_TO_PERIMETER_KEY = {
     "lrm": "15-15",
@@ -31,13 +31,13 @@ def load_clients(path: str) -> list[dict]:
     try:
         with open(path, encoding="utf-8") as f:
             data = yaml.safe_load(f)
-        if TOPOLOGY_ROOT_KEY not in data:
-            raise RuntimeError(f"Missing '{TOPOLOGY_ROOT_KEY}' key in {path}")
-        if TOPOLOGY_CLIENTS_KEY not in data[TOPOLOGY_ROOT_KEY]:
+        if ANNUAIRE_ROOT_KEY not in data:
+            raise RuntimeError(f"Missing '{ANNUAIRE_ROOT_KEY}' key in {path}")
+        if ANNUAIRE_CLIENTS_KEY not in data[ANNUAIRE_ROOT_KEY]:
             raise RuntimeError(
-                f"Missing '{TOPOLOGY_ROOT_KEY}.{TOPOLOGY_CLIENTS_KEY}' key in {path}"
+                f"Missing '{ANNUAIRE_ROOT_KEY}.{ANNUAIRE_CLIENTS_KEY}' key in {path}"
             )
-        return data[TOPOLOGY_ROOT_KEY][TOPOLOGY_CLIENTS_KEY]
+        return data[ANNUAIRE_ROOT_KEY][ANNUAIRE_CLIENTS_KEY]
     except FileNotFoundError:
         logging.error(f"Values file not found: {path}")
         raise
