@@ -12,8 +12,8 @@ from annuaire import (
     build_annuaire_clients,
     CLIENTS_ENDPOINT,
     HEALTH_ENDPOINT,
-    TOPOLOGY_ROOT_KEY,
-    TOPOLOGY_CLIENTS_KEY,
+    ANNUAIRE_ROOT_KEY,
+    ANNUAIRE_CLIENTS_KEY,
 )
 
 FIXTURE_DIR = os.path.join(os.path.dirname(__file__), "fixtures")
@@ -59,17 +59,17 @@ class AnnuaireTestCase(unittest.TestCase):
         with self.assertLogs(level="ERROR") as cm:
             with self.assertRaises(RuntimeError) as ctx:
                 load_clients(path)
-        self.assertIn(TOPOLOGY_ROOT_KEY, str(ctx.exception))
+        self.assertIn(ANNUAIRE_ROOT_KEY, str(ctx.exception))
         self.assertTrue(any("Failed to load" in line for line in cm.output))
 
     def test_load_clients_missing_clients_key(self):
         path = os.path.join(self.tempdir.name, "no_clients.yaml")
         with open(path, "w") as f:
-            yaml.dump({TOPOLOGY_ROOT_KEY: {"other-key": []}}, f)
+            yaml.dump({ANNUAIRE_ROOT_KEY: {"other-key": []}}, f)
         with self.assertLogs(level="ERROR") as cm:
             with self.assertRaises(RuntimeError) as ctx:
                 load_clients(path)
-        self.assertIn(f"{TOPOLOGY_ROOT_KEY}.{TOPOLOGY_CLIENTS_KEY}", str(ctx.exception))
+        self.assertIn(f"{ANNUAIRE_ROOT_KEY}.{ANNUAIRE_CLIENTS_KEY}", str(ctx.exception))
         self.assertTrue(any("Failed to load" in line for line in cm.output))
 
     def test_load_clients_yaml_parse_error(self):
