@@ -1,163 +1,218 @@
-import unittest
-import tempfile
 import os
-import annuaire
+import tempfile
+import unittest
 from unittest import mock
+
+import yaml
+
+import annuaire
 from annuaire import (
-    parse_csv,
-    select_columns,
-    API_ENDPOINT,
+    load_clients,
+    resolve_perimeters,
+    build_annuaire_clients,
+    CLIENTS_ENDPOINT,
     HEALTH_ENDPOINT,
-    HEADERS_COLUMNS_TO_KEEP,
-    CSV_NOT_FOUND_MSG,
+    ANNUAIRE_ROOT_KEY,
+    ANNUAIRE_CLIENTS_KEY,
 )
 
-VALUES_FILE_PATH_PATCH = "annuaire.VALUES_FILE_PATH"
+FIXTURE_DIR = os.path.join(os.path.dirname(__file__), "fixtures")
+FIXTURE_PATH = os.path.join(FIXTURE_DIR, "values_annuaire_api.yaml")
+VALUES_PATH_PATCH = "annuaire.VALUES_PATH"
 
 
 class AnnuaireTestCase(unittest.TestCase):
     def setUp(self):
         self.tempdir = tempfile.TemporaryDirectory()
-        self.csv_path = os.path.join(
-            self.tempdir.name, "rabbitmq.clients-configuration.csv"
-        )
-        self._write_temp_csv(
-            [
-                [
-                    "client_id",
-                    "CommonName",
-                    "editor",
-                    "P: 15-15",
-                    "P: 15-smur",
-                    "P: 15-nexsis",
-                    "P: 15-gps",
-                    "useXML",
-                    "directCISU",
-                    "additionalPermissions",
-                    "lrm_test",
-                ],
-                [
-                    "fr.health.lrm",
-                    "lrm.messaging.bac-a-sable.hub.esante.gouv.fr",
-                    "ANS",
-                    "1.5,2.0,2.1",
-                    "1.7",
-                    "1.9",
-                    "1.3",
-                    "",
-                    "",
-                    "",
-                    "true",
-                ],
-                [
-                    "fr.health.test.samuC",
-                    "fr.health.test.samuC",
-                    "ANS",
-                    "1.5,2.0,2.1",
-                    "1.7",
-                    "1.9",
-                    "1.3",
-                    "",
-                    "true",
-                    "",
-                    "true",
-                ],
-                [
-                    "fr.health.test.samuv1",
-                    "fr.health.test.samuv1",
-                    "ANS",
-                    "1.5",
-                    "",
-                    "",
-                    "",
-                    "",
-                    "",
-                    "",
-                    "true",
-                ],
-            ]
-        )
 
     def tearDown(self):
         self.tempdir.cleanup()
 
-    def _write_temp_csv(self, rows):
-        with open(self.csv_path, "w", encoding="utf-8", newline="") as f:
-            for row in rows:
-                f.write(";".join(row) + "\n")
-
-    def test_parse_csv_file_not_found(self):
-        missing_path = os.path.join(self.tempdir.name, "non_existent.csv")
-        with mock.patch(VALUES_FILE_PATH_PATCH, missing_path):
-            with self.assertLogs(level="ERROR") as cm:
-                with self.assertRaises(FileNotFoundError):
-                    parse_csv(missing_path)
-        self.assertIn(CSV_NOT_FOUND_MSG, cm.output[0])
-
-    def test_api(self):
-        with mock.patch(VALUES_FILE_PATH_PATCH, self.csv_path):
-            app = annuaire.create_app()
-            client = app.test_client()
-            response = client.get(API_ENDPOINT)
-            self.assertEqual(response.status_code, 200)
-            self.assertIsInstance(response.json, list)
-
-    def test_parse_csv_valid(self):
-        with mock.patch(VALUES_FILE_PATH_PATCH, self.csv_path):
-            data = parse_csv(self.csv_path)
-
-            expected_rows = [
-                {
-                    "client_id": "fr.health.lrm",
-                    "editor": "ANS",
-                    "P: 15-15": "1.5,2.0,2.1",
-                    "P: 15-smur": "1.7",
-                    "P: 15-nexsis": "1.9",
-                    "P: 15-gps": "1.3",
-                },
-                {
-                    "client_id": "fr.health.test.samuC",
-                    "editor": "ANS",
-                    "P: 15-15": "1.5,2.0,2.1",
-                    "P: 15-smur": "1.7",
-                    "P: 15-nexsis": "1.9",
-                    "P: 15-gps": "1.3",
-                },
-                {
-                    "client_id": "fr.health.test.samuv1",
-                    "editor": "ANS",
-                    "P: 15-15": "1.5",
-                    "P: 15-smur": "",
-                    "P: 15-nexsis": "",
-                    "P: 15-gps": "",
-                },
-            ]
-
-        for i, expected_row in enumerate(expected_rows):
-            for key, expected_value in expected_row.items():
-                actual_value = data[i].get(key)
-                self.assertEqual(
-                    actual_value,
-                    expected_value,
-                    f"Erreur sur la ligne {i + 1}, colonne '{key}': "
-                    f"attendu '{expected_value}', obtenu '{actual_value}'",
-                )
-
-    def test_select_columns(self):
-        with mock.patch(VALUES_FILE_PATH_PATCH, self.csv_path):
-            data = parse_csv(self.csv_path)
-            result = select_columns(data)
-            for row in result:
-                self.assertEqual(set(row.keys()), set(HEADERS_COLUMNS_TO_KEEP))
-
     def test_healthcheck(self):
-        with mock.patch(VALUES_FILE_PATH_PATCH, self.csv_path):
+        with mock.patch(VALUES_PATH_PATCH, FIXTURE_PATH):
             app = annuaire.create_app()
             client = app.test_client()
             response = client.get(HEALTH_ENDPOINT)
             self.assertEqual(response.status_code, 200)
             self.assertEqual(
                 response.json, {"status": "UP", "service": "SAMU Hub Annuaire"}
+            )
+
+    def test_load_clients(self):
+        clients = load_clients(FIXTURE_PATH)
+        self.assertEqual(len(clients), 3)
+        self.assertEqual(clients[0]["client_id"], "fr.health.samu750")
+        self.assertEqual(clients[1]["client_id"], "fr.fire.sdis750")
+        self.assertEqual(clients[2]["client_id"], "fr.health.fire")
+
+    def test_load_clients_file_not_found(self):
+        missing_path = os.path.join(self.tempdir.name, "nonexistent.yaml")
+        with self.assertLogs(level="ERROR") as cm:
+            with self.assertRaises(FileNotFoundError):
+                load_clients(missing_path)
+        self.assertTrue(any("not found" in line for line in cm.output))
+
+    def test_load_clients_missing_root_key(self):
+        path = os.path.join(self.tempdir.name, "bad.yaml")
+        with open(path, "w") as f:
+            yaml.dump({"wrong-key": {"clients": []}}, f)
+        with self.assertLogs(level="ERROR") as cm:
+            with self.assertRaises(RuntimeError) as ctx:
+                load_clients(path)
+        self.assertIn(ANNUAIRE_ROOT_KEY, str(ctx.exception))
+        self.assertTrue(any("Failed to load" in line for line in cm.output))
+
+    def test_load_clients_missing_clients_key(self):
+        path = os.path.join(self.tempdir.name, "no_clients.yaml")
+        with open(path, "w") as f:
+            yaml.dump({ANNUAIRE_ROOT_KEY: {"other-key": []}}, f)
+        with self.assertLogs(level="ERROR") as cm:
+            with self.assertRaises(RuntimeError) as ctx:
+                load_clients(path)
+        self.assertIn(f"{ANNUAIRE_ROOT_KEY}.{ANNUAIRE_CLIENTS_KEY}", str(ctx.exception))
+        self.assertTrue(any("Failed to load" in line for line in cm.output))
+
+    def test_load_clients_yaml_parse_error(self):
+        path = os.path.join(self.tempdir.name, "broken.yaml")
+        with open(path, "w") as f:
+            f.write("key: [\nunot closed\n")
+        with self.assertLogs(level="ERROR") as cm:
+            with self.assertRaises(RuntimeError) as ctx:
+                load_clients(path)
+        self.assertIn("Failed to load clients from", str(ctx.exception))
+        self.assertTrue(any("Failed to load" in line for line in cm.output))
+
+    def test_resolve_perimeters_missing_topology_key(self):
+        client = {
+            "client_id": "fr.health.cap-only",
+            "annuaire": {"lrm": True, "cap": True},
+            "editor": "ANS",
+        }
+        perimeters = resolve_perimeters(client)
+        self.assertEqual(
+            perimeters,
+            {
+                "15-15": True,
+                "15-cap": True,
+                "15-portail": False,
+                "15-cnr114": False,
+                "15-nexsis": False,
+                "15-smur": False,
+                "15-gps": False,
+            },
+        )
+
+    def test_build_annuaire_clients(self):
+        clients = [
+            {
+                "client_id": "fr.health.samu750",
+                "client_name": "SAMU 750",
+                "client_type": "SAMU",
+                "editor": "Editeur A",
+                "lrmPerimeterVersions": ["2.1"],
+                "annuaire": {"lrm": True},
+            },
+            {
+                "client_id": "fr.health.ignore",
+                "editor": "ANS",
+            },
+        ]
+
+        result = build_annuaire_clients(clients)
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0]["client_id"], "fr.health.samu750")
+        self.assertEqual(
+            result[0]["perimeters"],
+            {
+                "15-15": True,
+                "15-cap": False,
+                "15-portail": False,
+                "15-cnr114": False,
+                "15-nexsis": False,
+                "15-smur": False,
+                "15-gps": False,
+            },
+        )
+
+
+class AnnuaireClientsApiTestCase(unittest.TestCase):
+    def setUp(self):
+        self.patcher = mock.patch(VALUES_PATH_PATCH, FIXTURE_PATH)
+        self.patcher.start()
+        self.http = annuaire.create_app().test_client()
+
+    def tearDown(self):
+        self.patcher.stop()
+
+    def test_clients_without_annuaire_key_are_excluded(self):
+        response = self.http.get(CLIENTS_ENDPOINT)
+        self.assertEqual(response.status_code, 200)
+        ids = [entry["client_id"] for entry in response.json]
+        self.assertNotIn("fr.health.fire", ids)
+
+    def test_clients_api_returns_only_clients_with_annuaire(self):
+        response = self.http.get(CLIENTS_ENDPOINT)
+        self.assertEqual(response.status_code, 200)
+        ids = [entry["client_id"] for entry in response.json]
+        self.assertEqual(ids, ["fr.health.samu750", "fr.fire.sdis750"])
+
+    def test_clients_api_response_shape(self):
+        data = self.http.get(CLIENTS_ENDPOINT).json
+        samu = next(
+            entry for entry in data if entry["client_id"] == "fr.health.samu750"
+        )
+        self.assertEqual(samu["client_name"], "SAMU 750")
+        self.assertEqual(samu["client_type"], "SAMU")
+        self.assertNotIn("editor", samu)
+        self.assertNotIn("directCISU", samu)
+        self.assertNotIn("isLinkedToNexsis", samu)
+        self.assertEqual(
+            samu["perimeters"],
+            {
+                "15-15": True,
+                "15-cap": True,
+                "15-portail": False,
+                "15-cnr114": False,
+                "15-nexsis": True,
+                "15-smur": False,
+                "15-gps": False,
+            },
+        )
+
+    def test_clients_api_exposes_false_for_not_implemented_perimeters(self):
+        data = self.http.get(CLIENTS_ENDPOINT).json
+        sdis = next(entry for entry in data if entry["client_id"] == "fr.fire.sdis750")
+        self.assertFalse(sdis["perimeters"]["15-15"])
+        self.assertFalse(sdis["perimeters"]["15-cap"])
+
+    def test_clients_api_filter_by_perimeter(self):
+        response_1515 = self.http.get(f"{CLIENTS_ENDPOINT}/15-15")
+        self.assertEqual(response_1515.status_code, 200)
+        self.assertEqual(len(response_1515.json), 1)
+        self.assertEqual(response_1515.json[0]["client_id"], "fr.health.samu750")
+
+        response_cap = self.http.get(f"{CLIENTS_ENDPOINT}/15-cap")
+        self.assertEqual(response_cap.status_code, 200)
+        self.assertEqual(len(response_cap.json), 1)
+        self.assertEqual(response_cap.json[0]["client_id"], "fr.health.samu750")
+
+        response_nexsis = self.http.get(f"{CLIENTS_ENDPOINT}/15-nexsis")
+        self.assertEqual(response_nexsis.status_code, 200)
+        self.assertEqual(len(response_nexsis.json), 2)
+
+        response_unknown = self.http.get(f"{CLIENTS_ENDPOINT}/inconnu")
+        self.assertEqual(response_unknown.status_code, 400)
+        self.assertIn("error", response_unknown.json)
+        self.assertIn("valid_perimeters", response_unknown.json)
+        self.assertIsInstance(response_unknown.json["valid_perimeters"], list)
+
+    def test_clients_filter_rejects_all_unknown_perimeters(self):
+        for invalid in ["unknown", "P: 15-15", "injection-attempt"]:
+            response = self.http.get(f"{CLIENTS_ENDPOINT}/{invalid}")
+            self.assertEqual(
+                response.status_code,
+                400,
+                msg=f"Expected 400 for perimeter '{invalid}'",
             )
 
 

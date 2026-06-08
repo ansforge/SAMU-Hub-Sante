@@ -1,81 +1,112 @@
 import logging
-from flask import Flask, jsonify
-import csv
 import os
-import argparse
 
-DEFAULT_FLASK_HOST = "0.0.0.0"
-DEFAULT_FLASK_PORT = 8080
+from flask import Flask, jsonify
+import yaml
 
-VALUES_FILE_PATH = os.environ.get(
-    "VALUES_FILE_PATH", "/config/rabbitmq.clients-configuration.csv"
-)
-
-CSV_DATA_KEY = "CSV_DATA"
 API_ENDPOINT = "/annuaire/api"
+CLIENTS_ENDPOINT = f"{API_ENDPOINT}/clients"
 HEALTH_ENDPOINT = "/annuaire/health"
-CSV_NOT_FOUND_MSG = "Fichier CSV introuvable"
 
-HEADERS_COLUMNS_TO_KEEP = [
-    "client_id",
-    "editor",
-    "P: 15-15",
-    "P: 15-smur",
-    "P: 15-nexsis",
-    "P: 15-gps",
-    "directCISU",
-]
+VALUES_PATH = os.environ.get("VALUES_PATH", "/config/clients/values.yaml")
+ANNUAIRE_CLIENTS_DATA_KEY = "ANNUAIRE_CLIENTS_DATA"
 
+ANNUAIRE_ROOT_KEY = "annuaire"
+ANNUAIRE_CLIENTS_KEY = "clients"
 
-def create_app():
-    app = Flask(__name__)
-    register_routes(app)
-    csv_data = parse_csv(VALUES_FILE_PATH)
-    if csv_data is None:
-        raise RuntimeError(
-            "Erreur : impossible de charger le fichier CSV au démarrage."
-        )
-    app.config[CSV_DATA_KEY] = select_columns(csv_data)
-    return app
+ANNUAIRE_TO_PERIMETER_KEY = {
+    "lrm": "15-15",
+    "cap": "15-cap",
+    "portail": "15-portail",
+    "cnr114": "15-cnr114",
+    "cisu": "15-nexsis",
+    "smur": "15-smur",
+    "gps": "15-gps",
+}
+
+VALID_PERIMETERS = frozenset(ANNUAIRE_TO_PERIMETER_KEY.values())
 
 
-def parse_csv(filename):
-    path = VALUES_FILE_PATH
-    if not os.path.exists(path):
-        logging.error(f"Fichier CSV introuvable : {path}")
-        raise FileNotFoundError(f"{CSV_NOT_FOUND_MSG} : {filename}")
+def load_clients(path: str) -> list[dict]:
     try:
-        with open(path, newline="", encoding="utf-8") as csvfile:
-            reader = csv.DictReader(csvfile, delimiter=";")
-            return list(reader)
+        with open(path, encoding="utf-8") as f:
+            data = yaml.safe_load(f)
+        if ANNUAIRE_ROOT_KEY not in data:
+            raise RuntimeError(f"Missing '{ANNUAIRE_ROOT_KEY}' key in {path}")
+        if ANNUAIRE_CLIENTS_KEY not in data[ANNUAIRE_ROOT_KEY]:
+            raise RuntimeError(
+                f"Missing '{ANNUAIRE_ROOT_KEY}.{ANNUAIRE_CLIENTS_KEY}' key in {path}"
+            )
+        return data[ANNUAIRE_ROOT_KEY][ANNUAIRE_CLIENTS_KEY]
+    except FileNotFoundError:
+        logging.error(f"Values file not found: {path}")
+        raise
+    except RuntimeError as e:
+        logging.error(f"Failed to load clients from {path}: {e}")
+        raise
     except Exception as e:
-        logging.error(f"Erreur lors de la lecture du fichier CSV '{filename}': {e}")
-        raise RuntimeError(f"Erreur lors de la lecture du CSV: {e}")
+        logging.error(f"Failed to load clients from {path}: {e}")
+        raise RuntimeError(f"Failed to load clients from {path}: {e}") from e
 
 
-def select_columns(data: list[dict]) -> list[dict]:
-    data_updated = []
-    for row in data:
-        row_updated = {
-            key: value for key, value in row.items() if key in HEADERS_COLUMNS_TO_KEEP
-        }
-        data_updated.append(row_updated)
-    return data_updated
+def resolve_perimeters(client: dict) -> dict:
+    annuaire = client.get("annuaire")
+    if not isinstance(annuaire, dict):
+        return {}
+
+    perimeters = {}
+    for annuaire_key, perimeter_key in ANNUAIRE_TO_PERIMETER_KEY.items():
+        perimeters[perimeter_key] = bool(annuaire.get(annuaire_key, False))
+
+    return perimeters
+
+
+def build_annuaire_client_entry(client: dict) -> dict:
+    return {
+        "client_id": client["client_id"],
+        "client_name": client.get("client_name", ""),
+        "client_type": client.get("client_type", ""),
+        "perimeters": resolve_perimeters(client),
+    }
+
+
+def build_annuaire_clients(clients: list[dict]) -> list[dict]:
+    return [
+        build_annuaire_client_entry(c)
+        for c in clients
+        if isinstance(c.get("annuaire"), dict)
+    ]
 
 
 def register_routes(app):
-    @app.get(API_ENDPOINT)
-    def get_json():
-        return jsonify(app.config[CSV_DATA_KEY])
+    @app.get(CLIENTS_ENDPOINT)
+    def get_clients():
+        return jsonify(app.config[ANNUAIRE_CLIENTS_DATA_KEY])
+
+    @app.get(f"{CLIENTS_ENDPOINT}/<perimeter>")
+    def get_clients_by_perimeter(perimeter):
+        if perimeter not in VALID_PERIMETERS:
+            return jsonify(
+                {
+                    "error": "Invalid perimeter",
+                    "valid_perimeters": sorted(VALID_PERIMETERS),
+                }
+            ), 400
+        filtered = [
+            client
+            for client in app.config[ANNUAIRE_CLIENTS_DATA_KEY]
+            if client["perimeters"].get(perimeter) is True
+        ]
+        return jsonify(filtered)
 
     @app.get(HEALTH_ENDPOINT)
     def health_check():
         return jsonify({"status": "UP", "service": "SAMU Hub Annuaire"}), 200
 
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--port", type=int, default=DEFAULT_FLASK_PORT)
-    args = parser.parse_args()
-    app = create_app()
-    app.run(host=DEFAULT_FLASK_HOST, port=args.port)
+def create_app():
+    app = Flask(__name__)
+    register_routes(app)
+    clients = load_clients(VALUES_PATH)
+    app.config[ANNUAIRE_CLIENTS_DATA_KEY] = build_annuaire_clients(clients)
+    return app

@@ -1,0 +1,29 @@
+annuaire:
+  clients:
+    - client_id: fr.health.samu750
+      client_name: SAMU 750
+      client_type: SAMU
+      editor: Editeur A
+      lrmPerimeterVersions: ["2.1"]
+      cisuPerimeterVersions: ["1.9"]
+      directCISU: false
+      isLinkedToNexsis: false
+      annuaire:
+        lrm: true
+        cap: true
+        cisu: true
+    - client_id: fr.fire.sdis750
+      client_name: SDIS 750
+      client_type: SDIS
+      editor: Editeur Fire
+      cisuPerimeterVersions: ["1.9"]
+      directCISU: true
+      isLinkedToNexsis: true
+      annuaire:
+        cisu: true
+    - client_id: fr.health.fire
+      client_name: NexSIS Fire
+      client_type: NEXSIS
+      editor: NexSIS
+      cisuPerimeterVersions: ["1.9"]
+      directCISU: true
