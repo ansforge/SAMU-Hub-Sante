@@ -27,6 +27,7 @@ out/
 !**/src/test/**/out/
 **/application-bbo.properties
 **/client.preferences.csv
+**/src/main/resources/clients.yaml
 dispatcher/gradle.properties
 
 ### NetBeans ###

@@ -86,6 +86,9 @@ public class LogIntegrityTest {
                 () ->
                         Objects.requireNonNull(
                                 classLoader.getResource("config/client.preferences.csv")));
+        propertiesRegistry.add(
+                "client.configuration.file",
+                () -> Objects.requireNonNull(classLoader.getResource("config/clients.yaml")));
         propertiesRegistry.add("dispatcher.default.ttl", () -> 600);
         propertiesRegistry.add("spring.rabbitmq.virtual-host", () -> "15-15_v2.1");
     }

@@ -139,6 +139,10 @@ public class RabbitIntegrationAbstract {
                                     + Thread.currentThread()
                                             .getContextClassLoader()
                                             .getResource("config/client.preferences.csv"),
+                            "client.configuration.file="
+                                    + Thread.currentThread()
+                                            .getContextClassLoader()
+                                            .getResource("config/clients.yaml"),
                             "supported.messages.file="
                                     + Thread.currentThread()
                                             .getContextClassLoader()
