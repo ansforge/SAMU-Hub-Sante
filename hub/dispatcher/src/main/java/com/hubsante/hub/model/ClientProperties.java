@@ -26,7 +26,6 @@ public record ClientProperties(
         List<String> inhibitedUseCases) {
 
     public ClientProperties {
-        perimeters = perimeters == null ? List.of() : List.copyOf(perimeters);
         inhibitedUseCases = inhibitedUseCases == null ? List.of() : List.copyOf(inhibitedUseCases);
     }
 }

@@ -93,5 +93,12 @@ public class ClientPropertiesRegistryTest {
         assertThrows(
                 ClientConfigurationException.class,
                 () -> new ClientPropertiesRegistry(missingPerimeterVersionsYaml));
+
+        Resource missingPerimetersYaml =
+                new ClassPathResource("config/invalid-clients-missing-perimeters.yaml");
+
+        assertThrows(
+                ClientConfigurationException.class,
+                () -> new ClientPropertiesRegistry(missingPerimetersYaml));
     }
 }

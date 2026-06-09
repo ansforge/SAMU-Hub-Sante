@@ -82,22 +82,26 @@ public class ClientPropertiesRegistry {
                 throw new ClientConfigurationException("ClientId is missing in configuration");
             }
 
-            if (client.perimeters() != null) {
-                for (PerimeterDefinition perimeter : client.perimeters()) {
+            if (client.perimeters() == null || client.perimeters().isEmpty()) {
+                throw new ClientConfigurationException("At least one perimeter must be configured");
+            }
 
-                    try {
-                        validatePerimeter(client.clientId(), perimeter);
-                    } catch (IllegalArgumentException e) {
-                        throw new ClientConfigurationException(
-                                client.clientId(),
-                                "Invalid perimeter '" + perimeter.name() + "': " + e.getMessage());
-                    }
+            for (PerimeterDefinition perimeter : client.perimeters()) {
+                try {
+                    validatePerimeter(perimeter);
+                } catch (IllegalArgumentException e) {
+                    throw new ClientConfigurationException(
+                            client.clientId(),
+                            "Invalid perimeter configuration for client "
+                                    + client.clientId()
+                                    + ": "
+                                    + e.getMessage());
                 }
             }
         }
     }
 
-    private void validatePerimeter(String clientId, PerimeterDefinition perimeter) {
+    private void validatePerimeter(PerimeterDefinition perimeter) {
 
         if (perimeter.name() == null || perimeter.name().isBlank()) {
             throw new IllegalArgumentException("name must not be blank");
