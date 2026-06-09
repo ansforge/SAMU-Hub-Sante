@@ -46,7 +46,7 @@ public class ClientPropertiesRegistry {
 
             Properties props = factory.getObject();
             if (props == null) {
-                throw new ClientConfigurationException("clients.yaml is empty");
+                throw new ClientConfigurationException("clients configuration file is empty");
             }
 
             var env = new StandardEnvironment();
@@ -57,7 +57,10 @@ public class ClientPropertiesRegistry {
 
             List<ClientProperties> clients =
                     binder.bind("clients", Bindable.listOf(ClientProperties.class))
-                            .orElse(List.of());
+                            .orElseThrow(
+                                    () ->
+                                            new ClientConfigurationException(
+                                                    "Missing 'clients' block in clients configuration file"));
 
             validateClients(clients);
 
