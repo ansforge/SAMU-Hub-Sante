@@ -15,7 +15,9 @@
  */
 package com.hubsante.hub.service;
 
+import com.hubsante.hub.exception.ClientConfigurationException;
 import com.hubsante.hub.model.ClientProperties;
+import com.hubsante.hub.model.PerimeterDefinition;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -40,30 +42,79 @@ public class ClientPropertiesRegistry {
     }
 
     private void load(Resource resource) throws Exception {
+        try {
+            YamlPropertiesFactoryBean factory = new YamlPropertiesFactoryBean();
+            factory.setResources(resource);
 
-        YamlPropertiesFactoryBean factory = new YamlPropertiesFactoryBean();
-        factory.setResources(resource);
+            Properties props = factory.getObject();
+            if (props == null) {
+                throw new IllegalStateException("clients.yaml is empty");
+            }
 
-        Properties props = factory.getObject();
-        if (props == null) {
-            throw new IllegalStateException("clients.yaml is empty");
+            var env = new StandardEnvironment();
+            var ps = new PropertiesPropertySource("clients", props);
+            env.getPropertySources().addFirst(ps);
+
+            Binder binder = Binder.get(env);
+
+            List<ClientProperties> clients =
+                    binder.bind("clients", Bindable.listOf(ClientProperties.class))
+                            .orElse(List.of());
+
+            validateClients(clients);
+
+            this.clientsById =
+                    clients.stream()
+                            .collect(
+                                    Collectors.toMap(
+                                            ClientProperties::clientId, Function.identity()));
+
+        } catch (Exception e) {
+            throw new ClientConfigurationException("Failed to load clients.yaml" + e.getMessage());
+        }
+    }
+
+    private void validateClients(List<ClientProperties> clients) {
+
+        for (ClientProperties client : clients) {
+
+            if (client.clientId() == null || client.clientId().isBlank()) {
+                throw new ClientConfigurationException("ClientId is missing in configuration");
+            }
+
+            if (client.perimeters() != null) {
+                for (PerimeterDefinition perimeter : client.perimeters()) {
+
+                    try {
+                        validatePerimeter(client.clientId(), perimeter);
+                    } catch (IllegalArgumentException e) {
+                        throw new ClientConfigurationException(
+                                client.clientId(),
+                                "Invalid perimeter '" + perimeter.name() + "': " + e.getMessage());
+                    }
+                }
+            }
+        }
+    }
+
+    private void validatePerimeter(String clientId, PerimeterDefinition perimeter) {
+
+        if (perimeter.name() == null || perimeter.name().isBlank()) {
+            throw new IllegalArgumentException("name must not be blank");
         }
 
-        var env = new StandardEnvironment();
-        var ps = new PropertiesPropertySource("clients", props);
-        env.getPropertySources().addFirst(ps);
-
-        Binder binder = Binder.get(env);
-
-        List<ClientProperties> clients =
-                binder.bind("clients", Bindable.listOf(ClientProperties.class)).orElse(List.of());
-
-        this.clientsById =
-                clients.stream()
-                        .collect(Collectors.toMap(ClientProperties::clientId, Function.identity()));
+        if (perimeter.versions() == null || perimeter.versions().isEmpty()) {
+            throw new IllegalArgumentException("versions must not be empty");
+        }
     }
 
     public ClientProperties get(String clientId) {
-        return clientsById.get(clientId);
+        ClientProperties clientProperties = clientsById.get(clientId);
+
+        if (clientProperties == null) {
+            throw new IllegalStateException("client " + clientId + " is not configured");
+        }
+
+        return clientProperties;
     }
 }

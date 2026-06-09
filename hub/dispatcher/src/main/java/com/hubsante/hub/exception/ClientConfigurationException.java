@@ -13,20 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hubsante.hub.model;
+package com.hubsante.hub.exception;
 
-import java.util.List;
+public class ClientConfigurationException extends RuntimeException {
 
-public record ClientProperties(
-        String clientId,
-        boolean useXml,
-        boolean directCisu,
-        String editor,
-        List<PerimeterDefinition> perimeters,
-        List<String> inhibitedUseCases) {
+    public ClientConfigurationException(String message) {
+        super(message);
+    }
 
-    public ClientProperties {
-        perimeters = perimeters == null ? List.of() : List.copyOf(perimeters);
-        inhibitedUseCases = inhibitedUseCases == null ? List.of() : List.copyOf(inhibitedUseCases);
+    public ClientConfigurationException(String clientId, String message) {
+        super("Client '" + clientId + "': " + message);
     }
 }
