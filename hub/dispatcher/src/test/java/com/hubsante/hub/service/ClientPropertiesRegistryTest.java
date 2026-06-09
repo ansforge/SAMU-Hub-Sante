@@ -68,7 +68,7 @@ public class ClientPropertiesRegistryTest {
         ClientProperties samuV1Properties = clientPropertiesRegistry.get("fr.health.test.samu-v1");
         ClientProperties samuV3Properties = clientPropertiesRegistry.get("fr.health.test.samu-v3");
 
-        assertThrows(IllegalStateException.class, () -> clientPropertiesRegistry.get("unknown"));
+        assertThrows(ClientConfigurationException.class, () -> clientPropertiesRegistry.get("unknown"));
 
         List<String> samuV1InhibitedMessages = samuV1Properties.inhibitedUseCases();
         assertNotNull(samuV1InhibitedMessages);
@@ -77,28 +77,45 @@ public class ClientPropertiesRegistryTest {
 
     @Test
     void should_fail_when_loading_invalid_yaml() {
+        String exceptionPrefix = "Invalid clients configuration:\n\n";
 
+        // perimeter wth no name
         Resource missingPerimeterNameYaml =
                 new ClassPathResource("config/invalid-clients-missing-perimeter-name.yaml");
 
-        assertThrows(
-                ClientConfigurationException.class,
-                () -> {
-                    new ClientPropertiesRegistry(missingPerimeterNameYaml);
-                });
+        ClientConfigurationException missingPerimeterNameException =
+                assertThrows(
+                        ClientConfigurationException.class,
+                        () -> new ClientPropertiesRegistry(missingPerimeterNameYaml));
+        assertEquals(
+                exceptionPrefix
+                        + "Client: fr.health.test.samu-v1\n  - Perimeter name must not be blank\n",
+                missingPerimeterNameException.getMessage());
 
+        // perimeter without versions
         Resource missingPerimeterVersionsYaml =
                 new ClassPathResource("config/invalid-clients-missing-perimeter-versions.yaml");
 
-        assertThrows(
-                ClientConfigurationException.class,
-                () -> new ClientPropertiesRegistry(missingPerimeterVersionsYaml));
+        ClientConfigurationException missingPerimeterVersionsException =
+                assertThrows(
+                        ClientConfigurationException.class,
+                        () -> new ClientPropertiesRegistry(missingPerimeterVersionsYaml));
+        assertEquals(
+                exceptionPrefix
+                        + "Client: fr.health.test.samu-v1\n  - Perimeter versions must not be empty\n",
+                missingPerimeterVersionsException.getMessage());
 
+        // no perimeter at all
         Resource missingPerimetersYaml =
-                new ClassPathResource("config/invalid-clients-missing-perimeters.yaml");
+                new ClassPathResource("config/invalid-clients-no-perimeters.yaml");
 
-        assertThrows(
-                ClientConfigurationException.class,
-                () -> new ClientPropertiesRegistry(missingPerimetersYaml));
+        ClientConfigurationException missingPerimeterBlock =
+                assertThrows(
+                        ClientConfigurationException.class,
+                        () -> new ClientPropertiesRegistry(missingPerimetersYaml));
+        assertEquals(
+                exceptionPrefix
+                        + "Client: fr.health.test.samu-v1\n  - At least one perimeter must be configured\n",
+                missingPerimeterBlock.getMessage());
     }
 }

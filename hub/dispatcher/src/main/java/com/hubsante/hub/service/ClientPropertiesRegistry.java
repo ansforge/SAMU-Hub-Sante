@@ -18,9 +18,7 @@ package com.hubsante.hub.service;
 import com.hubsante.hub.exception.ClientConfigurationException;
 import com.hubsante.hub.model.ClientProperties;
 import com.hubsante.hub.model.PerimeterDefinition;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Value;
@@ -48,7 +46,7 @@ public class ClientPropertiesRegistry {
 
             Properties props = factory.getObject();
             if (props == null) {
-                throw new IllegalStateException("clients.yaml is empty");
+                throw new ClientConfigurationException("clients.yaml is empty");
             }
 
             var env = new StandardEnvironment();
@@ -70,53 +68,74 @@ public class ClientPropertiesRegistry {
                                             ClientProperties::clientId, Function.identity()));
 
         } catch (Exception e) {
-            throw new ClientConfigurationException("Failed to load clients.yaml" + e.getMessage());
+            throw new ClientConfigurationException(e.getMessage());
         }
     }
 
     private void validateClients(List<ClientProperties> clients) {
+        Map<String, List<String>> errorsByClient = new LinkedHashMap<>();
 
         for (ClientProperties client : clients) {
+            List<String> errors = new ArrayList<>();
 
             if (client.clientId() == null || client.clientId().isBlank()) {
-                throw new ClientConfigurationException("ClientId is missing in configuration");
+                errors.add("ClientId is missing in configuration");
             }
 
             if (client.perimeters() == null || client.perimeters().isEmpty()) {
-                throw new ClientConfigurationException("At least one perimeter must be configured");
+                errors.add("At least one perimeter must be configured");
             }
 
-            for (PerimeterDefinition perimeter : client.perimeters()) {
-                try {
-                    validatePerimeter(perimeter);
-                } catch (IllegalArgumentException e) {
-                    throw new ClientConfigurationException(
-                            client.clientId(),
-                            "Invalid perimeter configuration for client "
-                                    + client.clientId()
-                                    + ": "
-                                    + e.getMessage());
+            if (client.perimeters() != null) {
+                for (PerimeterDefinition perimeter : client.perimeters()) {
+                    try {
+                        validatePerimeter(perimeter);
+                    } catch (IllegalArgumentException e) {
+                        errors.add(e.getMessage());
+                    }
                 }
             }
+
+            if (!errors.isEmpty()) {
+                errorsByClient.put(client.clientId(), errors);
+            }
+        }
+
+        if (!errorsByClient.isEmpty()) {
+            throw buildException(errorsByClient);
         }
     }
 
     private void validatePerimeter(PerimeterDefinition perimeter) {
-
         if (perimeter.name() == null || perimeter.name().isBlank()) {
-            throw new IllegalArgumentException("name must not be blank");
+            throw new IllegalArgumentException("Perimeter name must not be blank");
         }
 
         if (perimeter.versions() == null || perimeter.versions().isEmpty()) {
-            throw new IllegalArgumentException("versions must not be empty");
+            throw new IllegalArgumentException("Perimeter versions must not be empty");
         }
+    }
+
+    private ClientConfigurationException buildException(Map<String, List<String>> errorsByClient) {
+
+        StringBuilder sb = new StringBuilder("Invalid clients configuration:\n");
+
+        errorsByClient.forEach(
+                (clientId, errors) -> {
+                    sb.append("\nClient: ").append(clientId).append("\n");
+                    for (String error : errors) {
+                        sb.append("  - ").append(error).append("\n");
+                    }
+                });
+
+        return new ClientConfigurationException(sb.toString());
     }
 
     public ClientProperties get(String clientId) {
         ClientProperties clientProperties = clientsById.get(clientId);
 
         if (clientProperties == null) {
-            throw new IllegalStateException("client " + clientId + " is not configured");
+            throw new ClientConfigurationException("client " + clientId + " is not configured");
         }
 
         return clientProperties;

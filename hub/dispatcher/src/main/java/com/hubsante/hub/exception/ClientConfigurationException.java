@@ -20,8 +20,4 @@ public class ClientConfigurationException extends RuntimeException {
     public ClientConfigurationException(String message) {
         super(message);
     }
-
-    public ClientConfigurationException(String clientId, String message) {
-        super("Client '" + clientId + "': " + message);
-    }
 }
