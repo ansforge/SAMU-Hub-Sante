@@ -65,8 +65,8 @@ public class ClientPropertiesRegistryTest {
     public void shouldLoadClientConfiguration() {
         assertNotNull(this.clientPropertiesRegistry);
 
-        ClientProperties samuV1Properties = clientPropertiesRegistry.get("fr.health.test.samu-v1");
-        ClientProperties samuV3Properties = clientPropertiesRegistry.get("fr.health.test.samu-v3");
+        ClientProperties samuV1Properties = clientPropertiesRegistry.get("fr.health.samuV1");
+        ClientProperties samuV3Properties = clientPropertiesRegistry.get("fr.health.samuV3");
 
         assertThrows(
                 ClientConfigurationException.class, () -> clientPropertiesRegistry.get("unknown"));
