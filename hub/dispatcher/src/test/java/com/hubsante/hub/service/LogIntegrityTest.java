@@ -61,6 +61,7 @@ public class LogIntegrityTest {
     @Autowired private EdxlHandler edxlHandler;
     @Autowired private Validator validator;
     @Autowired private HubConfiguration hubConfiguration;
+    @Autowired private ClientPropertiesRegistry clientPropertiesRegistry;
     @Autowired private MeterRegistry meterRegistry;
     @Autowired private XmlMapper xmlMapper;
     @Autowired private ObjectMapper jsonMapper;
@@ -157,6 +158,7 @@ public class LogIntegrityTest {
                         meterRegistry,
                         xmlMapper,
                         jsonMapper,
+                        clientPropertiesRegistry,
                         conversionHandler);
 
         dispatcher =

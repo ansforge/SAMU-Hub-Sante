@@ -15,12 +15,15 @@
  */
 package com.hubsante.hub.service;
 
+import com.hubsante.hub.config.LogConstants;
+import com.hubsante.hub.config.StructuredLogger;
 import com.hubsante.hub.exception.ClientConfigurationException;
 import com.hubsante.hub.model.ClientProperties;
 import com.hubsante.hub.model.PerimeterDefinition;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.YamlPropertiesFactoryBean;
 import org.springframework.boot.context.properties.bind.Bindable;
@@ -31,7 +34,10 @@ import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 
 @Component
+@Slf4j
 public class ClientPropertiesRegistry {
+    private static final StructuredLogger structuredLog = new StructuredLogger(log);
+
     private Map<String, ClientProperties> clientsById = Map.of();
 
     public ClientPropertiesRegistry(@Value("${client.configuration.file}") Resource resource)
@@ -135,12 +141,30 @@ public class ClientPropertiesRegistry {
     }
 
     public ClientProperties get(String clientId) {
-        ClientProperties clientProperties = clientsById.get(clientId);
+        return clientsById.get(clientId);
+    }
+
+    public String[] getClientVersionsForPerimeter(String clientId, String perimeterName) {
+        ClientProperties clientProperties = get(clientId);
 
         if (clientProperties == null) {
-            throw new ClientConfigurationException("client " + clientId + " is not configured");
+            structuredLog.warn(
+                    "Client has no configuration", Map.of(LogConstants.RECIPIENT_ID, clientId));
+            return null;
         }
 
-        return clientProperties;
+        PerimeterDefinition perimeter =
+                clientProperties.perimeters().stream()
+                        .filter(p -> p.name().equals(perimeterName))
+                        .findFirst()
+                        .orElse(null);
+
+        if (perimeter == null) {
+            structuredLog.warn(
+                    "Client does not support perimeter " + perimeterName,
+                    Map.of(LogConstants.RECIPIENT_ID, clientId));
+            return null;
+        }
+        return perimeter.versions().toArray(String[]::new);
     }
 }

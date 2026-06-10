@@ -31,6 +31,7 @@ import com.hubsante.hub.config.HubConfiguration;
 import com.hubsante.hub.config.LogConstants;
 import com.hubsante.hub.config.StructuredLogger;
 import com.hubsante.hub.exception.*;
+import com.hubsante.hub.model.ClientProperties;
 import com.hubsante.hub.utils.ConversionRulesCommand;
 import com.hubsante.hub.utils.ConversionUtils;
 import com.hubsante.hub.utils.EdxlUtils;
@@ -47,10 +48,7 @@ import com.hubsante.model.report.ErrorWrapper;
 import io.micrometer.core.instrument.MeterRegistry;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.AmqpRejectAndDontRequeueException;
 import org.springframework.amqp.core.Message;
@@ -89,6 +87,7 @@ public class MessageHandler {
             MeterRegistry registry,
             XmlMapper xmlMapper,
             ObjectMapper jsonMapper,
+            ClientPropertiesRegistry clientPropertiesRegistry,
             ConversionHandler conversionHandler) {
         this.rabbitTemplate = rabbitTemplate;
         this.edxlHandler = edxlHandler;
@@ -200,7 +199,11 @@ public class MessageHandler {
             String routingKey = infoQueueName;
 
             Message errorAmqpMessage;
-            if (convertToXML(sender, hubConfig.getUseXmlPreferences().get(sender))) {
+            Boolean useXML =
+                    hubConfig.getClientPropertiesRegistry().get(sender) != null
+                            ? hubConfig.getClientPropertiesRegistry().get(sender).useXml()
+                            : null;
+            if (convertToXML(sender, useXML)) {
                 errorAmqpMessage =
                         new Message(
                                 edxlHandler.serializeXmlEDXL(errorEdxlMessage).getBytes(),
@@ -498,7 +501,11 @@ public class MessageHandler {
         String messageType = getUseCaseFromMessage(edxlMessage.getFirstContentMessage());
 
         try {
-            if (convertToXML(recipientId, hubConfig.getUseXmlPreferences().get(recipientId))) {
+            Boolean useXML =
+                    hubConfig.getClientPropertiesRegistry().get(recipientId) != null
+                            ? hubConfig.getClientPropertiesRegistry().get(recipientId).useXml()
+                            : null;
+            if (convertToXML(recipientId, useXML)) {
                 edxlString = edxlHandler.serializeXmlEDXL(edxlMessage);
                 fwdAmqpProperties.setContentType(MessageProperties.CONTENT_TYPE_XML);
             } else {
@@ -590,11 +597,17 @@ public class MessageHandler {
     }
 
     protected void inhibitMessageIfNeeded(EdxlMessage edxlMessage) {
+        String recipientId = getRecipientID(edxlMessage);
+        String useCase = EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage());
+        ClientProperties clientProperties =
+                hubConfig.getClientPropertiesRegistry().get(recipientId);
+        List<String> inhibitedUseCases = new ArrayList<>();
+
+        if (clientProperties != null) {
+            inhibitedUseCases = clientProperties.inhibitedUseCases();
+        }
         checkMessageNotInhibited(
-                getRecipientID(edxlMessage),
-                EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage()),
-                hubConfig.getClientsInhibitedMessages(),
-                edxlMessage.getDistributionID());
+                recipientId, useCase, inhibitedUseCases, edxlMessage.getDistributionID());
     }
 
     private void logMessage(Message message, EdxlMessage edxlMessage, String receivedEdxl) {
@@ -685,6 +698,7 @@ public class MessageHandler {
     }
 
     private String getEditorFromSender(String sender) {
-        return hubConfig.getClientsEditorMap().getOrDefault(sender, UNKNOWN);
+        ClientProperties clientProperties = hubConfig.getClientPropertiesRegistry().get(sender);
+        return clientProperties != null ? clientProperties.editor() : UNKNOWN;
     }
 }

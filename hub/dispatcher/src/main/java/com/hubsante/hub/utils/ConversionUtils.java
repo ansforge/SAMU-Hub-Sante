@@ -20,6 +20,7 @@ import static com.hubsante.hub.config.Constants.*;
 import static com.hubsante.hub.utils.MessageUtils.*;
 
 import com.hubsante.hub.config.HubConfiguration;
+import com.hubsante.hub.model.ClientProperties;
 import com.hubsante.model.edxl.EdxlMessage;
 import java.util.Arrays;
 import lombok.extern.slf4j.Slf4j;
@@ -83,8 +84,10 @@ public class ConversionUtils {
                 (isCisuSender && !isDirectCisu) ? Perimeter.HEALTH.getName() : sourcePerimeter;
 
         targetVersionsOnTargetPerimeter =
-                hubConfig.getClientVersionsForPerimeter(
-                        recipientId, targetPerimeter); // ex ['1.5, 2.0']
+                hubConfig
+                        .getClientPropertiesRegistry()
+                        .getClientVersionsForPerimeter(
+                                recipientId, targetPerimeter); // ex ['1.5, 2.0']
         return formatVersionToVhosts(
                 targetVersionsOnTargetPerimeter,
                 targetPerimeter); // ex ["15-15_v1.5", "15-15_v2.0"]
@@ -135,10 +138,14 @@ public class ConversionUtils {
         String recipientId = getRecipientID(edxlMessage);
         String senderId = edxlMessage.getSenderID();
         String healthActor = senderId.startsWith(HEALTH_PREFIX) ? senderId : recipientId;
-        Boolean directCisuPreference =
-                hubConfig
-                        .getDirectCisuPreferences()
-                        .getOrDefault(healthActor, DEFAULT_DIRECT_CISU_PREFERENCE);
-        return directCisuPreference != null && directCisuPreference;
+
+        ClientProperties healthActorProperties =
+                hubConfig.getClientPropertiesRegistry().get(healthActor);
+        boolean directCisuPreference =
+                healthActorProperties != null
+                        ? healthActorProperties.directCisu()
+                        : DEFAULT_DIRECT_CISU_PREFERENCE;
+
+        return directCisuPreference;
     }
 }

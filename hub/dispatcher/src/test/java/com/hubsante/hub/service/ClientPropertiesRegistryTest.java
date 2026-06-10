@@ -66,14 +66,12 @@ public class ClientPropertiesRegistryTest {
         assertNotNull(this.clientPropertiesRegistry);
 
         ClientProperties samuV1Properties = clientPropertiesRegistry.get("fr.health.samuV1");
-        ClientProperties samuV3Properties = clientPropertiesRegistry.get("fr.health.samuV3");
-
-        assertThrows(
-                ClientConfigurationException.class, () -> clientPropertiesRegistry.get("unknown"));
-
         List<String> samuV1InhibitedMessages = samuV1Properties.inhibitedUseCases();
+
         assertNotNull(samuV1InhibitedMessages);
         assertEquals(List.of("ResourcesInfoCisuWrapper"), samuV1InhibitedMessages);
+
+        assertNull(clientPropertiesRegistry.get("unknown"));
     }
 
     @Test

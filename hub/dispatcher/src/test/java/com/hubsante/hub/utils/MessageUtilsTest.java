@@ -47,7 +47,7 @@ public class MessageUtilsTest {
                                 checkMessageNotInhibited(
                                         LIMITED_CLIENT,
                                         INHIBITED_MESSAGE,
-                                        inhibitedMessagesByClient,
+                                        inhibitedMessagesByClient.get(LIMITED_CLIENT),
                                         DISTRIBUTION_ID));
 
         assertEquals(
@@ -63,7 +63,7 @@ public class MessageUtilsTest {
                         checkMessageNotInhibited(
                                 LIMITED_CLIENT,
                                 UNRESTRICTED_MESSAGE,
-                                inhibitedMessagesByClient,
+                                inhibitedMessagesByClient.get(LIMITED_CLIENT),
                                 DISTRIBUTION_ID));
     }
 
@@ -75,7 +75,7 @@ public class MessageUtilsTest {
                         checkMessageNotInhibited(
                                 UNRESTRICTED_CLIENT,
                                 INHIBITED_MESSAGE,
-                                inhibitedMessagesByClient,
+                                inhibitedMessagesByClient.get(UNRESTRICTED_CLIENT),
                                 DISTRIBUTION_ID));
     }
 }

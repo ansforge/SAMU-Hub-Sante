@@ -155,13 +155,10 @@ public class MessageUtils {
     public static void checkMessageNotInhibited(
             String recipientId,
             String useCase,
-            Map<String, List<String>> inhibitedMessagesByClient,
+            List<String> inhibitedUseCases,
             String distributionId) {
 
-        List<String> blockedUseCases =
-                inhibitedMessagesByClient.getOrDefault(recipientId, List.of());
-
-        boolean isInhibited = blockedUseCases.contains(useCase);
+        boolean isInhibited = inhibitedUseCases.contains(useCase);
 
         if (isInhibited) {
             String errorMessage =
