@@ -49,11 +49,6 @@ public class ClientPropertiesRegistryTest {
                         Objects.requireNonNull(
                                 classLoader.getResource("config/supported.messages.csv")));
         propertiesRegistry.add(
-                "client.preferences.file",
-                () ->
-                        Objects.requireNonNull(
-                                classLoader.getResource("config/client.preferences.csv")));
-        propertiesRegistry.add(
                 "client.configuration.file",
                 () -> Objects.requireNonNull(classLoader.getResource("config/clients.yaml")));
         propertiesRegistry.add("hubsante.default.message.ttl", () -> 5);

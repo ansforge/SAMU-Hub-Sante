@@ -83,11 +83,6 @@ public class LogIntegrityTest {
                         Objects.requireNonNull(
                                 classLoader.getResource("config/supported.messages.csv")));
         propertiesRegistry.add(
-                "client.preferences.file",
-                () ->
-                        Objects.requireNonNull(
-                                classLoader.getResource("config/client.preferences.csv")));
-        propertiesRegistry.add(
                 "client.configuration.file",
                 () -> Objects.requireNonNull(classLoader.getResource("config/clients.yaml")));
         propertiesRegistry.add("dispatcher.default.ttl", () -> 600);

@@ -135,10 +135,6 @@ public class RabbitIntegrationAbstract {
                                     + Thread.currentThread()
                                             .getContextClassLoader()
                                             .getResource("config/certs/trustStore"),
-                            "client.preferences.file="
-                                    + Thread.currentThread()
-                                            .getContextClassLoader()
-                                            .getResource("config/client.preferences.csv"),
                             "client.configuration.file="
                                     + Thread.currentThread()
                                             .getContextClassLoader()
