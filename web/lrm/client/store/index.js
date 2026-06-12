@@ -238,6 +238,8 @@ export const useMainStore = defineStore('main', {
       });
     },
     loadMessageTypes(source) {
+      // Clear message types before fetching to prevent stale data from previous vhost
+      this._messageTypes = [];
       return fetch(source)
         .then((response) => response.json())
         .then((messageTypes) => {
