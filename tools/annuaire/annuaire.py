@@ -2,30 +2,22 @@ import logging
 import os
 import yaml
 
-from flask import Flask, jsonify
 from flask_cors import CORS
+from flask import Response, jsonify, redirect
+from flask_openapi3 import Info, OpenAPI, Tag
+from models import Perimeters, Client, PerimeterPath, ClientsResponse, ErrorResponse
 
-API_ENDPOINT = "/annuaire/api"
-CLIENTS_ENDPOINT = f"{API_ENDPOINT}/clients"
-HEALTH_ENDPOINT = "/annuaire/health"
+from constants import (
+    ANNUAIRE_ROOT_KEY,
+    ANNUAIRE_CLIENTS_KEY,
+    CLIENTS_ENDPOINT,
+    ANNUAIRE_CLIENTS_DATA_KEY,
+    SPECS_ENDPOINT,
+    HEALTH_ENDPOINT,
+    VALUES_PATH,
+)
 
-VALUES_PATH = os.environ.get("VALUES_PATH", "/config/clients/values.yaml")
-ANNUAIRE_CLIENTS_DATA_KEY = "ANNUAIRE_CLIENTS_DATA"
-
-ANNUAIRE_ROOT_KEY = "annuaire"
-ANNUAIRE_CLIENTS_KEY = "clients"
-
-ANNUAIRE_TO_PERIMETER_KEY = {
-    "lrm": "15-15",
-    "cap": "15-cap",
-    "portail": "15-portail",
-    "cnr114": "15-cnr114",
-    "cisu": "15-nexsis",
-    "smur": "15-smur",
-    "gps": "15-gps",
-}
-
-VALID_PERIMETERS = frozenset(ANNUAIRE_TO_PERIMETER_KEY.values())
+VALID_PERIMETERS = frozenset(field.alias for field in Perimeters.model_fields.values())
 
 
 def load_clients(path: str) -> list[dict]:
@@ -50,59 +42,63 @@ def load_clients(path: str) -> list[dict]:
         raise RuntimeError(f"Failed to load clients from {path}: {e}") from e
 
 
-def resolve_perimeters(client: dict) -> dict:
-    annuaire = client.get("annuaire")
-    if not isinstance(annuaire, dict):
-        return {}
-
-    perimeters = {}
-    for annuaire_key, perimeter_key in ANNUAIRE_TO_PERIMETER_KEY.items():
-        perimeters[perimeter_key] = bool(annuaire.get(annuaire_key, False))
-
-    return perimeters
+def resolve_perimeters(annuaire: dict) -> Perimeters:
+    return Perimeters.model_validate(annuaire)
 
 
-def build_annuaire_client_entry(client: dict) -> dict:
-    return {
-        "client_id": client["client_id"],
-        "client_name": client.get("client_name", ""),
-        "client_type": client.get("client_type", ""),
-        "perimeters": resolve_perimeters(client),
-    }
+def build_annuaire_client_entry(client: dict) -> Client:
+    return Client(
+        client_id=client["client_id"],
+        client_name=client.get("client_name", ""),
+        client_type=client.get("client_type", ""),
+        perimeters=resolve_perimeters(client.get(ANNUAIRE_ROOT_KEY, {})),
+    )
 
 
-def build_annuaire_clients(clients: list[dict]) -> list[dict]:
+def build_annuaire_clients(clients: list[dict]) -> list[Client]:
     return [
         build_annuaire_client_entry(c)
         for c in clients
-        if isinstance(c.get("annuaire"), dict)
+        if isinstance(c.get(ANNUAIRE_ROOT_KEY), dict)
     ]
 
 
-def register_routes(app):
-    @app.get(CLIENTS_ENDPOINT)
-    def get_clients():
-        return jsonify(app.config[ANNUAIRE_CLIENTS_DATA_KEY])
+clients_tag = Tag(name="Clients", description="Annuaire des clients par périmètre")
 
-    @app.get(f"{CLIENTS_ENDPOINT}/<perimeter>")
-    def get_clients_by_perimeter(perimeter):
-        if perimeter not in VALID_PERIMETERS:
+
+def register_routes(app: OpenAPI) -> None:
+    @app.get(CLIENTS_ENDPOINT, tags=[clients_tag], responses={200: ClientsResponse})
+    def get_clients() -> ClientsResponse:
+        """Lister tous les clients de l'annuaire"""
+        clients: list[Client] = app.config[ANNUAIRE_CLIENTS_DATA_KEY]
+        return jsonify([c.model_dump(by_alias=True) for c in clients])
+
+    @app.get(
+        f"{CLIENTS_ENDPOINT}/<perimeter>",
+        tags=[clients_tag],
+        responses={200: ClientsResponse, 400: ErrorResponse},
+    )
+    def get_clients_by_perimeter(path: PerimeterPath) -> ClientsResponse:
+        """Lister les clients actifs sur un périmètre donné"""
+        if path.perimeter not in VALID_PERIMETERS:
             return jsonify(
                 {
                     "error": "Invalid perimeter",
                     "valid_perimeters": sorted(VALID_PERIMETERS),
                 }
             ), 400
-        filtered = [
-            client
-            for client in app.config[ANNUAIRE_CLIENTS_DATA_KEY]
-            if client["perimeters"].get(perimeter) is True
-        ]
-        return jsonify(filtered)
+        clients: list[Client] = app.config[ANNUAIRE_CLIENTS_DATA_KEY]
+        filtered = [c for c in clients if c.perimeters.get_by_alias(path.perimeter)]
+        return jsonify([c.model_dump(by_alias=True) for c in filtered])
 
-    @app.get(HEALTH_ENDPOINT)
-    def health_check():
+    @app.get(HEALTH_ENDPOINT, doc_ui=False)
+    def health_check() -> tuple[Response, int]:
         return jsonify({"status": "UP", "service": "SAMU Hub Annuaire"}), 200
+
+    # redirects annuaire/api/specs to Swagger UI
+    @app.route(SPECS_ENDPOINT)
+    def specs_home() -> Response:
+        return redirect(f"{SPECS_ENDPOINT}/swagger")
 
 
 def get_allowed_origins() -> list[str] | None:
@@ -113,8 +109,16 @@ def get_allowed_origins() -> list[str] | None:
         return None
 
 
-def create_app():
-    app = Flask(__name__)
+def create_app() -> OpenAPI:
+    info = Info(
+        title="API Annuaire",
+        version="",
+        description="Annuaire des clients SAMU Hub joignables, par périmètre.",
+    )
+    # Swagger UI : /annuaire/api/specs/swagger  (redirigé depuis /annuaire/api/specs)
+    # ReDoc      : /annuaire/api/specs/redoc
+    # Spec JSON  : /annuaire/api/specs/openapi.json
+    app = OpenAPI(__name__, info=info, doc_prefix=SPECS_ENDPOINT)
     allowed_origins = get_allowed_origins()
     if allowed_origins:
         CORS(app, origins=allowed_origins)
