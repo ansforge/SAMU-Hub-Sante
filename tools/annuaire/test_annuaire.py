@@ -90,7 +90,7 @@ class AnnuaireTestCase(unittest.TestCase):
         }
         perimeters = resolve_perimeters(client.get("annuaire"))
         self.assertEqual(
-            perimeters.model_dump(by_alias=True),
+            perimeters,
             {
                 "15-15": True,
                 "15-cap": True,

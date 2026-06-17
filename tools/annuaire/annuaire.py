@@ -1,11 +1,20 @@
 import logging
 import os
 import yaml
+from http import HTTPStatus
 
 from flask_cors import CORS
-from flask import Response, jsonify, redirect
+from flask import Response, jsonify, redirect, make_response
 from flask_openapi3 import Info, OpenAPI, Tag
-from models import Perimeters, Client, PerimeterPath, ClientsResponse, ErrorResponse
+from models import (
+    ErrorResponse,
+    Perimeter,
+    Client,
+    PerimeterPath,
+    ClientsResponse,
+    PERIMETER_TO_ANNUAIRE_KEY_MAP,
+)
+from pydantic import ValidationError
 
 from constants import (
     ANNUAIRE_ROOT_KEY,
@@ -17,7 +26,19 @@ from constants import (
     VALUES_PATH,
 )
 
-VALID_PERIMETERS = frozenset(field.alias for field in Perimeters.model_fields.values())
+
+def validation_error_callback(e: ValidationError):
+    resp = make_response(
+        jsonify(
+            {
+                "error": "Invalid perimeter",
+                "valid_perimeters": list(Perimeter),
+            }
+        )
+    )
+    resp.headers["Content-Type"] = "application/json"
+    resp.status_code = HTTPStatus.BAD_REQUEST
+    return resp
 
 
 def load_clients(path: str) -> list[dict]:
@@ -42,8 +63,11 @@ def load_clients(path: str) -> list[dict]:
         raise RuntimeError(f"Failed to load clients from {path}: {e}") from e
 
 
-def resolve_perimeters(annuaire: dict) -> Perimeters:
-    return Perimeters.model_validate(annuaire)
+def resolve_perimeters(annuaire: dict) -> dict[Perimeter, bool]:
+    return {
+        p: bool(annuaire.get(key, False))
+        for p, key in PERIMETER_TO_ANNUAIRE_KEY_MAP.items()
+    }
 
 
 def build_annuaire_client_entry(client: dict) -> Client:
@@ -76,19 +100,12 @@ def register_routes(app: OpenAPI) -> None:
     @app.get(
         f"{CLIENTS_ENDPOINT}/<perimeter>",
         tags=[clients_tag],
-        responses={200: ClientsResponse, 400: ErrorResponse},
+        responses={200: ClientsResponse},
     )
     def get_clients_by_perimeter(path: PerimeterPath) -> ClientsResponse:
         """Lister les clients actifs sur un périmètre donné"""
-        if path.perimeter not in VALID_PERIMETERS:
-            return jsonify(
-                {
-                    "error": "Invalid perimeter",
-                    "valid_perimeters": sorted(VALID_PERIMETERS),
-                }
-            ), 400
         clients: list[Client] = app.config[ANNUAIRE_CLIENTS_DATA_KEY]
-        filtered = [c for c in clients if c.perimeters.get_by_alias(path.perimeter)]
+        filtered = [c for c in clients if c.perimeters[path.perimeter]]
         return jsonify([c.model_dump(by_alias=True) for c in filtered])
 
     @app.get(HEALTH_ENDPOINT, doc_ui=False)
@@ -118,7 +135,14 @@ def create_app() -> OpenAPI:
     # Swagger UI : /annuaire/api/specs/swagger  (redirigé depuis /annuaire/api/specs)
     # ReDoc      : /annuaire/api/specs/redoc
     # Spec JSON  : /annuaire/api/specs/openapi.json
-    app = OpenAPI(__name__, info=info, doc_prefix=SPECS_ENDPOINT)
+    app = OpenAPI(
+        __name__,
+        info=info,
+        doc_prefix=SPECS_ENDPOINT,
+        validation_error_status=HTTPStatus.BAD_REQUEST,
+        validation_error_model=ErrorResponse,
+        validation_error_callback=validation_error_callback,
+    )
     allowed_origins = get_allowed_origins()
     if allowed_origins:
         CORS(app, origins=allowed_origins)
