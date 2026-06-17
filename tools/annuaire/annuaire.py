@@ -1,8 +1,9 @@
 import logging
 import os
+import yaml
 
 from flask import Flask, jsonify
-import yaml
+from flask_cors import CORS
 
 API_ENDPOINT = "/annuaire/api"
 CLIENTS_ENDPOINT = f"{API_ENDPOINT}/clients"
@@ -104,8 +105,19 @@ def register_routes(app):
         return jsonify({"status": "UP", "service": "SAMU Hub Annuaire"}), 200
 
 
+def get_allowed_origins() -> list[str] | None:
+    ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS")
+    if ALLOWED_ORIGINS:
+        return ALLOWED_ORIGINS.split(",")
+    else:
+        return None
+
+
 def create_app():
     app = Flask(__name__)
+    allowed_origins = get_allowed_origins()
+    if allowed_origins:
+        CORS(app, origins=allowed_origins)
     register_routes(app)
     clients = load_clients(VALUES_PATH)
     app.config[ANNUAIRE_CLIENTS_DATA_KEY] = build_annuaire_clients(clients)
