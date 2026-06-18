@@ -132,6 +132,11 @@ def create_app() -> OpenAPI:
         version="",
         description="Annuaire des clients SAMU Hub joignables, par périmètre.",
     )
+    swagger_config = {
+        # Avoid configuring an external endpoint to validate the
+        # openapi spec generated (used to dispay a status badge).
+        "validatorUrl": None
+    }
     # Swagger UI : /annuaire/api/specs/swagger  (redirigé depuis /annuaire/api/specs)
     # ReDoc      : /annuaire/api/specs/redoc
     # Spec JSON  : /annuaire/api/specs/openapi.json
@@ -143,6 +148,7 @@ def create_app() -> OpenAPI:
         validation_error_model=ErrorResponse,
         validation_error_callback=validation_error_callback,
     )
+    app.config["SWAGGER_CONFIG"] = swagger_config
     allowed_origins = get_allowed_origins()
     if allowed_origins:
         CORS(app, origins=allowed_origins)
