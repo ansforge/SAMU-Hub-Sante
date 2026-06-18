@@ -88,7 +88,7 @@ class AnnuaireTestCase(unittest.TestCase):
             "annuaire": {"lrm": True, "cap": True},
             "editor": "ANS",
         }
-        perimeters = resolve_perimeters(client)
+        perimeters = resolve_perimeters(client.get("annuaire"))
         self.assertEqual(
             perimeters,
             {
@@ -120,9 +120,10 @@ class AnnuaireTestCase(unittest.TestCase):
 
         result = build_annuaire_clients(clients)
         self.assertEqual(len(result), 1)
-        self.assertEqual(result[0]["client_id"], "fr.health.samu750")
+        client = result[0].model_dump(by_alias=True)
+        self.assertEqual(client.get("client_id"), "fr.health.samu750")
         self.assertEqual(
-            result[0]["perimeters"],
+            client.get("perimeters"),
             {
                 "15-15": True,
                 "15-cap": False,
