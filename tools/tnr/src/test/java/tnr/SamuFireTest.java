@@ -27,8 +27,6 @@ class SamuFireTest extends AMQPTestSupport {
     protected static final String HUB_NEXSIS_USER_CLIENT_ID = "fr.health.fire";
     protected static final String NEXSIS_SHOVEL_ROUTING_KEY = "fr.fire.sga";
     protected static final String VHOST_15_NEXSIS_V3_TAG = "15-nexsis_v1.9";
-    protected static final String VHOST_15_NEXSIS_VACTIVE_TAG = "15-nexsis_vactive";
-
 
     @Test
     @DisplayName("Send RS-EDA message from samu1_v1 to sdisZ with conversion & transcoding, then send ack")
@@ -45,11 +43,11 @@ class SamuFireTest extends AMQPTestSupport {
         MessageDTO matched = awaitMessage(distributionId);
 
         assertNotNull(matched, "Message " + distributionId + " not received within " + RECEIVE_TIMEOUT_SECS + "s");
-        assertVhostEquals(matched, VHOST_15_NEXSIS_VACTIVE_TAG);
+        assertVhostEquals(matched, VHOST_15_NEXSIS_V3_TAG);
         assertQueueEquals(matched, HUB_NEXSIS_USER_CLIENT_ID + ".message");
         assertTrue(Utils.isMessageOfType(matched, "createCase"));
 
-        String ackDistributionId = sendAck(VHOST_15_NEXSIS_VACTIVE_TAG, NEXSIS_SHOVEL_ROUTING_KEY, SAMU1_V1_ID, distributionId);
+        String ackDistributionId = sendAck(VHOST_15_NEXSIS_V3_TAG, NEXSIS_SHOVEL_ROUTING_KEY, SAMU1_V1_ID, distributionId);
 
         MessageDTO matchedAck = awaitMessage(ackDistributionId);
 
@@ -76,11 +74,11 @@ class SamuFireTest extends AMQPTestSupport {
         MessageDTO matched = awaitMessage(distributionId);
 
         assertNotNull(matched, "Message " + distributionId + " not received within " + RECEIVE_TIMEOUT_SECS + "s");
-        assertVhostEquals(matched, VHOST_15_NEXSIS_VACTIVE_TAG);
+        assertVhostEquals(matched, VHOST_15_NEXSIS_V3_TAG);
         assertQueueEquals(matched, HUB_NEXSIS_USER_CLIENT_ID + ".message");
         assertTrue(Utils.isMessageOfType(matched, "createCase"));
 
-        String ackDistributionId = sendAck(VHOST_15_NEXSIS_VACTIVE_TAG, NEXSIS_SHOVEL_ROUTING_KEY, SAMU1_V3_ID, distributionId);
+        String ackDistributionId = sendAck(VHOST_15_NEXSIS_V3_TAG, NEXSIS_SHOVEL_ROUTING_KEY, SAMU1_V3_ID, distributionId);
 
         MessageDTO matchedAck = awaitMessage(ackDistributionId);
 
@@ -107,11 +105,11 @@ class SamuFireTest extends AMQPTestSupport {
         MessageDTO matched = awaitMessage(distributionId);
 
         assertNotNull(matched, "Message " + distributionId + " not received within " + RECEIVE_TIMEOUT_SECS + "s");
-        assertVhostEquals(matched, VHOST_15_NEXSIS_VACTIVE_TAG);
+        assertVhostEquals(matched, VHOST_15_NEXSIS_V3_TAG);
         assertQueueEquals(matched, HUB_NEXSIS_USER_CLIENT_ID + ".message");
         assertTrue(Utils.isMessageOfType(matched, "createCase"));
 
-        String ackDistributionId = sendAck(VHOST_15_NEXSIS_VACTIVE_TAG, NEXSIS_SHOVEL_ROUTING_KEY, SAMU2_V3_ID, distributionId);
+        String ackDistributionId = sendAck(VHOST_15_NEXSIS_V3_TAG, NEXSIS_SHOVEL_ROUTING_KEY, SAMU2_V3_ID, distributionId);
 
         MessageDTO matchedAck = awaitMessage(ackDistributionId);
 
@@ -133,7 +131,7 @@ class SamuFireTest extends AMQPTestSupport {
         String edxlJson = new MessageBuilder().buildMessage(
                 useCase, distributionId, TNR_SDIS_CLIENT_ID, SAMU1_V3_ID);
 
-        sendMessage(VHOST_15_NEXSIS_VACTIVE_TAG, NEXSIS_SHOVEL_ROUTING_KEY, edxlJson);
+        sendMessage(VHOST_15_NEXSIS_V3_TAG, NEXSIS_SHOVEL_ROUTING_KEY, edxlJson);
 
         MessageDTO matched = awaitMessage(distributionId);
 
@@ -149,7 +147,7 @@ class SamuFireTest extends AMQPTestSupport {
         String referencedDistributionID = Utils.getReferencedDistributionID(matchedAck);
 
         assertNotNull(matchedAck, "Ack " + ackDistributionId + " not received within " + RECEIVE_TIMEOUT_SECS + "s");
-        assertVhostEquals(matchedAck, VHOST_15_NEXSIS_VACTIVE_TAG);
+        assertVhostEquals(matchedAck, VHOST_15_NEXSIS_V3_TAG);
         assertQueueEquals(matchedAck, HUB_NEXSIS_USER_CLIENT_ID + ".ack");
         assertEquals(distributionId, referencedDistributionID);
     }
@@ -164,7 +162,7 @@ class SamuFireTest extends AMQPTestSupport {
         String edxlJson = new MessageBuilder().buildMessage(
                 useCase, distributionId, TNR_SDIS_CLIENT_ID, SAMU1_V1_ID);
 
-        sendMessage(VHOST_15_NEXSIS_VACTIVE_TAG, NEXSIS_SHOVEL_ROUTING_KEY, edxlJson);
+        sendMessage(VHOST_15_NEXSIS_V3_TAG, NEXSIS_SHOVEL_ROUTING_KEY, edxlJson);
 
         MessageDTO matched = awaitMessage(distributionId);
 
@@ -180,7 +178,7 @@ class SamuFireTest extends AMQPTestSupport {
         String referencedDistributionID = Utils.getReferencedDistributionID(matchedAck);
 
         assertNotNull(matchedAck, "Ack " + ackDistributionId + " not received within " + RECEIVE_TIMEOUT_SECS + "s");
-        assertVhostEquals(matchedAck, VHOST_15_NEXSIS_VACTIVE_TAG);
+        assertVhostEquals(matchedAck, VHOST_15_NEXSIS_V3_TAG);
         assertQueueEquals(matchedAck, HUB_NEXSIS_USER_CLIENT_ID + ".ack");
         assertEquals(distributionId, referencedDistributionID);
     }
@@ -195,7 +193,7 @@ class SamuFireTest extends AMQPTestSupport {
         String edxlJson = new MessageBuilder().buildMessage(
                 useCase, distributionId, TNR_SDIS_CLIENT_ID, SAMU2_V3_ID);
 
-        sendMessage(VHOST_15_NEXSIS_VACTIVE_TAG, NEXSIS_SHOVEL_ROUTING_KEY, edxlJson);
+        sendMessage(VHOST_15_NEXSIS_V3_TAG, NEXSIS_SHOVEL_ROUTING_KEY, edxlJson);
 
         MessageDTO matched = awaitMessage(distributionId);
 
@@ -211,7 +209,7 @@ class SamuFireTest extends AMQPTestSupport {
         String referencedDistributionID = Utils.getReferencedDistributionID(matchedAck);
 
         assertNotNull(matchedAck, "Ack " + ackDistributionId + " not received within " + RECEIVE_TIMEOUT_SECS + "s");
-        assertVhostEquals(matchedAck, VHOST_15_NEXSIS_VACTIVE_TAG);
+        assertVhostEquals(matchedAck, VHOST_15_NEXSIS_V3_TAG);
         assertQueueEquals(matchedAck, HUB_NEXSIS_USER_CLIENT_ID + ".ack");
         assertEquals(distributionId, referencedDistributionID);
     }
