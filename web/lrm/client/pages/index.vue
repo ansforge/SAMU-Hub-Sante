@@ -92,8 +92,8 @@ export default {
           ? new Map()
           : new Map(this.$config.public.clientMap),
       form: {
-        clientId: 'fr.health.test.samuA',
-        targetId: 'fr.health.test.samuC',
+        clientId: [...new Map(this.$config.public.clientMap).keys()][0] || null,
+        targetId: [...new Map(this.$config.public.clientMap).keys()][1] || null,
         tester: false,
       },
       rules: {
