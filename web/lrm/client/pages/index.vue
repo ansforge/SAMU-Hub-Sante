@@ -80,6 +80,14 @@ export default {
   name: 'Login',
 
   data() {
+    const clientMap = this.$config.public.clientMap;
+    const clientIds = new Map(clientMap);
+    const keys = [...clientIds.keys()];
+    const form = {
+      clientId: keys[0] || null,
+      targetId: keys[1] || null,
+      tester: false,
+    };
     return {
       store: useMainStore(),
       alert: {
@@ -87,15 +95,8 @@ export default {
         type: 'error',
         message: '',
       },
-      clientIds:
-        Object.keys(this.$config.public.clientMap).length === 0
-          ? new Map()
-          : new Map(this.$config.public.clientMap),
-      form: {
-        clientId: [...new Map(this.$config.public.clientMap).keys()][0] || null,
-        targetId: [...new Map(this.$config.public.clientMap).keys()][1] || null,
-        tester: false,
-      },
+      clientIds,
+      form,
       rules: {
         required: (v) => !!v || 'This field is required',
         testTargetId: (v) => {
