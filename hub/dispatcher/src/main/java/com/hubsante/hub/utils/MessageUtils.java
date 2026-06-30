@@ -341,6 +341,22 @@ public class MessageUtils {
         return new String(message.getBody(), StandardCharsets.UTF_8);
     }
 
+    public static String extractCaseId(EdxlMessage edxlMessage) {
+        if (edxlMessage == null) {
+            return null;
+        }
+        Object content = edxlMessage.getFirstContentMessage();
+        if (content == null) {
+            return null;
+        }
+        try {
+            Object value = content.getClass().getMethod("getCaseId").invoke(content);
+            return value != null ? value.toString() : null;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     public static boolean isInhibitedErrorMessage(Message message) {
         String dlqReasonHeader = message.getMessageProperties().getHeader(DLQ_REASON);
         return dlqReasonHeader != null && !dlqReasonHeader.equals(DLQ_EXPIRED_REASON);
