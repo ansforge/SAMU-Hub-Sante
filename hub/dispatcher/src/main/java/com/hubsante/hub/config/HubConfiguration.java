@@ -20,6 +20,7 @@ import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.Validator;
 import io.micrometer.core.aop.TimedAspect;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.observation.ObservationRegistry;
 import jakarta.annotation.PostConstruct;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -131,7 +132,12 @@ public class HubConfiguration {
     }
 
     @Bean
-    public WebClient conversionWebClient(@Value("${conversion.service.url}") String baseUrl) {
-        return WebClient.builder().baseUrl(baseUrl).build();
+    public WebClient conversionWebClient(
+            ObservationRegistry observationRegistry,
+            @Value("${conversion.service.url}") String baseUrl) {
+        return WebClient.builder()
+                .baseUrl(baseUrl)
+                .observationRegistry(observationRegistry)
+                .build();
     }
 }
