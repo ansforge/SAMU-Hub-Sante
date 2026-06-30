@@ -1,0 +1,10 @@
+{
+  "resourcesStatus": {
+    "caseId": "fr.health.samu770.TMC_RS_RI_001",
+    "resourceId": "fr.fire.sis076.cgo-076.resource.VSAV3A",
+    "state": {
+      "datetime": "2024-05-18T18:46:00+02:00",
+      "status": "ORIENTAT"
+    }
+  }
+}
