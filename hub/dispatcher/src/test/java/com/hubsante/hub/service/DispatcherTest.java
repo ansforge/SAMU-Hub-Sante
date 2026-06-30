@@ -51,6 +51,7 @@ import com.hubsante.model.report.ErrorCode;
 import com.hubsante.model.technical.noreq.TechnicalNoreqWrapper;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.search.Search;
+import io.micrometer.tracing.Tracer;
 import jakarta.annotation.PostConstruct;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -149,7 +150,8 @@ public class DispatcherTest {
                         jsonMapper,
                         conversionHandler,
                         hubConfig,
-                        persistenceService);
+                        persistenceService,
+                        Tracer.NOOP);
     }
 
     @BeforeEach
@@ -749,7 +751,8 @@ public class DispatcherTest {
                                     jsonMapper,
                                     conversionHandler,
                                     hubConfig,
-                                    persistenceService));
+                                    persistenceService,
+                                    Tracer.NOOP));
 
             Message message = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
 
@@ -923,7 +926,8 @@ public class DispatcherTest {
                             jsonMapper,
                             conversionHandler,
                             hubConfig,
-                            persistenceService);
+                            persistenceService,
+                            Tracer.NOOP);
 
             Message receivedMessage = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
             EdxlMessage edxlMessage =
@@ -1040,7 +1044,8 @@ public class DispatcherTest {
                     jsonMapper,
                     conversionHandler,
                     hubConfig,
-                    persistenceService);
+                    persistenceService,
+                    Tracer.NOOP);
 
             assertDoesNotThrow(
                     () -> MessageUtils.checkMessageClassNameSupported(edxlMessage, hubConfig));
@@ -1076,7 +1081,8 @@ public class DispatcherTest {
                     jsonMapper,
                     conversionHandler,
                     hubConfig,
-                    persistenceService);
+                    persistenceService,
+                    Tracer.NOOP);
 
             UnroutableMessageException thrown =
                     assertThrows(
@@ -1129,7 +1135,8 @@ public class DispatcherTest {
                         jsonMapper,
                         conversionHandler,
                         hubConfigSpy,
-                        persistenceService);
+                        persistenceService,
+                        Tracer.NOOP);
 
         Message message = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
 
@@ -1187,7 +1194,8 @@ public class DispatcherTest {
                         jsonMapper,
                         conversionHandler,
                         hubConfigSpy,
-                        persistenceService);
+                        persistenceService,
+                        Tracer.NOOP);
 
         Message errorMessage = createMessage("hub-error-to-samuA", JSON, "fr.health.hub");
 
@@ -1237,7 +1245,8 @@ public class DispatcherTest {
                         jsonMapper,
                         conversionHandler,
                         hubConfigSpy,
-                        persistenceService);
+                        persistenceService,
+                        Tracer.NOOP);
 
         Message message = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY);
 

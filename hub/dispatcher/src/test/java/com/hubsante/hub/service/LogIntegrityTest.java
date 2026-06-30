@@ -29,6 +29,7 @@ import com.hubsante.hub.config.HubConfiguration;
 import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.Validator;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.tracing.Tracer;
 import jakarta.annotation.PostConstruct;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -165,7 +166,8 @@ public class LogIntegrityTest {
                         jsonMapper,
                         conversionHandler,
                         hubConfiguration,
-                        persistenceService);
+                        persistenceService,
+                        Tracer.NOOP);
     }
 
     @Test
