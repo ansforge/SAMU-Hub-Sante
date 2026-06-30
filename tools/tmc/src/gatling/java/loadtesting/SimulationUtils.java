@@ -103,4 +103,32 @@ public final class SimulationUtils {
             }
         }).iterator();
     }
+
+    /**
+     * Feeder that replaces the caseId field inside the use-case JSON with a fresh
+     * UUID-based value on every generated message, ensuring no two messages share the same
+     * caseId.
+     */
+    public static Iterator<Map<String, Object>> generateUniqueIdMessageFeeder(
+            String useCaseString, String senderId, String recipientId) {
+        return Stream.generate((Supplier<Map<String, Object>>) () ->
+        {
+            try {
+                String uniqueCaseId = String.format("%s_%s", senderId, UUID.randomUUID());
+                ObjectNode useCaseNode = (ObjectNode) jsonMapper.readTree(useCaseString);
+                // The caseId is always one level deep inside the root use-case object
+                // e.g. { "resourcesInfoCisu": { "caseId": "...", ... } }
+                useCaseNode.fields().forEachRemaining(entry -> {
+                    JsonNode inner = entry.getValue();
+                    if (inner.isObject() && inner.has("caseId")) {
+                        ((ObjectNode) inner).put("caseId", uniqueCaseId);
+                    }
+                });
+                return Collections.singletonMap("message",
+                        buildEdxlMessageString(jsonMapper.writeValueAsString(useCaseNode), senderId, recipientId));
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }).iterator();
+    }
 }
