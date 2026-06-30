@@ -28,6 +28,7 @@ public class Constants {
     public static final String EDITOR_TAG = "editor";
     public static final String RECIPIENT_ID_TAG = "recipient";
     public static final String METRIC_MESSAGE_PROCESSING = "message.processing";
+    public static final String CASE_ID_SPAN_TAG = "hubsante.case_id";
     public static final String OPERATION = "operation";
     public static final String DISTRIBUTION_ID_UNAVAILABLE =
             "distributionId_could_not_be_extracted";
