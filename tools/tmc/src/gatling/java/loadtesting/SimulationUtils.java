@@ -18,6 +18,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -122,6 +123,56 @@ public final class SimulationUtils {
                     JsonNode inner = entry.getValue();
                     if (inner.isObject() && inner.has("caseId")) {
                         ((ObjectNode) inner).put("caseId", uniqueCaseId);
+                    }
+                });
+                return Collections.singletonMap("message",
+                        buildEdxlMessageString(jsonMapper.writeValueAsString(useCaseNode), senderId, recipientId));
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }).iterator();
+    }
+
+    /**
+     * Feeder that replaces the caseId with each entry of caseIdPool exactly once,
+     * in order. Used for the warmup phase to seed MongoDB with one document per caseId.
+     */
+    public static Iterator<Map<String, Object>> generateFixedPoolMessageFeeder(
+            String useCaseString, String senderId, String recipientId, List<String> caseIdPool) {
+        return caseIdPool.stream().map(caseId -> {
+            try {
+                ObjectNode useCaseNode = (ObjectNode) jsonMapper.readTree(useCaseString);
+                useCaseNode.fields().forEachRemaining(entry -> {
+                    JsonNode inner = entry.getValue();
+                    if (inner.isObject() && inner.has("caseId")) {
+                        ((ObjectNode) inner).put("caseId", caseId);
+                    }
+                });
+                return Collections.<String, Object>singletonMap("message",
+                        buildEdxlMessageString(jsonMapper.writeValueAsString(useCaseNode), senderId, recipientId));
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }).iterator();
+    }
+
+    /**
+     * Feeder that cycles indefinitely over caseIdPool in round-robin. Used for the load
+     * phase where every caseId is already known to MongoDB,
+     * forcing the Converter to take the "known case" (DB lookup + diff) path.
+     */
+    public static Iterator<Map<String, Object>> generateRoundRobinMessageFeeder(
+            String useCaseString, String senderId, String recipientId, List<String> caseIdPool) {
+        AtomicInteger index = new AtomicInteger(0);
+        return Stream.generate((Supplier<Map<String, Object>>) () ->
+        {
+            try {
+                String caseId = caseIdPool.get(index.getAndIncrement() % caseIdPool.size());
+                ObjectNode useCaseNode = (ObjectNode) jsonMapper.readTree(useCaseString);
+                useCaseNode.fields().forEachRemaining(entry -> {
+                    JsonNode inner = entry.getValue();
+                    if (inner.isObject() && inner.has("caseId")) {
+                        ((ObjectNode) inner).put("caseId", caseId);
                     }
                 });
                 return Collections.singletonMap("message",
