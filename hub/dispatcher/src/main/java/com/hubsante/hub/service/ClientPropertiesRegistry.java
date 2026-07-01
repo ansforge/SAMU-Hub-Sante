@@ -15,6 +15,8 @@
  */
 package com.hubsante.hub.service;
 
+import static com.hubsante.hub.config.Constants.UNKNOWN;
+
 import com.hubsante.hub.config.LogConstants;
 import com.hubsante.hub.config.StructuredLogger;
 import com.hubsante.hub.exception.ClientConfigurationException;
@@ -40,12 +42,11 @@ public class ClientPropertiesRegistry {
 
     private Map<String, ClientProperties> clientsById = Map.of();
 
-    public ClientPropertiesRegistry(@Value("${client.configuration.file}") Resource resource)
-            throws Exception {
+    public ClientPropertiesRegistry(@Value("${client.configuration.file}") Resource resource) {
         load(resource);
     }
 
-    private void load(Resource resource) throws Exception {
+    private void load(Resource resource) {
         try {
             YamlPropertiesFactoryBean factory = new YamlPropertiesFactoryBean();
             factory.setResources(resource);
@@ -166,5 +167,30 @@ public class ClientPropertiesRegistry {
             return null;
         }
         return perimeter.versions().toArray(String[]::new);
+    }
+
+    public Boolean getClientAcceptedMediaType(String clientId) {
+        ClientProperties clientProperties = get(clientId);
+
+        if (clientProperties == null) {
+            return null;
+        }
+        return clientProperties.useXml();
+    }
+
+    public List<String> getClientInhibitedUseCases(String clientId) {
+        ClientProperties clientProperties = get(clientId);
+        if (clientProperties == null) {
+            return new ArrayList<>();
+        }
+        return clientProperties.inhibitedUseCases();
+    }
+
+    public String getClientEditor(String clientId) {
+        ClientProperties clientProperties = get(clientId);
+
+        if (clientProperties != null && clientProperties.editor() != null) {
+            return clientProperties.editor();
+        } else return UNKNOWN;
     }
 }

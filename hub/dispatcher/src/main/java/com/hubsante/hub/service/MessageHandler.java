@@ -31,7 +31,6 @@ import com.hubsante.hub.config.HubConfiguration;
 import com.hubsante.hub.config.LogConstants;
 import com.hubsante.hub.config.StructuredLogger;
 import com.hubsante.hub.exception.*;
-import com.hubsante.hub.model.ClientProperties;
 import com.hubsante.hub.utils.ConversionRulesCommand;
 import com.hubsante.hub.utils.ConversionUtils;
 import com.hubsante.hub.utils.EdxlUtils;
@@ -200,9 +199,8 @@ public class MessageHandler {
 
             Message errorAmqpMessage;
             Boolean useXML =
-                    hubConfig.getClientPropertiesRegistry().get(sender) != null
-                            ? hubConfig.getClientPropertiesRegistry().get(sender).useXml()
-                            : null;
+                    hubConfig.getClientPropertiesRegistry().getClientAcceptedMediaType(sender);
+
             if (convertToXML(sender, useXML)) {
                 errorAmqpMessage =
                         new Message(
@@ -502,9 +500,7 @@ public class MessageHandler {
 
         try {
             Boolean useXML =
-                    hubConfig.getClientPropertiesRegistry().get(recipientId) != null
-                            ? hubConfig.getClientPropertiesRegistry().get(recipientId).useXml()
-                            : null;
+                    hubConfig.getClientPropertiesRegistry().getClientAcceptedMediaType(recipientId);
             if (convertToXML(recipientId, useXML)) {
                 edxlString = edxlHandler.serializeXmlEDXL(edxlMessage);
                 fwdAmqpProperties.setContentType(MessageProperties.CONTENT_TYPE_XML);
@@ -599,15 +595,18 @@ public class MessageHandler {
     protected void inhibitMessageIfNeeded(EdxlMessage edxlMessage) {
         String recipientId = getRecipientID(edxlMessage);
         String useCase = EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage());
-        ClientProperties clientProperties =
-                hubConfig.getClientPropertiesRegistry().get(recipientId);
-        List<String> inhibitedUseCases = new ArrayList<>();
+        List<String> inhibitedUseCases =
+                hubConfig.getClientPropertiesRegistry().getClientInhibitedUseCases(recipientId);
 
-        if (clientProperties != null) {
-            inhibitedUseCases = clientProperties.inhibitedUseCases();
+        boolean isInhibited = inhibitedUseCases.contains(useCase);
+
+        if (isInhibited) {
+            String errorMessage =
+                    String.format(
+                            "Use case %s is not supported for client %s", useCase, recipientId);
+            throw new UnroutableMessageException(
+                    errorMessage, edxlMessage.getDistributionID(), recipientId, useCase);
         }
-        checkMessageNotInhibited(
-                recipientId, useCase, inhibitedUseCases, edxlMessage.getDistributionID());
     }
 
     private void logMessage(Message message, EdxlMessage edxlMessage, String receivedEdxl) {
@@ -662,7 +661,7 @@ public class MessageHandler {
     }
 
     protected void publishErrorMetric(String error, String sender) {
-        String editor = getEditorFromSender(sender);
+        String editor = hubConfig.getClientPropertiesRegistry().getClientEditor(sender);
         registry.counter(
                         DISPATCH_ERROR,
                         REASON_TAG,
@@ -679,7 +678,7 @@ public class MessageHandler {
     protected void publishMetrics(EdxlMessage edxlMessage, Message amqpMessage) {
         String sender = getSenderFromRoutingKey(amqpMessage);
         String useCase = getUseCaseFromMessage(edxlMessage.getFirstContentMessage());
-        String editor = getEditorFromSender(sender);
+        String editor = hubConfig.getClientPropertiesRegistry().getClientEditor(sender);
         String recipient = getRecipientID(edxlMessage);
 
         registry.counter(
@@ -695,10 +694,5 @@ public class MessageHandler {
                         EDITOR_TAG,
                         editor)
                 .increment();
-    }
-
-    private String getEditorFromSender(String sender) {
-        ClientProperties clientProperties = hubConfig.getClientPropertiesRegistry().get(sender);
-        return clientProperties != null ? clientProperties.editor() : UNKNOWN;
     }
 }
