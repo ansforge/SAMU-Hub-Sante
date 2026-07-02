@@ -15,6 +15,7 @@
  */
 package com.hubsante.hub.service;
 
+import static com.hubsante.hub.config.Constants.DEFAULT_DIRECT_CISU_PREFERENCE;
 import static com.hubsante.hub.config.Constants.UNKNOWN;
 
 import com.hubsante.hub.config.LogConstants;
@@ -176,6 +177,14 @@ public class ClientPropertiesRegistry {
             return null;
         }
         return clientProperties.useXml();
+    }
+
+    public boolean isClientDirectCisu(String clientId) {
+        ClientProperties clientProperties = get(clientId);
+
+        return clientProperties != null
+                ? clientProperties.directCisu()
+                : DEFAULT_DIRECT_CISU_PREFERENCE;
     }
 
     public List<String> getClientInhibitedUseCases(String clientId) {

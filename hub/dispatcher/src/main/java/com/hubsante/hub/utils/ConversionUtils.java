@@ -20,15 +20,12 @@ import static com.hubsante.hub.config.Constants.*;
 import static com.hubsante.hub.utils.MessageUtils.*;
 
 import com.hubsante.hub.config.HubConfiguration;
-import com.hubsante.hub.model.ClientProperties;
 import com.hubsante.model.edxl.EdxlMessage;
 import java.util.Arrays;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class ConversionUtils {
-
-    private static final boolean DEFAULT_DIRECT_CISU_PREFERENCE = false;
 
     public static String buildExchangeDestination(String sourceVHost, String targetVHost) {
         return TRANSFER_EXCHANGE_PREFIX + sourceVHost + "_to_" + targetVHost;
@@ -139,13 +136,6 @@ public class ConversionUtils {
         String senderId = edxlMessage.getSenderID();
         String healthActor = senderId.startsWith(HEALTH_PREFIX) ? senderId : recipientId;
 
-        ClientProperties healthActorProperties =
-                hubConfig.getClientPropertiesRegistry().get(healthActor);
-        boolean directCisuPreference =
-                healthActorProperties != null
-                        ? healthActorProperties.directCisu()
-                        : DEFAULT_DIRECT_CISU_PREFERENCE;
-
-        return directCisuPreference;
+        return hubConfig.getClientPropertiesRegistry().isClientDirectCisu(healthActor);
     }
 }

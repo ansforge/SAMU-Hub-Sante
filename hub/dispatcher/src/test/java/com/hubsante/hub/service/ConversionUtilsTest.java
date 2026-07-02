@@ -303,7 +303,7 @@ public class ConversionUtilsTest {
 
             // Direct Cisu cases
             when(hubConfig.getVhost()).thenReturn("15-nexsis_v1.9");
-            when(clientPropertiesRegistry.get("fr.health.samuDirectCisu").directCisu())
+            when(clientPropertiesRegistry.isClientDirectCisu("fr.health.samuDirectCisu"))
                     .thenReturn(true);
             when(edxlMessage.getSenderID()).thenReturn("fr.health.samuDirectCisu");
             mockedMessageUtils
@@ -360,11 +360,11 @@ public class ConversionUtilsTest {
                     .thenReturn("fr.fire.sdisZ");
 
             // Health actor in direct CISU preferences - true
-            when(clientPropertiesRegistry.get("fr.health.samuA").directCisu()).thenReturn(true);
+            when(clientPropertiesRegistry.isClientDirectCisu("fr.health.samuA")).thenReturn(true);
             assertTrue(ConversionUtils.isDirectCisuForHealthActor(hubConfig, edxlMessage));
 
             // Health actor in direct CISU preferences - false
-            when(clientPropertiesRegistry.get("fr.health.samuA").directCisu()).thenReturn(false);
+            when(clientPropertiesRegistry.isClientDirectCisu("fr.health.samuA")).thenReturn(false);
             assertFalse(ConversionUtils.isDirectCisuForHealthActor(hubConfig, edxlMessage));
 
             // Health actor not in direct CISU preferences
