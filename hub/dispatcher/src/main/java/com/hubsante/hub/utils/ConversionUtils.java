@@ -88,24 +88,20 @@ public class ConversionUtils {
     }
 
     public static String[] extractAvailableVhostsByPerimeter(
-            HubConfiguration hubConfig, String recipientId, Perimeter perimeter) {
+            HubConfiguration hubConfig, String recipientId, String perimeter) {
         String[] targetVersionsOnPerimeter =
-                hubConfig.getClientVersionsForPerimeter(recipientId, perimeter.getName());
-        return formatPerimeterVersionListToVhosts(targetVersionsOnPerimeter, perimeter.getName());
+                hubConfig.getClientVersionsForPerimeter(recipientId, perimeter);
+        return formatPerimeterVersionListToVhosts(targetVersionsOnPerimeter, perimeter);
     }
 
     public static String determineTargetVhostByPerimeter(
-            HubConfiguration hubConfig, String recipientId, Perimeter perimeter) {
+            HubConfiguration hubConfig, String recipientId, String perimeter) {
         String currentVhost = hubConfig.getVhost();
 
         String[] availableVhosts =
                 extractAvailableVhostsByPerimeter(hubConfig, recipientId, perimeter);
 
-        if (availableVhosts == null) {
-            return null;
-        }
-
-        if (!isConversionNeeded(currentVhost, availableVhosts)) {
+        if (availableVhosts == null || !isConversionNeeded(currentVhost, availableVhosts)) {
             return null;
         }
 
@@ -128,8 +124,13 @@ public class ConversionUtils {
     private static ConversionParametersDTO resolveSamuToSamu(
             HubConfiguration hubConfig, EdxlMessage edxlMessage) {
         String recipientId = getRecipientID(edxlMessage);
-        String targetVhost =
-                determineTargetVhostByPerimeter(hubConfig, recipientId, Perimeter.HEALTH);
+        String currentVhost = hubConfig.getVhost();
+        String perimeter = trimVersionSuffix(currentVhost);
+        if (perimeter == null) {
+            return null;
+        }
+
+        String targetVhost = determineTargetVhostByPerimeter(hubConfig, recipientId, perimeter);
 
         if (targetVhost == null) {
             return null;
@@ -148,7 +149,7 @@ public class ConversionUtils {
         String currentVhost = hubConfig.getVhost();
 
         String[] availableCisuVhosts =
-                extractAvailableVhostsByPerimeter(hubConfig, recipientId, Perimeter.CISU);
+                extractAvailableVhostsByPerimeter(hubConfig, recipientId, Perimeter.CISU.getName());
 
         if (availableCisuVhosts != null && availableCisuVhosts.length > 0) {
             if (!isConversionNeeded(currentVhost, availableCisuVhosts)) {
@@ -164,7 +165,7 @@ public class ConversionUtils {
         }
 
         String targetHealthVhost =
-                determineTargetVhostByPerimeter(hubConfig, recipientId, Perimeter.HEALTH);
+                determineTargetVhostByPerimeter(hubConfig, recipientId, Perimeter.HEALTH.getName());
 
         if (targetHealthVhost == null) {
             return null;

@@ -37,6 +37,7 @@ public class Constants {
     public static final String FR_CISU_PREFIX = "fr.cisu";
     public static final String NEXSIS_VHOST = "15-nexsis_vactive";
     public static final String HEALTH_VHOST_PREFIX = "15-15_v";
+    // TODO : load from env var
     public static final Map<String, String> CONVERSION_VHOST_MODEL =
             Map.of(
                     "15-15_v1.5", "v1",
