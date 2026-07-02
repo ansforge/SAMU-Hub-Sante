@@ -32,13 +32,13 @@ Now we have a $DOMAIN.crt and a $DOMAIN.key file for each client
 ## Generate p12 files for Java clients
 for each Java client (dispatcher, samuA, samuB), run
 ```bash
-openssl pkcs12 -export -in dispatcher.crt -inkey dispatcher.key -out dispatcher.test.p12
-openssl pkcs12 -export -in fr.health.samuA.crt -inkey fr.health.samuA.key -out samuA.p12
-openssl pkcs12 -export -in fr.health.samuB.crt -inkey fr.health.samuB.key -out samuB.p12 
+openssl pkcs12 -export -in dispatcher.crt -inkey dispatcher.key -out dispatcher.test.p12 -passout pass:dispatcher
+openssl pkcs12 -export -in fr.health.samuA.crt -inkey fr.health.samuA.key -out samuA.p12 -passout pass:samuA
+openssl pkcs12 -export -in fr.health.samuB.crt -inkey fr.health.samuB.key -out samuB.p12 -passout pass:samuB
 ```
 
 ## Add to truststore
 We need to add the issuer in the truststore
 ```bash
-keytool -import -alias rabbitmq -file rabbitmq.crt -keystore trustStore -passin trustStore -noprompt
+keytool -importcert -alias rabbitmq -file rabbitmq.crt -keystore trustStore -storepass trustStore -noprompt
 ```

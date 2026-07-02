@@ -27,8 +27,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ConversionUtils {
 
-    private static final boolean DEFAULT_DIRECT_CISU_PREFERENCE = false;
-
     public static String buildExchangeDestination(String sourceVHost, String targetVHost) {
         return TRANSFER_EXCHANGE_PREFIX + sourceVHost + "_to_" + targetVHost;
     }
@@ -83,8 +81,10 @@ public class ConversionUtils {
                 (isCisuSender && !isDirectCisu) ? Perimeter.HEALTH.getName() : sourcePerimeter;
 
         targetVersionsOnTargetPerimeter =
-                hubConfig.getClientVersionsForPerimeter(
-                        recipientId, targetPerimeter); // ex ['1.5, 2.0']
+                hubConfig
+                        .getClientPropertiesRegistry()
+                        .getClientVersionsForPerimeter(
+                                recipientId, targetPerimeter); // ex ['1.5, 2.0']
         return formatVersionToVhosts(
                 targetVersionsOnTargetPerimeter,
                 targetPerimeter); // ex ["15-15_v1.5", "15-15_v2.0"]
@@ -135,10 +135,7 @@ public class ConversionUtils {
         String recipientId = getRecipientID(edxlMessage);
         String senderId = edxlMessage.getSenderID();
         String healthActor = senderId.startsWith(HEALTH_PREFIX) ? senderId : recipientId;
-        Boolean directCisuPreference =
-                hubConfig
-                        .getDirectCisuPreferences()
-                        .getOrDefault(healthActor, DEFAULT_DIRECT_CISU_PREFERENCE);
-        return directCisuPreference != null && directCisuPreference;
+
+        return hubConfig.getClientPropertiesRegistry().isClientDirectCisu(healthActor);
     }
 }

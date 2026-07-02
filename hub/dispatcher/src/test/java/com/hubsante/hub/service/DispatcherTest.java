@@ -86,6 +86,7 @@ public class DispatcherTest {
 
     @Autowired private EdxlHandler edxlHandler;
     @Autowired private HubConfiguration hubConfig;
+    @Autowired private ClientPropertiesRegistry clientPropertiesRegistry;
     @Autowired private Validator validator;
     private MessageHandler messageHandler;
     private ConversionHandler conversionHandler;
@@ -97,16 +98,13 @@ public class DispatcherTest {
     private final String SAMU_B_ROUTING_KEY = "fr.health.samuB";
     private final String SAMU_B_MESSAGE_QUEUE = SAMU_B_ROUTING_KEY + ".message";
     private final String SAMU_B_INFO_QUEUE = SAMU_B_ROUTING_KEY + ".info";
-    private final String SAMU_B_ERROR_QUEUE = SAMU_B_ROUTING_KEY + ".error";
     private final String SAMU_A_ROUTING_KEY = "fr.health.samuA";
     private final String SAMU_A_MESSAGE_QUEUE = SAMU_A_ROUTING_KEY + ".message";
     private final String SAMU_A_INFO_QUEUE = SAMU_A_ROUTING_KEY + ".info";
-    private final String SAMU_A_ERROR_QUEUE = SAMU_A_ROUTING_KEY + ".error";
     private final String SAMU_A_DISTRIBUTION_ID =
             "fr.health.samuA_2608323d-507d-4cbf-bf74-52007f8124ea";
     private final String SDIS_C_ROUTING_KEY = "fr.fire.sdisC";
 
-    private final String TEST_VHOST = "default-vhost";
     private final String TEST_EDITOR = "default-editor";
     private final String INCONSISTENT_ROUTING_KEY = "fr.health.no-samu";
     private final String JSON = MessageProperties.CONTENT_TYPE_JSON;
@@ -121,11 +119,6 @@ public class DispatcherTest {
                 () ->
                         Objects.requireNonNull(
                                 classLoader.getResource("config/supported.messages.csv")));
-        propertiesRegistry.add(
-                "client.preferences.file",
-                () ->
-                        Objects.requireNonNull(
-                                classLoader.getResource("config/client.preferences.csv")));
         propertiesRegistry.add(
                 "client.configuration.file",
                 () -> Objects.requireNonNull(classLoader.getResource("config/clients.yaml")));
@@ -144,6 +137,7 @@ public class DispatcherTest {
                         registry,
                         xmlMapper,
                         jsonMapper,
+                        clientPropertiesRegistry,
                         conversionHandler);
         conversionHandler = Mockito.spy(new ConversionHandler(conversionWebClient, edxlHandler));
         dispatcher =
@@ -1100,12 +1094,12 @@ public class DispatcherTest {
     @DisplayName("should transfer to another vhost when an error is raised after message transfer")
     public void transferErrorToOtherVhost() throws IOException, ValidationException {
         HubConfiguration hubConfigSpy = Mockito.spy(hubConfig);
+        ClientPropertiesRegistry clientPropertiesRegistrySpy =
+                Mockito.spy(clientPropertiesRegistry);
+        doReturn(clientPropertiesRegistrySpy).when(hubConfigSpy).getClientPropertiesRegistry();
         doReturn("15-15_v2.0").when(hubConfigSpy).getVhost();
-        doReturn(new HashMap<>(Map.of(SAMU_A_ROUTING_KEY, false)))
-                .when(hubConfigSpy)
-                .getUseXmlPreferences();
         doReturn(new String[] {"1.5"})
-                .when(hubConfigSpy)
+                .when(clientPropertiesRegistrySpy)
                 .getClientVersionsForPerimeter(SAMU_A_ROUTING_KEY, "15-15");
 
         Validator validatorMock = Mockito.mock(Validator.class);
@@ -1124,6 +1118,7 @@ public class DispatcherTest {
                         registry,
                         xmlMapper,
                         jsonMapper,
+                        clientPropertiesRegistrySpy,
                         conversionHandler);
         Dispatcher dispatcherSpy =
                 new Dispatcher(
@@ -1164,12 +1159,12 @@ public class DispatcherTest {
     @DisplayName("should forward error message directly when error is received after conversion")
     public void sendErrorMessageToSameVhost() throws IOException {
         HubConfiguration hubConfigSpy = Mockito.spy(hubConfig);
+        ClientPropertiesRegistry clientPropertiesRegistrySpy =
+                Mockito.spy(clientPropertiesRegistry);
+        doReturn(clientPropertiesRegistrySpy).when(hubConfigSpy).getClientPropertiesRegistry();
         doReturn("15-15_v1.5").when(hubConfigSpy).getVhost();
-        doReturn(new HashMap<>(Map.of(SAMU_A_ROUTING_KEY, false)))
-                .when(hubConfigSpy)
-                .getUseXmlPreferences();
         doReturn(new String[] {"1.5"})
-                .when(hubConfigSpy)
+                .when(clientPropertiesRegistrySpy)
                 .getClientVersionsForPerimeter(SAMU_A_ROUTING_KEY, "15-15");
 
         MessageHandler messageHandlerSpy =
@@ -1181,6 +1176,7 @@ public class DispatcherTest {
                         registry,
                         xmlMapper,
                         jsonMapper,
+                        clientPropertiesRegistrySpy,
                         conversionHandler);
         Dispatcher dispatcherSpy =
                 new Dispatcher(
@@ -1206,12 +1202,12 @@ public class DispatcherTest {
     @DisplayName("should send error message to sender info queue when error is raised")
     public void sendErrorMessageWhenErrorIsRaised() throws IOException, ValidationException {
         HubConfiguration hubConfigSpy = Mockito.spy(hubConfig);
+        ClientPropertiesRegistry clientPropertiesRegistrySpy =
+                Mockito.spy(clientPropertiesRegistry);
+        doReturn(clientPropertiesRegistrySpy).when(hubConfigSpy).getClientPropertiesRegistry();
         doReturn("15-15_v1.5").when(hubConfigSpy).getVhost();
-        doReturn(new HashMap<>(Map.of(SAMU_A_ROUTING_KEY, false)))
-                .when(hubConfigSpy)
-                .getUseXmlPreferences();
         doReturn(new String[] {"1.5"})
-                .when(hubConfigSpy)
+                .when(clientPropertiesRegistrySpy)
                 .getClientVersionsForPerimeter(SAMU_A_ROUTING_KEY, "15-15");
 
         Validator validatorMock = Mockito.mock(Validator.class);
@@ -1230,6 +1226,7 @@ public class DispatcherTest {
                         registry,
                         xmlMapper,
                         jsonMapper,
+                        clientPropertiesRegistrySpy,
                         conversionHandler);
         Dispatcher dispatcherSpy =
                 new Dispatcher(

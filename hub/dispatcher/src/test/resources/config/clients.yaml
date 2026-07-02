@@ -1,35 +1,163 @@
 clients:
-  - client_id: fr.health.test.samu-v1
-    common_name: fr.health.test.samu-v1.fr
+  - client_id: fr.health.samuA
+    common_name: fr.health.samuA
     perimeters:
       - name: '15-15'
         versions:
           - '1.5'
-    editor: ANS
+          - '2.0'
+          - '2.1'
+      - name: '15-smur'
+        versions:
+          - '1.7'
+      - name: '15-nexsis'
+        versions:
+          - '1.9'
+      - name: '15-gps'
+        versions:
+          - '2.0'
+      - name: '15-sas'
+        versions:
+          - '1.0'
+    editor: default-editor
+    lrmPerimeterVersions:
+      - '1.5'
+      - '2.0'
+      - '2.1'
+    cisuPerimeterVersions:
+      - '1.9'
+    smurPerimeterVersions:
+      - '1.7'
+    gpsPerimeterVersions:
+      - '2.0'
+    sasPerimeterVersions:
+      - '1.0'
+    lrm_test: false
+  - client_id: fr.health.samuB
+    common_name: fr.health.samuB
+    perimeters:
+      - name: '15-15'
+        versions:
+          - '1.5'
+          - '2.0'
+          - '2.1'
+      - name: '15-smur'
+        versions:
+          - '1.7'
+      - name: '15-nexsis'
+        versions:
+          - '1.9'
+      - name: '15-gps'
+        versions:
+          - '2.0'
+      - name: '15-sas'
+        versions:
+          - '1.0'
+    useXML: true
+    directCISU: true
+    editor: default-editor
+    lrmPerimeterVersions:
+      - '1.5'
+      - '2.0'
+      - '2.1'
+    cisuPerimeterVersions:
+      - '1.9'
+    smurPerimeterVersions:
+      - '1.7'
+    gpsPerimeterVersions:
+      - '2.0'
+    sasPerimeterVersions:
+      - '1.0'
+    lrm_test: false
+  - client_id: fr.health.samuV1
+    common_name: fr.health.samuV1
+    perimeters:
+      - name: '15-15'
+        versions:
+          - '1.5'
+      - name: '15-smur'
+        versions:
+          - '1.7'
+      - name: '15-nexsis'
+        versions:
+          - '1.9'
+      - name: '15-gps'
+        versions:
+          - '2.0'
+      - name: '15-sas'
+        versions:
+          - '1.0'
+    editor: default-editor
     inhibitedUseCases:
       - 'ResourcesInfoCisuWrapper'
-  - client_id: fr.health.test.samu-v3
-    common_name: fr.health.test.samu-v3.fr
+    lrmPerimeterVersions:
+      - '1.5'
+    cisuPerimeterVersions:
+      - '1.9'
+    smurPerimeterVersions:
+      - '1.7'
+    gpsPerimeterVersions:
+      - '2.0'
+    sasPerimeterVersions:
+      - '1.0'
+    lrm_test: false
+  - client_id: fr.health.samuV2
+    common_name: fr.health.samuV2
+    perimeters:
+      - name: '15-15'
+        versions:
+          - '2.0'
+      - name: '15-smur'
+        versions:
+          - '1.7'
+      - name: '15-nexsis'
+        versions:
+          - '1.9'
+      - name: '15-gps'
+        versions:
+          - '2.0'
+      - name: '15-sas'
+        versions:
+          - '1.0'
+    editor: default-editor
+    lrmPerimeterVersions:
+      - '2.0'
+    cisuPerimeterVersions:
+      - '1.9'
+    smurPerimeterVersions:
+      - '1.7'
+    gpsPerimeterVersions:
+      - '2.0'
+    sasPerimeterVersions:
+      - '1.0'
+    lrm_test: false
+  - client_id: fr.health.samuV3
+    common_name: fr.health.samuV3
     perimeters:
       - name: '15-15'
         versions:
           - '2.1'
-    editor: ANS
-  - client_id: fr.health.test.samu-v3-direct-cisu
-    common_name: fr.health.test.samu-v3-direct-cisu.fr
-    perimeters:
-      - name: '15-15'
+      - name: '15-smur'
         versions:
-          - '2.1'
+          - '1.7'
       - name: '15-nexsis'
         versions:
           - '1.9'
-    editor: ANS
-    directCisu: true
-  - client_id: fr.fire.nxsis.sdisZ
-    common_name: fr.fire.nexsis.sdisZ.fr
-    perimeters:
-      - name: '15-nexsis'
+      - name: '15-gps'
         versions:
-          - '1.9'
-    editor: ANS
+          - '2.0'
+      - name: '15-sas'
+        versions:
+          - '1.0'
+    editor: default-editor
+    lrmPerimeterVersions:
+      - '2.1'
+    cisuPerimeterVersions:
+      - '1.9'
+    smurPerimeterVersions:
+      - '1.7'
+    gpsPerimeterVersions:
+      - '2.0'
+    sasPerimeterVersions:
+      - '1.0'
+    lrm_test: false

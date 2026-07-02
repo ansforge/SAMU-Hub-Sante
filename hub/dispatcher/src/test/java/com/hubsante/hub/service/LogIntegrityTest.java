@@ -61,6 +61,7 @@ public class LogIntegrityTest {
     @Autowired private EdxlHandler edxlHandler;
     @Autowired private Validator validator;
     @Autowired private HubConfiguration hubConfiguration;
+    @Autowired private ClientPropertiesRegistry clientPropertiesRegistry;
     @Autowired private MeterRegistry meterRegistry;
     @Autowired private XmlMapper xmlMapper;
     @Autowired private ObjectMapper jsonMapper;
@@ -81,11 +82,6 @@ public class LogIntegrityTest {
                 () ->
                         Objects.requireNonNull(
                                 classLoader.getResource("config/supported.messages.csv")));
-        propertiesRegistry.add(
-                "client.preferences.file",
-                () ->
-                        Objects.requireNonNull(
-                                classLoader.getResource("config/client.preferences.csv")));
         propertiesRegistry.add(
                 "client.configuration.file",
                 () -> Objects.requireNonNull(classLoader.getResource("config/clients.yaml")));
@@ -157,6 +153,7 @@ public class LogIntegrityTest {
                         meterRegistry,
                         xmlMapper,
                         jsonMapper,
+                        clientPropertiesRegistry,
                         conversionHandler);
 
         dispatcher =

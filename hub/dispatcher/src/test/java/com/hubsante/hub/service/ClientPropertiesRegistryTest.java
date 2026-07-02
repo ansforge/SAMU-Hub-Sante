@@ -49,11 +49,6 @@ public class ClientPropertiesRegistryTest {
                         Objects.requireNonNull(
                                 classLoader.getResource("config/supported.messages.csv")));
         propertiesRegistry.add(
-                "client.preferences.file",
-                () ->
-                        Objects.requireNonNull(
-                                classLoader.getResource("config/client.preferences.csv")));
-        propertiesRegistry.add(
                 "client.configuration.file",
                 () -> Objects.requireNonNull(classLoader.getResource("config/clients.yaml")));
         propertiesRegistry.add("hubsante.default.message.ttl", () -> 5);
@@ -65,15 +60,13 @@ public class ClientPropertiesRegistryTest {
     public void shouldLoadClientConfiguration() {
         assertNotNull(this.clientPropertiesRegistry);
 
-        ClientProperties samuV1Properties = clientPropertiesRegistry.get("fr.health.test.samu-v1");
-        ClientProperties samuV3Properties = clientPropertiesRegistry.get("fr.health.test.samu-v3");
-
-        assertThrows(
-                ClientConfigurationException.class, () -> clientPropertiesRegistry.get("unknown"));
-
+        ClientProperties samuV1Properties = clientPropertiesRegistry.get("fr.health.samuV1");
         List<String> samuV1InhibitedMessages = samuV1Properties.inhibitedUseCases();
+
         assertNotNull(samuV1InhibitedMessages);
         assertEquals(List.of("ResourcesInfoCisuWrapper"), samuV1InhibitedMessages);
+
+        assertNull(clientPropertiesRegistry.get("unknown"));
     }
 
     @Test
