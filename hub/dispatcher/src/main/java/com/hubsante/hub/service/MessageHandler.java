@@ -198,8 +198,7 @@ public class MessageHandler {
             String routingKey = infoQueueName;
 
             Message errorAmqpMessage;
-            Boolean useXML =
-                    hubConfig.getClientPropertiesRegistry().getClientAcceptedMediaType(sender);
+            Boolean useXML = hubConfig.getClientPropertiesRegistry().isClientUseXml(sender);
 
             if (convertToXML(sender, useXML)) {
                 errorAmqpMessage =
@@ -499,8 +498,7 @@ public class MessageHandler {
         String messageType = getUseCaseFromMessage(edxlMessage.getFirstContentMessage());
 
         try {
-            Boolean useXML =
-                    hubConfig.getClientPropertiesRegistry().getClientAcceptedMediaType(recipientId);
+            Boolean useXML = hubConfig.getClientPropertiesRegistry().isClientUseXml(recipientId);
             if (convertToXML(recipientId, useXML)) {
                 edxlString = edxlHandler.serializeXmlEDXL(edxlMessage);
                 fwdAmqpProperties.setContentType(MessageProperties.CONTENT_TYPE_XML);

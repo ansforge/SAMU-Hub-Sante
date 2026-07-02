@@ -169,7 +169,7 @@ public class ClientPropertiesRegistry {
         return perimeter.versions().toArray(String[]::new);
     }
 
-    public Boolean getClientAcceptedMediaType(String clientId) {
+    public Boolean isClientUseXml(String clientId) {
         ClientProperties clientProperties = get(clientId);
 
         if (clientProperties == null) {
