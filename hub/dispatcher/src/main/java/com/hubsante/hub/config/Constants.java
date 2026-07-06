@@ -40,6 +40,7 @@ public class Constants {
     public static final String FR_CISU_PREFIX = "fr.cisu";
     public static final String NEXSIS_VHOST = "15-nexsis_v1.9";
     public static final String HEALTH_VHOST_PREFIX = "15-15_v";
+    public static final String NEXSIS_HUBEX_PARTNER = "fire";
     public static final Map<String, String> HUBEX_PERIMETER_PREFIXES =
             Map.of(
                     "15-15", "fr.health",
