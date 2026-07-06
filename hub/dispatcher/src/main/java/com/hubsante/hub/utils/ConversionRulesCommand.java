@@ -15,9 +15,8 @@
  */
 package com.hubsante.hub.utils;
 
-import static com.hubsante.hub.config.Constants.CONVERSION_VHOST_MODEL;
-
 import com.hubsante.hub.config.HubConfiguration;
+import com.hubsante.hub.service.TopologyRegistry;
 import com.hubsante.model.edxl.EdxlMessage;
 
 public class ConversionRulesCommand {
@@ -65,10 +64,11 @@ public class ConversionRulesCommand {
     }
 
     public String getVHostMatchingModelVersion(String vHost) {
-        if (CONVERSION_VHOST_MODEL.get(vHost) == null) {
+        String modelVersion = TopologyRegistry.getInstance().getMajorModelVersion(vHost);
+        if (modelVersion == null) {
             throw new IllegalArgumentException(
                     "There is no model version associated with the host " + vHost);
         }
-        return CONVERSION_VHOST_MODEL.get(vHost);
+        return modelVersion;
     }
 }

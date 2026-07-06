@@ -20,6 +20,7 @@ import static com.hubsante.hub.config.Constants.*;
 import static com.hubsante.hub.utils.MessageUtils.*;
 
 import com.hubsante.hub.config.HubConfiguration;
+import com.hubsante.hub.service.TopologyRegistry;
 import com.hubsante.model.edxl.EdxlMessage;
 import java.util.Arrays;
 import lombok.extern.slf4j.Slf4j;
@@ -54,7 +55,7 @@ public class ConversionUtils {
     }
 
     public static boolean isConversionAvailable(String vhost) {
-        return CONVERSION_VHOST_MODEL.get(vhost) != null;
+        return TopologyRegistry.getInstance().getMajorModelVersion(vhost) != null;
     }
 
     public static String getSourceVHost(HubConfiguration hubConfig) {
@@ -72,7 +73,9 @@ public class ConversionUtils {
         boolean isNexsisRecipient =
                 recipientId.startsWith(FR_FIRE_PREFIX) || recipientId.startsWith(FR_CISU_PREFIX);
         if (isNexsisRecipient) {
-            return new String[] {NEXSIS_VHOST}; // ["15-nexsis_v1.9"]
+            return new String[] {
+                TopologyRegistry.getInstance().getVhostTarget(NEXSIS_HUBEX_PARTNER)
+            };
         }
         boolean isCisuSender = !senderId.startsWith(FR_HEALTH_PREFIX);
         boolean isDirectCisu = isDirectCisuForHealthActor(hubConfig, edxlMessage);
@@ -119,7 +122,8 @@ public class ConversionUtils {
         if (recipient.startsWith(FR_HEALTH_PREFIX)) {
             return currentVHost.startsWith(HEALTH_VHOST_PREFIX);
         } else {
-            return currentVHost.startsWith(NEXSIS_VHOST);
+            return currentVHost.startsWith(
+                    TopologyRegistry.getInstance().getVhostTarget(NEXSIS_HUBEX_PARTNER));
         }
     }
 
