@@ -106,80 +106,49 @@ public final class SimulationUtils {
     }
 
     /**
-     * Feeder that replaces the caseId field inside the use-case JSON with a fresh
-     * UUID-based value on every generated message, ensuring no two messages share the same
-     * caseId.
+     * Feeder generating a unique UUID-based caseId per message (forces Converter "new case" path).
      */
-    public static Iterator<Map<String, Object>> generateUniqueIdMessageFeeder(
-            String useCaseString, String senderId, String recipientId) {
-        return Stream.generate((Supplier<Map<String, Object>>) () ->
-        {
-            try {
-                String uniqueCaseId = String.format("%s_%s", senderId, UUID.randomUUID());
-                ObjectNode useCaseNode = (ObjectNode) jsonMapper.readTree(useCaseString);
-                // The caseId is always one level deep inside the root use-case object
-                // e.g. { "resourcesInfoCisu": { "caseId": "...", ... } }
-                useCaseNode.fields().forEachRemaining(entry -> {
-                    JsonNode inner = entry.getValue();
-                    if (inner.isObject() && inner.has("caseId")) {
-                        ((ObjectNode) inner).put("caseId", uniqueCaseId);
-                    }
-                });
-                return Collections.singletonMap("message",
-                        buildEdxlMessageString(jsonMapper.writeValueAsString(useCaseNode), senderId, recipientId));
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }).iterator();
+    public static Iterator<Map<String, Object>> generateUniqueIdMessageFeeder(String useCaseString, String senderId, String recipientId) {
+        return Stream.generate(() ->
+                createMessage(useCaseString, senderId + "_" + UUID.randomUUID(), senderId, recipientId)
+        ).iterator();
     }
 
-    /**
-     * Feeder that replaces the caseId with each entry of caseIdPool exactly once,
-     * in order. Used for the warmup phase to seed MongoDB with one document per caseId.
-     */
-    public static Iterator<Map<String, Object>> generateFixedPoolMessageFeeder(
-            String useCaseString, String senderId, String recipientId, List<String> caseIdPool) {
-        return caseIdPool.stream().map(caseId -> {
-            try {
-                ObjectNode useCaseNode = (ObjectNode) jsonMapper.readTree(useCaseString);
-                useCaseNode.fields().forEachRemaining(entry -> {
-                    JsonNode inner = entry.getValue();
-                    if (inner.isObject() && inner.has("caseId")) {
-                        ((ObjectNode) inner).put("caseId", caseId);
-                    }
-                });
-                return Collections.<String, Object>singletonMap("message",
-                        buildEdxlMessageString(jsonMapper.writeValueAsString(useCaseNode), senderId, recipientId));
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }).iterator();
+    /** Feeder iterating once over {@code caseIdPool} in order (warmup / DB seeding). */
+    public static Iterator<Map<String, Object>> generateFixedPoolMessageFeeder(String useCaseString, String senderId, String recipientId, List<String> caseIdPool) {
+        return caseIdPool.stream()
+                .map(caseId -> createMessage(useCaseString, caseId, senderId, recipientId))
+                .iterator();
     }
 
-    /**
-     * Feeder that cycles indefinitely over caseIdPool in round-robin. Used for the load
-     * phase where every caseId is already known to MongoDB,
-     * forcing the Converter to take the "known case" (DB lookup + diff) path.
-     */
-    public static Iterator<Map<String, Object>> generateRoundRobinMessageFeeder(
-            String useCaseString, String senderId, String recipientId, List<String> caseIdPool) {
+    /** Feeder cycling indefinitely over {@code caseIdPool} in round-robin (load phase). */
+    public static Iterator<Map<String, Object>> generateRoundRobinMessageFeeder(String useCaseString, String senderId, String recipientId, List<String> caseIdPool) {
         AtomicInteger index = new AtomicInteger(0);
-        return Stream.generate((Supplier<Map<String, Object>>) () ->
-        {
-            try {
-                String caseId = caseIdPool.get(index.getAndIncrement() % caseIdPool.size());
-                ObjectNode useCaseNode = (ObjectNode) jsonMapper.readTree(useCaseString);
-                useCaseNode.fields().forEachRemaining(entry -> {
-                    JsonNode inner = entry.getValue();
-                    if (inner.isObject() && inner.has("caseId")) {
-                        ((ObjectNode) inner).put("caseId", caseId);
-                    }
-                });
-                return Collections.singletonMap("message",
-                        buildEdxlMessageString(jsonMapper.writeValueAsString(useCaseNode), senderId, recipientId));
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
+        return Stream.generate(() -> {
+            String caseId = caseIdPool.get(index.getAndIncrement() % caseIdPool.size());
+            return createMessage(useCaseString, caseId, senderId, recipientId);
         }).iterator();
+    }
+
+    private static Map<String, Object> createMessage(String useCaseString, String caseId, String senderId, String recipientId) {
+        try {
+            String message = buildEdxlMessageString(
+                    jsonMapper.writeValueAsString(replaceCaseId(useCaseString, caseId)),
+                    senderId, recipientId);
+            return Collections.singletonMap("message", message);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static ObjectNode replaceCaseId(String useCaseString, String caseId) throws Exception {
+        ObjectNode useCaseNode = (ObjectNode) jsonMapper.readTree(useCaseString);
+        useCaseNode.fields().forEachRemaining(entry -> {
+            JsonNode inner = entry.getValue();
+            if (inner.isObject() && inner.has("caseId")) {
+                ((ObjectNode) inner).put("caseId", caseId);
+            }
+        });
+        return useCaseNode;
     }
 }
