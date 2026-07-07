@@ -23,14 +23,12 @@ Toutes les simulations se trouvent dans [`src/gatling/java/loadtesting/simulatio
 
 Ces simulations couvrent les chemins où `isCisuConversion = true`, ce qui déclenche la persistance MongoDB dans le Dispatcher et les lectures en base dans le Converter. Elles nécessitent une instance MongoDB accessible (la même que celle du Dispatcher).
 
-| Simulation | Vhost | Message | Direction | Chemin DB |
-|---|---|---|---|---|
-| `SamuNexsisRsRiSimulation` | `15-15_v2.1` | RS-RI | SAMU→NexSIS | Le Dispatcher **persiste** le RS-RI ; le Converter le lit pour construire le RC-RI |
-| `SamuNexsisRsSrSimulation` | `15-15_v2.1` | RS-SR | SAMU→NexSIS | Le Dispatcher **persiste** le RS-SR ; le Converter le lit pour enrichir le RC-RI |
-| `SamuNexsisRcRiNewCaseSimulation` | `15-nexsis_v1.9` | RC-RI | NexSIS→SAMU | Le Dispatcher **persiste** le RC-RI ; le Converter ne trouve **aucun document préalable** → retourne RS-RI + N×RS-SR |
-| `SamuNexsisRcRiKnownCaseSimulation` | `15-nexsis_v1.9` | RC-RI | NexSIS→SAMU | Le Dispatcher **persiste** le RC-RI ; le Converter trouve un **document existant** → diff → RS-SR uniquement |
+Chaque simulation s'exécute en deux phases : un **warmup** qui alimente MongoDB avec le pool de caseIds, suivi d'une **phase de charge** qui déclenche les lectures en base.
 
-> `SamuNexsisRcRiKnownCaseSimulation` exécute d'abord une **phase de warmup** (alimente MongoDB avec un RC-RI par caseId) puis démarre la phase de charge après une pause configurable. Le pool de caseIds est défini en dur dans la classe de simulation.
+| Simulation | Vhost | Direction | Warmup | Phase de charge |
+|---|---|---|---|---|
+| `SamuNexsisRsSimulation` | `15-15_v2.1` | SAMU→NexSIS | RS-RI (un par caseId) → Dispatcher persiste ; Converter convertit en RC-RI | RS-SR round-robin → Converter lit le RS-RI en DB et convertit en RC-RI |
+| `SamuNexsisRcRiSimulation` | `15-nexsis_v1.9` | NexSIS→SAMU | RC-RI (un par caseId, DB vide) → Dispatcher persiste ; Converter retourne RS-RI + N×RS-SR | RC-RI round-robin (caseId connu) → Converter lit en DB, diff, retourne RS-SR uniquement |
 
 ## Variables d'environnement
 
@@ -49,12 +47,8 @@ Ces simulations couvrent les chemins où `isCisuConversion = true`, ce qui décl
 | `SAMU_SAMU_CONVERSION_SCENARIO_USER_COUNT` | Utilisateurs simultanés pour `SamuSamuConversionSimulation` (défaut : `2`) |
 | `SAMU_NEXSIS_DIRECT_SCENARIO_USER_COUNT` | Utilisateurs simultanés pour `SamuNexsisDirectSimulation` (défaut : `2`) |
 | `SAMU_NEXSIS_CONVERSION_SCENARIO_USER_COUNT` | Utilisateurs simultanés pour `SamuNexsisConversionSimulation` (défaut : `2`) |
-| `SAMU_NEXSIS_RS_RI_SCENARIO_USER_COUNT` | Utilisateurs simultanés pour `SamuNexsisRsRiSimulation` (défaut : `2`) |
-| `SAMU_NEXSIS_RS_SR_SCENARIO_USER_COUNT` | Utilisateurs simultanés pour `SamuNexsisRsSrSimulation` (défaut : `2`) |
-| `SAMU_NEXSIS_RC_RI_NEW_CASE_SCENARIO_USER_COUNT` | Utilisateurs simultanés pour `SamuNexsisRcRiNewCaseSimulation` (défaut : `2`) |
-| `SAMU_NEXSIS_RC_RI_KNOWN_CASE_SCENARIO_USER_COUNT` | Utilisateurs simultanés pour la phase de charge de `SamuNexsisRcRiKnownCaseSimulation` (défaut : `2`) |
-
-## Utilisation en local
+| `SAMU_NEXSIS_RS_SCENARIO_USER_COUNT` | Utilisateurs simultanés pour `SamuNexsisRsSimulation` (défaut : `2`) |
+| `SAMU_NEXSIS_RC_RI_SCENARIO_USER_COUNT` | Utilisateurs simultanés pour `SamuNexsisRcRiSimulation` (défaut : `2`) |## Utilisation en local
 
 ### Prérequis
 
