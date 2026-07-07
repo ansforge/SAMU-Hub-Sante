@@ -7,14 +7,9 @@ export const FILTERS_CONFIG = {
     getValue: (item, value) => item.label === value,
     getOptions: getActors,
   },
-  editor: {
-    id: FILTER_IDS.editor,
-    getValue: (item, value) => item.editor === value,
-    getOptions: getEditors,
-  },
   perimeter: {
     id: FILTER_IDS.perimeter,
-    getValue: (item, value) => item[value] !== "",
+    getValue: (item, value) => !!item.perimeters?.[value],
     getOptions: getPerimeter,
   },
 };
@@ -27,10 +22,6 @@ export function getActors() {
         .filter((label) => label !== ""),
     ),
   ];
-}
-
-export function getEditors() {
-  return [...new Set(state.clientsConfigurations.map((item) => item.editor))];
 }
 
 export function getPerimeter() {

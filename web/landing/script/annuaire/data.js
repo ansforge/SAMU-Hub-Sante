@@ -1,4 +1,4 @@
-import { CLIENT_ID_PREFIX, perimeter } from "./constants.js";
+import { CLIENT_ID_PREFIX, perimeter, perimeterLabels } from "./constants.js";
 
 export const state = { clientsConfigurations: [] };
 
@@ -38,8 +38,9 @@ export function constituteLabel(data) {
   } else if (clientId.startsWith(CLIENT_ID_PREFIX.SNP)) {
     label = "SNP ";
     departmentNumber = clientId.slice(CLIENT_ID_PREFIX.SNP.length);
+  }else if (clientId === "fr.health.si-cap") {
+    return "SICAP";
   }
-
   if (departmentNumber.length === 3 && departmentNumber.endsWith("0")) {
     departmentNumber = departmentNumber.slice(0, -1);
   }
@@ -96,11 +97,8 @@ export function sortClientConfig(clientsConfig) {
 }
 
 export function getActorsInfo(clientConfig) {
-  // retourne label (perimètre) ex : SAMU 01 (15-15, 15-NexSIS)
-  const activePerimeters = perimeter.filter((p) => clientConfig[p]);
-  let info = clientConfig.label;
-  if (activePerimeters.length > 0 && clientConfig.label !== "") {
-    info += " (" + activePerimeters.join(", ") + ")";
-  }
-  return info;
+  const activePerimeters = perimeter
+    .filter((p) => clientConfig.perimeters?.[p])
+    .map((p) => perimeterLabels[p]);
+  return activePerimeters.join(", ");
 }

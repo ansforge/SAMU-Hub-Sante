@@ -3,12 +3,11 @@ export const DIV_MAP_ID = "map";
 export const DIV_INFO_DEPARTMENT_ID = "info-selected-department";
 export const FILTER_IDS = {
   actor: "filter-actor",
-  editor: "filter-editor",
   perimeter: "filter-perimeter",
 };
 
 export const BASE_API_URL = "hub.esante.gouv.fr/annuaire/api";
-export const API_URL = "https://admin.hub.esante.gouv.fr/annuaire/api";
+export const API_URL = "http://localhost:3000/annuaire";
 
 export const RABBITMQ_URL = "amqps://messaging.hub.esante.gouv.fr:5671";
 
@@ -17,7 +16,17 @@ export const CLIENT_ID_PREFIX = {
   SNP: "fr.health.snp",
 };
 
-export const perimeter = ["15-15", "15-NexSIS", "15-SMUR/RPIS", "15-GPS"];
+export const perimeter = [
+  "15-15", "15-nexsis", "15-smur", "15-gps",
+  "15-cap", "15-cnr114", "15-portail",
+];
+
+export const perimeterLabels = {
+  "15-15": "15-15", "15-nexsis": "15-NexSIS", "15-smur": "15-SMUR/RPIS",
+  "15-gps": "15-GPS", "15-cap": "15-CAP", "15-cnr114": "15-CNR114",
+  "15-portail": "15-Portail",
+};
+
 export const colors = {
   [perimeter[0]]: "#369AEE", //(var(--information))
   [perimeter[1]]: "#E11414", //(var(--red))

@@ -1,7 +1,7 @@
 import {
   CLIENTS_CONFIG_TABLE_ID,
   perimeterInVhost,
-  mddMap,
+  perimeterLabels,
   RABBITMQ_URL,
   colors,
   perimeter,
@@ -29,7 +29,6 @@ function createClientConfigRow(item) {
   const row = document.createElement("tr");
   row.appendChild(createTextCell(item.label));
   row.appendChild(createTextCell(item.client_id));
-  row.appendChild(createTextCell(item.editor));
   row.appendChild(createAuthorizedPerimetersCell(item));
   return row;
 }
@@ -45,46 +44,38 @@ function createAuthorizedPerimetersCell(item) {
   td.style.display = "flex";
   td.style.flexWrap = "wrap";
   td.style.gap = "5px";
-  perimeter.forEach((perimeter) => {
-    item[perimeter].split(",").forEach((version) => {
-      if (version) {
-        const vhost = `${perimeterInVhost[perimeter]}_v${version}`;
-        const mdd = mddMap[vhost];
-        const perimeterElement = createAuthorizedPerimetersElement(
-          perimeter,
-          mdd,
-          item,
-          vhost,
-        );
-        td.appendChild(perimeterElement);
-      }
-    });
+  perimeter.forEach((p) => {
+    if (item.perimeters?.[p]) {
+      const vhost = perimeterInVhost[p];
+      const perimeterElement = createAuthorizedPerimetersElement(p, item, vhost);
+      td.appendChild(perimeterElement);
+    }
   });
   return td;
 }
 
-function createAuthorizedPerimetersElement(perimeter, mdd, item, vhost) {
+function createAuthorizedPerimetersElement(perimeter, item, vhost) {
   const element = document.createElement("a");
   element.classList.add("btn", "btn--ghost", "btn--default", "btn-sm");
   element.style.borderColor = colors[perimeter];
   element.dataset.toggle = "modal";
   element.dataset.target = "#modal1";
-  element.textContent = `${perimeter} (${mdd})`;
+  element.textContent = perimeterLabels[perimeter];
   element.addEventListener("click", (e) => {
     e.preventDefault();
-    fillModaleInfo(vhost, perimeter, mdd, item);
+    fillModaleInfo(vhost, perimeter, item);
   });
   return element;
 }
 
-function fillModaleInfo(vhost, perimeter, mdd, item) {
+function fillModaleInfo(vhost, perimeter, item) {
   document.getElementById("modal-clientID").innerHTML = item.client_id;
   document.getElementById("modal-env").innerHTML = "prod";
   const url_element = document.getElementById("modal-env-url");
   url_element.innerHTML = RABBITMQ_URL;
   url_element.href = RABBITMQ_URL;
-  document.getElementById("modal-perimeter").innerHTML = perimeter;
-  document.getElementById("modal-mdd").innerHTML = mdd;
+  document.getElementById("modal-perimeter").innerHTML = perimeterLabels[perimeter];
+  document.getElementById("modal-mdd").innerHTML = "Non communiqué par l'API";
   document.getElementById("modal-vhost").innerHTML = vhost;
 }
 
