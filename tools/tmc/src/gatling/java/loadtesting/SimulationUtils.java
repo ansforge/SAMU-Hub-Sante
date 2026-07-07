@@ -18,7 +18,6 @@ import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -105,31 +104,39 @@ public final class SimulationUtils {
         }).iterator();
     }
 
-    /** Feeder iterating once over {@code caseIdPool} in order (warmup / DB seeding). */
-    public static Iterator<Map<String, Object>> generateFixedPoolMessageFeeder(String useCaseString, String senderId, String recipientId, List<String> caseIdPool) {
-        return caseIdPool.stream()
-                .map(caseId -> createMessage(useCaseString, caseId, senderId, recipientId))
-                .iterator();
-    }
-
-    /** Feeder cycling indefinitely over {@code caseIdPool} in round-robin (load phase). */
-    public static Iterator<Map<String, Object>> generateRoundRobinMessageFeeder(String useCaseString, String senderId, String recipientId, List<String> caseIdPool) {
-        AtomicInteger index = new AtomicInteger(0);
+    /** Feeder for the 15-18 flow: generates an RS-RI and RS-SR sharing the same unique caseId per virtual user. */
+    public static Iterator<Map<String, Object>> generateRsFlowFeeder(
+            String rsRiContent, String rsSrContent, String senderId, String recipientId) {
         return Stream.generate(() -> {
-            String caseId = caseIdPool.get(index.getAndIncrement() % caseIdPool.size());
-            return createMessage(useCaseString, caseId, senderId, recipientId);
+            try {
+                String caseId = senderId + "_" + UUID.randomUUID();
+                String rsRiMessage = buildEdxlMessageString(
+                        jsonMapper.writeValueAsString(replaceCaseId(rsRiContent, caseId)), senderId, recipientId);
+                String rsSrMessage = buildEdxlMessageString(
+                        jsonMapper.writeValueAsString(replaceCaseId(rsSrContent, caseId)), senderId, recipientId);
+                return Map.<String, Object>of("rsRiMessage", rsRiMessage, "rsSrMessage", rsSrMessage);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         }).iterator();
     }
 
-    private static Map<String, Object> createMessage(String useCaseString, String caseId, String senderId, String recipientId) {
-        try {
-            String message = buildEdxlMessageString(
-                    jsonMapper.writeValueAsString(replaceCaseId(useCaseString, caseId)),
-                    senderId, recipientId);
-            return Collections.singletonMap("message", message);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+    /** Feeder for the 18-15 flow: generates two RC-RI messages sharing the same unique caseId per virtual user.
+     * The first triggers the new-case path; the second (sent after a pause) triggers the known-case diff path. */
+    public static Iterator<Map<String, Object>> generateRcRiFlowFeeder(
+            String rcRiContent, String senderId, String recipientId) {
+        return Stream.generate(() -> {
+            try {
+                String caseId = senderId + "_" + UUID.randomUUID();
+                String newCaseMessage = buildEdxlMessageString(
+                        jsonMapper.writeValueAsString(replaceCaseId(rcRiContent, caseId)), senderId, recipientId);
+                String updateMessage = buildEdxlMessageString(
+                        jsonMapper.writeValueAsString(replaceCaseId(rcRiContent, caseId)), senderId, recipientId);
+                return Map.<String, Object>of("rcRiNewMessage", newCaseMessage, "rcRiUpdateMessage", updateMessage);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }).iterator();
     }
 
     private static ObjectNode replaceCaseId(String useCaseString, String caseId) throws Exception {
