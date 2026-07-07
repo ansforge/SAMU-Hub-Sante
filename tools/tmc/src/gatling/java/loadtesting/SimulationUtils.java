@@ -105,15 +105,6 @@ public final class SimulationUtils {
         }).iterator();
     }
 
-    /**
-     * Feeder generating a unique UUID-based caseId per message (forces Converter "new case" path).
-     */
-    public static Iterator<Map<String, Object>> generateUniqueIdMessageFeeder(String useCaseString, String senderId, String recipientId) {
-        return Stream.generate(() ->
-                createMessage(useCaseString, senderId + "_" + UUID.randomUUID(), senderId, recipientId)
-        ).iterator();
-    }
-
     /** Feeder iterating once over {@code caseIdPool} in order (warmup / DB seeding). */
     public static Iterator<Map<String, Object>> generateFixedPoolMessageFeeder(String useCaseString, String senderId, String recipientId, List<String> caseIdPool) {
         return caseIdPool.stream()
