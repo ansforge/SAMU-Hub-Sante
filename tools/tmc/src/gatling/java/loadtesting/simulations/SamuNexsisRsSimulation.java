@@ -13,7 +13,7 @@ import static loadtesting.Constants.*;
 import static org.galaxio.gatling.amqp.javaapi.AmqpDsl.amqp;
 
 /** Load test for the RS persistence flow (15-18 direction, SAMU → NexSIS).
- * Each virtual user sends RS-RI, waits PAUSE_SECONDS, then sends RS-SR with the same caseId. */
+ * Each virtual user sends RS-RI, waits SCENARIO_PAUSE_SECONDS, then sends RS-SR with the same caseId. */
 public class SamuNexsisRsSimulation extends Simulation {
 
     private static final Logger log = LoggerFactory.getLogger(SamuNexsisRsSimulation.class);
@@ -22,12 +22,13 @@ public class SamuNexsisRsSimulation extends Simulation {
     private static final String SENDER_ID = "fr.health.test.samu1-v3";
     private static final String RECIPIENT_ID = "fr.fire.nexsis.sdisZ";
     private static final String USER_COUNT_ENV_VAR = "SAMU_NEXSIS_RS_SCENARIO_USER_COUNT";
-    private static final int PAUSE_SECONDS = 5;
 
     {
         try {
             String rsRiContent = SimulationUtils.loadSampleFile("rs-ri.json");
             String rsSrContent = SimulationUtils.loadSampleFile("rs-sr.json");
+
+            int pause = getNumericEnvVar("SCENARIO_PAUSE_SECONDS", 5);
 
             ScenarioBuilder rsScenario = scenario("RS flux complet — SAMU→NexSIS")
                     .feed(SimulationUtils.generateRsFlowFeeder(rsRiContent, rsSrContent, SENDER_ID, RECIPIENT_ID))
@@ -38,7 +39,7 @@ public class SamuNexsisRsSimulation extends Simulation {
                                     .textMessage("#{rsRiMessage}")
                                     .contentType(JSON_CONTENT_TYPE)
                     )
-                    .pause(PAUSE_SECONDS)
+                    .pause(pause)
                     .exec(
                             amqp(String.format("%s %s (RS-SR)", AMQP_REQUEST_NAME, SENDER_ID))
                                     .publish()
@@ -55,7 +56,7 @@ public class SamuNexsisRsSimulation extends Simulation {
             setUp(
                     rsScenario.injectOpen(constantUsersPerSec(userCount).during(duration))
                               .protocols(connectionFactory.buildAmqpProtocolBuilder(VHOST))
-            ).maxDuration(duration + PAUSE_SECONDS + 10L);
+            ).maxDuration(duration + pause + 10L);
 
         } catch (Exception e) {
             log.error("Unexpected error during load test", e);
