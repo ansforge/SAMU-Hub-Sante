@@ -103,4 +103,50 @@ public final class SimulationUtils {
             }
         }).iterator();
     }
+
+    /** Feeder for the 15-18 flow: generates an RS-RI and RS-SR sharing the same unique caseId per virtual user. */
+    public static Iterator<Map<String, Object>> generateRsFlowFeeder(
+            String rsRiContent, String rsSrContent, String senderId, String recipientId) {
+        return Stream.generate(() -> {
+            try {
+                String caseId = senderId + "_" + UUID.randomUUID();
+                String rsRiMessage = buildEdxlMessageString(
+                        jsonMapper.writeValueAsString(replaceCaseId(rsRiContent, caseId)), senderId, recipientId);
+                String rsSrMessage = buildEdxlMessageString(
+                        jsonMapper.writeValueAsString(replaceCaseId(rsSrContent, caseId)), senderId, recipientId);
+                return Map.<String, Object>of("rsRiMessage", rsRiMessage, "rsSrMessage", rsSrMessage);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }).iterator();
+    }
+
+    /** Feeder for the 18-15 flow: generates two RC-RI messages sharing the same unique caseId per virtual user.
+     * The first triggers the new-case path; the second (sent after a pause) triggers the known-case diff path. */
+    public static Iterator<Map<String, Object>> generateRcRiFlowFeeder(
+            String rcRiContent, String senderId, String recipientId) {
+        return Stream.generate(() -> {
+            try {
+                String caseId = senderId + "_" + UUID.randomUUID();
+                String newCaseMessage = buildEdxlMessageString(
+                        jsonMapper.writeValueAsString(replaceCaseId(rcRiContent, caseId)), senderId, recipientId);
+                String updateMessage = buildEdxlMessageString(
+                        jsonMapper.writeValueAsString(replaceCaseId(rcRiContent, caseId)), senderId, recipientId);
+                return Map.<String, Object>of("rcRiNewMessage", newCaseMessage, "rcRiUpdateMessage", updateMessage);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }).iterator();
+    }
+
+    private static ObjectNode replaceCaseId(String useCaseString, String caseId) throws Exception {
+        ObjectNode useCaseNode = (ObjectNode) jsonMapper.readTree(useCaseString);
+        useCaseNode.fields().forEachRemaining(entry -> {
+            JsonNode inner = entry.getValue();
+            if (inner.isObject() && inner.has("caseId")) {
+                ((ObjectNode) inner).put("caseId", caseId);
+            }
+        });
+        return useCaseNode;
+    }
 }

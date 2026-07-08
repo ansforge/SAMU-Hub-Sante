@@ -1,0 +1,17 @@
+{
+  "resourcesInfoCisu": {
+    "caseId": "fr.fire.nexsis.sdisZ.TMC_RC_RI_CASE_001",
+    "resource": [
+      {
+        "datetime": "2024-08-01T16:42:00+02:00",
+        "resourceId": "fr.fire.nexsis.sdisZ.resource.VSAV1",
+        "orgId": "fr.fire.nexsis.sdisZ",
+        "vehicleType": "SIS",
+        "state": {
+          "datetime": "2024-08-01T16:42:00+02:00",
+          "status": "RET-BASE"
+        }
+      }
+    ]
+  }
+}
