@@ -21,7 +21,7 @@ Toutes les simulations se trouvent dans [`src/gatling/java/loadtesting/simulatio
 
 ### Simulations de persistance MongoDB (périmètre 15-18)
 
-Ces simulations couvrent les chemins où `isCisuConversion = true`, ce qui déclenche la persistance MongoDB dans le Dispatcher et les lectures en base dans le Converter. Elles nécessitent une instance MongoDB accessible (la même que celle du Dispatcher).
+Ces simulations couvrent les flux où le Dispatcher déclenche la persistance MongoDB. Cela concerne les messages RC-RI et RS-RI (flux de compte-rendu d'intervention), mais **pas** les conversions CISU pures (RC-EDA ↔ RS-EDA) qui transitent sans persistance. Elles nécessitent une instance MongoDB accessible (la même que celle du Dispatcher).
 
 Chaque simulation s'exécute en deux phases : un **warmup** qui alimente MongoDB avec le pool de caseIds, suivi d'une **phase de charge** qui déclenche les lectures en base.
 
