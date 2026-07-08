@@ -92,4 +92,6 @@ Lancer une simulation individuelle :
 
 Sur Confluence sont disponibles [l'expression de besoin](https://ans-esante.atlassian.net/wiki/spaces/HUB/pages/1256292572/Expression+de+besoin) et la [stratégie technique](https://ans-esante.atlassian.net/wiki/spaces/HUB/pages/1257865233/Strat+gie+Technique) retenue pour l'implémentation des tests de montée en charge sur le Hub Santé.
 
+Le document de stratégie technique contient notamment un ADR sur le choix de Gatling par rapport aux autres offres disponibles sur le marché.
+
 Note : la version de Gatling utilisée ici est la `3.11.3`. Il s'agit de la version la plus récente utilisable avec le plugin [gatling-amqp](https://github.com/galax-io/gatling-amqp-plugin).
