@@ -56,7 +56,7 @@ public class SamuNexsisRcRiSimulation extends Simulation {
             setUp(
                     rcRiScenario.injectOpen(constantUsersPerSec(userCount).during(duration))
                                 .protocols(connectionFactory.buildAmqpProtocolBuilder(VHOST))
-            ).maxDuration(duration + pause + 10L);
+            ).maxDuration(duration * 2L);
 
         } catch (Exception e) {
             log.error("Unexpected error during load test", e);
