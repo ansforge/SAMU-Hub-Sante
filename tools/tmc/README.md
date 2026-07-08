@@ -23,12 +23,12 @@ Toutes les simulations se trouvent dans [`src/gatling/java/loadtesting/simulatio
 
 Ces simulations couvrent les flux où le Dispatcher déclenche la persistance MongoDB. Cela concerne les messages RC-RI et RS-RI (flux de compte-rendu d'intervention), mais **pas** les conversions CISU pures (RC-EDA ↔ RS-EDA) qui transitent sans persistance. Elles nécessitent une instance MongoDB accessible (la même que celle du Dispatcher).
 
-Chaque simulation s'exécute en deux phases : un **warmup** qui alimente MongoDB avec le pool de caseIds, suivi d'une **phase de charge** qui déclenche les lectures en base.
+Chaque virtual user envoie deux messages successifs avec une pause intermédiaire : le premier crée un nouveau cas (nouveau `caseId`), le second met à jour ce même cas et déclenche la lecture en base.
 
-| Simulation | Vhost | Direction | Warmup | Phase de charge |
+| Simulation | Vhost | Direction | 1er message | 2e message (après pause) |
 |---|---|---|---|---|
-| `SamuNexsisRsSimulation` | `15-15_v2.1` | SAMU→NexSIS | RS-RI (un par caseId) → Dispatcher persiste ; Converter convertit en RC-RI | RS-SR round-robin → Converter lit le RS-RI en DB et convertit en RC-RI |
-| `SamuNexsisRcRiSimulation` | `15-nexsis_v1.9` | NexSIS→SAMU | RC-RI (un par caseId, DB vide) → Dispatcher persiste ; Converter retourne RS-RI + N×RS-SR | RC-RI round-robin (caseId connu) → Converter lit en DB, diff, retourne RS-SR uniquement |
+| `SamuNexsisRsSimulation` | `15-15_v2.1` | SAMU→NexSIS | RS-RI (nouveau caseId) → Dispatcher persiste | RS-SR (même caseId) → Converter lit le RS-RI en DB et convertit en RC-RI |
+| `SamuNexsisRcRiSimulation` | `15-nexsis_v1.9` | NexSIS→SAMU | RC-RI (nouveau caseId) → Dispatcher persiste | RC-RI (même caseId) → Converter lit en DB, calcule le diff, retourne RS-SR |
 
 ## Variables d'environnement
 
