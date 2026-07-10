@@ -15,8 +15,6 @@
  */
 package com.hubsante.hub.service;
 
-import static com.hubsante.hub.utils.ConversionUtils.isAlreadyCisuConverted;
-import static com.hubsante.hub.utils.ConversionUtils.trimVersionSuffix;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mockStatic;
@@ -29,6 +27,7 @@ import com.hubsante.model.edxl.EdxlMessage;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -38,6 +37,7 @@ import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.MockitoAnnotations;
+import org.springframework.core.io.ClassPathResource;
 
 public class ConversionUtilsTest {
 
@@ -49,6 +49,11 @@ public class ConversionUtilsTest {
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private EdxlMessage edxlMessage;
+
+    @BeforeAll
+    static void setUpTopologyRegistry() {
+        new TopologyRegistry(new ClassPathResource("config/clients.yaml"));
+    }
 
     @BeforeEach
     void setUp() {
@@ -443,22 +448,24 @@ public class ConversionUtilsTest {
 
     @Test
     public void isAlreadyCisuConvertedTest() {
-        assertTrue(isAlreadyCisuConverted("15-15_v1.5", "fr.health.something"));
-        assertTrue(isAlreadyCisuConverted("15-nexsis_v1.9", "fr.fire.something-else"));
+        assertTrue(ConversionUtils.isAlreadyCisuConverted("15-15_v1.5", "fr.health.something"));
+        assertTrue(
+                ConversionUtils.isAlreadyCisuConverted("15-nexsis_v1.9", "fr.fire.something-else"));
 
-        assertFalse(isAlreadyCisuConverted("15-15_v1.5", "fr.fire.something-else"));
-        assertFalse(isAlreadyCisuConverted("15-nexsis_v1.9", "fr.health.something"));
-        assertFalse(isAlreadyCisuConverted("15-smur_v1.7", "fr.health.something"));
+        assertFalse(ConversionUtils.isAlreadyCisuConverted("15-15_v1.5", "fr.fire.something-else"));
+        assertFalse(
+                ConversionUtils.isAlreadyCisuConverted("15-nexsis_v1.9", "fr.health.something"));
+        assertFalse(ConversionUtils.isAlreadyCisuConverted("15-smur_v1.7", "fr.health.something"));
     }
 
     @Test
     public void testTrimVersionSuffix() {
-        assertEquals("15-15", trimVersionSuffix("15-15_v1.3"));
-        assertEquals("15-nexsis", trimVersionSuffix("15-nexsis_v2"));
-        assertEquals("backup", trimVersionSuffix("backup_v2.0.1"));
-        assertEquals("no-version-here", trimVersionSuffix("no-version-here"));
-        assertNull(trimVersionSuffix(null));
-        assertEquals("", trimVersionSuffix(""));
+        assertEquals("15-15", ConversionUtils.trimVersionSuffix("15-15_v1.3"));
+        assertEquals("15-nexsis", ConversionUtils.trimVersionSuffix("15-nexsis_v2"));
+        assertEquals("backup", ConversionUtils.trimVersionSuffix("backup_v2.0.1"));
+        assertEquals("no-version-here", ConversionUtils.trimVersionSuffix("no-version-here"));
+        assertNull(ConversionUtils.trimVersionSuffix(null));
+        assertEquals("", ConversionUtils.trimVersionSuffix(""));
     }
 
     @Test
