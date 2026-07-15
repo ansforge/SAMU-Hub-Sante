@@ -6,10 +6,30 @@ export const FILTER_IDS = {
   perimeter: "filter-perimeter",
 };
 
-export const BASE_API_URL = "hub.esante.gouv.fr/annuaire/api";
-export const API_URL = "https://admin.hub.esante.gouv.fr/annuaire/api";
+// Détecte automatiquement l'environnement à partir du nom de domaine
+function detectEnv() {
+  const host = window.location.hostname;
+  if (host.includes("localhost") || host.includes("127.0.0.1")) return "dev";
+  if (host.includes("bac-a-sable")) return "bac-a-sable";
+  if (host.includes("integration")) return "integration";
+  if (host.includes("qualification")) return "qualification";
+  if (host.includes("pre-prod")) return "pre-prod";
+  return "prod";
+}
 
-export const RABBITMQ_URL = "amqps://messaging.hub.esante.gouv.fr:5671";
+const ENV = detectEnv();
+
+const BASE_API_URLS = {
+  dev: "http://localhost:3000/annuaire",
+  "bac-a-sable": "https://bac-a-sable.hub.esante.gouv.fr/annuaire/api",
+  integration: "https://integration.hub.esante.gouv.fr/annuaire/api",
+  qualification: "https://qualification.hub.esante.gouv.fr/annuaire/api",
+  "pre-prod": "https://pre-prod.hub.esante.gouv.fr/annuaire/api",
+  prod: "https://hub.esante.gouv.fr/annuaire/api",
+};
+
+export const BASE_API_URL = BASE_API_URLS[ENV];
+export const API_URL = ENV === "dev" ? BASE_API_URL : `${BASE_API_URL}/clients`;
 
 export const CLIENT_ID_PREFIX = {
   SAMU: "fr.health.samu",
@@ -40,26 +60,9 @@ export const perimeterInVhost = {
   [perimeter[3]]: "15-gps",
 };
 
-export const mddMap = {
-  "15-15_v1.5": "1.0",
-  "15-15_v2.0": "2.0",
-  "15-15_v2.1": "3.0",
-  "15-smur_v1.4": "1.0",
-  "15-smur_v1.5": "1.0",
-  "15-smur_v1.6": "2.0",
-  "15-smur_v1.7": "3.0",
-  "15-nexsis_v1.8": "1.0",
-  "15-nexsis_v1.9": "2.0",
-  "15-nexsis_v1.9.1": "3.0",
-  "15-gps_v1.0": "1.0",
-  "15-gps_v1.1": "1.0",
-  "15-gps_v1.2": "2.0",
-  "15-gps_v1.3": "3.0",
-};
-
-export const keyMap = {
-  "P: 15-15": perimeter[0],
-  "P: 15-nexsis": perimeter[1],
-  "P: 15-smur": perimeter[2],
-  "P: 15-gps": perimeter[3],
+export const perimeterPdfLinks = {
+  "15-15": "/resources/Liens/Lien_15-15.pdf",
+  "15-nexsis": "/resources/Liens/Lien_15-NexSiS.pdf",
+  "15-smur": "/resources/Liens/Lien_15-SMUR.pdf",
+  "15-cap": "/resources/Liens/Lien_15-CAP.pdf",
 };

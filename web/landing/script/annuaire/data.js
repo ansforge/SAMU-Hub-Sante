@@ -18,15 +18,6 @@ export async function fetchData(url) {
   }
 }
 
-export function renameKeys(obj, keyMap) {
-  const renamed = {};
-  for (const key in obj) {
-    const newKey = keyMap[key] || key;
-    renamed[newKey] = obj[key];
-  }
-  return renamed;
-}
-
 export function constituteLabel(data) {
   let label = "";
   let departmentNumber = "";

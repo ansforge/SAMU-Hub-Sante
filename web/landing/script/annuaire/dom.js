@@ -2,7 +2,7 @@ import {
   CLIENTS_CONFIG_TABLE_ID,
   perimeterInVhost,
   perimeterLabels,
-  RABBITMQ_URL,
+  perimeterPdfLinks,
   colors,
   perimeter,
 } from "./constants.js";
@@ -58,25 +58,16 @@ function createAuthorizedPerimetersElement(perimeter, item, vhost) {
   const element = document.createElement("a");
   element.classList.add("btn", "btn--ghost", "btn--default", "btn-sm");
   element.style.borderColor = colors[perimeter];
-  element.dataset.toggle = "modal";
-  element.dataset.target = "#modal1";
   element.textContent = perimeterLabels[perimeter];
-  element.addEventListener("click", (e) => {
-    e.preventDefault();
-    fillModaleInfo(vhost, perimeter, item);
-  });
+  const pdfLink = perimeterPdfLinks[perimeter];
+  if (pdfLink) {
+    element.href = pdfLink;
+    element.target = "_blank";
+  } else {
+    element.style.cursor = "default";
+    element.style.opacity = "0.6";
+  }
   return element;
-}
-
-function fillModaleInfo(vhost, perimeter, item) {
-  document.getElementById("modal-clientID").innerHTML = item.client_id;
-  document.getElementById("modal-env").innerHTML = "prod";
-  const url_element = document.getElementById("modal-env-url");
-  url_element.innerHTML = RABBITMQ_URL;
-  url_element.href = RABBITMQ_URL;
-  document.getElementById("modal-perimeter").innerHTML = perimeterLabels[perimeter];
-  document.getElementById("modal-mdd").innerHTML = "Non communiqué par l'API";
-  document.getElementById("modal-vhost").innerHTML = vhost;
 }
 
 export function onDepartmentSelected(dep) {

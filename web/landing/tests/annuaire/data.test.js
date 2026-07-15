@@ -1,20 +1,19 @@
 import {
   fetchData,
   constituteLabel,
-  renameKeys,
   getDepartmentsInProd,
   getActorsFromDepartment,
   state,
   sortClientConfig,
   getActorsInfo,
 } from "../../script/annuaire/data.js";
-import { keyMap, CLIENT_ID_PREFIX } from "../../script/annuaire/constants.js";
+import { CLIENT_ID_PREFIX } from "../../script/annuaire/constants.js";
 import { expect, jest } from "@jest/globals";
 
 describe("Data utils", () => {
-  test("should constitute label from CSV client raw", () => {
+  test("should constitute label from client_id", () => {
     const clients = [
-      { client_id: "fr.health.samu750" }, //rows in CSV (we only need client_id here)
+      { client_id: "fr.health.samu750" },
       { client_id: "fr.health.samu76B" },
       { client_id: "fr.health.snp974" },
       { client_id: "fr.health.test.scriptal" },
@@ -25,73 +24,78 @@ describe("Data utils", () => {
     });
   });
 
-  test("should rename keys based on the mapping", () => {
-    const client_fetched = {
-      "P: 15-15": "1.5,2.0,2.1",
-      "P: 15-gps": "1.3",
-      "P: 15-nexsis": "1.9",
-      "P: 15-smur": "1.6,1.7",
-      client_id: "fr.health.lrm",
-      editor: "ANS",
-    };
-    const client_expected = {
-      "15-15": "1.5,2.0,2.1",
-      "15-GPS": "1.3",
-      "15-NexSIS": "1.9",
-      "15-SMUR/RPIS": "1.6,1.7",
-      client_id: "fr.health.lrm",
-      editor: "ANS",
-    };
-    expect(renameKeys(client_fetched, keyMap)).toEqual(client_expected);
-  });
-
   describe("State-based data utils", () => {
     beforeEach(() => {
       state.clientsConfigurations = [
         {
           client_id: CLIENT_ID_PREFIX.SAMU + "750",
-          editor: "Editeur A",
+          client_type: "Editeur A",
           label: "SAMU 75",
-          "15-15": "1.5",
-          "15-GPS": "",
-          "15-NexSIS": "",
-          "15-SMUR/RPIS": "1.6",
+          perimeters: {
+            "15-15": true,
+            "15-gps": false,
+            "15-nexsis": false,
+            "15-smur": true,
+            "15-cap": false,
+            "15-cnr114": false,
+            "15-portail": false,
+          },
         },
         {
           client_id: CLIENT_ID_PREFIX.SNP + "330",
-          editor: "Editeur B",
+          client_type: "Editeur B",
           label: "SNP 33",
-          "15-15": "",
-          "15-GPS": "",
-          "15-NexSIS": "1.9",
-          "15-SMUR/RPIS": "",
+          perimeters: {
+            "15-15": false,
+            "15-gps": false,
+            "15-nexsis": true,
+            "15-smur": false,
+            "15-cap": false,
+            "15-cnr114": false,
+            "15-portail": false,
+          },
         },
         {
           client_id: CLIENT_ID_PREFIX.SNP + "750",
-          editor: "Editeur C",
+          client_type: "Editeur C",
           label: "SNP 75",
-          "15-15": "2.1",
-          "15-GPS": "1.3",
-          "15-NexSIS": "",
-          "15-SMUR/RPIS": "1.6",
+          perimeters: {
+            "15-15": true,
+            "15-gps": true,
+            "15-nexsis": false,
+            "15-smur": true,
+            "15-cap": false,
+            "15-cnr114": false,
+            "15-portail": false,
+          },
         },
         {
           client_id: "fr.health.lrm2",
-          editor: "ANS",
+          client_type: "ANS",
           label: "",
-          "15-15": "",
-          "15-GPS": "",
-          "15-NexSIS": "1.9",
-          "15-SMUR/RPIS": "",
+          perimeters: {
+            "15-15": false,
+            "15-gps": false,
+            "15-nexsis": true,
+            "15-smur": false,
+            "15-cap": false,
+            "15-cnr114": false,
+            "15-portail": false,
+          },
         },
         {
           client_id: "fr.health.lrm1",
-          editor: "ANS",
+          client_type: "ANS",
           label: "",
-          "15-15": "",
-          "15-GPS": "",
-          "15-NexSIS": "",
-          "15-SMUR/RPIS": "",
+          perimeters: {
+            "15-15": false,
+            "15-gps": false,
+            "15-nexsis": false,
+            "15-smur": false,
+            "15-cap": false,
+            "15-cnr114": false,
+            "15-portail": false,
+          },
         },
       ];
     });
@@ -109,7 +113,7 @@ describe("Data utils", () => {
       expect(actors).toEqual(expected_actors);
     });
 
-    test("should sort client config by editor then by clien_id", () => {
+    test("should sort client config by client_type then by client_id", () => {
       const sortedClientConfig = sortClientConfig(state.clientsConfigurations);
       const expected_client_id_suite = [
         "fr.health.lrm1",
@@ -125,9 +129,9 @@ describe("Data utils", () => {
 
     test("should return client actors info", () => {
       const expectedInfo = [
-        "SAMU 75 (15-15, 15-SMUR/RPIS)",
-        "SNP 33 (15-NexSIS)",
-        "SNP 75 (15-15, 15-SMUR/RPIS, 15-GPS)",
+        "15-15, 15-SMUR/RPIS",
+        "15-NexSIS",
+        "15-15, 15-SMUR/RPIS, 15-GPS",
         "",
         "",
       ];
@@ -149,20 +153,32 @@ describe("Data utils", () => {
     test("should return parsed JSON when fetch is successful", async () => {
       const mockData = [
         {
-          "P: 15-15": "1.5,2.0,2.1",
-          "P: 15-gps": "1.3",
-          "P: 15-nexsis": "1.9",
-          "P: 15-smur": "1.6,1.7",
           client_id: "fr.health.lrm",
-          editor: "ANS",
+          client_name: "LRM",
+          client_type: "SAS",
+          perimeters: {
+            "15-15": true,
+            "15-gps": true,
+            "15-nexsis": true,
+            "15-smur": true,
+            "15-cap": true,
+            "15-cnr114": true,
+            "15-portail": true,
+          },
         },
         {
-          "P: 15-15": "1.5,2.0,2.1",
-          "P: 15-gps": "1.3",
-          "P: 15-nexsis": "1.9",
-          "P: 15-smur": "1.6,1.7",
           client_id: "fr.health.lrm2",
-          editor: "ANS",
+          client_name: "LRM 2",
+          client_type: "SAS",
+          perimeters: {
+            "15-15": true,
+            "15-gps": false,
+            "15-nexsis": false,
+            "15-smur": false,
+            "15-cap": false,
+            "15-cnr114": false,
+            "15-portail": false,
+          },
         },
       ];
 

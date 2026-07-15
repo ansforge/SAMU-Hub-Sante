@@ -1,4 +1,4 @@
-import { fetchData, renameKeys, constituteLabel, state } from "./data.js";
+import { fetchData, constituteLabel, state } from "./data.js";
 import {
   renderClientsConfigTable,
   updateFiltersSelectOptions,
@@ -7,19 +7,15 @@ import {
   hideInfoSelectedDepartment,
   unselectDepartment,
 } from "./dom.js";
-import { keyMap, API_URL } from "./constants.js";
+import { API_URL } from "./constants.js";
 import { getCurrentFilteredClientsConfig } from "./filters.js";
 
 window.addEventListener("load", async () => {
   const clientsConfig = await fetchData(API_URL);
-  state.clientsConfigurations = clientsConfig.map((item) => {
-    const renamedData = renameKeys(item, keyMap);
-    const label = constituteLabel(renamedData);
-    return {
-      ...renamedData,
-      label: label,
-    };
-  });
+state.clientsConfigurations = clientsConfig.map((item) => ({
+    ...item,
+    label: constituteLabel(item),
+  }));
   updateDepartmentInProdColor();
   updateFiltersSelectOptions();
   renderClientsConfigTable(state.clientsConfigurations);
