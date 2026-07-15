@@ -1,0 +1,50 @@
+body {
+  background-color: var(--white);
+}
+
+#first-section {
+  display: flex;
+  flex-direction: column;
+}
+
+#second-section {
+  padding-top: 3rem;
+}
+
+/* Modale */
+.modal-content {
+  padding: 20px 30px;
+  width: fit-content;
+  max-width: 70%;
+}
+
+/* Map */
+.department {
+  fill: var(--gray-400);
+  stroke: var(--white);
+  cursor: pointer;
+  stroke-width: 0.6;
+}
+
+.department:hover {
+  fill: var(--gray-500);
+  cursor: "pointer";
+}
+
+.department.selected {
+  fill: var(--gray-500);
+  transition: fill 0.3s ease;
+}
+
+.department.prod {
+  fill: var(--primary);
+}
+
+.department.prod:hover {
+  fill: var(--primary-darker);
+}
+
+.department.prod.selected {
+  fill: var(--primary-darker);
+  transition: fill 0.3s ease;
+}
