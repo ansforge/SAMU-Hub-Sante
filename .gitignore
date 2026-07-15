@@ -32,6 +32,9 @@ node_modules/
 package-lock.json
 package.json
 
+# vite distribution folder
+/dist
+
 # Class generation
 models/node_modules
 
@@ -51,3 +54,4 @@ certs/
 
 # Environment variables
 .envrc
+.env
