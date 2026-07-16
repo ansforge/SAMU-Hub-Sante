@@ -33,7 +33,7 @@ package-lock.json
 package.json
 
 # vite distribution folder
-/dist
+dist/
 
 # Class generation
 models/node_modules

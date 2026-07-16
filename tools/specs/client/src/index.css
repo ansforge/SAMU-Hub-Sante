@@ -1,0 +1,115 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* Brand accent (decorative only, not a UI state color) */
+  --color-brand-2: oklch(0.551 0.22 11.4);
+
+  /* Semantic states */
+  --color-success: oklch(0.738 0.156 122.1);
+  --color-success-muted: oklch(0.96 0.03 122.1);
+  --color-warning: oklch(0.729 0.155 68.2);
+  --color-warning-muted: oklch(0.96 0.03 68.2);
+  --color-danger: oklch(0.544 0.22 24.5);
+  --color-danger-muted: oklch(0.96 0.03 24.5);
+
+  --radius: 0.875rem;
+  --shadow: 0 0 14px rgb(52 56 82 / 0.1);
+  --shadow-lg: 0 15px 40px rgb(52 56 82 / 0.1);
+}
+
+* {
+  border-color: var(--color-border);
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Thin, sober scrollbars */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 9999px;
+  border: 3px solid var(--color-background);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-muted-foreground);
+}
+
+@theme inline {
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+:root {
+  --background: oklch(0.982 0.003 264.5);
+  --foreground: oklch(0.349 0.046 277);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.349 0.046 277);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.349 0.046 277);
+  --primary: oklch(0.537 0.135 249.3);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.965 0.005 275);
+  --secondary-foreground: oklch(0.349 0.046 277);
+  --muted: oklch(0.965 0.005 275);
+  --muted-foreground: oklch(0.555 0.061 276.3);
+  --accent: oklch(0.95 0.007 277.2);
+  --accent-foreground: oklch(0.349 0.046 277);
+  --destructive: oklch(0.544 0.22 24.5);
+  --border: oklch(0.908 0.014 277);
+  --input: oklch(0.836 0.025 278.3);
+  --ring: oklch(0.537 0.135 249.3);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
+}
