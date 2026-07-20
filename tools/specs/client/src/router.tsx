@@ -4,10 +4,11 @@ import {
   createRouter,
   Link,
   Outlet,
-} from "@tanstack/react-router"
-import { Button } from "@/components/ui/button"
-import { Footer } from "@/components/Footer"
-import { useCounterStore } from "@/store/counter-store"
+} from "@tanstack/react-router";
+import { Footer } from "@/components/Footer";
+import { MessageDetail } from "@/components/MessageDetail";
+import { MessageList } from "@/components/MessageList";
+import { useSchemaStore } from "@/store/schema-store";
 
 function Root() {
   return (
@@ -26,28 +27,16 @@ function Root() {
       </main>
       <Footer />
     </div>
-  )
+  );
 }
 
 function Home() {
-  const { count, increment, decrement } = useCounterStore()
-
   return (
-    <div className="flex flex-1 flex-col items-center justify-center gap-6">
-      <p className="text-4xl font-semibold">{count}</p>
-      <div className="flex gap-3">
-        <Button variant="default" onClick={increment}>
-          Increment
-        </Button>
-        <Button variant="secondary" onClick={decrement}>
-          Decrement
-        </Button>
-      </div>
-      <Link to="/test" className="text-sm underline">
-        go to /test
-      </Link>
+    <div className="flex flex-1 flex-col">
+      <MessageDetail />
+      <MessageList />
     </div>
-  )
+  );
 }
 
 // Example route showing the pattern: createRoute + getParentRoute, then
@@ -60,32 +49,52 @@ function Test() {
         back home
       </Link>
     </div>
-  )
+  );
 }
 
-const rootRoute = createRootRoute({ component: Root })
+const rootRoute = createRootRoute({
+  loader: async () => {
+    const res = await fetch(
+      `${import.meta.env.VITE_SPECS_API_DOMAIN}/schemas`,
+    );
+    if (!res.ok) throw new Error("not found");
+    const data = await res.json();
+    console.log(data);
 
+    useSchemaStore.getState().setSchemasFromArray(data);
+    return data;
+  },
+  staleTime: 30_000,
+  component: Root,
+  errorComponent: (error) => (
+    <div className="flex flex-col items-center justify-center gap-6">
+      <pre>
+        <code>{JSON.stringify(error, null, 2)}</code>
+      </pre>
+    </div>
+  ),
+});
 const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/",
   component: Home,
-})
+});
 
 const testRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/test",
   component: Test,
-})
+});
 
-const routeTree = rootRoute.addChildren([indexRoute, testRoute])
+const routeTree = rootRoute.addChildren([indexRoute, testRoute]);
 
 export const router = createRouter({
   routeTree,
   basepath: import.meta.env.PROD ? "/specs" : "/",
-})
+});
 
 declare module "@tanstack/react-router" {
   interface Register {
-    router: typeof router
+    router: typeof router;
   }
 }
