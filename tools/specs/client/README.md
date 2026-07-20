@@ -1,6 +1,6 @@
-# react-ts-tailwind-tanstack-boiler
+# specs-client
 
-Minimal boilerplate: React 19, TypeScript, Tailwind CSS v4, TanStack Router, Zustand, shadcn-style `Button` component.
+Viewer for the Hub Santé message schemas: fetches the schema list from the specs API and displays it.
 
 ## Stack
 
@@ -13,6 +13,7 @@ Minimal boilerplate: React 19, TypeScript, Tailwind CSS v4, TanStack Router, Zus
 ## Getting started
 
 ```bash
+cp .env.example .env # set VITE_SPECS_API_DOMAIN
 pnpm install
 pnpm dev
 ```
@@ -24,6 +25,8 @@ pnpm dev
 ## Structure
 
 - `src/main.tsx` — app entry point
-- `src/router.tsx` — router and the single `/` page
-- `src/store/counter-store.ts` — example Zustand store (increment/decrement)
+- `src/router.tsx` — router; root loader fetches `${VITE_SPECS_API_DOMAIN}/api/schemas` into the schema store, shared by all routes
+- `src/store/schema-store.ts` — Zustand store holding schemas (by name) and the selected schema
+- `src/components/MessageList.tsx` — bottom tab bar listing schemas, selects one
+- `src/components/MessageDetail.tsx` — middle panel, schema detail (placeholder for now)
 - `src/components/ui/button.tsx` — shadcn-style Button component
