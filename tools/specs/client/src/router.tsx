@@ -8,6 +8,7 @@ import {
 import { Footer } from "@/components/Footer";
 import { MessageDetail } from "@/components/MessageDetail";
 import { MessageList } from "@/components/MessageList";
+import { apiDomain } from "@/config";
 import { useSchemaStore } from "@/store/schema-store";
 
 function Root() {
@@ -54,9 +55,7 @@ function Test() {
 
 const rootRoute = createRootRoute({
   loader: async () => {
-    const res = await fetch(
-      `${import.meta.env.VITE_SPECS_API_DOMAIN}/schemas`,
-    );
+    const res = await fetch(`${apiDomain}/schemas`);
     if (!res.ok) throw new Error("not found");
     const data = await res.json();
     console.log(data);
