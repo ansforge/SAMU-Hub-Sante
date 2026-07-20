@@ -28,6 +28,13 @@ COPY --from=builder /app/dist /usr/share/nginx/html
 COPY nginx.conf /usr/share/nginx/html/nginx.conf
 COPY conf.d/default.conf /etc/nginx/conf.d/default.conf
 
+# Vite bakes VITE_* vars at build time, but this image is built once and
+# deployed to multiple environments with per-env values injected as container
+# env vars. This entrypoint writes those values to a small script, loaded by
+# index.html before the app bundle, so they're readable at container runtime.
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
+
 # Fix permissions for nginx cache directory to run as uid 1000
 # (matches the runAsUser: 1000 enforced by the k8s deployment securityContext,
 # which overrides the image's USER regardless of what's set here)
@@ -36,8 +43,7 @@ RUN mkdir -p /var/cache/nginx && chown -R 1000:1000 /var/cache/nginx /usr/share/
 # Expose port 8080 to allow incoming traffic
 EXPOSE 8080
 
-# Start the nginx web server with custom config (with updated pid path)
-CMD ["nginx", "-c", "/usr/share/nginx/html/nginx.conf", "-g", "daemon off;"]
+ENTRYPOINT ["/docker-entrypoint.sh"]
 
 # Run as non-root user for better security
 USER 1000
