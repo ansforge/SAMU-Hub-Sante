@@ -11,6 +11,9 @@ import { API_URL } from "./constants.js";
 import { getCurrentFilteredClientsConfig } from "./filters.js";
 
 window.addEventListener("load", async () => {
+  const svgResponse = await fetch("/img/carte-france.svg");
+  const svgContent = await svgResponse.text();
+  document.getElementById("div-map").innerHTML = svgContent;
   const clientsConfig = await fetchData(API_URL);
 state.clientsConfigurations = clientsConfig.map((item) => ({
     ...item,
