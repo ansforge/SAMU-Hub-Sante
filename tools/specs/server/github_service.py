@@ -11,6 +11,10 @@ _cache: List[SchemaReference] | None = None
 _cache_expiry = 0.0
 
 
+class SchemaNotFoundError(Exception):
+    pass
+
+
 def get_schemas() -> List[SchemaReference]:
     global _cache, _cache_expiry
     if _cache is not None and time.monotonic() < _cache_expiry:
@@ -40,3 +44,22 @@ def get_schemas() -> List[SchemaReference]:
     _cache = schemas
     _cache_expiry = time.monotonic() + CACHE_TTL_SECONDS
     return _cache
+
+
+def get_schema_content(name: str) -> str:
+    schema = next((s for s in get_schemas() if s.name == name), None)
+    if schema is None:
+        raise SchemaNotFoundError(name)
+
+    token = os.getenv("GITHUB_TOKEN")
+    if not token:
+        raise RuntimeError("GITHUB_TOKEN environment variable is not set")
+
+    auth = Auth.Token(token)
+    g = Github(auth=auth, timeout=15)
+    try:
+        repo = g.get_repo("ansforge/SAMU-Hub-Modeles")
+        content_file = repo.get_contents(schema.path)
+        return content_file.decoded_content.decode("utf-8")
+    finally:
+        g.close()
