@@ -5,31 +5,7 @@ export const FILTER_IDS = {
   actor: "filter-actor",
   perimeter: "filter-perimeter",
 };
-
-// Détecte automatiquement l'environnement à partir du nom de domaine
-function detectEnv() {
-  const host = window.location.hostname;
-  if (host.includes("localhost") || host.includes("127.0.0.1")) return "dev";
-  if (host.includes("bac-a-sable")) return "bac-a-sable";
-  if (host.includes("integration")) return "integration";
-  if (host.includes("qualification")) return "qualification";
-  if (host.includes("pre-prod")) return "pre-prod";
-  return "prod";
-}
-
-const ENV = detectEnv();
-
-const BASE_API_URLS = {
-  dev: "http://localhost:3000/annuaire",
-  "bac-a-sable": "https://bac-a-sable.hub.esante.gouv.fr/annuaire/api",
-  integration: "https://integration.hub.esante.gouv.fr/annuaire/api",
-  qualification: "https://qualification.hub.esante.gouv.fr/annuaire/api",
-  "pre-prod": "https://pre-prod.hub.esante.gouv.fr/annuaire/api",
-  prod: "https://hub.esante.gouv.fr/annuaire/api",
-};
-
-export const BASE_API_URL = BASE_API_URLS[ENV];
-export const API_URL = ENV === "dev" ? BASE_API_URL : `${BASE_API_URL}/clients`;
+export { API_URL } from "./env-config.js";
 
 export const CLIENT_ID_PREFIX = {
   SAMU: "fr.health.samu",

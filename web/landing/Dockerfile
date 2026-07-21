@@ -10,14 +10,21 @@ COPY nginx.conf /usr/share/nginx/html/nginx.conf
 # Copy custom server config to use port 8080
 COPY conf.d/default.conf /etc/nginx/conf.d/default.conf
 
+# Copy the entrypoint script that generates env-config.js at container startup
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
+
 # Fix permissions for nginx cache directory when running with non-root user
 RUN mkdir -p /var/cache/nginx && chown -R nginx:nginx /var/cache/nginx /usr/share/nginx/html
 
 # Expose port 8080 to allow incoming traffic
 EXPOSE 8080
 
-# Start the nginx web server with custom config (with updated pid path)
-CMD ["nginx", "-c", "/usr/share/nginx/html/nginx.conf", "-g", "daemon off;"]
-
 # Run as non-root user for better security
 USER nginx
+
+# Run the entrypoint script before starting nginx
+ENTRYPOINT ["/docker-entrypoint.sh"]
+
+# Start the nginx web server with custom config (with updated pid path)
+CMD ["nginx", "-c", "/usr/share/nginx/html/nginx.conf", "-g", "daemon off;"]
