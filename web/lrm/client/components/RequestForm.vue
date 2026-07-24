@@ -11,10 +11,11 @@
 </template>
 
 <script setup>
-import { ref, computed, toRefs, watch } from 'vue';
+import { ref, computed, toRefs, watch, markRaw } from 'vue';
 import Vjsf from '@koumoul/vjsf';
 import moment from 'moment';
 import { useMainStore } from '~/store';
+import DateTimePickerWithNow from './DateTimePickerWithNow.vue';
 
 const props = defineProps({
   schema: {
@@ -66,6 +67,9 @@ const options = ref({
   },
   formats: {
     'date-time': (dateTime, _locale) => moment(new Date(dateTime)).format(),
+  },
+  nodeComponents: {
+    'date-time-picker': markRaw(DateTimePickerWithNow),
   },
 });
 
