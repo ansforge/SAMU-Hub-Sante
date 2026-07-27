@@ -1,65 +1,63 @@
+import json
 import os
-import time
+from functools import lru_cache
 from typing import List
 from github import Github, Auth
 from models import SchemaReference
 
-SCHEMA_SUFFIX = ".schema.json"
-CACHE_TTL_SECONDS = 1800 # 30 mins
-
-_cache: List[SchemaReference] | None = None
-_cache_expiry = 0.0
+REPO_FULL_NAME = "ansforge/SAMU-Hub-Modeles"
+DEFAULT_REF = "main"
 
 
-class SchemaNotFoundError(Exception):
-    pass
+class GithubSchemaService:
+    def __init__(
+        self,
+        repo_full_name: str = REPO_FULL_NAME,
+    ):
+        self.repo_full_name = repo_full_name
+        self._client: Github | None = None
+
+    def _get_token(self) -> str:
+        token = os.getenv("GITHUB_TOKEN")
+        if not token:
+            raise RuntimeError("GITHUB_TOKEN environment variable is not set")
+        return token
+
+    def _get_client(self) -> Github:
+        if self._client is None:
+            self._client = Github(auth=Auth.Token(self._get_token()), timeout=15)
+        return self._client
+
+    def _construct_schema_path(self, name: str, ref: str) -> str:
+        return f"https://raw.githubusercontent.com/{self.repo_full_name}/{ref}/src/main/resources/json-schema/{name}"
+
+    @lru_cache(maxsize=8)
+    def get_schemas(self, ref: str) -> List[SchemaReference]:
+        client = self._get_client()
+        try:
+            repo = client.get_repo(self.repo_full_name)
+            messages_list_raw = repo.get_contents(
+                "src/main/resources/sample/examples/messagesList.json",
+                ref=ref,
+            )
+        except Exception:
+            client.close()
+            self._client = None
+            raise
+
+        messages_list = json.loads(messages_list_raw.decoded_content.decode("utf-8"))
+
+        return [
+            SchemaReference(
+                name=item.get("label"),
+                url=self._construct_schema_path(item.get("schemaName"), ref),
+            )
+            for item in messages_list
+        ]
 
 
-def get_schemas() -> List[SchemaReference]:
-    global _cache, _cache_expiry
-    if _cache is not None and time.monotonic() < _cache_expiry:
-        return _cache
-
-    token = os.getenv("GITHUB_TOKEN")
-    if not token:
-        raise RuntimeError("GITHUB_TOKEN environment variable is not set")
-
-    auth = Auth.Token(token)
-    schemas: List[SchemaReference] = []
-    g = Github(auth=auth, timeout=15)
-    try:
-        repo = g.get_repo("ansforge/SAMU-Hub-Modeles")
-        contents = repo.get_contents("src/main/resources/json-schema")
-        for item in contents:
-            if item.type == "file" and item.name.endswith(SCHEMA_SUFFIX):
-                schemas.append(SchemaReference(
-                    name=item.name.removesuffix(SCHEMA_SUFFIX),
-                    path=item.path,
-                    sha=item.sha,
-                    url=item.download_url
-                ))
-    finally:
-        g.close()
-
-    _cache = schemas
-    _cache_expiry = time.monotonic() + CACHE_TTL_SECONDS
-    return _cache
+_service = GithubSchemaService()
 
 
-def get_schema_content(name: str) -> str:
-    schema = next((s for s in get_schemas() if s.name == name), None)
-    if schema is None:
-        raise SchemaNotFoundError(name)
-
-    token = os.getenv("GITHUB_TOKEN")
-    if not token:
-        raise RuntimeError("GITHUB_TOKEN environment variable is not set")
-
-    auth = Auth.Token(token)
-    g = Github(auth=auth, timeout=15)
-    try:
-        repo = g.get_repo("ansforge/SAMU-Hub-Modeles")
-        content_file = repo.get_contents(schema.path)
-        return content_file.decoded_content.decode("utf-8")
-    finally:
-        g.close()
+def get_schemas(ref: str | None = None) -> List[SchemaReference]:
+    return _service.get_schemas(ref or os.getenv("SCHEMA_REF", DEFAULT_REF))

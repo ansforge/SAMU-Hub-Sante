@@ -11,6 +11,7 @@ dependencies = [
     "pydantic>=2.13.4",
     "pygithub>=2.8.1",
     "python-dotenv>=1.1.1",
+    "requests>=2.34.2",
 ]
 
 [dependency-groups]
