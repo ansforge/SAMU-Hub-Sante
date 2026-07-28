@@ -1,0 +1,38 @@
+spring:
+  application:
+    name: amqp-ordering-lab
+  main:
+    banner-mode: off
+    web-application-type: none
+  rabbitmq:
+    host: ${RABBIT_HOST:localhost}
+    port: ${RABBIT_PORT:5672}
+    username: ${RABBIT_USER:lab}
+    password: ${RABBIT_PASS:lab}
+    virtual-host: ${RABBIT_VHOST:/}
+    # Publisher confirms / returns are OFF by default so the baseline is the
+    # plainest possible `RabbitTemplate.send()`. Scenario `confirms` turns them on.
+    publisher-confirm-type: ${PUBLISHER_CONFIRM_TYPE:none}
+    publisher-returns: ${PUBLISHER_RETURNS:false}
+    template:
+      mandatory: ${TEMPLATE_MANDATORY:false}
+
+lab:
+  scenario: baseline
+  messages: 2000
+  queue-type: classic
+  producer-threads: 1
+  consumer-concurrency: 1
+  prefetch: 1
+  payload-bytes: 64
+  work-jitter-ms: 0
+  requeue-seq: -1
+  drain-timeout-seconds: 120
+  expect: preserved
+
+logging:
+  level:
+    root: WARN
+    com.hubsante.amqplab: INFO
+  pattern:
+    console: "%d{HH:mm:ss.SSS} %-5level %msg%n"

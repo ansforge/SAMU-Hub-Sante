@@ -1,0 +1,16 @@
+services:
+  rabbitmq:
+    image: rabbitmq:4.1-management
+    container_name: amqp-ordering-lab-rabbit
+    hostname: amqp-ordering-lab-rabbit
+    environment:
+      RABBITMQ_DEFAULT_USER: lab
+      RABBITMQ_DEFAULT_PASS: lab
+    ports:
+      - "5672:5672"     # AMQP
+      - "15672:15672"   # management UI -> http://localhost:15672 (lab/lab)
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "check_running"]
+      interval: 3s
+      timeout: 5s
+      retries: 20
