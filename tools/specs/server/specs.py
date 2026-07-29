@@ -1,5 +1,5 @@
 from dotenv import load_dotenv
-from flask import Flask, jsonify, Response
+from flask import Flask, jsonify, request, Response
 from flask_cors import CORS
 from github import GithubException
 
@@ -21,7 +21,7 @@ def create_app():
     @app.get("/schemas")
     def list_schemas() -> Response:
         try:
-            schemas = get_schemas()
+            schemas = get_schemas(ref=request.args.get("ref"))
         except RuntimeError as e:
             return jsonify({"error": str(e)}), 500
         except GithubException as e:
