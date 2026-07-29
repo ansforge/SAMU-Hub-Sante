@@ -20,14 +20,13 @@ import static com.hubsante.hub.config.Constants.*;
 import static com.hubsante.hub.utils.MessageUtils.*;
 
 import com.hubsante.hub.config.HubConfiguration;
+import com.hubsante.hub.service.TopologyRegistry;
 import com.hubsante.model.edxl.EdxlMessage;
 import java.util.Arrays;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class ConversionUtils {
-
-    private static final boolean DEFAULT_DIRECT_CISU_PREFERENCE = false;
 
     public static String buildExchangeDestination(String sourceVHost, String targetVHost) {
         return TRANSFER_EXCHANGE_PREFIX + sourceVHost + "_to_" + targetVHost;
@@ -56,7 +55,7 @@ public class ConversionUtils {
     }
 
     public static boolean isConversionAvailable(String vhost) {
-        return CONVERSION_VHOST_MODEL.get(vhost) != null;
+        return TopologyRegistry.getInstance().getMajorModelVersion(vhost) != null;
     }
 
     public static String getSourceVHost(HubConfiguration hubConfig) {
@@ -74,7 +73,9 @@ public class ConversionUtils {
         boolean isNexsisRecipient =
                 recipientId.startsWith(FR_FIRE_PREFIX) || recipientId.startsWith(FR_CISU_PREFIX);
         if (isNexsisRecipient) {
-            return new String[] {NEXSIS_VHOST}; // ["15-nexsis_v1.9"]
+            return new String[] {
+                TopologyRegistry.getInstance().getVhostTarget(NEXSIS_HUBEX_PARTNER)
+            };
         }
         boolean isCisuSender = !senderId.startsWith(FR_HEALTH_PREFIX);
         boolean isDirectCisu = isDirectCisuForHealthActor(hubConfig, edxlMessage);
@@ -83,8 +84,10 @@ public class ConversionUtils {
                 (isCisuSender && !isDirectCisu) ? Perimeter.HEALTH.getName() : sourcePerimeter;
 
         targetVersionsOnTargetPerimeter =
-                hubConfig.getClientVersionsForPerimeter(
-                        recipientId, targetPerimeter); // ex ['1.5, 2.0']
+                hubConfig
+                        .getClientPropertiesRegistry()
+                        .getClientVersionsForPerimeter(
+                                recipientId, targetPerimeter); // ex ['1.5, 2.0']
         return formatVersionToVhosts(
                 targetVersionsOnTargetPerimeter,
                 targetPerimeter); // ex ["15-15_v1.5", "15-15_v2.0"]
@@ -119,7 +122,8 @@ public class ConversionUtils {
         if (recipient.startsWith(FR_HEALTH_PREFIX)) {
             return currentVHost.startsWith(HEALTH_VHOST_PREFIX);
         } else {
-            return currentVHost.startsWith(NEXSIS_VHOST);
+            return currentVHost.startsWith(
+                    TopologyRegistry.getInstance().getVhostTarget(NEXSIS_HUBEX_PARTNER));
         }
     }
 
@@ -135,10 +139,7 @@ public class ConversionUtils {
         String recipientId = getRecipientID(edxlMessage);
         String senderId = edxlMessage.getSenderID();
         String healthActor = senderId.startsWith(HEALTH_PREFIX) ? senderId : recipientId;
-        Boolean directCisuPreference =
-                hubConfig
-                        .getDirectCisuPreferences()
-                        .getOrDefault(healthActor, DEFAULT_DIRECT_CISU_PREFERENCE);
-        return directCisuPreference != null && directCisuPreference;
+
+        return hubConfig.getClientPropertiesRegistry().isClientDirectCisu(healthActor);
     }
 }

@@ -1,0 +1,4 @@
+clients:
+  - client_id: fr.health.test.samu-v1
+    common_name: fr.health.test.samu-v1.fr
+    editor: ANS

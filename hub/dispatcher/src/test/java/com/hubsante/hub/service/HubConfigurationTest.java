@@ -21,9 +21,7 @@ import com.hubsante.hub.config.HubConfiguration;
 import java.io.File;
 import java.io.FileWriter;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -45,18 +43,6 @@ public class HubConfigurationTest {
         }
 
         ReflectionTestUtils.setField(hubConfig, "supportedMessagesFile", tempFile);
-
-        File tempConfigFile = File.createTempFile("client.preferences", ".csv");
-        try (FileWriter writer = new FileWriter(tempConfigFile, StandardCharsets.UTF_8)) {
-            writer.write(
-                    "client_id;useXML;directCISU;editor;lrm_test;15-15;15-nexsis;15-smur;15-gps\n");
-            writer.write(
-                    "fr.health.samuA;false;false;default-editor;false;1.5,2.0,2.1;1.9;1.7;2.0\n");
-            writer.write("fr.health.samuV2;false;false;default-editor;false;2.0;1.9;1.7;2.0\n");
-            writer.write("fr.health.samuV1;false;false;default-editor;false;1.5;;;\n");
-        }
-
-        ReflectionTestUtils.setField(hubConfig, "configFile", tempConfigFile);
     }
 
     @Test
@@ -110,36 +96,5 @@ public class HubConfigurationTest {
         Assertions.assertEquals(2, supportedMessages.size());
         Assertions.assertTrue(supportedMessages.contains("ReferenceWrapper"));
         Assertions.assertTrue(supportedMessages.contains("ErrorWrapper"));
-    }
-
-    @Test
-    void testLoadPerimeterVersions() throws Exception {
-        Map<String, Map<String, String>> clientsPerimetersAndVersions =
-                hubConfig.loadClientsPerimetersAndVersions();
-        Map<String, Map<String, String>> expectedMap = new HashMap<>();
-
-        Map<String, String> samuV1Map = new HashMap<>();
-        samuV1Map.put("15-smur", "");
-        samuV1Map.put("15-15", "1.5");
-        samuV1Map.put("15-nexsis", "");
-        samuV1Map.put("15-gps", "");
-        expectedMap.put("fr.health.samuV1", samuV1Map);
-
-        Map<String, String> samuV2Map = new HashMap<>();
-        samuV2Map.put("15-smur", "1.7");
-        samuV2Map.put("15-15", "2.0");
-        samuV2Map.put("15-nexsis", "1.9");
-        samuV2Map.put("15-gps", "2.0");
-        expectedMap.put("fr.health.samuV2", samuV2Map);
-
-        Map<String, String> samuAMap = new HashMap<>();
-        samuAMap.put("15-smur", "1.7");
-        samuAMap.put("15-15", "1.5,2.0,2.1");
-        samuAMap.put("15-nexsis", "1.9");
-        samuAMap.put("15-gps", "2.0");
-        expectedMap.put("fr.health.samuA", samuAMap);
-        System.out.println(clientsPerimetersAndVersions);
-
-        Assertions.assertEquals(expectedMap, clientsPerimetersAndVersions);
     }
 }

@@ -16,8 +16,10 @@
 package com.hubsante.hub.utils;
 
 import static com.hubsante.hub.config.Constants.HEALTH_VHOST_PREFIX;
-import static com.hubsante.hub.config.Constants.NEXSIS_VHOST;
+import static com.hubsante.hub.config.Constants.NEXSIS_HUBEX_PARTNER;
 
+import com.hubsante.hub.service.TopologyRegistry;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -46,7 +48,8 @@ public final class MessagePersistencePolicy {
      * Returns true if the message with the given useCase from the given vhost should be persisted.
      */
     public static boolean shouldPersist(String vhost, String useCase) {
-        if (NEXSIS_VHOST.equals(vhost)) {
+        String nexsisVhost = TopologyRegistry.getInstance().getVhostTarget(NEXSIS_HUBEX_PARTNER);
+        if (Objects.equals(nexsisVhost, vhost)) {
             return NEXSIS_PERSISTED_USE_CASES.contains(useCase);
         }
         if (vhost != null && vhost.startsWith(HEALTH_VHOST_PREFIX)) {

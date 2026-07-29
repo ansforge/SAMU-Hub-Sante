@@ -15,23 +15,19 @@
  */
 package com.hubsante.hub.service;
 
-import static com.hubsante.hub.utils.ConversionUtils.isAlreadyCisuConverted;
-import static com.hubsante.hub.utils.ConversionUtils.trimVersionSuffix;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
 import com.hubsante.hub.config.HubConfiguration;
 import com.hubsante.hub.utils.ConversionUtils;
 import com.hubsante.hub.utils.MessageUtils;
-import com.hubsante.model.cisu.CreateCaseWrapper;
 import com.hubsante.model.edxl.EdxlMessage;
-import com.hubsante.model.emsi.EmsiWrapper;
-import com.hubsante.model.health.CreateCaseHealthWrapper;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -41,6 +37,7 @@ import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.MockitoAnnotations;
+import org.springframework.core.io.ClassPathResource;
 
 public class ConversionUtilsTest {
 
@@ -48,24 +45,22 @@ public class ConversionUtilsTest {
     private HubConfiguration hubConfig;
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+    private ClientPropertiesRegistry clientPropertiesRegistry;
+
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private EdxlMessage edxlMessage;
 
-    @Mock private CreateCaseWrapper createCaseWrapper;
-
-    @Mock private CreateCaseHealthWrapper createCaseHealthWrapper;
-
-    @Mock private EmsiWrapper emsiWrapper;
-
-    private HashMap<String, Boolean> directCisuPreferences;
+    @BeforeAll
+    static void setUpTopologyRegistry() {
+        new TopologyRegistry(new ClassPathResource("config/clients.yaml"));
+    }
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
 
-        directCisuPreferences = new HashMap<>();
-        directCisuPreferences.put("fr.health.samuDirectCisu", true);
-
-        when(hubConfig.getDirectCisuPreferences()).thenReturn(directCisuPreferences);
+        when(hubConfig.getClientPropertiesRegistry()).thenReturn(clientPropertiesRegistry);
+        when(clientPropertiesRegistry.get(anyString()).directCisu()).thenReturn(false);
     }
 
     @Test
@@ -125,7 +120,7 @@ public class ConversionUtilsTest {
             mockedMessageUtils
                     .when(() -> MessageUtils.getRecipientID(edxlMessage))
                     .thenReturn(recipientId);
-            when(hubConfig.getClientVersionsForPerimeter(recipientId, perimeter))
+            when(clientPropertiesRegistry.getClientVersionsForPerimeter(recipientId, perimeter))
                     .thenReturn(versions);
 
             assertEquals(
@@ -239,8 +234,9 @@ public class ConversionUtilsTest {
 
             when(edxlMessage.getSenderID()).thenReturn("fr.health.samuVX");
 
-            when(hubConfig.getClientVersionsForPerimeter("fr.health.samuA", "15-15"))
+            when(clientPropertiesRegistry.getClientVersionsForPerimeter("fr.health.samuA", "15-15"))
                     .thenReturn(new String[] {"1.5", "2.0", "2.1"});
+
             mockedMessageUtils
                     .when(() -> MessageUtils.getRecipientID(edxlMessage))
                     .thenReturn("fr.health.samuA");
@@ -248,7 +244,8 @@ public class ConversionUtilsTest {
                     new String[] {"15-15_v1.5", "15-15_v2.0", "15-15_v2.1"},
                     ConversionUtils.getTargetVHosts(hubConfig, edxlMessage));
 
-            when(hubConfig.getClientVersionsForPerimeter("fr.health.samuV1", "15-15"))
+            when(clientPropertiesRegistry.getClientVersionsForPerimeter(
+                            "fr.health.samuV1", "15-15"))
                     .thenReturn(new String[] {"1.5"});
             mockedMessageUtils
                     .when(() -> MessageUtils.getRecipientID(edxlMessage))
@@ -257,14 +254,16 @@ public class ConversionUtilsTest {
                     new String[] {"15-15_v1.5"},
                     ConversionUtils.getTargetVHosts(hubConfig, edxlMessage));
 
-            when(hubConfig.getClientVersionsForPerimeter("fr.health.samuNull", "15-15"))
+            when(clientPropertiesRegistry.getClientVersionsForPerimeter(
+                            "fr.health.samuNull", "15-15"))
                     .thenReturn(null);
             mockedMessageUtils
                     .when(() -> MessageUtils.getRecipientID(edxlMessage))
                     .thenReturn("fr.health.samuNull");
             assertArrayEquals(null, ConversionUtils.getTargetVHosts(hubConfig, edxlMessage));
 
-            when(hubConfig.getClientVersionsForPerimeter("fr.health.samuEmpty", "15-15"))
+            when(clientPropertiesRegistry.getClientVersionsForPerimeter(
+                            "fr.health.samuEmpty", "15-15"))
                     .thenReturn(new String[] {});
             mockedMessageUtils
                     .when(() -> MessageUtils.getRecipientID(edxlMessage))
@@ -279,7 +278,8 @@ public class ConversionUtilsTest {
             mockedMessageUtils
                     .when(() -> MessageUtils.getRecipientID(edxlMessage))
                     .thenReturn("fr.health.samuV1");
-            when(hubConfig.getClientVersionsForPerimeter("fr.health.samuV1", "15-15"))
+            when(clientPropertiesRegistry.getClientVersionsForPerimeter(
+                            "fr.health.samuV1", "15-15"))
                     .thenReturn(new String[] {"1.5"});
             assertArrayEquals(
                     new String[] {"15-15_v1.5"},
@@ -308,6 +308,8 @@ public class ConversionUtilsTest {
 
             // Direct Cisu cases
             when(hubConfig.getVhost()).thenReturn("15-nexsis_v1.9");
+            when(clientPropertiesRegistry.isClientDirectCisu("fr.health.samuDirectCisu"))
+                    .thenReturn(true);
             when(edxlMessage.getSenderID()).thenReturn("fr.health.samuDirectCisu");
             mockedMessageUtils
                     .when(() -> MessageUtils.getRecipientID(edxlMessage))
@@ -317,7 +319,8 @@ public class ConversionUtilsTest {
                     ConversionUtils.getTargetVHosts(hubConfig, edxlMessage));
 
             when(edxlMessage.getSenderID()).thenReturn("fr.fire.test");
-            when(hubConfig.getClientVersionsForPerimeter("fr.health.samuDirectCisu", "15-nexsis"))
+            when(clientPropertiesRegistry.getClientVersionsForPerimeter(
+                            "fr.health.samuDirectCisu", "15-nexsis"))
                     .thenReturn(new String[] {"1.9"});
             mockedMessageUtils
                     .when(() -> MessageUtils.getRecipientID(edxlMessage))
@@ -362,11 +365,11 @@ public class ConversionUtilsTest {
                     .thenReturn("fr.fire.sdisZ");
 
             // Health actor in direct CISU preferences - true
-            directCisuPreferences.put("fr.health.samuA", true);
+            when(clientPropertiesRegistry.isClientDirectCisu("fr.health.samuA")).thenReturn(true);
             assertTrue(ConversionUtils.isDirectCisuForHealthActor(hubConfig, edxlMessage));
 
             // Health actor in direct CISU preferences - false
-            directCisuPreferences.put("fr.health.samuA", false);
+            when(clientPropertiesRegistry.isClientDirectCisu("fr.health.samuA")).thenReturn(false);
             assertFalse(ConversionUtils.isDirectCisuForHealthActor(hubConfig, edxlMessage));
 
             // Health actor not in direct CISU preferences
@@ -445,22 +448,24 @@ public class ConversionUtilsTest {
 
     @Test
     public void isAlreadyCisuConvertedTest() {
-        assertTrue(isAlreadyCisuConverted("15-15_v1.5", "fr.health.something"));
-        assertTrue(isAlreadyCisuConverted("15-nexsis_v1.9", "fr.fire.something-else"));
+        assertTrue(ConversionUtils.isAlreadyCisuConverted("15-15_v1.5", "fr.health.something"));
+        assertTrue(
+                ConversionUtils.isAlreadyCisuConverted("15-nexsis_v1.9", "fr.fire.something-else"));
 
-        assertFalse(isAlreadyCisuConverted("15-15_v1.5", "fr.fire.something-else"));
-        assertFalse(isAlreadyCisuConverted("15-nexsis_v1.9", "fr.health.something"));
-        assertFalse(isAlreadyCisuConverted("15-smur_v1.7", "fr.health.something"));
+        assertFalse(ConversionUtils.isAlreadyCisuConverted("15-15_v1.5", "fr.fire.something-else"));
+        assertFalse(
+                ConversionUtils.isAlreadyCisuConverted("15-nexsis_v1.9", "fr.health.something"));
+        assertFalse(ConversionUtils.isAlreadyCisuConverted("15-smur_v1.7", "fr.health.something"));
     }
 
     @Test
     public void testTrimVersionSuffix() {
-        assertEquals("15-15", trimVersionSuffix("15-15_v1.3"));
-        assertEquals("15-nexsis", trimVersionSuffix("15-nexsis_v2"));
-        assertEquals("backup", trimVersionSuffix("backup_v2.0.1"));
-        assertEquals("no-version-here", trimVersionSuffix("no-version-here"));
-        assertNull(trimVersionSuffix(null));
-        assertEquals("", trimVersionSuffix(""));
+        assertEquals("15-15", ConversionUtils.trimVersionSuffix("15-15_v1.3"));
+        assertEquals("15-nexsis", ConversionUtils.trimVersionSuffix("15-nexsis_v2"));
+        assertEquals("backup", ConversionUtils.trimVersionSuffix("backup_v2.0.1"));
+        assertEquals("no-version-here", ConversionUtils.trimVersionSuffix("no-version-here"));
+        assertNull(ConversionUtils.trimVersionSuffix(null));
+        assertEquals("", ConversionUtils.trimVersionSuffix(""));
     }
 
     @Test

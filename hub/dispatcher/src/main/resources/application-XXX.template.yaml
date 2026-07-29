@@ -9,8 +9,8 @@ spring:
   main:
     web-application-type: reactive
 client:
-  preferences:
-    file: "file:<PATH_TO_LOCAL_DEV_DIRECTORY>/config/values/client.preferences.csv"
+  configuration:
+    file: "file:<PATH_TO_LOCAL_DEV_DIRECTORY>/config/values/clients.yaml"
 supported:
   messages:
     file: "file:<PATH_TO_LOCAL_DEV_DIRECTORY>/dispatcher/supported.messages.csv"
