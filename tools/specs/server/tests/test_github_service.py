@@ -37,27 +37,6 @@ def test_get_schemas_filters_and_maps_schema_files(mock_github_cls, monkeypatch)
     mock_gh.close.assert_not_called()
 
 
-@patch("github_service.Github")
-def test_get_schemas_uses_custom_ref(mock_github_cls, monkeypatch):
-    monkeypatch.setenv("GITHUB_TOKEN", "fake-token")
-    mock_repo = MagicMock()
-    mock_repo.get_contents.return_value = _mock_messages_list(
-        [{"label": "GEO-REQ", "schemaName": "GEO-REQ.schema.json"}]
-    )
-    mock_gh = mock_github_cls.return_value
-    mock_gh.get_repo.return_value = mock_repo
-
-    github_service._service = github_service.GithubSchemaService(ref="develop")
-
-    schemas = get_schemas()
-
-    mock_repo.get_contents.assert_called_once_with(
-        "src/main/resources/sample/examples/messagesList.json",
-        ref="develop",
-    )
-    assert schemas[0].url == "https://raw.githubusercontent.com/ansforge/SAMU-Hub-Modeles/develop/src/main/resources/json-schema/GEO-REQ.schema.json"
-
-
 def test_get_schemas_raises_when_token_missing(monkeypatch):
     monkeypatch.delenv("GITHUB_TOKEN", raising=False)
 
@@ -79,9 +58,8 @@ def test_get_schemas_closes_client_on_error(mock_github_cls, monkeypatch):
     mock_gh.close.assert_called_once()
 
 
-@patch("github_service.requests.get")
 @patch("github_service.Github")
-def test_get_schema_content_returns_decoded_file(mock_github_cls, mock_requests_get, monkeypatch):
+def test_get_schemas_uses_custom_ref(mock_github_cls, monkeypatch):
     monkeypatch.setenv("GITHUB_TOKEN", "fake-token")
     mock_repo = MagicMock()
     mock_repo.get_contents.return_value = _mock_messages_list(
@@ -92,11 +70,9 @@ def test_get_schema_content_returns_decoded_file(mock_github_cls, mock_requests_
 
     schemas = get_schemas(ref="develop")
 
-    assert content == '{"title": "GEO-REQ"}'
-    mock_requests_get.assert_called_once_with(
-        "https://raw.githubusercontent.com/ansforge/SAMU-Hub-Modeles/main/src/main/resources/json-schema/GEO-REQ.schema.json",
-        headers={"Authorization": "token fake-token"},
-        timeout=15,
+    mock_repo.get_contents.assert_called_once_with(
+        "src/main/resources/sample/examples/messagesList.json",
+        ref="develop",
     )
     assert schemas[0].url == "https://raw.githubusercontent.com/ansforge/SAMU-Hub-Modeles/develop/src/main/resources/json-schema/GEO-REQ.schema.json"
 

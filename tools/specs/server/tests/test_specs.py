@@ -3,7 +3,6 @@ from unittest.mock import patch
 from github import GithubException
 
 from specs import create_app
-from github_service import SchemaNotFoundError
 
 
 def _client():
@@ -31,48 +30,6 @@ def test_schemas_returns_github_error_as_502(mock_get_schemas):
     mock_get_schemas.side_effect = GithubException(404, {"message": "Not Found"}, None)
 
     res = _client().get("/schemas")
-
-    assert res.status_code == 502
-    assert res.get_json()["error"] == "GitHub API error"
-
-
-@patch("specs.get_schema_content")
-def test_schema_content_returns_raw_json(mock_get_schema_content):
-    mock_get_schema_content.return_value = '{"title": "GEO-REQ"}'
-
-    res = _client().get("/schemas/GEO-REQ/content")
-
-    assert res.status_code == 200
-    assert res.content_type == "application/json"
-    assert res.get_data(as_text=True) == '{"title": "GEO-REQ"}'
-    mock_get_schema_content.assert_called_once_with("GEO-REQ")
-
-
-@patch("specs.get_schema_content")
-def test_schema_content_returns_missing_schema_as_404(mock_get_schema_content):
-    mock_get_schema_content.side_effect = SchemaNotFoundError("unknown")
-
-    res = _client().get("/schemas/unknown/content")
-
-    assert res.status_code == 404
-    assert res.get_json()["error"] == "schema not found"
-
-
-@patch("specs.get_schema_content")
-def test_schema_content_returns_missing_token_as_500(mock_get_schema_content):
-    mock_get_schema_content.side_effect = RuntimeError("GITHUB_TOKEN environment variable is not set")
-
-    res = _client().get("/schemas/GEO-REQ/content")
-
-    assert res.status_code == 500
-    assert "GITHUB_TOKEN" in res.get_json()["error"]
-
-
-@patch("specs.get_schema_content")
-def test_schema_content_returns_github_error_as_502(mock_get_schema_content):
-    mock_get_schema_content.side_effect = GithubException(404, {"message": "Not Found"}, None)
-
-    res = _client().get("/schemas/GEO-REQ/content")
 
     assert res.status_code == 502
     assert res.get_json()["error"] == "GitHub API error"
