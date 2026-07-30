@@ -3,7 +3,6 @@ import {
   perimeterInVhost,
   perimeterLabels,
   perimeterPdfLinks,
-  colors,
   perimeter,
 } from "./constants.js";
 import { FILTERS_CONFIG } from "./filters.js";
@@ -57,7 +56,6 @@ function createAuthorizedPerimetersCell(item) {
 function createAuthorizedPerimetersElement(perimeter, item, vhost) {
   const element = document.createElement("a");
   element.classList.add("btn", "btn--ghost", "btn--default", "btn-sm");
-  element.style.borderColor = colors[perimeter];
   element.textContent = perimeterLabels[perimeter];
   const pdfLink = perimeterPdfLinks[perimeter];
   if (pdfLink) {
