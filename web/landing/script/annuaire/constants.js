@@ -18,17 +18,11 @@ export const perimeter = [
 ];
 
 export const perimeterLabels = {
-  "15-15": "15-15", "15-nexsis": "15-NexSIS", "15-smur": "15-SMUR/RPIS",
+  "15-15": "15-15", "15-nexsis": "15-NexSIS", "15-smur": "15-SMUR",
   "15-gps": "15-GPS", "15-cap": "15-CAP", "15-cnr114": "15-CNR114",
   "15-portail": "15-Portail",
 };
 
-export const colors = {
-  [perimeter[0]]: "#369AEE", //(var(--information))
-  [perimeter[1]]: "#E11414", //(var(--red))
-  [perimeter[2]]: "#FAE832", //(var(--yellow))
-  [perimeter[3]]: "#9AB938", //(var(--success))
-};
 export const perimeterInVhost = {
   [perimeter[0]]: "15-15",
   [perimeter[1]]: "15-nexsis",
