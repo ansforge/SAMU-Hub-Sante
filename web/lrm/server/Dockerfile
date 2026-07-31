@@ -8,7 +8,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies via NPM (use latest npm in build stage)
-RUN npm install -g npm@latest && npm ci
+RUN npm ci 
 
 # Copy the project files to the container
 COPY . .
