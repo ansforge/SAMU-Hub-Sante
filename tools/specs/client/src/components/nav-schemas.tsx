@@ -38,7 +38,14 @@ export function NavSchemas() {
             <SidebarMenuSub>
               {Object.values(schemas).map((schema: SchemaReference) => (
                 <SidebarMenuSubItem key={schema.schemaName}>
-                  <SidebarMenuSubButton render={<Link to={schema.url} />}>
+                  <SidebarMenuSubButton
+                    render={
+                      <Link
+                        to="/$schemaName"
+                        params={{ schemaName: schema.schemaName }}
+                      />
+                    }
+                  >
                     <span>{schema.label}</span>
                   </SidebarMenuSubButton>
                 </SidebarMenuSubItem>

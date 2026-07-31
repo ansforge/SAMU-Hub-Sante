@@ -2,9 +2,10 @@ import {
   createRootRoute,
   createRoute,
   createRouter,
+  Link,
   Outlet,
 } from "@tanstack/react-router";
-import { MessageDetailPlaceholder } from "@/components/message-detail";
+import { SchemaDetail, SchemaDetailSkeleton } from "@/components/schema-detail";
 import { messageListUrl, defaultBranch } from "@/config";
 import { useSchemaStore } from "@/store/schema-store";
 import {
@@ -16,6 +17,7 @@ import { AppSidebar } from "./components/app-sidebar";
 import { Separator } from "@base-ui/react";
 import { SchemaReference } from "./types";
 import { buildGithubSchemaUrl } from "./lib/utils";
+import { ensureSchemaLoaded } from "./lib/ensure-schema-loaded";
 
 function Root() {
   return (
@@ -39,13 +41,69 @@ function Root() {
   );
 }
 
-function Home() {
+function SchemaPagePending() {
   return (
-    <div className="flex flex-1 flex-col">
-      <MessageDetailPlaceholder />
+    <div className="flex min-h-0 flex-1 flex-col">
+      <SchemaDetailSkeleton />
     </div>
   );
 }
+
+function SchemaNotFound() {
+  return (
+    <div className="flex min-h-0 flex-1 flex-col">
+      <div className="flex flex-1 flex-col items-center justify-center gap-2 p-6 text-center">
+        <p className="text-5xl font-semibold text-muted-foreground">404</p>
+        <p className="text-lg font-medium">Schéma introuvable</p>
+        <p className="text-sm text-muted-foreground">
+          Ce schéma n'existe pas ou n'est plus disponible.
+        </p>
+        <Link to="/" className="mt-2 text-sm underline">
+          Retour à l'accueil
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+function Home() {
+  return (
+    <div className="flex flex-1 flex-col">
+      <SchemaDetail />
+    </div>
+  );
+}
+
+function SchemaPage() {
+  const schema = schemaRoute.useLoaderData();
+  return (
+    <div className="flex min-h-0 flex-1 flex-col">
+      <SchemaDetail schema={schema} />
+    </div>
+  );
+}
+
+const schemaRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  component: SchemaPage,
+  path: "/$schemaName",
+  loader: async ({ params }) => {
+    const schema = await ensureSchemaLoaded(params.schemaName);
+    if (!schema) {
+      throw new Error("Schema not found");
+    }
+    const res = await fetch(schema.url);
+    if (!res.ok) throw new Error("not found");
+    return res.json();
+  },
+  staleTime: 30_000,
+  pendingComponent: SchemaPagePending,
+  // default pendingMs (1000) eats most of a 1-2s fetch before the skeleton
+  // even shows up; show it right away instead
+  pendingMs: 0,
+  pendingMinMs: 300,
+  errorComponent: SchemaNotFound,
+});
 
 const rootRoute = createRootRoute({
   loader: async () => {
@@ -76,7 +134,7 @@ const indexRoute = createRoute({
   component: Home,
 });
 
-const routeTree = rootRoute.addChildren([indexRoute]);
+const routeTree = rootRoute.addChildren([indexRoute, schemaRoute]);
 
 export const router = createRouter({
   routeTree,
