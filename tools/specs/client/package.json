@@ -1,0 +1,32 @@
+{
+  "name": "react-ts-tailwind-tanstack-boiler",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@base-ui/react": "^1.6.0",
+    "@tanstack/react-router": "^1.170.17",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^1.28.0",
+    "react": "^19",
+    "react-dom": "^19",
+    "tailwind-merge": "^3.3.1",
+    "zustand": "^5.0.3"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.2",
+    "@types/node": "^26.1.1",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^6.0.3",
+    "tailwindcss": "^4.2.0",
+    "typescript": "5.7.3",
+    "vite": "^8.1.3"
+  }
+}
