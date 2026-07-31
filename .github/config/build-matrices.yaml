@@ -50,3 +50,11 @@ projects:
         context: ./tools/demo-app-tempo
         tag: demo-app-tempo
         artifact-name: trivy-reports-tempo
+
+  specs-front:
+    description: "Specs client"
+    include:
+      - name: specs-client
+        context: ./tools/specs/client
+        tag: hub-specs-client
+        artifact-name: trivy-reports-specs-client
