@@ -22,37 +22,33 @@
       "token": "{{ secrets.GITHUB_TOKEN }}"
     }
   ],
+  "ignorePaths": [
+    "web/lrm/client/**",
+    "tools/chatbot/**",
+    "tools/demo-app-tempo/**",
+    "clients/**"
+  ],
   "packageRules": [
-    {
-      "description": "Desactivation de renovate pour le LRM Client, le chatbot, demo-app-tempo & les exemples de clients RabbitMQ Java",
-      "matchFileNames": [
-        "web/lrm/client/**",
-        "tools/chatbot/**",
-        "tools/demo-app-tempo/**",
-        "clients/**"
-      ],
-      "enabled": false
-    },
     {
       "description": "Mises à jour des GitHub Actions",
       "matchManagers": ["github-actions"],
-      "groupName": "github-actions updates",
+      "groupName": "github-actions",
       "separateMajorMinor": false
     },
     {
       "description": "Mises à jour des dépendances - Dispatcher",
       "matchFileNames": ["hub/**"],
-      "groupName": "dispatcher updates"
+      "groupName": "dispatcher dependencies"
     },
     {
       "description": "Mises à jour des dépendances - Web",
       "matchFileNames": ["web/**"],
-      "groupName": "web updates"
+      "groupName": "web dependencies"
     },
     {
       "description": "Mises à jour des dépendances - Tools",
       "matchFileNames": ["tools/**"],
-      "groupName": "tools updates"
+      "groupName": "tools dependencies"
     }
   ]
 }
