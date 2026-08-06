@@ -79,6 +79,7 @@ dependencies {
 
     // ===== Observabilité =====
     runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
+    implementation 'org.springframework.boot:spring-boot-starter-opentelemetry'
 
     // ===== JSON / XML / CSV =====
     implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-xml"
