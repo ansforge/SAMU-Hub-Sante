@@ -112,15 +112,19 @@ public class Dispatcher {
         initReturnsCallback();
     }
 
-    private void tagCurrentSpanWithCaseId(EdxlMessage edxlMessage) {
+    private void tagCurrentSpan(Message amqpMessage, EdxlMessage edxlMessage) {
         Span currentSpan = tracer.currentSpan();
         if (currentSpan == null) {
             return;
         }
-        String caseId = MessageUtils.extractCaseId(edxlMessage);
-        if (caseId != null) {
-            currentSpan.tag(CASE_ID_SPAN_TAG, caseId);
-        }
+        String sender = getSenderFromRoutingKey(amqpMessage);
+        currentSpan.tag(SENDER_SPAN_TAG, sender);
+        currentSpan.tag(RECIPIENT_SPAN_TAG, MessageUtils.getRecipientID(edxlMessage));
+        currentSpan.tag(
+                USE_CASE_SPAN_TAG,
+                EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage()));
+        currentSpan.tag(
+                EDITOR_SPAN_TAG, hubConfig.getClientPropertiesRegistry().getClientEditor(sender));
     }
 
     public void initReturnsCallback() {
@@ -215,7 +219,7 @@ public class Dispatcher {
             setOriginalRoutingKeyHeader(message);
             // Deserialize the message according to its content type
             EdxlMessage edxlMessage = messageHandler.extractMessage(message);
-            tagCurrentSpanWithCaseId(edxlMessage);
+            tagCurrentSpan(message, edxlMessage);
             // check message type is allowed on the current vhost
             checkMessageClassNameSupported(edxlMessage, hubConfig);
             // check message is allowed for its recipient
@@ -351,7 +355,7 @@ public class Dispatcher {
                 return;
             }
             EdxlMessage edxlMessage = messageHandler.extractMessage(message);
-            tagCurrentSpanWithCaseId(edxlMessage);
+            tagCurrentSpan(message, edxlMessage);
             // log message & error
             String errorCause =
                     "Message "
