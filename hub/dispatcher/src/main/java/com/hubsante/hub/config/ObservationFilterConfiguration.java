@@ -16,13 +16,17 @@
 package com.hubsante.hub.config;
 
 import io.micrometer.observation.ObservationPredicate;
+import java.util.Set;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.mongodb.observability.MongoHandlerContext;
 import org.springframework.http.server.observation.ServerRequestObservationContext;
 
 @Configuration
 public class ObservationFilterConfiguration {
+    private static final Set<String> MONGO_HEALTHCHECK_COMMANDS =
+            Set.of("ping", "hello", "buildInfo");
 
     /**
      * Actuator endpoints (health probes, prometheus scraping) are polled continuously and would
@@ -38,6 +42,9 @@ public class ObservationFilterConfiguration {
                     String uri = serverContext.getCarrier().getRequestURI();
                     return uri == null || !uri.startsWith(actuatorBasePath);
                 }
+            }
+            if (context instanceof MongoHandlerContext mongoContext) {
+                return !MONGO_HEALTHCHECK_COMMANDS.contains(mongoContext.getCommandName());
             }
             return true;
         };
