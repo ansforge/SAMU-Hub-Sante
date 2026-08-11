@@ -37,7 +37,7 @@ public class TopologyRegistryTest {
         assertEquals("v3", topologyRegistry.getMajorModelVersion("15-nexsis_v1.9"));
         assertNull(topologyRegistry.getMajorModelVersion("unknown-vhost"));
 
-        assertEquals("15-nexsis_v1.9", topologyRegistry.getVhostTarget("fire"));
+        assertEquals("15-nexsis_vactive", topologyRegistry.getVhostTarget("fire"));
         assertNull(topologyRegistry.getVhostTarget("unknown-partner"));
     }
 

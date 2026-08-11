@@ -1089,11 +1089,10 @@ public class DispatcherTest {
     @Test
     @DisplayName("should transfer to another vhost when an error is raised after message transfer")
     public void transferErrorToOtherVhost() throws IOException, ValidationException {
-        HubConfiguration hubConfigSpy = Mockito.spy(hubConfig);
         ClientPropertiesRegistry clientPropertiesRegistrySpy =
                 Mockito.spy(clientPropertiesRegistry);
-        doReturn(clientPropertiesRegistrySpy).when(hubConfigSpy).getClientPropertiesRegistry();
-        doReturn("15-15_v2.0").when(hubConfigSpy).getVhost();
+        doReturn(clientPropertiesRegistrySpy).when(hubConfig).getClientPropertiesRegistry();
+        doReturn("15-15_v2.0").when(hubConfig).getVhost();
         doReturn(new String[] {"1.5"})
                 .when(clientPropertiesRegistrySpy)
                 .getClientVersionsForPerimeter(SAMU_A_ROUTING_KEY, "15-15");
@@ -1129,7 +1128,7 @@ public class DispatcherTest {
 
         Message message = createMessage("EDXL-DE", JSON, SAMU_V1_ROUTING_KEY, SAMU_A_ROUTING_KEY);
 
-        String exchangeName = "transfer_15-15_v2.1_to_15-15_v1.5";
+        String exchangeName = "transfer_15-15_v2.0_to_15-15_v1.5";
 
         // Mock call to converter (return same payload for error message)
         AmqpRejectAndDontRequeueException errorThrown =
@@ -1159,11 +1158,10 @@ public class DispatcherTest {
     @Test
     @DisplayName("should send error message to sender info queue when error is raised")
     public void sendErrorMessageWhenErrorIsRaised() throws IOException, ValidationException {
-        HubConfiguration hubConfigSpy = Mockito.spy(hubConfig);
         ClientPropertiesRegistry clientPropertiesRegistrySpy =
                 Mockito.spy(clientPropertiesRegistry);
-        doReturn(clientPropertiesRegistrySpy).when(hubConfigSpy).getClientPropertiesRegistry();
-        doReturn("15-15_v1.5").when(hubConfigSpy).getVhost();
+        doReturn(clientPropertiesRegistrySpy).when(hubConfig).getClientPropertiesRegistry();
+        doReturn("15-15_v1.5").when(hubConfig).getVhost();
         doReturn(new String[] {"1.5"})
                 .when(clientPropertiesRegistrySpy)
                 .getClientVersionsForPerimeter(SAMU_A_ROUTING_KEY, "15-15");
