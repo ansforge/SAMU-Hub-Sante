@@ -11,7 +11,10 @@ export const apiDomain =
   window.__ENV__?.VITE_SPECS_API_DOMAIN ||
   import.meta.env.VITE_SPECS_API_DOMAIN;
 
-export const messageListUrl =
-  "https://raw.githubusercontent.com/ansforge/SAMU-Hub-Modeles/main/src/main/resources/sample/examples/messagesList.json";
 
-export const defaultBranch = "main";
+
+export const defaultBranch = "feat/include-nomenclatures-in-csv-parser";
+
+
+export const messageListUrl =
+  `https://raw.githubusercontent.com/ansforge/SAMU-Hub-Modeles/${defaultBranch}/src/main/resources/sample/examples/messagesList.json`;
