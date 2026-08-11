@@ -110,6 +110,7 @@ public class DispatcherTest {
     private final String SAMU_V3_DIRECT_CISU_MESSAGE_QUEUE =
             SAMU_V3_DIRECT_CISU_ROUTING_KEY + ".message";
     private final String FIRE_ROUTING_KEY = "fr.fire.sga";
+    private final String NEXSIS_VHOST = "15-nexsis_vactive";
 
     private final String TEST_EDITOR = "default-editor";
     private final String INCONSISTENT_ROUTING_KEY = "fr.health.no-samu";

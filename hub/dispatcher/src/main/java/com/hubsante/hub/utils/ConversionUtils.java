@@ -86,7 +86,8 @@ public class ConversionUtils {
     }
 
     public static boolean isNexsisVhost(String vhost) {
-        return NEXSIS_VHOST.equals(vhost);
+        String nexsisVhost = TopologyRegistry.getInstance().getVhostTarget(NEXSIS_HUBEX_PARTNER);
+        return nexsisVhost.equals(vhost);
     }
 
     public static String[] extractAvailableVhostsByPerimeter(
@@ -181,20 +182,18 @@ public class ConversionUtils {
     private static ConversionParametersDTO resolveSamuToCisu(
             HubConfiguration hubConfig, EdxlMessage edxlMessage) {
         String currentVhost = hubConfig.getVhost();
+        String nexsisVhost = TopologyRegistry.getInstance().getVhostTarget(NEXSIS_HUBEX_PARTNER);
 
         if (isNexsisVhost(currentVhost)) {
             return null;
         }
         if (isCisuVhost(currentVhost)) {
             return ConversionParametersDTO.forVhostConversion(
-                    edxlMessage,
-                    currentVhost,
-                    NEXSIS_VHOST,
-                    ConversionType.CISU_VERSION_CONVERSION);
+                    edxlMessage, currentVhost, nexsisVhost, ConversionType.CISU_VERSION_CONVERSION);
         }
         if (isHealthVhost(currentVhost)) {
             return ConversionParametersDTO.forVhostConversion(
-                    edxlMessage, currentVhost, NEXSIS_VHOST, ConversionType.CISU_TRANSCODING);
+                    edxlMessage, currentVhost, nexsisVhost, ConversionType.CISU_TRANSCODING);
         }
         throw unroutable(edxlMessage, "Cannot route message to Nexsis from vhost " + currentVhost);
     }
@@ -260,7 +259,7 @@ public class ConversionUtils {
     }
 
     public static String getVHostMatchingModelVersion(String vHost) {
-        String modelVersion = CONVERSION_VHOST_MODEL.get(vHost);
+        String modelVersion = TopologyRegistry.getInstance().getMajorModelVersion(vHost);
         if (modelVersion == null) {
             throw new IllegalArgumentException(
                     "There is no model version associated with the host " + vHost);
