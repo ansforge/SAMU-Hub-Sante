@@ -113,9 +113,9 @@ const rootRoute = createRootRoute({
     const schemas = data.map(({ label, schemaName }) => ({
       label,
       schemaName,
-      url: buildGithubSchemaUrl(schemaName, defaultBranch),
+      url: buildGithubSchemaUrl(schemaName, deps.ref),
     }));
-    useSchemaStore.getState().setSchemasFromArray(schemas);
+    useSchemaStore.getState().setSchemasFromArray(schemas, deps.ref);
     return data;
   },
   staleTime: 30_000,

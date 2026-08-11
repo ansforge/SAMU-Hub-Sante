@@ -13,8 +13,8 @@ export const apiDomain =
 
 
 
-export const defaultBranch = "feat/include-nomenclatures-in-csv-parser";
+export const defaultRef = "main";
 
-
-export const messageListUrl =
-  `https://raw.githubusercontent.com/ansforge/SAMU-Hub-Modeles/${defaultBranch}/src/main/resources/sample/examples/messagesList.json`;
+export function messageListUrl(ref: string): string {
+  return `https://raw.githubusercontent.com/ansforge/SAMU-Hub-Modeles/${ref}/src/main/resources/sample/examples/messagesList.json`;
+}
