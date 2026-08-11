@@ -12,6 +12,7 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
+import { defaultRef } from "@/config";
 import { useSchemaStore } from "@/store/schema-store";
 import { SchemaReference } from "@/types";
 import { Link } from "@tanstack/react-router";
@@ -43,6 +44,7 @@ export function NavSchemas() {
                       <Link
                         to="/$schemaName"
                         params={{ schemaName: schema.schemaName }}
+                        search={(prev) => ({ ref: prev.ref ?? defaultRef })}
                       />
                     }
                   >
