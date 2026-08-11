@@ -266,29 +266,4 @@ public class ConversionUtils {
         }
         return modelVersion;
     }
-
-    public static boolean isAlreadyCisuConverted(String currentVHost, String recipient) {
-        if (recipient.startsWith(FR_HEALTH_PREFIX)) {
-            return currentVHost.startsWith(HEALTH_VHOST_PREFIX);
-        } else {
-            return currentVHost.startsWith(
-                    TopologyRegistry.getInstance().getVhostTarget(NEXSIS_HUBEX_PARTNER));
-        }
-    }
-
-    public static boolean isOneCisuHubexInvolved(EdxlMessage edxlMessage) {
-        String recipientId = getRecipientID(edxlMessage);
-        String senderId = edxlMessage.getSenderID();
-        return !(recipientId.startsWith(HEALTH_PREFIX) && senderId.startsWith(HEALTH_PREFIX));
-    }
-
-    public static boolean isDirectCisuForHealthActor(
-            HubConfiguration hubConfig, EdxlMessage edxlMessage) {
-        // Checks if the health actor is direct CISU
-        String recipientId = getRecipientID(edxlMessage);
-        String senderId = edxlMessage.getSenderID();
-        String healthActor = senderId.startsWith(HEALTH_PREFIX) ? senderId : recipientId;
-
-        return hubConfig.getClientPropertiesRegistry().isClientDirectCisu(healthActor);
-    }
 }

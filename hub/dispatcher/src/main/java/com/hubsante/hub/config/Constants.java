@@ -34,7 +34,6 @@ public class Constants {
     public static final String DISPATCHED_MESSAGE = "dispatch.message";
     public static final String USE_CASE_TAG = "use_case";
     public static final String UNKNOWN = "unknown";
-    public static final boolean DEFAULT_DIRECT_CISU_PREFERENCE = false;
     public static final String FR_HEALTH_PREFIX = "fr.health";
     public static final String FR_FIRE_PREFIX = "fr.fire";
     public static final String FR_CISU_PREFIX = "fr.cisu";
