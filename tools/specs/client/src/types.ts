@@ -4,6 +4,11 @@ export type SchemaReference = {
   url: string;
 };
 
+export type RepoReferences = {
+  branches: string[];
+  tags: string[];
+};
+
 export type JsonSchemaProperty = {
   type?: string;
   description?: string;
