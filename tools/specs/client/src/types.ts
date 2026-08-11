@@ -15,6 +15,7 @@ export type JsonSchemaProperty = {
   minItems?: number;
   maxItems?: number;
   $ref?: string;
+  "x-nomenclature"?: string;
 };
 
 export type JsonSchemaDefinitions = Record<string, JsonSchemaProperty>;
@@ -23,4 +24,10 @@ export type JsonSchemaDocument = JsonSchemaProperty & {
   title?: string;
   definitions?: JsonSchemaDefinitions;
   $defs?: JsonSchemaDefinitions;
+};
+
+export type NomenclatureSchema = {
+  title?: string;
+  description?: string;
+  oneOf?: { const: string; title: string; description?: string }[];
 };
