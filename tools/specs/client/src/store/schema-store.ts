@@ -7,11 +7,15 @@ interface SchemaState {
   setSchemasFromArray: (schemas: SchemaReference[]) => void;
   selectSchema: (name: string) => void;
   getSchema: (name: string) => SchemaReference | undefined;
+  nomenclatureDrawerName: string | null;
+  openNomenclatureDrawer: (name: string) => void;
+  closeNomenclatureDrawer: () => void;
 }
 
 export const useSchemaStore = create<SchemaState>((set, get) => ({
   schemas: {},
   selectedName: null,
+  nomenclatureDrawerName: null,
 
   setSchemasFromArray: (schemas) =>
     set({
@@ -23,4 +27,7 @@ export const useSchemaStore = create<SchemaState>((set, get) => ({
 
   selectSchema: (name) => set({ selectedName: name }),
   getSchema: (name) => get().schemas[name],
+
+  openNomenclatureDrawer: (name) => set({ nomenclatureDrawerName: name }),
+  closeNomenclatureDrawer: () => set({ nomenclatureDrawerName: null }),
 }));
