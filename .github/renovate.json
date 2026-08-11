@@ -1,0 +1,54 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "schedule": ["on monday"],
+  "prHourlyLimit": 0,
+  "minimumReleaseAge": "14 days",
+  "automerge": false,
+  "registryAliases": {
+    "dhi.io": "dhi.io"
+  },
+  "hostRules": [
+    {
+      "matchHost": "dhi.io",
+      "hostType": "docker",
+      "username": "{{ secrets.DHI_USERNAME }}",
+      "password": "{{ secrets.DHI_PASSWORD }}"
+    },
+    {
+      "matchHost": "maven.pkg.github.com",
+      "hostType": "maven",
+      "username": "x-access-token",
+      "token": "{{ secrets.GITHUB_TOKEN }}"
+    }
+  ],
+  "ignorePaths": [
+    "web/lrm/client/**",
+    "tools/chatbot/**",
+    "tools/demo-app-tempo/**",
+    "clients/**"
+  ],
+  "packageRules": [
+    {
+      "description": "Mises à jour des GitHub Actions",
+      "matchManagers": ["github-actions"],
+      "groupName": "github-actions",
+      "separateMajorMinor": false
+    },
+    {
+      "description": "Mises à jour des dépendances - Dispatcher",
+      "matchFileNames": ["hub/**"],
+      "groupName": "dispatcher dependencies"
+    },
+    {
+      "description": "Mises à jour des dépendances - Web",
+      "matchFileNames": ["web/**"],
+      "groupName": "web dependencies"
+    },
+    {
+      "description": "Mises à jour des dépendances - Tools",
+      "matchFileNames": ["tools/**"],
+      "groupName": "tools dependencies"
+    }
+  ]
+}

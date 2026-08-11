@@ -1,0 +1,42 @@
+clients:
+  - client_id: fr.health.test.samu-v1
+    common_name: fr.health.test.samu-v1.fr
+    perimeters:
+      - name: '15-15'
+        versions:
+          - '1.5'
+    editor: ANS
+    inhibitedUseCases:
+      - 'ResourcesInfoCisuWrapper'
+  - client_id: fr.health.test.samu-v3
+    common_name: fr.health.test.samu-v3.fr
+    perimeters:
+      - name: '15-15'
+        versions:
+          - '2.1'
+    editor: ANS
+  - client_id: fr.health.test.samu-v3-direct-cisu
+    common_name: fr.health.test.samu-v3-direct-cisu.fr
+    perimeters:
+      - name: '15-15'
+        versions:
+          - '2.1'
+      - name: '15-nexsis'
+        versions:
+          - '1.9'
+    editor: ANS
+    directCisu: true
+  - client_id: fr.fire.nxsis.sdisZ
+    common_name: fr.fire.nexsis.sdisZ.fr
+    perimeters:
+      - name: '15-nexsis'
+        versions:
+          - '1.9'
+    editor: ANS
+majorModelVersionPerVhost:
+  15-15_v1.5: "v1"
+  15-15_v2.0: "v2"
+  15-15_v2.1: "v3"
+  15-nexsis_v1.9: "v3"
+vhostTargetPerHubexPartner:
+  fire: "15-nexsis_v1.9"

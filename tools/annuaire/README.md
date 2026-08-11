@@ -28,14 +28,18 @@ This project uses [uv](https://docs.astral.sh/uv/) for dependency management.
 
 ### Running the API
 
+`annuaire.py` exposes a `create_app()` application factory (there is no module-level
+`app` and no `python annuaire.py` entrypoint), so the app is started through Flask or
+Gunicorn. The clients file is read from the path in `VALUES_PATH` (set in `.env`).
+
 Development mode:
 ```bash
-uv run --env-file .env python annuaire.py
+uv run --env-file .env flask --app annuaire run --port 8080
 ```
 
 Production mode with Gunicorn:
 ```bash
-ENVIRONMENT=production uv run gunicorn -w 4 -b 0.0.0.0:8080 annuaire:app
+ENVIRONMENT=production uv run --env-file .env gunicorn -w 4 -b 0.0.0.0:8080 "annuaire:create_app()"
 ```
 
 ### API Endpoints

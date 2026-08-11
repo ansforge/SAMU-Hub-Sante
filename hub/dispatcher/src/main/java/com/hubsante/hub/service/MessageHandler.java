@@ -46,10 +46,7 @@ import com.hubsante.model.report.ErrorWrapper;
 import io.micrometer.core.instrument.MeterRegistry;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.AmqpRejectAndDontRequeueException;
 import org.springframework.amqp.core.Message;
@@ -88,6 +85,7 @@ public class MessageHandler {
             MeterRegistry registry,
             XmlMapper xmlMapper,
             ObjectMapper jsonMapper,
+            ClientPropertiesRegistry clientPropertiesRegistry,
             ConversionHandler conversionHandler) {
         this.rabbitTemplate = rabbitTemplate;
         this.edxlHandler = edxlHandler;
@@ -199,7 +197,9 @@ public class MessageHandler {
             String routingKey = infoQueueName;
 
             Message errorAmqpMessage;
-            if (convertToXML(sender, hubConfig.getUseXmlPreferences().get(sender))) {
+            Boolean useXML = hubConfig.getClientPropertiesRegistry().isClientUseXml(sender);
+
+            if (convertToXML(sender, useXML)) {
                 errorAmqpMessage =
                         new Message(
                                 edxlHandler.serializeXmlEDXL(errorEdxlMessage).getBytes(),
@@ -496,7 +496,8 @@ public class MessageHandler {
         String messageType = getUseCaseFromMessage(edxlMessage.getFirstContentMessage());
 
         try {
-            if (convertToXML(recipientId, hubConfig.getUseXmlPreferences().get(recipientId))) {
+            Boolean useXML = hubConfig.getClientPropertiesRegistry().isClientUseXml(recipientId);
+            if (convertToXML(recipientId, useXML)) {
                 edxlString = edxlHandler.serializeXmlEDXL(edxlMessage);
                 fwdAmqpProperties.setContentType(MessageProperties.CONTENT_TYPE_XML);
             } else {
@@ -588,11 +589,20 @@ public class MessageHandler {
     }
 
     protected void inhibitMessageIfNeeded(EdxlMessage edxlMessage) {
-        checkMessageNotInhibited(
-                getRecipientID(edxlMessage),
-                EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage()),
-                hubConfig.getClientsInhibitedMessages(),
-                edxlMessage.getDistributionID());
+        String recipientId = getRecipientID(edxlMessage);
+        String useCase = EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage());
+        List<String> inhibitedUseCases =
+                hubConfig.getClientPropertiesRegistry().getClientInhibitedUseCases(recipientId);
+
+        boolean isInhibited = inhibitedUseCases.contains(useCase);
+
+        if (isInhibited) {
+            String errorMessage =
+                    String.format(
+                            "Use case %s is not supported for client %s", useCase, recipientId);
+            throw new UnroutableMessageException(
+                    errorMessage, edxlMessage.getDistributionID(), recipientId, useCase);
+        }
     }
 
     private void logMessage(Message message, EdxlMessage edxlMessage, String receivedEdxl) {
@@ -647,7 +657,7 @@ public class MessageHandler {
     }
 
     protected void publishErrorMetric(String error, String sender) {
-        String editor = getEditorFromSender(sender);
+        String editor = hubConfig.getClientPropertiesRegistry().getClientEditor(sender);
         registry.counter(
                         DISPATCH_ERROR,
                         REASON_TAG,
@@ -664,7 +674,7 @@ public class MessageHandler {
     protected void publishMetrics(EdxlMessage edxlMessage, Message amqpMessage) {
         String sender = getSenderFromRoutingKey(amqpMessage);
         String useCase = getUseCaseFromMessage(edxlMessage.getFirstContentMessage());
-        String editor = getEditorFromSender(sender);
+        String editor = hubConfig.getClientPropertiesRegistry().getClientEditor(sender);
         String recipient = getRecipientID(edxlMessage);
 
         registry.counter(
@@ -680,9 +690,5 @@ public class MessageHandler {
                         EDITOR_TAG,
                         editor)
                 .increment();
-    }
-
-    private String getEditorFromSender(String sender) {
-        return hubConfig.getClientsEditorMap().getOrDefault(sender, UNKNOWN);
     }
 }

@@ -2,45 +2,87 @@
 
 ## Description
 
-TODO :
+Outil de tests de montée en charge pour la plateforme Hub Santé. Les simulations sont construites avec [Gatling](https://gatling.io/) et publient des messages via AMQP (RabbitMQ) grâce au plugin [gatling-amqp](https://github.com/galax-io/gatling-amqp-plugin).
 
-- [] Lister les scénarios implémentés et avec quelle charge
+## Simulations
 
-## Utilisation en local
+Toutes les simulations se trouvent dans [`src/gatling/java/loadtesting/simulations/`](src/gatling/java/loadtesting/simulations/).
+
+### Simulations existantes
+
+| Simulation | Périmètre | Vhost | Message | Description |
+|---|---|---|---|---|
+| `SamuGpsSimulation` | 15-GPS | `15-gps_v1.3` | Géo-position | Mise à jour de position GPS (SAMU→SAMU) |
+| `SamuSmurSimulation` | 15-SMUR | `15-smur_v1.7` | RS-EDA | Création de dossier SAMU→SMUR |
+| `SamuSamuDirectSimulation` | 15-15 | `15-15_v2.1` | RS-EDA | Transfert direct entre deux SAMUs |
+| `SamuSamuConversionSimulation` | 15-15 | `15-15_v2.1` | RS-EDA | Conversion de version entre deux SAMUs (v3→v1) |
+| `SamuNexsisDirectSimulation` | 15-18 | `15-nexsis_v1.9` | RC-EDA | Transfert direct SAMU→NexSIS |
+| `SamuNexsisConversionSimulation` | 15-18 | `15-15_v2.1` | RS-EDA | Conversion de version SAMU→NexSIS |
+
+### Simulations de persistance MongoDB (périmètre 15-18)
+
+Ces simulations couvrent les flux où le Dispatcher déclenche la persistance MongoDB. Cela concerne les messages RC-RI et RS-RI (flux de compte-rendu d'intervention), mais **pas** les conversions CISU pures (RC-EDA ↔ RS-EDA) qui transitent sans persistance. Elles nécessitent une instance MongoDB accessible (la même que celle du Dispatcher).
+
+Chaque virtual user envoie deux messages successifs avec une pause intermédiaire : le premier crée un nouveau cas (nouveau `caseId`), le second met à jour ce même cas et déclenche la lecture en base.
+
+| Simulation | Vhost | Direction | 1er message | 2e message (après pause) |
+|---|---|---|---|---|
+| `SamuNexsisRsSimulation` | `15-15_v2.1` | SAMU→NexSIS | RS-RI (nouveau caseId) → Dispatcher persiste | RS-SR (même caseId) → Converter lit le RS-RI en DB et convertit en RC-RI |
+| `SamuNexsisRcRiSimulation` | `15-nexsis_v1.9` | NexSIS→SAMU | RC-RI (nouveau caseId) → Dispatcher persiste | RC-RI (même caseId) → Converter lit en DB, calcule le diff, retourne RS-SR |
+
+## Variables d'environnement
+
+| Variable | Description |
+|---|---|
+| `KEY_PASSPHRASE` | Passphrase du certificat client mTLS |
+| `CERTIFICATE_PATH` | Chemin absolu vers le certificat client mTLS (PKCS12) |
+| `TRUST_STORE_PASSWORD` | Mot de passe du truststore JKS |
+| `TRUST_STORE_PATH` | Chemin absolu vers le truststore JKS |
+| `RABBITMQ_HOST` | Nom d'hôte RabbitMQ |
+| `RABBITMQ_PORT` | Port AMQP RabbitMQ (généralement `5671` pour TLS) |
+| `SCENARIO_DURATION` | Durée de chaque simulation en secondes (défaut : `10`) |
+| `SAMU_GPS_SCENARIO_USER_COUNT` | Utilisateurs simultanés pour `SamuGpsSimulation` (défaut : `2`) |
+| `SAMU_SMUR_SCENARIO_USER_COUNT` | Utilisateurs simultanés pour `SamuSmurSimulation` (défaut : `2`) |
+| `SAMU_SAMU_DIRECT_SCENARIO_USER_COUNT` | Utilisateurs simultanés pour `SamuSamuDirectSimulation` (défaut : `2`) |
+| `SAMU_SAMU_CONVERSION_SCENARIO_USER_COUNT` | Utilisateurs simultanés pour `SamuSamuConversionSimulation` (défaut : `2`) |
+| `SAMU_NEXSIS_DIRECT_SCENARIO_USER_COUNT` | Utilisateurs simultanés pour `SamuNexsisDirectSimulation` (défaut : `2`) |
+| `SAMU_NEXSIS_CONVERSION_SCENARIO_USER_COUNT` | Utilisateurs simultanés pour `SamuNexsisConversionSimulation` (défaut : `2`) |
+| `SAMU_NEXSIS_RS_SCENARIO_USER_COUNT` | Utilisateurs simultanés pour `SamuNexsisRsSimulation` (défaut : `2`) |
+| `SAMU_NEXSIS_RC_RI_SCENARIO_USER_COUNT` | Utilisateurs simultanés pour `SamuNexsisRcRiSimulation` (défaut : `2`) |## Utilisation en local
 
 ### Prérequis
 
 - Java 21
 - Droits de connexion :
   - Disposer du certificat client associé à l'utilisateur des tmc
-  - Génerer un trustStore avec la root CA IGC Santé (TEST/PROD en fonction de l'environnement visé)
+  - Générer un trustStore avec la root CA IGC Santé (TEST/PROD en fonction de l'environnement visé)
 
 ### Environnement
 
-- Dans `tools/tmc`, uppliquer le fichier `.env.template` en le renommant `.env` :
+Dans `tools/tmc`, dupliquer le fichier `.env.template` en `.env` :
 
 ```bash
 cp .env.template .env
 ```
 
-- Remplir le fichier `.env` en référençant
-  - les paths **absolus** du certificat et du truststore (respectivement `CERTIFICATE_PATH` et `TRUST_STORE_PASSWORD`)
-  - les mots de passe associés (respectivement `KEY_PASSPHRASE` et `TRUST_STORE_PASSWORD`)
-  - le host du server RabbitMQ visé (`RABBITMQ_HOST`)
-  - le port du server RabbitMQ visé (`RABBITMQ_PORT`)
-  - le nom de l'exchange visé pour la publication des messages sur le server RabbitMQ (`EXCHANGE_NAME`)
+Remplir le fichier `.env` avec :
+- les paths **absolus** du certificat et du truststore (`CERTIFICATE_PATH`, `TRUST_STORE_PATH`)
+- les mots de passe associés (`KEY_PASSPHRASE`, `TRUST_STORE_PASSWORD`)
+- le host et port RabbitMQ (`RABBITMQ_HOST`, `RABBITMQ_PORT`)
+- la durée des scénarios en secondes (`SCENARIO_DURATION`)
+- le nombre d'utilisateurs par simulation (variables `*_USER_COUNT`)
 
-Note : l'exposition des variables d'environnement via fichier `.env` est géré en dev local par la librairie [dotenv-java](https://github.com/cdimascio/dotenv-java).
+Note : l'exposition des variables via `.env` est gérée par la librairie [dotenv-java](https://github.com/cdimascio/dotenv-java).
 
 ### Lancement des tests
 
-Pour lancer toutes les simulations présentes dans le dossier [simulations](tools/tmc/src/gatling/java/loadtesting/simulations), utiliser la commande :
+Lancer toutes les simulations en parallèle :
 
 ```bash
 ./gradlew gatlingRunAllParallel
 ```
 
-Pour lancer une simulation , utiliser la commande :
+Lancer une simulation individuelle :
 
 ```bash
 ./gradlew gatlingRun --simulation loadtesting.simulations.<NOM_DE_LA_SIMULATION>
@@ -52,22 +94,4 @@ Sur Confluence sont disponibles [l'expression de besoin](https://ans-esante.atla
 
 Le document de stratégie technique contient notamment un ADR sur le choix de Gatling par rapport aux autres offres disponibles sur le marché.
 
-Note : la version de Gatling utilisée ici est la `3.11.3`. Il en est ainsi car il s'agit la version la plus récente utilisable avec le plugin [gatling-amqp](https://github.com/galax-io/gatling-amqp-plugin).
-
-## Archive : Gatling default readme
-
-Gatling plugin for Gradle - Java demo project
-
-=============================================
-
-A simple showcase of a Gradle project using the Gatling plugin for Gradle. Refer to the plugin documentation
-[on the Gatling website](https://gatling.io/docs/current/extensions/gradle_plugin/) for usage.
-
-This project includes:
-
-- Gradle Wrapper, so you don't need to install Gradle (a JDK must be installed and $JAVA_HOME configured)
-- minimal `build.gradle` leveraging Gradle wrapper
-- latest version of `io.gatling.gradle` plugin applied
-- sample [Simulation](https://gatling.io/docs/gatling/reference/current/general/concepts/#simulation) class,
-demonstrating sufficient Gatling functionality
-- proper source file layout
+Note : la version de Gatling utilisée ici est la `3.11.3`. Il s'agit de la version la plus récente utilisable avec le plugin [gatling-amqp](https://github.com/galax-io/gatling-amqp-plugin).

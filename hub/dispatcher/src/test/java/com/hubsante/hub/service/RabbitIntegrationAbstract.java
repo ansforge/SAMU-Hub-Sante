@@ -135,10 +135,10 @@ public class RabbitIntegrationAbstract {
                                     + Thread.currentThread()
                                             .getContextClassLoader()
                                             .getResource("config/certs/trustStore"),
-                            "client.preferences.file="
+                            "client.configuration.file="
                                     + Thread.currentThread()
                                             .getContextClassLoader()
-                                            .getResource("config/client.preferences.csv"),
+                                            .getResource("config/clients.yaml"),
                             "supported.messages.file="
                                     + Thread.currentThread()
                                             .getContextClassLoader()
@@ -150,7 +150,10 @@ public class RabbitIntegrationAbstract {
                             "spring.rabbitmq.publisher-confirm-type=correlated",
                             "spring.rabbitmq.publisher-returns=true",
                             "spring.rabbitmq.template.mandatory=true",
-                            "spring.rabbitmq.virtual-host=15-15_v2.1");
+                            "spring.rabbitmq.virtual-host=15-15_v2.1",
+
+                            // Deactivate OTEL tracings
+                            "management.tracing.sampling.probability=0");
             values.applyTo(applicationContext);
         }
     }

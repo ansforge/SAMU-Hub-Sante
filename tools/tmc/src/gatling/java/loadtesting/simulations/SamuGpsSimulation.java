@@ -8,8 +8,8 @@ public class SamuGpsSimulation extends BaseSimulation {
         return new ScenarioConfig(
                 "15-GPS: geo position update",
                 "15-gps_v1.3",
-                "fr.health.test.samuA",
-                "fr.health.test.samuC",
+                "fr.health.test.samu1-v3",
+                "fr.health.test.samu2-v3",
                 "geo-position.json",
                 "SAMU_GPS_SCENARIO_USER_COUNT"
         );

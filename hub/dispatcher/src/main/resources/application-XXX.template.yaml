@@ -6,11 +6,9 @@ spring:
       trust-store-password: password
       key-store: "file:<PATH_TO_LOCAL_DEV_DIRECTORY>/config/certs/dispatcher.p12"
       trust-store: "file:<PATH_TO_LOCAL_DEV_DIRECTORY>/config/certs/trustStore"
-  main:
-    web-application-type: reactive
 client:
-  preferences:
-    file: "file:<PATH_TO_LOCAL_DEV_DIRECTORY>/config/values/client.preferences.csv"
+  configuration:
+    file: "file:<PATH_TO_LOCAL_DEV_DIRECTORY>/config/values/clients.yaml"
 supported:
   messages:
     file: "file:<PATH_TO_LOCAL_DEV_DIRECTORY>/dispatcher/supported.messages.csv"

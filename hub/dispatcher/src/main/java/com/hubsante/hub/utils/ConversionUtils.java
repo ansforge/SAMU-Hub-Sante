@@ -21,6 +21,8 @@ import static com.hubsante.hub.utils.MessageUtils.*;
 
 import com.hubsante.hub.config.HubConfiguration;
 import com.hubsante.hub.exception.UnroutableMessageException;
+import com.hubsante.hub.service.ClientPropertiesRegistry;
+import com.hubsante.hub.service.TopologyRegistry;
 import com.hubsante.model.edxl.EdxlMessage;
 import java.util.Arrays;
 import lombok.Getter;
@@ -89,8 +91,9 @@ public class ConversionUtils {
 
     public static String[] extractAvailableVhostsByPerimeter(
             HubConfiguration hubConfig, String recipientId, String perimeter) {
+        ClientPropertiesRegistry registry = hubConfig.getClientPropertiesRegistry();
         String[] targetVersionsOnPerimeter =
-                hubConfig.getClientVersionsForPerimeter(recipientId, perimeter);
+                registry.getClientVersionsForPerimeter(recipientId, perimeter);
         return formatPerimeterVersionListToVhosts(targetVersionsOnPerimeter, perimeter);
     }
 
@@ -263,5 +266,30 @@ public class ConversionUtils {
                     "There is no model version associated with the host " + vHost);
         }
         return modelVersion;
+    }
+
+    public static boolean isAlreadyCisuConverted(String currentVHost, String recipient) {
+        if (recipient.startsWith(FR_HEALTH_PREFIX)) {
+            return currentVHost.startsWith(HEALTH_VHOST_PREFIX);
+        } else {
+            return currentVHost.startsWith(
+                    TopologyRegistry.getInstance().getVhostTarget(NEXSIS_HUBEX_PARTNER));
+        }
+    }
+
+    public static boolean isOneCisuHubexInvolved(EdxlMessage edxlMessage) {
+        String recipientId = getRecipientID(edxlMessage);
+        String senderId = edxlMessage.getSenderID();
+        return !(recipientId.startsWith(HEALTH_PREFIX) && senderId.startsWith(HEALTH_PREFIX));
+    }
+
+    public static boolean isDirectCisuForHealthActor(
+            HubConfiguration hubConfig, EdxlMessage edxlMessage) {
+        // Checks if the health actor is direct CISU
+        String recipientId = getRecipientID(edxlMessage);
+        String senderId = edxlMessage.getSenderID();
+        String healthActor = senderId.startsWith(HEALTH_PREFIX) ? senderId : recipientId;
+
+        return hubConfig.getClientPropertiesRegistry().isClientDirectCisu(healthActor);
     }
 }

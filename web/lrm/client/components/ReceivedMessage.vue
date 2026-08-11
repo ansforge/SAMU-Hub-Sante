@@ -59,29 +59,7 @@
           </div>
         </span>
         <v-spacer />
-        <span v-if="!dense" class="d-flex row">
-          <div
-            v-if="getMessageType({ body }) === 'message' && !isOut(direction)"
-          >
-            <v-btn
-              icon
-              variant="text"
-              size="x-small"
-              :color="acked ? 'accent' : 'primary'"
-              @click="sendAck()"
-            >
-              <v-icon size="24">mdi-check-all</v-icon>
-            </v-btn>
-            <v-btn
-              icon
-              variant="text"
-              size="x-small"
-              :color="acked ? 'accent' : 'error'"
-              @click="sendAck(true)"
-            >
-              <v-icon size="24">mdi-close-circle</v-icon>
-            </v-btn>
-          </div>
+        <div v-if="!dense" class="d-flex row align-center">
           <v-btn
             v-if="getMessageType({ body }) !== 'ack'"
             icon
@@ -123,7 +101,42 @@
           >
             <v-icon size="24">mdi-unfold-less-vertical</v-icon>
           </v-btn>
-        </span>
+          <v-btn
+            icon
+            variant="text"
+            size="x-small"
+            :color="copied ? 'success' : 'primary'"
+            @click="copyMessage"
+          >
+            <v-icon size="20">{{
+              copied ? 'mdi-content-copy' : 'mdi-content-copy'
+            }}</v-icon>
+          </v-btn>
+          <div
+            v-if="getMessageType({ body }) === 'message' && !isOut(direction)"
+            class="d-flex align-center"
+          >
+            <div class="action-divider" />
+            <v-btn
+              icon
+              variant="text"
+              size="x-small"
+              :color="acked ? 'accent' : 'primary'"
+              @click="sendAck()"
+            >
+              <v-icon size="20">mdi-check-all</v-icon>
+            </v-btn>
+            <v-btn
+              icon
+              variant="text"
+              size="x-small"
+              :color="acked ? 'accent' : 'primary'"
+              @click="sendAck(true)"
+            >
+              <v-icon size="20">mdi-cancel</v-icon>
+            </v-btn>
+          </div>
+        </div>
       </v-row>
 
       <json-viewer
@@ -135,7 +148,6 @@
             : body.content[0].jsonContent.embeddedJsonContent.message
         "
         :expand-depth="jsonDepthLocal"
-        :copyable="{ copyText: 'Copier', copiedText: 'Copié !', timeout: 1000 }"
         expanded
         theme="json-theme"
       />
@@ -279,6 +291,18 @@ const collapseAll = () => {
   jsonViewerKey.value++;
 };
 
+const copied = ref(false);
+
+const copyMessage = () => {
+  const content = showFullMessage.value
+    ? props.body
+    : props.body.content[0].jsonContent.embeddedJsonContent.message;
+  navigator.clipboard.writeText(JSON.stringify(content, null, 2));
+  copied.value = true;
+  setTimeout(() => {
+    copied.value = false;
+  }, 1000);
+};
 //on mounted, send ack if autoAckConfig is enabled
 onMounted(() => {
   if (autoAckConfig.value) {
@@ -408,5 +432,12 @@ export default {
 .v-badge__badge {
   position: relative;
   left: auto !important;
+}
+
+.action-divider {
+  width: 0.5px;
+  height: 28px;
+  background-color: grey;
+  margin: 0 12px;
 }
 </style>

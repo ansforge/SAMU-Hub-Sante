@@ -15,22 +15,20 @@
  */
 package com.hubsante.hub.service;
 
-import static com.hubsante.hub.utils.ConversionUtils.trimVersionSuffix;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 import com.hubsante.hub.config.HubConfiguration;
 import com.hubsante.hub.utils.ConversionUtils;
-import com.hubsante.model.cisu.CreateCaseWrapper;
 import com.hubsante.model.edxl.EdxlMessage;
-import com.hubsante.model.emsi.EmsiWrapper;
-import com.hubsante.model.health.CreateCaseHealthWrapper;
-import java.util.HashMap;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.core.io.ClassPathResource;
 
 public class ConversionUtilsTest {
 
@@ -38,24 +36,22 @@ public class ConversionUtilsTest {
     private HubConfiguration hubConfig;
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+    private ClientPropertiesRegistry clientPropertiesRegistry;
+
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private EdxlMessage edxlMessage;
 
-    @Mock private CreateCaseWrapper createCaseWrapper;
-
-    @Mock private CreateCaseHealthWrapper createCaseHealthWrapper;
-
-    @Mock private EmsiWrapper emsiWrapper;
-
-    private HashMap<String, Boolean> directCisuPreferences;
+    @BeforeAll
+    static void setUpTopologyRegistry() {
+        new TopologyRegistry(new ClassPathResource("config/clients.yaml"));
+    }
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
 
-        directCisuPreferences = new HashMap<>();
-        directCisuPreferences.put("fr.health.samuDirectCisu", true);
-
-        when(hubConfig.getDirectCisuPreferences()).thenReturn(directCisuPreferences);
+        when(hubConfig.getClientPropertiesRegistry()).thenReturn(clientPropertiesRegistry);
+        when(clientPropertiesRegistry.get(anyString()).directCisu()).thenReturn(false);
     }
 
     @Test
@@ -69,12 +65,12 @@ public class ConversionUtilsTest {
 
     @Test
     public void testTrimVersionSuffix() {
-        assertEquals("15-15", trimVersionSuffix("15-15_v1.3"));
-        assertEquals("15-nexsis", trimVersionSuffix("15-nexsis_v2"));
-        assertEquals("backup", trimVersionSuffix("backup_v2.0.1"));
-        assertEquals("no-version-here", trimVersionSuffix("no-version-here"));
-        assertNull(trimVersionSuffix(null));
-        assertEquals("", trimVersionSuffix(""));
+        assertEquals("15-15", ConversionUtils.trimVersionSuffix("15-15_v1.3"));
+        assertEquals("15-nexsis", ConversionUtils.trimVersionSuffix("15-nexsis_v2"));
+        assertEquals("backup", ConversionUtils.trimVersionSuffix("backup_v2.0.1"));
+        assertEquals("no-version-here", ConversionUtils.trimVersionSuffix("no-version-here"));
+        assertNull(ConversionUtils.trimVersionSuffix(null));
+        assertEquals("", ConversionUtils.trimVersionSuffix(""));
     }
 
     @Test

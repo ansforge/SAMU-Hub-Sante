@@ -1,0 +1,9 @@
+clients:
+  - client_id: fr.health.test.samu-v1
+    common_name: fr.health.test.samu-v1.fr
+    editor: ANS
+majorModelVersionPerVhost:
+  15-15_v1.5: "v1"
+  15-nexsis_v1.9: "v3"
+vhostTargetPerHubexPartner:
+  other-partner: "15-nexsis_v1.9"

@@ -6,9 +6,6 @@ spring:
     publisher-returns: true
     template:
       mandatory: true
-  main:
-    # Start web server, useful when testing actuator config
-    web-application-type: reactive
 logging:
   level:
     com.hubsante.hub: DEBUG

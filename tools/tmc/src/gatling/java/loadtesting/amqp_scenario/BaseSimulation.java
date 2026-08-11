@@ -29,7 +29,8 @@ public abstract class BaseSimulation extends Simulation {
 
             String fileContent = SimulationUtils.loadSampleFile(config.messageSampleName());
 
-            Iterator<Map<String, Object>> messageFeeder = SimulationUtils.generateMessageFeeder(fileContent, config.senderId(), config.recipientId());
+            Iterator<Map<String, Object>> messageFeeder =
+                    SimulationUtils.generateMessageFeeder(fileContent, config.senderId(), config.recipientId());
 
             ScenarioBuilder scenario = scenario(config.title())
                     .feed(

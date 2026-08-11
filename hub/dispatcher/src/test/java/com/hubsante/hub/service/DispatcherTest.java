@@ -45,6 +45,7 @@ import com.hubsante.model.report.ErrorCode;
 import com.hubsante.model.technical.noreq.TechnicalNoreqWrapper;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.search.Search;
+import io.micrometer.tracing.Tracer;
 import jakarta.annotation.PostConstruct;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -83,6 +84,7 @@ public class DispatcherTest {
 
     @Autowired private EdxlHandler edxlHandler;
     @MockitoSpyBean private HubConfiguration hubConfig;
+    @Autowired private ClientPropertiesRegistry clientPropertiesRegistry;
     @Autowired private Validator validator;
     private MessageHandler messageHandler;
     private ConversionHandler conversionHandler;
@@ -124,10 +126,8 @@ public class DispatcherTest {
                         Objects.requireNonNull(
                                 classLoader.getResource("config/supported.messages.csv")));
         propertiesRegistry.add(
-                "client.preferences.file",
-                () ->
-                        Objects.requireNonNull(
-                                classLoader.getResource("config/client.preferences.csv")));
+                "client.configuration.file",
+                () -> Objects.requireNonNull(classLoader.getResource("config/clients.yaml")));
         propertiesRegistry.add("hubsante.default.message.ttl", () -> 5);
         propertiesRegistry.add("spring.rabbitmq.virtual-host", () -> "15-15_v2.1");
     }
@@ -144,6 +144,7 @@ public class DispatcherTest {
                         registry,
                         xmlMapper,
                         jsonMapper,
+                        clientPropertiesRegistry,
                         conversionHandler);
         dispatcher =
                 new Dispatcher(
@@ -154,7 +155,8 @@ public class DispatcherTest {
                         jsonMapper,
                         conversionHandler,
                         hubConfig,
-                        persistenceService);
+                        persistenceService,
+                        Tracer.NOOP);
     }
 
     @BeforeEach
@@ -779,7 +781,8 @@ public class DispatcherTest {
                                 jsonMapper,
                                 conversionHandler,
                                 hubConfig,
-                                persistenceService));
+                                persistenceService,
+                                Tracer.NOOP));
 
         Message message = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY, SAMU_V1_ROUTING_KEY);
 
@@ -929,7 +932,8 @@ public class DispatcherTest {
                         jsonMapper,
                         conversionHandler,
                         hubConfig,
-                        persistenceService);
+                        persistenceService,
+                        Tracer.NOOP);
 
         Message receivedMessage =
                 createMessage("EDXL-DE", JSON, SDIS_C_ROUTING_KEY, SAMU_V3_ROUTING_KEY);
@@ -1030,7 +1034,8 @@ public class DispatcherTest {
                     jsonMapper,
                     conversionHandler,
                     hubConfig,
-                    persistenceService);
+                    persistenceService,
+                    Tracer.NOOP);
 
             assertDoesNotThrow(
                     () -> MessageUtils.checkMessageClassNameSupported(edxlMessage, hubConfig));
@@ -1066,7 +1071,8 @@ public class DispatcherTest {
                     jsonMapper,
                     conversionHandler,
                     hubConfig,
-                    persistenceService);
+                    persistenceService,
+                    Tracer.NOOP);
 
             UnroutableMessageException thrown =
                     assertThrows(
@@ -1083,6 +1089,14 @@ public class DispatcherTest {
     @Test
     @DisplayName("should transfer to another vhost when an error is raised after message transfer")
     public void transferErrorToOtherVhost() throws IOException, ValidationException {
+        HubConfiguration hubConfigSpy = Mockito.spy(hubConfig);
+        ClientPropertiesRegistry clientPropertiesRegistrySpy =
+                Mockito.spy(clientPropertiesRegistry);
+        doReturn(clientPropertiesRegistrySpy).when(hubConfigSpy).getClientPropertiesRegistry();
+        doReturn("15-15_v2.0").when(hubConfigSpy).getVhost();
+        doReturn(new String[] {"1.5"})
+                .when(clientPropertiesRegistrySpy)
+                .getClientVersionsForPerimeter(SAMU_A_ROUTING_KEY, "15-15");
         Validator validatorMock = Mockito.mock(Validator.class);
         Mockito.doThrow(
                         new SchemaValidationException(
@@ -1099,6 +1113,7 @@ public class DispatcherTest {
                         registry,
                         xmlMapper,
                         jsonMapper,
+                        clientPropertiesRegistrySpy,
                         conversionHandler);
         Dispatcher dispatcherSpy =
                 new Dispatcher(
@@ -1109,7 +1124,8 @@ public class DispatcherTest {
                         jsonMapper,
                         conversionHandler,
                         hubConfig,
-                        persistenceService);
+                        persistenceService,
+                        Tracer.NOOP);
 
         Message message = createMessage("EDXL-DE", JSON, SAMU_V1_ROUTING_KEY, SAMU_A_ROUTING_KEY);
 
@@ -1143,6 +1159,14 @@ public class DispatcherTest {
     @Test
     @DisplayName("should send error message to sender info queue when error is raised")
     public void sendErrorMessageWhenErrorIsRaised() throws IOException, ValidationException {
+        HubConfiguration hubConfigSpy = Mockito.spy(hubConfig);
+        ClientPropertiesRegistry clientPropertiesRegistrySpy =
+                Mockito.spy(clientPropertiesRegistry);
+        doReturn(clientPropertiesRegistrySpy).when(hubConfigSpy).getClientPropertiesRegistry();
+        doReturn("15-15_v1.5").when(hubConfigSpy).getVhost();
+        doReturn(new String[] {"1.5"})
+                .when(clientPropertiesRegistrySpy)
+                .getClientVersionsForPerimeter(SAMU_A_ROUTING_KEY, "15-15");
         // Default hub vhost is v2.1 and samuA declares v2.1: validation error is forwarded directly
         // to samuA's info queue without any conversion.
         Validator validatorMock = Mockito.mock(Validator.class);
@@ -1161,6 +1185,7 @@ public class DispatcherTest {
                         registry,
                         xmlMapper,
                         jsonMapper,
+                        clientPropertiesRegistrySpy,
                         conversionHandler);
         Dispatcher dispatcherSpy =
                 new Dispatcher(
@@ -1171,7 +1196,8 @@ public class DispatcherTest {
                         jsonMapper,
                         conversionHandler,
                         hubConfig,
-                        persistenceService);
+                        persistenceService,
+                        Tracer.NOOP);
 
         Message message = createMessage("EDXL-DE", JSON);
 

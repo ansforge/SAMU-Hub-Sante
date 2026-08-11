@@ -1,81 +1,158 @@
 import logging
-from flask import Flask, jsonify
-import csv
 import os
-import argparse
+import yaml
+from http import HTTPStatus
 
-DEFAULT_FLASK_HOST = "0.0.0.0"
-DEFAULT_FLASK_PORT = 8080
+from flask_cors import CORS
+from flask import Response, jsonify, redirect, make_response
+from flask_openapi3 import Info, OpenAPI, Tag
+from models import (
+    ErrorResponse,
+    Perimeter,
+    Client,
+    PerimeterPath,
+    ClientsResponse,
+    PERIMETER_TO_ANNUAIRE_KEY_MAP,
+)
+from pydantic import ValidationError
 
-VALUES_FILE_PATH = os.environ.get(
-    "VALUES_FILE_PATH", "/config/rabbitmq.clients-configuration.csv"
+from constants import (
+    ANNUAIRE_ROOT_KEY,
+    ANNUAIRE_CLIENTS_KEY,
+    CLIENTS_ENDPOINT,
+    ANNUAIRE_CLIENTS_DATA_KEY,
+    SPECS_ENDPOINT,
+    HEALTH_ENDPOINT,
+    VALUES_PATH,
 )
 
-CSV_DATA_KEY = "CSV_DATA"
-API_ENDPOINT = "/annuaire/api"
-HEALTH_ENDPOINT = "/annuaire/health"
-CSV_NOT_FOUND_MSG = "Fichier CSV introuvable"
 
-HEADERS_COLUMNS_TO_KEEP = [
-    "client_id",
-    "editor",
-    "P: 15-15",
-    "P: 15-smur",
-    "P: 15-nexsis",
-    "P: 15-gps",
-    "directCISU",
-]
-
-
-def create_app():
-    app = Flask(__name__)
-    register_routes(app)
-    csv_data = parse_csv(VALUES_FILE_PATH)
-    if csv_data is None:
-        raise RuntimeError(
-            "Erreur : impossible de charger le fichier CSV au démarrage."
+def validation_error_callback(e: ValidationError):
+    resp = make_response(
+        jsonify(
+            {
+                "error": "Invalid perimeter",
+                "valid_perimeters": list(Perimeter),
+            }
         )
-    app.config[CSV_DATA_KEY] = select_columns(csv_data)
-    return app
+    )
+    resp.headers["Content-Type"] = "application/json"
+    resp.status_code = HTTPStatus.BAD_REQUEST
+    return resp
 
 
-def parse_csv(filename):
-    path = VALUES_FILE_PATH
-    if not os.path.exists(path):
-        logging.error(f"Fichier CSV introuvable : {path}")
-        raise FileNotFoundError(f"{CSV_NOT_FOUND_MSG} : {filename}")
+def load_clients(path: str) -> list[dict]:
     try:
-        with open(path, newline="", encoding="utf-8") as csvfile:
-            reader = csv.DictReader(csvfile, delimiter=";")
-            return list(reader)
+        with open(path, encoding="utf-8") as f:
+            data = yaml.safe_load(f)
+        if ANNUAIRE_ROOT_KEY not in data:
+            raise RuntimeError(f"Missing '{ANNUAIRE_ROOT_KEY}' key in {path}")
+        if ANNUAIRE_CLIENTS_KEY not in data[ANNUAIRE_ROOT_KEY]:
+            raise RuntimeError(
+                f"Missing '{ANNUAIRE_ROOT_KEY}.{ANNUAIRE_CLIENTS_KEY}' key in {path}"
+            )
+        return data[ANNUAIRE_ROOT_KEY][ANNUAIRE_CLIENTS_KEY]
+    except FileNotFoundError:
+        logging.error(f"Values file not found: {path}")
+        raise
+    except RuntimeError as e:
+        logging.error(f"Failed to load clients from {path}: {e}")
+        raise
     except Exception as e:
-        logging.error(f"Erreur lors de la lecture du fichier CSV '{filename}': {e}")
-        raise RuntimeError(f"Erreur lors de la lecture du CSV: {e}")
+        logging.error(f"Failed to load clients from {path}: {e}")
+        raise RuntimeError(f"Failed to load clients from {path}: {e}") from e
 
 
-def select_columns(data: list[dict]) -> list[dict]:
-    data_updated = []
-    for row in data:
-        row_updated = {
-            key: value for key, value in row.items() if key in HEADERS_COLUMNS_TO_KEEP
-        }
-        data_updated.append(row_updated)
-    return data_updated
+def resolve_perimeters(annuaire: dict) -> dict[Perimeter, bool]:
+    return {
+        p: bool(annuaire.get(key, False))
+        for p, key in PERIMETER_TO_ANNUAIRE_KEY_MAP.items()
+    }
 
 
-def register_routes(app):
-    @app.get(API_ENDPOINT)
-    def get_json():
-        return jsonify(app.config[CSV_DATA_KEY])
+def build_annuaire_client_entry(client: dict) -> Client:
+    return Client(
+        client_id=client["client_id"],
+        client_name=client.get("client_name", ""),
+        client_type=client.get("client_type", ""),
+        perimeters=resolve_perimeters(client.get(ANNUAIRE_ROOT_KEY, {})),
+    )
 
-    @app.get(HEALTH_ENDPOINT)
-    def health_check():
+
+def build_annuaire_clients(clients: list[dict]) -> list[Client]:
+    return [
+        build_annuaire_client_entry(c)
+        for c in clients
+        if isinstance(c.get(ANNUAIRE_ROOT_KEY), dict)
+    ]
+
+
+clients_tag = Tag(name="Clients", description="Annuaire des clients par périmètre")
+
+
+def register_routes(app: OpenAPI) -> None:
+    @app.get(CLIENTS_ENDPOINT, tags=[clients_tag], responses={200: ClientsResponse})
+    def get_clients() -> ClientsResponse:
+        """Lister tous les clients de l'annuaire"""
+        clients: list[Client] = app.config[ANNUAIRE_CLIENTS_DATA_KEY]
+        return jsonify([c.model_dump(by_alias=True) for c in clients])
+
+    @app.get(
+        f"{CLIENTS_ENDPOINT}/<perimeter>",
+        tags=[clients_tag],
+        responses={200: ClientsResponse},
+    )
+    def get_clients_by_perimeter(path: PerimeterPath) -> ClientsResponse:
+        """Lister les clients actifs sur un périmètre donné"""
+        clients: list[Client] = app.config[ANNUAIRE_CLIENTS_DATA_KEY]
+        filtered = [c for c in clients if c.perimeters[path.perimeter]]
+        return jsonify([c.model_dump(by_alias=True) for c in filtered])
+
+    @app.get(HEALTH_ENDPOINT, doc_ui=False)
+    def health_check() -> tuple[Response, int]:
         return jsonify({"status": "UP", "service": "SAMU Hub Annuaire"}), 200
 
+    # redirects annuaire/api/specs to Swagger UI
+    @app.route(SPECS_ENDPOINT)
+    def specs_home() -> Response:
+        return redirect(f"{SPECS_ENDPOINT}/swagger")
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--port", type=int, default=DEFAULT_FLASK_PORT)
-    args = parser.parse_args()
-    app = create_app()
-    app.run(host=DEFAULT_FLASK_HOST, port=args.port)
+
+def get_allowed_origins() -> list[str] | None:
+    ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS")
+    if ALLOWED_ORIGINS:
+        return ALLOWED_ORIGINS.split(",")
+    else:
+        return None
+
+
+def create_app() -> OpenAPI:
+    info = Info(
+        title="API Annuaire",
+        version="",
+        description="Annuaire des clients SAMU Hub joignables, par périmètre.",
+    )
+    swagger_config = {
+        # Avoid configuring an external endpoint to validate the
+        # openapi spec generated (used to dispay a status badge).
+        "validatorUrl": None
+    }
+    # Swagger UI : /annuaire/api/specs/swagger  (redirigé depuis /annuaire/api/specs)
+    # ReDoc      : /annuaire/api/specs/redoc
+    # Spec JSON  : /annuaire/api/specs/openapi.json
+    app = OpenAPI(
+        __name__,
+        info=info,
+        doc_prefix=SPECS_ENDPOINT,
+        validation_error_status=HTTPStatus.BAD_REQUEST,
+        validation_error_model=ErrorResponse,
+        validation_error_callback=validation_error_callback,
+    )
+    app.config["SWAGGER_CONFIG"] = swagger_config
+    allowed_origins = get_allowed_origins()
+    if allowed_origins:
+        CORS(app, origins=allowed_origins)
+    register_routes(app)
+    clients = load_clients(VALUES_PATH)
+    app.config[ANNUAIRE_CLIENTS_DATA_KEY] = build_annuaire_clients(clients)
+    return app

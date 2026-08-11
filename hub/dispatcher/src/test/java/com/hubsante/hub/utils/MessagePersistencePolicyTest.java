@@ -18,12 +18,20 @@ package com.hubsante.hub.utils;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.hubsante.hub.service.TopologyRegistry;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.springframework.core.io.ClassPathResource;
 
 public class MessagePersistencePolicyTest {
+
+    @BeforeAll
+    static void setUpTopologyRegistry() {
+        new TopologyRegistry(new ClassPathResource("config/clients.yaml"));
+    }
 
     // ─── Nexsis vhost (18 → 15) ───────────────────────────────────────────────
 
