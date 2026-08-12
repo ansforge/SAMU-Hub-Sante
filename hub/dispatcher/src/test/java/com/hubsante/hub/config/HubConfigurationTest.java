@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hubsante.hub.service;
+package com.hubsante.hub.config;
 
-import com.hubsante.hub.config.HubConfiguration;
 import java.io.File;
 import java.io.FileWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -44,7 +44,8 @@ public class HubConfigurationTest {
     }
 
     @Test
-    void testGetSupportedMessages_host1() throws Exception {
+    @DisplayName("should load the common messages and the messages specific to the vhost")
+    void shouldLoadCommonAndVhostSpecificMessages() throws Exception {
         List<String> supportedMessages = hubConfig.loadSupportedMessages("host_1");
 
         Assertions.assertEquals(4, supportedMessages.size());
@@ -55,7 +56,8 @@ public class HubConfigurationTest {
     }
 
     @Test
-    void testGetSupportedMessages_host2() throws Exception {
+    @DisplayName("should load a different message list for a different vhost")
+    void shouldLoadMessagesForAnotherVhost() throws Exception {
         List<String> supportedMessages = hubConfig.loadSupportedMessages("host_2");
 
         Assertions.assertEquals(4, supportedMessages.size());
@@ -66,7 +68,8 @@ public class HubConfigurationTest {
     }
 
     @Test
-    void testGetSupportedMessages_unknownHost() throws Exception {
+    @DisplayName("should fall back to the common messages only for an unknown vhost")
+    void shouldLoadCommonMessagesOnlyForUnknownVhost() throws Exception {
         List<String> supportedMessages = hubConfig.loadSupportedMessages("unknown");
 
         Assertions.assertEquals(2, supportedMessages.size());

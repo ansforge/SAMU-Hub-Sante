@@ -13,21 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hubsante.hub.service;
+package com.hubsante.hub.utils;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.hubsante.hub.utils.EdxlUtils;
 import com.hubsante.model.edxl.DistributionKind;
 import com.hubsante.model.edxl.DistributionStatus;
 import com.hubsante.model.edxl.EdxlMessage;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 public class EdxlUtilsTest {
 
     @Test
-    public void testEdxlMessageFromHub() {
+    @DisplayName("should build a hub-originated EDXL message addressed to the recipient")
+    void shouldBuildEdxlMessageFromHub() {
         String recipientId = "fr.health.samu123";
 
         EdxlMessage edxlMessage = EdxlUtils.edxlMessageFromHub(recipientId, null);

@@ -15,8 +15,8 @@
  */
 package com.hubsante.hub.service;
 
-import static com.hubsante.hub.service.utils.MessageTestUtils.createInvalidMessage;
-import static com.hubsante.hub.service.utils.MessageTestUtils.createMessage;
+import static com.hubsante.hub.testsupport.MessageTestUtils.createInvalidMessage;
+import static com.hubsante.hub.testsupport.MessageTestUtils.createMessage;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.IOException;
@@ -62,7 +62,7 @@ public class RabbitMQBatchTest extends RabbitIntegrationAbstract {
                 "queues");
     }
 
-    @Disabled
+    @Disabled("Wall-clock performance test, run manually; excluded test task")
     @Test
     @DisplayName("publish and consume batch of 1000 messages")
     public void consumeBatch() throws IOException, InterruptedException {
