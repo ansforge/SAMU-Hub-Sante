@@ -24,12 +24,10 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class AmqpConfiguration {
-    public static final String HUBSANTE_EXCHANGE = "hubsante";
     public static final String DISTRIBUTION_EXCHANGE = "distribution";
     public static final String TRANSFER_EXCHANGE_PREFIX = "transfer_";
     public static final String DISPATCH_QUEUE_NAME = "dispatch";
     public static final String DISPATCH_DLQ_NAME = "dispatch.dlq";
-    public static final String DISTRIBUTION_DLX = "distribution.dlx";
     public static final String DLQ_REASON = "x-first-death-reason";
     public static final String DLQ_EXPIRED_REASON = "expired";
     public static final String DLQ_REJECTED_REASON = "rejected";

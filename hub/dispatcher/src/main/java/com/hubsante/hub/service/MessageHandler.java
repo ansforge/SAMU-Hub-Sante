@@ -85,7 +85,6 @@ public class MessageHandler {
             MeterRegistry registry,
             XmlMapper xmlMapper,
             ObjectMapper jsonMapper,
-            ClientPropertiesRegistry clientPropertiesRegistry,
             ConversionHandler conversionHandler) {
         this.rabbitTemplate = rabbitTemplate;
         this.edxlHandler = edxlHandler;
@@ -95,10 +94,6 @@ public class MessageHandler {
         this.xmlMapper = xmlMapper;
         this.jsonMapper = jsonMapper;
         this.conversionHandler = conversionHandler;
-    }
-
-    public HubConfiguration getHubConfig() {
-        return hubConfig;
     }
 
     protected void handleError(AbstractHubException exception, Message message) {

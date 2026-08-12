@@ -145,7 +145,6 @@ public class DispatcherTest {
                         registry,
                         xmlMapper,
                         jsonMapper,
-                        clientPropertiesRegistry,
                         conversionHandler);
         dispatcher =
                 new Dispatcher(
@@ -1113,7 +1112,6 @@ public class DispatcherTest {
                         registry,
                         xmlMapper,
                         jsonMapper,
-                        clientPropertiesRegistrySpy,
                         conversionHandler);
         Dispatcher dispatcherSpy =
                 new Dispatcher(
@@ -1184,7 +1182,6 @@ public class DispatcherTest {
                         registry,
                         xmlMapper,
                         jsonMapper,
-                        clientPropertiesRegistrySpy,
                         conversionHandler);
         Dispatcher dispatcherSpy =
                 new Dispatcher(
