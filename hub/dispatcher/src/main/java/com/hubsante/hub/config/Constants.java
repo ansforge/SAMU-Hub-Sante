@@ -42,9 +42,7 @@ public class Constants {
 
     public enum Perimeter {
         HEALTH("15-15"),
-        CISU("15-nexsis"),
-        GPS("15-gps"),
-        SMUR("15-smur");
+        CISU("15-nexsis");
 
         private final String name;
 
