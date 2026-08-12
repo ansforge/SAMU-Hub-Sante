@@ -145,16 +145,22 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
         Thread.sleep(DISPATCHER_PROCESS_TIME);
         samuB_consumer.execute(
                 channel -> {
-                    channel.basicConsume(
-                            SAMU_B_MESSAGE_QUEUE,
-                            false,
-                            (consumerTag, message) -> {
-                                channel.basicReject(message.getEnvelope().getDeliveryTag(), false);
-                            },
-                            consumerTag -> {});
+                    // The consumer must be cancelled before this channel goes back to the cache:
+                    // a surviving consumer on SAMU_B_MESSAGE_QUEUE steals the messages that later
+                    // tests expect on that queue.
+                    String consumerTag =
+                            channel.basicConsume(
+                                    SAMU_B_MESSAGE_QUEUE,
+                                    false,
+                                    (tag, message) -> {
+                                        channel.basicReject(
+                                                message.getEnvelope().getDeliveryTag(), false);
+                                    },
+                                    tag -> {});
+                    Thread.sleep(DISPATCHER_PROCESS_TIME);
+                    channel.basicCancel(consumerTag);
                     return null;
                 });
-        Thread.sleep(DISPATCHER_PROCESS_TIME);
         assertRecipientDidNotReceive("samuB", SAMU_B_MESSAGE_QUEUE);
         assertRecipientDidNotReceive("samuA", SAMU_A_INFO_QUEUE);
     }
