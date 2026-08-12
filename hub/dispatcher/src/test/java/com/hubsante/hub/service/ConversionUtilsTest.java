@@ -16,7 +16,6 @@
 package com.hubsante.hub.service;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 import com.hubsante.hub.config.HubConfiguration;
@@ -51,7 +50,6 @@ public class ConversionUtilsTest {
         MockitoAnnotations.openMocks(this);
 
         when(hubConfig.getClientPropertiesRegistry()).thenReturn(clientPropertiesRegistry);
-        when(clientPropertiesRegistry.get(anyString()).directCisu()).thenReturn(false);
     }
 
     @Test
