@@ -15,6 +15,7 @@
  */
 package com.hubsante.hub.service;
 
+import static com.hubsante.hub.testsupport.HubTestTags.PERFORMANCE;
 import static com.hubsante.hub.testsupport.MessageTestUtils.createInvalidMessage;
 import static com.hubsante.hub.testsupport.MessageTestUtils.createMessage;
 import static org.junit.jupiter.api.Assertions.*;
@@ -27,6 +28,7 @@ import org.springframework.amqp.core.AmqpAdmin;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testcontainers.containers.Container;
 
+@Tag(PERFORMANCE)
 public class RabbitMQBatchTest extends RabbitIntegrationAbstract {
 
     @Autowired private AmqpAdmin amqpAdmin;
