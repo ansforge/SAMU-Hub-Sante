@@ -36,7 +36,7 @@ jobs:
       - name: Check format
         run: ./gradlew spotlessCheck
 
-      - name: Build and run tests
+      - name: Build and run unit tests
         env:
           # required to run tests because the whole build.gradle seems to be evaluated, even if the jib task is not executed
           # so the GITHUB_TOKEN var must be resolved
@@ -48,6 +48,11 @@ jobs:
             echo "🚀 Running dispatcher tests for model version $MODEL_VERSION"
             ./gradlew test -PmodelVersion=$MODEL_VERSION
           done
+
+      - name: Run integration tests
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./gradlew integrationTest jacocoTestReport
 
       - name: Add coverage to PR
         id: jacoco
