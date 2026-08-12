@@ -16,7 +16,7 @@
 package com.hubsante.hub.service;
 
 import com.hubsante.hub.HubApplication;
-import com.hubsante.hub.service.utils.SSLTestUtils;
+import com.hubsante.hub.testsupport.SSLTestUtils;
 import com.hubsante.model.EdxlHandler;
 import com.rabbitmq.client.DefaultSaslConfig;
 import java.io.IOException;

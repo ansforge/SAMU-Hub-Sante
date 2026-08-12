@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hubsante.hub.service;
+package com.hubsante.hub;
 
-import com.hubsante.hub.HubApplication;
 import lombok.val;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -29,10 +29,11 @@ import org.springframework.test.context.ContextConfiguration;
 @SpringBootConfiguration
 @ContextConfiguration(
         classes = HubApplication.class,
-        initializers = HubApplicationTests.Initializer.class)
-class HubApplicationTests {
+        initializers = HubApplicationTest.Initializer.class)
+class HubApplicationTest {
     @Test
-    void contextLoads() {}
+    @DisplayName("should start the Spring application context")
+    void shouldStartApplicationContext() {}
 
     public static class Initializer
             implements ApplicationContextInitializer<ConfigurableApplicationContext> {

@@ -17,8 +17,8 @@ package com.hubsante.hub.service;
 
 import static com.hubsante.hub.config.AmqpConfiguration.*;
 import static com.hubsante.hub.config.Constants.*;
-import static com.hubsante.hub.service.utils.MessageTestUtils.*;
-import static com.hubsante.hub.service.utils.MetricsUtils.*;
+import static com.hubsante.hub.testsupport.MessageTestUtils.*;
+import static com.hubsante.hub.testsupport.MetricsUtils.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -478,7 +478,7 @@ public class DispatcherTest {
     @ParameterizedTest
     @ValueSource(strings = {"15-sas_v1.0", "15-smur_v1.7", "15-gps_v2.0", "15-notexisting_v1.0"})
     @DisplayName("should send message to current vhost")
-    public void testSendMessageToCurrentVhost(String vhost) throws IOException {
+    public void shouldSendMessageToCurrentVhost(String vhost) throws IOException {
         Message message = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY, SAMU_V3_ROUTING_KEY);
 
         doReturn(vhost).when(hubConfig).getVhost();
@@ -626,7 +626,7 @@ public class DispatcherTest {
 
     @Test
     @DisplayName("malformed message should throw an exception")
-    public void malformedMessagefailed() throws IOException {
+    public void shouldRejectMalformedMessage() throws IOException {
 
         // we test that the message has been rejected if we can't parse it
         Message receivedMessage =
@@ -970,8 +970,7 @@ public class DispatcherTest {
         assertEquals(receivedMessage, handledMessage);
     }
 
-    // disabling until we restore info message sending to outer hubex
-    @Disabled
+    @Disabled("Re-enable when info message sending to outer hubex is restored")
     @Test
     @DisplayName("should reject message if no health actor is involved")
     public void shouldRejectMessageIfNoHealthActorIsInvolved() throws IOException {
@@ -1378,7 +1377,7 @@ public class DispatcherTest {
 
     @Test
     @DisplayName("should transfer all messages received from converter as array")
-    public void transferMultipleMessagedFromConverter() throws IOException {
+    public void shouldTransferEveryMessageReturnedByConverter() throws IOException {
         Message message = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY, SAMU_V1_ROUTING_KEY);
         String exchangeName = "transfer_15-15_v2.1_to_15-15_v1.5";
 

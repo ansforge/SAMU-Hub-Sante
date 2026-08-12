@@ -15,8 +15,8 @@
  */
 package com.hubsante.hub.service;
 
-import static com.hubsante.hub.service.utils.MessageTestUtils.createInvalidMessage;
-import static com.hubsante.hub.service.utils.MessageTestUtils.createMessage;
+import static com.hubsante.hub.testsupport.MessageTestUtils.createInvalidMessage;
+import static com.hubsante.hub.testsupport.MessageTestUtils.createMessage;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -45,7 +45,7 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
     @Test
     @DisplayName(
             "message dispatched to exchange is received by a consumer listening to the right queue")
-    public void dispatchTest() throws Exception {
+    public void shouldDeliverToRecipientQueue() throws Exception {
         Message published = createMessage("EDXL-DE", JSON);
         RabbitTemplate samuA_publisher =
                 getCustomRabbitTemplate(

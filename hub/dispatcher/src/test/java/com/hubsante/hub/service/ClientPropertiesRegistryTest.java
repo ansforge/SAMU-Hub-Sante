@@ -70,7 +70,8 @@ public class ClientPropertiesRegistryTest {
     }
 
     @Test
-    void should_fail_when_loading_invalid_yaml() {
+    @DisplayName("should fail when loading an invalid clients YAML")
+    void shouldFailWhenLoadingInvalidYaml() {
         String exceptionPrefix = "Invalid clients configuration:\n\n";
 
         // perimeter wth no name
