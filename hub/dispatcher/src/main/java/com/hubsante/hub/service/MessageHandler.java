@@ -96,10 +96,6 @@ public class MessageHandler {
         this.conversionHandler = conversionHandler;
     }
 
-    public HubConfiguration getHubConfig() {
-        return hubConfig;
-    }
-
     protected void handleError(AbstractHubException exception, Message message) {
         // create Error
         Error error = new Error();
