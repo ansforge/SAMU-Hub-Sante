@@ -80,7 +80,6 @@ class MessageHandlerTest {
                                 meterRegistry,
                                 xmlMapper,
                                 jsonMapper,
-                                clientPropertiesRegistry,
                                 conversionHandler));
 
         when(hubConfiguration.getClientPropertiesRegistry()).thenReturn(clientPropertiesRegistry);

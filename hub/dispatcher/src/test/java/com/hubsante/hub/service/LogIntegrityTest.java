@@ -154,7 +154,6 @@ public class LogIntegrityTest {
                         meterRegistry,
                         xmlMapper,
                         jsonMapper,
-                        clientPropertiesRegistry,
                         conversionHandler);
 
         dispatcher =

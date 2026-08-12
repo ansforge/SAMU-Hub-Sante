@@ -85,7 +85,6 @@ public class MessageHandler {
             MeterRegistry registry,
             XmlMapper xmlMapper,
             ObjectMapper jsonMapper,
-            ClientPropertiesRegistry clientPropertiesRegistry,
             ConversionHandler conversionHandler) {
         this.rabbitTemplate = rabbitTemplate;
         this.edxlHandler = edxlHandler;
