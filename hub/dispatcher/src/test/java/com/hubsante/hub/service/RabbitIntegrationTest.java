@@ -31,6 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.*;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageProperties;
+import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -72,7 +73,9 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
     @DisplayName("publish with authorized but inconsistent routing key fails")
     public void publishWithAuthorizedButInconsistentRoutingKeyFails() throws Exception {
         String p12Path = classLoader.getResource("config/certs/samuA/samuA.p12").getPath();
-        RabbitTemplate samuA_publisher = getCustomRabbitTemplate(p12Path, "samuA");
+        RabbitTemplate samuA_publisher =
+                getCustomRabbitTemplate(
+                        p12Path, "samuA", CachingConnectionFactory.ConfirmType.CORRELATED);
 
         samuA_publisher.setConfirmCallback(
                 (correlationData, ack, cause) -> {
