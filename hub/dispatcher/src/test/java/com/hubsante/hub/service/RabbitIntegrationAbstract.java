@@ -35,6 +35,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.util.TestPropertyValues;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.testcontainers.containers.RabbitMQContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -47,6 +48,7 @@ import org.testcontainers.utility.MountableFile;
         classes = HubApplication.class,
         initializers = RabbitIntegrationTest.Initializer.class)
 @Testcontainers
+@ActiveProfiles("test")
 @Tag(HubTestTags.INTEGRATION)
 @Slf4j
 public class RabbitIntegrationAbstract {
@@ -121,42 +123,13 @@ public class RabbitIntegrationAbstract {
             implements ApplicationContextInitializer<ConfigurableApplicationContext> {
         @Override
         public void initialize(ConfigurableApplicationContext applicationContext) {
+            // only the container-dependent values belong here, the rest is in
+            // application.properties / application-test.properties
             val values =
                     TestPropertyValues.of(
-                            // broker identification
                             "spring.rabbitmq.host=" + rabbitMQContainer.getHost(),
                             "spring.rabbitmq.port=" + rabbitMQContainer.getAmqpsPort(),
-
-                            // default RabbitTemplate conf (dispatcher)
-                            "spring.rabbitmq.ssl.key-store-password=dispatcher",
-                            "spring.rabbitmq.ssl.trust-store-password=trustStore",
-                            "spring.rabbitmq.ssl.key-store="
-                                    + Thread.currentThread()
-                                            .getContextClassLoader()
-                                            .getResource(
-                                                    "config/certs/dispatcher/dispatcher.test.p12"),
-                            "spring.rabbitmq.ssl.trust-store="
-                                    + Thread.currentThread()
-                                            .getContextClassLoader()
-                                            .getResource("config/certs/trustStore"),
-                            "client.configuration.file="
-                                    + Thread.currentThread()
-                                            .getContextClassLoader()
-                                            .getResource("config/clients.yaml"),
-                            "supported.messages.file="
-                                    + Thread.currentThread()
-                                            .getContextClassLoader()
-                                            .getResource("config/supported.messages.csv"),
-                            "dispatcher.default.ttl=5",
-
-                            // must be set to handle PublisherConfirms in other RabbitTemplates,
-                            // even if we don't use it in Dispatcher
-                            "spring.rabbitmq.publisher-returns=true",
-                            "spring.rabbitmq.template.mandatory=true",
-                            "spring.rabbitmq.virtual-host=15-15_v2.1",
-
-                            // Deactivate OTEL tracings
-                            "management.tracing.sampling.probability=0");
+                            "spring.rabbitmq.virtual-host=15-15_v2.1");
             values.applyTo(applicationContext);
         }
     }
