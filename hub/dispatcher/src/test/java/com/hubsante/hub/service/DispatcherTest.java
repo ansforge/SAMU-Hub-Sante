@@ -17,6 +17,10 @@ package com.hubsante.hub.service;
 
 import static com.hubsante.hub.config.AmqpConfiguration.*;
 import static com.hubsante.hub.config.Constants.*;
+import static com.hubsante.hub.service.ConversionStubs.echoConversionService;
+import static com.hubsante.hub.service.ConversionStubs.failConversionService;
+import static com.hubsante.hub.service.ConversionStubs.verifyConversion;
+import static com.hubsante.hub.service.ConversionStubs.verifyNoConversion;
 import static com.hubsante.hub.testsupport.HubTestScaffolding.aHub;
 import static com.hubsante.hub.testsupport.MessageTestUtils.*;
 import static com.hubsante.hub.testsupport.MetricsUtils.*;
@@ -118,14 +122,7 @@ public class DispatcherTest {
         jsonMapper = hub.jsonMapper();
         registry = hub.registry();
 
-        doAnswer(invocation -> List.of(invocation.getArgument(0).toString()))
-                .when(conversionHandler)
-                .callConversionService(
-                        anyString(),
-                        anyString(),
-                        anyString(),
-                        any(ConversionUtils.ConversionType.class),
-                        anyString());
+        echoConversionService(conversionHandler);
     }
 
     @Test
@@ -224,13 +221,7 @@ public class DispatcherTest {
 
         dispatcher.dispatch(fromFireMessage);
 
-        verify(conversionHandler, times(1))
-                .callConversionService(
-                        anyString(),
-                        anyString(),
-                        anyString(),
-                        eq(ConversionUtils.ConversionType.CISU_TRANSCODING),
-                        anyString());
+        verifyConversion(conversionHandler, ConversionUtils.ConversionType.CISU_TRANSCODING);
     }
 
     @Test
@@ -241,13 +232,7 @@ public class DispatcherTest {
 
         dispatcher.dispatch(messageToFire);
 
-        verify(conversionHandler, times(1))
-                .callConversionService(
-                        anyString(),
-                        anyString(),
-                        anyString(),
-                        eq(ConversionUtils.ConversionType.CISU_TRANSCODING),
-                        anyString());
+        verifyConversion(conversionHandler, ConversionUtils.ConversionType.CISU_TRANSCODING);
 
         String expectedTargetExchangeName = "transfer_15-15_v2.1_to_15-nexsis_vactive";
 
@@ -266,13 +251,7 @@ public class DispatcherTest {
 
         dispatcher.dispatch(messageToFire);
 
-        verify(conversionHandler, never())
-                .callConversionService(
-                        anyString(),
-                        anyString(),
-                        anyString(),
-                        any(ConversionUtils.ConversionType.class),
-                        anyString());
+        verifyNoConversion(conversionHandler);
 
         ArgumentCaptor<Message> argument = ArgumentCaptor.forClass(Message.class);
         Mockito.verify(rabbitTemplate, times(1))
@@ -291,13 +270,7 @@ public class DispatcherTest {
 
         dispatcher.dispatch(messageFromFire);
 
-        verify(conversionHandler, times(1))
-                .callConversionService(
-                        anyString(),
-                        anyString(),
-                        anyString(),
-                        any(ConversionUtils.ConversionType.class),
-                        anyString());
+        verifyConversion(conversionHandler);
 
         String expectedTargetExchangeName = "transfer_15-nexsis_vactive_to_15-15_v2.1";
 
@@ -318,13 +291,7 @@ public class DispatcherTest {
 
         dispatcher.dispatch(messageFromFire);
 
-        verify(conversionHandler, never())
-                .callConversionService(
-                        anyString(),
-                        anyString(),
-                        anyString(),
-                        eq(ConversionUtils.ConversionType.CISU_TRANSCODING),
-                        anyString());
+        verifyNoConversion(conversionHandler);
 
         ArgumentCaptor<Message> argument = ArgumentCaptor.forClass(Message.class);
         Mockito.verify(rabbitTemplate, times(1))
@@ -339,13 +306,8 @@ public class DispatcherTest {
 
         dispatcher.dispatch(message);
 
-        verify(conversionHandler, times(1))
-                .callConversionService(
-                        anyString(),
-                        anyString(),
-                        anyString(),
-                        eq(ConversionUtils.ConversionType.HEALTH_VERSION_CONVERSION),
-                        anyString());
+        verifyConversion(
+                conversionHandler, ConversionUtils.ConversionType.HEALTH_VERSION_CONVERSION);
     }
 
     @Test
@@ -356,13 +318,7 @@ public class DispatcherTest {
 
         dispatcher.dispatch(message);
 
-        verify(conversionHandler, never())
-                .callConversionService(
-                        anyString(),
-                        anyString(),
-                        anyString(),
-                        any(ConversionUtils.ConversionType.class),
-                        anyString());
+        verifyNoConversion(conversionHandler);
     }
 
     @Test
@@ -376,13 +332,7 @@ public class DispatcherTest {
         doReturn("15-nexsis_v1.9").when(hubConfig).getVhost();
         dispatcher.dispatch(message);
 
-        verify(conversionHandler, times(1))
-                .callConversionService(
-                        anyString(),
-                        anyString(),
-                        anyString(),
-                        eq(ConversionUtils.ConversionType.CISU_VERSION_CONVERSION),
-                        anyString());
+        verifyConversion(conversionHandler, ConversionUtils.ConversionType.CISU_VERSION_CONVERSION);
 
         String expectedTargetExchangeName = "transfer_15-nexsis_v1.9_to_15-nexsis_vactive";
 
@@ -408,13 +358,7 @@ public class DispatcherTest {
         doReturn(NEXSIS_VHOST).when(hubConfig).getVhost();
         dispatcher.dispatch(messageFromFire);
 
-        verify(conversionHandler, times(1))
-                .callConversionService(
-                        anyString(),
-                        anyString(),
-                        anyString(),
-                        eq(ConversionUtils.ConversionType.CISU_VERSION_CONVERSION),
-                        anyString());
+        verifyConversion(conversionHandler, ConversionUtils.ConversionType.CISU_VERSION_CONVERSION);
 
         String expectedTargetExchangeName = "transfer_15-nexsis_vactive_to_15-nexsis_v1.9";
 
@@ -432,13 +376,7 @@ public class DispatcherTest {
         doReturn(vhost).when(hubConfig).getVhost();
         dispatcher.dispatch(message);
 
-        verify(conversionHandler, never())
-                .callConversionService(
-                        anyString(),
-                        anyString(),
-                        anyString(),
-                        any(ConversionUtils.ConversionType.class),
-                        anyString());
+        verifyNoConversion(conversionHandler);
 
         ArgumentCaptor<Message> argument = ArgumentCaptor.forClass(Message.class);
         Mockito.verify(rabbitTemplate, times(1))
@@ -890,14 +828,9 @@ public class DispatcherTest {
                         new String(receivedMessage.getBody(), StandardCharsets.UTF_8));
 
         String conversionErrorMessage = "Conversion service error message";
-        doThrow(new ConversionException(conversionErrorMessage, edxlMessage.getDistributionID()))
-                .when(conversionHandler)
-                .callConversionService(
-                        anyString(),
-                        anyString(),
-                        anyString(),
-                        any(ConversionUtils.ConversionType.class),
-                        anyString());
+        failConversionService(
+                conversionHandler,
+                new ConversionException(conversionErrorMessage, edxlMessage.getDistributionID()));
 
         assertThrows(
                 AmqpRejectAndDontRequeueException.class,
@@ -1221,13 +1154,7 @@ public class DispatcherTest {
             // Verify ordering: persistence must happen before conversion
             InOrder inOrder = inOrder(persistenceService, conversionHandler);
             inOrder.verify(persistenceService, times(1)).persist(any(EdxlMessage.class));
-            inOrder.verify(conversionHandler, times(1))
-                    .callConversionService(
-                            anyString(),
-                            anyString(),
-                            anyString(),
-                            any(ConversionUtils.ConversionType.class),
-                            anyString());
+            verifyConversion(inOrder, conversionHandler);
         }
     }
 
@@ -1256,14 +1183,8 @@ public class DispatcherTest {
                     .thenReturn(true);
 
             // Conversion failure: persistence should occur, conversion throws
-            doThrow(new RuntimeException("Conversion service unavailable"))
-                    .when(conversionHandler)
-                    .callConversionService(
-                            anyString(),
-                            anyString(),
-                            anyString(),
-                            any(ConversionUtils.ConversionType.class),
-                            anyString());
+            failConversionService(
+                    conversionHandler, new RuntimeException("Conversion service unavailable"));
 
             // The conversion failure causes the dispatch to reject the message
             assertThrows(
@@ -1304,13 +1225,7 @@ public class DispatcherTest {
             assertInstanceOf(HubPersistenceException.class, thrown.getCause());
             assertTrue(thrown.getCause().getMessage().contains("Persistence failed"));
             // Conversion must not be called if persistence fails
-            verify(conversionHandler, never())
-                    .callConversionService(
-                            anyString(),
-                            anyString(),
-                            anyString(),
-                            any(ConversionUtils.ConversionType.class),
-                            anyString());
+            verifyNoConversion(conversionHandler);
         }
     }
 
@@ -1330,28 +1245,12 @@ public class DispatcherTest {
         String exchangeName = "transfer_15-15_v2.1_to_15-15_v1.5";
 
         // Returns a list of 2 converted messages
-        doAnswer(
-                        invocation ->
-                                List.of(
-                                        invocation.getArgument(0).toString(),
-                                        invocation.getArgument(0).toString()))
-                .when(conversionHandler)
-                .callConversionService(
-                        anyString(),
-                        anyString(),
-                        anyString(),
-                        any(ConversionUtils.ConversionType.class),
-                        anyString());
+        echoConversionService(conversionHandler, 2);
 
         dispatcher.dispatch(message);
 
-        verify(conversionHandler, times(1))
-                .callConversionService(
-                        anyString(),
-                        anyString(),
-                        anyString(),
-                        eq(ConversionUtils.ConversionType.HEALTH_VERSION_CONVERSION),
-                        anyString());
+        verifyConversion(
+                conversionHandler, ConversionUtils.ConversionType.HEALTH_VERSION_CONVERSION);
 
         ArgumentCaptor<Message> argCaptor = ArgumentCaptor.forClass(Message.class);
 
