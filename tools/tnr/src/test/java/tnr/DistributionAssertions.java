@@ -46,7 +46,7 @@ public final class DistributionAssertions {
 
     public static void assertRcRi(MessageDTO rcRi, String distributionId) {
         assertNotNull(rcRi, "RC-RI " + distributionId + " not received within " + RECEIVE_TIMEOUT_SECS + "s");
-        assertVhostEquals(rcRi, VHOST_15_NEXSIS_V3_TAG);
+        assertVhostEquals(rcRi, VHOST_15_NEXSIS_VACTIVE_TAG);
         assertQueueEquals(rcRi, HUB_NEXSIS_USER_CLIENT_ID + ".message");
         assertTrue(Utils.isMessageOfType(rcRi, MessageType.RESOURCES_INFO_CISU),
                 "Expected message type '%s'".formatted(MessageType.RESOURCES_INFO_CISU));

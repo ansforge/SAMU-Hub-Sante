@@ -53,7 +53,7 @@ public final class TestConstants {
 
     // specific for nexsis
     protected static final String VHOST_15_NEXSIS_VACTIVE_TAG = "15-nexsis_vactive";
-    
+
     // Use case references — RS-RI/RS-SR (Alice & Grégoire NORMAND FuiteDeGaz lifecycle)
     public static final String RS_RI_NORMAND_REF = "RS-RI/RS-RI_FuiteDeGaz_AliceGregoireNORMAND.03.json"; // SMUR resource with status
     public static final String RS_SR_NORMAND_REF = "RS-SR/RS-SR_FuiteDeGaz_AliceGregoireNORMAND.04.json"; // status update

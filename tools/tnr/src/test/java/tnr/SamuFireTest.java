@@ -266,7 +266,7 @@ class SamuFireTest extends AMQPTestSupport {
         String useCase = getUseCaseContentOnline(V3_FIRE_TAG, fixtureRef)
                 .replaceFirst("\"caseId\"\\s*:\\s*\"[^\"]+\"", "\"caseId\": \"" + caseId + "\"");
         String distributionId = Utils.generateDistributionId(TNR_SDIS_CLIENT_ID);
-        sendMessage(VHOST_15_NEXSIS_V3_TAG, NEXSIS_SHOVEL_ROUTING_KEY,
+        sendMessage(VHOST_15_NEXSIS_VACTIVE_TAG, NEXSIS_SHOVEL_ROUTING_KEY,
                 new MessageBuilder().buildMessage(useCase, distributionId, TNR_SDIS_CLIENT_ID, SAMU1_V3_ID));
         return distributionId;
     }
@@ -274,7 +274,7 @@ class SamuFireTest extends AMQPTestSupport {
     private void sendAndAssertAck(String referencedDistributionId) throws Exception {
         String ackDistributionId = sendAck(VHOST_15_15_V3_TAG, SAMU1_V3_ID, TNR_SDIS_CLIENT_ID, referencedDistributionId);
         MessageDTO matchedAck = awaitMessageByDistributionId(ackDistributionId);
-        assertAck(matchedAck, ackDistributionId, VHOST_15_NEXSIS_V3_TAG, HUB_NEXSIS_USER_CLIENT_ID + ".ack", referencedDistributionId);
+        assertAck(matchedAck, ackDistributionId, VHOST_15_NEXSIS_VACTIVE_TAG, HUB_NEXSIS_USER_CLIENT_ID + ".ack", referencedDistributionId);
     }
 
     @Test
@@ -334,7 +334,7 @@ class SamuFireTest extends AMQPTestSupport {
     }
 
     private void sendAndAssertAckFromNexsis(String referencedDistributionId) throws Exception {
-        String ackDistributionId = sendAck(VHOST_15_NEXSIS_V3_TAG, NEXSIS_SHOVEL_ROUTING_KEY, SAMU1_V3_ID, referencedDistributionId);
+        String ackDistributionId = sendAck(VHOST_15_NEXSIS_VACTIVE_TAG, NEXSIS_SHOVEL_ROUTING_KEY, SAMU1_V3_ID, referencedDistributionId);
         MessageDTO matchedAck = awaitMessageByDistributionId(ackDistributionId);
         assertAck(matchedAck, ackDistributionId, VHOST_15_15_V3_TAG, SAMU1_V3_ID + ".ack", referencedDistributionId);
     }
