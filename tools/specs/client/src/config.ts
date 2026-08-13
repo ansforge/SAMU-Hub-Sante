@@ -15,6 +15,12 @@ export const apiDomain =
 
 export const defaultRef = "main";
 
+// pass as a Link's `search` prop to carry the current ref along when
+// navigating, defaulting it if absent
+export function preserveRefSearch(prev: { ref?: string }): { ref: string } {
+  return { ref: prev.ref ?? defaultRef };
+}
+
 export function messageListUrl(ref: string): string {
   return `https://raw.githubusercontent.com/ansforge/SAMU-Hub-Modeles/${ref}/src/main/resources/sample/examples/messagesList.json`;
 }

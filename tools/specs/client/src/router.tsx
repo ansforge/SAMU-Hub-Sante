@@ -8,7 +8,7 @@ import {
   Outlet,
 } from "@tanstack/react-router";
 import { SchemaDetail, SchemaDetailSkeleton } from "@/components/schema-detail";
-import { messageListUrl, defaultRef } from "@/config";
+import { messageListUrl, defaultRef, preserveRefSearch } from "@/config";
 import { useSchemaStore } from "@/store/schema-store";
 import {
   SidebarInset,
@@ -67,7 +67,7 @@ function SchemaNotFound() {
         <div className="mt-2 flex gap-4 text-sm">
           <Link
             to="/"
-            search={(prev) => ({ ref: prev.ref ?? defaultRef })}
+            search={preserveRefSearch}
             className="underline"
           >
             Retour à l'accueil
