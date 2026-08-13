@@ -17,6 +17,7 @@ package com.hubsante.hub.service;
 
 import static com.hubsante.hub.config.AmqpConfiguration.*;
 import static com.hubsante.hub.config.Constants.*;
+import static com.hubsante.hub.testsupport.HubTestScaffolding.aHub;
 import static com.hubsante.hub.testsupport.MessageTestUtils.*;
 import static com.hubsante.hub.testsupport.MetricsUtils.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -28,13 +29,13 @@ import static org.mockito.Mockito.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import com.hubsante.hub.HubApplication;
 import com.hubsante.hub.config.HubConfiguration;
 import com.hubsante.hub.exception.ConversionException;
 import com.hubsante.hub.exception.ExpiredBeforeDispatchMessageException;
 import com.hubsante.hub.exception.HubPersistenceException;
 import com.hubsante.hub.exception.SchemaValidationException;
 import com.hubsante.hub.exception.UnroutableMessageException;
+import com.hubsante.hub.testsupport.HubTestScaffolding;
 import com.hubsante.hub.utils.*;
 import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.Validator;
@@ -46,7 +47,6 @@ import com.hubsante.model.technical.noreq.TechnicalNoreqWrapper;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.search.Search;
 import io.micrometer.tracing.Tracer;
-import jakarta.annotation.PostConstruct;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -63,34 +63,18 @@ import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageDeliveryMode;
 import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.amqp.rabbit.test.context.SpringRabbitTest;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
-import org.springframework.web.reactive.function.client.WebClient;
 
-@SpringBootTest
-@ContextConfiguration(classes = HubApplication.class)
-@SpringRabbitTest
 @Slf4j
 public class DispatcherTest {
 
-    private RabbitTemplate rabbitTemplate = Mockito.mock(RabbitTemplate.class);
-    private MessagePersistenceService persistenceService =
-            Mockito.mock(MessagePersistenceService.class);
-
-    @Autowired private EdxlHandler edxlHandler;
-    @MockitoSpyBean private HubConfiguration hubConfig;
-    @Autowired private ClientPropertiesRegistry clientPropertiesRegistry;
-    @Autowired private Validator validator;
+    private RabbitTemplate rabbitTemplate;
+    private MessagePersistenceService persistenceService;
+    private EdxlHandler edxlHandler;
+    private HubConfiguration hubConfig;
+    private ClientPropertiesRegistry clientPropertiesRegistry;
     private MessageHandler messageHandler;
     private ConversionHandler conversionHandler;
-    private WebClient conversionWebClient = Mockito.mock(WebClient.class);
-    @Autowired private MeterRegistry registry;
-    static ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+    private MeterRegistry registry;
     private Dispatcher dispatcher;
 
     private final String SAMU_B_ROUTING_KEY = "fr.health.samuB";
@@ -116,59 +100,23 @@ public class DispatcherTest {
     private final String INCONSISTENT_ROUTING_KEY = "fr.health.no-samu";
     private final String JSON = MessageProperties.CONTENT_TYPE_JSON;
     private final String XML = MessageProperties.CONTENT_TYPE_XML;
-    @Autowired private XmlMapper xmlMapper;
-    @Autowired private ObjectMapper jsonMapper;
-
-    @DynamicPropertySource
-    static void registerPgProperties(DynamicPropertyRegistry propertiesRegistry) {
-        propertiesRegistry.add(
-                "supported.messages.file",
-                () ->
-                        Objects.requireNonNull(
-                                classLoader.getResource("config/supported.messages.csv")));
-        propertiesRegistry.add(
-                "client.configuration.file",
-                () -> Objects.requireNonNull(classLoader.getResource("config/clients.yaml")));
-        propertiesRegistry.add("hubsante.default.message.ttl", () -> 5);
-        propertiesRegistry.add("spring.rabbitmq.virtual-host", () -> "15-15_v2.1");
-    }
-
-    @PostConstruct
-    public void init() {
-        conversionHandler = Mockito.spy(new ConversionHandler(conversionWebClient, edxlHandler));
-        messageHandler =
-                new MessageHandler(
-                        rabbitTemplate,
-                        edxlHandler,
-                        hubConfig,
-                        validator,
-                        registry,
-                        xmlMapper,
-                        jsonMapper,
-                        conversionHandler);
-        dispatcher =
-                new Dispatcher(
-                        messageHandler,
-                        rabbitTemplate,
-                        edxlHandler,
-                        xmlMapper,
-                        jsonMapper,
-                        conversionHandler,
-                        hubConfig,
-                        persistenceService,
-                        Tracer.NOOP);
-    }
+    private XmlMapper xmlMapper;
+    private ObjectMapper jsonMapper;
 
     @BeforeEach
-    public void resetTestState() {
-        registry.forEachMeter(
-                meter -> {
-                    if (meter.getId().getName().equalsIgnoreCase(DISPATCH_ERROR)) {
-                        registry.remove(meter);
-                    }
-                });
-        Mockito.reset(rabbitTemplate, persistenceService, conversionWebClient, hubConfig);
-        Mockito.clearInvocations(conversionHandler);
+    public void setUp() {
+        HubTestScaffolding.Hub hub = aHub().build();
+        dispatcher = hub.dispatcher();
+        messageHandler = hub.messageHandler();
+        conversionHandler = hub.conversionHandler();
+        rabbitTemplate = hub.rabbitTemplate();
+        persistenceService = hub.persistenceService();
+        hubConfig = hub.hubConfig();
+        clientPropertiesRegistry = hub.clientPropertiesRegistry();
+        edxlHandler = hub.edxlHandler();
+        xmlMapper = hub.xmlMapper();
+        jsonMapper = hub.jsonMapper();
+        registry = hub.registry();
 
         doAnswer(invocation -> List.of(invocation.getArgument(0).toString()))
                 .when(conversionHandler)
