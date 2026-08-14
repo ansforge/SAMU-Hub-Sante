@@ -1,7 +1,8 @@
 #!/bin/sh
 set -e
 
-cat <<EOF > /usr/share/nginx/html/env-config.js
+mkdir -p /usr/share/nginx/html/config
+cat <<EOF > /usr/share/nginx/html/config/env-config.js
 window.__ENV__ = { VITE_SPECS_API_DOMAIN: "${VITE_SPECS_API_DOMAIN}" };
 EOF
 

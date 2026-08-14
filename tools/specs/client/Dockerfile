@@ -40,11 +40,6 @@ COPY docker-entrypoint.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
 
 RUN export VITE_SPECS_API_DOMAIN=https://integration.hub.esante.gouv.fr/specs/api
-# Fix permissions for nginx runtime directories to run as the nginx user
-# provided by the base image. The hardened base image locks /var/lib/nginx
-# and /var/log/nginx down to that same user already, but /var/cache/nginx and
-# the copied-in html/config files need to be reassigned too.
-RUN mkdir -p /var/cache/nginx && chown -R nginx:nginx /var/cache/nginx /usr/share/nginx/html /var/lib/nginx /var/log/nginx
 
 # Expose port 8080 to allow incoming traffic
 EXPOSE 8080
