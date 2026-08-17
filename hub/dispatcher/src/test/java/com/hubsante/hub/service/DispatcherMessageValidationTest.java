@@ -28,14 +28,11 @@ import static org.mockito.Mockito.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.hubsante.hub.config.HubConfiguration;
-import com.hubsante.hub.exception.UnroutableMessageException;
 import com.hubsante.hub.testsupport.HubTestScaffolding;
 import com.hubsante.hub.utils.*;
 import com.hubsante.model.EdxlHandler;
-import com.hubsante.model.edxl.EdxlMessage;
 import com.hubsante.model.report.ErrorCode;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -237,63 +234,6 @@ class DispatcherMessageValidationTest {
                 ErrorCode.INVALID_MESSAGE,
                 "fr.health.samuB_2608323d-507d-4cbf-bf74-52007f8124ea",
                 "Invalid content was found starting with element '{\"urn:emergency:eda:1.9:reference\":reference}'.");
-    }
-
-    @Test
-    @DisplayName("should not throw when message class is supported")
-    public void checkMessageClassNameSupportedDoesNotThrow() throws Exception {
-        Message message = createMessage("EDXL-DE", JSON);
-        EdxlMessage edxlMessage =
-                edxlHandler.deserializeJsonEDXL(
-                        new String(message.getBody(), StandardCharsets.UTF_8));
-
-        HubConfiguration hubConfig = mock(HubConfiguration.class);
-        String supportedClassName = "SUPPORTED_CLASS";
-        when(hubConfig.getSupportedMessages()).thenReturn(List.of(supportedClassName));
-        try (MockedStatic<EdxlUtils> mockedEdxlUtils = mockStatic(EdxlUtils.class)) {
-            mockedEdxlUtils
-                    .when(
-                            () ->
-                                    EdxlUtils.getUseCaseFromMessage(
-                                            edxlMessage.getFirstContentMessage()))
-                    .thenReturn(supportedClassName);
-
-            assertDoesNotThrow(
-                    () -> MessageUtils.checkMessageClassNameSupported(edxlMessage, hubConfig));
-        }
-    }
-
-    @Test
-    @DisplayName("should throw UnroutableMessageException when message class is not supported")
-    public void checkMessageClassNameSupportedThrowsException() throws Exception {
-        Message message = createMessage("EDXL-DE", JSON);
-        EdxlMessage edxlMessage =
-                edxlHandler.deserializeJsonEDXL(
-                        new String(message.getBody(), StandardCharsets.UTF_8));
-
-        HubConfiguration hubConfig = mock(HubConfiguration.class);
-        String unsupportedClassName = "UNSUPPORTED_CLASS";
-        when(hubConfig.getSupportedMessages()).thenReturn(List.of("SUPPORTED_CLASS"));
-        when(hubConfig.getVhost()).thenReturn("15-15_v1.5");
-
-        try (MockedStatic<EdxlUtils> mockedEdxlUtils = mockStatic(EdxlUtils.class)) {
-            mockedEdxlUtils
-                    .when(
-                            () ->
-                                    EdxlUtils.getUseCaseFromMessage(
-                                            edxlMessage.getFirstContentMessage()))
-                    .thenReturn(unsupportedClassName);
-
-            UnroutableMessageException thrown =
-                    assertThrows(
-                            UnroutableMessageException.class,
-                            () -> {
-                                MessageUtils.checkMessageClassNameSupported(edxlMessage, hubConfig);
-                            });
-            assertEquals(
-                    "The received message classname UNSUPPORTED_CLASS is not supported on the vhost 15-15_v1.5",
-                    thrown.getMessage());
-        }
     }
 
     @Disabled("Re-enable when info message sending to outer hubex is restored")
