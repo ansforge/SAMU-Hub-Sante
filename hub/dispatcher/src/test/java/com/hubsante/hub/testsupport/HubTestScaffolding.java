@@ -86,7 +86,7 @@ public final class HubTestScaffolding {
         MeterRegistry registry = new SimpleMeterRegistry();
 
         ClientPropertiesRegistry clientPropertiesRegistry =
-                new ClientPropertiesRegistry(new ClassPathResource(CLIENTS_YAML));
+                spy(new ClientPropertiesRegistry(new ClassPathResource(CLIENTS_YAML)));
         // TopologyRegistry publishes itself through a static field read by ConversionUtils and
         // MessagePersistencePolicy: in production Spring builds it, here the scaffolding must.
         new TopologyRegistry(new ClassPathResource(CLIENTS_YAML));
@@ -96,29 +96,32 @@ public final class HubTestScaffolding {
         MessagePersistenceService persistenceService = mock(MessagePersistenceService.class);
         ConversionHandler conversionHandler =
                 spy(new ConversionHandler(mock(WebClient.class), edxlHandler));
+        Validator validator = spy(new Validator());
 
         MessageHandler messageHandler =
-                new MessageHandler(
-                        rabbitTemplate,
-                        edxlHandler,
-                        hubConfig,
-                        new Validator(),
-                        registry,
-                        xmlMapper,
-                        jsonMapper,
-                        conversionHandler);
+                spy(
+                        new MessageHandler(
+                                rabbitTemplate,
+                                edxlHandler,
+                                hubConfig,
+                                validator,
+                                registry,
+                                xmlMapper,
+                                jsonMapper,
+                                conversionHandler));
 
         Dispatcher dispatcher =
-                new Dispatcher(
-                        messageHandler,
-                        rabbitTemplate,
-                        edxlHandler,
-                        xmlMapper,
-                        jsonMapper,
-                        conversionHandler,
-                        hubConfig,
-                        persistenceService,
-                        Tracer.NOOP);
+                spy(
+                        new Dispatcher(
+                                messageHandler,
+                                rabbitTemplate,
+                                edxlHandler,
+                                xmlMapper,
+                                jsonMapper,
+                                conversionHandler,
+                                hubConfig,
+                                persistenceService,
+                                Tracer.NOOP));
 
         return new Hub(
                 dispatcher,
@@ -128,6 +131,7 @@ public final class HubTestScaffolding {
                 persistenceService,
                 hubConfig,
                 clientPropertiesRegistry,
+                validator,
                 edxlHandler,
                 xmlMapper,
                 jsonMapper,
@@ -170,6 +174,7 @@ public final class HubTestScaffolding {
             MessagePersistenceService persistenceService,
             HubConfiguration hubConfig,
             ClientPropertiesRegistry clientPropertiesRegistry,
+            Validator validator,
             EdxlHandler edxlHandler,
             XmlMapper xmlMapper,
             ObjectMapper jsonMapper,

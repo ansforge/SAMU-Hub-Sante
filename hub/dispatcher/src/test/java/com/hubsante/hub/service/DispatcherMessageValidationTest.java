@@ -34,7 +34,6 @@ import com.hubsante.hub.utils.*;
 import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.edxl.EdxlMessage;
 import com.hubsante.model.report.ErrorCode;
-import io.micrometer.tracing.Tracer;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -259,17 +258,6 @@ class DispatcherMessageValidationTest {
                                             edxlMessage.getFirstContentMessage()))
                     .thenReturn(supportedClassName);
 
-            new Dispatcher(
-                    messageHandler,
-                    rabbitTemplate,
-                    edxlHandler,
-                    xmlMapper,
-                    jsonMapper,
-                    conversionHandler,
-                    hubConfig,
-                    persistenceService,
-                    Tracer.NOOP);
-
             assertDoesNotThrow(
                     () -> MessageUtils.checkMessageClassNameSupported(edxlMessage, hubConfig));
         }
@@ -295,17 +283,6 @@ class DispatcherMessageValidationTest {
                                     EdxlUtils.getUseCaseFromMessage(
                                             edxlMessage.getFirstContentMessage()))
                     .thenReturn(unsupportedClassName);
-
-            new Dispatcher(
-                    messageHandler,
-                    rabbitTemplate,
-                    edxlHandler,
-                    xmlMapper,
-                    jsonMapper,
-                    conversionHandler,
-                    hubConfig,
-                    persistenceService,
-                    Tracer.NOOP);
 
             UnroutableMessageException thrown =
                     assertThrows(

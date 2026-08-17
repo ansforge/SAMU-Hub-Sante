@@ -38,7 +38,6 @@ import com.hubsante.model.Validator;
 import com.hubsante.model.edxl.EdxlMessage;
 import com.hubsante.model.exception.ValidationException;
 import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.tracing.Tracer;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.BeforeEach;
@@ -59,6 +58,7 @@ class DispatcherConversionErrorHandlingTest {
     private MessagePersistenceService persistenceService;
     private HubConfiguration hubConfig;
     private ClientPropertiesRegistry clientPropertiesRegistry;
+    private Validator validator;
     private EdxlHandler edxlHandler;
     private XmlMapper xmlMapper;
     private ObjectMapper jsonMapper;
@@ -74,6 +74,7 @@ class DispatcherConversionErrorHandlingTest {
         persistenceService = hub.persistenceService();
         hubConfig = hub.hubConfig();
         clientPropertiesRegistry = hub.clientPropertiesRegistry();
+        validator = hub.validator();
         edxlHandler = hub.edxlHandler();
         xmlMapper = hub.xmlMapper();
         jsonMapper = hub.jsonMapper();
@@ -86,19 +87,6 @@ class DispatcherConversionErrorHandlingTest {
     public void shouldHandleConversionServiceError() throws IOException {
         // sdisC -> samuV3 on vhost 15-nexsis_v1.9 => transcoding triggered
         doReturn(NEXSIS_VHOST).when(hubConfig).getVhost();
-
-        MessageHandler messageHandlerSpy = spy(messageHandler);
-        Dispatcher testDispatcher =
-                new Dispatcher(
-                        messageHandlerSpy,
-                        rabbitTemplate,
-                        edxlHandler,
-                        xmlMapper,
-                        jsonMapper,
-                        conversionHandler,
-                        hubConfig,
-                        persistenceService,
-                        Tracer.NOOP);
 
         Message receivedMessage =
                 createMessage("EDXL-DE", JSON, SDIS_C_ROUTING_KEY, SAMU_V3_ROUTING_KEY);
@@ -113,13 +101,13 @@ class DispatcherConversionErrorHandlingTest {
 
         assertThrows(
                 AmqpRejectAndDontRequeueException.class,
-                () -> testDispatcher.dispatch(receivedMessage));
+                () -> dispatcher.dispatch(receivedMessage));
 
         ArgumentCaptor<ConversionException> exceptionCaptor =
                 ArgumentCaptor.forClass(ConversionException.class);
         ArgumentCaptor<Message> messageCaptor = ArgumentCaptor.forClass(Message.class);
 
-        verify(messageHandlerSpy).handleError(exceptionCaptor.capture(), messageCaptor.capture());
+        verify(messageHandler).handleError(exceptionCaptor.capture(), messageCaptor.capture());
 
         ConversionException thrownException = exceptionCaptor.getValue();
         assertEquals(
@@ -133,41 +121,15 @@ class DispatcherConversionErrorHandlingTest {
     @Test
     @DisplayName("should transfer to another vhost when an error is raised after message transfer")
     public void transferErrorToOtherVhost() throws IOException, ValidationException {
-        ClientPropertiesRegistry clientPropertiesRegistrySpy =
-                Mockito.spy(clientPropertiesRegistry);
-        doReturn(clientPropertiesRegistrySpy).when(hubConfig).getClientPropertiesRegistry();
         doReturn("15-15_v2.0").when(hubConfig).getVhost();
         doReturn(new String[] {"1.5"})
-                .when(clientPropertiesRegistrySpy)
+                .when(clientPropertiesRegistry)
                 .getClientVersionsForPerimeter(SAMU_A_ROUTING_KEY, "15-15");
-        Validator validatorMock = Mockito.mock(Validator.class);
-        Mockito.doThrow(
+        doThrow(
                         new SchemaValidationException(
                                 "Mock schema validation error", "mock_distribution_id"))
-                .when(validatorMock)
+                .when(validator)
                 .validateJSON(anyString(), any());
-
-        MessageHandler messageHandlerSpy =
-                new MessageHandler(
-                        rabbitTemplate,
-                        edxlHandler,
-                        hubConfig,
-                        validatorMock,
-                        registry,
-                        xmlMapper,
-                        jsonMapper,
-                        conversionHandler);
-        Dispatcher dispatcherSpy =
-                new Dispatcher(
-                        messageHandlerSpy,
-                        rabbitTemplate,
-                        edxlHandler,
-                        xmlMapper,
-                        jsonMapper,
-                        conversionHandler,
-                        hubConfig,
-                        persistenceService,
-                        Tracer.NOOP);
 
         Message message = createMessage("EDXL-DE", JSON, SAMU_V1_ROUTING_KEY, SAMU_A_ROUTING_KEY);
 
@@ -177,7 +139,7 @@ class DispatcherConversionErrorHandlingTest {
         AmqpRejectAndDontRequeueException errorThrown =
                 assertThrows(
                         AmqpRejectAndDontRequeueException.class,
-                        () -> dispatcherSpy.dispatch(message));
+                        () -> dispatcher.dispatch(message));
 
         assertEquals("Mock schema validation error", errorThrown.getCause().getMessage());
 
@@ -197,50 +159,24 @@ class DispatcherConversionErrorHandlingTest {
     @Test
     @DisplayName("should send error message to sender info queue when error is raised")
     public void sendErrorMessageWhenErrorIsRaised() throws IOException, ValidationException {
-        ClientPropertiesRegistry clientPropertiesRegistrySpy =
-                Mockito.spy(clientPropertiesRegistry);
-        doReturn(clientPropertiesRegistrySpy).when(hubConfig).getClientPropertiesRegistry();
         doReturn("15-15_v1.5").when(hubConfig).getVhost();
         doReturn(new String[] {"1.5"})
-                .when(clientPropertiesRegistrySpy)
+                .when(clientPropertiesRegistry)
                 .getClientVersionsForPerimeter(SAMU_A_ROUTING_KEY, "15-15");
         // Default hub vhost is v2.1 and samuA declares v2.1: validation error is forwarded directly
         // to samuA's info queue without any conversion.
-        Validator validatorMock = Mockito.mock(Validator.class);
-        Mockito.doThrow(
+        doThrow(
                         new SchemaValidationException(
                                 "Mock schema validation error", "mock_distribution_id"))
-                .when(validatorMock)
+                .when(validator)
                 .validateJSON(anyString(), any());
-
-        MessageHandler messageHandlerSpy =
-                new MessageHandler(
-                        rabbitTemplate,
-                        edxlHandler,
-                        hubConfig,
-                        validatorMock,
-                        registry,
-                        xmlMapper,
-                        jsonMapper,
-                        conversionHandler);
-        Dispatcher dispatcherSpy =
-                new Dispatcher(
-                        messageHandlerSpy,
-                        rabbitTemplate,
-                        edxlHandler,
-                        xmlMapper,
-                        jsonMapper,
-                        conversionHandler,
-                        hubConfig,
-                        persistenceService,
-                        Tracer.NOOP);
 
         Message message = createMessage("EDXL-DE", JSON);
 
         AmqpRejectAndDontRequeueException errorThrown =
                 assertThrows(
                         AmqpRejectAndDontRequeueException.class,
-                        () -> dispatcherSpy.dispatch(message));
+                        () -> dispatcher.dispatch(message));
 
         assertEquals("Mock schema validation error", errorThrown.getCause().getMessage());
 

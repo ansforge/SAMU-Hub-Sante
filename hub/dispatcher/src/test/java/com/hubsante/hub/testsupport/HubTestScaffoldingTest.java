@@ -31,6 +31,7 @@ import java.io.IOException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.internal.util.MockUtil;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageProperties;
 
@@ -43,6 +44,36 @@ class HubTestScaffoldingTest {
     private static final String JSON = MessageProperties.CONTENT_TYPE_JSON;
     private static final String XML = MessageProperties.CONTENT_TYPE_XML;
     private static final String SAMU_B_MESSAGE_QUEUE = "fr.health.samuB.message";
+
+    /**
+     * Every collaborator a test may stub or verify must be a mock or a spy, and must be the very
+     * instance wired into the graph. A plain instance here sends tests back to rebuilding the graph
+     * by hand, and a spy that is not the wired one fails silently — it simply never records a call.
+     */
+    @Test
+    @DisplayName("should expose stubbable collaborators, wired into the graph")
+    void shouldExposeStubbableCollaborators() {
+        HubTestScaffolding.Hub hub = aHub().build();
+
+        assertThat(MockUtil.isMock(hub.dispatcher())).as("dispatcher is a spy").isTrue();
+        assertThat(MockUtil.isMock(hub.messageHandler())).as("messageHandler is a spy").isTrue();
+        assertThat(MockUtil.isMock(hub.conversionHandler()))
+                .as("conversionHandler is a spy")
+                .isTrue();
+        assertThat(MockUtil.isMock(hub.hubConfig())).as("hubConfig is a spy").isTrue();
+        assertThat(MockUtil.isMock(hub.clientPropertiesRegistry()))
+                .as("clientPropertiesRegistry is a spy")
+                .isTrue();
+        assertThat(MockUtil.isMock(hub.validator())).as("validator is a spy").isTrue();
+        assertThat(MockUtil.isMock(hub.rabbitTemplate())).as("rabbitTemplate is a mock").isTrue();
+        assertThat(MockUtil.isMock(hub.persistenceService()))
+                .as("persistenceService is a mock")
+                .isTrue();
+
+        assertThat(hub.hubConfig().getClientPropertiesRegistry())
+                .as("hubConfig must hand out the same registry the tests stub")
+                .isSameAs(hub.clientPropertiesRegistry());
+    }
 
     @Test
     @DisplayName("should wire every collaborator of the dispatcher graph")

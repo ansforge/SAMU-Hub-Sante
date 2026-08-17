@@ -37,7 +37,6 @@ import com.hubsante.hub.testsupport.HubTestScaffolding;
 import com.hubsante.hub.utils.*;
 import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.edxl.EdxlMessage;
-import io.micrometer.tracing.Tracer;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.BeforeEach;
@@ -236,19 +235,6 @@ class DispatcherConversionRoutingTest {
     @Test
     @DisplayName("should call sendToTransferExchange when there is a version conversion")
     public void transferToOtherVhost() throws IOException {
-        Dispatcher dispatcher =
-                spy(
-                        new Dispatcher(
-                                messageHandler,
-                                rabbitTemplate,
-                                edxlHandler,
-                                xmlMapper,
-                                jsonMapper,
-                                conversionHandler,
-                                hubConfig,
-                                persistenceService,
-                                Tracer.NOOP));
-
         Message message = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY, SAMU_V1_ROUTING_KEY);
 
         dispatcher.dispatch(message);
