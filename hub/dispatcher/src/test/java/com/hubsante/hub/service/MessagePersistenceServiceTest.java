@@ -15,7 +15,7 @@
  */
 package com.hubsante.hub.service;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
@@ -23,6 +23,7 @@ import static org.mockito.Mockito.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hubsante.hub.config.HubConfiguration;
+import com.hubsante.hub.exception.HubPersistenceException;
 import com.hubsante.hub.model.PersistedMessage;
 import com.hubsante.hub.repository.PersistedMessageRepository;
 import com.hubsante.hub.utils.EdxlUtils;
@@ -131,7 +132,9 @@ public class MessagePersistenceServiceTest {
                     .thenReturn(Map.of());
             doThrow(new RuntimeException("MongoDB unavailable")).when(repository).save(any());
 
-            assertThrows(RuntimeException.class, () -> service.persist(edxlMessage));
+            assertThatThrownBy(() -> service.persist(edxlMessage))
+                    .isInstanceOf(HubPersistenceException.class)
+                    .hasMessageContaining("MongoDB unavailable");
 
             // save() was attempted but failed
             verify(repository, times(1)).save(any());
@@ -149,7 +152,9 @@ public class MessagePersistenceServiceTest {
             when(edxlHandler.serializeJsonEDXL(any()))
                     .thenThrow(new RuntimeException("Serialization error"));
 
-            assertThrows(RuntimeException.class, () -> service.persist(edxlMessage));
+            assertThatThrownBy(() -> service.persist(edxlMessage))
+                    .isInstanceOf(HubPersistenceException.class)
+                    .hasMessageContaining("Serialization error");
 
             // save() was never called because serialization failed before reaching it
             verify(repository, never()).save(any());

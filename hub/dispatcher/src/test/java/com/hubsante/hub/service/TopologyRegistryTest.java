@@ -15,10 +15,11 @@
  */
 package com.hubsante.hub.service;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.hubsante.hub.config.Constants;
 import com.hubsante.hub.exception.ClientConfigurationException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -46,7 +47,9 @@ public class TopologyRegistryTest {
     void shouldThrowWhenTopologyBlockMissing() {
         Resource resource = new ClassPathResource("config/invalid-clients-no-perimeters.yaml");
 
-        assertThrows(ClientConfigurationException.class, () -> new TopologyRegistry(resource));
+        assertThatThrownBy(() -> new TopologyRegistry(resource))
+                .isInstanceOf(ClientConfigurationException.class)
+                .hasMessageContaining("majorModelVersionPerVhost");
     }
 
     @Test
@@ -55,6 +58,8 @@ public class TopologyRegistryTest {
         Resource resource =
                 new ClassPathResource("config/invalid-clients-missing-fire-partner.yaml");
 
-        assertThrows(ClientConfigurationException.class, () -> new TopologyRegistry(resource));
+        assertThatThrownBy(() -> new TopologyRegistry(resource))
+                .isInstanceOf(ClientConfigurationException.class)
+                .hasMessageContaining(Constants.NEXSIS_HUBEX_PARTNER);
     }
 }

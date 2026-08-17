@@ -24,13 +24,15 @@ import static com.hubsante.hub.service.ConversionStubs.verifyNoConversion;
 import static com.hubsante.hub.testsupport.HubTestScaffolding.aHub;
 import static com.hubsante.hub.testsupport.MessageTestUtils.*;
 import static com.hubsante.hub.testsupport.MetricsUtils.*;
+import static com.hubsante.hub.testsupport.assertions.HubAssertions.assertThatMessageSentTo;
+import static com.hubsante.hub.testsupport.assertions.HubAssertions.assertThatMessagesSentTo;
+import static com.hubsante.hub.testsupport.assertions.HubAssertions.assertThatNoMessageSentTo;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.hubsante.hub.config.HubConfiguration;
@@ -45,7 +47,6 @@ import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.Validator;
 import com.hubsante.model.edxl.EdxlMessage;
 import com.hubsante.model.exception.ValidationException;
-import com.hubsante.model.report.Error;
 import com.hubsante.model.report.ErrorCode;
 import com.hubsante.model.technical.noreq.TechnicalNoreqWrapper;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -236,9 +237,7 @@ public class DispatcherTest {
 
         String expectedTargetExchangeName = "transfer_15-15_v2.1_to_15-nexsis_vactive";
 
-        ArgumentCaptor<Message> argument = ArgumentCaptor.forClass(Message.class);
-        Mockito.verify(rabbitTemplate, times(1))
-                .send(eq(expectedTargetExchangeName), eq(SAMU_A_ROUTING_KEY), argument.capture());
+        assertThatMessageSentTo(rabbitTemplate, expectedTargetExchangeName, SAMU_A_ROUTING_KEY);
     }
 
     @Test
@@ -253,9 +252,7 @@ public class DispatcherTest {
 
         verifyNoConversion(conversionHandler);
 
-        ArgumentCaptor<Message> argument = ArgumentCaptor.forClass(Message.class);
-        Mockito.verify(rabbitTemplate, times(1))
-                .send(eq(DISTRIBUTION_EXCHANGE), eq(SDIS_C_MESSAGE_QUEUE), argument.capture());
+        assertThatMessageSentTo(rabbitTemplate, DISTRIBUTION_EXCHANGE, SDIS_C_MESSAGE_QUEUE);
     }
 
     @Test
@@ -274,9 +271,7 @@ public class DispatcherTest {
 
         String expectedTargetExchangeName = "transfer_15-nexsis_vactive_to_15-15_v2.1";
 
-        ArgumentCaptor<Message> argument = ArgumentCaptor.forClass(Message.class);
-        Mockito.verify(rabbitTemplate, times(1))
-                .send(eq(expectedTargetExchangeName), eq(FIRE_ROUTING_KEY), argument.capture());
+        assertThatMessageSentTo(rabbitTemplate, expectedTargetExchangeName, FIRE_ROUTING_KEY);
     }
 
     @Test
@@ -293,9 +288,7 @@ public class DispatcherTest {
 
         verifyNoConversion(conversionHandler);
 
-        ArgumentCaptor<Message> argument = ArgumentCaptor.forClass(Message.class);
-        Mockito.verify(rabbitTemplate, times(1))
-                .send(eq(DISTRIBUTION_EXCHANGE), eq(SAMU_V3_MESSAGE_QUEUE), argument.capture());
+        assertThatMessageSentTo(rabbitTemplate, DISTRIBUTION_EXCHANGE, SAMU_V3_MESSAGE_QUEUE);
     }
 
     @Test
@@ -336,12 +329,8 @@ public class DispatcherTest {
 
         String expectedTargetExchangeName = "transfer_15-nexsis_v1.9_to_15-nexsis_vactive";
 
-        ArgumentCaptor<Message> argument = ArgumentCaptor.forClass(Message.class);
-        Mockito.verify(rabbitTemplate, times(1))
-                .send(
-                        eq(expectedTargetExchangeName),
-                        eq(SAMU_V3_DIRECT_CISU_ROUTING_KEY),
-                        argument.capture());
+        assertThatMessageSentTo(
+                rabbitTemplate, expectedTargetExchangeName, SAMU_V3_DIRECT_CISU_ROUTING_KEY);
     }
 
     @Test
@@ -362,9 +351,7 @@ public class DispatcherTest {
 
         String expectedTargetExchangeName = "transfer_15-nexsis_vactive_to_15-nexsis_v1.9";
 
-        ArgumentCaptor<Message> argument = ArgumentCaptor.forClass(Message.class);
-        Mockito.verify(rabbitTemplate, times(1))
-                .send(eq(expectedTargetExchangeName), eq(FIRE_ROUTING_KEY), argument.capture());
+        assertThatMessageSentTo(rabbitTemplate, expectedTargetExchangeName, FIRE_ROUTING_KEY);
     }
 
     @ParameterizedTest
@@ -378,9 +365,7 @@ public class DispatcherTest {
 
         verifyNoConversion(conversionHandler);
 
-        ArgumentCaptor<Message> argument = ArgumentCaptor.forClass(Message.class);
-        Mockito.verify(rabbitTemplate, times(1))
-                .send(eq(DISTRIBUTION_EXCHANGE), eq(SAMU_V3_MESSAGE_QUEUE), argument.capture());
+        assertThatMessageSentTo(rabbitTemplate, DISTRIBUTION_EXCHANGE, SAMU_V3_MESSAGE_QUEUE);
     }
 
     @Test
@@ -435,9 +420,7 @@ public class DispatcherTest {
                 ex.getCause(),
                 "Cause should be ExpiredBeforeDispatchMessageException");
 
-        ArgumentCaptor<Message> argument = ArgumentCaptor.forClass(Message.class);
-        Mockito.verify(rabbitTemplate, times(1))
-                .send(eq(DISTRIBUTION_EXCHANGE), eq(SAMU_A_INFO_QUEUE), argument.capture());
+        assertThatMessageSentTo(rabbitTemplate, DISTRIBUTION_EXCHANGE, SAMU_A_INFO_QUEUE);
     }
 
     @Test
@@ -677,9 +660,7 @@ public class DispatcherTest {
         verify(dispatcher, times(1)).sendToTransferExchange(anyString(), any(), any());
 
         // the message must NOT have been published on the source target queue
-        ArgumentCaptor<Message> argument = ArgumentCaptor.forClass(Message.class);
-        Mockito.verify(rabbitTemplate, times(0))
-                .send(eq(DISTRIBUTION_EXCHANGE), eq(SAMU_B_MESSAGE_QUEUE), argument.capture());
+        assertThatNoMessageSentTo(rabbitTemplate, DISTRIBUTION_EXCHANGE, SAMU_B_MESSAGE_QUEUE);
     }
 
     @Test
@@ -871,20 +852,13 @@ public class DispatcherTest {
             String infoQueueName,
             ErrorCode errorCode,
             String referencedDistributionId,
-            String... errorCause)
-            throws JsonProcessingException {
+            String... errorCause) {
 
-        ArgumentCaptor<Message> argument = ArgumentCaptor.forClass(Message.class);
-        Mockito.verify(rabbitTemplate, times(1))
-                .send(eq(DISTRIBUTION_EXCHANGE), eq(infoQueueName), argument.capture());
-
-        Error error = getErrorFromMessage(edxlHandler, argument.getValue());
-        assertEquals(errorCode, error.getErrorCode());
-        assertEquals(referencedDistributionId, error.getReferencedDistributionID());
-        if (errorCause != null) {
-            Arrays.stream(errorCause)
-                    .forEach(cause -> assertTrue(error.getErrorCause().contains(cause)));
-        }
+        assertThatMessageSentTo(rabbitTemplate, DISTRIBUTION_EXCHANGE, infoQueueName)
+                .asError()
+                .hasCode(errorCode)
+                .references(referencedDistributionId)
+                .hasCauseContaining(errorCause);
     }
 
     @Test
@@ -1017,9 +991,7 @@ public class DispatcherTest {
 
         assertEquals("Mock schema validation error", errorThrown.getCause().getMessage());
 
-        ArgumentCaptor<Message> argument = ArgumentCaptor.forClass(Message.class);
-        Mockito.verify(rabbitTemplate, times(1))
-                .send(eq(exchangeName), eq("fr.health.hub"), argument.capture());
+        assertThatMessageSentTo(rabbitTemplate, exchangeName, "fr.health.hub");
     }
 
     @Test
@@ -1029,9 +1001,7 @@ public class DispatcherTest {
 
         dispatcher.dispatch(errorMessage);
 
-        ArgumentCaptor<Message> argument = ArgumentCaptor.forClass(Message.class);
-        Mockito.verify(rabbitTemplate, times(1))
-                .send(eq(DISTRIBUTION_EXCHANGE), eq(SAMU_A_INFO_QUEUE), argument.capture());
+        assertThatMessageSentTo(rabbitTemplate, DISTRIBUTION_EXCHANGE, SAMU_A_INFO_QUEUE);
     }
 
     @Test
@@ -1084,9 +1054,7 @@ public class DispatcherTest {
 
         assertEquals("Mock schema validation error", errorThrown.getCause().getMessage());
 
-        ArgumentCaptor<Message> argument = ArgumentCaptor.forClass(Message.class);
-        Mockito.verify(rabbitTemplate, times(1))
-                .send(eq(DISTRIBUTION_EXCHANGE), eq(SAMU_A_INFO_QUEUE), argument.capture());
+        assertThatMessageSentTo(rabbitTemplate, DISTRIBUTION_EXCHANGE, SAMU_A_INFO_QUEUE);
     }
 
     @Test
@@ -1252,9 +1220,6 @@ public class DispatcherTest {
         verifyConversion(
                 conversionHandler, ConversionUtils.ConversionType.HEALTH_VERSION_CONVERSION);
 
-        ArgumentCaptor<Message> argCaptor = ArgumentCaptor.forClass(Message.class);
-
-        Mockito.verify(rabbitTemplate, times(2))
-                .send(eq(exchangeName), eq(SAMU_A_ROUTING_KEY), argCaptor.capture());
+        assertThatMessagesSentTo(rabbitTemplate, exchangeName, SAMU_A_ROUTING_KEY, 2);
     }
 }

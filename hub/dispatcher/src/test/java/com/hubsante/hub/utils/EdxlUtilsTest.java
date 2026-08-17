@@ -34,8 +34,8 @@ public class EdxlUtilsTest {
         EdxlMessage edxlMessage = EdxlUtils.edxlMessageFromHub(recipientId, null);
 
         assertTrue(edxlMessage.getDistributionID().startsWith("fr.health.hub_"));
-        assertEquals(edxlMessage.getSenderID(), "fr.health.hub");
-        assertEquals(edxlMessage.getDateTimeSent().plusDays(1), edxlMessage.getDateTimeExpires());
+        assertEquals("fr.health.hub", edxlMessage.getSenderID());
+        assertEquals(edxlMessage.getDateTimeExpires(), edxlMessage.getDateTimeSent().plusDays(1));
         assertEquals(DistributionStatus.ACTUAL, edxlMessage.getDistributionStatus());
         assertEquals(DistributionKind.ERROR, edxlMessage.getDistributionKind());
         assertEquals("fr-FR", edxlMessage.getDescriptor().getLanguage());
