@@ -15,17 +15,20 @@
  */
 package com.hubsante.hub.config;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.test.util.ReflectionTestUtils;
 
 public class HubConfigurationTest {
+
     private HubConfiguration hubConfig;
 
     @BeforeEach
@@ -43,37 +46,18 @@ public class HubConfigurationTest {
         ReflectionTestUtils.setField(hubConfig, "supportedMessagesFile", tempFile);
     }
 
-    @Test
-    @DisplayName("should load the common messages and the messages specific to the vhost")
-    void shouldLoadCommonAndVhostSpecificMessages() throws Exception {
-        List<String> supportedMessages = hubConfig.loadSupportedMessages("host_1");
+    @ParameterizedTest(name = "vhost {0} supports {1}")
+    @CsvSource({
+        "host_1, 'ReferenceWrapper,ErrorWrapper,type1,type2'",
+        "host_2, 'ReferenceWrapper,ErrorWrapper,type1,type3'",
+        "unknown, 'ReferenceWrapper,ErrorWrapper'",
+    })
+    @DisplayName("should load the common messages plus the ones specific to the vhost")
+    void shouldLoadSupportedMessages(String vhost, String expected) throws Exception {
+        List<String> supportedMessages = hubConfig.loadSupportedMessages(vhost);
 
-        Assertions.assertEquals(4, supportedMessages.size());
-        Assertions.assertTrue(supportedMessages.contains("ReferenceWrapper"));
-        Assertions.assertTrue(supportedMessages.contains("ErrorWrapper"));
-        Assertions.assertTrue(supportedMessages.contains("type1"));
-        Assertions.assertTrue(supportedMessages.contains("type2"));
-    }
-
-    @Test
-    @DisplayName("should load a different message list for a different vhost")
-    void shouldLoadMessagesForAnotherVhost() throws Exception {
-        List<String> supportedMessages = hubConfig.loadSupportedMessages("host_2");
-
-        Assertions.assertEquals(4, supportedMessages.size());
-        Assertions.assertTrue(supportedMessages.contains("ReferenceWrapper"));
-        Assertions.assertTrue(supportedMessages.contains("ErrorWrapper"));
-        Assertions.assertTrue(supportedMessages.contains("type1"));
-        Assertions.assertTrue(supportedMessages.contains("type3"));
-    }
-
-    @Test
-    @DisplayName("should fall back to the common messages only for an unknown vhost")
-    void shouldLoadCommonMessagesOnlyForUnknownVhost() throws Exception {
-        List<String> supportedMessages = hubConfig.loadSupportedMessages("unknown");
-
-        Assertions.assertEquals(2, supportedMessages.size());
-        Assertions.assertTrue(supportedMessages.contains("ReferenceWrapper"));
-        Assertions.assertTrue(supportedMessages.contains("ErrorWrapper"));
+        assertThat(supportedMessages)
+                .as("messages supported on vhost %s", vhost)
+                .containsExactlyInAnyOrder(expected.split(","));
     }
 }
