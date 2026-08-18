@@ -17,6 +17,7 @@ package com.hubsante.hub.service;
 
 import static com.hubsante.hub.testsupport.MessageTestUtils.createInvalidMessage;
 import static com.hubsante.hub.testsupport.MessageTestUtils.createMessage;
+import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -27,8 +28,11 @@ import com.hubsante.model.report.ErrorCode;
 import com.hubsante.model.report.ErrorWrapper;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.*;
+import org.springframework.amqp.AmqpException;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -36,9 +40,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 @Slf4j
 public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
-
-    private static long DISPATCHER_PROCESS_TIME = 1000;
-    private static long DEFAULT_TTL = 5000;
 
     @Autowired private EdxlHandler edxlHandler;
 
@@ -52,12 +53,7 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
                         classLoader.getResource("config/certs/samuA/samuA.p12").getPath(), "samuA");
         samuA_publisher.send(HUBSANTE_EXCHANGE, SAMU_A_ROUTING_KEY, published);
 
-        Thread.sleep(DISPATCHER_PROCESS_TIME);
-
-        RabbitTemplate samuB_consumer =
-                getCustomRabbitTemplate(
-                        classLoader.getResource("config/certs/samuB/samuB.p12").getPath(), "samuB");
-        Message received = samuB_consumer.receive(SAMU_B_MESSAGE_QUEUE);
+        Message received = awaitMessageOn(clientTemplate("samuB"), SAMU_B_MESSAGE_QUEUE);
 
         EdxlMessage publishedEdxl =
                 converter.deserializeJsonEDXL(
@@ -77,7 +73,6 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
         Message published =
                 createInvalidMessage("EDXL-DE/inexistent-recipient-queue.json", SAMU_A_ROUTING_KEY);
         samuA_publisher.send(HUBSANTE_EXCHANGE, SAMU_A_ROUTING_KEY, published);
-        Thread.sleep(DISPATCHER_PROCESS_TIME);
 
         assertErrorHasBeenReceived(
                 samuA_publisher,
@@ -98,7 +93,6 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
         Message published =
                 createInvalidMessage("EDXL-DE/inexistent-recipient-queue.xml", SAMU_B_ROUTING_KEY);
         samuB_publisher.send(HUBSANTE_EXCHANGE, SAMU_B_ROUTING_KEY, published);
-        Thread.sleep(DISPATCHER_PROCESS_TIME);
 
         assertErrorHasBeenReceived(
                 samuB_publisher,
@@ -119,8 +113,8 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
                         classLoader.getResource("config/certs/samuA/samuA.p12").getPath(), "samuA");
         samuA_publisher.send(HUBSANTE_EXCHANGE, SAMU_A_ROUTING_KEY, published);
 
-        Thread.sleep(DISPATCHER_PROCESS_TIME + DEFAULT_TTL);
-        assertRecipientDidNotReceive("samuB", SAMU_B_MESSAGE_QUEUE);
+        // the dead-letter report can only appear once the TTL has elapsed, so awaiting it is the
+        // wait — asserting samuB got nothing before that would pass trivially
         assertErrorHasBeenReceived(
                 samuA_publisher,
                 SAMU_A_INFO_QUEUE,
@@ -128,6 +122,8 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
                 "fr.health.samuA_2608323d-507d-4cbf-bf74-52007f8124ea",
                 "fr.health.samuA_2608323d-507d-4cbf-bf74-52007f8124ea",
                 "dead-letter-queue; reason was expired");
+
+        assertRecipientDidNotReceive("samuB", SAMU_B_MESSAGE_QUEUE);
     }
 
     @Test
@@ -141,8 +137,8 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
                 getCustomRabbitTemplate(
                         classLoader.getResource("config/certs/samuB/samuB.p12").getPath(), "samuB");
 
+        AtomicBoolean rejected = new AtomicBoolean(false);
         samuA_publisher.send(HUBSANTE_EXCHANGE, SAMU_A_ROUTING_KEY, published);
-        Thread.sleep(DISPATCHER_PROCESS_TIME);
         samuB_consumer.execute(
                 channel -> {
                     // The consumer must be cancelled before this channel goes back to the cache:
@@ -155,9 +151,12 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
                                     (tag, message) -> {
                                         channel.basicReject(
                                                 message.getEnvelope().getDeliveryTag(), false);
+                                        rejected.set(true);
                                     },
                                     tag -> {});
-                    Thread.sleep(DISPATCHER_PROCESS_TIME);
+                    await("the client to reject the delivered message")
+                            .atMost(DELIVERY_TIMEOUT)
+                            .until(rejected::get);
                     channel.basicCancel(consumerTag);
                     return null;
                 });
@@ -166,14 +165,7 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
     }
 
     private void assertRecipientDidNotReceive(String client, String queueName) throws Exception {
-        RabbitTemplate nexsis_client =
-                getCustomRabbitTemplate(
-                        classLoader
-                                .getResource("config/certs/" + client + "/" + client + ".p12")
-                                .getPath(),
-                        client);
-        Message received = nexsis_client.receive(queueName);
-        assertNull(received);
+        assertNoMessageOn(clientTemplate(client), queueName);
     }
 
     private void assertErrorHasBeenReceived(
@@ -184,8 +176,7 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
             String... errorCause)
             throws JsonProcessingException {
 
-        Message infoMsg = rabbitTemplate.receive(infoQueueName);
-        assertNotNull(infoMsg);
+        Message infoMsg = awaitMessageOn(rabbitTemplate, infoQueueName);
         String errorString = new String(infoMsg.getBody());
 
         Error error =

@@ -81,6 +81,12 @@ public class RabbitMQBatchTest extends RabbitIntegrationAbstract {
         Container.ExecResult batchOutput = publishBatch(1000);
         OffsetDateTime batchEndTime = OffsetDateTime.now();
 
+        // without this, a batch script that fails outright surfaces as a confusing count mismatch
+        assertEquals(
+                0,
+                batchOutput.getExitCode(),
+                () -> "batch-test.sh failed: " + batchOutput.getStderr());
+
         long published =
                 Objects.requireNonNull(amqpAdmin.getQueueInfo(SAMU_B_MESSAGE_QUEUE))
                         .getMessageCount();

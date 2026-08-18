@@ -15,18 +15,24 @@
  */
 package com.hubsante.hub.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
+
 import com.hubsante.hub.HubApplication;
 import com.hubsante.hub.testsupport.HubTestTags;
 import com.hubsante.hub.testsupport.SSLTestUtils;
 import com.hubsante.model.EdxlHandler;
 import com.rabbitmq.client.DefaultSaslConfig;
 import java.io.IOException;
+import java.time.Duration;
+import java.util.Objects;
 import javax.net.ssl.SSLContext;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
+import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -46,7 +52,7 @@ import org.testcontainers.utility.MountableFile;
 @SpringBootTest
 @ContextConfiguration(
         classes = HubApplication.class,
-        initializers = RabbitIntegrationTest.Initializer.class)
+        initializers = RabbitIntegrationAbstract.Initializer.class)
 @Testcontainers
 @ActiveProfiles("test")
 @Tag(HubTestTags.INTEGRATION)
@@ -117,6 +123,39 @@ public class RabbitIntegrationAbstract {
         ccf.setPublisherReturns(true);
 
         return new RabbitTemplate(ccf);
+    }
+
+    /** How long a message may take to travel publisher -> hub -> recipient queue. */
+    protected static final Duration DELIVERY_TIMEOUT = Duration.ofSeconds(10);
+
+    /** How long "nothing arrived" must hold before we believe it. */
+    protected static final Duration QUIET_WINDOW = Duration.ofSeconds(1);
+
+    private static final Duration POLL_INTERVAL = Duration.ofMillis(100);
+
+    /** Waits for a message on {@code queue}, instead of sleeping and hoping. */
+    protected Message awaitMessageOn(RabbitTemplate consumer, String queue) {
+        return await("message on " + queue)
+                .atMost(DELIVERY_TIMEOUT)
+                .pollInterval(POLL_INTERVAL)
+                .until(() -> consumer.receive(queue), Objects::nonNull);
+    }
+
+    /**
+     * Lets a quiet window elapse, then checks the queue exactly once.
+     *
+     * <p>Deliberately not a polling condition: {@code receive} consumes, so polling for "no message"
+     * would swallow the message on the first poll and then report success on the second.
+     */
+    protected void assertNoMessageOn(RabbitTemplate consumer, String queue) {
+        await("quiet window on " + queue).pollDelay(QUIET_WINDOW).until(() -> true);
+        assertThat(consumer.receive(queue)).as("unexpected message on %s", queue).isNull();
+    }
+
+    protected RabbitTemplate clientTemplate(String client) throws Exception {
+        return getCustomRabbitTemplate(
+                classLoader.getResource("config/certs/" + client + "/" + client + ".p12").getPath(),
+                client);
     }
 
     public static class Initializer
