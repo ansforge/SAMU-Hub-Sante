@@ -48,3 +48,25 @@ jacocoTestReport {
 tasks.withType(Test).configureEach {
     finalizedBy jacocoTestReport
 }
+
+jacocoTestCoverageVerification {
+    dependsOn tasks.named('test'), tasks.named('integrationTest')
+    executionData tasks.withType(Test)
+
+    violationRules {
+        rule {
+            limit {
+                counter = 'LINE'
+                minimum = 0.91
+            }
+            limit {
+                counter = 'BRANCH'
+                minimum = 0.82
+            }
+        }
+    }
+}
+
+tasks.named('check') {
+    dependsOn tasks.named('jacocoTestCoverageVerification')
+}

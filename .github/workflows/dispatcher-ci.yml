@@ -49,10 +49,10 @@ jobs:
             ./gradlew test -PmodelVersion=$MODEL_VERSION
           done
 
-      - name: Run integration tests
+      - name: Run integration tests and verify coverage
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./gradlew integrationTest jacocoTestReport
+        run: ./gradlew check
 
       - name: Add coverage to PR
         id: jacoco
@@ -60,8 +60,8 @@ jobs:
         with:
           paths: ${{ github.workspace }}/hub/dispatcher/build/reports/jacoco/test/jacocoTestReport.xml
           token: ${{ secrets.GITHUB_TOKEN }}
-          min-coverage-overall: 40
-          min-coverage-changed-files: 60
+          min-coverage-overall: 91
+          min-coverage-changed-files: 80
 
       - name: Setup .NET Core # Required to execute ReportGenerator
         uses: actions/setup-dotnet@v3
