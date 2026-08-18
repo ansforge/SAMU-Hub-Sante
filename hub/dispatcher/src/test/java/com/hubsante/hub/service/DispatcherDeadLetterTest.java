@@ -20,6 +20,7 @@ import static com.hubsante.hub.testsupport.HubTestConstants.*;
 import static com.hubsante.hub.testsupport.HubTestScaffolding.aHub;
 import static com.hubsante.hub.testsupport.MessageTestUtils.*;
 import static com.hubsante.hub.testsupport.assertions.HubAssertions.assertThatMessageSentTo;
+import static com.hubsante.hub.testsupport.assertions.HubAssertions.assertThatNoMessageSentTo;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -90,6 +91,38 @@ class DispatcherDeadLetterTest {
         assertDoesNotThrow(() -> dispatcher.dispatchDLQ(dlqMessage));
         Mockito.verify(rabbitTemplate, times(0))
                 .send(eq(DISTRIBUTION_EXCHANGE), any(), any(Message.class));
+    }
+
+    /**
+     * {@code dispatchDLQ} dereferences the original routing key header without a null check, so a
+     * DLQ message missing it is rejected through the generic catch and its sender is never told.
+     */
+    @Test
+    @DisplayName("should reject a DLQ message carrying no original routing key, silently")
+    public void shouldRejectDlqMessageWithoutOriginalRoutingKey() throws Exception {
+        Message dlqMessage = createMessage("EDXL-DE", JSON);
+        dlqMessage.getMessageProperties().setHeader(DLQ_REASON, DLQ_EXPIRED_REASON);
+
+        assertThrows(
+                AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatchDLQ(dlqMessage));
+
+        assertThatNoMessageSentTo(rabbitTemplate, DISTRIBUTION_EXCHANGE, SAMU_A_INFO_QUEUE);
+    }
+
+    @Test
+    @DisplayName("should still report a DLQ message carrying no reason, with a null cause")
+    public void shouldReportDlqMessageWithoutReason() throws Exception {
+        Message dlqMessage = createMessage("EDXL-DE", JSON);
+        dlqMessage.getMessageProperties().setHeader(ORIGINAL_ROUTING_KEY, SAMU_A_ROUTING_KEY);
+
+        assertThrows(
+                AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatchDLQ(dlqMessage));
+
+        assertErrorHasBeenSent(
+                SAMU_A_INFO_QUEUE,
+                ErrorCode.DEAD_LETTER_QUEUED,
+                SAMU_A_DISTRIBUTION_ID,
+                "has been read from dead-letter-queue; reason was null");
     }
 
     private void assertErrorHasBeenSent(
