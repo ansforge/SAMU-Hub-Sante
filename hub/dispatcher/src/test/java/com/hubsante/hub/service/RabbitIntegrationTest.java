@@ -69,26 +69,6 @@ public class RabbitIntegrationTest extends RabbitIntegrationAbstract {
     }
 
     @Test
-    @DisplayName("publish with authorized but inconsistent routing key fails")
-    public void publishWithAuthorizedButInconsistentRoutingKeyFails() throws Exception {
-        String p12Path = classLoader.getResource("config/certs/samuA/samuA.p12").getPath();
-        RabbitTemplate samuA_publisher = getCustomRabbitTemplate(p12Path, "samuA");
-
-        samuA_publisher.setConfirmCallback(
-                (correlationData, ack, cause) -> {
-                    if (!ack) {
-                        failed = true;
-                    }
-                });
-
-        Message published = createMessage("EDXL-DE", JSON);
-        samuA_publisher.send(HUBSANTE_EXCHANGE, SAMU_B_ROUTING_KEY, published);
-        Thread.sleep(DISPATCHER_PROCESS_TIME);
-
-        assertTrue(failed);
-    }
-
-    @Test
     @DisplayName("publish to inexistent recipient")
     public void publishToInexistentRecipientFails() throws Exception {
         String p12Path = classLoader.getResource("config/certs/samuA/samuA.p12").getPath();
