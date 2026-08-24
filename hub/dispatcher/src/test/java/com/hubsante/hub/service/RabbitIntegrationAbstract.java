@@ -107,7 +107,6 @@ public class RabbitIntegrationAbstract {
 
         cf.setSaslConfig(DefaultSaslConfig.EXTERNAL);
         CachingConnectionFactory ccf = new CachingConnectionFactory(cf);
-        ccf.setPublisherConfirmType(CachingConnectionFactory.ConfirmType.CORRELATED);
         ccf.setPublisherReturns(true);
 
         return new RabbitTemplate(ccf);
@@ -147,7 +146,6 @@ public class RabbitIntegrationAbstract {
 
                             // must be set to handle PublisherConfirms in other RabbitTemplates,
                             // even if we don't use it in Dispatcher
-                            "spring.rabbitmq.publisher-confirm-type=correlated",
                             "spring.rabbitmq.publisher-returns=true",
                             "spring.rabbitmq.template.mandatory=true",
                             "spring.rabbitmq.virtual-host=15-15_v2.1",
