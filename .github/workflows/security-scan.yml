@@ -147,7 +147,7 @@ jobs:
 
   #     # Upload all security reports as artifacts
   #     - name: Upload Security scan reports as artifact
-  #       uses: actions/upload-artifact@v4
+  #       uses: actions/upload-artifact@v7
   #       with:
   #         name: security-reports-${{ inputs.component-name }}
   #         path: |

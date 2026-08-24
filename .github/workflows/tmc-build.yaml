@@ -100,7 +100,7 @@ jobs:
   #         category: 'trivy-tmc-image'
   #     - name: Upload TMC image scan reports as artifacts
   #       if: always()
-  #       uses: actions/upload-artifact@v4
+  #       uses: actions/upload-artifact@v7
   #       with:
   #         name: trivy-reports-tmc-image
   #         path: '*.sarif'
