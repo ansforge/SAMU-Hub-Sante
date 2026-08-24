@@ -2,9 +2,14 @@ package tnr;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static tnr.DistributionAssertions.*;
+import static tnr.TestConstants.*;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import java.util.function.Predicate;
+
+import tnr.MessageType;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -12,21 +17,6 @@ import org.junit.jupiter.api.Test;
 import tnr.dto.MessageDTO;
 
 class SamuFireTest extends AMQPTestSupport {
-
-    protected static final String SAMU1_V1_ID = "fr.health.tnr.samu1-v1";
-    protected static final String SAMU1_V3_ID = "fr.health.tnr.samu1-v3";
-    protected static final String SAMU2_V3_ID = "fr.health.tnr.samu2-v3";
-    protected static final String VHOST_15_15_V1_TAG = "15-15_v1.5";
-    protected static final String VHOST_15_15_V3_TAG = "15-15_v2.1";
-    protected static final String V1_TAG = "1.3.0";
-    protected static final String V3_TAG = "3.3.0";
-    protected static final String RS_EDA_REF = "RS-EDA/RS-EDA_partageDossier_DidierMorel.01a.json";
-    protected static final String RC_EDA_REF = "RC-EDA/RC-EDA-DouleurThoracique-PierreLegrand.json";
-    // specific for nexsis
-    protected static final String TNR_SDIS_CLIENT_ID = "fr.fire.tnr.sdisZ";
-    protected static final String HUB_NEXSIS_USER_CLIENT_ID = "fr.health.fire";
-    protected static final String NEXSIS_SHOVEL_ROUTING_KEY = "fr.fire.sga";
-    protected static final String VHOST_15_NEXSIS_V3_TAG = "15-nexsis_v1.9";
 
     @Test
     @DisplayName("Send RS-EDA message from samu1_v1 to sdisZ with conversion & transcoding, then send ack")
@@ -40,16 +30,16 @@ class SamuFireTest extends AMQPTestSupport {
 
         sendMessage(VHOST_15_15_V1_TAG, SAMU1_V1_ID, edxlJson);
 
-        MessageDTO matched = awaitMessage(distributionId);
+        MessageDTO matched = awaitMessageByDistributionId(distributionId);
 
         assertNotNull(matched, "Message " + distributionId + " not received within " + RECEIVE_TIMEOUT_SECS + "s");
-        assertVhostEquals(matched, VHOST_15_NEXSIS_V3_TAG);
+        assertVhostEquals(matched, VHOST_15_NEXSIS_VACTIVE_TAG);
         assertQueueEquals(matched, HUB_NEXSIS_USER_CLIENT_ID + ".message");
-        assertTrue(Utils.isMessageOfType(matched, "createCase"));
+        assertTrue(Utils.isMessageOfType(matched, MessageType.CREATE_CASE));
 
-        String ackDistributionId = sendAck(VHOST_15_NEXSIS_V3_TAG, NEXSIS_SHOVEL_ROUTING_KEY, SAMU1_V1_ID, distributionId);
+        String ackDistributionId = sendAck(VHOST_15_NEXSIS_VACTIVE_TAG, NEXSIS_SHOVEL_ROUTING_KEY, SAMU1_V1_ID, distributionId);
 
-        MessageDTO matchedAck = awaitMessage(ackDistributionId);
+        MessageDTO matchedAck = awaitMessageByDistributionId(ackDistributionId);
 
         String referencedDistributionID = Utils.getReferencedDistributionID(matchedAck);
 
@@ -63,7 +53,7 @@ class SamuFireTest extends AMQPTestSupport {
     @DisplayName("Send RS-EDA message from samu1_v3 to sdisZ with transcoding, then send ack")
     void messageFromSamu1V3ToNexsis() throws Exception {
 
-        String useCase = getUseCaseContentOnline(V3_TAG,  RS_EDA_REF);
+        String useCase = getUseCaseContentOnline(V3_FIRE_TAG,  RS_EDA_REF);
 
         String distributionId = Utils.generateDistributionId(SAMU1_V3_ID);
         String edxlJson = new MessageBuilder().buildMessage(
@@ -71,16 +61,16 @@ class SamuFireTest extends AMQPTestSupport {
 
         sendMessage(VHOST_15_15_V3_TAG, SAMU1_V3_ID, edxlJson);
 
-        MessageDTO matched = awaitMessage(distributionId);
+        MessageDTO matched = awaitMessageByDistributionId(distributionId);
 
         assertNotNull(matched, "Message " + distributionId + " not received within " + RECEIVE_TIMEOUT_SECS + "s");
-        assertVhostEquals(matched, VHOST_15_NEXSIS_V3_TAG);
+        assertVhostEquals(matched, VHOST_15_NEXSIS_VACTIVE_TAG);
         assertQueueEquals(matched, HUB_NEXSIS_USER_CLIENT_ID + ".message");
-        assertTrue(Utils.isMessageOfType(matched, "createCase"));
+        assertTrue(Utils.isMessageOfType(matched, MessageType.CREATE_CASE));
 
-        String ackDistributionId = sendAck(VHOST_15_NEXSIS_V3_TAG, NEXSIS_SHOVEL_ROUTING_KEY, SAMU1_V3_ID, distributionId);
+        String ackDistributionId = sendAck(VHOST_15_NEXSIS_VACTIVE_TAG, NEXSIS_SHOVEL_ROUTING_KEY, SAMU1_V3_ID, distributionId);
 
-        MessageDTO matchedAck = awaitMessage(ackDistributionId);
+        MessageDTO matchedAck = awaitMessageByDistributionId(ackDistributionId);
 
         String referencedDistributionID = Utils.getReferencedDistributionID(matchedAck);
 
@@ -94,7 +84,7 @@ class SamuFireTest extends AMQPTestSupport {
     @DisplayName("Send RC-EDA message from samu2_v3 to sdisZ without conversion nor transcoding, then send ack")
     void messageFromSamu2V3ToNexsis() throws Exception {
 
-        String useCase = getUseCaseContentOnline(V3_TAG,  RC_EDA_REF);
+        String useCase = getUseCaseContentOnline(V3_FIRE_TAG,  RC_EDA_REF);
 
         String distributionId = Utils.generateDistributionId(SAMU2_V3_ID);
         String edxlJson = new MessageBuilder().buildMessage(
@@ -102,16 +92,16 @@ class SamuFireTest extends AMQPTestSupport {
 
         sendMessage(VHOST_15_NEXSIS_V3_TAG, SAMU2_V3_ID, edxlJson);
 
-        MessageDTO matched = awaitMessage(distributionId);
+        MessageDTO matched = awaitMessageByDistributionId(distributionId);
 
         assertNotNull(matched, "Message " + distributionId + " not received within " + RECEIVE_TIMEOUT_SECS + "s");
-        assertVhostEquals(matched, VHOST_15_NEXSIS_V3_TAG);
+        assertVhostEquals(matched, VHOST_15_NEXSIS_VACTIVE_TAG);
         assertQueueEquals(matched, HUB_NEXSIS_USER_CLIENT_ID + ".message");
-        assertTrue(Utils.isMessageOfType(matched, "createCase"));
+        assertTrue(Utils.isMessageOfType(matched, MessageType.CREATE_CASE));
 
-        String ackDistributionId = sendAck(VHOST_15_NEXSIS_V3_TAG, NEXSIS_SHOVEL_ROUTING_KEY, SAMU2_V3_ID, distributionId);
+        String ackDistributionId = sendAck(VHOST_15_NEXSIS_VACTIVE_TAG, NEXSIS_SHOVEL_ROUTING_KEY, SAMU2_V3_ID, distributionId);
 
-        MessageDTO matchedAck = awaitMessage(ackDistributionId);
+        MessageDTO matchedAck = awaitMessageByDistributionId(ackDistributionId);
 
         String referencedDistributionID = Utils.getReferencedDistributionID(matchedAck);
 
@@ -125,29 +115,29 @@ class SamuFireTest extends AMQPTestSupport {
     @DisplayName("Send RC-EDA message from sdisZ to samu1_v3 with transcoding, then send ack")
     void messageFromNexsisToSamu1V3() throws Exception {
 
-        String useCase = getUseCaseContentOnline(V3_TAG,  RC_EDA_REF);
+        String useCase = getUseCaseContentOnline(V3_FIRE_TAG,  RC_EDA_REF);
 
         String distributionId = Utils.generateDistributionId(TNR_SDIS_CLIENT_ID);
         String edxlJson = new MessageBuilder().buildMessage(
                 useCase, distributionId, TNR_SDIS_CLIENT_ID, SAMU1_V3_ID);
 
-        sendMessage(VHOST_15_NEXSIS_V3_TAG, NEXSIS_SHOVEL_ROUTING_KEY, edxlJson);
+        sendMessage(VHOST_15_NEXSIS_VACTIVE_TAG, NEXSIS_SHOVEL_ROUTING_KEY, edxlJson);
 
-        MessageDTO matched = awaitMessage(distributionId);
+        MessageDTO matched = awaitMessageByDistributionId(distributionId);
 
         assertNotNull(matched, "Message " + distributionId + " not received within " + RECEIVE_TIMEOUT_SECS + "s");
         assertVhostEquals(matched, VHOST_15_15_V3_TAG);
         assertQueueEquals(matched, SAMU1_V3_ID + ".message");
-        assertTrue(Utils.isMessageOfType(matched, "createCaseHealth"));
+        assertTrue(Utils.isMessageOfType(matched, MessageType.CREATE_CASE_HEALTH));
 
         String ackDistributionId = sendAck(VHOST_15_15_V3_TAG, SAMU1_V3_ID, TNR_SDIS_CLIENT_ID, distributionId);
 
-        MessageDTO matchedAck = awaitMessage(ackDistributionId);
+        MessageDTO matchedAck = awaitMessageByDistributionId(ackDistributionId);
 
         String referencedDistributionID = Utils.getReferencedDistributionID(matchedAck);
 
         assertNotNull(matchedAck, "Ack " + ackDistributionId + " not received within " + RECEIVE_TIMEOUT_SECS + "s");
-        assertVhostEquals(matchedAck, VHOST_15_NEXSIS_V3_TAG);
+        assertVhostEquals(matchedAck, VHOST_15_NEXSIS_VACTIVE_TAG);
         assertQueueEquals(matchedAck, HUB_NEXSIS_USER_CLIENT_ID + ".ack");
         assertEquals(distributionId, referencedDistributionID);
     }
@@ -156,29 +146,29 @@ class SamuFireTest extends AMQPTestSupport {
     @DisplayName("Send RC-EDA message from sdisZ to samu1_v1 with conversion & transcoding, then send ack")
     void messageFromNexsisToSamu1V1() throws Exception {
 
-        String useCase = getUseCaseContentOnline(V3_TAG,  RC_EDA_REF);
+        String useCase = getUseCaseContentOnline(V3_FIRE_TAG,  RC_EDA_REF);
 
         String distributionId = Utils.generateDistributionId(TNR_SDIS_CLIENT_ID);
         String edxlJson = new MessageBuilder().buildMessage(
                 useCase, distributionId, TNR_SDIS_CLIENT_ID, SAMU1_V1_ID);
 
-        sendMessage(VHOST_15_NEXSIS_V3_TAG, NEXSIS_SHOVEL_ROUTING_KEY, edxlJson);
+        sendMessage(VHOST_15_NEXSIS_VACTIVE_TAG, NEXSIS_SHOVEL_ROUTING_KEY, edxlJson);
 
-        MessageDTO matched = awaitMessage(distributionId);
+        MessageDTO matched = awaitMessageByDistributionId(distributionId);
 
         assertNotNull(matched, "Message " + distributionId + " not received within " + RECEIVE_TIMEOUT_SECS + "s");
         assertVhostEquals(matched, VHOST_15_15_V1_TAG);
         assertQueueEquals(matched, SAMU1_V1_ID + ".message");
-        assertTrue(Utils.isMessageOfType(matched, "createCaseHealth"));
+        assertTrue(Utils.isMessageOfType(matched, MessageType.CREATE_CASE_HEALTH));
 
         String ackDistributionId = sendAck(VHOST_15_15_V1_TAG, SAMU1_V1_ID, TNR_SDIS_CLIENT_ID, distributionId);
 
-        MessageDTO matchedAck = awaitMessage(ackDistributionId);
+        MessageDTO matchedAck = awaitMessageByDistributionId(ackDistributionId);
 
         String referencedDistributionID = Utils.getReferencedDistributionID(matchedAck);
 
         assertNotNull(matchedAck, "Ack " + ackDistributionId + " not received within " + RECEIVE_TIMEOUT_SECS + "s");
-        assertVhostEquals(matchedAck, VHOST_15_NEXSIS_V3_TAG);
+        assertVhostEquals(matchedAck, VHOST_15_NEXSIS_VACTIVE_TAG);
         assertQueueEquals(matchedAck, HUB_NEXSIS_USER_CLIENT_ID + ".ack");
         assertEquals(distributionId, referencedDistributionID);
     }
@@ -187,31 +177,166 @@ class SamuFireTest extends AMQPTestSupport {
     @DisplayName("Send RC-EDA message from sdisZ to samu2_v3 without conversion nor transcoding, then send ack")
     void messageFromNexsisToSamu2V3() throws Exception {
 
-        String useCase = getUseCaseContentOnline(V3_TAG,  RC_EDA_REF);
+        String useCase = getUseCaseContentOnline(V3_FIRE_TAG,  RC_EDA_REF);
 
         String distributionId = Utils.generateDistributionId(TNR_SDIS_CLIENT_ID);
         String edxlJson = new MessageBuilder().buildMessage(
                 useCase, distributionId, TNR_SDIS_CLIENT_ID, SAMU2_V3_ID);
 
-        sendMessage(VHOST_15_NEXSIS_V3_TAG, NEXSIS_SHOVEL_ROUTING_KEY, edxlJson);
+        sendMessage(VHOST_15_NEXSIS_VACTIVE_TAG, NEXSIS_SHOVEL_ROUTING_KEY, edxlJson);
 
-        MessageDTO matched = awaitMessage(distributionId);
+        MessageDTO matched = awaitMessageByDistributionId(distributionId);
 
         assertNotNull(matched, "Message " + distributionId + " not received within " + RECEIVE_TIMEOUT_SECS + "s");
         assertVhostEquals(matched, VHOST_15_NEXSIS_V3_TAG);
         assertQueueEquals(matched, SAMU2_V3_ID + ".message");
-        assertTrue(Utils.isMessageOfType(matched, "createCase"));
+        assertTrue(Utils.isMessageOfType(matched, MessageType.CREATE_CASE));
 
         String ackDistributionId = sendAck(VHOST_15_NEXSIS_V3_TAG, SAMU2_V3_ID, TNR_SDIS_CLIENT_ID, distributionId);
 
-        MessageDTO matchedAck = awaitMessage(ackDistributionId);
+        MessageDTO matchedAck = awaitMessageByDistributionId(ackDistributionId);
 
         String referencedDistributionID = Utils.getReferencedDistributionID(matchedAck);
 
         assertNotNull(matchedAck, "Ack " + ackDistributionId + " not received within " + RECEIVE_TIMEOUT_SECS + "s");
-        assertVhostEquals(matchedAck, VHOST_15_NEXSIS_V3_TAG);
+        assertVhostEquals(matchedAck, VHOST_15_NEXSIS_VACTIVE_TAG);
         assertQueueEquals(matchedAck, HUB_NEXSIS_USER_CLIENT_ID + ".ack");
         assertEquals(distributionId, referencedDistributionID);
+    }
+
+    @Test
+    @DisplayName("RC-RI Raymonde LECCIA lifecycle: resource additions, status updates, and no-op (steps 2, 3, 5–9)")
+    void messageRcRiRaymondeLecciaLifecycle() throws Exception {
+
+        String uniqueCaseId = "fr.fire.tnr.test." + UUID.randomUUID().toString().replace("-", "").substring(0, 12);
+
+        // Step 2: first reception — RS-RI + RS-SR
+        String step2DistId = sendRcRi(RC_RI_REF, uniqueCaseId);
+        MessageDTO step2RsRi = awaitMessageByDistributionId(step2DistId);
+        List<MessageDTO> step2RsSr = List.of(awaitMessageOfType(MessageType.RESOURCES_STATUS));
+        assertRsRi(step2RsRi, step2DistId);
+        assertRsSr(step2RsSr, uniqueCaseId, Set.of(RC_RI_RESOURCE_ID));
+        sendAndAssertAck(step2DistId);
+
+        // Step 3: resource 1 status update — RS-SR only
+        String step3DistId = sendRcRi(RC_RI_STATUS1_REF, uniqueCaseId);
+        List<MessageDTO> step3RsSr = List.of(awaitMessageOfType(MessageType.RESOURCES_STATUS));
+        assertRsSr(step3RsSr, uniqueCaseId, Set.of(RC_RI_RESOURCE_ID));
+        sendAndAssertAck(step3DistId);
+
+        // Step 5: add resource 2 — RS-RI + RS-SR for new resource only
+        String step5DistId = sendRcRi(RC_RI_ADD_RES2_REF, uniqueCaseId);
+        MessageDTO step5RsRi = awaitMessageByDistributionId(step5DistId);
+        List<MessageDTO> step5RsSr = List.of(awaitMessageOfType(MessageType.RESOURCES_STATUS));
+        assertRsRi(step5RsRi, step5DistId);
+        assertRsSr(step5RsSr, uniqueCaseId, Set.of(RC_RI_RESOURCE2_ID));
+        sendAndAssertAck(step5DistId);
+
+        // Step 6: resource 1 status update — RS-SR only
+        String step6DistId = sendRcRi(RC_RI_STATUS2_REF, uniqueCaseId);
+        List<MessageDTO> step6RsSr = List.of(awaitMessageOfType(MessageType.RESOURCES_STATUS));
+        assertRsSr(step6RsSr, uniqueCaseId, Set.of(RC_RI_RESOURCE_ID));
+        sendAndAssertAck(step6DistId);
+
+        // Step 7: add resource 3 + resource 2 status update — RS-RI + 2×RS-SR
+        String step7DistId = sendRcRi(RC_RI_ADD_RES3_REF, uniqueCaseId);
+        MessageDTO step7RsRi = awaitMessageByDistributionId(step7DistId);
+        assertRsRi(step7RsRi, step7DistId);
+        List<MessageDTO> step7RsSr = List.of(
+                awaitMessageOfType(MessageType.RESOURCES_STATUS),
+                awaitMessageOfType(MessageType.RESOURCES_STATUS));
+        assertRsSr(step7RsSr, uniqueCaseId, Set.of(RC_RI_RESOURCE2_ID, RC_RI_RESOURCE3_ID));
+        sendAndAssertAck(step7DistId);
+
+        // Step 8: all resources status update — 3×RS-SR
+        String step8DistId = sendRcRi(RC_RI_ALL_STATUS_REF, uniqueCaseId);
+        List<MessageDTO> step8RsSr = List.of(
+                awaitMessageOfType(MessageType.RESOURCES_STATUS),
+                awaitMessageOfType(MessageType.RESOURCES_STATUS),
+                awaitMessageOfType(MessageType.RESOURCES_STATUS));
+        assertRsSr(step8RsSr, uniqueCaseId, Set.of(RC_RI_RESOURCE_ID, RC_RI_RESOURCE2_ID, RC_RI_RESOURCE3_ID));
+        sendAndAssertAck(step8DistId);
+
+        // Step 9: no change — no output
+        sendRcRi(RC_RI_ALL_STATUS_REF, uniqueCaseId);
+        assertNoMessageReceived(msg -> msg.getQueue().equals(SAMU1_V3_ID + ".message"));
+    }
+
+    private String sendRcRi(String fixtureRef, String caseId) throws Exception {
+        String useCase = getUseCaseContentOnline(V3_FIRE_TAG, fixtureRef)
+                .replaceFirst("\"caseId\"\\s*:\\s*\"[^\"]+\"", "\"caseId\": \"" + caseId + "\"");
+        String distributionId = Utils.generateDistributionId(TNR_SDIS_CLIENT_ID);
+        sendMessage(VHOST_15_NEXSIS_VACTIVE_TAG, NEXSIS_SHOVEL_ROUTING_KEY,
+                new MessageBuilder().buildMessage(useCase, distributionId, TNR_SDIS_CLIENT_ID, SAMU1_V3_ID));
+        return distributionId;
+    }
+
+    private void sendAndAssertAck(String referencedDistributionId) throws Exception {
+        String ackDistributionId = sendAck(VHOST_15_15_V3_TAG, SAMU1_V3_ID, TNR_SDIS_CLIENT_ID, referencedDistributionId);
+        MessageDTO matchedAck = awaitMessageByDistributionId(ackDistributionId);
+        assertAck(matchedAck, ackDistributionId, VHOST_15_NEXSIS_VACTIVE_TAG, HUB_NEXSIS_USER_CLIENT_ID + ".ack", referencedDistributionId);
+    }
+
+    @Test
+    @DisplayName("RS-RI then RS-SR lifecycle (Alice & Grégoire NORMAND): SMUR resource engagement with status, then status update (tests n°2–3)")
+    void rsRiWithStatusThenRsSrNormandLifecycle() throws Exception {
+
+        String uniqueCaseId = "fr.health.tnr.test." + UUID.randomUUID().toString().replace("-", "").substring(0, 12);
+
+        // Test n°2: RS-RI with SMUR resource and status → RC-RI with transcoded vehicle type
+        String step2DistId = sendSamuMessage(RS_RI_NORMAND_REF, uniqueCaseId);
+        MessageDTO step2RcRi = awaitMessageByDistributionId(step2DistId);
+        assertRcRi(step2RcRi, step2DistId);
+        assertRcRiResourceVehicleType(step2RcRi, "SMUR");
+        sendAndAssertAckFromNexsis(step2DistId);
+
+        // Test n°3: RS-SR status update → RC-RI (distributionId from persisted RS-RI envelope)
+        sendSamuMessage(RS_SR_NORMAND_REF, uniqueCaseId);
+        MessageDTO step3RcRi = awaitMessageOfType(MessageType.RESOURCES_INFO_CISU);
+        assertRcRi(step3RcRi, step3RcRi.getDistributionId());
+        sendAndAssertAckFromNexsis(step3RcRi.getDistributionId());
+    }
+
+    @Test
+    @DisplayName("RS-RI without status then RS-SR lifecycle (Robert VERMANDE): resource without status ignored, then RC-RI on status addition (tests n°6–7)")
+    void rsRiWithoutStatusThenRsSrVermandeLifecycle() throws Exception {
+
+        String uniqueCaseId = "fr.health.tnr.test." + UUID.randomUUID().toString().replace("-", "").substring(0, 12);
+
+        // Test n°6: RS-RI without status → no output, no ack
+        sendSamuMessage(RS_RI_VERMANDE_REF, uniqueCaseId);
+        assertNoMessageReceived(msg -> msg.getQueue().equals(HUB_NEXSIS_USER_CLIENT_ID + ".message"));
+
+        // Test n°7: RS-SR adds status → RC-RI (distributionId from persisted RS-RI envelope)
+        sendSamuMessage(RS_SR_VERMANDE_REF, uniqueCaseId);
+        MessageDTO step7RcRi = awaitMessageOfType(MessageType.RESOURCES_INFO_CISU);
+        assertRcRi(step7RcRi, step7RcRi.getDistributionId());
+        sendAndAssertAckFromNexsis(step7RcRi.getDistributionId());
+    }
+
+    @Test
+    @DisplayName("RS-RI non-SMUR resource ignored (Monsieur X): TSU resource with status produces no output (test n°8)")
+    void rsRiNonSmurResourceIgnored() throws Exception {
+
+        String uniqueCaseId = "fr.health.tnr.test." + UUID.randomUUID().toString().replace("-", "").substring(0, 12);
+
+        sendSamuMessage(RS_RI_MONSIEUR_X_REF, uniqueCaseId);
+        assertNoMessageReceived(msg -> msg.getQueue().equals(HUB_NEXSIS_USER_CLIENT_ID + ".message"));
+    }
+
+    private String sendSamuMessage(String fixtureRef, String caseId) throws Exception {
+        String useCase = getUseCaseContentOnline(V3_SAMU_TAG, fixtureRef)
+                .replaceFirst("\"caseId\"\\s*:\\s*\"[^\"]+\"", "\"caseId\": \"" + caseId + "\"");
+        String distributionId = Utils.generateDistributionId(SAMU1_V3_ID);
+        sendMessage(VHOST_15_15_V3_TAG, SAMU1_V3_ID,
+                new MessageBuilder().buildMessage(useCase, distributionId, SAMU1_V3_ID, TNR_SDIS_CLIENT_ID));
+        return distributionId;
+    }
+
+    private void sendAndAssertAckFromNexsis(String referencedDistributionId) throws Exception {
+        String ackDistributionId = sendAck(VHOST_15_NEXSIS_VACTIVE_TAG, NEXSIS_SHOVEL_ROUTING_KEY, SAMU1_V3_ID, referencedDistributionId);
+        MessageDTO matchedAck = awaitMessageByDistributionId(ackDistributionId);
+        assertAck(matchedAck, ackDistributionId, VHOST_15_15_V3_TAG, SAMU1_V3_ID + ".ack", referencedDistributionId);
     }
 
 }
