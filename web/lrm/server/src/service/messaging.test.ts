@@ -6,7 +6,7 @@ import { WebSocketServer } from 'ws';
 
 const mockConsume = vi.fn();
 const mockChannel = new EventEmitter();
-// @ts-expect-error
+// @ts-expect-error EventEmitter is used as a stand-in for an amqplib Channel
 mockChannel.consume = mockConsume;
 const mockConnection = {
   createChannel: vi.fn((callback) => {

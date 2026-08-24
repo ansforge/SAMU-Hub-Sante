@@ -13,5 +13,15 @@ export default [
       ecmaVersion: 2021,
       sourceType: 'module',
     },
-  }
+    rules: {
+      'no-console': 'error',
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+    },
+  },
+  {
+    files: ['src/**/*.test.ts'],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
+    },
+  },
 ];

@@ -26,7 +26,7 @@ afterEach(async () => {
 
 // Mock RabbitMQConnector
 const mockPublish = vi.fn();
-const mockConnectAsync = vi.fn(async (vhost: string) => {
+const mockConnectAsync = vi.fn(async (_vhost: string) => {
   const channel = {
     publish: mockPublish,
     on: vi.fn(),
