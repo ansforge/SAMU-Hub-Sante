@@ -23,7 +23,7 @@ const mockConnect = vi.fn((_: any, callback: any) => {
 // Mock RabbitMQConnector
 vi.mock('../rabbit/utils', () => {
   return {
-    RabbitMQConnector: vi.fn().mockImplementation(() => {
+    RabbitMQConnector: vi.fn().mockImplementation(function () {
       return {
         connect: mockConnect,
         close: vi.fn(),
