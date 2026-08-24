@@ -100,7 +100,7 @@ jobs:
 
   #   steps:
   #     - name: Checkout repository
-  #       uses: actions/checkout@v5
+  #       uses: actions/checkout@v7
 
   #     - name: Run Semgrep scan
   #       if: matrix.scan-config.tool == 'semgrep' && matrix.scan-config.condition
@@ -143,7 +143,7 @@ jobs:
   #   if: always()
   #   steps:
   #     - name: Checkout repository
-  #       uses: actions/checkout@v5
+  #       uses: actions/checkout@v7
 
   #     # Upload all security reports as artifacts
   #     - name: Upload Security scan reports as artifact
