@@ -61,9 +61,9 @@ public class MessagePersistenceServiceTest {
     // ─── Nexsis vhost (18 → 15) ───────────────────────────────────────────────
 
     @Test
-    @DisplayName("should persist ResourcesInfoCisuWrapper when vhost is 15-nexsis")
+    @DisplayName("should persist ResourcesInfoCisuWrapper when vhost is 15-nexsis_vactive")
     void shouldPersistResourcesInfoCisuWrapperFromNexsisVhost() throws Exception {
-        when(hubConfig.getVhost()).thenReturn("15-nexsis_v1.9");
+        when(hubConfig.getVhost()).thenReturn("15-nexsis_vactive");
         try (MockedStatic<EdxlUtils> mockedEdxlUtils = mockStatic(EdxlUtils.class)) {
             mockedEdxlUtils
                     .when(() -> EdxlUtils.getUseCaseFromMessage(any()))
