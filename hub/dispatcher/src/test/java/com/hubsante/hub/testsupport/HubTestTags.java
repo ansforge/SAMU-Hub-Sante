@@ -18,7 +18,6 @@ package com.hubsante.hub.testsupport;
 public final class HubTestTags {
 
     public static final String INTEGRATION = "integration";
-    public static final String PERFORMANCE = "performance";
 
     private HubTestTags() {}
 }

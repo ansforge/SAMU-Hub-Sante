@@ -1,10 +1,9 @@
 def INTEGRATION_TAG = 'integration'
-def PERFORMANCE_TAG = 'performance'
 
 tasks.named('test') {
     description = 'Runs the unit tests'
     useJUnitPlatform {
-        excludeTags INTEGRATION_TAG, PERFORMANCE_TAG
+        excludeTags INTEGRATION_TAG
     }
     testLogging {
         events 'failed', 'skipped'
@@ -18,23 +17,11 @@ tasks.register('integrationTest', Test) {
     classpath = sourceSets.test.runtimeClasspath
     useJUnitPlatform {
         includeTags INTEGRATION_TAG
-        excludeTags PERFORMANCE_TAG
     }
     testLogging {
         events 'failed', 'skipped'
     }
     shouldRunAfter tasks.named('test')
-}
-
-tasks.register('performanceTest', Test) {
-    description = 'Runs the performance tests. Requires a Docker daemon.'
-    group = 'verification'
-    testClassesDirs = sourceSets.test.output.classesDirs
-    classpath = sourceSets.test.runtimeClasspath
-    useJUnitPlatform {
-        includeTags PERFORMANCE_TAG
-    }
-    shouldRunAfter tasks.named('integrationTest')
 }
 
 jacocoTestReport {
