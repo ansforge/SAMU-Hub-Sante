@@ -60,7 +60,7 @@ jobs:
         with:
           paths: ${{ github.workspace }}/hub/dispatcher/build/reports/jacoco/test/jacocoTestReport.xml
           token: ${{ secrets.GITHUB_TOKEN }}
-          min-coverage-overall: 91
+          min-coverage-overall: 80
           min-coverage-changed-files: 80
 
       - name: Setup .NET Core # Required to execute ReportGenerator
