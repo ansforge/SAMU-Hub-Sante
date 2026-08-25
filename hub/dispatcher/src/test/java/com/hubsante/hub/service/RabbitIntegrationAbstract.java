@@ -129,7 +129,7 @@ public class RabbitIntegrationAbstract {
     protected static final Duration DELIVERY_TIMEOUT = Duration.ofSeconds(10);
 
     /** How long "nothing arrived" must hold before we believe it. */
-    protected static final Duration QUIET_WINDOW = Duration.ofSeconds(1);
+    protected static final Duration QUIET_WINDOW = Duration.ofSeconds(5);
 
     private static final Duration POLL_INTERVAL = Duration.ofMillis(100);
 
