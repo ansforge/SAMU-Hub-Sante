@@ -15,16 +15,24 @@
  */
 package com.hubsante.hub.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
+
 import com.hubsante.hub.HubApplication;
-import com.hubsante.hub.service.utils.SSLTestUtils;
+import com.hubsante.hub.testsupport.HubTestTags;
+import com.hubsante.hub.testsupport.SSLTestUtils;
 import com.hubsante.model.EdxlHandler;
 import com.rabbitmq.client.DefaultSaslConfig;
 import java.io.IOException;
+import java.time.Duration;
+import java.util.Objects;
 import javax.net.ssl.SSLContext;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Tag;
+import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -33,6 +41,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.util.TestPropertyValues;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.testcontainers.containers.RabbitMQContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -43,8 +52,10 @@ import org.testcontainers.utility.MountableFile;
 @SpringBootTest
 @ContextConfiguration(
         classes = HubApplication.class,
-        initializers = RabbitIntegrationTest.Initializer.class)
+        initializers = RabbitIntegrationAbstract.Initializer.class)
 @Testcontainers
+@ActiveProfiles("test")
+@Tag(HubTestTags.INTEGRATION)
 @Slf4j
 public class RabbitIntegrationAbstract {
 
@@ -88,7 +99,9 @@ public class RabbitIntegrationAbstract {
 
     @AfterEach
     public void cleanUp() throws IOException, InterruptedException {
-        String[] queues = {SAMU_A_INFO_QUEUE, SAMU_A_MESSAGE_QUEUE, SAMU_B_MESSAGE_QUEUE};
+        String[] queues = {
+            SAMU_A_INFO_QUEUE, SAMU_A_MESSAGE_QUEUE, SAMU_B_INFO_QUEUE, SAMU_B_MESSAGE_QUEUE
+        };
         for (String queue : queues) {
             rabbitMQContainer.execInContainer("rabbitmqctl", "purge_queue", queue);
         }
@@ -112,46 +125,50 @@ public class RabbitIntegrationAbstract {
         return new RabbitTemplate(ccf);
     }
 
+    /** How long a message may take to travel publisher -> hub -> recipient queue. */
+    protected static final Duration DELIVERY_TIMEOUT = Duration.ofSeconds(10);
+
+    /** How long "nothing arrived" must hold before we believe it. */
+    protected static final Duration QUIET_WINDOW = Duration.ofSeconds(5);
+
+    private static final Duration POLL_INTERVAL = Duration.ofMillis(100);
+
+    /** Waits for a message on {@code queue}, instead of sleeping and hoping. */
+    protected Message awaitMessageOn(RabbitTemplate consumer, String queue) {
+        return await("message on " + queue)
+                .atMost(DELIVERY_TIMEOUT)
+                .pollInterval(POLL_INTERVAL)
+                .until(() -> consumer.receive(queue), Objects::nonNull);
+    }
+
+    /**
+     * Lets a quiet window elapse, then checks the queue exactly once.
+     *
+     * <p>Deliberately not a polling condition: {@code receive} consumes, so polling for "no message"
+     * would swallow the message on the first poll and then report success on the second.
+     */
+    protected void assertNoMessageOn(RabbitTemplate consumer, String queue) {
+        await("quiet window on " + queue).pollDelay(QUIET_WINDOW).until(() -> true);
+        assertThat(consumer.receive(queue)).as("unexpected message on %s", queue).isNull();
+    }
+
+    protected RabbitTemplate clientTemplate(String client) throws Exception {
+        return getCustomRabbitTemplate(
+                classLoader.getResource("config/certs/" + client + "/" + client + ".p12").getPath(),
+                client);
+    }
+
     public static class Initializer
             implements ApplicationContextInitializer<ConfigurableApplicationContext> {
         @Override
         public void initialize(ConfigurableApplicationContext applicationContext) {
+            // only the container-dependent values belong here, the rest is in
+            // application.properties / application-test.properties
             val values =
                     TestPropertyValues.of(
-                            // broker identification
                             "spring.rabbitmq.host=" + rabbitMQContainer.getHost(),
                             "spring.rabbitmq.port=" + rabbitMQContainer.getAmqpsPort(),
-
-                            // default RabbitTemplate conf (dispatcher)
-                            "spring.rabbitmq.ssl.key-store-password=dispatcher",
-                            "spring.rabbitmq.ssl.trust-store-password=trustStore",
-                            "spring.rabbitmq.ssl.key-store="
-                                    + Thread.currentThread()
-                                            .getContextClassLoader()
-                                            .getResource(
-                                                    "config/certs/dispatcher/dispatcher.test.p12"),
-                            "spring.rabbitmq.ssl.trust-store="
-                                    + Thread.currentThread()
-                                            .getContextClassLoader()
-                                            .getResource("config/certs/trustStore"),
-                            "client.configuration.file="
-                                    + Thread.currentThread()
-                                            .getContextClassLoader()
-                                            .getResource("config/clients.yaml"),
-                            "supported.messages.file="
-                                    + Thread.currentThread()
-                                            .getContextClassLoader()
-                                            .getResource("config/supported.messages.csv"),
-                            "dispatcher.default.ttl=5",
-
-                            // must be set to handle PublisherConfirms in other RabbitTemplates,
-                            // even if we don't use it in Dispatcher
-                            "spring.rabbitmq.publisher-returns=true",
-                            "spring.rabbitmq.template.mandatory=true",
-                            "spring.rabbitmq.virtual-host=15-15_v2.1",
-
-                            // Deactivate OTEL tracings
-                            "management.tracing.sampling.probability=0");
+                            "spring.rabbitmq.virtual-host=15-15_v2.1");
             values.applyTo(applicationContext);
         }
     }

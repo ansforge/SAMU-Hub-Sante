@@ -13,15 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hubsante.hub.service.utils;
+package com.hubsante.hub.testsupport;
 
 import static com.hubsante.hub.config.AmqpConfiguration.*;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.edxl.EdxlMessage;
-import com.hubsante.model.report.Error;
-import com.hubsante.model.report.ErrorWrapper;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -172,23 +170,6 @@ public class MessageTestUtils {
             default:
                 return null;
         }
-    }
-
-    public static Error getErrorFromMessage(EdxlHandler edxlHandler, Message message)
-            throws JsonProcessingException {
-
-        String msgString = new String(message.getBody());
-
-        ErrorWrapper wrapper =
-                message.getMessageProperties()
-                                .getContentType()
-                                .equals(MessageProperties.CONTENT_TYPE_XML)
-                        ? (ErrorWrapper)
-                                edxlHandler.deserializeXmlEDXL(msgString).getFirstContentMessage()
-                        : (ErrorWrapper)
-                                edxlHandler.deserializeJsonEDXL(msgString).getFirstContentMessage();
-
-        return wrapper.getError();
     }
 
     public static void setCustomExpirationDate(EdxlMessage edxlMessage, long offset_in_seconds) {

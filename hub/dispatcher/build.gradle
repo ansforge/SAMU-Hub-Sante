@@ -100,6 +100,8 @@ dependencies {
     // ===== Tests =====
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.amqp:spring-rabbit-test'
+    // transitive of spring-boot-starter-test, declared because the tests import it directly
+    testImplementation 'org.awaitility:awaitility'
 
     testImplementation 'org.testcontainers:junit-jupiter'
     testImplementation 'org.testcontainers:rabbitmq'

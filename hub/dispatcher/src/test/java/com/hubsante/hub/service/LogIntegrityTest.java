@@ -36,6 +36,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Objects;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.Message;
@@ -170,7 +171,8 @@ public class LogIntegrityTest {
     }
 
     @Test
-    void dispatchLogsHashWhenReceivingMessage() {
+    @DisplayName("should log the hash of the received body on reception")
+    void shouldLogHashOfReceivedBody() {
         // Arrange: set up MessageHandler with a ListAppender to capture logs
         Logger logger = (Logger) LoggerFactory.getLogger(MessageHandler.class);
         ListAppender<ILoggingEvent> listAppender = new ListAppender<>();
@@ -191,7 +193,8 @@ public class LogIntegrityTest {
     }
 
     @Test
-    void dispatchLogsHashBeforeSendingMessage() {
+    @DisplayName("should log the hash of the forwarded body before sending")
+    void shouldLogHashOfForwardedBody() {
         // Arrange: set up MessageHandler with a ListAppender to capture logs
         Logger logger = (Logger) LoggerFactory.getLogger(MessageHandler.class);
         ListAppender<ILoggingEvent> listAppender = new ListAppender<>();
