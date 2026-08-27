@@ -24,7 +24,7 @@ def create_app():
 
     @app.get("/refs")
     @cache.cached()
-    def list_refs() -> Response:
+    def list_refs() -> Response | tuple[Response, int]:
         token = os.getenv("GITHUB_TOKEN")
         if not token:
             return jsonify(

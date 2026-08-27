@@ -26,7 +26,7 @@ class GithubService:
             self._client.close()
             self._client = None
 
-    def get_refs(self) -> list[str]:
+    def get_refs(self) -> dict[str, list[str]]:
         client = self._get_client()
         try:
             repo = client.get_repo(self.repo_full_name)
