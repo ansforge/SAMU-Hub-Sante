@@ -1,6 +1,6 @@
 from unittest.mock import MagicMock, patch
 
-from github_service import GithubService
+from services.github_service import GithubService
 
 
 def _mock_ref(name):
@@ -14,7 +14,7 @@ def get_refs():
     return service.get_refs()
 
 
-@patch("github_service.Github")
+@patch("services.github_service.Github")
 def test_get_refs_returns_ref_names(mock_github_cls):
     mock_repo = MagicMock()
     mock_repo.get_branches.return_value = [_mock_ref("main"), _mock_ref("develop")]

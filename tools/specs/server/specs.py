@@ -6,7 +6,7 @@ from flask_caching import Cache
 from flask_cors import CORS
 from github import GithubException
 
-from github_service import GithubService
+from services.github_service import GithubService
 
 load_dotenv()
 
