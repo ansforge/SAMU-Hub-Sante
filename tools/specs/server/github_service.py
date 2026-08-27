@@ -26,6 +26,15 @@ class GithubService:
             self._client.close()
             self._client = None
 
+    def get_me(self) -> dict:
+        client = self._get_client()
+        user = client.get_user()
+        return {
+            "login": user.login,
+            "name": user.name,
+            "avatar_url": user.avatar_url,
+        }
+
     def get_refs(self) -> dict[str, list[str]]:
         client = self._get_client()
         try:
