@@ -21,7 +21,12 @@ class GithubService:
             self._client = Github(auth=Auth.Token(self._get_token()), timeout=15)
         return self._client
 
-    def get_refs(self) -> list[str]:
+    def close(self) -> None:
+        if self._client is not None:
+            self._client.close()
+            self._client = None
+
+    def get_refs(self) -> dict[str, list[str]]:
         client = self._get_client()
         try:
             repo = client.get_repo(self.repo_full_name)
@@ -32,6 +37,5 @@ class GithubService:
                 "tags": [tag.name for tag in tags],
             }
         except Exception:
-            client.close()
-            self._client = None
+            self.close()
             raise
