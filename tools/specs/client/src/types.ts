@@ -36,3 +36,21 @@ export type NomenclatureSchema = {
   description?: string;
   oneOf?: { const: string; title: string; description?: string }[];
 };
+
+export type User = {
+  username: string;
+  avatarUrl: string;
+};
+
+export type AuthResponse =
+  | { isAuthenticated: true; user: User }
+  | { isAuthenticated: false; user: null };
+
+export type ApiUser = {
+  username: string;
+  avatar_url: string;
+};
+
+export type ApiAuthResponse =
+  | { authenticated: true; user: ApiUser }
+  | { authenticated: false; user: null };
