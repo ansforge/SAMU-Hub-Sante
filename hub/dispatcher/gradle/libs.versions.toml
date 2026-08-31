@@ -1,7 +1,7 @@
 [versions]
 springBoot = "4.0.6"
-testcontainers = "1.21.4"
-jsonSchemaValidator = "1.0.87"
+testcontainers = "2.0.5"
+jsonSchemaValidator = "3.0.6"
 logstashEncoder = "9.0"
 univocityParsers = "2.9.1"
 groovyJson = "3.0.9"
