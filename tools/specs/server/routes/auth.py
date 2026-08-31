@@ -1,3 +1,5 @@
+import logging
+
 from authlib.integrations.flask_client import OAuth
 from flask import Blueprint, g, jsonify, redirect
 from github import GithubException
@@ -5,6 +7,8 @@ from github import GithubException
 from config import Config
 from decorators import auth_required
 from services.auth_service import auth_service
+
+logger = logging.getLogger(__name__)
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
 oauth = OAuth()
@@ -43,8 +47,9 @@ def callback():
 
         return auth_service.create_login_response(access_token)
 
-    except Exception as e:  # noqa: BLE001
-        return redirect(f"{Config.CLIENT_URL}?error={e!s}")
+    except Exception:
+        logger.exception("GitHub OAuth callback failed")
+        return redirect(f"{Config.CLIENT_URL}?error=auth_failed")
 
 
 @auth_bp.get("/me")
