@@ -6,20 +6,26 @@ from specs import create_app
 app = create_app()
 
 
-@patch("services.auth_service.Github")
-def test_verify_collaborator_permissions_true_for_write(mock_github_cls):
-    mock_gh = mock_github_cls.return_value
-    mock_gh.get_user.return_value.login = "alice"
-    mock_gh.get_repo.return_value.get_collaborator_permission.return_value = "write"
+@patch.object(auth_service, "github_service")
+@patch("services.auth_service.UserAccount")
+def test_verify_collaborator_permissions_true_for_write(
+    mock_user_account_cls, mock_github_service
+):
+    mock_user_account_cls.return_value.get_me.return_value = {"login": "alice"}
+    mock_github_service.get_collaborator_permission.return_value = "write"
     assert auth_service.verify_collaborator_permissions("token") is True
+    mock_user_account_cls.return_value.close.assert_called_once()
 
 
-@patch("services.auth_service.Github")
-def test_verify_collaborator_permissions_false_for_read(mock_github_cls):
-    mock_gh = mock_github_cls.return_value
-    mock_gh.get_user.return_value.login = "alice"
-    mock_gh.get_repo.return_value.get_collaborator_permission.return_value = "read"
+@patch.object(auth_service, "github_service")
+@patch("services.auth_service.UserAccount")
+def test_verify_collaborator_permissions_false_for_read(
+    mock_user_account_cls, mock_github_service
+):
+    mock_user_account_cls.return_value.get_me.return_value = {"login": "alice"}
+    mock_github_service.get_collaborator_permission.return_value = "read"
     assert auth_service.verify_collaborator_permissions("token") is False
+    mock_user_account_cls.return_value.close.assert_called_once()
 
 
 def test_create_login_response_sets_cookie_and_redirects():

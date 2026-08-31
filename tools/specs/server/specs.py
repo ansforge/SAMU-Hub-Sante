@@ -1,14 +1,12 @@
-import os
-
 from dotenv import load_dotenv
-from flask import Flask, Response, jsonify, request
+from flask import Flask, Response, jsonify
 from flask_caching import Cache
 from flask_cors import CORS
 from github import GithubException
 
 from config import Config
 from routes.auth import auth_bp, init_oauth
-from services.github_service import GithubService
+from services.service_account import ServiceAccount
 
 load_dotenv()
 
@@ -30,17 +28,14 @@ def create_app():
     @app.get("/refs")
     @cache.cached()
     def list_refs() -> Response | tuple[Response, int]:
-        token = request.cookies.get("gh_token") or os.getenv("GITHUB_TOKEN")
-        if not token:
-            return jsonify(
-                {"error": "GITHUB_TOKEN environment variable is not set"}
-            ), 500
-        service = GithubService(token=token)
+        service = ServiceAccount()
         try:
             refs = service.get_refs()
             return jsonify(refs)
         except GithubException as e:
             return jsonify({"error": "GitHub API error", "detail": str(e)}), 502
+        except ValueError as e:
+            return jsonify({"error": str(e)}), 500
         finally:
             service.close()
 
