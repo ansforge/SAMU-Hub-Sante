@@ -21,6 +21,7 @@ import { SchemaReference } from "./types";
 import { buildGithubSchemaUrl } from "./lib/utils";
 import { ensureSchemaLoaded } from "./lib/ensure-schema-loaded";
 import RefSelector from "./components/ref-selector";
+import User from "./components/user";
 
 function Root({ children = <Outlet /> }: { children?: ReactNode }) {
   return (
@@ -28,13 +29,15 @@ function Root({ children = <Outlet /> }: { children?: ReactNode }) {
       <AppSidebar />
       <SidebarInset>
         <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
-          <div className="flex items-center gap-2 px-4">
+          <div className="flex items-center gap-2 px-4 w-full">
             <SidebarTrigger className="-ml-1" />
             <Separator
               orientation="vertical"
               className="mr-2 data-[orientation=vertical]:h-4"
             />
             <RefSelector />
+            <div className="grow" />
+            <User />
           </div>
         </header>
         <main className="flex flex-1 flex-col">{children}</main>
@@ -65,11 +68,7 @@ function SchemaNotFound() {
           <span className="font-mono">{ref}</span>.
         </p>
         <div className="mt-2 flex gap-4 text-sm">
-          <Link
-            to="/"
-            search={preserveRefSearch}
-            className="underline"
-          >
+          <Link to="/" search={preserveRefSearch} className="underline">
             Retour à l'accueil
           </Link>
           {ref !== defaultRef && (
@@ -88,7 +87,13 @@ function SchemaNotFound() {
   );
 }
 
-function SchemaLoadError({ error, reset }: { error: unknown; reset: () => void }) {
+function SchemaLoadError({
+  error,
+  reset,
+}: {
+  error: unknown;
+  reset: () => void;
+}) {
   const message = error instanceof Error ? error.message : "Erreur inconnue";
 
   return (
@@ -96,7 +101,11 @@ function SchemaLoadError({ error, reset }: { error: unknown; reset: () => void }
       <div className="flex flex-1 flex-col items-center justify-center gap-2 p-6 text-center">
         <p className="text-lg font-medium">Impossible de charger le schéma</p>
         <p className="text-sm text-muted-foreground">{message}</p>
-        <button type="button" onClick={() => reset()} className="mt-2 text-sm underline">
+        <button
+          type="button"
+          onClick={reset}
+          className="mt-2 text-sm underline"
+        >
           Réessayer
         </button>
       </div>
@@ -110,7 +119,9 @@ function RootError({ error, reset }: { error: unknown; reset: () => void }) {
   return (
     <Root>
       <div className="flex flex-1 flex-col items-center justify-center gap-2 p-6 text-center">
-        <p className="text-lg font-medium">Impossible de charger la liste des schémas</p>
+        <p className="text-lg font-medium">
+          Impossible de charger la liste des schémas
+        </p>
         <p className="text-sm text-muted-foreground">{message}</p>
         <div className="mt-2 flex gap-4 text-sm">
           <button type="button" onClick={() => reset()} className="underline">
@@ -119,7 +130,7 @@ function RootError({ error, reset }: { error: unknown; reset: () => void }) {
           <Link
             to="."
             search={{ ref: defaultRef }}
-            onClick={() => reset()}
+            onClick={reset}
             className="underline"
           >
             Revenir sur {defaultRef}
