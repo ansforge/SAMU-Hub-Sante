@@ -62,7 +62,7 @@ def test_me_rejects_missing_cookie(client):
 
 def test_me_returns_user_when_authenticated(client):
     client.set_cookie("gh_token", "abc123")
-    with patch("decorators.UserAccount") as mock_service_cls:
+    with patch("decorators.UserRepositoryService") as mock_service_cls:
         mock_service_cls.return_value.get_me.return_value = {"login": "alice"}
         res = client.get("/auth/me")
 

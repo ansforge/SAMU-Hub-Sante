@@ -1,9 +1,9 @@
-from services.github_account import GithubAccount
+from services.abstract_repository_service import AbstractRepositoryService
 
 REPO_FULL_NAME = "ansforge/SAMU-Hub-Modeles"
 
 
-class UserAccount(GithubAccount):
+class UserRepositoryService(AbstractRepositoryService):
     def __init__(
         self,
         token: str,

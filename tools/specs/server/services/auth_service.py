@@ -2,18 +2,18 @@ from flask import Response, jsonify, make_response, redirect
 from github import GithubException
 
 from config import Config
-from services.service_account import ServiceAccount
-from services.user_account import UserAccount
+from services.internal_repository_service import InternalRepositoryService
+from services.user_repository_service import UserRepositoryService
 
 ALLOWED_PERMISSIONS = ["write", "admin"]
 
 
 class AuthService:
     def __init__(self):
-        self.github_service = ServiceAccount()
+        self.github_service = InternalRepositoryService()
 
     def verify_collaborator_permissions(self, access_token: str) -> bool:
-        user_account = UserAccount(token=access_token)
+        user_account = UserRepositoryService(token=access_token)
         try:
             username = user_account.get_me()["login"]
             permission = self.github_service.get_collaborator_permission(username)

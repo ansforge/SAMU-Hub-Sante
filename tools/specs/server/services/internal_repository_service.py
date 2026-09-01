@@ -1,10 +1,10 @@
 from github import GithubException
 
 from config import Config
-from services.github_account import GithubAccount
+from services.abstract_repository_service import AbstractRepositoryService
 
 
-class ServiceAccount(GithubAccount):
+class InternalRepositoryService(AbstractRepositoryService):
     def _get_token(self):
         return Config.GITHUB_TOKEN
 

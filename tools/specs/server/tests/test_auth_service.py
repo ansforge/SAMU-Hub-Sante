@@ -7,7 +7,7 @@ app = create_app()
 
 
 @patch.object(auth_service, "github_service")
-@patch("services.auth_service.UserAccount")
+@patch("services.auth_service.UserRepositoryService")
 def test_verify_collaborator_permissions_true_for_write(
     mock_user_account_cls, mock_github_service
 ):
@@ -18,7 +18,7 @@ def test_verify_collaborator_permissions_true_for_write(
 
 
 @patch.object(auth_service, "github_service")
-@patch("services.auth_service.UserAccount")
+@patch("services.auth_service.UserRepositoryService")
 def test_verify_collaborator_permissions_false_for_read(
     mock_user_account_cls, mock_github_service
 ):

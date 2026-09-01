@@ -5,7 +5,7 @@ from github import Auth, Github
 from config import Config
 
 
-class GithubAccount(ABC):
+class AbstractRepositoryService(ABC):
     def __init__(self):
         self._client: Github | None = None
         self.repo_full_name = f"{Config.REPO_OWNER}/{Config.REPO_NAME}"

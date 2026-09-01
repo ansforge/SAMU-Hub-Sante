@@ -6,7 +6,7 @@ from github import GithubException
 
 from config import Config
 from routes.auth import auth_bp, init_oauth
-from services.service_account import ServiceAccount
+from services.internal_repository_service import InternalRepositoryService
 
 load_dotenv()
 
@@ -28,7 +28,7 @@ def create_app():
     @app.get("/refs")
     @cache.cached()
     def list_refs() -> Response | tuple[Response, int]:
-        service = ServiceAccount()
+        service = InternalRepositoryService()
         try:
             refs = service.get_refs()
             return jsonify(refs)

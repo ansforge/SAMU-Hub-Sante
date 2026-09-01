@@ -24,7 +24,7 @@ def test_refs_returns_missing_token_as_500():
     assert "GITHUB_TOKEN" in res.get_json()["error"]
 
 
-@patch("specs.ServiceAccount")
+@patch("specs.InternalRepositoryService")
 def test_refs_returns_list(mock_service_cls):
     mock_service = mock_service_cls.return_value
     mock_service.get_refs.return_value = {
@@ -42,7 +42,7 @@ def test_refs_returns_list(mock_service_cls):
     mock_service.close.assert_called_once()
 
 
-@patch("specs.ServiceAccount")
+@patch("specs.InternalRepositoryService")
 def test_refs_returns_github_error_as_502(mock_service_cls):
     mock_service = mock_service_cls.return_value
     mock_service.get_refs.side_effect = GithubException(
