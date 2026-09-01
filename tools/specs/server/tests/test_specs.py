@@ -1,8 +1,8 @@
-import os
 from unittest.mock import patch
 
 from github import GithubException
 
+from config import Config
 from specs import create_app
 
 
@@ -16,8 +16,15 @@ def test_health():
     assert res.get_json()["status"] == "UP"
 
 
-@patch("specs.GithubService")
-@patch.dict(os.environ, {"GITHUB_TOKEN": "dummy_token"})
+@patch.object(Config, "GITHUB_TOKEN", None)
+def test_refs_returns_missing_token_as_500():
+    res = _client().get("/refs")
+
+    assert res.status_code == 500
+    assert "GITHUB_TOKEN" in res.get_json()["error"]
+
+
+@patch("specs.InternalRepositoryService")
 def test_refs_returns_list(mock_service_cls):
     mock_service = mock_service_cls.return_value
     mock_service.get_refs.return_value = {
@@ -35,16 +42,7 @@ def test_refs_returns_list(mock_service_cls):
     mock_service.close.assert_called_once()
 
 
-@patch.dict(os.environ, {}, clear=True)
-def test_refs_returns_missing_token_as_500():
-    res = _client().get("/refs")
-
-    assert res.status_code == 500
-    assert "GITHUB_TOKEN" in res.get_json()["error"]
-
-
-@patch("specs.GithubService")
-@patch.dict(os.environ, {"GITHUB_TOKEN": "dummy_token"})
+@patch("specs.InternalRepositoryService")
 def test_refs_returns_github_error_as_502(mock_service_cls):
     mock_service = mock_service_cls.return_value
     mock_service.get_refs.side_effect = GithubException(
