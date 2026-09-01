@@ -103,7 +103,7 @@ function SchemaLoadError({
         <p className="text-sm text-muted-foreground">{message}</p>
         <button
           type="button"
-          onClick={() => reset()}
+          onClick={reset}
           className="mt-2 text-sm underline"
         >
           Réessayer
@@ -130,7 +130,7 @@ function RootError({ error, reset }: { error: unknown; reset: () => void }) {
           <Link
             to="."
             search={{ ref: defaultRef }}
-            onClick={() => reset()}
+            onClick={reset}
             className="underline"
           >
             Revenir sur {defaultRef}
