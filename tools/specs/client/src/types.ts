@@ -10,6 +10,7 @@ export type RepoReferences = {
 };
 
 export type JsonSchemaProperty = {
+  title?: string;
   type?: string;
   description?: string;
   format?: string;

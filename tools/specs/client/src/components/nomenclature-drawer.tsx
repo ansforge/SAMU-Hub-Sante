@@ -22,7 +22,9 @@ function NomenclatureHeader({ name }: { name: string }) {
 
   return (
     <>
-      <SheetTitle className="font-bold text-xl">{data?.title ?? name}</SheetTitle>
+      <SheetTitle className="font-bold text-xl">
+        {data?.title ?? name}
+      </SheetTitle>
       {data?.description && (
         <p className="text-sm text-muted-foreground">{data.description}</p>
       )}
@@ -84,7 +86,9 @@ export function NomenclatureDrawer() {
       onOpenChange={(open) => !open && closeNomenclatureDrawer()}
     >
       <SheetContent className={"w-full max-w-4xl!"}>
-        <SheetHeader className="border-b">{name && <NomenclatureHeader name={name} />}</SheetHeader>
+        <SheetHeader className="border-b">
+          {name && <NomenclatureHeader name={name} />}
+        </SheetHeader>
         <div className="min-h-0 flex-1 overflow-y-auto w-full">
           {name && <NomenclatureContent name={name} />}
         </div>
@@ -94,18 +98,23 @@ export function NomenclatureDrawer() {
 }
 
 export function NomenclatureBadge({ name }: { name: string }) {
-  const openNomenclatureDrawer = useSchemaStore((s) => s.openNomenclatureDrawer);
+  const openNomenclatureDrawer = useSchemaStore(
+    (s) => s.openNomenclatureDrawer,
+  );
 
   return (
-    <button
-      type="button"
-      onClick={(e) => {
-        e.stopPropagation();
-        openNomenclatureDrawer(name);
-      }}
-      className="rounded bg-primary px-1.5 py-0.5 font-mono text-xs text-primary-foreground hover:bg-primary/90"
-    >
-      {name}
-    </button>
+    <span className="whitespace-nowrap font-mono text-xs text-muted-foreground">
+      nomenclature :{" "}
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          openNomenclatureDrawer(name);
+        }}
+        className="cursor-pointer text-primary underline underline-offset-2 hover:text-primary/80"
+      >
+        {name}
+      </button>
+    </span>
   );
 }

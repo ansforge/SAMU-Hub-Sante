@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { NomenclatureDrawer } from "@/components/nomenclature-drawer";
 import type { JsonSchemaDocument } from "@/types";
+import { FieldLegend } from "./field-legend";
 import { SchemaFields } from "./schema-fields";
 import type { ExpandSignal } from "./schema-utils";
 
@@ -32,35 +33,51 @@ export function SchemaDetail({ schema }: SchemaDetailProps) {
     <>
       <NomenclatureDrawer />
       <div className="min-h-0 flex-1 overflow-y-auto p-8 w-full max-w-7xl mx-auto">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h1 className="text-lg font-semibold">{schema.title}</h1>
-            {schema.description && (
-              <p className="mt-1 text-sm text-muted-foreground">
-                {schema.description}
-              </p>
-            )}
-          </div>
-          {hasProperties && (
-            <Button
-              variant="outline"
-              onClick={() =>
-                setExpandSignal((s) => ({ key: s.key + 1, expand: !s.expand }))
-              }
-            >
-              {expandSignal.expand ? "Tout replier" : "Tout déplier"}
-            </Button>
+        <div>
+          <h1 className="text-lg font-semibold">{schema.title}</h1>
+          {schema.description && (
+            <p className="mt-1 text-sm text-muted-foreground">
+              {schema.description}
+            </p>
           )}
         </div>
 
         {hasProperties && (
-          <div className="mt-6">
-            <SchemaFields
-              properties={properties}
-              required={schema.required}
-              definitions={definitions}
-              expandSignal={expandSignal}
-            />
+          <div className="mt-8">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <h2 className="text-base font-semibold">
+                  Structure de l'objet
+                </h2>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Cliquez sur un élément pour voir le détail.
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center gap-3">
+                <FieldLegend />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    setExpandSignal((s) => ({
+                      key: s.key + 1,
+                      expand: !s.expand,
+                    }))
+                  }
+                >
+                  {expandSignal.expand ? "Tout replier" : "Tout déplier"}
+                </Button>
+              </div>
+            </div>
+
+            <div className="mt-6">
+              <SchemaFields
+                properties={properties}
+                required={schema.required}
+                definitions={definitions}
+                expandSignal={expandSignal}
+              />
+            </div>
           </div>
         )}
       </div>

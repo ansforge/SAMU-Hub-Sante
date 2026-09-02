@@ -1,7 +1,4 @@
-import type {
-  JsonSchemaDefinitions,
-  JsonSchemaProperty,
-} from "@/types";
+import type { JsonSchemaDefinitions, JsonSchemaProperty } from "@/types";
 
 export type ExpandSignal = {
   // bumped on every "expand/collapse all" click, forcing every Accordion in
@@ -47,20 +44,30 @@ export function fieldType(
   return resolved.type ?? "—";
 }
 
-// array fields: minItems/maxItems live on the array node itself (not on
-// `items`). non-array fields: occurrence is 0/1, driven by `required`.
-export function fieldCardinality(
+// minItems/maxItems live on the array node itself (not on items). only
+// arrays have a real cardinality
+// non-array fields are always 0/1 or 1,
+// already covered by "Obligatoire", so callers only use this for arrays
+export function fieldOccurrences(
   prop: JsonSchemaProperty,
   definitions: JsonSchemaDefinitions,
-  required: boolean,
 ): string {
   const resolved = resolveRef(prop, definitions);
-  if (resolved.type === "array") {
-    const min = resolved.minItems ?? 0;
-    const max = resolved.maxItems ?? "*";
-    return `min ${min} · max ${max}`;
-  }
-  return `min ${required ? 1 : 0} · max 1`;
+  const min = resolved.minItems ?? 0;
+  const max = resolved.maxItems ?? "*";
+  return `${min} à ${max}`;
+}
+
+export type FieldKind = "object" | "array" | "simple";
+
+export function fieldKind(
+  prop: JsonSchemaProperty,
+  definitions: JsonSchemaDefinitions,
+): FieldKind {
+  const resolved = resolveRef(prop, definitions);
+  if (resolved.type === "array") return "array";
+  if (resolved.properties) return "object";
+  return "simple";
 }
 
 // object fields nest under `properties`, arrays of objects under `items`,
