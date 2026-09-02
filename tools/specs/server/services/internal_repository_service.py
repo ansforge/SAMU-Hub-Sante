@@ -9,9 +9,8 @@ class InternalRepositoryService(AbstractRepositoryService):
         return Config.GITHUB_TOKEN
 
     def get_refs(self) -> dict[str, list[str]]:
-        client = self._get_client()
+        repo = self._get_repo()
         try:
-            repo = client.get_repo(self.repo_full_name)
             branches = repo.get_branches()
             tags = repo.get_tags()
             return {
@@ -23,9 +22,8 @@ class InternalRepositoryService(AbstractRepositoryService):
             raise
 
     def get_collaborator_permission(self, username: str) -> str | None:
-        client = self._get_client()
+        repo = self._get_repo()
         try:
-            repo = client.get_repo(self.repo_full_name)
             return repo.get_collaborator_permission(username)
         except GithubException:
             return None
