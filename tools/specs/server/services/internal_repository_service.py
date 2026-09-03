@@ -1,7 +1,11 @@
+import logging
+
 from github import GithubException
 
 from config import Config
 from services.abstract_repository_service import AbstractRepositoryService
+
+logger = logging.getLogger(__name__)
 
 
 class InternalRepositoryService(AbstractRepositoryService):
@@ -18,6 +22,7 @@ class InternalRepositoryService(AbstractRepositoryService):
                 "tags": [tag.name for tag in tags],
             }
         except Exception:
+            logger.exception("get_refs failed for %s", self.repo_full_name)
             self.close()
             raise
 
@@ -25,5 +30,6 @@ class InternalRepositoryService(AbstractRepositoryService):
         repo = self._get_repo()
         try:
             return repo.get_collaborator_permission(username)
-        except GithubException:
+        except GithubException as e:
+            logger.warning("get_collaborator_permission failed for %s: %s", username, e)
             return None
