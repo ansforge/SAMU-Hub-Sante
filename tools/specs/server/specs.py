@@ -4,6 +4,7 @@ from flask_caching import Cache
 from flask_cors import CORS
 from github import GithubException
 
+from cache import cache
 from config import Config
 from routes.auth import auth_bp, init_oauth
 from services.internal_repository_service import InternalRepositoryService
