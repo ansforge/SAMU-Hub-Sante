@@ -7,7 +7,7 @@ The documentation of the server for the specs services.
 run : 
 
 ```bash
-uv run gunicorn -w 2 -b 0.0.0.0:8080 "specs:create_app()" --timeout 180 --log-level=debug
+uv run gunicorn -w 2 -b 0.0.0.0:8080 "specs:create_app()" --timeout 180 --log-level=debug --reload
 ```
 
 ## Dev
