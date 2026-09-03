@@ -1,8 +1,11 @@
+import logging
 from abc import ABC, abstractmethod
 
 from github import Auth, Github, Repository
 
 from config import Config
+
+logger = logging.getLogger(__name__)
 
 
 class AbstractRepositoryService(ABC):
