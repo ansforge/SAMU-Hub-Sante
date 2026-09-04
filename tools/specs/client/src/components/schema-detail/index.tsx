@@ -9,9 +9,10 @@ import type { ExpandSignal } from "./schema-utils";
 
 type SchemaDetailProps = {
   schema?: JsonSchemaDocument;
+  rawText?: string;
 };
 
-export function SchemaDetail({ schema }: SchemaDetailProps) {
+export function SchemaDetail({ schema, rawText }: SchemaDetailProps) {
   const [expandSignal, setExpandSignal] = useState<ExpandSignal>({
     key: 0,
     expand: false,
