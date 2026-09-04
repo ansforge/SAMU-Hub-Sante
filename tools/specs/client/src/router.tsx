@@ -9,7 +9,9 @@ import {
 } from "@tanstack/react-router";
 import { SchemaDetail, SchemaDetailSkeleton } from "@/components/schema-detail";
 import { messageListUrl, defaultRef, preserveRefSearch } from "@/config";
+import { fetchSchemaContent } from "@/lib/fetch-schema-content";
 import { useSchemaStore } from "@/store/schema-store";
+import type { JsonSchemaDocument } from "@/types";
 import {
   SidebarInset,
   SidebarProvider,
@@ -150,10 +152,11 @@ function Home() {
 }
 
 function SchemaPage() {
-  const schema = schemaRoute.useLoaderData();
+  const text = schemaRoute.useLoaderData();
+  const schema = JSON.parse(text) as JsonSchemaDocument;
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <SchemaDetail schema={schema} />
+      <SchemaDetail schema={schema} rawText={text} />
     </div>
   );
 }
@@ -168,10 +171,13 @@ const schemaRoute = createRoute({
   loader: async ({ params, deps }) => {
     const schema = await ensureSchemaLoaded(params.schemaName, deps.ref);
     if (!schema) throw notFound();
-    const res = await fetch(schema.url);
-    if (res.status === 404) throw notFound();
-    if (!res.ok) throw new Error(`Échec du chargement (HTTP ${res.status})`);
-    return res.json();
+
+    try {
+      return await fetchSchemaContent(params.schemaName, deps.ref);
+    } catch (e) {
+      if (e instanceof Error && e.message === "not-found") throw notFound();
+      throw e;
+    }
   },
   staleTime: 30_000,
   pendingComponent: SchemaPagePending,
