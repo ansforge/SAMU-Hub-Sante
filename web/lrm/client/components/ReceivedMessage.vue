@@ -220,10 +220,9 @@ const props = defineProps({
   },
 });
 
-defineEmits(['useMessageToReply']);
+const emit = defineEmits(['useMessageToReply']);
 
 function useMessageToReply() {
-  // eslint-disable-next-line no-undef
   emit(
     'useMessageToReply',
     props.body.content[0].jsonContent.embeddedJsonContent.message
