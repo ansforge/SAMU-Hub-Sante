@@ -14,12 +14,13 @@ import SourceLink from "../source-link";
 
 type SchemaDetailProps = {
   schema?: JsonSchemaDocument;
+  rawText?: string;
 };
 
 const schemaRouteApi = getRouteApi("/$schemaName");
 const rootRouteApi = getRouteApi("__root__");
 
-export function SchemaDetail({ schema }: SchemaDetailProps) {
+export function SchemaDetail({ schema, rawText }: SchemaDetailProps) {
   const { schemaName } = schemaRouteApi.useParams();
   const { ref } = rootRouteApi.useSearch();
   const [expandSignal, setExpandSignal] = useState<ExpandSignal>({
