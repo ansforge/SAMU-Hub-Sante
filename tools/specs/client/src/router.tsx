@@ -124,7 +124,7 @@ function RootError({ error, reset }: { error: unknown; reset: () => void }) {
         </p>
         <p className="text-sm text-muted-foreground">{message}</p>
         <div className="mt-2 flex gap-4 text-sm">
-          <button type="button" onClick={() => reset()} className="underline">
+          <button type="button" onClick={reset} className="underline">
             Réessayer
           </button>
           <Link

@@ -1,3 +1,5 @@
+import { NOMENCLATURE_KEY } from "./config";
+
 export type SchemaReference = {
   label: string;
   schemaName: string;
@@ -10,6 +12,7 @@ export type RepoReferences = {
 };
 
 export type JsonSchemaProperty = {
+  title?: string;
   type?: string;
   description?: string;
   format?: string;
@@ -20,7 +23,7 @@ export type JsonSchemaProperty = {
   minItems?: number;
   maxItems?: number;
   $ref?: string;
-  "x-nomenclature"?: string;
+  [NOMENCLATURE_KEY]?: string;
 };
 
 export type JsonSchemaDefinitions = Record<string, JsonSchemaProperty>;
