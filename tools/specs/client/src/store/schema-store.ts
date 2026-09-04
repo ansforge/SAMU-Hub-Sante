@@ -11,6 +11,9 @@ interface SchemaState {
   nomenclatureDrawerName: string | null;
   openNomenclatureDrawer: (name: string) => void;
   closeNomenclatureDrawer: () => void;
+  schemaUpdateActive: boolean;
+  openUpdateSchemaDrawer: () => void;
+  closeUpdateSchemaDrawer: () => void;
 }
 
 export const useSchemaStore = create<SchemaState>((set, get) => ({
@@ -18,7 +21,7 @@ export const useSchemaStore = create<SchemaState>((set, get) => ({
   loadedRef: null,
   selectedName: null,
   nomenclatureDrawerName: null,
-
+  schemaUpdateActive: false,
   setSchemasFromArray: (schemas, ref) =>
     set({
       schemas: Object.fromEntries(
@@ -33,4 +36,6 @@ export const useSchemaStore = create<SchemaState>((set, get) => ({
 
   openNomenclatureDrawer: (name) => set({ nomenclatureDrawerName: name }),
   closeNomenclatureDrawer: () => set({ nomenclatureDrawerName: null }),
+  closeUpdateSchemaDrawer: () => set({ schemaUpdateActive: false }),
+  openUpdateSchemaDrawer: () => set({ schemaUpdateActive: true }),
 }));
