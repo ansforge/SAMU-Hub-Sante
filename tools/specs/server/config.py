@@ -9,7 +9,7 @@ DEV_SECRET_KEY = "dev_secret_key_to_change"
 
 
 class Config:
-    CLIENT_URL = os.getenv("CLIENT_URL", "http://localhost:5173")
+    CLIENT_URL = os.getenv("CLIENT_URL", "http://localhost:5176")
     BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8080")
     GITHUB_CLIENT_ID = os.getenv("GITHUB_CLIENT_ID")
     GITHUB_CLIENT_SECRET = os.getenv("GITHUB_CLIENT_SECRET")
