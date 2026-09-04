@@ -1,8 +1,11 @@
+import logging
 from abc import ABC, abstractmethod
 
-from github import Auth, Github
+from github import Auth, Github, Repository
 
 from config import Config
+
+logger = logging.getLogger(__name__)
 
 
 class AbstractRepositoryService(ABC):
@@ -21,6 +24,9 @@ class AbstractRepositoryService(ABC):
                 raise ValueError("Missing GITHUB_TOKEN configuration")
             self._client = Github(auth=Auth.Token(token), timeout=15)
         return self._client
+
+    def _get_repo(self) -> Repository.Repository:
+        return self._get_client().get_repo(self.repo_full_name)
 
     def close(self) -> None:
         if self._client is not None:

@@ -18,6 +18,7 @@ class Config:
     REPO_NAME = os.getenv("REPO_NAME", "SAMU-Hub-Modeles")
     SECRET_KEY = os.getenv("FLASK_SECRET_KEY", DEV_SECRET_KEY)
     COOKIE_SECURE = os.getenv("COOKIE_SECURE", "False").lower() in ("true", "1")
+    SCHEMAS_PATH = "src/main/resources/json-schema"
 
 
 if Config.SECRET_KEY == DEV_SECRET_KEY:
