@@ -1,9 +1,7 @@
 import { cn } from "@/lib/utils";
 import type { JsonSchemaDefinitions, JsonSchemaProperty } from "@/types";
 import { fieldKind, fieldType, type FieldKind } from "./schema-utils";
-import { Check, Copy } from "lucide-react";
-import { Button } from "../ui/button";
-import { useCallback, useState } from "react";
+import { CopyButton } from "../copy-button";
 
 export const KIND_BADGE: Record<FieldKind, string> = {
   object: "bg-violet-100 text-violet-700",
@@ -34,28 +32,13 @@ export function FieldHeader({
   path?: string[];
 }) {
   const kind = fieldKind(prop, definitions);
-  const [copied, setCopied] = useState(false);
-
-  const handleCopyToClipBoard = useCallback(async () => {
-    if (!path || !path.length) return;
-    setCopied(true);
-    await navigator.clipboard.writeText(path.join("."));
-    setTimeout(() => setCopied(false), 1000);
-  }, [path]);
 
   return (
     <div className="flex flex-col items-start gap-0.5 text-left">
       {path && path.length > 1 && (
         <span className="group relative flex items-center gap-1 h-6 font-mono text-[11px] text-muted-foreground/90">
           {path.join(".")}
-          <Button
-            onClick={handleCopyToClipBoard}
-            size="icon-xs"
-            variant={"ghost"}
-            className="hidden group-hover:flex border-0"
-          >
-            {copied ? <Check /> : <Copy className="h-4 w-4" />}
-          </Button>
+          <CopyButton content={path.join(".")} />
         </span>
       )}
       <div className="flex flex-wrap items-baseline gap-2">
