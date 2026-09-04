@@ -1,6 +1,7 @@
 import { buildGithubUrl } from "@/config";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { schemaPath, nomenclaturePath } from "@/config";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -11,11 +12,7 @@ export function buildGithubSchemaUrl(
   ref: string,
   schemaName: string,
 ): string {
-  return buildGithubUrl(
-    domain,
-    ref,
-    `src/main/resources/json-schema/${schemaName}`,
-  );
+  return buildGithubUrl(domain, ref, `${schemaPath}/${schemaName}`);
 }
 
 export function buildNomenclatureUrl(
@@ -26,6 +23,6 @@ export function buildNomenclatureUrl(
   return buildGithubUrl(
     domain,
     ref,
-    `nomenclature_parser/out/latest/json_schema/${nomenclature}.json`,
+    `${nomenclaturePath}/${nomenclature}.json`,
   );
 }

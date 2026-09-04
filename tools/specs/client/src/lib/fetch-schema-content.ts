@@ -1,10 +1,13 @@
+import { rawGithubDomain } from "@/config";
 import { buildGithubSchemaUrl } from "@/lib/utils";
 
 export async function fetchSchemaContent(
   schemaName: string,
   ref: string,
 ): Promise<string> {
-  const res = await fetch(buildGithubSchemaUrl(schemaName, ref));
+  const res = await fetch(
+    buildGithubSchemaUrl(rawGithubDomain, ref, schemaName),
+  );
 
   if (!res.ok) {
     throw new Error(
