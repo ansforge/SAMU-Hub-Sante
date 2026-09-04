@@ -48,7 +48,7 @@ export function fieldType(
 // arrays have a real cardinality
 // non-array fields are always 0/1 or 1,
 // already covered by "Obligatoire", so callers only use this for arrays
-export function fieldOccurrences(
+export function fieldCardinality(
   prop: JsonSchemaProperty,
   definitions: JsonSchemaDefinitions,
 ): string {

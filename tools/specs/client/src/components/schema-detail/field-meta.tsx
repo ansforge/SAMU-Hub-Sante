@@ -1,6 +1,7 @@
 import type { JsonSchemaDefinitions, JsonSchemaProperty } from "@/types";
 import { NomenclatureBadge } from "../nomenclature-drawer";
-import { fieldOccurrences, resolveRef } from "./schema-utils";
+import { fieldCardinality, resolveRef } from "./schema-utils";
+import { NOMENCLATURE_KEY } from "@/config";
 
 export function FieldMeta({
   prop,
@@ -25,7 +26,7 @@ export function FieldMeta({
             </span>
           )}
           {isArray && (
-            <span>{fieldOccurrences(prop, definitions)} élément(s)</span>
+            <span>{fieldCardinality(prop, definitions)} élément(s)</span>
           )}
         </div>
       )}

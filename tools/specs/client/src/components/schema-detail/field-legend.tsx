@@ -8,7 +8,7 @@ const LEGEND: { label: string; className: string; asterisk?: boolean }[] = [
   },
   { label: "Objet", className: KIND_BADGE.object },
   { label: "Collection", className: KIND_BADGE.array },
-  { label: "Type simple", className: KIND_BADGE.simple },
+  { label: "Primitive", className: KIND_BADGE.simple },
 ];
 
 export function FieldLegend() {
