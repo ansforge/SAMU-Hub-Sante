@@ -6,7 +6,7 @@ export function useRefs() {
   return useQuery({
     queryKey: ["refs"],
     queryFn: async (): Promise<RepoReferences> => {
-      const res = await fetch(`${apiDomain}/refs`);
+      const res = await fetch(`${apiDomain}/repo/refs`);
       if (!res.ok) throw new Error("not found");
       return res.json();
     },
