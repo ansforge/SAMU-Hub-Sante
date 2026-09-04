@@ -11,8 +11,6 @@ export const apiDomain =
   window.__ENV__?.VITE_SPECS_API_DOMAIN ||
   import.meta.env.VITE_SPECS_API_DOMAIN;
 
-
-
 export const defaultRef = "main";
 
 // pass as a Link's `search` prop to carry the current ref along when
@@ -24,3 +22,5 @@ export function preserveRefSearch(prev: { ref?: string }): { ref: string } {
 export function messageListUrl(ref: string): string {
   return `https://raw.githubusercontent.com/ansforge/SAMU-Hub-Modeles/${ref}/src/main/resources/sample/examples/messagesList.json`;
 }
+
+export const NOMENCLATURE_KEY = "x-nomenclature";

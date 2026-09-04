@@ -11,7 +11,7 @@ export function FieldMeta({
 }) {
   const resolved = resolveRef(prop, definitions);
   const isArray = resolved.type === "array";
-  const hasNomenclature = Boolean(prop["x-nomenclature"]);
+  const hasNomenclature = Boolean(prop[NOMENCLATURE_KEY]);
 
   if (!resolved.format && !isArray && !hasNomenclature) return null;
 
@@ -30,7 +30,7 @@ export function FieldMeta({
         </div>
       )}
       {hasNomenclature && (
-        <NomenclatureBadge name={prop["x-nomenclature"] as string} />
+        <NomenclatureBadge name={prop[NOMENCLATURE_KEY] as string} />
       )}
     </div>
   );
