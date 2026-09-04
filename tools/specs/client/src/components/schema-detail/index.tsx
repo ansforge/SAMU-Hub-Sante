@@ -6,16 +6,26 @@ import type { JsonSchemaDocument } from "@/types";
 import { FieldLegend } from "./field-legend";
 import { SchemaFields } from "./schema-fields";
 import type { ExpandSignal } from "./schema-utils";
+import { UpdateSchemaDrawer } from "./update-schema-drawer";
+import { useAuth } from "@/hooks/use-auth";
+import { useSchemaStore } from "@/store/schema-store";
 
 type SchemaDetailProps = {
   schema?: JsonSchemaDocument;
+  rawText?: string;
 };
 
-export function SchemaDetail({ schema }: SchemaDetailProps) {
+export function SchemaDetail({ schema, rawText }: SchemaDetailProps) {
   const [expandSignal, setExpandSignal] = useState<ExpandSignal>({
     key: 0,
     expand: false,
   });
+
+  const openUpdateSchemaDrawer = useSchemaStore(
+    (s) => s.openUpdateSchemaDrawer,
+  );
+
+  const { isAuthenticated } = useAuth();
 
   if (!schema) {
     return (
@@ -32,6 +42,7 @@ export function SchemaDetail({ schema }: SchemaDetailProps) {
   return (
     <>
       <NomenclatureDrawer />
+      <UpdateSchemaDrawer rawText={rawText} />
       <div className="min-h-0 flex-1 overflow-y-auto p-8 w-full max-w-7xl mx-auto">
         <div>
           <h1 className="text-lg font-semibold">{schema.title}</h1>
@@ -68,6 +79,11 @@ export function SchemaDetail({ schema }: SchemaDetailProps) {
                   {expandSignal.expand ? "Tout replier" : "Tout déplier"}
                 </Button>
               </div>
+              {isAuthenticated && (
+                <Button variant="default" onClick={openUpdateSchemaDrawer}>
+                  Modifier
+                </Button>
+              )}
             </div>
 
             <div className="mt-6">
