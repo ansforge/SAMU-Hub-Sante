@@ -1,3 +1,4 @@
+import { Input } from "@/components/ui/input";
 import {
   Sheet,
   SheetContent,
@@ -7,6 +8,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { useNomenclature } from "@/hooks/use-nomenclature";
 import { useSchemaStore } from "@/store/schema-store";
+import { useMemo, useState } from "react";
 
 function NomenclatureHeader({ name }: { name: string }) {
   const { data, isPending } = useNomenclature(name);
@@ -34,6 +36,17 @@ function NomenclatureHeader({ name }: { name: string }) {
 
 function NomenclatureContent({ name }: { name: string }) {
   const { data, isPending, isError } = useNomenclature(name);
+  const [search, setSearch] = useState<string>("");
+
+  const filteredOptions = useMemo(() => {
+    const q = search.toLocaleLowerCase();
+    return Object.values(data?.oneOf ?? {}).filter(
+      (s) =>
+        s.title.toLowerCase().includes(q) ||
+        String(s.const).toLowerCase().includes(q) ||
+        (s.description ?? "").toLowerCase().includes(q),
+    );
+  }, [search, data]);
 
   if (isPending) {
     return (
@@ -54,23 +67,33 @@ function NomenclatureContent({ name }: { name: string }) {
   }
 
   return (
-    <table className="w-full text-sm">
-      <tbody>
-        {data.oneOf?.map((option) => (
-          <tr key={option.const} className="border-b last:border-0">
-            <td className="w-px whitespace-nowrap p-4 align-top">
-              <span className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs text-muted-foreground">
-                {option.const}
-              </span>
-            </td>
-            <td className="p-4 pl-0 align-top">
-              <p className="font-bold text-sm">{option.title}</p>
-              <p className="italic text-xs">{option?.description}</p>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+    <>
+      <Input
+        autoFocus
+        type="search"
+        placeholder="Rechercher..."
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        className="m-4 w-[calc(100%-2rem)]"
+      />
+      <table className="w-full text-sm">
+        <tbody>
+          {filteredOptions?.map((option) => (
+            <tr key={option.const} className="border-b last:border-0">
+              <td className="w-px whitespace-nowrap p-4 align-top">
+                <span className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs text-muted-foreground">
+                  {option.const}
+                </span>
+              </td>
+              <td className="p-4 pl-0 align-top">
+                <p className="font-bold text-sm">{option.title}</p>
+                <p className="italic text-xs">{option?.description}</p>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </>
   );
 }
 
