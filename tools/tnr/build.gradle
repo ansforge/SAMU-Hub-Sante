@@ -27,14 +27,14 @@ dependencies {
     // This dependency is used by the application.
     implementation libs.guava
     implementation 'com.hubsante:models:3.3.2'
-    implementation 'org.slf4j:slf4j-simple:1.7.26'
+    implementation 'org.slf4j:slf4j-simple:2.0.18'
     implementation 'com.rabbitmq:amqp-client:5.16.0'
     implementation 'io.github.cdimascio:dotenv-java:3.0.0'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.12.7.1'
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.15.2'
     implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.15.2'
     implementation 'javax.validation:validation-api:2.0.1.Final'
-    implementation 'com.networknt:json-schema-validator:1.0.79'
+    implementation 'com.networknt:json-schema-validator:3.0.6'
     implementation 'com.github.ben-manes.caffeine:caffeine:3.1.8'
     implementation 'org.slf4j:slf4j-api:2.0.17'
     runtimeOnly 'ch.qos.logback:logback-classic:1.5.32'
@@ -45,7 +45,7 @@ testing {
         // Configure the built-in test suite
         test {
             // Use JUnit Jupiter test framework
-            useJUnitJupiter('5.12.1')
+            useJUnitJupiter('6.1.2')
         }
     }
 }

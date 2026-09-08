@@ -8,7 +8,7 @@ plugins {
 def modelVersion = '3.1'
 
 dependencies {
-    gatling("org.galaxio:gatling-amqp-plugin_2.13:0.14.0")
+    gatling("org.galaxio:gatling-amqp-plugin_2.13:1.2.10")
     gatling("io.github.cdimascio:dotenv-java:3.2.0")
     gatling("com.hubsante:models:${modelVersion}")
 }
