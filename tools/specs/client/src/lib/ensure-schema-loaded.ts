@@ -1,4 +1,4 @@
-import { messageListUrl } from "@/config";
+import { messageListUrl, rawGithubDomain } from "@/config";
 import { useSchemaStore } from "@/store/schema-store";
 import { SchemaReference } from "@/types";
 import { buildGithubSchemaUrl } from "./utils";
@@ -12,7 +12,7 @@ export async function ensureSchemaLoaded(name: string, ref: string) {
     const schemas = data.map(({ label, schemaName }) => ({
       label,
       schemaName,
-      url: buildGithubSchemaUrl(schemaName, ref),
+      url: buildGithubSchemaUrl(rawGithubDomain, ref, schemaName),
     }));
     store.setSchemasFromArray(schemas, ref);
     schema = store.getSchema(name);

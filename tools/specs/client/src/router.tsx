@@ -8,7 +8,12 @@ import {
   Outlet,
 } from "@tanstack/react-router";
 import { SchemaDetail, SchemaDetailSkeleton } from "@/components/schema-detail";
-import { messageListUrl, defaultRef, preserveRefSearch } from "@/config";
+import {
+  messageListUrl,
+  defaultRef,
+  preserveRefSearch,
+  rawGithubDomain,
+} from "@/config";
 import { useSchemaStore } from "@/store/schema-store";
 import {
   SidebarInset,
@@ -198,7 +203,7 @@ const rootRoute = createRootRoute({
     const schemas = data.map(({ label, schemaName }) => ({
       label,
       schemaName,
-      url: buildGithubSchemaUrl(schemaName, deps.ref),
+      url: buildGithubSchemaUrl(rawGithubDomain, deps.ref, schemaName),
     }));
     useSchemaStore.getState().setSchemasFromArray(schemas, deps.ref);
     return data;
