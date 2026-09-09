@@ -13,14 +13,25 @@ export const apiDomain =
 
 export const defaultRef = "main";
 
+export const rawGithubDomain = "raw.githubusercontent.com";
+export const githubDomain = "github.com";
+export const githubRepo = "ansforge/SAMU-Hub-Modeles";
+
+export function buildGithubUrl(domain: string, ref: string, path: string): string {
+  return `https://${domain}/${githubRepo}/${ref}/${path}`;
+}
+
 // pass as a Link's `search` prop to carry the current ref along when
 // navigating, defaulting it if absent
 export function preserveRefSearch(prev: { ref?: string }): { ref: string } {
   return { ref: prev.ref ?? defaultRef };
 }
-
 export function messageListUrl(ref: string): string {
-  return `https://raw.githubusercontent.com/ansforge/SAMU-Hub-Modeles/${ref}/src/main/resources/sample/examples/messagesList.json`;
+  return buildGithubUrl(
+    rawGithubDomain,
+    ref,
+    "src/main/resources/sample/examples/messagesList.json",
+  );
 }
 
 export const NOMENCLATURE_KEY = "x-nomenclature";

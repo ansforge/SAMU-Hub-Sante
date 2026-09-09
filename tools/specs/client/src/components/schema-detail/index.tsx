@@ -6,12 +6,22 @@ import type { JsonSchemaDocument } from "@/types";
 import { FieldLegend } from "./field-legend";
 import { SchemaFields } from "./schema-fields";
 import type { ExpandSignal } from "./schema-utils";
+import { buildGithubSchemaUrl } from "@/lib/utils";
+import { githubDomain } from "@/config";
+import { getRouteApi } from "@tanstack/react-router";
+import { ExternalLinkIcon } from "lucide-react";
+import SourceLink from "../source-link";
 
 type SchemaDetailProps = {
   schema?: JsonSchemaDocument;
 };
 
+const schemaRouteApi = getRouteApi("/$schemaName");
+const rootRouteApi = getRouteApi("__root__");
+
 export function SchemaDetail({ schema }: SchemaDetailProps) {
+  const { schemaName } = schemaRouteApi.useParams();
+  const { ref } = rootRouteApi.useSearch();
   const [expandSignal, setExpandSignal] = useState<ExpandSignal>({
     key: 0,
     expand: false,
@@ -29,12 +39,19 @@ export function SchemaDetail({ schema }: SchemaDetailProps) {
   const hasProperties = Object.keys(properties).length > 0;
   const definitions = schema.definitions ?? schema.$defs ?? {};
 
+  const schemaSource = buildGithubSchemaUrl(
+    githubDomain,
+    `blob/${ref}`,
+    schemaName,
+  );
+
   return (
     <>
       <NomenclatureDrawer />
       <div className="min-h-0 flex-1 overflow-y-auto p-8 w-full max-w-7xl mx-auto">
-        <div>
-          <h1 className="text-lg font-semibold">{schema.title}</h1>
+        <div className="flex items-base gap-2">
+          <h1 className="text-lg font-semibold">{schema.title}</h1>{" "}
+          <SourceLink href={schemaSource} />
           {schema.description && (
             <p className="mt-1 text-sm text-muted-foreground">
               {schema.description}

@@ -6,12 +6,20 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
+import { githubDomain } from "@/config";
 import { useNomenclature } from "@/hooks/use-nomenclature";
+import { buildNomenclatureUrl } from "@/lib/utils";
 import { useSchemaStore } from "@/store/schema-store";
+import { getRouteApi } from "@tanstack/react-router";
+import { ExternalLinkIcon } from "lucide-react";
 import { useMemo, useState } from "react";
+import SourceLink from "./source-link";
+
+const rootRouteApi = getRouteApi("__root__");
 
 function NomenclatureHeader({ name }: { name: string }) {
   const { data, isPending } = useNomenclature(name);
+  const { ref } = rootRouteApi.useSearch();
 
   if (isPending) {
     return (
@@ -22,11 +30,20 @@ function NomenclatureHeader({ name }: { name: string }) {
     );
   }
 
+  const nomenclatureSource = buildNomenclatureUrl(
+    githubDomain,
+    `blob/${ref}`,
+    name,
+  );
+
   return (
     <>
-      <SheetTitle className="font-bold text-xl">
-        {data?.title ?? name}
-      </SheetTitle>
+      <div className="flex items-center gap-2">
+        <SheetTitle className="font-bold text-xl">
+          {data?.title ?? name}
+        </SheetTitle>
+        <SourceLink href={nomenclatureSource} />
+      </div>
       {data?.description && (
         <p className="text-sm text-muted-foreground">{data.description}</p>
       )}
