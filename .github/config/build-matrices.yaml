@@ -58,3 +58,10 @@ projects:
         context: ./tools/specs/server
         tag: hub-specs-back
         artifact-name: trivy-reports-specs-back
+  specs-front:
+    description: "Specs client"
+    include:
+      - name: specs-client
+        context: ./tools/specs/client
+        tag: hub-specs-client
+        artifact-name: trivy-reports-specs-client

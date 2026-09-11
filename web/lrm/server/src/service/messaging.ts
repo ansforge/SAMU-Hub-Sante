@@ -8,6 +8,9 @@ import { RabbitMQConnector } from '../rabbit/utils';
 import { Config } from '../config';
 import { register } from '../metrics';
 
+type AmqpError = { code?: number; message?: string };
+
+
 const NOT_FOUND_QUEUE_ERROR_MESSAGE_PATTERN = 'NOT_FOUND - no queue';
 const MAX_RECONNEXION_ATTEMPT = 3;
 const RECONNEXION_ATTEMPT_DELAY = 5000;
@@ -51,7 +54,7 @@ export class MessagingService {
     throw new Error(`Connection error for vhost '${this.vhost}'`);
   }
 
-  handleChannelError(err: any) {
+  handleChannelError(err: AmqpError) {
     if (this.isMissingQueueError(err)) {
       this.logger.error(err);
       throw new Error(`Missing queue for vhost '${this.vhost}'`);
@@ -84,7 +87,7 @@ export class MessagingService {
     }, RECONNEXION_ATTEMPT_DELAY);
   }
 
-  isMissingQueueError(err: any) {
+  isMissingQueueError(err: AmqpError) {
     return err?.code === 404 && err.message?.includes(NOT_FOUND_QUEUE_ERROR_MESSAGE_PATTERN);
   }
 
@@ -183,6 +186,8 @@ export class ClientListenerService {
     };
   }
 
+  // TODO: use correct typing for edxl message
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   computeTreamtmentDuration(body: any): number | null {
     const logsMetadata = getMessageLogsMetadata(body);
     if (!body || typeof body.dateTimeSent !== 'string') {
