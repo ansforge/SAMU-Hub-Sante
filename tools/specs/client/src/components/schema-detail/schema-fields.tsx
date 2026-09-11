@@ -60,6 +60,7 @@ export function SchemaFields({
         if (!nested) {
           return (
             <div
+              id={fieldPath.join(".")}
               key={name}
               className={cn(
                 depth === 0 && "border-b border-border/60 px-1",
@@ -73,6 +74,7 @@ export function SchemaFields({
 
         return (
           <AccordionPrimitive.Item
+            id={fieldPath.join(".")}
             key={name}
             value={name}
             className={cn(
