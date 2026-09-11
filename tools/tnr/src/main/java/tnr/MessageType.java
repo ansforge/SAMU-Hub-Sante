@@ -5,7 +5,8 @@ public enum MessageType {
     CREATE_CASE_HEALTH("createCaseHealth"),
     RESOURCES_INFO("resourcesInfo"),
     RESOURCES_INFO_CISU("resourcesInfoCisu"),
-    RESOURCES_STATUS("resourcesStatus");
+    RESOURCES_STATUS("resourcesStatus"),
+    REFERENCE("reference");
 
     private final String value;
 

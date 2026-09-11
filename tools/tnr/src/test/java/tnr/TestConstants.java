@@ -38,6 +38,9 @@ public final class TestConstants {
     // Use case references — RC-EDA
     public static final String RC_EDA_REF = "RC-EDA/RC-EDA-DouleurThoracique-PierreLegrand.json";
 
+    // Use case references — RC-REF (reference)
+    public static final String RC_REF_REF = "RC-REF/RC-REF.json";
+
     // Use case references — RC-RI (Raymonde LECCIA lifecycle)
     public static final String RC_RI_REF           = "RC-RI/RC-RI_Incendie_RaymondeLECCIA.02.json"; // first reception
     public static final String RC_RI_STATUS1_REF    = "RC-RI/RC-RI_Incendie_RaymondeLECCIA.03.json"; // resource 1 status update

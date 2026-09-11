@@ -211,6 +211,10 @@ Valide les échanges entre SAMU et le système Nexsis (SDIS) avec transcoding :
 | `messageFromSamu1V1ToNexsis` | SAMU V1 → Nexsis, conversion + transcoding |
 | `messageFromSamu1V3ToNexsis` | SAMU V3 → Nexsis, transcoding uniquement |
 | `messageFromSamu2V3ToNexsis` | SAMU V3 → Nexsis, sans conversion ni transcoding |
+| `referenceMessageWithStepFromVhost1515IsStrippedForNexsis` | RC-REF avec `step` depuis vhost `15-15_v2.1` → Nexsis : `step` supprimé |
+| `referenceMessageWithoutStepFromVhost1515IsUnmodifiedForNexsis` | RC-REF sans `step` depuis vhost `15-15_v2.1` → Nexsis : message inchangé |
+| `referenceMessageWithStepFromVhostNexsisIsStrippedForNexsis` | RC-REF avec `step` depuis vhost `15-nexsis_v1.9` → Nexsis : `step` supprimé |
+| `referenceMessageWithoutStepFromVhostNexsisIsUnmodifiedForNexsis` | RC-REF sans `step` depuis vhost `15-nexsis_v1.9` → Nexsis : message inchangé |
 | `messageFromNexsisToSamu1V3` | Nexsis → SAMU V3, transcoding uniquement |
 | `messageFromNexsisToSamu1V1` | Nexsis → SAMU V1, conversion + transcoding |
 | `messageFromNexsisToSamu2V3` | Nexsis → SAMU V3, sans conversion ni transcoding |

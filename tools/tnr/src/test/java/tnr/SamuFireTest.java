@@ -11,12 +11,33 @@ import java.util.function.Predicate;
 
 import tnr.MessageType;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import tnr.dto.MessageDTO;
 
 class SamuFireTest extends AMQPTestSupport {
+
+    private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
+
+    /**
+     * Returns a copy of the given "reference" use case JSON with its "step" field
+     * either set to the given value, or removed if stepValue is null.
+     */
+    private String withReferenceStep(String useCaseJson, String stepValue) throws Exception {
+        ObjectNode root = (ObjectNode) JSON_MAPPER.readTree(useCaseJson);
+        ObjectNode reference = (ObjectNode) root.path("reference");
+        if (stepValue == null) {
+            reference.remove("step");
+        } else {
+            reference.put("step", stepValue);
+        }
+        return JSON_MAPPER.writeValueAsString(root);
+    }
 
     @Test
     @DisplayName("Send RS-EDA message from samu1_v1 to sdisZ with conversion & transcoding, then send ack")
@@ -109,6 +130,98 @@ class SamuFireTest extends AMQPTestSupport {
         assertVhostEquals(matchedAck, VHOST_15_NEXSIS_V3_TAG);
         assertQueueEquals(matchedAck, SAMU2_V3_ID + ".ack");
         assertEquals(distributionId, referencedDistributionID);
+    }
+
+    @Test
+    @DisplayName("Send RC-REF with 'step' from samu1_v3 (vhost 15-15_v2.1) to sdisZ: 'step' is stripped for Nexsis")
+    void referenceMessageWithStepFromVhost1515IsStrippedForNexsis() throws Exception {
+
+        String useCase = withReferenceStep(getUseCaseContentOnline(V3_FIRE_TAG, RC_REF_REF), "ERREUR");
+
+        String distributionId = Utils.generateDistributionId(SAMU1_V3_ID);
+        String edxlJson = new MessageBuilder().buildMessage(
+                useCase, distributionId, SAMU1_V3_ID, TNR_SDIS_CLIENT_ID);
+
+        sendMessage(VHOST_15_15_V3_TAG, SAMU1_V3_ID, edxlJson);
+
+        MessageDTO matched = awaitMessageByDistributionId(distributionId);
+
+        assertNotNull(matched, "Message " + distributionId + " not received within " + RECEIVE_TIMEOUT_SECS + "s");
+        assertVhostEquals(matched, VHOST_15_NEXSIS_VACTIVE_TAG);
+        assertQueueEquals(matched, HUB_NEXSIS_USER_CLIENT_ID + ".message");
+        assertTrue(Utils.isMessageOfType(matched, MessageType.REFERENCE));
+
+        JsonNode referenceNode = Utils.getUseCaseNode(matched, MessageType.REFERENCE);
+        assertFalse(referenceNode.has("step"), "RC-REF sent to Nexsis should not contain a 'step' field");
+    }
+
+    @Test
+    @DisplayName("Send RC-REF without 'step' from samu1_v3 (vhost 15-15_v2.1) to sdisZ: message is unmodified for Nexsis")
+    void referenceMessageWithoutStepFromVhost1515IsUnmodifiedForNexsis() throws Exception {
+
+        String useCase = withReferenceStep(getUseCaseContentOnline(V3_FIRE_TAG, RC_REF_REF), null);
+
+        String distributionId = Utils.generateDistributionId(SAMU1_V3_ID);
+        String edxlJson = new MessageBuilder().buildMessage(
+                useCase, distributionId, SAMU1_V3_ID, TNR_SDIS_CLIENT_ID);
+
+        sendMessage(VHOST_15_15_V3_TAG, SAMU1_V3_ID, edxlJson);
+
+        MessageDTO matched = awaitMessageByDistributionId(distributionId);
+
+        assertNotNull(matched, "Message " + distributionId + " not received within " + RECEIVE_TIMEOUT_SECS + "s");
+        assertVhostEquals(matched, VHOST_15_NEXSIS_VACTIVE_TAG);
+        assertQueueEquals(matched, HUB_NEXSIS_USER_CLIENT_ID + ".message");
+        assertTrue(Utils.isMessageOfType(matched, MessageType.REFERENCE));
+
+        JsonNode referenceNode = Utils.getUseCaseNode(matched, MessageType.REFERENCE);
+        assertFalse(referenceNode.has("step"), "RC-REF sent to Nexsis should still not contain a 'step' field");
+    }
+
+    @Test
+    @DisplayName("Send RC-REF with 'step' from samu2_v3 (vhost 15-nexsis_v1.9) to sdisZ: 'step' is stripped for Nexsis")
+    void referenceMessageWithStepFromVhostNexsisIsStrippedForNexsis() throws Exception {
+
+        String useCase = withReferenceStep(getUseCaseContentOnline(V3_FIRE_TAG, RC_REF_REF), "ERREUR");
+
+        String distributionId = Utils.generateDistributionId(SAMU2_V3_ID);
+        String edxlJson = new MessageBuilder().buildMessage(
+                useCase, distributionId, SAMU2_V3_ID, TNR_SDIS_CLIENT_ID);
+
+        sendMessage(VHOST_15_NEXSIS_V3_TAG, SAMU2_V3_ID, edxlJson);
+
+        MessageDTO matched = awaitMessageByDistributionId(distributionId);
+
+        assertNotNull(matched, "Message " + distributionId + " not received within " + RECEIVE_TIMEOUT_SECS + "s");
+        assertVhostEquals(matched, VHOST_15_NEXSIS_VACTIVE_TAG);
+        assertQueueEquals(matched, HUB_NEXSIS_USER_CLIENT_ID + ".message");
+        assertTrue(Utils.isMessageOfType(matched, MessageType.REFERENCE));
+
+        JsonNode referenceNode = Utils.getUseCaseNode(matched, MessageType.REFERENCE);
+        assertFalse(referenceNode.has("step"), "RC-REF sent to Nexsis should not contain a 'step' field");
+    }
+
+    @Test
+    @DisplayName("Send RC-REF without 'step' from samu2_v3 (vhost 15-nexsis_v1.9) to sdisZ: message is unmodified for Nexsis")
+    void referenceMessageWithoutStepFromVhostNexsisIsUnmodifiedForNexsis() throws Exception {
+
+        String useCase = withReferenceStep(getUseCaseContentOnline(V3_FIRE_TAG, RC_REF_REF), null);
+
+        String distributionId = Utils.generateDistributionId(SAMU2_V3_ID);
+        String edxlJson = new MessageBuilder().buildMessage(
+                useCase, distributionId, SAMU2_V3_ID, TNR_SDIS_CLIENT_ID);
+
+        sendMessage(VHOST_15_NEXSIS_V3_TAG, SAMU2_V3_ID, edxlJson);
+
+        MessageDTO matched = awaitMessageByDistributionId(distributionId);
+
+        assertNotNull(matched, "Message " + distributionId + " not received within " + RECEIVE_TIMEOUT_SECS + "s");
+        assertVhostEquals(matched, VHOST_15_NEXSIS_VACTIVE_TAG);
+        assertQueueEquals(matched, HUB_NEXSIS_USER_CLIENT_ID + ".message");
+        assertTrue(Utils.isMessageOfType(matched, MessageType.REFERENCE));
+
+        JsonNode referenceNode = Utils.getUseCaseNode(matched, MessageType.REFERENCE);
+        assertFalse(referenceNode.has("step"), "RC-REF sent to Nexsis should still not contain a 'step' field");
     }
 
     @Test
