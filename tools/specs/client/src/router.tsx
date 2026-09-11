@@ -22,7 +22,7 @@ import {
 } from "./components/ui/sidebar";
 import { AppSidebar } from "./components/app-sidebar";
 import { Separator } from "@base-ui/react";
-import { SchemaReference } from "./types";
+import { JsonSchemaDocument, SchemaReference } from "./types";
 import { buildGithubSchemaUrl } from "./lib/utils";
 import { ensureSchemaLoaded } from "./lib/ensure-schema-loaded";
 import RefSelector from "./components/ref-selector";
@@ -176,7 +176,7 @@ const schemaRoute = createRoute({
     const res = await fetch(schema.url);
     if (res.status === 404) throw notFound();
     if (!res.ok) throw new Error(`Échec du chargement (HTTP ${res.status})`);
-    return res.json();
+    return res.json() as Promise<JsonSchemaDocument>;
   },
   staleTime: 30_000,
   pendingComponent: SchemaPagePending,
