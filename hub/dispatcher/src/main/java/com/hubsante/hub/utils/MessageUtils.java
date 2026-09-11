@@ -17,6 +17,7 @@ package com.hubsante.hub.utils;
 
 import static com.hubsante.hub.config.AmqpConfiguration.*;
 import static com.hubsante.hub.config.Constants.DISTRIBUTION_ID_UNAVAILABLE;
+import static com.hubsante.hub.config.Constants.FR_HEALTH_PREFIX;
 
 import com.hubsante.hub.config.Constants;
 import com.hubsante.hub.config.HubConfiguration;
@@ -46,8 +47,6 @@ import org.springframework.amqp.core.ReturnedMessage;
 public class MessageUtils {
     private static final StructuredLogger structuredLog = new StructuredLogger(log);
 
-    static final String HEALTH_PREFIX = "fr.health";
-
     public static String getSenderFromRoutingKey(Message message) {
         String receivedRoutingKey = message.getMessageProperties().getReceivedRoutingKey();
         return receivedRoutingKey != null ? receivedRoutingKey : "";
@@ -66,7 +65,7 @@ public class MessageUtils {
             String recipientId = getRecipientID(edxlMessage);
             String messageType =
                     EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage());
-            if (!receivedRoutingKey.startsWith(HEALTH_PREFIX)) {
+            if (!receivedRoutingKey.startsWith(FR_HEALTH_PREFIX)) {
                 String senderId = edxlMessage.getSenderID();
                 structuredLog.info(
                         String.format(
@@ -98,7 +97,7 @@ public class MessageUtils {
     public static void checkHealthActorIsInvolved(EdxlMessage edxlMessage) {
         String senderId = edxlMessage.getSenderID();
         String recipientId = getRecipientID(edxlMessage);
-        if (!senderId.startsWith(HEALTH_PREFIX) && !recipientId.startsWith(HEALTH_PREFIX)) {
+        if (!senderId.startsWith(FR_HEALTH_PREFIX) && !recipientId.startsWith(FR_HEALTH_PREFIX)) {
             String errorCause =
                     "Unable to route message with id "
                             + edxlMessage.getDistributionID()
@@ -114,7 +113,9 @@ public class MessageUtils {
     public static void checkDeliveryModeIsPersistent(Message message, String distributionId) {
         if (!MessageDeliveryMode.PERSISTENT.equals(
                 message.getMessageProperties().getReceivedDeliveryMode())) {
-            if (!message.getMessageProperties().getReceivedRoutingKey().startsWith(HEALTH_PREFIX)) {
+            if (!message.getMessageProperties()
+                    .getReceivedRoutingKey()
+                    .startsWith(FR_HEALTH_PREFIX)) {
                 String senderId = getSenderFromRoutingKey(message);
                 structuredLog.error(
                         "Message has been received from hubex without persistent mode enabled",
@@ -203,13 +204,13 @@ public class MessageUtils {
                 || message.getMessageProperties().getReceivedRoutingKey() == null
                 || !message.getMessageProperties()
                         .getReceivedRoutingKey()
-                        .startsWith(HEALTH_PREFIX));
+                        .startsWith(FR_HEALTH_PREFIX));
     }
 
     public static boolean isXML(ReturnedMessage returned) {
         return MessageProperties.CONTENT_TYPE_XML.equals(
                         returned.getMessage().getMessageProperties().getContentType())
-                || !returned.getRoutingKey().startsWith(HEALTH_PREFIX);
+                || !returned.getRoutingKey().startsWith(FR_HEALTH_PREFIX);
     }
 
     public static void overrideExpirationIfNeeded(

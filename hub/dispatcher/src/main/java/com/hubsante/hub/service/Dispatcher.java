@@ -27,7 +27,6 @@ import com.hubsante.hub.config.HubConfiguration;
 import com.hubsante.hub.config.LogConstants;
 import com.hubsante.hub.config.StructuredLogger;
 import com.hubsante.hub.exception.*;
-import com.hubsante.hub.utils.ConversionRulesCommand;
 import com.hubsante.hub.utils.ConversionUtils;
 import com.hubsante.hub.utils.EdxlUtils;
 import com.hubsante.hub.utils.MessagePersistencePolicy;
@@ -241,13 +240,13 @@ public class Dispatcher {
                 checkDistributionIDFormat(edxlMessage);
             }
 
-            boolean isCisuConversion =
-                    ConversionUtils.requiresCisuConversion(hubConfig, edxlMessage);
-            boolean isVersionConversion =
-                    ConversionUtils.requiresVersionConversion(hubConfig, edxlMessage);
+            ConversionUtils.ConversionParametersDTO conversionParameters =
+                    ConversionUtils.resolveConversionParameters(hubConfig, edxlMessage);
+            boolean isConversionNeeded = conversionParameters != null;
 
-            if (isCisuConversion || isVersionConversion) {
-                if (isCisuConversion) {
+            if (isConversionNeeded) {
+                if (conversionParameters.conversionType()
+                        == ConversionUtils.ConversionType.CISU_TRANSCODING) {
                     String useCase =
                             EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage());
                     // Persist before conversion so the original message is saved even if conversion
@@ -256,13 +255,11 @@ public class Dispatcher {
                         persistenceService.persist(edxlMessage);
                     }
                 }
-
-                ConversionRulesCommand conversionRulesCommand =
-                        new ConversionRulesCommand(edxlMessage, hubConfig);
                 List<String> convertedMessages =
-                        conversionHandler.applyConversionRules(conversionRulesCommand);
+                        conversionHandler.applyConversionRules(conversionParameters);
                 for (String convertedMessage : convertedMessages) {
-                    sendToTransferExchange(convertedMessage, message, conversionRulesCommand);
+                    sendToTransferExchange(
+                            convertedMessage, message, conversionParameters.targetVhost());
                 }
                 String recipientId = MessageUtils.getRecipientID(edxlMessage);
                 String messageType =
@@ -314,15 +311,11 @@ public class Dispatcher {
     }
 
     public void sendToTransferExchange(
-            String convertedMessage,
-            Message message,
-            ConversionRulesCommand conversionRulesCommand) {
+            String convertedMessage, Message message, String targetVhost) {
         Message forwardedMsg = messageHandler.forwardedStringMessage(convertedMessage, message);
 
         String transferExchangeName =
-                ConversionUtils.buildExchangeDestination(
-                        conversionRulesCommand.getSourceVHost(),
-                        conversionRulesCommand.getTargetVHost());
+                ConversionUtils.buildTransferExchangeName(hubConfig.getVhost(), targetVhost);
 
         String routingKey = message.getMessageProperties().getReceivedRoutingKey();
         String distributionId = extractDistributionId(stringifyBody(message));

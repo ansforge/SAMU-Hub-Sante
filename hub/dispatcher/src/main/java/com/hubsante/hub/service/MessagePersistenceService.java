@@ -24,6 +24,7 @@ import com.hubsante.hub.exception.HubPersistenceException;
 import com.hubsante.hub.model.PersistedMessage;
 import com.hubsante.hub.repository.PersistedMessageRepository;
 import com.hubsante.hub.utils.EdxlUtils;
+import com.hubsante.hub.utils.MessageUtils;
 import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.edxl.EdxlMessage;
 import java.util.Map;
@@ -54,6 +55,7 @@ public class MessagePersistenceService {
 
     public void persist(EdxlMessage edxlMessage) throws HubPersistenceException {
         String useCase = EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage());
+        String recipient = MessageUtils.getRecipientID(edxlMessage);
         String vhost = hubConfig.getVhost();
         try {
             String jsonEdxl = edxlHandler.serializeJsonEDXL(edxlMessage);
@@ -82,7 +84,8 @@ public class MessagePersistenceService {
                             LogConstants.MESSAGE_TYPE,
                             useCase),
                     e);
-            throw new HubPersistenceException(e.getMessage(), edxlMessage.getDistributionID());
+            throw new HubPersistenceException(
+                    e.getMessage(), edxlMessage.getDistributionID(), recipient, useCase);
         }
     }
 }

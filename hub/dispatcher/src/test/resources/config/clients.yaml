@@ -140,9 +140,6 @@ clients:
       - name: '15-smur'
         versions:
           - '1.7'
-      - name: '15-nexsis'
-        versions:
-          - '1.9'
       - name: '15-gps'
         versions:
           - '2.0'
@@ -161,10 +158,21 @@ clients:
     sasPerimeterVersions:
       - '1.0'
     lrm_test: false
+  - client_id: fr.health.samuV3-nexsis
+    common_name: fr.health.samuV3-nexsis
+    perimeters:
+      - name: '15-nexsis'
+        versions:
+          - '1.9'
+    editor: default-editor
+    cisuPerimeterVersions:
+      - '1.9'
+    lrm_test: false
 majorModelVersionPerVhost:
   15-15_v1.5: "v1"
   15-15_v2.0: "v2"
   15-15_v2.1: "v3"
   15-nexsis_v1.9: "v3"
+  15-nexsis_vactive: "vactive"
 vhostTargetPerHubexPartner:
-  fire: "15-nexsis_v1.9"
+  fire: "15-nexsis_vactive"

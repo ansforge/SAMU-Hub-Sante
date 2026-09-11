@@ -17,43 +17,18 @@ package com.hubsante.hub.service;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import com.hubsante.hub.HubApplication;
 import com.hubsante.hub.exception.ClientConfigurationException;
 import com.hubsante.hub.model.ClientProperties;
 import java.util.List;
-import java.util.Objects;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.amqp.rabbit.test.context.SpringRabbitTest;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 
-@SpringBootTest
-@ContextConfiguration(classes = HubApplication.class)
-@SpringRabbitTest
 public class ClientPropertiesRegistryTest {
 
-    static ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-    @Autowired private ClientPropertiesRegistry clientPropertiesRegistry;
-
-    @DynamicPropertySource
-    static void registerPgProperties(DynamicPropertyRegistry propertiesRegistry) {
-        propertiesRegistry.add(
-                "supported.messages.file",
-                () ->
-                        Objects.requireNonNull(
-                                classLoader.getResource("config/supported.messages.csv")));
-        propertiesRegistry.add(
-                "client.configuration.file",
-                () -> Objects.requireNonNull(classLoader.getResource("config/clients.yaml")));
-        propertiesRegistry.add("hubsante.default.message.ttl", () -> 5);
-        propertiesRegistry.add("spring.rabbitmq.virtual-host", () -> "15-15_v2.1");
-    }
+    private final ClientPropertiesRegistry clientPropertiesRegistry =
+            new ClientPropertiesRegistry(new ClassPathResource("config/clients.yaml"));
 
     @Test
     @DisplayName("should load Client configuration")
@@ -70,7 +45,8 @@ public class ClientPropertiesRegistryTest {
     }
 
     @Test
-    void should_fail_when_loading_invalid_yaml() {
+    @DisplayName("should fail when loading an invalid clients YAML")
+    void shouldFailWhenLoadingInvalidYaml() {
         String exceptionPrefix = "Invalid clients configuration:\n\n";
 
         // perimeter wth no name

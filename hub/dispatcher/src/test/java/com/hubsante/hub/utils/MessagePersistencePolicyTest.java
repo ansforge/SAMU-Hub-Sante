@@ -40,7 +40,7 @@ public class MessagePersistencePolicyTest {
     void shouldPersistResourcesInfoCisuWrapperFromNexsisVhost() {
         assertTrue(
                 MessagePersistencePolicy.shouldPersist(
-                        "15-nexsis_v1.9", "ResourcesInfoCisuWrapper"));
+                        "15-nexsis_vactive", "ResourcesInfoCisuWrapper"));
     }
 
     @ParameterizedTest(name = "should not persist {0} when vhost is 15-nexsis")

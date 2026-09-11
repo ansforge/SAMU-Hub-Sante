@@ -15,13 +15,9 @@
  */
 package com.hubsante.hub.config;
 
-import java.util.Map;
-
 public class Constants {
 
     public static final String DISPATCH_ERROR = "dispatch.error";
-    public static final String DISPATCH_TIMED_METRIC = "overall.dispatch.time";
-    public static final String DLQ_TIMED_METRIC = "dlq.overall.dispatch.time";
     public static final String REASON_TAG = "reason";
     public static final String CLIENT_ID_TAG = "sender";
     public static final String VHOST_TAG = "vhost";
@@ -38,22 +34,15 @@ public class Constants {
     public static final String DISPATCHED_MESSAGE = "dispatch.message";
     public static final String USE_CASE_TAG = "use_case";
     public static final String UNKNOWN = "unknown";
-    public static final boolean DEFAULT_DIRECT_CISU_PREFERENCE = false;
     public static final String FR_HEALTH_PREFIX = "fr.health";
     public static final String FR_FIRE_PREFIX = "fr.fire";
     public static final String FR_CISU_PREFIX = "fr.cisu";
     public static final String HEALTH_VHOST_PREFIX = "15-15_v";
     public static final String NEXSIS_HUBEX_PARTNER = "fire";
-    public static final Map<String, String> HUBEX_PERIMETER_PREFIXES =
-            Map.of(
-                    "15-15", "fr.health",
-                    "15-nexsis", "fr.fire");
 
     public enum Perimeter {
         HEALTH("15-15"),
-        CISU("15-nexsis"),
-        GPS("15-gps"),
-        SMUR("15-smur");
+        CISU("15-nexsis");
 
         private final String name;
 

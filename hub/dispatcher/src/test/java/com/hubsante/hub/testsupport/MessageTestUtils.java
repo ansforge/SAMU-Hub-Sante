@@ -13,15 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hubsante.hub.service.utils;
+package com.hubsante.hub.testsupport;
 
 import static com.hubsante.hub.config.AmqpConfiguration.*;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.edxl.EdxlMessage;
-import com.hubsante.model.report.Error;
-import com.hubsante.model.report.ErrorWrapper;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -34,6 +32,8 @@ import org.springframework.amqp.core.MessageProperties;
 import org.testcontainers.shaded.com.google.common.io.ByteStreams;
 
 public class MessageTestUtils {
+
+    private static final EdxlHandler edxlHandler = new EdxlHandler();
 
     public static String getSampleMessage(String message, boolean isXML) throws IOException {
         String extension = isXML ? ".xml" : ".json";
@@ -61,23 +61,59 @@ public class MessageTestUtils {
         return json;
     }
 
-    public static Message createMessage(
-            String filename, String contentType, String receivedRoutingKey) throws IOException {
-        boolean isXML = MessageProperties.CONTENT_TYPE_XML.equals(contentType);
-        String edxlString = getSampleMessage(filename, isXML);
-
-        MessageProperties properties = getMessageProperties(receivedRoutingKey);
-
-        Message createdMessage =
-                new Message(edxlString.getBytes(StandardCharsets.UTF_8), properties);
-        createdMessage.getMessageProperties().setContentType(contentType);
-
-        return createdMessage;
+    public static Message createMessage(String filename, String contentType) throws IOException {
+        return createMessage(filename, contentType, null, null);
     }
 
-    public static Message createMessage(String filename, String receivedRoutingKey)
+    public static Message createMessage(String filename, String contentType, String sender)
             throws IOException {
-        return createMessage(filename, getContentTypeFromFilename(filename), receivedRoutingKey);
+        return createMessage(filename, contentType, sender, null);
+    }
+
+    public static Message createMessage(
+            String filename, String contentType, String sender, String recipient)
+            throws IOException {
+        boolean isXML = MessageProperties.CONTENT_TYPE_XML.equals(contentType);
+        String edxlString = getSampleMessage(filename, isXML);
+        EdxlMessage edxlMessage = deserialize(edxlString, isXML);
+        String effectiveSender = sender != null ? sender : edxlMessage.getSenderID();
+
+        if (sender != null) {
+            String existingDistributionId = edxlMessage.getDistributionID();
+            int separator = existingDistributionId.indexOf('_');
+            String uuid =
+                    separator >= 0
+                            ? existingDistributionId.substring(separator + 1)
+                            : existingDistributionId;
+            edxlMessage.setSenderID(sender);
+            edxlMessage.setDistributionID(sender + "_" + uuid);
+        }
+
+        if (recipient != null) {
+            edxlMessage.getDescriptor().getExplicitAddress().setExplicitAddressValue(recipient);
+        }
+
+        String serialized = serialize(edxlMessage, isXML);
+        byte[] body = serialized.getBytes(StandardCharsets.UTF_8);
+
+        MessageProperties properties = buildMessageProperties(effectiveSender);
+        Message message = new Message(body, properties);
+        message.getMessageProperties().setContentType(contentType);
+        return message;
+    }
+
+    private static EdxlMessage deserialize(String edxlString, boolean isXML)
+            throws JsonProcessingException {
+        return isXML
+                ? edxlHandler.deserializeXmlEDXL(edxlString)
+                : edxlHandler.deserializeJsonEDXL(edxlString);
+    }
+
+    private static String serialize(EdxlMessage edxlMessage, boolean isXML)
+            throws JsonProcessingException {
+        return isXML
+                ? edxlHandler.serializeXmlEDXL(edxlMessage)
+                : edxlHandler.serializeJsonEDXL(edxlMessage);
     }
 
     public static Message createInvalidMessage(String filename, String receivedRoutingKey)
@@ -90,7 +126,7 @@ public class MessageTestUtils {
             String filename, String contentType, String receivedRoutingKey) throws IOException {
         String edxlString = getInvalidMessage(filename);
 
-        MessageProperties properties = getMessageProperties(receivedRoutingKey);
+        MessageProperties properties = buildMessageProperties(receivedRoutingKey);
 
         Message createdMessage =
                 new Message(edxlString.getBytes(StandardCharsets.UTF_8), properties);
@@ -100,7 +136,7 @@ public class MessageTestUtils {
     }
 
     @NotNull
-    private static MessageProperties getMessageProperties(String receivedRoutingKey) {
+    private static MessageProperties buildMessageProperties(String receivedRoutingKey) {
         MessageProperties properties = new MessageProperties();
         properties.setReceivedRoutingKey(receivedRoutingKey);
         // Spring AMQP uses receivedDeliveryMode on consumers, and deliveryMode on producers
@@ -136,32 +172,9 @@ public class MessageTestUtils {
         }
     }
 
-    public static Error getErrorFromMessage(EdxlHandler edxlHandler, Message message)
-            throws JsonProcessingException {
-
-        String msgString = new String(message.getBody());
-
-        ErrorWrapper wrapper =
-                message.getMessageProperties()
-                                .getContentType()
-                                .equals(MessageProperties.CONTENT_TYPE_XML)
-                        ? (ErrorWrapper)
-                                edxlHandler.deserializeXmlEDXL(msgString).getFirstContentMessage()
-                        : (ErrorWrapper)
-                                edxlHandler.deserializeJsonEDXL(msgString).getFirstContentMessage();
-
-        return wrapper.getError();
-    }
-
     public static void setCustomExpirationDate(EdxlMessage edxlMessage, long offset_in_seconds) {
         OffsetDateTime now = OffsetDateTime.now();
         edxlMessage.setDateTimeSent(now);
         edxlMessage.setDateTimeExpires(now.plusSeconds(offset_in_seconds));
-    }
-
-    public static void setMessageConsistentWithRoutingKey(
-            EdxlMessage edxlMessage, String routingKey) {
-        edxlMessage.setSenderID(routingKey);
-        edxlMessage.setDistributionID(routingKey + "_2608323d-507d-4cbf-bf74-52007f8124ea");
     }
 }

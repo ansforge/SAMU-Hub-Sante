@@ -124,13 +124,6 @@ public class HubConfiguration {
         return new TimedAspect(registry);
     }
 
-    public static String[] splitString(String input) {
-        if (input == null || input.isEmpty()) {
-            return null;
-        }
-        return input.split(DATA_DIVIDER);
-    }
-
     @Bean
     public WebClient conversionWebClient(
             ObservationRegistry observationRegistry,
