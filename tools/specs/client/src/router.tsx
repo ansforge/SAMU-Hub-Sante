@@ -27,6 +27,7 @@ import { buildGithubSchemaUrl } from "./lib/utils";
 import { ensureSchemaLoaded } from "./lib/ensure-schema-loaded";
 import RefSelector from "./components/ref-selector";
 import User from "./components/user";
+import GlobalSearch from "./components/global-seach";
 
 function Root({ children = <Outlet /> }: { children?: ReactNode }) {
   return (
@@ -45,6 +46,7 @@ function Root({ children = <Outlet /> }: { children?: ReactNode }) {
             <User />
           </div>
         </header>
+        <GlobalSearch />
         <main className="flex flex-1 flex-col">{children}</main>
       </SidebarInset>
     </SidebarProvider>
