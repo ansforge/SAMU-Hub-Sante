@@ -29,3 +29,5 @@ export function buildNomenclatureUrl(
     `nomenclature_parser/out/latest/json_schema/${nomenclature}.json`,
   );
 }
+
+export const isMac = window.navigator.platform === "MacIntel";

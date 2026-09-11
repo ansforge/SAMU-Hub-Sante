@@ -88,3 +88,26 @@ export function nestedFields(
   if (!target?.properties) return null;
   return { properties: target.properties, required: target.required };
 }
+
+export type FlatField = {
+  path: string[];
+  prop: JsonSchemaProperty;
+};
+
+const MAX_FLATTEN_DEPTH = 8;
+
+export function flattenFields(
+  properties: Record<string, JsonSchemaProperty>,
+  definitions: JsonSchemaDefinitions,
+  path: string[] = [],
+): FlatField[] {
+  if (path.length >= MAX_FLATTEN_DEPTH) return [];
+  return Object.entries(properties).flatMap(([name, prop]) => {
+    const fieldPath = [...path, name];
+    const nested = nestedFields(prop, definitions);
+    const children = nested
+      ? flattenFields(nested.properties, definitions, fieldPath)
+      : [];
+    return [{ path: fieldPath, prop }, ...children];
+  });
+}
