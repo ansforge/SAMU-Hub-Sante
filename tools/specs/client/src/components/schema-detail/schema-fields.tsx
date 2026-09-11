@@ -44,7 +44,7 @@ export function SchemaFields({
         const fieldPath = [...path, name];
 
         const row = (
-          <div className="flex flex-col gap-1 py-2.5">
+          <div className="flex flex-col gap-1 rounded-md py-2.5">
             <FieldHeader
               definitions={definitions}
               name={name}
@@ -61,7 +61,10 @@ export function SchemaFields({
           return (
             <div
               key={name}
-              className={cn(depth === 0 && "border-b border-border/60 px-1")}
+              className={cn(
+                depth === 0 && "border-b border-border/60 px-1",
+                "p-1 m-1 scroll-mt-8 target:bg-muted target:rounded-lg target:ring-2 target:ring-ring/40 transition-colors duration-300",
+              )}
             >
               {row}
             </div>
@@ -73,8 +76,8 @@ export function SchemaFields({
             key={name}
             value={name}
             className={cn(
-              depth === 0 &&
-                "rounded-lg border border-border/70 bg-card/40 px-3",
+              depth === 0 && "border border-border/70 bg-card/40 px-3",
+              "rounded-lg scroll-mt-8 target:bg-muted target:ring-2 target:ring-ring/40 transition-colors duration-300",
             )}
           >
             <AccordionPrimitive.Header className="flex">
