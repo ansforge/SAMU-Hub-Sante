@@ -1,13 +1,12 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { NomenclatureDrawer } from "@/components/nomenclature-drawer";
 import type { JsonSchemaDocument } from "@/types";
 import { FieldLegend } from "./field-legend";
 import { SchemaFields } from "./schema-fields";
-import type { ExpandSignal } from "./schema-utils";
 import { buildGithubSchemaUrl } from "@/lib/utils";
 import { githubDomain } from "@/config";
+import { useSchemaStore } from "@/store/schema-store";
 import { getRouteApi } from "@tanstack/react-router";
 import { ExternalLinkIcon } from "lucide-react";
 import SourceLink from "../source-link";
@@ -22,10 +21,8 @@ const rootRouteApi = getRouteApi("__root__");
 export function SchemaDetail({ schema }: SchemaDetailProps) {
   const { schemaName } = schemaRouteApi.useParams();
   const { ref } = rootRouteApi.useSearch();
-  const [expandSignal, setExpandSignal] = useState<ExpandSignal>({
-    key: 0,
-    expand: false,
-  });
+  const expandSignal = useSchemaStore((s) => s.expandSignal);
+  const toggleExpandAll = useSchemaStore((s) => s.toggleExpandAll);
 
   if (!schema) {
     return (
@@ -75,12 +72,7 @@ export function SchemaDetail({ schema }: SchemaDetailProps) {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() =>
-                    setExpandSignal((s) => ({
-                      key: s.key + 1,
-                      expand: !s.expand,
-                    }))
-                  }
+                  onClick={toggleExpandAll}
                 >
                   {expandSignal.expand ? "Tout replier" : "Tout déplier"}
                 </Button>
