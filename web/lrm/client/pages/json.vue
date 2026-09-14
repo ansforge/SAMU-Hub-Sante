@@ -23,7 +23,7 @@
             align-tabs="title"
           >
             <v-tabs color="primary" />
-            <v-tab v-for="{ label } in store.messageTypes" :key="label">
+            <v-tab v-for="{ label } in store._messageTypes" :key="label">
               {{ label }}
             </v-tab>
           </v-tabs>
@@ -216,7 +216,7 @@ export default {
   },
   computed: {
     currentMessageType() {
-      return this.store.messageTypes[this.messageTypeTabIndex];
+      return this.store._messageTypes[this.messageTypeTabIndex];
     },
   },
   watch: {
@@ -225,7 +225,7 @@ export default {
     },
     currentMessageType() {
       this.store.selectedSchema =
-        this.store.messageTypes[this.messageTypeTabIndex];
+        this.store._messageTypes[this.messageTypeTabIndex];
     },
   },
   mounted() {
