@@ -112,14 +112,49 @@ class MessageUtilsTest {
         }
 
         @Test
-        @DisplayName("should tolerate an inconsistent sender coming from a hubex partner")
-        void shouldTolerateInconsistentHubexSender() {
+        @DisplayName(
+                "should accept a hubex sender whose senderID shares the routing key's domain prefix")
+        void shouldToleratePrefixMatchingHubexSender() {
             assertThatCode(
                             () ->
                                     MessageUtils.checkSenderConsistency(
                                             amqp("fr.fire.sga", MessageProperties.CONTENT_TYPE_XML),
                                             edxl(SDIS_C, "fr.health.samuB", "fr.fire.sdisC_1")))
-                    .as("hubex senders are logged, not rejected")
+                    .doesNotThrowAnyException();
+        }
+
+        @Test
+        @DisplayName(
+                "should throw when a hubex sender's senderID does not share the routing key's domain prefix")
+        void shouldThrowForHubexSenderWithMismatchedPrefix() {
+            assertThatThrownBy(
+                            () ->
+                                    MessageUtils.checkSenderConsistency(
+                                            amqp("fr.fire.sga", MessageProperties.CONTENT_TYPE_XML),
+                                            edxl(
+                                                    "fr.cisu.sdisY",
+                                                    "fr.health.samuB",
+                                                    "fr.cisu.sdisY_1")))
+                    .isInstanceOf(SenderInconsistencyException.class)
+                    .hasMessageContaining("fr.cisu.sdisY")
+                    .hasMessageContaining("fr.fire.sga")
+                    .hasMessageContaining("fr.fire");
+        }
+
+        @Test
+        @DisplayName(
+                "should pass when a hubex sender publishes directly under its own identity (qualification setup)")
+        void shouldPassWhenHubexSenderRoutingKeyEqualsSenderId() {
+            assertThatCode(
+                            () ->
+                                    MessageUtils.checkSenderConsistency(
+                                            amqp(
+                                                    "fr.cisu.sdisY",
+                                                    MessageProperties.CONTENT_TYPE_XML),
+                                            edxl(
+                                                    "fr.cisu.sdisY",
+                                                    "fr.health.samuB",
+                                                    "fr.cisu.sdisY_1")))
                     .doesNotThrowAnyException();
         }
     }
