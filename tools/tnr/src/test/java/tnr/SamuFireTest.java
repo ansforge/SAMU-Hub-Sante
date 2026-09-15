@@ -287,7 +287,7 @@ class SamuFireTest extends AMQPTestSupport {
         String step2DistId = sendSamuMessage(RS_RI_NORMAND_REF, uniqueCaseId);
         MessageDTO step2RcRi = awaitMessageByDistributionId(step2DistId);
         assertRcRi(step2RcRi, step2DistId);
-        assertRcRiResourceVehicleType(step2RcRi, "SMUR");
+        assertRcRiResourceVehicleType(step2RcRi, "VECTEUR_SANTE");
         sendAndAssertAckFromNexsis(step2DistId);
 
         // Test n°3: RS-SR status update → RC-RI (distributionId from persisted RS-RI envelope)
@@ -315,13 +315,16 @@ class SamuFireTest extends AMQPTestSupport {
     }
 
     @Test
-    @DisplayName("RS-RI non-SMUR resource ignored (Monsieur X): TSU resource with status produces no output (test n°8)")
-    void rsRiNonSmurResourceIgnored() throws Exception {
+    @DisplayName("RS-RI non-SMUR resource (Monsieur X): TSU resource with status is converted to RC-RI with vehicleType VECTEUR_SANTE (test n°8)")
+    void rsRiNonSmurResourceConverted() throws Exception {
 
         String uniqueCaseId = "fr.health.tnr.test." + UUID.randomUUID().toString().replace("-", "").substring(0, 12);
 
-        sendSamuMessage(RS_RI_MONSIEUR_X_REF, uniqueCaseId);
-        assertNoMessageReceived(msg -> msg.getQueue().equals(HUB_NEXSIS_USER_CLIENT_ID + ".message"));
+        String step8DistId = sendSamuMessage(RS_RI_MONSIEUR_X_REF, uniqueCaseId);
+        MessageDTO step8RcRi = awaitMessageByDistributionId(step8DistId);
+        assertRcRi(step8RcRi, step8DistId);
+        assertRcRiResourceVehicleType(step8RcRi, "VECTEUR_SANTE");
+        sendAndAssertAckFromNexsis(step8DistId);
     }
 
     private String sendSamuMessage(String fixtureRef, String caseId) throws Exception {
