@@ -61,37 +61,44 @@ public class MessageUtils {
 
     public static void checkSenderConsistency(Message message, EdxlMessage edxlMessage) {
         String receivedRoutingKey = getSenderFromRoutingKey(message);
-        if (!receivedRoutingKey.equals(edxlMessage.getSenderID())) {
+        String senderId = edxlMessage.getSenderID();
+        boolean isHealthSender = receivedRoutingKey.startsWith(FR_HEALTH_PREFIX);
+
+        // Health senders must publish under their own identity: the routing key is expected to be
+        // strictly equal to the senderID. Hubex partners publish through a shared technical
+        // routing key that will not always match the functional senderId, so we only require both
+        // to
+        // share the same domain prefix (e.g. "fr.fire").
+        String expected =
+                isHealthSender ? receivedRoutingKey : extractDomainPrefix(receivedRoutingKey);
+        boolean isConsistent =
+                isHealthSender ? senderId.equals(expected) : senderId.startsWith(expected);
+
+        if (!isConsistent) {
             String recipientId = getRecipientID(edxlMessage);
             String messageType =
                     EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage());
-            if (!receivedRoutingKey.startsWith(FR_HEALTH_PREFIX)) {
-                String senderId = edxlMessage.getSenderID();
-                structuredLog.info(
-                        String.format(
-                                "Message has been received from hubex partner with routing key %s and senderId %s",
-                                receivedRoutingKey, senderId),
-                        Map.of(
-                                LogConstants.DISTRIBUTION_ID,
-                                edxlMessage.getDistributionID(),
-                                LogConstants.SENDER_ID,
-                                senderId,
-                                LogConstants.RECIPIENT_ID,
-                                recipientId,
-                                LogConstants.MESSAGE_TYPE,
-                                messageType));
-                return;
-            }
             String errorCause =
                     "Sender inconsistency for message "
                             + edxlMessage.getDistributionID()
                             + " : message sender is "
-                            + edxlMessage.getSenderID()
+                            + senderId
                             + " but received routing key is "
-                            + receivedRoutingKey;
+                            + receivedRoutingKey
+                            + ", expected sender to "
+                            + (isHealthSender ? "equal " : "be prefixed with ")
+                            + expected;
             throw new SenderInconsistencyException(
                     errorCause, edxlMessage.getDistributionID(), recipientId, messageType);
         }
+    }
+
+    private static String extractDomainPrefix(String id) {
+        String[] segments = id.split("\\.", 3);
+        if (segments.length < 2) {
+            return id;
+        }
+        return segments[0] + "." + segments[1];
     }
 
     public static void checkHealthActorIsInvolved(EdxlMessage edxlMessage) {
