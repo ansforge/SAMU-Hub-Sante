@@ -51,3 +51,5 @@ certs/
 
 # Environment variables
 .envrc
+
+dist/

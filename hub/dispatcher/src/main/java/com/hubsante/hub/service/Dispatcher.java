@@ -27,7 +27,6 @@ import com.hubsante.hub.config.HubConfiguration;
 import com.hubsante.hub.config.LogConstants;
 import com.hubsante.hub.config.StructuredLogger;
 import com.hubsante.hub.exception.*;
-import com.hubsante.hub.utils.ConversionRulesCommand;
 import com.hubsante.hub.utils.ConversionUtils;
 import com.hubsante.hub.utils.EdxlUtils;
 import com.hubsante.hub.utils.MessagePersistencePolicy;
@@ -37,6 +36,8 @@ import com.hubsante.model.edxl.EdxlMessage;
 import com.hubsante.model.report.Error;
 import com.hubsante.model.report.ErrorCode;
 import io.micrometer.core.annotation.Timed;
+import io.micrometer.tracing.Span;
+import io.micrometer.tracing.Tracer;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -86,6 +87,7 @@ public class Dispatcher {
     private final HubConfiguration hubConfig;
     private final MessagePersistenceService persistenceService;
     private static final StructuredLogger structuredLog = new StructuredLogger(log);
+    private final Tracer tracer;
 
     public Dispatcher(
             MessageHandler messageHandler,
@@ -95,7 +97,8 @@ public class Dispatcher {
             ObjectMapper jsonMapper,
             ConversionHandler conversionHandler,
             HubConfiguration hubConfig,
-            MessagePersistenceService persistenceService) {
+            MessagePersistenceService persistenceService,
+            Tracer tracer) {
         this.messageHandler = messageHandler;
         this.rabbitTemplate = rabbitTemplate;
         this.edxlHandler = edxlHandler;
@@ -104,7 +107,23 @@ public class Dispatcher {
         this.conversionHandler = conversionHandler;
         this.hubConfig = hubConfig;
         this.persistenceService = persistenceService;
+        this.tracer = tracer;
         initReturnsCallback();
+    }
+
+    private void tagCurrentSpan(Message amqpMessage, EdxlMessage edxlMessage) {
+        Span currentSpan = tracer.currentSpan();
+        if (currentSpan == null) {
+            return;
+        }
+        String sender = getSenderFromRoutingKey(amqpMessage);
+        currentSpan.tag(SENDER_SPAN_TAG, sender);
+        currentSpan.tag(RECIPIENT_SPAN_TAG, MessageUtils.getRecipientID(edxlMessage));
+        currentSpan.tag(
+                USE_CASE_SPAN_TAG,
+                EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage()));
+        currentSpan.tag(
+                EDITOR_SPAN_TAG, hubConfig.getClientPropertiesRegistry().getClientEditor(sender));
     }
 
     public void initReturnsCallback() {
@@ -199,6 +218,7 @@ public class Dispatcher {
             setOriginalRoutingKeyHeader(message);
             // Deserialize the message according to its content type
             EdxlMessage edxlMessage = messageHandler.extractMessage(message);
+            tagCurrentSpan(message, edxlMessage);
             // check message type is allowed on the current vhost
             checkMessageClassNameSupported(edxlMessage, hubConfig);
             // check message is allowed for its recipient
@@ -220,13 +240,13 @@ public class Dispatcher {
                 checkDistributionIDFormat(edxlMessage);
             }
 
-            boolean isCisuConversion =
-                    ConversionUtils.requiresCisuConversion(hubConfig, edxlMessage);
-            boolean isVersionConversion =
-                    ConversionUtils.requiresVersionConversion(hubConfig, edxlMessage);
+            ConversionUtils.ConversionParametersDTO conversionParameters =
+                    ConversionUtils.resolveConversionParameters(hubConfig, edxlMessage);
+            boolean isConversionNeeded = conversionParameters != null;
 
-            if (isCisuConversion || isVersionConversion) {
-                if (isCisuConversion) {
+            if (isConversionNeeded) {
+                if (conversionParameters.conversionType()
+                        == ConversionUtils.ConversionType.CISU_TRANSCODING) {
                     String useCase =
                             EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage());
                     // Persist before conversion so the original message is saved even if conversion
@@ -235,13 +255,11 @@ public class Dispatcher {
                         persistenceService.persist(edxlMessage);
                     }
                 }
-
-                ConversionRulesCommand conversionRulesCommand =
-                        new ConversionRulesCommand(edxlMessage, hubConfig);
                 List<String> convertedMessages =
-                        conversionHandler.applyConversionRules(conversionRulesCommand);
+                        conversionHandler.applyConversionRules(conversionParameters);
                 for (String convertedMessage : convertedMessages) {
-                    sendToTransferExchange(convertedMessage, message, conversionRulesCommand);
+                    sendToTransferExchange(
+                            convertedMessage, message, conversionParameters.targetVhost());
                 }
                 String recipientId = MessageUtils.getRecipientID(edxlMessage);
                 String messageType =
@@ -293,15 +311,11 @@ public class Dispatcher {
     }
 
     public void sendToTransferExchange(
-            String convertedMessage,
-            Message message,
-            ConversionRulesCommand conversionRulesCommand) {
+            String convertedMessage, Message message, String targetVhost) {
         Message forwardedMsg = messageHandler.forwardedStringMessage(convertedMessage, message);
 
         String transferExchangeName =
-                ConversionUtils.buildExchangeDestination(
-                        conversionRulesCommand.getSourceVHost(),
-                        conversionRulesCommand.getTargetVHost());
+                ConversionUtils.buildTransferExchangeName(hubConfig.getVhost(), targetVhost);
 
         String routingKey = message.getMessageProperties().getReceivedRoutingKey();
         String distributionId = extractDistributionId(stringifyBody(message));
@@ -334,6 +348,7 @@ public class Dispatcher {
                 return;
             }
             EdxlMessage edxlMessage = messageHandler.extractMessage(message);
+            tagCurrentSpan(message, edxlMessage);
             // log message & error
             String errorCause =
                     "Message "

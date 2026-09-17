@@ -3,3 +3,5 @@ spring:
     virtual-host: 15-nexsis_v1.9
   dispatcher:
     vhost: 15-nexsis_v1.9
+server:
+  port: 8082

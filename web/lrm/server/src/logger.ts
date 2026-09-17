@@ -22,6 +22,8 @@ type MessageLogsMetadata = {
     messageType?: string
 }
 
+// TODO: use correct typing for edxl message
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const getMessageType = (message: any): string | undefined => {
     const messageContent = message?.content?.[0]?.jsonContent?.embeddedJsonContent?.message ?? {};
     const excludedKeys = ["messageId", "sender", "sentAt", "kind", "status", "recipient"];
@@ -33,6 +35,8 @@ const getMessageType = (message: any): string | undefined => {
 
 }
 
+// TODO: use correct typing for edxl message
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const getMessageLogsMetadata = (message: any): MessageLogsMetadata => {
     if (!message) return {};
     const distributionId = message.distributionID;

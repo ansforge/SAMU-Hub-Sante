@@ -3,3 +3,5 @@ spring:
     virtual-host: 15-15_v2.1
   dispatcher:
     vhost: 15-15_v2.1
+server:
+  port: 8080

@@ -1,11 +1,59 @@
+def INTEGRATION_TAG = 'integration'
+
+tasks.named('test') {
+    description = 'Runs the unit tests'
+    useJUnitPlatform {
+        excludeTags INTEGRATION_TAG
+    }
+    testLogging {
+        events 'failed', 'skipped'
+    }
+}
+
+tasks.register('integrationTest', Test) {
+    description = 'Runs the Testcontainers-backed tests. Requires a Docker daemon.'
+    group = 'verification'
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+    useJUnitPlatform {
+        includeTags INTEGRATION_TAG
+    }
+    testLogging {
+        events 'failed', 'skipped'
+    }
+    shouldRunAfter tasks.named('test')
+}
+
 jacocoTestReport {
+    executionData tasks.withType(Test)
     reports {
         html.required = true
         xml.required = true
     }
 }
 
-tasks.named('test') {
-    useJUnitPlatform()
+tasks.withType(Test).configureEach {
     finalizedBy jacocoTestReport
+}
+
+jacocoTestCoverageVerification {
+    dependsOn tasks.named('test'), tasks.named('integrationTest')
+    executionData tasks.withType(Test)
+
+    violationRules {
+        rule {
+            limit {
+                counter = 'LINE'
+                minimum = 0.80
+            }
+            limit {
+                counter = 'BRANCH'
+                minimum = 0.80
+            }
+        }
+    }
+}
+
+tasks.named('check') {
+    dependsOn tasks.named('jacocoTestCoverageVerification')
 }
