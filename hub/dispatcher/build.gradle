@@ -102,8 +102,8 @@ dependencies {
     // transitive of spring-boot-starter-test, declared because the tests import it directly
     testImplementation 'org.awaitility:awaitility'
 
-    testImplementation 'org.testcontainers:junit-jupiter'
-    testImplementation 'org.testcontainers:rabbitmq'
+    testImplementation 'org.testcontainers:testcontainers-junit-jupiter'
+    testImplementation 'org.testcontainers:testcontainers-rabbitmq'
 
     testImplementation "de.flapdoodle.embed:de.flapdoodle.embed.mongo.spring4x:${libs.versions.embedMongo.get()}"
 
