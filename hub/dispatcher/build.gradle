@@ -79,11 +79,11 @@ dependencies {
 
     // ===== Observabilité =====
     runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
+    implementation 'org.springframework.boot:spring-boot-starter-opentelemetry'
 
     // ===== JSON / XML / CSV =====
     implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-xml"
     implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310"
-    implementation "com.networknt:json-schema-validator:${libs.versions.jsonSchemaValidator.get()}"
     implementation "net.logstash.logback:logstash-logback-encoder:${libs.versions.logstashEncoder.get()}"
     implementation "com.univocity:univocity-parsers:${libs.versions.univocityParsers.get()}"
     implementation "org.codehaus.groovy:groovy-json:${libs.versions.groovyJson.get()}"
@@ -99,6 +99,8 @@ dependencies {
     // ===== Tests =====
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.amqp:spring-rabbit-test'
+    // transitive of spring-boot-starter-test, declared because the tests import it directly
+    testImplementation 'org.awaitility:awaitility'
 
     testImplementation 'org.testcontainers:junit-jupiter'
     testImplementation 'org.testcontainers:rabbitmq'

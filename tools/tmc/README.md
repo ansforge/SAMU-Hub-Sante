@@ -28,7 +28,7 @@ Chaque virtual user envoie deux messages successifs avec une pause intermédiair
 | Simulation | Vhost | Direction | 1er message | 2e message (après pause) |
 |---|---|---|---|---|
 | `SamuNexsisRsSimulation` | `15-15_v2.1` | SAMU→NexSIS | RS-RI (nouveau caseId) → Dispatcher persiste | RS-SR (même caseId) → Converter lit le RS-RI en DB et convertit en RC-RI |
-| `SamuNexsisRcRiSimulation` | `15-nexsis_v1.9` | NexSIS→SAMU | RC-RI (nouveau caseId) → Dispatcher persiste | RC-RI (même caseId) → Converter lit en DB, calcule le diff, retourne RS-SR |
+| `SamuNexsisRcRiSimulation` | `15-nexsis_vactive` | NexSIS→SAMU | RC-RI (nouveau caseId) → Dispatcher persiste | RC-RI (même caseId) → Converter lit en DB, calcule le diff, retourne RS-SR |
 
 ## Variables d'environnement
 
