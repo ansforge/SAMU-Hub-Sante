@@ -129,9 +129,16 @@ export function setCaseId(message, caseId, localCaseId) {
 export function buildAck({
   distributionID,
   senderID,
+  vhost,
   refused = false,
   errorDistributionID = null,
 }) {
+  const store = useMainStore();
+  const modelVersion = store.vhostMap.find(
+    (v) => v.vhost === vhost
+  )?.modelVersion;
+  const isV3Model = /^3\./.test(modelVersion);
+
   return buildMessage(
     {
       reference: {
@@ -140,6 +147,7 @@ export function buildAck({
         ...(errorDistributionID && {
           errorDistributionID,
         }),
+        ...(isV3Model && { step: refused ? 'ERREUR' : 'INTEGRE' }),
       },
     },
     { distributionKind: 'Ack', recipientId: senderID }

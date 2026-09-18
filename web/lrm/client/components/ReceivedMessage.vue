@@ -267,6 +267,7 @@ const sendAck = (refused = false) => {
     const msg = buildAck({
       distributionID,
       senderID,
+      vhost: props.vhost,
       refused,
       errorDistributionID,
     });
