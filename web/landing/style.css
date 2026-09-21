@@ -124,6 +124,14 @@ html {
 }
  
  /* Tableau des éditeurs */
+#table-editeurs-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.6rem;
+  align-items: center;
+  margin-top: 0.4rem;
+  font-size: 0.85em;
+}
 
 #table-editeurs td {
   padding-left: 0.8rem;
@@ -132,29 +140,107 @@ html {
 }
 
 /* Tests ANS validés */
-#table-editeurs .test {
+#table-editeurs .test,
+#table-editeurs-legend .test {
   text-align: center;
   background-color: #FFF2F9;
-  padding: 2px 6px; 
+  padding: 2px 6px;
   border-radius: 3px;
 }
 
 /* En production */
-#table-editeurs .active {
+#table-editeurs .active,
+#table-editeurs-legend .active {
   text-align: center;
   background-color: #f0f6e4 !important;
-  padding: 2px 6px; 
+  padding: 2px 6px;
   border-radius: 3px;
 }
 
 /* En développement */
-#table-editeurs .dev {
+#table-editeurs .dev,
+#table-editeurs-legend .dev {
   text-align: center;
   background-color: #fdf3e3 !important;
-  padding: 2px 6px; 
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+/* Tests bout en bout validés */
+#table-editeurs .test-e2e,
+#table-editeurs-legend .test-e2e {
+  text-align: center;
+  background-color: #EAF3FB;
+  padding: 2px 6px;
   border-radius: 3px;
 }
 
 #table-editeurs tbody tr:last-child td:first-child {
     border-radius: inherit !important;
+}
+
+/* Icônes de statut */
+#table-editeurs .dev::before,
+#table-editeurs-legend .dev::before,
+#table-editeurs .test::before,
+#table-editeurs-legend .test::before,
+#table-editeurs .test-e2e::before,
+#table-editeurs-legend .test-e2e::before,
+#table-editeurs .active::before,
+#table-editeurs-legend .active::before {
+  content: "";
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  vertical-align: middle;
+  margin-right: 4px;
+  background-color: currentColor;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}
+
+#table-editeurs .dev::before,
+#table-editeurs-legend .dev::before {
+  -webkit-mask-image: url("/svg-icons/sprite/time.svg");
+  mask-image: url("/svg-icons/sprite/time.svg");
+}
+
+#table-editeurs .test::before,
+#table-editeurs-legend .test::before {
+  -webkit-mask-image: url("/svg-icons/sprite/play.svg");
+  mask-image: url("/svg-icons/sprite/play.svg");
+}
+
+#table-editeurs .test-e2e::before,
+#table-editeurs-legend .test-e2e::before {
+  color: #1D71B8;
+  -webkit-mask-image: url("/svg-icons/sprite/circle-check.svg");
+  mask-image: url("/svg-icons/sprite/circle-check.svg");
+}
+
+#table-editeurs .active::before,
+#table-editeurs-legend .active::before {
+  color: #368E6E;
+  -webkit-mask-image: url("/svg-icons/sprite/valid.svg");
+  mask-image: url("/svg-icons/sprite/valid.svg");
+}
+
+/* Flèches entre les statuts de la légende */
+#table-editeurs-legend .legend-arrow {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  background-color: #969cbb;
+  -webkit-mask-image: url("/svg-icons/sprite/arrow-right.svg");
+  mask-image: url("/svg-icons/sprite/arrow-right.svg");
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
 }
