@@ -1,6 +1,7 @@
 package tnr;
 
 import java.io.IOException;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -8,15 +9,16 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Predicate;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static tnr.Constants.TLS_PROTOCOL_VERSION;
+import static tnr.TestConstants.RECEIVE_TIMEOUT_SECS;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,15 +39,14 @@ abstract class AMQPTestSupport {
             "15-15_v1.5", List.of("fr.health.tnr.samu1-v1", "fr.health.tnr.samu2-v1"),
             "15-15_v2.0", List.of("fr.health.tnr.samu1-v2", "fr.health.tnr.samu2-v2"),
             "15-15_v2.1", List.of("fr.health.tnr.samu1-v3", "fr.health.tnr.samu2-v3"),
-            "15-nexsis_v1.9", List.of("fr.health.fire", "fr.health.tnr.samu2-v3")
+            "15-nexsis_v1.9", List.of("fr.health.tnr.samu2-v3"),
+            "15-nexsis_vactive", List.of("fr.health.fire")
     ));
 
     protected static final String BASE_URL = "https://raw.githubusercontent.com/ansforge/SAMU-Hub-Modeles/refs/tags";
 
     protected Map<String, Producer> producers = new HashMap<>();
     protected Collection<TestConsumer> consumers = new ArrayList<>();
-
-    protected static final int RECEIVE_TIMEOUT_SECS = 10;
 
     protected Dotenv dotenv = Dotenv.configure().ignoreIfMissing().load();
 
@@ -110,8 +111,16 @@ abstract class AMQPTestSupport {
         return httpClient.fetch(refUrl);
     }
 
-    protected MessageDTO awaitMessage(String distributionId) throws Exception {
-        return inbox.awaitMessage(distributionId, RECEIVE_TIMEOUT_SECS, TimeUnit.SECONDS);
+    protected MessageDTO awaitMessageByDistributionId(String distributionId) throws Exception {
+        return inbox.awaitMessageByDistributionId(distributionId, RECEIVE_TIMEOUT_SECS, TimeUnit.SECONDS);
+    }
+
+    protected MessageDTO awaitMessageOfType(MessageType messageType) throws Exception {
+        return inbox.awaitMessageOfType(messageType, RECEIVE_TIMEOUT_SECS, TimeUnit.SECONDS);
+    }
+
+    protected void assertNoMessageReceived(Predicate<MessageDTO> scope) throws Exception {
+        inbox.assertNoPendingMessages(scope, 3, TimeUnit.SECONDS);
     }
 
     protected void send(String vhost, String routingKey, String message) throws Exception {
@@ -158,7 +167,7 @@ abstract class AMQPTestSupport {
 
     static class MessageCollector {
 
-        private final ConcurrentHashMap<String, CompletableFuture<MessageDTO>> pending = new ConcurrentHashMap<>();
+        private final List<Map.Entry<Predicate<MessageDTO>, CompletableFuture<MessageDTO>>> pending = new ArrayList<>();
         private final List<MessageDTO> buffer = new ArrayList<>();
         private final ReentrantLock lock = new ReentrantLock();
         ObjectMapper mapper = new ObjectMapper();
@@ -166,9 +175,9 @@ abstract class AMQPTestSupport {
         void add(MessageDTO delivery) {
             lock.lock();
             try {
-                for (Iterator<Map.Entry<String, CompletableFuture<MessageDTO>>> it = pending.entrySet().iterator(); it.hasNext();) {
-                    Map.Entry<String, CompletableFuture<MessageDTO>> entry = it.next();
-                    if (delivery.getDistributionId().equals(entry.getKey())) {
+                for (Iterator<Map.Entry<Predicate<MessageDTO>, CompletableFuture<MessageDTO>>> it = pending.iterator(); it.hasNext();) {
+                    Map.Entry<Predicate<MessageDTO>, CompletableFuture<MessageDTO>> entry = it.next();
+                    if (entry.getKey().test(delivery)) {
                         it.remove();
                         entry.getValue().complete(delivery);
                         return;
@@ -182,19 +191,19 @@ abstract class AMQPTestSupport {
             }
         }
 
-        MessageDTO awaitMessage(String distributionId, long timeout, TimeUnit unit) throws Exception {
+        private MessageDTO awaitMatching(Predicate<MessageDTO> matcher, long timeout, TimeUnit unit) throws Exception {
             CompletableFuture<MessageDTO> future;
             lock.lock();
             try {
                 for (Iterator<MessageDTO> it = buffer.iterator(); it.hasNext();) {
                     MessageDTO message = it.next();
-                    if (message.getDistributionId().equals(distributionId)) {
+                    if (matcher.test(message)) {
                         it.remove();
                         return message;
                     }
                 }
                 future = new CompletableFuture<>();
-                pending.put(distributionId, future);
+                pending.add(new AbstractMap.SimpleEntry<>(matcher, future));
             } finally {
                 lock.unlock();
             }
@@ -203,12 +212,57 @@ abstract class AMQPTestSupport {
             } catch (TimeoutException e) {
                 lock.lock();
                 try {
-                    pending.remove(distributionId, future);
+                    pending.removeIf(entry -> entry.getValue() == future);
                 } finally {
                     lock.unlock();
                 }
-                logger.error("Could not receive message that matched " + distributionId);
                 throw e;
+            }
+        }
+
+        MessageDTO awaitMessageByDistributionId(String distributionId, long timeout, TimeUnit unit) throws Exception {
+            try {
+                return awaitMatching(msg -> msg.getDistributionId().equals(distributionId), timeout, unit);
+            } catch (TimeoutException e) {
+                logger.error("Could not receive message that matched distributionId: " + distributionId);
+                throw e;
+            }
+        }
+
+        MessageDTO awaitMessageOfType(MessageType messageType, long timeout, TimeUnit unit) throws Exception {
+            try {
+                return awaitMatching(msg -> Utils.isMessageOfType(msg, messageType), timeout, unit);
+            } catch (TimeoutException e) {
+                logger.error("Could not receive message of type: " + messageType);
+                throw new TimeoutException("No message of type '" + messageType + "' received within timeout");
+            }
+        }
+
+        void assertNoPendingMessages(Predicate<MessageDTO> scope, long timeout, TimeUnit unit) throws Exception {
+            CompletableFuture<MessageDTO> anyMessage = new CompletableFuture<>();
+            lock.lock();
+            try {
+                if (buffer.stream().anyMatch(scope)) {
+                    throw new AssertionError(
+                            "Expected no message but received one with distributionId: "
+                                    + buffer.stream().filter(scope).findFirst().get().getDistributionId());
+                }
+                pending.add(new AbstractMap.SimpleEntry<>(scope, anyMessage));
+            } finally {
+                lock.unlock();
+            }
+            try {
+                MessageDTO unexpected = anyMessage.get(timeout, unit);
+                throw new AssertionError(
+                        "Expected no message but received: " + unexpected.getDistributionId());
+            } catch (TimeoutException e) {
+                // Good — no message arrived within the timeout
+                lock.lock();
+                try {
+                    pending.removeIf(entry -> entry.getValue() == anyMessage);
+                } finally {
+                    lock.unlock();
+                }
             }
         }
 
@@ -216,8 +270,8 @@ abstract class AMQPTestSupport {
             lock.lock();
             try {
                 buffer.clear();
-                for (CompletableFuture<MessageDTO> f : pending.values()) {
-                    f.cancel(false);
+                for (Map.Entry<Predicate<MessageDTO>, CompletableFuture<MessageDTO>> entry : pending) {
+                    entry.getValue().cancel(false);
                 }
                 pending.clear();
             } finally {

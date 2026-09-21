@@ -6,7 +6,7 @@ import { WebSocketServer } from 'ws';
 
 const mockConsume = vi.fn();
 const mockChannel = new EventEmitter();
-// @ts-expect-error
+// @ts-expect-error EventEmitter is used as a stand-in for an amqplib Channel
 mockChannel.consume = mockConsume;
 const mockConnection = {
   createChannel: vi.fn((callback) => {
@@ -23,7 +23,7 @@ const mockConnect = vi.fn((_: any, callback: any) => {
 // Mock RabbitMQConnector
 vi.mock('../rabbit/utils', () => {
   return {
-    RabbitMQConnector: vi.fn().mockImplementation(() => {
+    RabbitMQConnector: vi.fn().mockImplementation(function () {
       return {
         connect: mockConnect,
         close: vi.fn(),

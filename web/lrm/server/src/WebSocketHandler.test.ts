@@ -26,7 +26,7 @@ afterEach(async () => {
 
 // Mock RabbitMQConnector
 const mockPublish = vi.fn();
-const mockConnectAsync = vi.fn(async (vhost: string) => {
+const mockConnectAsync = vi.fn(async (_vhost: string) => {
   const channel = {
     publish: mockPublish,
     on: vi.fn(),
@@ -39,7 +39,7 @@ const mockConnectAsync = vi.fn(async (vhost: string) => {
 });
 vi.mock('./rabbit/utils', () => {
   return {
-    RabbitMQConnector: vi.fn().mockImplementation(() => {
+    RabbitMQConnector: vi.fn().mockImplementation(function () {
       return {
         connectAsync: mockConnectAsync,
         close: vi.fn(),
@@ -50,7 +50,7 @@ vi.mock('./rabbit/utils', () => {
 
 vi.mock('ws', () => {
   return {
-    WebSocket: vi.fn().mockImplementation(() => {
+    WebSocket: vi.fn().mockImplementation(function () {
       return new EventEmitter();
     }),
   };
