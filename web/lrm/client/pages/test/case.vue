@@ -531,8 +531,9 @@ function validateMessage(index, ack) {
           const msg = buildAck({
             distributionID: message.body.distributionID,
             senderID: message.body.senderID,
+            vhost: message.vhost,
           });
-          sendMessage(msg);
+          sendMessage(msg, message.vhost);
         }
       }
     } else if (
