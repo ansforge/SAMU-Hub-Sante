@@ -2,6 +2,10 @@
     margin-right: 30px;
 }
 
+.gap-2 {
+    gap: 2rem;
+}
+
 /* Fixing anchor links behind header |
    Ref.: https://gomakethings.com/how-to-prevent-anchor-links-from-scrolling-behind-a-sticky-header-with-one-line-of-css
 */
