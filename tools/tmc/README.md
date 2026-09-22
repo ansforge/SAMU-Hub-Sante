@@ -88,10 +88,14 @@ Lancer une simulation individuelle :
 ./gradlew gatlingRun --simulation loadtesting.simulations.<NOM_DE_LA_SIMULATION>
 ```
 
+> ⚠️ **Point de vigilance Gradle 9** : la tâche `gatlingRecorder` du plugin `io.gatling.gradle` (3.13.5) est cassée sous Gradle 9 (elle référence une propriété `reportsDir` fournie par l'ancienne Convention API, supprimée en 9.0). Elle n'est pas utilisée par ce projet, mais toute commande qui force l'évaluation de toutes les tâches (ex. `./gradlew tasks`) échouera à cause d'elle. Sans impact sur `gatlingRun` / `gatlingRunAllParallel`.
+>
+> `gatlingRunAllParallel` (tâche maison de ce build) utilise le service injecté `ExecOperations` pour forker ses process — `Project#javaexec(Closure)`, utilisé auparavant, a été retiré en Gradle 9.0. En cas de modification de cette tâche, ne pas revenir à un appel direct à `javaexec { ... }` dans le `doLast`.
+
 ## Architecture technique
 
 Sur Confluence sont disponibles [l'expression de besoin](https://ans-esante.atlassian.net/wiki/spaces/HUB/pages/1256292572/Expression+de+besoin) et la [stratégie technique](https://ans-esante.atlassian.net/wiki/spaces/HUB/pages/1257865233/Strat+gie+Technique) retenue pour l'implémentation des tests de montée en charge sur le Hub Santé.
 
 Le document de stratégie technique contient notamment un ADR sur le choix de Gatling par rapport aux autres offres disponibles sur le marché.
 
-Note : la version de Gatling utilisée ici est la `3.11.3`. Il s'agit de la version la plus récente utilisable avec le plugin [gatling-amqp](https://github.com/galax-io/gatling-amqp-plugin).
+Note : la version de Gatling utilisée ici est la `3.13.5`. Il s'agit de la version requise par le plugin [gatling-amqp](https://github.com/galax-io/gatling-amqp-plugin) en version `1.2.10`.

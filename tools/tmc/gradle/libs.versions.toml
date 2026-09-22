@@ -1,8 +1,8 @@
 [versions]
-gatlingPlugin = "3.11.3"
+gatlingPlugin = "3.13.5"
 jibPlugin = "3.5.1"
 models = "3.4.1"
-gatlingAmqpPlugin = "0.14.0"
+gatlingAmqpPlugin = "1.2.10"
 dotenvJava = "3.2.0"
 commonsIo = "2.15.1"
 sshd = "2.12.1"
