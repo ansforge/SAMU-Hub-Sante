@@ -33,10 +33,7 @@ export function SchemaFields({
       key={expandSignal.key}
       multiple
       defaultValue={expandSignal.expand ? names : []}
-      className={cn(
-        "flex w-full flex-col",
-        depth === 0 ? "gap-2" : "divide-y divide-border/60",
-      )}
+      className={cn("flex w-full flex-col gap-1")}
     >
       {Object.entries(properties).map(([name, prop]) => {
         const nested = nestedFields(prop, definitions);
@@ -44,7 +41,7 @@ export function SchemaFields({
         const fieldPath = [...path, name];
 
         const row = (
-          <div className="flex flex-col gap-1 py-2.5">
+          <div className="flex flex-col gap-1 rounded-md py-2.5 my-1">
             <FieldHeader
               definitions={definitions}
               name={name}
@@ -60,8 +57,12 @@ export function SchemaFields({
         if (!nested) {
           return (
             <div
+              id={fieldPath.join(".")}
               key={name}
-              className={cn(depth === 0 && "border-b border-border/60 px-1")}
+              className={cn(
+                depth === 0 && "border-b border-border/60 px-1",
+                "p-1 m-1 scroll-mt-8 target:bg-muted target:rounded-lg target:ring-2 target:ring-ring/40 transition-colors duration-300",
+              )}
             >
               {row}
             </div>
@@ -70,24 +71,25 @@ export function SchemaFields({
 
         return (
           <AccordionPrimitive.Item
+            id={fieldPath.join(".")}
             key={name}
             value={name}
             className={cn(
-              depth === 0 &&
-                "rounded-lg border border-border/70 bg-card/40 px-3",
+              depth === 0 && "border border-border/70 bg-card/40",
+              "scroll-mt-8 target:bg-muted target:ring-2 target:ring-ring/40 transition-colors duration-300 rounded border",
             )}
           >
             <AccordionPrimitive.Header className="flex">
-              <AccordionPrimitive.Trigger className="group/trigger flex flex-1 items-start justify-between gap-2 rounded-md px-1 text-left outline-none hover:bg-muted/40 focus-visible:ring-2 focus-visible:ring-ring/50">
+              <AccordionPrimitive.Trigger className="group/trigger flex flex-1 items-start justify-between gap-2 rounded-md px-2 text-left outline-none hover:bg-muted/40 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring/50">
                 {row}
                 <ChevronDownIcon className="mt-3 size-3.5 shrink-0 text-muted-foreground/50 transition-transform duration-150 group-aria-expanded/trigger:rotate-180" />
               </AccordionPrimitive.Trigger>
             </AccordionPrimitive.Header>
-            <AccordionPrimitive.Panel className="overflow-hidden text-sm data-open:animate-accordion-down data-closed:animate-accordion-up">
+            <AccordionPrimitive.Panel className="overflow-hidden p-1 text-sm data-open:animate-accordion-down data-closed:animate-accordion-up">
               <div className="h-(--accordion-panel-height) data-ending-style:h-0 data-starting-style:h-0">
                 <div
                   className={cn(
-                    "ml-3 border-l border-border/50 pl-4",
+                    "ml-3 border-border/50 pl-4",
                     depth === 0 ? "mt-1 mb-2" : "mb-1",
                   )}
                 >

@@ -1,13 +1,12 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { NomenclatureDrawer } from "@/components/nomenclature-drawer";
 import type { JsonSchemaDocument } from "@/types";
 import { FieldLegend } from "./field-legend";
 import { SchemaFields } from "./schema-fields";
-import type { ExpandSignal } from "./schema-utils";
 import { buildGithubSchemaUrl } from "@/lib/utils";
 import { githubDomain } from "@/config";
+import { useSchemaStore } from "@/store/schema-store";
 import SourceLink from "../source-link";
 
 type SchemaDetailProps = {
@@ -17,10 +16,8 @@ type SchemaDetailProps = {
 };
 
 export function SchemaDetail({ schema, schemaName, ref }: SchemaDetailProps) {
-  const [expandSignal, setExpandSignal] = useState<ExpandSignal>({
-    key: 0,
-    expand: false,
-  });
+  const expandSignal = useSchemaStore((s) => s.expandSignal);
+  const toggleExpandAll = useSchemaStore((s) => s.toggleExpandAll);
 
   const properties = schema.properties ?? {};
   const hasProperties = Object.keys(properties).length > 0;
@@ -54,12 +51,7 @@ export function SchemaDetail({ schema, schemaName, ref }: SchemaDetailProps) {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() =>
-                    setExpandSignal((s) => ({
-                      key: s.key + 1,
-                      expand: !s.expand,
-                    }))
-                  }
+                  onClick={toggleExpandAll}
                 >
                   {expandSignal.expand ? "Tout replier" : "Tout déplier"}
                 </Button>
