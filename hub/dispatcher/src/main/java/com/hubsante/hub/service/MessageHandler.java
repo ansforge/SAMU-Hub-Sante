@@ -31,7 +31,6 @@ import com.hubsante.hub.config.HubConfiguration;
 import com.hubsante.hub.config.LogConstants;
 import com.hubsante.hub.config.StructuredLogger;
 import com.hubsante.hub.exception.*;
-import com.hubsante.hub.utils.ConversionRulesCommand;
 import com.hubsante.hub.utils.ConversionUtils;
 import com.hubsante.hub.utils.EdxlUtils;
 import com.hubsante.model.EdxlHandler;
@@ -86,7 +85,6 @@ public class MessageHandler {
             MeterRegistry registry,
             XmlMapper xmlMapper,
             ObjectMapper jsonMapper,
-            ClientPropertiesRegistry clientPropertiesRegistry,
             ConversionHandler conversionHandler) {
         this.rabbitTemplate = rabbitTemplate;
         this.edxlHandler = edxlHandler;
@@ -96,10 +94,6 @@ public class MessageHandler {
         this.xmlMapper = xmlMapper;
         this.jsonMapper = jsonMapper;
         this.conversionHandler = conversionHandler;
-    }
-
-    public HubConfiguration getHubConfig() {
-        return hubConfig;
     }
 
     protected void handleError(AbstractHubException exception, Message message) {
@@ -215,14 +209,14 @@ public class MessageHandler {
                                         .setContentType(MessageProperties.CONTENT_TYPE_JSON)
                                         .build());
 
-                boolean isVersionConversion =
-                        ConversionUtils.requiresVersionConversion(hubConfig, errorEdxlMessage);
+                ConversionUtils.ConversionParametersDTO conversionParameters =
+                        ConversionUtils.resolveConversionParameters(hubConfig, errorEdxlMessage);
 
-                if (isVersionConversion) {
-                    ConversionRulesCommand conversionRulesCommand =
-                            new ConversionRulesCommand(errorEdxlMessage, hubConfig);
+                if (conversionParameters != null
+                        && conversionParameters.conversionType()
+                                == ConversionUtils.ConversionType.HEALTH_VERSION_CONVERSION) {
                     List<String> convertedMessages =
-                            conversionHandler.applyConversionRules(conversionRulesCommand);
+                            conversionHandler.applyConversionRules(conversionParameters);
                     if (convertedMessages.size() > 1) {
                         structuredLog.info(
                                 "convertedMessages has more than one message: %s",
@@ -235,9 +229,8 @@ public class MessageHandler {
                     errorAmqpMessage =
                             forwardedStringMessage(convertedMessages.getFirst(), errorAmqpMessage);
                     destinationExchange =
-                            ConversionUtils.buildExchangeDestination(
-                                    conversionRulesCommand.getSourceVHost(),
-                                    conversionRulesCommand.getTargetVHost());
+                            ConversionUtils.buildTransferExchangeName(
+                                    hubConfig.getVhost(), conversionParameters.targetVhost());
                     routingKey = HUB_ID;
                     structuredLog.info(
                             String.format(

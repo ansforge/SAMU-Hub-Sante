@@ -1,0 +1,7 @@
+spring:
+  rabbitmq:
+    virtual-host: 15-nexsis_vactive
+  dispatcher:
+    vhost: 15-nexsis_vactive
+server:
+  port: 8085
