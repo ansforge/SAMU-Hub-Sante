@@ -8,32 +8,19 @@ import { SchemaFields } from "./schema-fields";
 import type { ExpandSignal } from "./schema-utils";
 import { buildGithubSchemaUrl } from "@/lib/utils";
 import { githubDomain } from "@/config";
-import { getRouteApi } from "@tanstack/react-router";
-import { ExternalLinkIcon } from "lucide-react";
 import SourceLink from "../source-link";
 
 type SchemaDetailProps = {
-  schema?: JsonSchemaDocument;
+  schema: JsonSchemaDocument;
+  schemaName: string;
+  ref: string;
 };
 
-const schemaRouteApi = getRouteApi("/$schemaName");
-const rootRouteApi = getRouteApi("__root__");
-
-export function SchemaDetail({ schema }: SchemaDetailProps) {
-  const { schemaName } = schemaRouteApi.useParams();
-  const { ref } = rootRouteApi.useSearch();
+export function SchemaDetail({ schema, schemaName, ref }: SchemaDetailProps) {
   const [expandSignal, setExpandSignal] = useState<ExpandSignal>({
     key: 0,
     expand: false,
   });
-
-  if (!schema) {
-    return (
-      <div className="flex flex-1 items-center justify-center text-muted-foreground">
-        Sélectionnez un schéma pour voir ses détails.
-      </div>
-    );
-  }
 
   const properties = schema.properties ?? {};
   const hasProperties = Object.keys(properties).length > 0;

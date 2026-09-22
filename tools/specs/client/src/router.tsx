@@ -148,17 +148,19 @@ function RootError({ error, reset }: { error: unknown; reset: () => void }) {
 
 function Home() {
   return (
-    <div className="flex flex-1 flex-col">
-      <SchemaDetail />
+    <div className="flex flex-1 items-center justify-center text-muted-foreground">
+      Sélectionnez un schéma pour voir ses détails.
     </div>
   );
 }
 
 function SchemaPage() {
   const schema = schemaRoute.useLoaderData();
+  const { schemaName } = schemaRoute.useParams();
+  const { ref } = rootRoute.useSearch();
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <SchemaDetail schema={schema} />
+      <SchemaDetail schema={schema} schemaName={schemaName} ref={ref} />
     </div>
   );
 }
