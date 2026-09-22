@@ -152,7 +152,7 @@ html {
 #table-editeurs .active,
 #table-editeurs-legend .active {
   text-align: center;
-  background-color: #f0f6e4 !important;
+  background-color: #E3F4EC !important;
   padding: 2px 6px;
   border-radius: 3px;
 }
@@ -170,7 +170,7 @@ html {
 #table-editeurs .test-e2e,
 #table-editeurs-legend .test-e2e {
   text-align: center;
-  background-color: #EAF3FB;
+  background-color: #E0F2FE !important;
   padding: 2px 6px;
   border-radius: 3px;
 }
