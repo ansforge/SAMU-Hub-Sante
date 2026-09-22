@@ -94,6 +94,7 @@ tasks.register("gatlingRunAllParallel") {
                     javaexec {
                         classpath files(gatlingCpFiles)
                         mainClass = "io.gatling.app.Gatling"
+                        jvmArgs = project.gatling.jvmArgs
                         args = ["-s", simulation, "-rf", reportDir.absolutePath]
                     }
                 } catch (Throwable t) {
