@@ -19,7 +19,7 @@ public class SamuNexsisRcRiSimulation extends Simulation {
 
     private static final Logger log = LoggerFactory.getLogger(SamuNexsisRcRiSimulation.class);
 
-    private static final String VHOST = "15-nexsis_v1.9";
+    private static final String VHOST = "15-nexsis_vactive";
     private static final String SENDER_ID = "fr.fire.nexsis.sdisZ";
     private static final String RECIPIENT_ID = "fr.health.test.samu1-v3";
     private static final String USER_COUNT_ENV_VAR = "SAMU_NEXSIS_RC_RI_SCENARIO_USER_COUNT";
