@@ -1,0 +1,12 @@
+[versions]
+gatlingPlugin = "3.11.3"
+jibPlugin = "3.5.1"
+models = "3.1"
+gatlingAmqpPlugin = "0.14.0"
+dotenvJava = "3.2.0"
+commonsIo = "2.15.1"
+sshd = "2.12.1"
+
+[plugins]
+gatling = { id = "io.gatling.gradle", version.ref = "gatlingPlugin" }
+jib = { id = "com.google.cloud.tools.jib", version.ref = "jibPlugin" }
