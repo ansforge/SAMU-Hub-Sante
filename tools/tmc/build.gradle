@@ -45,6 +45,16 @@ configurations.all {
 
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
+import org.gradle.process.ExecOperations
+import javax.inject.Inject
+
+// Project#javaexec(Closure) was removed in Gradle 9.0 (deprecated since 8.10): tasks must use the
+// injected ExecOperations service instead. objects.newInstance() lets us obtain it without declaring
+// a dedicated Task class for this ad hoc task.
+abstract class ExecOperationsProvider {
+    @Inject
+    abstract ExecOperations getExecOperations()
+}
 
 def discoverGatlingSimulations = {
     def classesDirs = sourceSets.gatling.output.classesDirs.files
@@ -81,6 +91,7 @@ tasks.register("gatlingRunAllParallel") {
         simulations.each { println " - $it" }
 
         def gatlingCpFiles = sourceSets.gatling.runtimeClasspath.files.toList()
+        def execOperations = objects.newInstance(ExecOperationsProvider).execOperations
 
         def pool = Executors.newFixedThreadPool(simulations.size())
         def failures = Collections.synchronizedList([])
@@ -91,8 +102,8 @@ tasks.register("gatlingRunAllParallel") {
                     def simulationClassName = simulation.toString().tokenize('.').last()
                     def reportDir = file("${layout.buildDirectory.asFile.get()}/reports/gatling/${simulationClassName}-${System.currentTimeMillis()}")
 
-                    javaexec {
-                        classpath files(gatlingCpFiles)
+                    execOperations.javaexec {
+                        classpath = files(gatlingCpFiles)
                         mainClass = "io.gatling.app.Gatling"
                         jvmArgs = project.gatling.jvmArgs
                         args = ["-s", simulation, "-rf", reportDir.absolutePath]
