@@ -1,5 +1,5 @@
 # Dockerfile for OpenSSL and OpenJDK 11 JRE on Alpine 3.21.3
-FROM alpine:3.21.3
+FROM alpine:3.24.1
 
 RUN apk add --no-cache openssl openjdk11-jre
 
