@@ -2,20 +2,20 @@
 # https://docs.gradle.org/current/userguide/version_catalogs.html#sec::toml-dependencies-format
 
 [versions]
-models = "3.3.2"
+models = "3.4.1"
 guava = "33.4.6-jre"
-slf4jSimple = "1.7.26"
-slf4jApi = "2.0.17"
-rabbitmqClient = "5.16.0"
-dotenvJava = "3.0.0"
-jacksonDatabind = "2.12.7.1"
-jacksonDatatypeJsr310 = "2.15.2"
-jacksonDataformatXml = "2.15.2"
+slf4jSimple = "1.7.36"
+slf4jApi = "2.0.18"
+rabbitmqClient = "5.34.0"
+dotenvJava = "3.2.0"
+jacksonDatabind = "2.22.1"
+jacksonDatatypeJsr310 = "2.22.1"
+jacksonDataformatXml = "2.22.1"
 validationApi = "2.0.1.Final"
-jsonSchemaValidator = "1.0.79"
-caffeine = "3.1.8"
-logback = "1.5.32"
-junitJupiter = "5.12.1"
+jsonSchemaValidator = "1.5.9"
+caffeine = "3.2.4"
+logback = "1.5.38"
+junitJupiter = "5.14.4"
 
 [libraries]
 guava = { module = "com.google.guava:guava", version.ref = "guava" }
