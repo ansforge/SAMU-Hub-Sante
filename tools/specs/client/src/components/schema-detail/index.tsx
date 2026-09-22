@@ -49,14 +49,6 @@ export function SchemaDetail({ schema, schemaName, ref }: SchemaDetailProps) {
         {hasProperties && (
           <div className="mt-8">
             <div className="flex flex-wrap items-start justify-between gap-4">
-              <div>
-                <h2 className="text-base font-semibold">
-                  Structure de l'objet
-                </h2>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  Cliquez sur un élément pour voir le détail.
-                </p>
-              </div>
               <div className="flex flex-wrap items-center gap-3">
                 <FieldLegend />
                 <Button
