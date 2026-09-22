@@ -27,7 +27,7 @@ import { buildGithubSchemaUrl } from "./lib/utils";
 import { ensureSchemaLoaded } from "./lib/ensure-schema-loaded";
 import RefSelector from "./components/ref-selector";
 import User from "./components/user";
-import GlobalSearch from "./components/global-seach";
+import GlobalSearch from "./components/global-search";
 
 function Root({ children = <Outlet /> }: { children?: ReactNode }) {
   return (

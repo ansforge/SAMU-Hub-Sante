@@ -57,7 +57,7 @@ const GlobalSearch = () => {
   }, []);
 
   useKeyboardShortcut({
-    key: "p",
+    key: "k",
     ctrlOrCmd: true,
     allowInEditable: true,
     callback: toggleGlobalSearch,
