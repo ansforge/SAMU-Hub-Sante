@@ -53,3 +53,5 @@ certs/
 .envrc
 
 dist/
+
+.env

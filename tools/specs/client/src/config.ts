@@ -12,12 +12,19 @@ export const apiDomain =
   import.meta.env.VITE_SPECS_API_DOMAIN;
 
 export const defaultRef = "main";
+export const schemaPath = "src/main/resources/json-schema";
+export const nomenclaturePath = "nomenclature_parser/out/latest/json_schema";
+export const defaultWorkingBranch = "specs/working-poc";
 
 export const rawGithubDomain = "raw.githubusercontent.com";
 export const githubDomain = "github.com";
 export const githubRepo = "ansforge/SAMU-Hub-Modeles";
 
-export function buildGithubUrl(domain: string, ref: string, path: string): string {
+export function buildGithubUrl(
+  domain: string,
+  ref: string,
+  path: string,
+): string {
   return `https://${domain}/${githubRepo}/${ref}/${path}`;
 }
 

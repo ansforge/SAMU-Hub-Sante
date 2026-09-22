@@ -9,23 +9,32 @@ import type { ExpandSignal } from "./schema-utils";
 import { buildGithubSchemaUrl } from "@/lib/utils";
 import { githubDomain } from "@/config";
 import { getRouteApi } from "@tanstack/react-router";
-import { ExternalLinkIcon } from "lucide-react";
 import SourceLink from "../source-link";
+import { useSchemaStore } from "@/store/schema-store";
+import { useAuth } from "@/hooks/use-auth";
+import { UpdateSchemaDrawer } from "./update-schema-drawer";
 
 type SchemaDetailProps = {
   schema?: JsonSchemaDocument;
+  rawText?: string;
 };
 
 const schemaRouteApi = getRouteApi("/$schemaName");
 const rootRouteApi = getRouteApi("__root__");
 
-export function SchemaDetail({ schema }: SchemaDetailProps) {
+export function SchemaDetail({ schema, rawText }: SchemaDetailProps) {
   const { schemaName } = schemaRouteApi.useParams();
   const { ref } = rootRouteApi.useSearch();
   const [expandSignal, setExpandSignal] = useState<ExpandSignal>({
     key: 0,
     expand: false,
   });
+
+  const openUpdateSchemaDrawer = useSchemaStore(
+    (s) => s.openUpdateSchemaDrawer,
+  );
+
+  const { isAuthenticated } = useAuth();
 
   if (!schema) {
     return (
@@ -48,6 +57,7 @@ export function SchemaDetail({ schema }: SchemaDetailProps) {
   return (
     <>
       <NomenclatureDrawer />
+      <UpdateSchemaDrawer rawText={rawText} />
       <div className="min-h-0 flex-1 overflow-y-auto p-8 w-full max-w-7xl mx-auto">
         <div className="flex items-base gap-2">
           <h1 className="text-lg font-semibold">{schema.title}</h1>{" "}
@@ -84,6 +94,11 @@ export function SchemaDetail({ schema }: SchemaDetailProps) {
                 >
                   {expandSignal.expand ? "Tout replier" : "Tout déplier"}
                 </Button>
+                {isAuthenticated && (
+                  <Button variant="default" onClick={openUpdateSchemaDrawer}>
+                    Modifier
+                  </Button>
+                )}
               </div>
             </div>
 
