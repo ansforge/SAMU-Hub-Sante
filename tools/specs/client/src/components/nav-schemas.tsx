@@ -14,23 +14,46 @@ import {
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
 import { preserveRefSearch } from "@/config";
+import { getPerimeters } from "@/lib/get-perimeters";
 import { useSchemaStore } from "@/store/schema-store";
 import { SchemaReference } from "@/types";
 import { Link } from "@tanstack/react-router";
 import { Braces, ChevronRightIcon } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
+import { PerimeterSelect } from "./perimeter-select";
 
 export function NavSchemas() {
   const schemas = useSchemaStore((s) => s.schemas);
   const [search, setSearch] = useState<string>("");
   const [open, setOpen] = useState<boolean>(true);
+  const [selectedPerimeters, seSelectedPerimeters] = useState<string[]>([]);
+
+  const perimeters = getPerimeters(Object.values(schemas));
 
   const filteredSchemas = useMemo(() => {
     const q = search.toLocaleLowerCase();
-    return Object.values(schemas).filter((s) =>
-      s.schemaName.toLowerCase().includes(q),
-    );
-  }, [search, schemas]);
+    return Object.values(schemas).filter((s) => {
+      const matchesSearch = s.schemaName
+        .toLowerCase()
+        .includes(q.toLowerCase());
+      if (!s.perimeters) return matchesSearch;
+      const matchesPerimeters =
+        selectedPerimeters.length > 0
+          ? selectedPerimeters.some((p) => s.perimeters?.includes(p))
+          : true;
+      return matchesSearch && matchesPerimeters;
+    });
+  }, [search, schemas, selectedPerimeters]);
+
+  const toggleFilter = useCallback(
+    (value: string, checked: boolean) => {
+      seSelectedPerimeters((prev) => {
+        if (checked) return [...prev, value];
+        else return prev.filter((p) => p !== value);
+      });
+    },
+    [seSelectedPerimeters],
+  );
 
   return (
     <SidebarGroup>
@@ -50,14 +73,24 @@ export function NavSchemas() {
           </CollapsibleTrigger>
           <CollapsibleContent>
             {open && (
-              <Input
-                autoFocus
-                type="search"
-                placeholder="Rechercher..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="mx-2 my-1 w-[calc(100%-1rem)] group-data-[collapsible=icon]:hidden"
-              />
+              <div className="flex items-center gap-1">
+                <Input
+                  autoFocus
+                  type="search"
+                  placeholder="Rechercher..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="mx-2 my-1 w-[calc(100%-1rem)] group-data-[collapsible=icon]:hidden grow"
+                />
+                {perimeters.length > 0 && (
+                  <PerimeterSelect
+                    toggleFilter={toggleFilter}
+                    selectedPerimeters={selectedPerimeters}
+                    perimeters={perimeters}
+                    className="group-data-[collapsible=icon]:hidden"
+                  />
+                )}
+              </div>
             )}
             <SidebarMenuSub>
               {filteredSchemas.map((schema: SchemaReference) => (
