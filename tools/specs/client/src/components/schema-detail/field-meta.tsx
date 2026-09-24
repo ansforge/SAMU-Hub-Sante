@@ -13,6 +13,7 @@ export function FieldMeta({
   const resolved = resolveRef(prop, definitions);
   const isArray = resolved.type === "array";
   const hasNomenclature = Boolean(prop[NOMENCLATURE_KEY]);
+  const hasPattern = Boolean(resolved["pattern"]);
 
   if (!resolved.format && !isArray && !hasNomenclature) return null;
 
@@ -21,8 +22,13 @@ export function FieldMeta({
       {(resolved.format || isArray) && (
         <div className="flex flex-wrap items-center gap-x-3">
           {resolved.format && (
-            <span>
+            <span className="border rounded px-1">
               Format : <span className="font-medium">{resolved.format}</span>
+            </span>
+          )}
+          {hasPattern && (
+            <span className="border rounded px-1">
+              Regex : <span className="font-medium">{resolved["pattern"]}</span>
             </span>
           )}
           {isArray && (

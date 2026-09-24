@@ -23,6 +23,7 @@ export type JsonSchemaProperty = {
   minItems?: number;
   maxItems?: number;
   $ref?: string;
+  pattern?: string;
   [NOMENCLATURE_KEY]?: string;
 };
 
