@@ -9,10 +9,11 @@ export async function ensureSchemaLoaded(name: string, ref: string) {
   if (!schema) {
     const res = await fetch(messageListUrl(ref));
     const data = (await res.json()) as SchemaReference[];
-    const schemas = data.map(({ label, schemaName }) => ({
+    const schemas = data.map(({ label, schemaName, perimeters }) => ({
       label,
       schemaName,
       url: buildGithubSchemaUrl(rawGithubDomain, ref, schemaName),
+      perimeters,
     }));
     store.setSchemasFromArray(schemas, ref);
     schema = store.getSchema(name);
