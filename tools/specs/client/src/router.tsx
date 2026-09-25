@@ -204,10 +204,11 @@ const rootRoute = createRootRoute({
     }
     if (!res.ok) throw new Error(`Échec du chargement (HTTP ${res.status})`);
     const data = (await res.json()) as SchemaReference[];
-    const schemas = data.map(({ label, schemaName }) => ({
+    const schemas = data.map(({ label, schemaName, perimeters }) => ({
       label,
       schemaName,
       url: buildGithubSchemaUrl(rawGithubDomain, deps.ref, schemaName),
+      perimeters,
     }));
     useSchemaStore.getState().setSchemasFromArray(schemas, deps.ref);
     return data;
