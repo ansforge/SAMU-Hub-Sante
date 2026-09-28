@@ -8,7 +8,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getRouteApi, useNavigate } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Input } from "./ui/input";
 import { ChevronDown, GitPullRequest } from "lucide-react";
 
@@ -18,6 +18,7 @@ const RefSelector = () => {
   const { data, isLoading } = useRefs();
   const { ref } = rootRouteApi.useSearch();
   const [filter, setFilter] = useState<string>("");
+  const searchRef = useRef<HTMLInputElement>(null);
 
   const navigate = useNavigate();
 
@@ -58,6 +59,7 @@ const RefSelector = () => {
         />
         <PopoverContent
           align="start"
+          initialFocus={searchRef}
           className="w-80 flex flex-col p-0! max-h-80 overflow-hidden"
         >
           <Tabs
@@ -87,8 +89,8 @@ const RefSelector = () => {
             <div className="p-1 border-b">
               <Input
                 className="h-7"
+                ref={searchRef}
                 placeholder="Rechercher..."
-                autoFocus
                 value={filter}
                 onChange={(e) => setFilter(e.target.value)}
               />
