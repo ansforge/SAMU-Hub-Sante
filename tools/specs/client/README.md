@@ -1,6 +1,6 @@
 # specs-client
 
-Viewer for the Hub Santé message schemas: fetches the schema list from the specs API and displays it.
+Viewer for the Hub Santé message schemas, read from the `ansforge/SAMU-Hub-Modeles` GitHub repo for a given branch or tag.
 
 ## Stack
 
@@ -8,12 +8,13 @@ Viewer for the Hub Santé message schemas: fetches the schema list from the spec
 - React + TypeScript
 - Tailwind CSS v4
 - TanStack Router
-- Zustand
+- TanStack Query
+- Zustand (UI state only)
 
 ## Getting started
 
 ```bash
-cp .env.example .env # set VITE_SPECS_API_DOMAIN
+cp .env.example .env
 pnpm install
 pnpm dev
 ```
@@ -22,11 +23,21 @@ pnpm dev
 - `pnpm build` — build for production
 - `pnpm preview` — preview the production build
 
+## Configuration
+
+| Variable | Description |
+| --- | --- |
+| `VITE_SPECS_API_DOMAIN` | Specs API (auth, branches and tags) |
+| `VITE_SPECS_PUBLIC_VERSIONS` | JSON array of the versions visible when logged out, e.g. `["2.4.0", "3.5.0-rc.1"]`; the newest is the default. Unset or empty: falls back to `main` |
+
+In the Docker image, both are read at container start by `docker-entrypoint.sh` and written to `env-config.js`.
+
 ## Structure
 
-- `src/main.tsx` — app entry point
-- `src/router.tsx` — router; root loader fetches `${VITE_SPECS_API_DOMAIN}/api/schemas` into the schema store, shared by all routes
-- `src/store/schema-store.ts` — Zustand store holding schemas (by name) and the selected schema
-- `src/components/MessageList.tsx` — bottom tab bar listing schemas, selects one
-- `src/components/MessageDetail.tsx` — middle panel, schema detail (placeholder for now)
-- `src/components/ui/button.tsx` — shadcn-style Button component
+- `src/main.tsx` — app entry point; resolves auth, then mounts the router with it in its context
+- `src/router.tsx` — routes; the root `beforeLoad` resolves the `ref` search param (default `main` when logged in, newest public version otherwise) and restricts logged-out users to the public versions
+- `src/config.ts` — env config, public versions, GitHub URLs
+- `src/hooks/use-schemas.ts` — schema list of the current ref (`messagesList.json`), keeps the previous list while switching refs
+- `src/hooks/use-auth.ts`, `use-refs.ts`, `use-nomenclature.ts` — auth, ref selector options, nomenclatures
+- `src/store/schema-store.ts` — Zustand store for UI state (nomenclature drawer, expand/collapse all)
+- `src/components/` — layout (`app-header`, `app-sidebar`, `nav-schemas`), `ref-selector`, `global-search`, `schema-detail/`

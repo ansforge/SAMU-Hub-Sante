@@ -1,15 +1,22 @@
 import {
-  createRootRoute,
+  createRootRouteWithContext,
   createRoute,
   createRouter,
   Link,
   notFound,
   Outlet,
+  redirect,
   retainSearchParams,
   type SearchSchemaInput,
 } from "@tanstack/react-router";
 import { SchemaDetail, SchemaDetailSkeleton } from "@/components/schema-detail";
-import { defaultRef, rawGithubDomain } from "@/config";
+import {
+  defaultPublicVersion,
+  publicVersions,
+  rawGithubDomain,
+  resolveDefaultRef,
+} from "@/config";
+import { useDefaultRef } from "@/hooks/use-auth";
 import { useSchemas } from "@/hooks/use-schemas";
 import { SidebarInset, SidebarProvider } from "./components/ui/sidebar";
 import { AppSidebar } from "./components/app-sidebar";
@@ -49,6 +56,7 @@ function SchemaPagePending() {
 function SchemaNotFound() {
   const { schemaName } = schemaRoute.useParams();
   const { ref } = rootRoute.useSearch();
+  const defaultRef = useDefaultRef();
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -106,6 +114,8 @@ function SchemaLoadError({
 }
 
 function SchemasError({ error, retry }: { error: Error; retry: () => void }) {
+  const defaultRef = useDefaultRef();
+
   return (
     <div className="flex flex-1 flex-col items-center justify-center gap-2 p-6 text-center">
       <p className="text-lg font-medium">
@@ -175,13 +185,28 @@ const schemaRoute = createRoute({
   errorComponent: SchemaLoadError,
 });
 
-const rootRoute = createRootRoute({
+const rootRoute = createRootRouteWithContext<{
+  auth: { isAuthenticated: boolean };
+}>()({
   validateSearch: (
     search: Partial<RootSearch> & SearchSchemaInput,
   ): RootSearch => ({
-    ref: typeof search.ref === "string" ? search.ref : defaultRef,
+    ref: typeof search.ref === "string" ? search.ref : defaultPublicVersion,
   }),
   search: { middlewares: [retainSearchParams(["ref"])] },
+  beforeLoad: ({ context, location, search }) => {
+    const { isAuthenticated } = context.auth;
+    const hasRef = new URLSearchParams(location.searchStr).has("ref");
+    const isPublic =
+      search.ref === defaultPublicVersion ||
+      publicVersions.includes(search.ref);
+    if (hasRef && (isAuthenticated || isPublic)) return;
+    throw redirect({
+      to: location.pathname,
+      search: { ref: resolveDefaultRef(isAuthenticated) },
+      replace: true,
+    });
+  },
   component: Root,
 });
 const indexRoute = createRoute({
@@ -194,6 +219,7 @@ const routeTree = rootRoute.addChildren([indexRoute, schemaRoute]);
 
 export const router = createRouter({
   routeTree,
+  context: { auth: undefined! }, // provided by RouterProvider in main.tsx
   basepath: import.meta.env.PROD ? "/specs" : "/",
 });
 

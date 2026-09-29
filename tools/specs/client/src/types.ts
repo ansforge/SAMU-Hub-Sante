@@ -17,7 +17,7 @@ export type SchemaExample = {
 };
 
 export type RepoReferences = {
-  branches: string[];
+  branches?: string[];
   tags: string[];
 };
 
