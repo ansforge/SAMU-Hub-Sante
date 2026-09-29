@@ -18,6 +18,18 @@ export function buildGithubSchemaUrl(
   );
 }
 
+export function buildGithubSchemaExampleUrl(
+  domain: string,
+  ref: string,
+  schemaExampleName: string,
+): string {
+  return buildGithubUrl(
+    domain,
+    ref,
+    `src/main/resources/sample/examples/${schemaExampleName}`,
+  );
+}
+
 export function buildNomenclatureUrl(
   domain: string,
   ref: string,
