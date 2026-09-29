@@ -32,41 +32,35 @@ export function SchemaDetail({ schema, schemaName, ref }: SchemaDetailProps) {
   return (
     <>
       <NomenclatureDrawer />
-      <div className="min-h-0 flex-1 overflow-y-auto p-8 w-full max-w-7xl mx-auto">
-        <div className="flex items-base gap-2">
-          <h1 className="text-lg font-semibold">{schema.title}</h1>{" "}
-          <SourceLink href={schemaSource} />
+      <div className="mx-auto flex min-h-0 w-full max-w-7xl flex-1 flex-col gap-6 overflow-y-auto px-4 py-6 md:px-8">
+        <header className="flex flex-col gap-1">
+          <div className="flex items-center gap-2">
+            <h1 className="text-lg font-semibold">{schema.title}</h1>
+            <SourceLink href={schemaSource} />
+          </div>
           {schema.description && (
-            <p className="mt-1 text-sm text-muted-foreground">
+            <p className="max-w-prose text-sm text-muted-foreground">
               {schema.description}
             </p>
           )}
-        </div>
+        </header>
 
         {hasProperties && (
-          <div className="mt-8">
-            <div className="flex flex-wrap items-start justify-between gap-4">
-              <div className="flex flex-wrap items-center gap-3">
-                <FieldLegend />
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={toggleExpandAll}
-                >
-                  {expandSignal.expand ? "Tout replier" : "Tout déplier"}
-                </Button>
-              </div>
+          <section className="flex flex-col gap-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <FieldLegend />
+              <Button variant="outline" size="sm" onClick={toggleExpandAll}>
+                {expandSignal.expand ? "Tout replier" : "Tout déplier"}
+              </Button>
             </div>
 
-            <div className="mt-6">
-              <SchemaFields
-                properties={properties}
-                required={schema.required}
-                definitions={definitions}
-                expandSignal={expandSignal}
-              />
-            </div>
-          </div>
+            <SchemaFields
+              properties={properties}
+              required={schema.required}
+              definitions={definitions}
+              expandSignal={expandSignal}
+            />
+          </section>
         )}
       </div>
     </>
@@ -75,19 +69,22 @@ export function SchemaDetail({ schema, schemaName, ref }: SchemaDetailProps) {
 
 export function SchemaDetailSkeleton() {
   return (
-    <div className="min-h-0 flex-1 overflow-y-auto p-8 w-full max-w-7xl mx-auto">
-      <div className="flex items-start justify-between gap-4">
-        <div className="space-y-2">
-          <Skeleton className="h-5 w-48" />
-          <Skeleton className="h-4 w-80" />
-        </div>
-        <Skeleton className="h-8 w-24 shrink-0" />
+    <div className="mx-auto flex min-h-0 w-full max-w-7xl flex-1 flex-col gap-6 overflow-y-auto px-4 py-6 md:px-8">
+      <div className="flex flex-col gap-1">
+        <Skeleton className="h-7 w-48" />
+        <Skeleton className="h-5 w-80 max-w-full" />
       </div>
 
-      <div className="mt-6 space-y-1">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <Skeleton key={i} className="h-11 w-full" />
-        ))}
+      <div className="flex flex-col gap-4">
+        <div className="flex items-center justify-between gap-3">
+          <Skeleton className="h-6 w-72 max-w-full" />
+          <Skeleton className="h-8 w-24 shrink-0" />
+        </div>
+        <div className="flex flex-col gap-2">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Skeleton key={i} className="h-14 w-full" />
+          ))}
+        </div>
       </div>
     </div>
   );

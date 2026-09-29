@@ -20,7 +20,7 @@ export function FieldMeta({
   return (
     <div className="flex flex-col gap-1 text-xs text-muted-foreground">
       {(resolved.format || isArray) && (
-        <div className="flex flex-wrap items-center gap-x-3">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
           {resolved.format && (
             <span className="border rounded px-1">
               Format : <span className="font-medium">{resolved.format}</span>

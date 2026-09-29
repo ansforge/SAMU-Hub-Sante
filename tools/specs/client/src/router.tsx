@@ -15,40 +15,23 @@ import {
   rawGithubDomain,
 } from "@/config";
 import { useSchemaStore } from "@/store/schema-store";
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "./components/ui/sidebar";
+import { SidebarInset, SidebarProvider } from "./components/ui/sidebar";
 import { AppSidebar } from "./components/app-sidebar";
-import { Separator } from "@base-ui/react";
+import { AppHeader } from "./components/app-header";
 import { JsonSchemaDocument, SchemaReference } from "./types";
 import { buildGithubSchemaUrl } from "./lib/utils";
 import { ensureSchemaLoaded } from "./lib/ensure-schema-loaded";
-import RefSelector from "./components/ref-selector";
-import User from "./components/user";
-import GlobalSearch from "./components/global-search";
 
 function Root({ children = <Outlet /> }: { children?: ReactNode }) {
   return (
-    <SidebarProvider>
-      <AppSidebar />
-      <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
-          <div className="flex items-center gap-2 px-4 w-full">
-            <SidebarTrigger className="-ml-1" />
-            <Separator
-              orientation="vertical"
-              className="mr-2 data-[orientation=vertical]:h-4"
-            />
-            <RefSelector />
-            <div className="grow" />
-            <User />
-          </div>
-        </header>
-        <GlobalSearch />
-        <main className="flex flex-1 flex-col">{children}</main>
-      </SidebarInset>
+    <SidebarProvider className="flex-col [--header-height:4.5rem]">
+      <AppHeader />
+      <div className="flex flex-1">
+        <AppSidebar className="top-(--header-height) h-[calc(100svh-var(--header-height))]!" />
+        <SidebarInset>
+          <main className="flex flex-1 flex-col">{children}</main>
+        </SidebarInset>
+      </div>
     </SidebarProvider>
   );
 }

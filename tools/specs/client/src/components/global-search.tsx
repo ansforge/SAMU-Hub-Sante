@@ -13,6 +13,8 @@ import { preserveRefSearch } from "@/config";
 import { flattenFields } from "@/components/schema-detail/schema-utils";
 import { useMatch, useNavigate } from "@tanstack/react-router";
 import { useCallback, useMemo, useState } from "react";
+import { SearchIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const GlobalSearch = () => {
   const [open, setOpen] = useState(false);
@@ -64,39 +66,54 @@ const GlobalSearch = () => {
   });
 
   return (
-    <CommandDialog open={open} onOpenChange={setOpen}>
-      <Command>
-        <CommandInput placeholder="Rechercher..." />
-        <CommandList>
-          <CommandEmpty>Aucun résultat trouvé.</CommandEmpty>
-          {flatFields.length > 0 && (
-            <CommandGroup heading={`Champs du ${currentSchema?.title}`}>
-              {flatFields.map(({ path }) => {
-                const fieldPath = path.join(".");
-                return (
-                  <CommandItem
-                    key={fieldPath}
-                    onSelect={() => handleFieldSelect(fieldPath)}
-                  >
-                    {fieldPath}
-                  </CommandItem>
-                );
-              })}
+    <>
+      <Button
+        variant="outline"
+        onClick={() => setOpen(true)}
+        className="w-auto xl:w-64 justify-start gap-2 text-muted-foreground"
+      >
+        <SearchIcon />
+        <div className="hidden xl:flex items-center justify-between w-full">
+          <span className="grow text-left">Rechercher...</span>
+          <kbd className="rounded border bg-muted px-1.5 font-mono text-xs">
+            ⌘K
+          </kbd>
+        </div>
+      </Button>
+      <CommandDialog open={open} onOpenChange={setOpen}>
+        <Command>
+          <CommandInput placeholder="Rechercher..." />
+          <CommandList>
+            <CommandEmpty>Aucun résultat trouvé.</CommandEmpty>
+            {flatFields.length > 0 && (
+              <CommandGroup heading={`Champs du ${currentSchema?.title}`}>
+                {flatFields.map(({ path }) => {
+                  const fieldPath = path.join(".");
+                  return (
+                    <CommandItem
+                      key={fieldPath}
+                      onSelect={() => handleFieldSelect(fieldPath)}
+                    >
+                      {fieldPath}
+                    </CommandItem>
+                  );
+                })}
+              </CommandGroup>
+            )}
+            <CommandGroup heading="Schemas">
+              {Object.values(schemas).map((s) => (
+                <CommandItem
+                  key={s.schemaName}
+                  onSelect={() => handleOnSelect(s.schemaName)}
+                >
+                  {s.label}
+                </CommandItem>
+              ))}
             </CommandGroup>
-          )}
-          <CommandGroup heading="Schemas">
-            {Object.values(schemas).map((s) => (
-              <CommandItem
-                key={s.schemaName}
-                onSelect={() => handleOnSelect(s.schemaName)}
-              >
-                {s.label}
-              </CommandItem>
-            ))}
-          </CommandGroup>
-        </CommandList>
-      </Command>
-    </CommandDialog>
+          </CommandList>
+        </Command>
+      </CommandDialog>
+    </>
   );
 };
 export default GlobalSearch;
