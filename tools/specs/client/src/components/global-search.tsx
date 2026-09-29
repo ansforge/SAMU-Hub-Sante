@@ -9,7 +9,6 @@ import {
 } from "@/components/ui/command";
 import { useKeyboardShortcut } from "@/hooks/use-keyboard-shortcut";
 import { useSchemaStore } from "@/store/schema-store";
-import { preserveRefSearch } from "@/config";
 import { flattenFields } from "@/components/schema-detail/schema-utils";
 import { useMatch, useNavigate } from "@tanstack/react-router";
 import { useCallback, useMemo, useState } from "react";
@@ -44,7 +43,6 @@ const GlobalSearch = () => {
     navigate({
       to: "/$schemaName",
       params: { schemaName },
-      search: preserveRefSearch,
     });
   }, []);
 

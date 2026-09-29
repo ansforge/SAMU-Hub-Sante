@@ -5,9 +5,11 @@ import {
   Link,
   notFound,
   Outlet,
+  retainSearchParams,
+  type SearchSchemaInput,
 } from "@tanstack/react-router";
 import { SchemaDetail, SchemaDetailSkeleton } from "@/components/schema-detail";
-import { defaultRef, preserveRefSearch, rawGithubDomain } from "@/config";
+import { defaultRef, rawGithubDomain } from "@/config";
 import { useSchemas } from "@/hooks/use-schemas";
 import { SidebarInset, SidebarProvider } from "./components/ui/sidebar";
 import { AppSidebar } from "./components/app-sidebar";
@@ -58,7 +60,7 @@ function SchemaNotFound() {
           <span className="font-mono">{ref}</span>.
         </p>
         <div className="mt-2 flex gap-4 text-sm">
-          <Link to="/" search={preserveRefSearch} className="underline">
+          <Link to="/" className="underline">
             Retour à l'accueil
           </Link>
           {ref !== defaultRef && (
@@ -174,9 +176,12 @@ const schemaRoute = createRoute({
 });
 
 const rootRoute = createRootRoute({
-  validateSearch: (search: Partial<RootSearch>): RootSearch => ({
+  validateSearch: (
+    search: Partial<RootSearch> & SearchSchemaInput,
+  ): RootSearch => ({
     ref: typeof search.ref === "string" ? search.ref : defaultRef,
   }),
+  search: { middlewares: [retainSearchParams(["ref"])] },
   component: Root,
 });
 const indexRoute = createRoute({

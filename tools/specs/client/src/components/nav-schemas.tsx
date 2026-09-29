@@ -13,7 +13,6 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
-import { preserveRefSearch } from "@/config";
 import { getPerimeters } from "@/lib/get-perimeters";
 import { SchemaReference } from "@/types";
 import { Link } from "@tanstack/react-router";
@@ -100,7 +99,6 @@ export function NavSchemas() {
                       <Link
                         to="/$schemaName"
                         params={{ schemaName: schema.schemaName }}
-                        search={preserveRefSearch}
                       />
                     }
                   >

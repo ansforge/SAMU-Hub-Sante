@@ -17,15 +17,14 @@ export const rawGithubDomain = "raw.githubusercontent.com";
 export const githubDomain = "github.com";
 export const githubRepo = "ansforge/SAMU-Hub-Modeles";
 
-export function buildGithubUrl(domain: string, ref: string, path: string): string {
+export function buildGithubUrl(
+  domain: string,
+  ref: string,
+  path: string,
+): string {
   return `https://${domain}/${githubRepo}/${ref}/${path}`;
 }
 
-// pass as a Link's `search` prop to carry the current ref along when
-// navigating, defaulting it if absent
-export function preserveRefSearch(prev: { ref?: string }): { ref: string } {
-  return { ref: prev.ref ?? defaultRef };
-}
 export function messageListUrl(ref: string): string {
   return buildGithubUrl(
     rawGithubDomain,
