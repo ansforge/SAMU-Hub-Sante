@@ -13,12 +13,13 @@ import { preserveRefSearch } from "@/config";
 import { flattenFields } from "@/components/schema-detail/schema-utils";
 import { useMatch, useNavigate } from "@tanstack/react-router";
 import { useCallback, useMemo, useState } from "react";
+import { useSchemas } from "@/hooks/use-schemas";
 import { SearchIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const GlobalSearch = () => {
   const [open, setOpen] = useState(false);
-  const schemas = useSchemaStore((s) => s.schemas);
+  const { data: schemas = [] } = useSchemas();
   const navigate = useNavigate();
   const currentSchemaMatch = useMatch({
     from: "/$schemaName",
@@ -101,7 +102,7 @@ const GlobalSearch = () => {
               </CommandGroup>
             )}
             <CommandGroup heading="Schemas">
-              {Object.values(schemas).map((s) => (
+              {schemas.map((s) => (
                 <CommandItem
                   key={s.schemaName}
                   onSelect={() => handleOnSelect(s.schemaName)}

@@ -3,7 +3,6 @@ import { NOMENCLATURE_KEY } from "./config";
 export type SchemaReference = {
   label: string;
   schemaName: string;
-  url: string;
   perimeters?: string[];
   examples?: SchemaExample[];
 };
