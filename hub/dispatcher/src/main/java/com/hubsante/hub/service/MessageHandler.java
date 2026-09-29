@@ -267,7 +267,7 @@ public class MessageHandler {
         }
     }
 
-    protected Message forwardedMessage(EdxlMessage edxlMessage, Message receivedAmqpMessage) {
+    public Message forwardedMessage(EdxlMessage edxlMessage, Message receivedAmqpMessage) {
         MessageProperties receivedAmqpProperties = receivedAmqpMessage.getMessageProperties();
         MessageProperties forwardedMessageProperties =
                 MessagePropertiesBuilder.fromClonedProperties(receivedAmqpProperties).build();
@@ -279,7 +279,7 @@ public class MessageHandler {
         return getFwdMessageBody(edxlMessage, receivedAmqpMessage, forwardedMessageProperties);
     }
 
-    protected Message forwardedStringMessage(String stringMessage, Message receivedAmqpMessage) {
+    public Message forwardedStringMessage(String stringMessage, Message receivedAmqpMessage) {
         MessageProperties receivedAmqpProperties = receivedAmqpMessage.getMessageProperties();
         MessageProperties forwardedMessageProperties =
                 MessagePropertiesBuilder.fromClonedProperties(receivedAmqpProperties).build();
@@ -583,7 +583,7 @@ public class MessageHandler {
         return fwdMessage;
     }
 
-    protected void inhibitMessageIfNeeded(EdxlMessage edxlMessage) {
+    public void inhibitMessageIfNeeded(EdxlMessage edxlMessage) {
         String recipientId = getRecipientID(edxlMessage);
         String useCase = EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage());
         List<String> inhibitedUseCases =

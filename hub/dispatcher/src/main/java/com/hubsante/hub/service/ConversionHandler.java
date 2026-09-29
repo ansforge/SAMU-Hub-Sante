@@ -50,7 +50,7 @@ public class ConversionHandler {
         this.edxlHandler = edxlHandler;
     }
 
-    protected List<String> applyConversionRules(
+    public List<String> applyConversionRules(
             ConversionUtils.ConversionParametersDTO conversionParametersDTO)
             throws JsonProcessingException {
         String sourceModelVersion = conversionParametersDTO.sourceVersion();
