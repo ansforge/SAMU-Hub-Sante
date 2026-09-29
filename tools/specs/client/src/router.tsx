@@ -142,10 +142,16 @@ function Home() {
 function SchemaPage() {
   const schema = schemaRoute.useLoaderData();
   const { schemaName } = schemaRoute.useParams();
+  const examples = useSchemaStore((s) => s.schemas[schemaName]?.examples);
   const { ref } = rootRoute.useSearch();
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <SchemaDetail schema={schema} schemaName={schemaName} ref={ref} />
+      <SchemaDetail
+        schema={schema}
+        examples={examples}
+        schemaName={schemaName}
+        ref={ref}
+      />
     </div>
   );
 }
@@ -187,11 +193,12 @@ const rootRoute = createRootRoute({
     }
     if (!res.ok) throw new Error(`Échec du chargement (HTTP ${res.status})`);
     const data = (await res.json()) as SchemaReference[];
-    const schemas = data.map(({ label, schemaName, perimeters }) => ({
+    const schemas = data.map(({ label, schemaName, perimeters, examples }) => ({
       label,
       schemaName,
       url: buildGithubSchemaUrl(rawGithubDomain, deps.ref, schemaName),
       perimeters,
+      examples,
     }));
     useSchemaStore.getState().setSchemasFromArray(schemas, deps.ref);
     return data;

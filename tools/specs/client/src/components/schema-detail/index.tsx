@@ -1,21 +1,28 @@
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { NomenclatureDrawer } from "@/components/nomenclature-drawer";
-import type { JsonSchemaDocument } from "@/types";
+import type { JsonSchemaDocument, SchemaExample } from "@/types";
 import { FieldLegend } from "./field-legend";
 import { SchemaFields } from "./schema-fields";
 import { buildGithubSchemaUrl } from "@/lib/utils";
 import { githubDomain } from "@/config";
 import { useSchemaStore } from "@/store/schema-store";
 import SourceLink from "../source-link";
+import { SchemaExamples } from "./schema-examples";
 
 type SchemaDetailProps = {
   schema: JsonSchemaDocument;
+  examples?: SchemaExample[];
   schemaName: string;
   ref: string;
 };
 
-export function SchemaDetail({ schema, schemaName, ref }: SchemaDetailProps) {
+export function SchemaDetail({
+  schema,
+  examples,
+  schemaName,
+  ref,
+}: SchemaDetailProps) {
   const expandSignal = useSchemaStore((s) => s.expandSignal);
   const toggleExpandAll = useSchemaStore((s) => s.toggleExpandAll);
 
@@ -44,6 +51,10 @@ export function SchemaDetail({ schema, schemaName, ref }: SchemaDetailProps) {
             </p>
           )}
         </header>
+
+        {examples && examples.length > 0 && (
+          <SchemaExamples examples={examples} ref={ref} />
+        )}
 
         {hasProperties && (
           <section className="flex flex-col gap-4">

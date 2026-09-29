@@ -14,6 +14,7 @@ export async function ensureSchemaLoaded(name: string, ref: string) {
       schemaName,
       url: buildGithubSchemaUrl(rawGithubDomain, ref, schemaName),
       perimeters,
+      examples,
     }));
     store.setSchemasFromArray(schemas, ref);
     schema = store.getSchema(name);
