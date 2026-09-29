@@ -10,6 +10,7 @@ dependencies = [
     "flask-caching>=2.4.1",
     "flask-cors>=6.0.5",
     "gunicorn>=23.0.0",
+    "pydantic>=2.13.5",
     "pygithub>=2.8.1",
     "python-dotenv>=1.1.1",
     "requests>=2.34.2",
