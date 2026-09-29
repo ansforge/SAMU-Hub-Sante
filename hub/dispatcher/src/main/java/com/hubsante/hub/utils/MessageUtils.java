@@ -142,7 +142,7 @@ public class MessageUtils {
     }
 
     public static void checkMessageClassNameSupported(
-            EdxlMessage edxlMessage, HubConfiguration hubConfig) throws Exception {
+            EdxlMessage edxlMessage, HubConfiguration hubConfig) {
         String messageClassName =
                 EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage());
         List<String> supportedMessages = hubConfig.getSupportedMessages();
