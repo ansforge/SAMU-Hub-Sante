@@ -5,6 +5,16 @@ export type SchemaReference = {
   schemaName: string;
   url: string;
   perimeters?: string[];
+  examples?: SchemaExample[];
+};
+
+export type SchemaExample = {
+  file: string;
+  icon: string;
+  context: string;
+  name: string;
+  environment: string;
+  victim?: string;
 };
 
 export type RepoReferences = {
