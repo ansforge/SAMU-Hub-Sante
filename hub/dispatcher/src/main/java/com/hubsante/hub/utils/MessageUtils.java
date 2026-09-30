@@ -93,7 +93,7 @@ public class MessageUtils {
         }
     }
 
-    private static String extractDomainPrefix(String id) {
+    public static String extractDomainPrefix(String id) {
         String[] segments = id.split("\\.", 3);
         if (segments.length < 2) {
             return id;
