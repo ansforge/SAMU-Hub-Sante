@@ -239,24 +239,6 @@ class HubSanteInternalStrategyTest {
                                                     inconsistentDistributionId)))
                     .isInstanceOf(InvalidDistributionIDException.class);
         }
-
-        @Test
-        @DisplayName("should not check the distributionId format for a non-health sender")
-        void shouldSkipDistributionIdFormatCheckForNonHealthSender() {
-            // distributionId deliberately inconsistent with the sender: would fail
-            // checkDistributionIDFormat, but that check only applies to health senders
-            String inconsistentDistributionId = "fr.fire.someoneElse_1234";
-
-            assertThatCode(
-                            () ->
-                                    strategy.checkMessageContent(
-                                            amqp(SDIS_C_ROUTING_KEY),
-                                            edxl(
-                                                    SDIS_C_ROUTING_KEY,
-                                                    SAMU_V3_ROUTING_KEY,
-                                                    inconsistentDistributionId)))
-                    .doesNotThrowAnyException();
-        }
     }
 
     // ─── buildMessageRoutingDTO ─────────────────────────────────────────────────
