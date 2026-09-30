@@ -1,8 +1,11 @@
+type VhostMap = Record<string, { model_lib_version: string }>;
+
 declare global {
   interface Window {
     __ENV__?: {
       VITE_SPECS_API_DOMAIN?: string;
       VITE_SPECS_PUBLIC_VERSIONS?: string[];
+      VITE_SPECS_VHOST_MAP?: VhostMap;
     };
   }
 }
@@ -14,11 +17,21 @@ export const apiDomain =
   window.__ENV__?.VITE_SPECS_API_DOMAIN ||
   import.meta.env.VITE_SPECS_API_DOMAIN;
 
+const vhostMap: VhostMap =
+  window.__ENV__?.VITE_SPECS_VHOST_MAP ??
+  JSON.parse(import.meta.env.VITE_SPECS_VHOST_MAP ?? "{}");
+
+const extraVersions: string[] =
+  window.__ENV__?.VITE_SPECS_PUBLIC_VERSIONS ??
+  JSON.parse(import.meta.env.VITE_SPECS_PUBLIC_VERSIONS ?? "[]");
+
 // refs visible when logged out, newest first; numeric sort puts 3.5.0-rc.1
 // after 3.5.0, fine until a prerelease and its release are both listed
 export const publicVersions: string[] = [
-  ...(window.__ENV__?.VITE_SPECS_PUBLIC_VERSIONS ??
-    JSON.parse(import.meta.env.VITE_SPECS_PUBLIC_VERSIONS ?? "[]")),
+  ...new Set([
+    ...Object.values(vhostMap).map((vhost) => vhost.model_lib_version),
+    ...extraVersions,
+  ]),
 ].sort((a, b) => b.localeCompare(a, undefined, { numeric: true }));
 
 export const defaultRef = "main";
