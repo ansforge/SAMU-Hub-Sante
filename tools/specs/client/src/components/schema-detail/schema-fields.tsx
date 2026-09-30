@@ -63,7 +63,7 @@ export function SchemaFields({
               key={name}
               className={cn(
                 depth === 0 && "border-b border-border/60",
-                "scroll-mt-8 px-3 transition-colors duration-300 target:rounded-md target:bg-muted target:ring-2 target:ring-ring/40",
+                "scroll-mt-24 px-3 transition-colors duration-300 p-1 target:rounded-md target:bg-muted target:ring-2 target:ring-ring/40",
               )}
             >
               {row}
@@ -78,7 +78,7 @@ export function SchemaFields({
             value={name}
             className={cn(
               depth === 0 ? "border-border/70 bg-card/40" : "border-border/50",
-              "scroll-mt-8 rounded-md border transition-colors duration-300 target:bg-muted target:ring-2 target:ring-ring/40",
+              "scroll-mt-24 rounded-md border transition-colors duration-300 target:bg-muted target:ring-2 target:ring-ring/40",
             )}
           >
             <AccordionPrimitive.Header className="flex">
@@ -87,7 +87,7 @@ export function SchemaFields({
                 <ChevronDownIcon className="mt-3 size-3.5 shrink-0 text-muted-foreground/50 transition-transform duration-150 group-aria-expanded/trigger:rotate-180" />
               </AccordionPrimitive.Trigger>
             </AccordionPrimitive.Header>
-            <AccordionPrimitive.Panel className="overflow-hidden text-sm data-open:animate-accordion-down data-closed:animate-accordion-up">
+            <AccordionPrimitive.Panel className="overflow-hidden pt-1 text-sm data-open:animate-accordion-down data-closed:animate-accordion-up">
               <div className="h-(--accordion-panel-height) data-ending-style:h-0 data-starting-style:h-0">
                 {/* px-3 = row inset, so child cards align with the parent's field name */}
                 <div className="px-3 pb-3">
