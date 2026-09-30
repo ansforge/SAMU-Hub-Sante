@@ -16,17 +16,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-import { Spinner } from "@/components/ui/spinner";
-
 function User() {
-  const { user, login, logout, isLoading, isAuthenticated } = useAuth();
+  const { user, login, logout, isAuthenticated } = useAuth();
 
-  if (isLoading)
-    return (
-      <div className="h-8 w-8 flex items-center justify-center border rounded-full opacity-60">
-        <Spinner />
-      </div>
-    );
   if (!isAuthenticated)
     return (
       <Button

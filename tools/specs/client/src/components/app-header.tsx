@@ -5,7 +5,6 @@ import { AssetImage } from "@/components/asset-image";
 import GlobalSearch from "@/components/global-search";
 import RefSelector from "@/components/ref-selector";
 import User from "@/components/user";
-import { preserveRefSearch } from "@/config";
 
 export function AppHeader() {
   return (
@@ -22,7 +21,7 @@ export function AppHeader() {
           className="h-14"
         />
       </a>
-      <Link to="/" search={preserveRefSearch}>
+      <Link to="/">
         <AssetImage name="logo-ANS.svg" alt="Accueil ANS" className="h-11" />
       </Link>
       <Separator orientation="vertical" className="mx-2 h-6 w-px bg-border" />

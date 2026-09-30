@@ -13,26 +13,25 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
-import { preserveRefSearch } from "@/config";
 import { getPerimeters } from "@/lib/get-perimeters";
-import { useSchemaStore } from "@/store/schema-store";
 import { SchemaReference } from "@/types";
 import { Link } from "@tanstack/react-router";
 import { Braces, ChevronRightIcon } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
+import { useSchemas } from "@/hooks/use-schemas";
 import { PerimeterSelect } from "./perimeter-select";
 
 export function NavSchemas() {
-  const schemas = useSchemaStore((s) => s.schemas);
+  const { data: schemas = [] } = useSchemas();
   const [search, setSearch] = useState<string>("");
   const [open, setOpen] = useState<boolean>(true);
   const [selectedPerimeters, seSelectedPerimeters] = useState<string[]>([]);
 
-  const perimeters = getPerimeters(Object.values(schemas));
+  const perimeters = getPerimeters(schemas);
 
   const filteredSchemas = useMemo(() => {
     const q = search.toLocaleLowerCase();
-    return Object.values(schemas).filter((s) => {
+    return schemas.filter((s) => {
       const matchesSearch = s.schemaName
         .toLowerCase()
         .includes(q.toLowerCase());
@@ -100,7 +99,6 @@ export function NavSchemas() {
                       <Link
                         to="/$schemaName"
                         params={{ schemaName: schema.schemaName }}
-                        search={preserveRefSearch}
                       />
                     }
                   >

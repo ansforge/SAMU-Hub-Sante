@@ -39,9 +39,11 @@ const RefSelector = () => {
 
   const filteredBranches = useMemo(
     () =>
-      data?.branches.filter((branch) =>
-        branch.toLocaleLowerCase().includes(filter.toLocaleLowerCase()),
-      ),
+      data?.branches
+        ? data?.branches.filter((branch) =>
+            branch.toLocaleLowerCase().includes(filter.toLocaleLowerCase()),
+          )
+        : null,
     [filter, data],
   );
 
@@ -67,15 +69,17 @@ const RefSelector = () => {
             className="flex flex-col w-full grow min-h-0"
           >
             <TabsList className={"w-full h-8"}>
-              <TabsTrigger value="branches">
-                Branches (
-                {isLoading ? (
-                  <Skeleton className="inline-block h-3 w-4 align-middle" />
-                ) : (
-                  data?.branches.length
-                )}
-                )
-              </TabsTrigger>
+              {filteredBranches && (
+                <TabsTrigger value="branches">
+                  Branches (
+                  {isLoading ? (
+                    <Skeleton className="inline-block h-3 w-4 align-middle" />
+                  ) : (
+                    data?.branches?.length
+                  )}
+                  )
+                </TabsTrigger>
+              )}
               <TabsTrigger value="tags">
                 Tags (
                 {isLoading ? (

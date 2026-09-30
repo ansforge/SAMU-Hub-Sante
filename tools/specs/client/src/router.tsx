@@ -1,35 +1,44 @@
-import type { ReactNode } from "react";
 import {
-  createRootRoute,
+  createRootRouteWithContext,
   createRoute,
   createRouter,
   Link,
   notFound,
   Outlet,
+  redirect,
+  retainSearchParams,
+  type SearchSchemaInput,
 } from "@tanstack/react-router";
 import { SchemaDetail, SchemaDetailSkeleton } from "@/components/schema-detail";
 import {
-  messageListUrl,
-  defaultRef,
-  preserveRefSearch,
+  defaultPublicVersion,
+  publicVersions,
   rawGithubDomain,
+  resolveDefaultRef,
 } from "@/config";
-import { useSchemaStore } from "@/store/schema-store";
+import { useDefaultRef } from "@/hooks/use-auth";
+import { useSchemas } from "@/hooks/use-schemas";
 import { SidebarInset, SidebarProvider } from "./components/ui/sidebar";
 import { AppSidebar } from "./components/app-sidebar";
 import { AppHeader } from "./components/app-header";
-import { JsonSchemaDocument, SchemaReference } from "./types";
+import { JsonSchemaDocument } from "./types";
 import { buildGithubSchemaUrl } from "./lib/utils";
-import { ensureSchemaLoaded } from "./lib/ensure-schema-loaded";
 
-function Root({ children = <Outlet /> }: { children?: ReactNode }) {
+function Root() {
+  const { error, refetch } = useSchemas();
   return (
     <SidebarProvider className="flex-col [--header-height:4.5rem]">
       <AppHeader />
       <div className="flex flex-1">
         <AppSidebar className="top-(--header-height) h-[calc(100svh-var(--header-height))]!" />
         <SidebarInset>
-          <main className="flex flex-1 flex-col">{children}</main>
+          <main className="flex flex-1 flex-col">
+            {error ? (
+              <SchemasError error={error} retry={refetch} />
+            ) : (
+              <Outlet />
+            )}
+          </main>
         </SidebarInset>
       </div>
     </SidebarProvider>
@@ -47,6 +56,7 @@ function SchemaPagePending() {
 function SchemaNotFound() {
   const { schemaName } = schemaRoute.useParams();
   const { ref } = rootRoute.useSearch();
+  const defaultRef = useDefaultRef();
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -58,7 +68,7 @@ function SchemaNotFound() {
           <span className="font-mono">{ref}</span>.
         </p>
         <div className="mt-2 flex gap-4 text-sm">
-          <Link to="/" search={preserveRefSearch} className="underline">
+          <Link to="/" className="underline">
             Retour à l'accueil
           </Link>
           {ref !== defaultRef && (
@@ -103,31 +113,24 @@ function SchemaLoadError({
   );
 }
 
-function RootError({ error, reset }: { error: unknown; reset: () => void }) {
-  const message = error instanceof Error ? error.message : "Erreur inconnue";
+function SchemasError({ error, retry }: { error: Error; retry: () => void }) {
+  const defaultRef = useDefaultRef();
 
   return (
-    <Root>
-      <div className="flex flex-1 flex-col items-center justify-center gap-2 p-6 text-center">
-        <p className="text-lg font-medium">
-          Impossible de charger la liste des schémas
-        </p>
-        <p className="text-sm text-muted-foreground">{message}</p>
-        <div className="mt-2 flex gap-4 text-sm">
-          <button type="button" onClick={reset} className="underline">
-            Réessayer
-          </button>
-          <Link
-            to="."
-            search={{ ref: defaultRef }}
-            onClick={reset}
-            className="underline"
-          >
-            Revenir sur {defaultRef}
-          </Link>
-        </div>
+    <div className="flex flex-1 flex-col items-center justify-center gap-2 p-6 text-center">
+      <p className="text-lg font-medium">
+        Impossible de charger la liste des schémas
+      </p>
+      <p className="text-sm text-muted-foreground">{error.message}</p>
+      <div className="mt-2 flex gap-4 text-sm">
+        <button type="button" onClick={retry} className="underline">
+          Réessayer
+        </button>
+        <Link to="." search={{ ref: defaultRef }} className="underline">
+          Revenir sur {defaultRef}
+        </Link>
       </div>
-    </Root>
+    </div>
   );
 }
 
@@ -142,7 +145,8 @@ function Home() {
 function SchemaPage() {
   const schema = schemaRoute.useLoaderData();
   const { schemaName } = schemaRoute.useParams();
-  const examples = useSchemaStore((s) => s.schemas[schemaName]?.examples);
+  const { data: schemas } = useSchemas();
+  const examples = schemas?.find((s) => s.schemaName === schemaName)?.examples;
   const { ref } = rootRoute.useSearch();
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -162,11 +166,11 @@ const schemaRoute = createRoute({
   getParentRoute: () => rootRoute,
   component: SchemaPage,
   path: "/$schemaName",
-  loaderDeps: ({ search }: { search: RootSearch }) => ({ ref: search.ref }),
+  loaderDeps: ({ search }) => ({ ref: search.ref }),
   loader: async ({ params, deps }) => {
-    const schema = await ensureSchemaLoaded(params.schemaName, deps.ref);
-    if (!schema) throw notFound();
-    const res = await fetch(schema.url);
+    const res = await fetch(
+      buildGithubSchemaUrl(rawGithubDomain, deps.ref, params.schemaName),
+    );
     if (res.status === 404) throw notFound();
     if (!res.ok) throw new Error(`Échec du chargement (HTTP ${res.status})`);
     return res.json() as Promise<JsonSchemaDocument>;
@@ -181,34 +185,29 @@ const schemaRoute = createRoute({
   errorComponent: SchemaLoadError,
 });
 
-const rootRoute = createRootRoute({
-  validateSearch: (search: Partial<RootSearch>): RootSearch => ({
-    ref: typeof search.ref === "string" ? search.ref : defaultRef,
+const rootRoute = createRootRouteWithContext<{
+  auth: { isAuthenticated: boolean };
+}>()({
+  validateSearch: (
+    search: Partial<RootSearch> & SearchSchemaInput,
+  ): RootSearch => ({
+    ref: typeof search.ref === "string" ? search.ref : defaultPublicVersion,
   }),
-  loaderDeps: ({ search }) => ({ ref: search.ref }),
-  loader: async ({ deps }) => {
-    const res = await fetch(messageListUrl(deps.ref));
-    if (res.status === 404) {
-      throw new Error(`Branche ou tag "${deps.ref}" introuvable.`);
-    }
-    if (!res.ok) throw new Error(`Échec du chargement (HTTP ${res.status})`);
-    const data = (await res.json()) as SchemaReference[];
-    const schemas = data.map(({ label, schemaName, perimeters, examples }) => ({
-      label,
-      schemaName,
-      url: buildGithubSchemaUrl(rawGithubDomain, deps.ref, schemaName),
-      perimeters,
-      examples,
-    }));
-    useSchemaStore.getState().setSchemasFromArray(schemas, deps.ref);
-    return data;
+  search: { middlewares: [retainSearchParams(["ref"])] },
+  beforeLoad: ({ context, location, search }) => {
+    const { isAuthenticated } = context.auth;
+    const hasRef = new URLSearchParams(location.searchStr).has("ref");
+    const isPublic =
+      search.ref === defaultPublicVersion ||
+      publicVersions.includes(search.ref);
+    if (hasRef && (isAuthenticated || isPublic)) return;
+    throw redirect({
+      to: location.pathname,
+      search: { ref: resolveDefaultRef(isAuthenticated) },
+      replace: true,
+    });
   },
-  staleTime: 30_000,
   component: Root,
-  pendingComponent: Root,
-  pendingMs: 0,
-  pendingMinMs: 0,
-  errorComponent: RootError,
 });
 const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -220,6 +219,7 @@ const routeTree = rootRoute.addChildren([indexRoute, schemaRoute]);
 
 export const router = createRouter({
   routeTree,
+  context: { auth: undefined! }, // provided by RouterProvider in main.tsx
   basepath: import.meta.env.PROD ? "/specs" : "/",
 });
 

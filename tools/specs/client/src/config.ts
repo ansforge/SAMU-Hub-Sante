@@ -1,6 +1,9 @@
 declare global {
   interface Window {
-    __ENV__?: { VITE_SPECS_API_DOMAIN?: string };
+    __ENV__?: {
+      VITE_SPECS_API_DOMAIN?: string;
+      VITE_SPECS_PUBLIC_VERSIONS?: string[];
+    };
   }
 }
 
@@ -11,21 +14,32 @@ export const apiDomain =
   window.__ENV__?.VITE_SPECS_API_DOMAIN ||
   import.meta.env.VITE_SPECS_API_DOMAIN;
 
+// refs visible when logged out, newest first; numeric sort puts 3.5.0-rc.1
+// after 3.5.0, fine until a prerelease and its release are both listed
+export const publicVersions: string[] = [
+  ...(window.__ENV__?.VITE_SPECS_PUBLIC_VERSIONS ??
+    JSON.parse(import.meta.env.VITE_SPECS_PUBLIC_VERSIONS ?? "[]")),
+].sort((a, b) => b.localeCompare(a, undefined, { numeric: true }));
+
 export const defaultRef = "main";
+// no public version configured: fall back to main rather than redirect forever
+export const defaultPublicVersion: string = publicVersions[0] ?? defaultRef;
+
+export const resolveDefaultRef = (isAuthenticated: boolean) =>
+  isAuthenticated ? defaultRef : defaultPublicVersion;
 
 export const rawGithubDomain = "raw.githubusercontent.com";
 export const githubDomain = "github.com";
 export const githubRepo = "ansforge/SAMU-Hub-Modeles";
 
-export function buildGithubUrl(domain: string, ref: string, path: string): string {
+export function buildGithubUrl(
+  domain: string,
+  ref: string,
+  path: string,
+): string {
   return `https://${domain}/${githubRepo}/${ref}/${path}`;
 }
 
-// pass as a Link's `search` prop to carry the current ref along when
-// navigating, defaulting it if absent
-export function preserveRefSearch(prev: { ref?: string }): { ref: string } {
-  return { ref: prev.ref ?? defaultRef };
-}
 export function messageListUrl(ref: string): string {
   return buildGithubUrl(
     rawGithubDomain,
