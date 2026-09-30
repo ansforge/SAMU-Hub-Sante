@@ -16,7 +16,6 @@
 package com.hubsante.hub.service.routing;
 
 import static com.hubsante.hub.config.AmqpConfiguration.DISTRIBUTION_EXCHANGE;
-import static com.hubsante.hub.config.Constants.FR_HEALTH_PREFIX;
 import static com.hubsante.hub.utils.MessageUtils.*;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -68,10 +67,8 @@ public class HubSanteInternalStrategy implements RoutingStrategy {
         // reject the message if the delivery mode is not PERSISTENT
         checkDeliveryModeIsPersistent(message, edxlMessage.getDistributionID());
         // reject the message if distributionId does not respect the format
-        // (senderId_internalId)
-        if (message.getMessageProperties().getReceivedRoutingKey().startsWith(FR_HEALTH_PREFIX)) {
-            checkDistributionIDFormat(edxlMessage);
-        }
+        // (senderId_internalId); assumes the sender is always a health actor
+        checkDistributionIDFormat(edxlMessage);
     }
 
     @Override
