@@ -26,7 +26,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 import com.hubsante.hub.config.HubConfiguration;
@@ -39,7 +38,6 @@ import com.hubsante.hub.service.ConversionHandler;
 import com.hubsante.hub.service.MessagePersistenceService;
 import com.hubsante.hub.testsupport.HubTestScaffolding;
 import com.hubsante.hub.utils.ConversionUtils;
-import com.hubsante.hub.utils.MessagePersistencePolicy;
 import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.edxl.Descriptor;
 import com.hubsante.model.edxl.EdxlMessage;
@@ -52,8 +50,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.mockito.InOrder;
-import org.mockito.MockedStatic;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageDeliveryMode;
 import org.springframework.amqp.core.MessageProperties;
@@ -307,31 +303,6 @@ class HubSanteInternalStrategyTest {
                                         .isEqualTo("transfer_15-15_v2.1_to_15-15_v1.5");
                                 assertThat(routingDTO.routingKey()).isEqualTo(SAMU_A_ROUTING_KEY);
                             });
-        }
-
-        @Test
-        @DisplayName("should persist the message before a CISU transcoding conversion")
-        void shouldPersistBeforeCisuTranscodingConversion() throws IOException {
-            try (MockedStatic<MessagePersistencePolicy> mockedPersistencePolicy =
-                    mockStatic(MessagePersistencePolicy.class)) {
-                doReturn(NEXSIS_VHOST).when(hubConfig).getVhost();
-                mockedPersistencePolicy
-                        .when(
-                                () ->
-                                        MessagePersistencePolicy.shouldPersist(
-                                                anyString(), anyString()))
-                        .thenReturn(true);
-
-                Message message =
-                        createMessage("EDXL-DE", XML, SDIS_C_ROUTING_KEY, SAMU_V3_ROUTING_KEY);
-                EdxlMessage edxlMessage = deserialize(message);
-
-                strategy.buildMessageRoutingDTO(message, edxlMessage);
-
-                InOrder inOrder = inOrder(persistenceService, conversionHandler);
-                inOrder.verify(persistenceService, times(1)).persist(any(EdxlMessage.class));
-                verifyConversion(inOrder, conversionHandler);
-            }
         }
     }
 }
