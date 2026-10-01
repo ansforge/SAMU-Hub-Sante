@@ -75,12 +75,40 @@ public class HubSanteInternalStrategy implements RoutingStrategy {
     public List<MessageRoutingDTO> buildMessageRoutingDTO(Message message, EdxlMessage edxlMessage)
             throws AbstractHubException {
         ConversionUtils.ConversionParametersDTO conversionParameters =
-                ConversionUtils.resolveConversionParameters(hubConfig, edxlMessage);
+                resolveConversionParameters(edxlMessage);
 
         if (conversionParameters != null) {
             return buildConvertedRoutingDTOs(message, edxlMessage, conversionParameters);
         }
         return List.of(buildDirectRoutingDTO(message, edxlMessage));
+    }
+
+    /**
+     * Resolves whether the message needs converting before reaching its recipient, and if so, to
+     * what target vhost. Each perimeter-specific strategy overrides this with its own resolution
+     * rules; this default is the SAMU-to-SAMU (health version conversion) case.
+     */
+    protected ConversionUtils.ConversionParametersDTO resolveConversionParameters(
+            EdxlMessage edxlMessage) {
+        String recipientId = getRecipientID(edxlMessage);
+        String currentVhost = hubConfig.getVhost();
+        String perimeter = ConversionUtils.trimVersionSuffix(currentVhost);
+        if (perimeter == null) {
+            return null;
+        }
+
+        String targetVhost =
+                ConversionUtils.determineTargetVhostByPerimeter(hubConfig, recipientId, perimeter);
+
+        if (targetVhost == null) {
+            return null;
+        }
+
+        return ConversionUtils.ConversionParametersDTO.forVhostConversion(
+                edxlMessage,
+                hubConfig.getVhost(),
+                targetVhost,
+                ConversionUtils.ConversionType.HEALTH_VERSION_CONVERSION);
     }
 
     private List<MessageRoutingDTO> buildConvertedRoutingDTOs(
