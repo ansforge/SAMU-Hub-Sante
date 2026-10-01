@@ -15,13 +15,18 @@
  */
 package com.hubsante.hub.service.routing;
 
+import static com.hubsante.hub.config.Constants.NEXSIS_HUBEX_PARTNER;
 import static com.hubsante.hub.utils.MessageUtils.*;
 
 import com.hubsante.hub.config.HubConfiguration;
 import com.hubsante.hub.exception.AbstractHubException;
+import com.hubsante.hub.exception.UnroutableMessageException;
 import com.hubsante.hub.service.ConversionHandler;
 import com.hubsante.hub.service.MessageHandler;
 import com.hubsante.hub.service.MessagePersistenceService;
+import com.hubsante.hub.service.TopologyRegistry;
+import com.hubsante.hub.utils.ConversionUtils;
+import com.hubsante.hub.utils.EdxlUtils;
 import com.hubsante.model.edxl.EdxlMessage;
 import org.springframework.amqp.core.Message;
 import org.springframework.stereotype.Component;
@@ -58,5 +63,35 @@ public class HubToFireStrategy extends HubSanteInternalStrategy implements Routi
         // the sender is always a health actor for this strategy, so the check is the same strict
         // equality as HubSanteInternalStrategy's
         checkSenderConsistency(message, edxlMessage);
+    }
+
+    @Override
+    protected ConversionUtils.ConversionParametersDTO resolveConversionParameters(
+            EdxlMessage edxlMessage) {
+        String currentVhost = hubConfig.getVhost();
+        String nexsisVhost = TopologyRegistry.getInstance().getVhostTarget(NEXSIS_HUBEX_PARTNER);
+
+        if (ConversionUtils.isNexsisVhost(currentVhost)) {
+            return null;
+        }
+        if (ConversionUtils.isCisuVhost(currentVhost)) {
+            return ConversionUtils.ConversionParametersDTO.forVhostConversion(
+                    edxlMessage,
+                    currentVhost,
+                    nexsisVhost,
+                    ConversionUtils.ConversionType.CISU_VERSION_CONVERSION);
+        }
+        if (ConversionUtils.isHealthVhost(currentVhost)) {
+            return ConversionUtils.ConversionParametersDTO.forVhostConversion(
+                    edxlMessage,
+                    currentVhost,
+                    nexsisVhost,
+                    ConversionUtils.ConversionType.CISU_TRANSCODING);
+        }
+        throw new UnroutableMessageException(
+                "Cannot route message to Nexsis from vhost " + currentVhost,
+                edxlMessage.getDistributionID(),
+                getRecipientID(edxlMessage),
+                EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage()));
     }
 }

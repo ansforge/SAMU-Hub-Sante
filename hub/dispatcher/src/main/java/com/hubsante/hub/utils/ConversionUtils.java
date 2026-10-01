@@ -55,7 +55,7 @@ public class ConversionUtils {
             String targetVhost,
             ConversionType conversionType) {
 
-        static ConversionParametersDTO forVhostConversion(
+        public static ConversionParametersDTO forVhostConversion(
                 EdxlMessage edxlMessage,
                 String sourceVhost,
                 String targetVhost,
