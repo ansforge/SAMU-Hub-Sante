@@ -15,27 +15,41 @@
  */
 package com.hubsante.hub.service.routing;
 
+import static com.hubsante.hub.service.ConversionStubs.echoConversionService;
+import static com.hubsante.hub.service.ConversionStubs.verifyConversion;
 import static com.hubsante.hub.testsupport.HubTestConstants.*;
 import static com.hubsante.hub.testsupport.HubTestScaffolding.aHub;
+import static com.hubsante.hub.testsupport.MessageTestUtils.createMessage;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.doReturn;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
 
 import com.hubsante.hub.config.HubConfiguration;
 import com.hubsante.hub.exception.SenderInconsistencyException;
 import com.hubsante.hub.exception.UnroutableMessageException;
 import com.hubsante.hub.service.ClientPropertiesRegistry;
+import com.hubsante.hub.service.ConversionHandler;
+import com.hubsante.hub.service.MessagePersistenceService;
 import com.hubsante.hub.testsupport.HubTestScaffolding;
+import com.hubsante.hub.utils.ConversionUtils;
+import com.hubsante.hub.utils.MessagePersistencePolicy;
+import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.edxl.Descriptor;
 import com.hubsante.model.edxl.EdxlMessage;
 import com.hubsante.model.edxl.ExplicitAddress;
 import com.hubsante.model.report.ErrorWrapper;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockito.InOrder;
+import org.mockito.MockedStatic;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageDeliveryMode;
 import org.springframework.amqp.core.MessageProperties;
@@ -45,8 +59,11 @@ import org.springframework.amqp.core.MessageProperties;
 class FireToHubStrategyTest {
 
     private static final String DISTRIBUTION_ID = SDIS_C_ROUTING_KEY + "_1234";
+    private static final EdxlHandler EDXL = new EdxlHandler();
 
     private FireToHubStrategy strategy;
+    private ConversionHandler conversionHandler;
+    private MessagePersistenceService persistenceService;
     private HubConfiguration hubConfig;
     private ClientPropertiesRegistry clientPropertiesRegistry;
 
@@ -59,8 +76,11 @@ class FireToHubStrategyTest {
                         hub.conversionHandler(),
                         hub.hubConfig(),
                         hub.persistenceService());
+        conversionHandler = hub.conversionHandler();
+        persistenceService = hub.persistenceService();
         hubConfig = hub.hubConfig();
         clientPropertiesRegistry = hub.clientPropertiesRegistry();
+        echoConversionService(conversionHandler);
     }
 
     // ─── helpers ──────────────────────────────────────────────────────────────
@@ -81,6 +101,14 @@ class FireToHubStrategyTest {
         properties.setContentType(MessageProperties.CONTENT_TYPE_JSON);
         properties.setReceivedDeliveryMode(MessageDeliveryMode.PERSISTENT);
         return new Message("{}".getBytes(StandardCharsets.UTF_8), properties);
+    }
+
+    private static EdxlMessage deserialize(Message message) throws IOException {
+        String body = new String(message.getBody(), StandardCharsets.UTF_8);
+        return MessageProperties.CONTENT_TYPE_XML.equals(
+                        message.getMessageProperties().getContentType())
+                ? EDXL.deserializeXmlEDXL(body)
+                : EDXL.deserializeJsonEDXL(body);
     }
 
     // ─── checkMessageContent ────────────────────────────────────────────────────
@@ -180,6 +208,59 @@ class FireToHubStrategyTest {
                                                     SAMU_B_ROUTING_KEY,
                                                     DISTRIBUTION_ID)))
                     .isInstanceOf(SenderInconsistencyException.class);
+        }
+    }
+
+    // ─── buildMessageRoutingDTO ─────────────────────────────────────────────────
+
+    @Nested
+    @DisplayName("buildMessageRoutingDTO")
+    class BuildMessageRoutingDTO {
+
+        @Test
+        @DisplayName("should persist the message before a CISU transcoding conversion")
+        void shouldPersistBeforeCisuTranscodingConversion() throws IOException {
+            try (MockedStatic<MessagePersistencePolicy> mockedPersistencePolicy =
+                    mockStatic(MessagePersistencePolicy.class)) {
+                doReturn(NEXSIS_VHOST).when(hubConfig).getVhost();
+                mockedPersistencePolicy
+                        .when(
+                                () ->
+                                        MessagePersistencePolicy.shouldPersist(
+                                                anyString(), anyString()))
+                        .thenReturn(true);
+
+                Message message =
+                        createMessage("EDXL-DE", XML, SDIS_C_ROUTING_KEY, SAMU_V3_ROUTING_KEY);
+                EdxlMessage edxlMessage = deserialize(message);
+
+                strategy.buildMessageRoutingDTO(message, edxlMessage);
+
+                InOrder inOrder = inOrder(persistenceService, conversionHandler);
+                inOrder.verify(persistenceService, times(1)).persist(any(EdxlMessage.class));
+                verifyConversion(inOrder, conversionHandler);
+            }
+        }
+
+        @Test
+        @DisplayName("should stay on the CISU perimeter when the recipient speaks CISU")
+        void shouldBuildTransferRoutingDTOForCisuVersionConversion() throws IOException {
+            doReturn(NEXSIS_VHOST).when(hubConfig).getVhost();
+            Message message =
+                    createMessage(
+                            "EDXL-DE", XML, SDIS_C_ROUTING_KEY, SAMU_V3_DIRECT_CISU_ROUTING_KEY);
+            EdxlMessage edxlMessage = deserialize(message);
+
+            List<MessageRoutingDTO> routingDTOs =
+                    strategy.buildMessageRoutingDTO(message, edxlMessage);
+
+            assertThat(routingDTOs).hasSize(1);
+            assertThat(routingDTOs.getFirst().destinationExchange())
+                    .isEqualTo("transfer_15-nexsis_vactive_to_15-nexsis_v1.9");
+
+            verifyConversion(
+                    conversionHandler, ConversionUtils.ConversionType.CISU_VERSION_CONVERSION);
+            verify(persistenceService, never()).persist(any(EdxlMessage.class));
         }
     }
 }
