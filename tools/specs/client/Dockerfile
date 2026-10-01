@@ -7,7 +7,7 @@ WORKDIR /app
 RUN corepack enable
 
 # Copy the pnpm project files needed for install to the container
-COPY package.json pnpm-lock.yaml ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
 # Install dependencies
 RUN pnpm install --frozen-lockfile
