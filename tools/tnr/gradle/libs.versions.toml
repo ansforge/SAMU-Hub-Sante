@@ -19,3 +19,4 @@ junitJupiter = "6.1.2"
 
 [libraries]
 guava = { module = "com.google.guava:guava", version.ref = "guava" }
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junitJupiter" }

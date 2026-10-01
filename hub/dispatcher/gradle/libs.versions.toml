@@ -12,5 +12,11 @@ tomcat = "11.0.22"
 netty = "4.2.13.Final"
 jacksonBom = "3.1.1"
 
+[libraries]
+tomcat-embed-core = { module = "org.apache.tomcat.embed:tomcat-embed-core", version.ref = "tomcat" }
+netty-bom = { module = "io.netty:netty-bom", version.ref = "netty" }
+jackson-bom = { module = "com.fasterxml.jackson:jackson-bom", version.ref = "jacksonBom" }
+google-java-format = { module = "com.google.googlejavaformat:google-java-format", version.ref = "googleJavaFormat" }
+
 [plugins]
 spring-boot = { id = "org.springframework.boot", version.ref = "springBoot" }
