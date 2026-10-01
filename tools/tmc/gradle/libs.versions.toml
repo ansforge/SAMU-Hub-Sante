@@ -7,6 +7,9 @@ dotenvJava = "3.2.0"
 commonsIo = "2.15.1"
 sshd = "2.12.1"
 
+[libraries]
+models = { module = "com.hubsante:models", version.ref = "models" }
+
 [plugins]
 gatling = { id = "io.gatling.gradle", version.ref = "gatlingPlugin" }
 jib = { id = "com.google.cloud.tools.jib", version.ref = "jibPlugin" }
