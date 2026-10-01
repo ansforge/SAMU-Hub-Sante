@@ -15,6 +15,7 @@
  */
 package com.hubsante.hub.service.routing;
 
+import static com.hubsante.hub.config.Constants.Perimeter;
 import static com.hubsante.hub.utils.MessageUtils.*;
 
 import com.hubsante.hub.config.HubConfiguration;
@@ -23,6 +24,7 @@ import com.hubsante.hub.exception.SenderInconsistencyException;
 import com.hubsante.hub.service.ConversionHandler;
 import com.hubsante.hub.service.MessageHandler;
 import com.hubsante.hub.service.MessagePersistenceService;
+import com.hubsante.hub.utils.ConversionUtils;
 import com.hubsante.hub.utils.EdxlUtils;
 import com.hubsante.model.edxl.EdxlMessage;
 import org.springframework.amqp.core.Message;
@@ -83,5 +85,43 @@ public class FireToHubStrategy extends HubSanteInternalStrategy implements Routi
             throw new SenderInconsistencyException(
                     errorCause, edxlMessage.getDistributionID(), recipientId, messageType);
         }
+    }
+
+    @Override
+    protected ConversionUtils.ConversionParametersDTO resolveConversionParameters(
+            EdxlMessage edxlMessage) {
+        String recipientId = getRecipientID(edxlMessage);
+        String currentVhost = hubConfig.getVhost();
+
+        String[] availableCisuVhosts =
+                ConversionUtils.extractAvailableVhostsByPerimeter(
+                        hubConfig, recipientId, Perimeter.CISU.getName());
+
+        if (availableCisuVhosts != null && availableCisuVhosts.length > 0) {
+            if (!ConversionUtils.isConversionNeeded(currentVhost, availableCisuVhosts)) {
+                return null;
+            }
+
+            String latestCisuVhost = availableCisuVhosts[availableCisuVhosts.length - 1];
+            return ConversionUtils.ConversionParametersDTO.forVhostConversion(
+                    edxlMessage,
+                    currentVhost,
+                    latestCisuVhost,
+                    ConversionUtils.ConversionType.CISU_VERSION_CONVERSION);
+        }
+
+        String targetHealthVhost =
+                ConversionUtils.determineTargetVhostByPerimeter(
+                        hubConfig, recipientId, Perimeter.HEALTH.getName());
+
+        if (targetHealthVhost == null) {
+            return null;
+        }
+
+        return ConversionUtils.ConversionParametersDTO.forVhostConversion(
+                edxlMessage,
+                currentVhost,
+                targetHealthVhost,
+                ConversionUtils.ConversionType.CISU_TRANSCODING);
     }
 }
