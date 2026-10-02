@@ -7,6 +7,9 @@ plugins {
 
 ext {
     modelVersion = project.hasProperty('modelVersion') ? project.getProperty('modelVersion') : libs.versions.models.get()
+    // Gradle 9 removed the legacy Convention API; the gatling-gradle-plugin (tested up to Gradle 8.6)
+    // still reads this property eagerly off the project, so we provide it ourselves.
+    reportsDir = layout.buildDirectory.dir('reports').get().asFile
 }
 
 dependencies {

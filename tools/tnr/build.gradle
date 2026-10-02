@@ -15,7 +15,7 @@ repositories {
     // Use Maven Central for resolving dependencies.
     mavenCentral()
     maven {
-        url = uri("https://maven.pkg.github.com/ansforge/SAMU-Hub-Sante")
+        url = uri("https://maven.pkg.github.com/ansforge/SAMU-Hub-Modeles")
         credentials {
             username = System.getenv('GITHUB_ACTOR')
             password = System.getenv('GITHUB_TOKEN')
