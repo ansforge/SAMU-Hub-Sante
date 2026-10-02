@@ -14,12 +14,6 @@
       "hostType": "docker",
       "username": "{{ secrets.DHI_USERNAME }}",
       "password": "{{ secrets.DHI_PASSWORD }}"
-    },
-    {
-      "matchHost": "maven.pkg.github.com",
-      "hostType": "maven",
-      "username": "x-access-token",
-      "token": "{{ secrets.GITHUB_TOKEN }}"
     }
   ],
   "ignorePaths": [
