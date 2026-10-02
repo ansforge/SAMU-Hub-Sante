@@ -375,3 +375,41 @@ export function replaceSubstringsAtPaths(
   }
   return clone;
 }
+
+function findPathsWithDatesHelper(current, path, result) {
+  if (typeof current === 'string') {
+    if (moment(current, moment.ISO_8601, true).isValid()) {
+      result.push([...path]);
+    }
+  } else if (Array.isArray(current)) {
+    current.forEach((item, idx) =>
+      findPathsWithDatesHelper(item, [...path, idx], result)
+    );
+  } else if (current && typeof current === 'object') {
+    Object.entries(current).forEach(([key, value]) => {
+      findPathsWithDatesHelper(value, [...path, key], result);
+    });
+  }
+}
+
+export function findPathsWithDates(obj) {
+  const result = [];
+  findPathsWithDatesHelper(obj, [], result);
+  return result;
+}
+
+export function setValuesAtPaths(obj, pathsToSet, newValue) {
+  const clone = JSON.parse(JSON.stringify(obj));
+  for (const path of pathsToSet) {
+    let ref = clone;
+    for (let i = 0; i < path.length - 1; i++) {
+      ref = ref?.[path[i]];
+      if (ref == null) break;
+    }
+    const lastKey = path[path.length - 1];
+    if (ref && lastKey in ref) {
+      ref[lastKey] = newValue;
+    }
+  }
+  return clone;
+}
