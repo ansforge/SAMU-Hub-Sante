@@ -6,7 +6,16 @@ import { CopyButton } from "../copy-button";
 export const KIND_BADGE: Record<FieldKind, string> = {
   object: "bg-violet-100 text-violet-700",
   array: "bg-emerald-100 text-emerald-700",
-  simple: "bg-muted text-muted-foreground",
+  simple: "bg-slate-100 text-slate-700",
+};
+
+// primitives get one color per JSON type so string/number/boolean read apart;
+// anything else falls back to KIND_BADGE.simple
+export const PRIMITIVE_BADGE: Record<string, string> = {
+  string: "bg-sky-100 text-sky-700",
+  number: "bg-amber-100 text-amber-800",
+  integer: "bg-amber-100 text-amber-800",
+  boolean: "bg-rose-100 text-rose-700",
 };
 
 function badgeLabel(
@@ -32,11 +41,12 @@ export function FieldHeader({
   path?: string[];
 }) {
   const kind = fieldKind(prop, definitions);
+  const label = badgeLabel(kind, prop, definitions);
 
   return (
     <div className="flex flex-col items-start gap-0.5 text-left">
       {path && path.length > 1 && (
-        <span className="group relative flex items-center gap-1 h-6 font-mono text-[11px] text-muted-foreground/90">
+        <span className="group relative flex items-center gap-1 h-6 font-mono text-[11px] text-muted-foreground">
           {path.join(".")}
           <CopyButton content={path.join(".")} />
         </span>
@@ -49,14 +59,14 @@ export function FieldHeader({
         <span
           className={cn(
             "rounded-full px-2 py-0.5 font-mono text-[11px] font-medium",
-            KIND_BADGE[kind],
+            (kind === "simple" && PRIMITIVE_BADGE[label]) || KIND_BADGE[kind],
           )}
         >
-          {badgeLabel(kind, prop, definitions)}
+          {label}
         </span>
       </div>
       {prop.title && (
-        <span className="text-sm font-medium text-foreground/80">
+        <span className="text-sm font-medium text-foreground">
           {prop.title}
         </span>
       )}
