@@ -22,7 +22,11 @@ import { SidebarInset, SidebarProvider } from "./components/ui/sidebar";
 import { AppSidebar } from "./components/app-sidebar";
 import { AppHeader } from "./components/app-header";
 import { JsonSchemaDocument } from "./types";
-import { buildGithubSchemaUrl } from "./lib/utils";
+import {
+  buildCsvParserExampleUrl,
+  buildGithubSchemaUrl,
+  inlineExamples,
+} from "./lib/utils";
 
 function Root() {
   const { error, refetch } = useSchemas();
@@ -148,6 +152,7 @@ function SchemaPage() {
   const { data: schemas } = useSchemas();
   const examples = schemas?.find((s) => s.schemaName === schemaName)?.examples;
   const { ref } = rootRoute.useSearch();
+
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <SchemaDetail
@@ -168,12 +173,19 @@ const schemaRoute = createRoute({
   path: "/$schemaName",
   loaderDeps: ({ search }) => ({ ref: search.ref }),
   loader: async ({ params, deps }) => {
-    const res = await fetch(
-      buildGithubSchemaUrl(rawGithubDomain, deps.ref, params.schemaName),
-    );
+    const [res, exampleRes] = await Promise.all([
+      fetch(buildGithubSchemaUrl(rawGithubDomain, deps.ref, params.schemaName)),
+      fetch(
+        buildCsvParserExampleUrl(rawGithubDomain, deps.ref, params.schemaName),
+      ),
+    ]);
     if (res.status === 404) throw notFound();
     if (!res.ok) throw new Error(`Échec du chargement (HTTP ${res.status})`);
-    return res.json() as Promise<JsonSchemaDocument>;
+    const schema = (await res.json()) as JsonSchemaDocument;
+    // no example file on this ref: keep the raw pointers, page still renders
+    return exampleRes.ok
+      ? inlineExamples(schema, await exampleRes.json())
+      : schema;
   },
   staleTime: 30_000,
   pendingComponent: SchemaPagePending,
