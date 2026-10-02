@@ -1,11 +1,11 @@
 [versions]
-gatlingPlugin = "3.13.5"
-jibPlugin = "3.5.1"
+gatlingPlugin = "3.15.1.3"
+jibPlugin = "3.5.4"
 models = "3.4.1"
-gatlingAmqpPlugin = "1.2.10"
+gatlingAmqpPlugin = "1.3.0"
 dotenvJava = "3.2.0"
-commonsIo = "2.15.1"
-sshd = "2.12.1"
+commonsIo = "2.22.0"
+sshd = "2.19.0"
 
 [libraries]
 models = { module = "com.hubsante:models", version.ref = "models" }
