@@ -302,7 +302,33 @@ public class MessageHandler {
                 .increment();
         String receivedEdxl = stringifyBody(message);
         validateFullMessage(message, receivedEdxl);
-        return deserializeMessage(message, receivedEdxl);
+        EdxlMessage edxlMessage = deserializeMessage(message, receivedEdxl);
+        validateContentSize(message, edxlMessage);
+        return edxlMessage;
+    }
+
+    /*
+     ** The EDXL content list must contain a single element: the schema allows a list for the
+     ** format's sake, but the hub only ever supports one embedded content message per envelope.
+     */
+    private void validateContentSize(Message message, EdxlMessage edxlMessage) {
+        int contentSize = edxlMessage.getContent().size();
+        if (contentSize > 1) {
+            String senderId = message.getMessageProperties().getReceivedRoutingKey();
+            String distributionId = edxlMessage.getDistributionID();
+            String errorCause =
+                    String.format(
+                            "EDXL content must contain a single element, but contains %d",
+                            contentSize);
+            structuredLog.error(
+                    errorCause,
+                    Map.of(
+                            LogConstants.SENDER_ID,
+                            senderId,
+                            LogConstants.DISTRIBUTION_ID,
+                            distributionId));
+            throw new SchemaValidationException(errorCause, distributionId);
+        }
     }
 
     private void validateFullMessage(Message message, String receivedEdxl) {

@@ -23,17 +23,6 @@
           }
         }
       }
-    },
-    {
-      "jsonContent": {
-        "embeddedJsonContent": {
-          "message": {
-            "customContent": {
-              "otherKey": "other_value"
-            }
-          }
-        }
-      }
     }
   ]
 }
