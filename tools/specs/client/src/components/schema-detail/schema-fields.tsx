@@ -84,7 +84,7 @@ export function SchemaFields({
             <AccordionPrimitive.Header className="flex">
               <AccordionPrimitive.Trigger className="group/trigger flex flex-1 cursor-pointer items-start justify-between gap-3 rounded-md px-3 text-left outline-none hover:bg-muted/40 focus-visible:ring-2 focus-visible:ring-ring/50">
                 {row}
-                <ChevronDownIcon className="mt-3 size-3.5 shrink-0 text-muted-foreground/50 transition-transform duration-150 group-aria-expanded/trigger:rotate-180" />
+                <ChevronDownIcon className="mt-3 size-3.5 shrink-0 text-muted-foreground transition-transform duration-150 group-aria-expanded/trigger:rotate-180" />
               </AccordionPrimitive.Trigger>
             </AccordionPrimitive.Header>
             <AccordionPrimitive.Panel className="overflow-hidden pt-1 text-sm data-open:animate-accordion-down data-closed:animate-accordion-up">

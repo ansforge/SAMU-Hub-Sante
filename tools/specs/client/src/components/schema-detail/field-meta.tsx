@@ -14,11 +14,28 @@ export function FieldMeta({
   const isArray = resolved.type === "array";
   const hasNomenclature = Boolean(prop[NOMENCLATURE_KEY]);
   const hasPattern = Boolean(resolved["pattern"]);
+  // objects carry their example on the definition as a whole subtree, too big
+  // to inline here; only leaf values are shown
+  const example =
+    typeof prop.example === "string" ||
+    typeof prop.example === "number" ||
+    typeof prop.example === "boolean"
+      ? String(prop.example)
+      : undefined;
 
-  if (!resolved.format && !isArray && !hasNomenclature) return null;
+  if (!resolved.format && !isArray && !hasNomenclature && example === undefined)
+    return null;
 
   return (
     <div className="flex flex-col gap-1 text-xs text-muted-foreground">
+      {example !== undefined && (
+        <span>
+          Exemple :{" "}
+          <code className="rounded bg-muted px-1 py-0.5 font-mono text-[11px] text-foreground break-all">
+            {example}
+          </code>
+        </span>
+      )}
       {(resolved.format || isArray) && (
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
           {resolved.format && (

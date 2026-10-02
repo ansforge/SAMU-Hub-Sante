@@ -34,6 +34,7 @@ export type JsonSchemaProperty = {
   maxItems?: number;
   $ref?: string;
   pattern?: string;
+  example?: unknown;
   [NOMENCLATURE_KEY]?: string;
 };
 

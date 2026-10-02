@@ -1,7 +1,8 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  /* DS typeface, served by the Adobe Fonts kit linked in index.html */
+  --font-sans: "futura-pt", ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
 
   /* Brand accent (decorative only, not a UI state color) */
@@ -34,8 +35,31 @@ body {
   margin: 0;
   color: var(--color-foreground);
   font-family: var(--font-sans);
+  /* futura-pt has a short x-height (~0.41em) and a thin Book (400) cut:
+     scale it a bit past the system UI font's (~0.45em) and use Medium as
+     the base weight so body text reads at a comfortable size */
+  font-size-adjust: 0.48;
+  font-weight: 500;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+}
+
+/* the kit ships futura-pt up to 600 only; bold is a separate family, so
+   without this 700 would be a browser-synthesized faux bold */
+.font-bold,
+b,
+strong {
+  font-family: "futura-pt-bold", var(--font-sans);
+}
+
+/* font-size-adjust is inherited; the mono font already has a tall x-height
+   and would shrink under the sans value */
+.font-mono,
+code,
+kbd,
+pre,
+samp {
+  font-size-adjust: none;
 }
 
 /* Thin, sober scrollbars */
