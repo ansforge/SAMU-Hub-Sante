@@ -1,15 +1,15 @@
 [versions]
-springBoot = "4.1.0"
+springBoot = "4.1.1"
 testcontainers = "2.0.5"
 logstashEncoder = "9.0"
 univocityParsers = "2.9.1"
 groovyJson = "3.0.25"
 orgJson = "20231013"
-googleJavaFormat = "1.29.0"
+googleJavaFormat = "1.36.1"
 embedMongo = "4.33.0"
 apacheCommonsCsv = "1.14.1"
-tomcat = "11.0.22"
-netty = "4.2.13.Final"
+tomcat = "11.0.26"
+netty = "4.2.18.Final"
 jacksonBom = "3.1.1"
 
 [libraries]
