@@ -29,7 +29,7 @@ pnpm dev
 | --- | --- |
 | `VITE_SPECS_API_DOMAIN` | Specs API (auth, branches and tags) |
 | `VITE_SPECS_PUBLIC_VERSIONS` | JSON array of the versions visible when logged out, e.g. `["2.4.0", "3.5.0-rc.1"]`; the newest is the default. Unset or empty: falls back to `main` |
-| `VITE_SPECS_VHOST_MAP` | JSON object from hubsante-topology's `vhost.map`; every `model_lib_version` is merged (deduplicated) into the public versions |
+| `VITE_SPECS_VHOST_MAP` | JSON object from hubsante-topology's `vhost.map`; every `model_lib_version` is merged (deduplicated) into the public versions; for a ref targeted by some vhost, the perimeter filter comes from `supported_messages` (perimeter = vhost name before `_`, messages matched on `label`) instead of `perimeters` in `messagesList.json` |
 
 In the Docker image, both are read at container start by `docker-entrypoint.sh` and written to `env-config.js`.
 
