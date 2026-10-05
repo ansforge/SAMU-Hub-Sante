@@ -17,9 +17,12 @@ package com.hubsante.hub.config;
 
 import com.hubsante.hub.model.PersistedMessage;
 import java.time.Duration;
+import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.boot.mongodb.autoconfigure.MongoClientSettingsBuilderCustomizer;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
 import org.springframework.data.domain.Sort;
@@ -38,6 +41,30 @@ public class MongoConfiguration {
 
     @Value("${persistence.arrivedAt.expiresDurationDays}")
     private int expiresDurationDays;
+
+    @Value("${mongo.connection.server-selection-timeout-ms:5000}")
+    private long serverSelectionTimeoutMs;
+
+    @Value("${mongo.connection.connect-timeout-ms:5000}")
+    private int connectTimeoutMs;
+
+    /**
+     * Shortens the MongoDB driver's default timeouts (30s) so that any operation fails fast
+     * when the database is unreachable, instead of blocking the caller (e.g. index creation at
+     * startup, or message persistence) for a long time.
+     */
+    @Bean
+    public MongoClientSettingsBuilderCustomizer mongoConnectionTimeoutCustomizer() {
+        return builder ->
+                builder.applyToClusterSettings(
+                                cluster ->
+                                        cluster.serverSelectionTimeout(
+                                                serverSelectionTimeoutMs, TimeUnit.MILLISECONDS))
+                        .applyToSocketSettings(
+                                socket ->
+                                        socket.connectTimeout(
+                                                connectTimeoutMs, TimeUnit.MILLISECONDS));
+    }
 
     public MongoConfiguration(MongoTemplate mongoTemplate) {
         this.mongoTemplate = mongoTemplate;
