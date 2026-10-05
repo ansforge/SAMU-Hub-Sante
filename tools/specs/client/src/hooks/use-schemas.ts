@@ -1,6 +1,6 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { getRouteApi } from "@tanstack/react-router";
-import { messageListUrl } from "@/config";
+import { messageListUrl, messagePerimeters } from "@/config";
 import type { SchemaReference } from "@/types";
 
 const rootRouteApi = getRouteApi("__root__");
@@ -15,7 +15,11 @@ export function useSchemas() {
         throw new Error(`Branche ou tag "${ref}" introuvable.`);
       }
       if (!res.ok) throw new Error(`Échec du chargement (HTTP ${res.status})`);
-      return res.json();
+      const schemas: SchemaReference[] = await res.json();
+      return schemas.map((schema) => ({
+        ...schema,
+        perimeters: messagePerimeters(schema.label),
+      }));
     },
     placeholderData: keepPreviousData,
     retry: false,

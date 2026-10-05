@@ -1,4 +1,7 @@
-type VhostMap = Record<string, { model_lib_version: string }>;
+type VhostMap = Record<
+  string,
+  { model_lib_version: string; supported_messages?: string[] }
+>;
 
 declare global {
   interface Window {
@@ -20,6 +23,14 @@ export const apiDomain =
 const vhostMap: VhostMap =
   window.__ENV__?.VITE_SPECS_VHOST_MAP ??
   JSON.parse(import.meta.env.VITE_SPECS_VHOST_MAP ?? "{}");
+
+export const messagePerimeters = (label: string): string[] => [
+  ...new Set(
+    Object.entries(vhostMap)
+      .filter(([, vhost]) => vhost.supported_messages?.includes(label))
+      .map(([name]) => name.split("_")[0]),
+  ),
+];
 
 const extraVersions: string[] =
   window.__ENV__?.VITE_SPECS_PUBLIC_VERSIONS ??
