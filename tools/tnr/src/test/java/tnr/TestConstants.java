@@ -10,8 +10,6 @@ public final class TestConstants {
     // Client IDs — SAMU
     public static final String SAMU1_V1_ID = "fr.health.tnr.samu1-v1";
     public static final String SAMU2_V1_ID = "fr.health.tnr.samu2-v1";
-    public static final String SAMU1_V2_ID = "fr.health.tnr.samu1-v2";
-    public static final String SAMU2_V2_ID = "fr.health.tnr.samu2-v2";
     public static final String SAMU1_V3_ID = "fr.health.tnr.samu1-v3";
     public static final String SAMU2_V3_ID = "fr.health.tnr.samu2-v3";
 
@@ -22,13 +20,11 @@ public final class TestConstants {
 
     // Vhosts
     public static final String VHOST_15_15_V1_TAG = "15-15_v1.5";
-    public static final String VHOST_15_15_V2_TAG = "15-15_v2.0";
     public static final String VHOST_15_15_V3_TAG = "15-15_v2.1";
     public static final String VHOST_15_NEXSIS_V3_TAG = "15-nexsis_v1.9";
 
     // Version tags
     public static final String V1_TAG = "1.3.0";
-    public static final String V2_TAG = "2.3.0";
     public static final String V3_SAMU_TAG = "3.3.0";
     public static final String V3_FIRE_TAG = "3.4.0-rc.3";
 
