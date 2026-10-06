@@ -151,7 +151,7 @@ function Home() {
       </h1>
       <p className="max-w-xl text-muted-foreground">
         Consultez les schémas des messages échangés via le Hub Santé : champs,
-        types, nomenclatures et exemples.
+        types et nomenclatures.
       </p>
       <Button size="lg" onClick={() => openSearch(true)}>
         <SearchIcon />
@@ -175,7 +175,6 @@ function SchemaPage() {
     <div className="flex min-h-0 flex-1 flex-col">
       <SchemaDetail
         schema={schema}
-        examples={schemaRef?.examples}
         label={schemaRef?.label ?? schemaName}
         perimeters={schemaRef?.perimeters ?? []}
         schemaName={schemaName}
