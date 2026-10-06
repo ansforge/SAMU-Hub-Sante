@@ -11,13 +11,14 @@ import { useKeyboardShortcut } from "@/hooks/use-keyboard-shortcut";
 import { useSchemaStore } from "@/store/schema-store";
 import { flattenFields } from "@/components/schema-detail/schema-utils";
 import { useMatch, useNavigate } from "@tanstack/react-router";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import { useSchemas } from "@/hooks/use-schemas";
 import { SearchIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const GlobalSearch = () => {
-  const [open, setOpen] = useState(false);
+  const open = useSchemaStore((s) => s.searchOpen);
+  const setOpen = useSchemaStore((s) => s.setSearchOpen);
   const { data: schemas = [] } = useSchemas();
   const navigate = useNavigate();
   const currentSchemaMatch = useMatch({
@@ -36,7 +37,10 @@ const GlobalSearch = () => {
     [currentSchemaFields, currentSchemaDefinitions],
   );
 
-  const toggleGlobalSearch = useCallback(() => setOpen((prev) => !prev), []);
+  const toggleGlobalSearch = useCallback(
+    () => setOpen(!useSchemaStore.getState().searchOpen),
+    [],
+  );
 
   const handleOnSelect = useCallback((schemaName: string) => {
     setOpen(false);

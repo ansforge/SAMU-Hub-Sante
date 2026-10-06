@@ -19,6 +19,9 @@ import {
 import { useDefaultRef } from "@/hooks/use-auth";
 import { useSchemas } from "@/hooks/use-schemas";
 import { SidebarInset, SidebarProvider } from "./components/ui/sidebar";
+import { Button } from "./components/ui/button";
+import { useSchemaStore } from "./store/schema-store";
+import { SearchIcon } from "lucide-react";
 import { AppSidebar } from "./components/app-sidebar";
 import { AppHeader } from "./components/app-header";
 import { JsonSchemaDocument } from "./types";
@@ -139,9 +142,24 @@ function SchemasError({ error, retry }: { error: Error; retry: () => void }) {
 }
 
 function Home() {
+  const openSearch = useSchemaStore((s) => s.setSearchOpen);
+
   return (
-    <div className="flex flex-1 items-center justify-center text-muted-foreground">
-      Sélectionnez un schéma pour voir ses détails.
+    <div className="flex flex-1 flex-col items-center justify-center gap-4 p-6 text-center">
+      <h1 className="text-2xl font-semibold">
+        Spécifications des messages Hub Santé
+      </h1>
+      <p className="max-w-xl text-muted-foreground">
+        Consultez les schémas des messages échangés via le Hub Santé : champs,
+        types, nomenclatures et exemples.
+      </p>
+      <Button size="lg" onClick={() => openSearch(true)}>
+        <SearchIcon />
+        Rechercher un schéma
+      </Button>
+      <p className="text-sm text-muted-foreground">
+        ou choisissez-en un dans le menu à gauche.
+      </p>
     </div>
   );
 }
