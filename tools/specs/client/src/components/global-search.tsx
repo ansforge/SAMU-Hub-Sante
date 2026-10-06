@@ -45,6 +45,9 @@ const GlobalSearch = () => {
     shouldThrow: false,
   });
   const currentSchema = currentSchemaMatch?.loaderData;
+  const currentSchemaLabel = schemas.find(
+    (s) => s.schemaName === currentSchemaMatch?.params.schemaName,
+  )?.label;
   const currentSchemaFields = currentSchema?.properties;
   const currentSchemaDefinitions =
     currentSchema?.definitions ?? currentSchema?.$defs ?? {};
@@ -108,7 +111,7 @@ const GlobalSearch = () => {
           <CommandList>
             <CommandEmpty>Aucun résultat trouvé.</CommandEmpty>
             {flatFields.length > 0 && (
-              <CommandGroup heading={`Champs du ${currentSchema?.title}`}>
+              <CommandGroup heading={`Champs du ${currentSchemaLabel}`}>
                 {flatFields.map(({ path, prop }) => {
                   const fieldPath = path.join(".");
                   return (

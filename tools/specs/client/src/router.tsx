@@ -168,14 +168,16 @@ function SchemaPage() {
   const schema = schemaRoute.useLoaderData();
   const { schemaName } = schemaRoute.useParams();
   const { data: schemas } = useSchemas();
-  const examples = schemas?.find((s) => s.schemaName === schemaName)?.examples;
+  const schemaRef = schemas?.find((s) => s.schemaName === schemaName);
   const { ref } = rootRoute.useSearch();
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <SchemaDetail
         schema={schema}
-        examples={examples}
+        examples={schemaRef?.examples}
+        label={schemaRef?.label ?? schemaName}
+        perimeters={schemaRef?.perimeters ?? []}
         schemaName={schemaName}
         ref={ref}
       />
