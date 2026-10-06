@@ -38,13 +38,16 @@ import org.springframework.data.mongodb.core.query.Criteria;
 @Slf4j
 public class MongoConfiguration {
 
-    private static final Duration INITIAL_RETRY_DELAY = Duration.ofSeconds(1);
-    private static final Duration MAX_RETRY_DELAY = Duration.ofMinutes(5);
-
     private final MongoTemplate mongoTemplate;
 
     @Value("${persistence.arrivedAt.expiresDurationDays}")
     private int expiresDurationDays;
+
+    @Value("${mongo.index-creation-retry.initial-delay-ms:1000}")
+    private long initialRetryDelayMs;
+
+    @Value("${mongo.index-creation-retry.max-delay-ms:300000}")
+    private long maxRetryDelayMs;
 
     private final ScheduledExecutorService retryScheduler =
             Executors.newSingleThreadScheduledExecutor(
@@ -60,7 +63,7 @@ public class MongoConfiguration {
 
     @EventListener(ApplicationReadyEvent.class)
     public void createIndexes() {
-        attemptCreateIndexes(INITIAL_RETRY_DELAY);
+        attemptCreateIndexes(Duration.ofMillis(initialRetryDelayMs));
     }
 
     private void attemptCreateIndexes(Duration nextRetryDelay) {
@@ -80,9 +83,10 @@ public class MongoConfiguration {
         }
     }
 
-    private static Duration nextDelay(Duration currentDelay) {
+    private Duration nextDelay(Duration currentDelay) {
         Duration doubled = currentDelay.multipliedBy(2);
-        return doubled.compareTo(MAX_RETRY_DELAY) > 0 ? MAX_RETRY_DELAY : doubled;
+        Duration maxRetryDelay = Duration.ofMillis(maxRetryDelayMs);
+        return doubled.compareTo(maxRetryDelay) > 0 ? maxRetryDelay : doubled;
     }
 
     @PreDestroy

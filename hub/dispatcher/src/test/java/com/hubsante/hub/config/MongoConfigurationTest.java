@@ -44,6 +44,8 @@ class MongoConfigurationTest {
         mongoTemplate = mock(MongoTemplate.class);
         mongoConfiguration = new MongoConfiguration(mongoTemplate);
         ReflectionTestUtils.setField(mongoConfiguration, "expiresDurationDays", 3);
+        ReflectionTestUtils.setField(mongoConfiguration, "initialRetryDelayMs", 50L);
+        ReflectionTestUtils.setField(mongoConfiguration, "maxRetryDelayMs", 200L);
     }
 
     @AfterEach
@@ -92,8 +94,8 @@ class MongoConfigurationTest {
 
         mongoConfiguration.createIndexes();
 
-        // first call fails immediately, then retries after 1s, then 2s: allow up to 5s
-        await().atMost(Duration.ofSeconds(5))
+        // first call fails immediately, then retries after 50ms, then 100ms: allow up to 2s
+        await().atMost(Duration.ofSeconds(2))
                 .untilAsserted(() -> assertThat(indexOpsCalls.get()).isEqualTo(3));
     }
 }
