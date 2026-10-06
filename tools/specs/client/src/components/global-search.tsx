@@ -16,6 +16,25 @@ import { useSchemas } from "@/hooks/use-schemas";
 import { SearchIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
+// normalize is a method to remove all accent
+// so it does something like : é -> e
+// so that if you type "perimetre" it matches "périmètre"
+const normalize = (s: string) =>
+  s
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .toLowerCase();
+
+// we override the search filter to be able to filter by title and label
+const filter = (value: string, search: string, keywords: string[] = []) => {
+  const query = normalize(search).trim();
+  const haystack = normalize([value, ...keywords].join(" "));
+  if (!query.split(/\s+/).every((word) => haystack.includes(word))) return 0;
+  const v = normalize(value);
+  if (v === query || v.endsWith(`.${query}`)) return 1;
+  return v.includes(query) ? 0.8 : 0.5;
+};
+
 const GlobalSearch = () => {
   const open = useSchemaStore((s) => s.searchOpen);
   const setOpen = useSchemaStore((s) => s.setSearchOpen);
@@ -84,20 +103,29 @@ const GlobalSearch = () => {
         </div>
       </Button>
       <CommandDialog open={open} onOpenChange={setOpen}>
-        <Command>
+        <Command filter={filter}>
           <CommandInput placeholder="Rechercher..." />
           <CommandList>
             <CommandEmpty>Aucun résultat trouvé.</CommandEmpty>
             {flatFields.length > 0 && (
               <CommandGroup heading={`Champs du ${currentSchema?.title}`}>
-                {flatFields.map(({ path }) => {
+                {flatFields.map(({ path, prop }) => {
                   const fieldPath = path.join(".");
                   return (
                     <CommandItem
                       key={fieldPath}
+                      value={fieldPath}
+                      keywords={prop.title ? [prop.title] : []}
                       onSelect={() => handleFieldSelect(fieldPath)}
                     >
-                      {fieldPath}
+                      <div className="flex min-w-0 flex-col">
+                        <span>{fieldPath}</span>
+                        {prop.title && (
+                          <span className="truncate text-xs text-muted-foreground">
+                            {prop.title}
+                          </span>
+                        )}
+                      </div>
                     </CommandItem>
                   );
                 })}
@@ -107,6 +135,8 @@ const GlobalSearch = () => {
               {schemas.map((s) => (
                 <CommandItem
                   key={s.schemaName}
+                  value={s.label}
+                  keywords={[s.schemaName]}
                   onSelect={() => handleOnSelect(s.schemaName)}
                 >
                   {s.label}
