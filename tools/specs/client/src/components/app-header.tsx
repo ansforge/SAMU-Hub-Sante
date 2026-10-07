@@ -21,7 +21,7 @@ export function AppHeader() {
       >
         <AssetImage
           name="logo-ministere.svg"
-          alt="Ministère de la Santé et de la Prévention"
+          alt="Ministère de la Santé et de la Prévention (nouvelle fenêtre)"
           className="h-14"
         />
       </a>

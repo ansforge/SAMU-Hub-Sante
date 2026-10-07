@@ -11,9 +11,8 @@ import { useNomenclature } from "@/hooks/use-nomenclature";
 import { buildNomenclatureUrl } from "@/lib/utils";
 import { useSchemaStore } from "@/store/schema-store";
 import { getRouteApi } from "@tanstack/react-router";
-import { ExternalLinkIcon } from "lucide-react";
 import { useMemo, useState } from "react";
-import SourceLink from "./source-link";
+import { ExternalLink } from "./external-link";
 
 const rootRouteApi = getRouteApi("__root__");
 
@@ -42,7 +41,7 @@ function NomenclatureHeader({ name }: { name: string }) {
         <SheetTitle className="font-bold text-xl">
           {data?.title ?? name}
         </SheetTitle>
-        <SourceLink href={nomenclatureSource} />
+        <ExternalLink href={nomenclatureSource}>Voir sur GitHub</ExternalLink>
       </div>
       {data?.description && (
         <p className="text-sm text-muted-foreground">{data.description}</p>
