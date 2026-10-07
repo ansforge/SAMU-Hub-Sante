@@ -15,6 +15,7 @@ import { useCallback, useMemo } from "react";
 import { useSchemas } from "@/hooks/use-schemas";
 import { SearchIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { isMac } from "@/lib/utils";
 
 // normalize is a method to remove all accent
 // so it does something like : é -> e
@@ -101,7 +102,7 @@ const GlobalSearch = () => {
         <div className="hidden xl:flex items-center justify-between w-full">
           <span className="grow text-left">Rechercher...</span>
           <kbd className="rounded border bg-background px-1.5 font-mono text-xs">
-            ⌘K
+            {isMac ? "⌘K" : "Ctrl+K"}
           </kbd>
         </div>
       </Button>
