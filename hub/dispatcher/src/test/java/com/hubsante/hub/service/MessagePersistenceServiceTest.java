@@ -64,9 +64,9 @@ public class MessagePersistenceServiceTest {
 
     @ParameterizedTest(name = "{1} on vhost {0} is persisted as {2}")
     @CsvSource({
-        "15-nexsis_vactive, resourcesInfoCisu, ResourcesInfoCisuWrapper",
-        "15-15_v2.1,        resourcesInfo,     ResourcesInfoWrapper",
-        "15-15_v1.5,        resourcesStatus,   ResourcesStatusWrapper",
+        "15-nexsis_vactive, resourcesInfoCisu, resourcesInfoCisu",
+        "15-15_v2.1,        resourcesInfo,     resourcesInfo",
+        "15-15_v1.5,        resourcesStatus,   resourcesStatus",
     })
     @DisplayName("should persist the message under its use case name")
     void shouldPersistAllowedUseCase(String vhost, String contentKey, String expectedUseCase)

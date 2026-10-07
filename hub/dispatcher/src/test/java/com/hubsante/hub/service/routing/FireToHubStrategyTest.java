@@ -148,7 +148,7 @@ class FireToHubStrategyTest {
         @Test
         @DisplayName("should throw when the message class is not supported on the vhost")
         void shouldThrowWhenMessageClassNotSupported() {
-            doReturn(List.of("SomethingElseWrapper")).when(hubConfig).getSupportedMessages();
+            doReturn(List.of("somethingElseUseCase")).when(hubConfig).getSupportedMessages();
 
             assertThatThrownBy(
                             () ->
@@ -164,7 +164,7 @@ class FireToHubStrategyTest {
         @Test
         @DisplayName("should throw when the use case is inhibited for the recipient")
         void shouldThrowWhenUseCaseInhibited() {
-            doReturn(List.of("ErrorWrapper"))
+            doReturn(List.of("error"))
                     .when(clientPropertiesRegistry)
                     .getClientInhibitedUseCases(SAMU_A_ROUTING_KEY);
 

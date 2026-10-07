@@ -89,7 +89,7 @@ clients:
           - '1.0'
     editor: default-editor
     inhibitedUseCases:
-      - 'ResourcesInfoCisuWrapper'
+      - 'resourcesInfoCisu'
     lrmPerimeterVersions:
       - '1.5'
     cisuPerimeterVersions:
