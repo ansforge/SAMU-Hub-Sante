@@ -101,7 +101,7 @@ const GlobalSearch = () => {
         <SearchIcon />
         <div className="hidden xl:flex items-center justify-between w-full">
           <span className="grow text-left">Rechercher...</span>
-          <kbd className="rounded border bg-background px-1.5 font-mono text-xs">
+          <kbd className="rounded border bg-background px-1.5 text-xs">
             {isMac ? "⌘K" : "Ctrl+K"}
           </kbd>
         </div>

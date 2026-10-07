@@ -72,7 +72,7 @@ function SchemaNotFound() {
         <p className="text-lg font-medium">Schéma introuvable</p>
         <p className="text-sm text-muted-foreground">
           « {schemaName} » n'existe pas sur la branche{" "}
-          <span className="font-mono">{ref}</span>.
+          <span className="font-semibold">{ref}</span>.
         </p>
         <div className="mt-2 flex gap-4 text-sm">
           <Link to="/" className="underline">

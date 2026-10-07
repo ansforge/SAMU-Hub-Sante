@@ -143,7 +143,7 @@ export function NomenclatureBadge({ name }: { name: string }) {
   );
 
   return (
-    <span className="whitespace-nowrap font-mono text-xs text-muted-foreground">
+    <span className="whitespace-nowrap text-xs text-muted-foreground">
       nomenclature :{" "}
       <button
         type="button"
