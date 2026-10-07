@@ -294,21 +294,20 @@ class MessageUtilsTest {
         void shouldPassWhenSupported() {
             assertThatCode(
                             () ->
-                                    MessageUtils.checkMessageClassNameSupported(
-                                            message, configSupporting("ErrorWrapper")))
+                                    MessageUtils.checkUseCaseSupported(
+                                            message, configSupporting("error")))
                     .doesNotThrowAnyException();
         }
 
         @Test
         @DisplayName("should throw UnroutableMessageException when the class is not supported")
         void shouldThrowWhenUnsupported() {
-            HubConfiguration hubConfig = configSupporting("SomethingElseWrapper");
+            HubConfiguration hubConfig = configSupporting("otherUseCase");
             when(hubConfig.getVhost()).thenReturn("15-15_v1.5");
 
-            assertThatThrownBy(
-                            () -> MessageUtils.checkMessageClassNameSupported(message, hubConfig))
+            assertThatThrownBy(() -> MessageUtils.checkUseCaseSupported(message, hubConfig))
                     .isInstanceOf(UnroutableMessageException.class)
-                    .hasMessageContaining("ErrorWrapper")
+                    .hasMessageContaining("error")
                     .hasMessageContaining("is not supported on the vhost 15-15_v1.5");
         }
     }
