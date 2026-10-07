@@ -202,7 +202,7 @@ public class ConversionUtils {
                 EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage()));
     }
 
-    private static RoutingType determineRoutingType(EdxlMessage edxlMessage) {
+    public static RoutingType determineRoutingType(EdxlMessage edxlMessage) {
         String senderId = edxlMessage.getSenderID();
         String recipientId = getRecipientID(edxlMessage);
 

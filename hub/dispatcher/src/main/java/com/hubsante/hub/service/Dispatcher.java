@@ -27,6 +27,10 @@ import com.hubsante.hub.config.HubConfiguration;
 import com.hubsante.hub.config.LogConstants;
 import com.hubsante.hub.config.StructuredLogger;
 import com.hubsante.hub.exception.*;
+import com.hubsante.hub.service.routing.FireToHubStrategy;
+import com.hubsante.hub.service.routing.HubSanteInternalStrategy;
+import com.hubsante.hub.service.routing.HubToFireStrategy;
+import com.hubsante.hub.service.routing.RoutingStrategy;
 import com.hubsante.hub.utils.ConversionUtils;
 import com.hubsante.hub.utils.EdxlUtils;
 import com.hubsante.hub.utils.MessagePersistencePolicy;
@@ -88,6 +92,9 @@ public class Dispatcher {
     private final MessagePersistenceService persistenceService;
     private static final StructuredLogger structuredLog = new StructuredLogger(log);
     private final Tracer tracer;
+    private final HubSanteInternalStrategy hubSanteInternalStrategy;
+    private final HubToFireStrategy hubToFireStrategy;
+    private final FireToHubStrategy fireToHubStrategy;
 
     public Dispatcher(
             MessageHandler messageHandler,
@@ -98,7 +105,10 @@ public class Dispatcher {
             ConversionHandler conversionHandler,
             HubConfiguration hubConfig,
             MessagePersistenceService persistenceService,
-            Tracer tracer) {
+            Tracer tracer,
+            HubSanteInternalStrategy hubSanteInternalStrategy,
+            HubToFireStrategy hubToFireStrategy,
+            FireToHubStrategy fireToHubStrategy) {
         this.messageHandler = messageHandler;
         this.rabbitTemplate = rabbitTemplate;
         this.edxlHandler = edxlHandler;
@@ -108,7 +118,22 @@ public class Dispatcher {
         this.hubConfig = hubConfig;
         this.persistenceService = persistenceService;
         this.tracer = tracer;
+        this.hubSanteInternalStrategy = hubSanteInternalStrategy;
+        this.hubToFireStrategy = hubToFireStrategy;
+        this.fireToHubStrategy = fireToHubStrategy;
         initReturnsCallback();
+    }
+
+    /**
+     * Selects the routing strategy matching the message's sender/recipient cinematic (both health,
+     * health to fire, or fire to health).
+     */
+    public RoutingStrategy selectRoutingStrategy(EdxlMessage edxlMessage) {
+        return switch (ConversionUtils.determineRoutingType(edxlMessage)) {
+            case SAMU_TO_SAMU -> hubSanteInternalStrategy;
+            case SAMU_TO_CISU -> hubToFireStrategy;
+            case CISU_TO_SAMU -> fireToHubStrategy;
+        };
     }
 
     private void tagCurrentSpan(Message amqpMessage, EdxlMessage edxlMessage) {
