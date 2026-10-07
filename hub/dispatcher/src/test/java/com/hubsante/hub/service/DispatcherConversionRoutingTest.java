@@ -25,9 +25,6 @@ import static com.hubsante.hub.testsupport.MessageTestUtils.*;
 import static com.hubsante.hub.testsupport.assertions.HubAssertions.assertThatMessageSentTo;
 import static com.hubsante.hub.testsupport.assertions.HubAssertions.assertThatMessagesSentTo;
 import static com.hubsante.hub.testsupport.assertions.HubAssertions.assertThatNoMessageSentTo;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -35,10 +32,7 @@ import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.hubsante.hub.config.HubConfiguration;
 import com.hubsante.hub.testsupport.HubTestScaffolding;
 import com.hubsante.hub.utils.*;
-import com.hubsante.model.EdxlHandler;
-import com.hubsante.model.edxl.EdxlMessage;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -54,7 +48,6 @@ class DispatcherConversionRoutingTest {
     private RabbitTemplate rabbitTemplate;
     private MessagePersistenceService persistenceService;
     private HubConfiguration hubConfig;
-    private EdxlHandler edxlHandler;
     private XmlMapper xmlMapper;
     private ObjectMapper jsonMapper;
 
@@ -67,7 +60,6 @@ class DispatcherConversionRoutingTest {
         rabbitTemplate = hub.rabbitTemplate();
         persistenceService = hub.persistenceService();
         hubConfig = hub.hubConfig();
-        edxlHandler = hub.edxlHandler();
         xmlMapper = hub.xmlMapper();
         jsonMapper = hub.jsonMapper();
         echoConversionService(conversionHandler);
@@ -218,28 +210,15 @@ class DispatcherConversionRoutingTest {
     }
 
     @Test
-    @DisplayName("should send version converted message to transfer exchange")
-    public void sendToTransferExchange() throws IOException {
-        // samuA -> samuV1 on default vhost 15-15_v2.1; conversion triggered
-        Message message = createMessage("EDXL-DE", XML, SAMU_A_ROUTING_KEY, SAMU_V1_ROUTING_KEY);
-        EdxlMessage edxlMessage =
-                edxlHandler.deserializeXmlEDXL(
-                        new String(message.getBody(), StandardCharsets.UTF_8));
-        String exchangeName = "transfer_15-15_v2.1_to_15-15_v1.5";
-
-        dispatcher.sendToTransferExchange(message.toString(), message, "15-15_v1.5");
-
-        verify(rabbitTemplate).send(eq(exchangeName), eq(SAMU_A_ROUTING_KEY), any(Message.class));
-    }
-
-    @Test
-    @DisplayName("should call sendToTransferExchange when there is a version conversion")
+    @DisplayName(
+            "should publish the message to the transfer exchange when a version conversion is needed")
     public void transferToOtherVhost() throws IOException {
         Message message = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY, SAMU_V1_ROUTING_KEY);
 
         dispatcher.dispatch(message);
 
-        verify(dispatcher, times(1)).sendToTransferExchange(anyString(), any(), any());
+        assertThatMessageSentTo(
+                rabbitTemplate, "transfer_15-15_v2.1_to_15-15_v1.5", SAMU_A_ROUTING_KEY);
 
         // the message must NOT have been published on the source target queue
         assertThatNoMessageSentTo(rabbitTemplate, DISTRIBUTION_EXCHANGE, SAMU_B_MESSAGE_QUEUE);
