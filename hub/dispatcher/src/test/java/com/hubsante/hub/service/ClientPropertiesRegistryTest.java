@@ -39,7 +39,7 @@ public class ClientPropertiesRegistryTest {
         List<String> samuV1InhibitedMessages = samuV1Properties.inhibitedUseCases();
 
         assertNotNull(samuV1InhibitedMessages);
-        assertEquals(List.of("ResourcesInfoCisuWrapper"), samuV1InhibitedMessages);
+        assertEquals(List.of("resourcesInfoCisu"), samuV1InhibitedMessages);
 
         assertNull(clientPropertiesRegistry.get("unknown"));
     }

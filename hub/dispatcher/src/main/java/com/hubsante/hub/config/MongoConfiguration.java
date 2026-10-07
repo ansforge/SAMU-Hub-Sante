@@ -61,8 +61,7 @@ public class MongoConfiguration {
                                 "payload.content.jsonContent.embeddedJsonContent.message.resourcesInfo.caseId",
                                 Sort.Direction.ASC)
                         .partial(
-                                PartialIndexFilter.of(
-                                        Criteria.where("type").is("ResourcesInfoWrapper"))));
+                                PartialIndexFilter.of(Criteria.where("type").is("resourcesInfo"))));
         indexOps.createIndex(
                 new Index()
                         .named("idx_resourcesStatus_caseId")
@@ -71,7 +70,7 @@ public class MongoConfiguration {
                                 Sort.Direction.ASC)
                         .partial(
                                 PartialIndexFilter.of(
-                                        Criteria.where("type").is("ResourcesStatusWrapper"))));
+                                        Criteria.where("type").is("resourcesStatus"))));
         indexOps.createIndex(
                 new Index()
                         .named("idx_resourcesStatus_resourceId")
@@ -80,7 +79,7 @@ public class MongoConfiguration {
                                 Sort.Direction.ASC)
                         .partial(
                                 PartialIndexFilter.of(
-                                        Criteria.where("type").is("ResourcesStatusWrapper"))));
+                                        Criteria.where("type").is("resourcesStatus"))));
         indexOps.createIndex(
                 new Index()
                         .named("idx_resourcesInfoCisu_caseId")
@@ -89,6 +88,6 @@ public class MongoConfiguration {
                                 Sort.Direction.ASC)
                         .partial(
                                 PartialIndexFilter.of(
-                                        Criteria.where("type").is("ResourcesInfoCisuWrapper"))));
+                                        Criteria.where("type").is("resourcesInfoCisu"))));
     }
 }

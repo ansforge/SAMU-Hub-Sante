@@ -141,8 +141,8 @@ public class MessageUtils {
         }
     }
 
-    public static void checkMessageClassNameSupported(
-            EdxlMessage edxlMessage, HubConfiguration hubConfig) throws Exception {
+    public static void checkUseCaseSupported(EdxlMessage edxlMessage, HubConfiguration hubConfig)
+            throws Exception {
         String messageClassName =
                 EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage());
         List<String> supportedMessages = hubConfig.getSupportedMessages();
