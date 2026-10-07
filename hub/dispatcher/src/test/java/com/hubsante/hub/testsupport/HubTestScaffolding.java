@@ -29,6 +29,9 @@ import com.hubsante.hub.service.Dispatcher;
 import com.hubsante.hub.service.MessageHandler;
 import com.hubsante.hub.service.MessagePersistenceService;
 import com.hubsante.hub.service.TopologyRegistry;
+import com.hubsante.hub.service.routing.FireToHubStrategy;
+import com.hubsante.hub.service.routing.HubSanteInternalStrategy;
+import com.hubsante.hub.service.routing.HubToFireStrategy;
 import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.Validator;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -110,6 +113,19 @@ public final class HubTestScaffolding {
                                 jsonMapper,
                                 conversionHandler));
 
+        HubSanteInternalStrategy hubSanteInternalStrategy =
+                spy(
+                        new HubSanteInternalStrategy(
+                                messageHandler, conversionHandler, hubConfig, persistenceService));
+        HubToFireStrategy hubToFireStrategy =
+                spy(
+                        new HubToFireStrategy(
+                                messageHandler, conversionHandler, hubConfig, persistenceService));
+        FireToHubStrategy fireToHubStrategy =
+                spy(
+                        new FireToHubStrategy(
+                                messageHandler, conversionHandler, hubConfig, persistenceService));
+
         Dispatcher dispatcher =
                 spy(
                         new Dispatcher(
@@ -121,7 +137,10 @@ public final class HubTestScaffolding {
                                 conversionHandler,
                                 hubConfig,
                                 persistenceService,
-                                Tracer.NOOP));
+                                Tracer.NOOP,
+                                hubSanteInternalStrategy,
+                                hubToFireStrategy,
+                                fireToHubStrategy));
 
         return new Hub(
                 dispatcher,
@@ -135,7 +154,10 @@ public final class HubTestScaffolding {
                 edxlHandler,
                 xmlMapper,
                 jsonMapper,
-                registry);
+                registry,
+                hubSanteInternalStrategy,
+                hubToFireStrategy,
+                fireToHubStrategy);
     }
 
     /**
@@ -178,7 +200,10 @@ public final class HubTestScaffolding {
             EdxlHandler edxlHandler,
             XmlMapper xmlMapper,
             ObjectMapper jsonMapper,
-            MeterRegistry registry) {
+            MeterRegistry registry,
+            HubSanteInternalStrategy hubSanteInternalStrategy,
+            HubToFireStrategy hubToFireStrategy,
+            FireToHubStrategy fireToHubStrategy) {
 
         /** Overrides the vhost the routing code sees, without rebuilding the graph. */
         public Hub onVhost(String vhost) {
