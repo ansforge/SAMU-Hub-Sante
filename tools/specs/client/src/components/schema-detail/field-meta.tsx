@@ -1,5 +1,5 @@
 import type { JsonSchemaDefinitions, JsonSchemaProperty } from "@/types";
-import { NomenclatureBadge } from "../nomenclature-drawer";
+import { NomenclatureLink } from "../nomenclature-drawer";
 import { fieldCardinality, resolveRef } from "./schema-utils";
 import { NOMENCLATURE_KEY } from "@/config";
 
@@ -31,21 +31,27 @@ export function FieldMeta({
       {example !== undefined && (
         <span>
           Exemple :{" "}
-          <code className="rounded bg-muted px-1 py-0.5 font-mono text-[11px] text-foreground break-all">
+          <span className="font-medium text-foreground break-all">
             {example}
-          </code>
+          </span>
         </span>
       )}
       {(resolved.format || isArray) && (
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
           {resolved.format && (
-            <span className="border rounded px-1">
-              Format : <span className="font-medium">{resolved.format}</span>
+            <span>
+              Format :{" "}
+              <span className="font-medium text-foreground">
+                {resolved.format}
+              </span>
             </span>
           )}
           {hasPattern && (
-            <span className="border rounded px-1">
-              Regex : <span className="font-medium">{resolved["pattern"]}</span>
+            <span>
+              Regex :{" "}
+              <span className="font-medium text-foreground break-all">
+                {resolved["pattern"]}
+              </span>
             </span>
           )}
           {isArray && (
@@ -54,7 +60,7 @@ export function FieldMeta({
         </div>
       )}
       {hasNomenclature && (
-        <NomenclatureBadge name={prop[NOMENCLATURE_KEY] as string} />
+        <NomenclatureLink name={prop[NOMENCLATURE_KEY] as string} />
       )}
     </div>
   );

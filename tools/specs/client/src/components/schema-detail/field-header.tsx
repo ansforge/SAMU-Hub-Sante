@@ -1,22 +1,21 @@
 import { cn } from "@/lib/utils";
+import { Badge, type BadgeVariant } from "@/components/ui/badge";
 import type { JsonSchemaDefinitions, JsonSchemaProperty } from "@/types";
 import { fieldKind, fieldType, type FieldKind } from "./schema-utils";
 import { CopyButton } from "../copy-button";
 
-export const KIND_BADGE: Record<FieldKind, string> = {
-  object: "bg-violet-100 text-violet-700",
-  array: "bg-emerald-100 text-emerald-700",
-  simple: "bg-slate-100 text-slate-700",
+const PRIMITIVE_VARIANT: Record<string, BadgeVariant> = {
+  string: "string",
+  number: "number",
+  integer: "number",
+  boolean: "boolean",
 };
 
 // primitives get one color per JSON type so string/number/boolean read apart;
-// anything else falls back to KIND_BADGE.simple
-export const PRIMITIVE_BADGE: Record<string, string> = {
-  string: "bg-sky-100 text-sky-700",
-  number: "bg-amber-100 text-amber-800",
-  integer: "bg-amber-100 text-amber-800",
-  boolean: "bg-rose-100 text-rose-700",
-};
+// anything else falls back to its kind
+export function fieldBadgeVariant(kind: FieldKind, label: string): BadgeVariant {
+  return (kind === "simple" && PRIMITIVE_VARIANT[label]) || kind;
+}
 
 function badgeLabel(
   kind: FieldKind,
@@ -38,32 +37,33 @@ export function FieldHeader({
   prop: JsonSchemaProperty;
   required: boolean;
   definitions: JsonSchemaDefinitions;
-  path?: string[];
+  path: string[];
 }) {
   const kind = fieldKind(prop, definitions);
   const label = badgeLabel(kind, prop, definitions);
+  const depth = path.length - 1;
 
   return (
     <div className="flex flex-col items-start gap-0.5 text-left">
-      {path && path.length > 1 && (
-        <span className="group relative flex items-center gap-1 h-6 font-mono text-[11px] text-muted-foreground">
-          {path.join(".")}
-          <CopyButton content={path.join(".")} />
-        </span>
-      )}
-      <div className="flex flex-wrap items-baseline gap-2">
-        <span className="font-mono text-[15px] leading-none font-semibold text-primary">
-          {name}
-          {required && <span className="ml-0.5 text-destructive">*</span>}
-        </span>
+      <div className="flex min-h-6 flex-wrap items-center gap-2">
         <span
           className={cn(
-            "rounded-full px-2 py-0.5 font-mono text-[11px] font-medium",
-            (kind === "simple" && PRIMITIVE_BADGE[label]) || KIND_BADGE[kind],
+            "leading-none font-semibold text-primary",
+            depth === 0 ? "text-base" : "text-sm",
           )}
         >
-          {label}
+          {name}
         </span>
+        <Badge variant={fieldBadgeVariant(kind, label)}>{label}</Badge>
+        {required && (
+          <span className="text-xs font-medium text-destructive">Requis</span>
+        )}
+        {depth > 0 && (
+          <span className="group flex items-center gap-1 text-xs text-muted-foreground">
+            {path.join(".")}
+            <CopyButton content={path.join(".")} label="Copier le chemin" />
+          </span>
+        )}
       </div>
       {prop.title && (
         <span className="text-sm font-medium text-foreground">

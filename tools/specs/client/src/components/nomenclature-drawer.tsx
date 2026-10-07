@@ -1,3 +1,4 @@
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import {
   Sheet,
@@ -97,9 +98,7 @@ function NomenclatureContent({ name }: { name: string }) {
           {filteredOptions?.map((option) => (
             <tr key={option.const} className="border-b last:border-0">
               <td className="w-px whitespace-nowrap p-4 align-top">
-                <span className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs text-muted-foreground">
-                  {option.const}
-                </span>
+                <Badge variant="neutral">{option.const}</Badge>
               </td>
               <td className="p-4 pl-0 align-top">
                 <p className="font-bold text-sm">{option.title}</p>
@@ -136,7 +135,7 @@ export function NomenclatureDrawer() {
   );
 }
 
-export function NomenclatureBadge({ name }: { name: string }) {
+export function NomenclatureLink({ name }: { name: string }) {
   const openNomenclatureDrawer = useSchemaStore(
     (s) => s.openNomenclatureDrawer,
   );
