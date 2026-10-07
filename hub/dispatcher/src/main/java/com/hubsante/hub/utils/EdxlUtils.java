@@ -37,7 +37,7 @@ public class EdxlUtils {
         if (contentMessage == null) {
             return Constants.UNKNOWN;
         }
-        return contentMessage.getClass().getSimpleName();
+        return contentMessage.getUseCaseName();
     }
 
     private static String UUID() {
