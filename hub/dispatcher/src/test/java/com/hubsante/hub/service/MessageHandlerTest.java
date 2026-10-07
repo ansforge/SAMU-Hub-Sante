@@ -123,7 +123,7 @@ class MessageHandlerTest {
         @Test
         @DisplayName("should throw when the use case is inhibited for the recipient")
         void shouldThrowWhenInhibited() {
-            doReturn(List.of("ResourcesInfoCisuWrapper"))
+            doReturn(List.of("resourcesInfoCisu"))
                     .when(clientPropertiesRegistry)
                     .getClientInhibitedUseCases(SAMU_B_ROUTING_KEY);
 
@@ -135,14 +135,14 @@ class MessageHandlerTest {
                                                     RESOURCES_INFO_CISU_USE_CASE)))
                     .isInstanceOf(UnroutableMessageException.class)
                     .hasMessage(
-                            "Use case ResourcesInfoCisuWrapper is not supported for client "
+                            "Use case resourcesInfoCisu is not supported for client "
                                     + SAMU_B_ROUTING_KEY);
         }
 
         @Test
         @DisplayName("should pass when the use case is not among the inhibited ones")
         void shouldPassWhenUseCaseNotInhibited() {
-            doReturn(List.of("ResourcesInfoCisuWrapper"))
+            doReturn(List.of("resourcesInfoCisu"))
                     .when(clientPropertiesRegistry)
                     .getClientInhibitedUseCases(SAMU_B_ROUTING_KEY);
 
@@ -317,7 +317,7 @@ class MessageHandlerTest {
                                                     "boom",
                                                     SAMU_A_ROUTING_KEY + "_1234",
                                                     SAMU_B_ROUTING_KEY,
-                                                    "ErrorWrapper"),
+                                                    "error"),
                                             message))
                     .isInstanceOf(AmqpRejectAndDontRequeueException.class);
 
@@ -338,10 +338,7 @@ class MessageHandlerTest {
                             () ->
                                     messageHandler.handleError(
                                             new UnroutableMessageException(
-                                                    "boom",
-                                                    "id",
-                                                    SAMU_B_ROUTING_KEY,
-                                                    "ErrorWrapper"),
+                                                    "boom", "id", SAMU_B_ROUTING_KEY, "error"),
                                             message))
                     .isInstanceOf(AmqpRejectAndDontRequeueException.class);
 
@@ -359,10 +356,7 @@ class MessageHandlerTest {
                             () ->
                                     messageHandler.handleError(
                                             new UnroutableMessageException(
-                                                    "boom",
-                                                    "id",
-                                                    SAMU_B_ROUTING_KEY,
-                                                    "ErrorWrapper"),
+                                                    "boom", "id", SAMU_B_ROUTING_KEY, "error"),
                                             message))
                     .isInstanceOf(AmqpRejectAndDontRequeueException.class);
 
@@ -378,10 +372,7 @@ class MessageHandlerTest {
                             () ->
                                     messageHandler.handleError(
                                             new UnroutableMessageException(
-                                                    "boom",
-                                                    "id",
-                                                    SAMU_B_ROUTING_KEY,
-                                                    "ErrorWrapper"),
+                                                    "boom", "id", SAMU_B_ROUTING_KEY, "error"),
                                             message))
                     .isInstanceOf(AmqpRejectAndDontRequeueException.class);
 

@@ -220,7 +220,7 @@ public class Dispatcher {
             EdxlMessage edxlMessage = messageHandler.extractMessage(message);
             tagCurrentSpan(message, edxlMessage);
             // check message type is allowed on the current vhost
-            checkMessageClassNameSupported(edxlMessage, hubConfig);
+            checkUseCaseSupported(edxlMessage, hubConfig);
             // check message is allowed for its recipient
             messageHandler.inhibitMessageIfNeeded(edxlMessage);
             // reject the message if no health actor is involved (as sender or recipient)
@@ -247,11 +247,11 @@ public class Dispatcher {
             if (isConversionNeeded) {
                 if (conversionParameters.conversionType()
                         == ConversionUtils.ConversionType.CISU_TRANSCODING) {
-                    String useCase =
+                    String wrapperName =
                             EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage());
                     // Persist before conversion so the original message is saved even if conversion
                     // fails
-                    if (MessagePersistencePolicy.shouldPersist(hubConfig.getVhost(), useCase)) {
+                    if (MessagePersistencePolicy.shouldPersist(hubConfig.getVhost(), wrapperName)) {
                         persistenceService.persist(edxlMessage);
                     }
                 }
