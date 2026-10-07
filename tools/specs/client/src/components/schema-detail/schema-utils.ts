@@ -1,13 +1,5 @@
 import type { JsonSchemaDefinitions, JsonSchemaProperty } from "@/types";
 
-export type ExpandSignal = {
-  // bumped on every "expand/collapse all" click, forcing every Accordion in
-  // the tree to remount with the new defaultValue instead of staying
-  // uncontrolled-but-stuck on its old state
-  key: number;
-  expand: boolean;
-};
-
 export function refName(ref: string): string {
   return ref.split("/").pop() ?? ref;
 }

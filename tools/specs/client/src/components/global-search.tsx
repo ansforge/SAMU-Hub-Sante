@@ -74,7 +74,7 @@ const GlobalSearch = () => {
   }, []);
 
   const handleFieldSelect = useCallback((fieldPath: string) => {
-    useSchemaStore.getState().expandAll();
+    useSchemaStore.getState().revealField(fieldPath.split("."));
     setOpen(false);
     // wait for the close animation + accordion expansion to settle before
     // scrolling, instead of scrolling while still mid-close

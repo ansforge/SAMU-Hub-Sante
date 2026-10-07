@@ -1,3 +1,4 @@
+import { useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { NomenclatureDrawer } from "@/components/nomenclature-drawer";
@@ -9,6 +10,7 @@ import { githubDomain } from "@/config";
 import { useSchemaStore } from "@/store/schema-store";
 import { ExternalLink } from "../external-link";
 import { SchemaBadges } from "./schema-badges";
+import { flattenFields, nestedFields } from "./schema-utils";
 
 type SchemaDetailProps = {
   schema: JsonSchemaDocument;
@@ -25,12 +27,39 @@ export function SchemaDetail({
   schemaName,
   ref,
 }: SchemaDetailProps) {
-  const expandSignal = useSchemaStore((s) => s.expandSignal);
-  const toggleExpandAll = useSchemaStore((s) => s.toggleExpandAll);
+  const openFields = useSchemaStore((s) => s.openFields);
+  const setOpenFields = useSchemaStore((s) => s.setOpenFields);
 
   const properties = schema.properties ?? {};
   const hasProperties = Object.keys(properties).length > 0;
   const definitions = schema.definitions ?? schema.$defs ?? {};
+
+  // every expandable node, for "tout déplier"
+  const expandableIds = useMemo(
+    () =>
+      flattenFields(properties, definitions)
+        .filter(({ prop }) => nestedFields(prop, definitions))
+        .map(({ path }) => path.join(".")),
+    [properties, definitions],
+  );
+  const allOpen = openFields.length >= expandableIds.length;
+
+  // a #field.path anchor (on arrival or later) expands down to that field,
+  // then scrolls to it once it is rendered
+  useEffect(() => {
+    const revealHash = () => {
+      const id = decodeURIComponent(window.location.hash.slice(1));
+      if (!id) return;
+      useSchemaStore.getState().revealField(id.split("."));
+      requestAnimationFrame(() =>
+        document.getElementById(id)?.scrollIntoView({ block: "start" }),
+      );
+    };
+    setOpenFields([]);
+    revealHash();
+    window.addEventListener("hashchange", revealHash);
+    return () => window.removeEventListener("hashchange", revealHash);
+  }, [schemaName, setOpenFields]);
 
   const schemaSource = buildGithubSchemaUrl(
     githubDomain,
@@ -62,16 +91,21 @@ export function SchemaDetail({
           <section className="flex flex-col gap-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <FieldLegend />
-              <Button variant="outline" size="sm" onClick={toggleExpandAll}>
-                {expandSignal.expand ? "Tout replier" : "Tout déplier"}
-              </Button>
+              {expandableIds.length > 0 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setOpenFields(allOpen ? [] : expandableIds)}
+                >
+                  {allOpen ? "Tout replier" : "Tout déplier"}
+                </Button>
+              )}
             </div>
 
             <SchemaFields
               properties={properties}
               required={schema.required}
               definitions={definitions}
-              expandSignal={expandSignal}
             />
           </section>
         )}

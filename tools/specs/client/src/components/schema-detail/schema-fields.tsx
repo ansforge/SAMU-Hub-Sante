@@ -1,109 +1,113 @@
-import { Accordion as AccordionPrimitive } from "@base-ui/react/accordion";
-import { ChevronDownIcon } from "lucide-react";
+import { ChevronRightIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useSchemaStore } from "@/store/schema-store";
 import type { JsonSchemaDefinitions, JsonSchemaProperty } from "@/types";
 import { FieldDescription } from "./field-description";
 import { FieldHeader } from "./field-header";
 import { FieldMeta } from "./field-meta";
-import { nestedFields, type ExpandSignal } from "./schema-utils";
+import { nestedFields } from "./schema-utils";
 
-// nested levels are built from the bare base-ui primitives (not the styled
-// ui/accordion.tsx wrapper): that wrapper's default border/bg only cancel
-// cleanly at the top level — fighting its data-open:border-border rule with
-// an override class loses the specificity/ordering battle deeper in the tree
+type Fields = {
+  properties: Record<string, JsonSchemaProperty>;
+  required?: string[];
+  definitions: JsonSchemaDefinitions;
+};
+
+// outline-style tree: every level looks the same, depth reads from the
+// indentation and the vertical guide each child list draws under its
+// parent's chevron
 export function SchemaFields({
   properties,
   required,
   definitions,
-  expandSignal,
   path = [],
-}: {
-  properties: Record<string, JsonSchemaProperty>;
-  required?: string[];
-  definitions: JsonSchemaDefinitions;
-  expandSignal: ExpandSignal;
-  path?: string[];
-}) {
+}: Fields & { path?: string[] }) {
   const requiredNames = new Set(required ?? []);
-  const names = Object.keys(properties);
-  const depth = path.length;
 
   return (
-    <AccordionPrimitive.Root
-      key={expandSignal.key}
-      multiple
-      defaultValue={expandSignal.expand ? names : []}
-      className={cn("flex w-full flex-col", depth === 0 ? "gap-2" : "gap-1.5")}
+    <ul
+      id={path.length ? `${path.join(".")}-children` : undefined}
+      className={cn("flex flex-col", path.length > 0 && "ml-3 border-l pl-2")}
     >
-      {Object.entries(properties).map(([name, prop]) => {
-        const nested = nestedFields(prop, definitions);
-        const isRequired = requiredNames.has(name);
-        const fieldPath = [...path, name];
+      {Object.entries(properties).map(([name, prop]) => (
+        <FieldNode
+          key={name}
+          name={name}
+          prop={prop}
+          required={requiredNames.has(name)}
+          definitions={definitions}
+          path={[...path, name]}
+        />
+      ))}
+    </ul>
+  );
+}
 
-        // spacing contract: row owns vertical padding, its wrapper/trigger owns
-        // horizontal padding (px-3), the list owns gaps — nothing else adds any
-        const row = (
-          <div className="flex min-w-0 flex-1 flex-col gap-1 py-2.5">
-            <FieldHeader
-              definitions={definitions}
-              name={name}
-              prop={prop}
-              required={isRequired}
-              path={fieldPath}
-            />
-            <FieldDescription prop={prop} />
-            <FieldMeta prop={prop} definitions={definitions} />
-          </div>
-        );
+function FieldNode({
+  name,
+  prop,
+  required,
+  definitions,
+  path,
+}: {
+  name: string;
+  prop: JsonSchemaProperty;
+  required: boolean;
+  definitions: JsonSchemaDefinitions;
+  path: string[];
+}) {
+  const id = path.join(".");
+  const nested = nestedFields(prop, definitions);
+  const open = useSchemaStore((s) => s.openFields.includes(id));
+  const toggleField = useSchemaStore((s) => s.toggleField);
 
-        if (!nested) {
-          return (
-            <div
-              id={fieldPath.join(".")}
-              key={name}
-              className={cn(
-                depth === 0 && "border-b border-border/60",
-                "scroll-mt-24 px-3 transition-colors duration-300 p-1 target:rounded-md target:bg-muted target:ring-2 target:ring-ring/40",
-              )}
-            >
-              {row}
-            </div>
-          );
-        }
-
-        return (
-          <AccordionPrimitive.Item
-            id={fieldPath.join(".")}
-            key={name}
-            value={name}
-            className={cn(
-              depth === 0 ? "border-border/70 bg-card/40" : "border-border/50",
-              "scroll-mt-24 rounded-md border transition-colors duration-300 target:bg-muted target:ring-2 target:ring-ring/40",
-            )}
+  return (
+    <li id={id} className="scroll-mt-24">
+      <div className="flex items-start gap-1 rounded-md py-1.5 pr-2 transition-colors duration-300 [:target>&]:bg-muted [:target>&]:ring-2 [:target>&]:ring-ring/40">
+        {nested ? (
+          <button
+            type="button"
+            aria-expanded={open}
+            aria-controls={`${id}-children`}
+            aria-label={`${open ? "Replier" : "Déplier"} ${name}`}
+            onClick={() => toggleField(id)}
+            className="flex size-6 shrink-0 cursor-pointer items-center justify-center rounded text-muted-foreground outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring/50"
           >
-            <AccordionPrimitive.Header className="flex">
-              <AccordionPrimitive.Trigger className="group/trigger flex flex-1 cursor-pointer items-start justify-between gap-3 rounded-md px-3 text-left outline-none hover:bg-muted/40 focus-visible:ring-2 focus-visible:ring-ring/50">
-                {row}
-                <ChevronDownIcon className="mt-3 size-3.5 shrink-0 text-muted-foreground transition-transform duration-150 group-aria-expanded/trigger:rotate-180" />
-              </AccordionPrimitive.Trigger>
-            </AccordionPrimitive.Header>
-            <AccordionPrimitive.Panel className="overflow-hidden pt-1 text-sm data-open:animate-accordion-down data-closed:animate-accordion-up">
-              <div className="h-(--accordion-panel-height) data-ending-style:h-0 data-starting-style:h-0">
-                {/* px-3 = row inset, so child cards align with the parent's field name */}
-                <div className="px-3 pb-3">
-                  <SchemaFields
-                    properties={nested.properties}
-                    required={nested.required}
-                    definitions={definitions}
-                    expandSignal={expandSignal}
-                    path={fieldPath}
-                  />
-                </div>
-              </div>
-            </AccordionPrimitive.Panel>
-          </AccordionPrimitive.Item>
-        );
-      })}
-    </AccordionPrimitive.Root>
+            <ChevronRightIcon
+              className={cn(
+                "size-4 transition-transform duration-150",
+                open && "rotate-90",
+              )}
+            />
+          </button>
+        ) : (
+          <span
+            aria-hidden
+            className="flex size-6 shrink-0 items-center justify-center"
+          >
+            <span className="size-1.5 rounded-full bg-muted-foreground/40" />
+          </span>
+        )}
+        <div className="flex min-w-0 flex-1 flex-col gap-1">
+          <FieldHeader
+            name={name}
+            prop={prop}
+            required={required}
+            definitions={definitions}
+            path={path}
+          />
+          <FieldDescription prop={prop} />
+          <FieldMeta prop={prop} definitions={definitions} />
+        </div>
+      </div>
+      {nested && open && (
+        <SchemaFields
+          properties={nested.properties}
+          required={nested.required}
+          definitions={definitions}
+          path={path}
+        />
+      )}
+    </li>
   );
 }
