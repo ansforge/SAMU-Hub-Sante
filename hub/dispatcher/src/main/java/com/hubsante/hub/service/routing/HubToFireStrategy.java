@@ -19,7 +19,6 @@ import static com.hubsante.hub.config.Constants.NEXSIS_HUBEX_PARTNER;
 import static com.hubsante.hub.utils.MessageUtils.*;
 
 import com.hubsante.hub.config.HubConfiguration;
-import com.hubsante.hub.exception.AbstractHubException;
 import com.hubsante.hub.exception.UnroutableMessageException;
 import com.hubsante.hub.service.ConversionHandler;
 import com.hubsante.hub.service.MessageHandler;
@@ -28,7 +27,6 @@ import com.hubsante.hub.service.TopologyRegistry;
 import com.hubsante.hub.utils.ConversionUtils;
 import com.hubsante.hub.utils.EdxlUtils;
 import com.hubsante.model.edxl.EdxlMessage;
-import org.springframework.amqp.core.Message;
 import org.springframework.stereotype.Component;
 
 /**
@@ -38,7 +36,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class HubToFireStrategy extends HubSanteInternalStrategy implements RoutingStrategy {
 
-    private final MessageHandler messageHandler;
     private final HubConfiguration hubConfig;
 
     public HubToFireStrategy(
@@ -47,23 +44,13 @@ public class HubToFireStrategy extends HubSanteInternalStrategy implements Routi
             HubConfiguration hubConfig,
             MessagePersistenceService persistenceService) {
         super(messageHandler, conversionHandler, hubConfig, persistenceService);
-        this.messageHandler = messageHandler;
         this.hubConfig = hubConfig;
     }
 
-    @Override
-    public void checkMessageContent(Message message, EdxlMessage edxlMessage)
-            throws AbstractHubException {
-        // check message type is allowed on the current vhost
-        checkMessageClassNameSupported(edxlMessage, hubConfig);
-        // check message is allowed for its recipient
-        messageHandler.inhibitMessageIfNeeded(edxlMessage);
-        // reject the message if no health actor is involved (as sender or recipient)
-        checkHealthActorIsInvolved(edxlMessage);
-        // the sender is always a health actor for this strategy, so the check is the same strict
-        // equality as HubSanteInternalStrategy's
-        checkSenderConsistency(message, edxlMessage);
-    }
+    // checkMessageContent is inherited as-is from HubSanteInternalStrategy: the sender is always
+    // a health actor for this strategy too, so every check there (including the strict-equality
+    // checkSenderConsistency, and the delivery-mode/distributionId-format checks) applies
+    // identically here.
 
     @Override
     protected ConversionUtils.ConversionParametersDTO resolveConversionParameters(
