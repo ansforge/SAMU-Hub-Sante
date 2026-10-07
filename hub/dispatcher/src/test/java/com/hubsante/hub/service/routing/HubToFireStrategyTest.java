@@ -27,6 +27,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.doReturn;
 
 import com.hubsante.hub.config.HubConfiguration;
+import com.hubsante.hub.exception.DeliveryModeInconsistencyException;
+import com.hubsante.hub.exception.InvalidDistributionIDException;
 import com.hubsante.hub.exception.SenderInconsistencyException;
 import com.hubsante.hub.exception.UnroutableMessageException;
 import com.hubsante.hub.service.ClientPropertiesRegistry;
@@ -89,10 +91,14 @@ class HubToFireStrategyTest {
     }
 
     private static Message amqp(String receivedRoutingKey) {
+        return amqp(receivedRoutingKey, MessageDeliveryMode.PERSISTENT);
+    }
+
+    private static Message amqp(String receivedRoutingKey, MessageDeliveryMode deliveryMode) {
         MessageProperties properties = new MessageProperties();
         properties.setReceivedRoutingKey(receivedRoutingKey);
         properties.setContentType(MessageProperties.CONTENT_TYPE_JSON);
-        properties.setReceivedDeliveryMode(MessageDeliveryMode.PERSISTENT);
+        properties.setReceivedDeliveryMode(deliveryMode);
         return new Message("{}".getBytes(StandardCharsets.UTF_8), properties);
     }
 
@@ -188,6 +194,38 @@ class HubToFireStrategyTest {
                                                     SDIS_C_ROUTING_KEY,
                                                     DISTRIBUTION_ID)))
                     .isInstanceOf(SenderInconsistencyException.class);
+        }
+
+        @Test
+        @DisplayName("should throw when the delivery mode is not persistent")
+        void shouldThrowWhenDeliveryModeNotPersistent() {
+            assertThatThrownBy(
+                            () ->
+                                    strategy.checkMessageContent(
+                                            amqp(
+                                                    SAMU_A_ROUTING_KEY,
+                                                    MessageDeliveryMode.NON_PERSISTENT),
+                                            edxl(
+                                                    SAMU_A_ROUTING_KEY,
+                                                    SDIS_C_ROUTING_KEY,
+                                                    DISTRIBUTION_ID)))
+                    .isInstanceOf(DeliveryModeInconsistencyException.class);
+        }
+
+        @Test
+        @DisplayName("should throw when the distributionId format is invalid")
+        void shouldThrowWhenDistributionIdFormatInvalid() {
+            String inconsistentDistributionId = "fr.health.someoneElse_1234";
+
+            assertThatThrownBy(
+                            () ->
+                                    strategy.checkMessageContent(
+                                            amqp(SAMU_A_ROUTING_KEY),
+                                            edxl(
+                                                    SAMU_A_ROUTING_KEY,
+                                                    SDIS_C_ROUTING_KEY,
+                                                    inconsistentDistributionId)))
+                    .isInstanceOf(InvalidDistributionIDException.class);
         }
     }
 
