@@ -30,6 +30,7 @@ import com.hubsante.hub.exception.*;
 import com.hubsante.hub.service.routing.FireToHubStrategy;
 import com.hubsante.hub.service.routing.HubSanteInternalStrategy;
 import com.hubsante.hub.service.routing.HubToFireStrategy;
+import com.hubsante.hub.service.routing.MessageRoutingDTO;
 import com.hubsante.hub.service.routing.RoutingStrategy;
 import com.hubsante.hub.utils.ConversionUtils;
 import com.hubsante.hub.utils.EdxlUtils;
@@ -134,6 +135,16 @@ public class Dispatcher {
             case SAMU_TO_CISU -> hubToFireStrategy;
             case CISU_TO_SAMU -> fireToHubStrategy;
         };
+    }
+
+    /** Publishes each routing DTO to its exchange and routing key. */
+    public void sendMessages(List<MessageRoutingDTO> routingDTOs) {
+        for (MessageRoutingDTO routingDTO : routingDTOs) {
+            rabbitTemplate.send(
+                    routingDTO.destinationExchange(),
+                    routingDTO.routingKey(),
+                    routingDTO.message());
+        }
     }
 
     private void tagCurrentSpan(Message amqpMessage, EdxlMessage edxlMessage) {
