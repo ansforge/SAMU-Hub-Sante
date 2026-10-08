@@ -10,11 +10,15 @@ interface SchemaState {
   expandSignal: { key: number; expand: boolean };
   toggleExpandAll: () => void;
   expandAll: () => void;
+  searchOpen: boolean;
+  setSearchOpen: (open: boolean) => void;
 }
 
 export const useSchemaStore = create<SchemaState>((set) => ({
   nomenclatureDrawerName: null,
   expandSignal: { key: 0, expand: false },
+  searchOpen: false,
+  setSearchOpen: (searchOpen) => set({ searchOpen }),
   toggleExpandAll: () =>
     set((s) => ({
       expandSignal: {

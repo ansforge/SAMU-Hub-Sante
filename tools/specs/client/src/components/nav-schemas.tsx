@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/sidebar";
 import { getPerimeters } from "@/lib/get-perimeters";
 import { SchemaReference } from "@/types";
-import { Link } from "@tanstack/react-router";
+import { Link, useParams } from "@tanstack/react-router";
 import { Braces, ChevronRightIcon } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { useSchemas } from "@/hooks/use-schemas";
@@ -23,6 +23,7 @@ import { PerimeterSelect } from "./perimeter-select";
 
 export function NavSchemas() {
   const { data: schemas = [] } = useSchemas();
+  const { schemaName: activeSchema } = useParams({ strict: false });
   const [search, setSearch] = useState<string>("");
   const [open, setOpen] = useState<boolean>(true);
   const [selectedPerimeters, seSelectedPerimeters] = useState<string[]>([]);
@@ -95,6 +96,7 @@ export function NavSchemas() {
               {filteredSchemas.map((schema: SchemaReference) => (
                 <SidebarMenuSubItem key={schema.schemaName}>
                   <SidebarMenuSubButton
+                    isActive={schema.schemaName === activeSchema}
                     render={
                       <Link
                         to="/$schemaName"

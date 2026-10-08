@@ -1,4 +1,5 @@
 import { useRefs } from "@/hooks/use-refs";
+import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
@@ -14,8 +15,15 @@ import { ChevronDown, GitPullRequest } from "lucide-react";
 
 const rootRouteApi = getRouteApi("__root__");
 
+// "v3.5.0" -> "Version 3"; non-semver refs (branches, "tmc-0.2.0") stay as-is
+const versionLabel = (ref: string) => {
+  const major = ref.match(/^v?(\d+)\./)?.[1];
+  return major ? `Version ${major}` : ref;
+};
+
 const RefSelector = () => {
   const { data, isLoading } = useRefs();
+  const { isAuthenticated } = useAuth();
   const { ref } = rootRouteApi.useSearch();
   const [filter, setFilter] = useState<string>("");
   const searchRef = useRef<HTMLInputElement>(null);
@@ -54,7 +62,7 @@ const RefSelector = () => {
           render={
             <Button variant="outline">
               <GitPullRequest />
-              {ref}
+              {isAuthenticated ? ref : versionLabel(ref)}
               <ChevronDown />
             </Button>
           }
@@ -158,7 +166,16 @@ const RefSelector = () => {
                         aria-selected={tag === ref}
                         onClick={() => selectRef(tag)}
                       >
-                        {tag}
+                        {isAuthenticated || versionLabel(tag) === tag ? (
+                          tag
+                        ) : (
+                          <>
+                            {versionLabel(tag)}{" "}
+                            <span className="opacity-80 border rounded-full px-1 font-medium text-xs">
+                              {tag}
+                            </span>
+                          </>
+                        )}
                       </button>
                     </li>
                   ))}

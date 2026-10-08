@@ -11,13 +11,34 @@ import { useKeyboardShortcut } from "@/hooks/use-keyboard-shortcut";
 import { useSchemaStore } from "@/store/schema-store";
 import { flattenFields } from "@/components/schema-detail/schema-utils";
 import { useMatch, useNavigate } from "@tanstack/react-router";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import { useSchemas } from "@/hooks/use-schemas";
 import { SearchIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { isMac } from "@/lib/utils";
+
+// normalize is a method to remove all accent
+// so it does something like : é -> e
+// so that if you type "perimetre" it matches "périmètre"
+const normalize = (s: string) =>
+  s
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .toLowerCase();
+
+// we override the search filter to be able to filter by title and label
+const filter = (value: string, search: string, keywords: string[] = []) => {
+  const query = normalize(search).trim();
+  const haystack = normalize([value, ...keywords].join(" "));
+  if (!query.split(/\s+/).every((word) => haystack.includes(word))) return 0;
+  const v = normalize(value);
+  if (v === query || v.endsWith(`.${query}`)) return 1;
+  return v.includes(query) ? 0.8 : 0.5;
+};
 
 const GlobalSearch = () => {
-  const [open, setOpen] = useState(false);
+  const open = useSchemaStore((s) => s.searchOpen);
+  const setOpen = useSchemaStore((s) => s.setSearchOpen);
   const { data: schemas = [] } = useSchemas();
   const navigate = useNavigate();
   const currentSchemaMatch = useMatch({
@@ -25,6 +46,9 @@ const GlobalSearch = () => {
     shouldThrow: false,
   });
   const currentSchema = currentSchemaMatch?.loaderData;
+  const currentSchemaLabel = schemas.find(
+    (s) => s.schemaName === currentSchemaMatch?.params.schemaName,
+  )?.label;
   const currentSchemaFields = currentSchema?.properties;
   const currentSchemaDefinitions =
     currentSchema?.definitions ?? currentSchema?.$defs ?? {};
@@ -36,7 +60,10 @@ const GlobalSearch = () => {
     [currentSchemaFields, currentSchemaDefinitions],
   );
 
-  const toggleGlobalSearch = useCallback(() => setOpen((prev) => !prev), []);
+  const toggleGlobalSearch = useCallback(
+    () => setOpen(!useSchemaStore.getState().searchOpen),
+    [],
+  );
 
   const handleOnSelect = useCallback((schemaName: string) => {
     setOpen(false);
@@ -75,25 +102,34 @@ const GlobalSearch = () => {
         <div className="hidden xl:flex items-center justify-between w-full">
           <span className="grow text-left">Rechercher...</span>
           <kbd className="rounded border bg-background px-1.5 font-mono text-xs">
-            ⌘K
+            {isMac ? "⌘K" : "Ctrl+K"}
           </kbd>
         </div>
       </Button>
       <CommandDialog open={open} onOpenChange={setOpen}>
-        <Command>
+        <Command filter={filter}>
           <CommandInput placeholder="Rechercher..." />
           <CommandList>
             <CommandEmpty>Aucun résultat trouvé.</CommandEmpty>
             {flatFields.length > 0 && (
-              <CommandGroup heading={`Champs du ${currentSchema?.title}`}>
-                {flatFields.map(({ path }) => {
+              <CommandGroup heading={`Champs du ${currentSchemaLabel}`}>
+                {flatFields.map(({ path, prop }) => {
                   const fieldPath = path.join(".");
                   return (
                     <CommandItem
                       key={fieldPath}
+                      value={fieldPath}
+                      keywords={prop.title ? [prop.title] : []}
                       onSelect={() => handleFieldSelect(fieldPath)}
                     >
-                      {fieldPath}
+                      <div className="flex min-w-0 flex-col">
+                        <span>{fieldPath}</span>
+                        {prop.title && (
+                          <span className="truncate text-xs text-muted-foreground">
+                            {prop.title}
+                          </span>
+                        )}
+                      </div>
                     </CommandItem>
                   );
                 })}
@@ -103,6 +139,8 @@ const GlobalSearch = () => {
               {schemas.map((s) => (
                 <CommandItem
                   key={s.schemaName}
+                  value={s.label}
+                  keywords={[s.schemaName]}
                   onSelect={() => handleOnSelect(s.schemaName)}
                 >
                   {s.label}

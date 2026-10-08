@@ -22,31 +22,37 @@ function isEditableTarget(target: EventTarget | null) {
   );
 }
 
-export function useKeyboardShortcut(options: ShortcutOptions) {
+export function useKeyboardShortcut({
+  key,
+  ctrlOrCmd,
+  alt,
+  shift,
+  callback,
+  allowInEditable,
+}: ShortcutOptions) {
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      const { key, ctrlKey, altKey, shiftKey, metaKey } = event;
-      if (key.toLowerCase() !== options.key.toLowerCase()) {
+      const { key: pressed, ctrlKey, altKey, shiftKey, metaKey } = event;
+      if (pressed.toLowerCase() !== key.toLowerCase()) {
         return;
       }
-      if (!options.allowInEditable && isEditableTarget(event.target)) {
+      if (!allowInEditable && isEditableTarget(event.target)) {
         return;
       }
       const cmdKeyPressed = isMac ? metaKey : ctrlKey;
       if (
-        (options.ctrlOrCmd === undefined ||
-          options.ctrlOrCmd === cmdKeyPressed) &&
-        (options.alt === undefined || options.alt === altKey) &&
-        (options.shift === undefined || options.shift === shiftKey)
+        (ctrlOrCmd === undefined || ctrlOrCmd === cmdKeyPressed) &&
+        (alt === undefined || alt === altKey) &&
+        (shift === undefined || shift === shiftKey)
       ) {
         event.preventDefault();
-        options.callback();
+        callback();
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [options]);
+  }, [key, ctrlOrCmd, alt, shift, callback, allowInEditable]);
   return { isMac };
 }

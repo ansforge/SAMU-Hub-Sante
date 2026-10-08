@@ -1,25 +1,27 @@
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { NomenclatureDrawer } from "@/components/nomenclature-drawer";
-import type { JsonSchemaDocument, SchemaExample } from "@/types";
+import type { JsonSchemaDocument } from "@/types";
 import { FieldLegend } from "./field-legend";
 import { SchemaFields } from "./schema-fields";
 import { buildGithubSchemaUrl } from "@/lib/utils";
 import { githubDomain } from "@/config";
 import { useSchemaStore } from "@/store/schema-store";
 import SourceLink from "../source-link";
-import { SchemaExamples } from "./schema-examples";
+import { SchemaBadges } from "./schema-badges";
 
 type SchemaDetailProps = {
   schema: JsonSchemaDocument;
-  examples?: SchemaExample[];
+  label: string;
+  perimeters: string[];
   schemaName: string;
   ref: string;
 };
 
 export function SchemaDetail({
   schema,
-  examples,
+  label,
+  perimeters,
   schemaName,
   ref,
 }: SchemaDetailProps) {
@@ -42,19 +44,17 @@ export function SchemaDetail({
       <div className="mx-auto flex min-h-0 w-full max-w-7xl flex-1 flex-col gap-6 overflow-y-auto px-4 py-6 md:px-8">
         <header className="flex flex-col gap-1">
           <div className="flex items-center gap-2">
-            <h1 className="text-lg font-semibold">{schema.title}</h1>
+            <h1 className="text-2xl font-semibold">{label}</h1>
+            <SchemaBadges perimeters={perimeters} />
             <SourceLink href={schemaSource} />
           </div>
+          <h2 className="text-lg font-medium">{schema.title}</h2>
           {schema.description && (
             <p className="max-w-prose text-sm text-muted-foreground">
               {schema.description}
             </p>
           )}
         </header>
-
-        {examples && examples.length > 0 && (
-          <SchemaExamples examples={examples} ref={ref} />
-        )}
 
         {hasProperties && (
           <section className="flex flex-col gap-4">
