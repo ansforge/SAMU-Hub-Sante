@@ -3,7 +3,7 @@
 // classpath to read those layers. Without it: "Zstandard compression is not available".
 buildscript {
     dependencies {
-        classpath 'com.github.luben:zstd-jni:1.5.7-11'
+        classpath 'com.github.luben:zstd-jni:1.5.7-19'
     }
 }
 
@@ -13,7 +13,7 @@ plugins {
     id 'io.spring.dependency-management' version '1.1.7'
     id 'com.google.cloud.tools.jib' version '3.5.4'
     id 'jacoco'
-    id 'com.diffplug.spotless' version '8.8.0'
+    id 'com.diffplug.spotless' version '8.10.2'
 }
 
 group = 'com.hubsante'
