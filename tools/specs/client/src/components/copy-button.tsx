@@ -4,9 +4,10 @@ import { Check, Copy } from "lucide-react";
 
 type CopyButtonProps = {
   content: string;
+  label?: string;
 };
 
-export const CopyButton = ({ content }: CopyButtonProps) => {
+export const CopyButton = ({ content, label = "Copier" }: CopyButtonProps) => {
   const { handleCopyToClipBoard, isCopied } = useCopyToClipBoard();
 
   const handleCopy = (e: { stopPropagation: () => void }) => {
@@ -19,7 +20,9 @@ export const CopyButton = ({ content }: CopyButtonProps) => {
       onClick={handleCopy}
       size="icon-xs"
       variant={"ghost"}
-      className="hidden group-hover:flex border-0"
+      aria-label={label}
+      title={label}
+      className="border-0 opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
     >
       {isCopied ? <Check /> : <Copy className="h-4 w-4" />}
     </Button>

@@ -3,7 +3,7 @@
 @theme {
   /* DS typeface, served by the Adobe Fonts kit linked in index.html */
   --font-sans: "futura-pt", ui-sans-serif, system-ui, -apple-system, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --font-mono: var(--font-sans);
 
   /* Brand accent (decorative only, not a UI state color) */
   --color-brand-2: oklch(0.551 0.22 11.4);
@@ -19,10 +19,6 @@
   --radius: 0.875rem;
   --shadow: 0 0 14px rgb(52 56 82 / 0.1);
   --shadow-lg: 0 15px 40px rgb(52 56 82 / 0.1);
-}
-
-* {
-  border-color: var(--color-border);
 }
 
 html,
@@ -50,16 +46,6 @@ body {
 b,
 strong {
   font-family: "futura-pt-bold", var(--font-sans);
-}
-
-/* font-size-adjust is inherited; the mono font already has a tall x-height
-   and would shrink under the sans value */
-.font-mono,
-code,
-kbd,
-pre,
-samp {
-  font-size-adjust: none;
 }
 
 /* Thin, sober scrollbars */

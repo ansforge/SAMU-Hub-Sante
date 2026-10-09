@@ -1,3 +1,4 @@
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import {
   Sheet,
@@ -11,9 +12,8 @@ import { useNomenclature } from "@/hooks/use-nomenclature";
 import { buildNomenclatureUrl } from "@/lib/utils";
 import { useSchemaStore } from "@/store/schema-store";
 import { getRouteApi } from "@tanstack/react-router";
-import { ExternalLinkIcon } from "lucide-react";
 import { useMemo, useState } from "react";
-import SourceLink from "./source-link";
+import { ExternalLink } from "./external-link";
 
 const rootRouteApi = getRouteApi("__root__");
 
@@ -42,7 +42,7 @@ function NomenclatureHeader({ name }: { name: string }) {
         <SheetTitle className="font-bold text-xl">
           {data?.title ?? name}
         </SheetTitle>
-        <SourceLink href={nomenclatureSource} />
+        <ExternalLink href={nomenclatureSource}>Voir sur GitHub</ExternalLink>
       </div>
       {data?.description && (
         <p className="text-sm text-muted-foreground">{data.description}</p>
@@ -98,9 +98,7 @@ function NomenclatureContent({ name }: { name: string }) {
           {filteredOptions?.map((option) => (
             <tr key={option.const} className="border-b last:border-0">
               <td className="w-px whitespace-nowrap p-4 align-top">
-                <span className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs text-muted-foreground">
-                  {option.const}
-                </span>
+                <Badge variant="neutral">{option.const}</Badge>
               </td>
               <td className="p-4 pl-0 align-top">
                 <p className="font-bold text-sm">{option.title}</p>
@@ -137,13 +135,13 @@ export function NomenclatureDrawer() {
   );
 }
 
-export function NomenclatureBadge({ name }: { name: string }) {
+export function NomenclatureLink({ name }: { name: string }) {
   const openNomenclatureDrawer = useSchemaStore(
     (s) => s.openNomenclatureDrawer,
   );
 
   return (
-    <span className="whitespace-nowrap font-mono text-xs text-muted-foreground">
+    <span className="whitespace-nowrap text-xs text-muted-foreground">
       nomenclature :{" "}
       <button
         type="button"

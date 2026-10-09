@@ -1,5 +1,6 @@
 import { useRefs } from "@/hooks/use-refs";
 import { useAuth } from "@/hooks/use-auth";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
@@ -171,9 +172,7 @@ const RefSelector = () => {
                         ) : (
                           <>
                             {versionLabel(tag)}{" "}
-                            <span className="opacity-80 border rounded-full px-1 font-medium text-xs">
-                              {tag}
-                            </span>
+                            <Badge variant="outline">{tag}</Badge>
                           </>
                         )}
                       </button>
