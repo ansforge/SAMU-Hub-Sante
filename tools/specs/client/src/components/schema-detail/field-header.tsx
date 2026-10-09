@@ -1,7 +1,12 @@
 import { cn } from "@/lib/utils";
 import { Badge, type BadgeVariant } from "@/components/ui/badge";
 import type { JsonSchemaDefinitions, JsonSchemaProperty } from "@/types";
-import { fieldKind, fieldType, type FieldKind } from "./schema-utils";
+import {
+  fieldKind,
+  fieldTitle,
+  fieldType,
+  type FieldKind,
+} from "./schema-utils";
 import { CopyButton } from "../copy-button";
 
 const PRIMITIVE_VARIANT: Record<string, BadgeVariant> = {
@@ -42,6 +47,7 @@ export function FieldHeader({
   const kind = fieldKind(prop, definitions);
   const label = badgeLabel(kind, prop, definitions);
   const depth = path.length - 1;
+  const title = fieldTitle(prop, definitions);
 
   return (
     <div className="flex flex-col items-start gap-0.5 text-left">
@@ -65,10 +71,8 @@ export function FieldHeader({
           </span>
         )}
       </div>
-      {prop.title && (
-        <span className="text-sm font-medium text-foreground">
-          {prop.title}
-        </span>
+      {title && (
+        <span className="text-sm font-medium text-foreground">{title}</span>
       )}
     </div>
   );
