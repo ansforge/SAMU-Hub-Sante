@@ -167,9 +167,7 @@ public class LogIntegrityTest {
                         edxlHandler,
                         xmlMapper,
                         jsonMapper,
-                        conversionHandler,
                         hubConfiguration,
-                        persistenceService,
                         Tracer.NOOP,
                         new HubSanteInternalStrategy(
                                 messageHandler,
