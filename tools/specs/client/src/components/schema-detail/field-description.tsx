@@ -17,7 +17,7 @@ export function FieldDescription({ prop }: { prop: JsonSchemaProperty }) {
             ref={(el) => {
               if (el && !detailed) setOverflows(el.scrollHeight > el.clientHeight);
             }}
-            className={cn("flex-1 text-muted-foreground", !detailed && "line-clamp-1")}
+            className={cn("flex-1 font-normal text-muted-foreground", !detailed && "line-clamp-1")}
           >
             {prop.description}
           </p>

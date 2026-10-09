@@ -18,6 +18,20 @@ export function resolveRef(
   return resolveRef(resolved, definitions, new Set(seen).add(name));
 }
 
+// objects and collections carry their title on the referenced definition
+// (or on the items' definition), not on the $ref property itself
+export function fieldTitle(
+  prop: JsonSchemaProperty,
+  definitions: JsonSchemaDefinitions,
+): string | undefined {
+  const resolved = resolveRef(prop, definitions);
+  return (
+    prop.title ??
+    resolved.title ??
+    (resolved.items && resolveRef(resolved.items, definitions).title)
+  );
+}
+
 export function fieldType(
   prop: JsonSchemaProperty,
   definitions: JsonSchemaDefinitions,

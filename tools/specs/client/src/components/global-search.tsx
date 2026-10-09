@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/command";
 import { useKeyboardShortcut } from "@/hooks/use-keyboard-shortcut";
 import { useSchemaStore } from "@/store/schema-store";
-import { flattenFields } from "@/components/schema-detail/schema-utils";
+import { fieldTitle, flattenFields } from "@/components/schema-detail/schema-utils";
 import { useMatch, useNavigate } from "@tanstack/react-router";
 import { useCallback, useMemo } from "react";
 import { useSchemas } from "@/hooks/use-schemas";
@@ -115,18 +115,19 @@ const GlobalSearch = () => {
               <CommandGroup heading={`Champs du ${currentSchemaLabel}`}>
                 {flatFields.map(({ path, prop }) => {
                   const fieldPath = path.join(".");
+                  const title = fieldTitle(prop, currentSchemaDefinitions);
                   return (
                     <CommandItem
                       key={fieldPath}
                       value={fieldPath}
-                      keywords={prop.title ? [prop.title] : []}
+                      keywords={title ? [title] : []}
                       onSelect={() => handleFieldSelect(fieldPath)}
                     >
                       <div className="flex min-w-0 flex-col">
                         <span>{fieldPath}</span>
-                        {prop.title && (
+                        {title && (
                           <span className="truncate text-xs text-muted-foreground">
-                            {prop.title}
+                            {title}
                           </span>
                         )}
                       </div>
