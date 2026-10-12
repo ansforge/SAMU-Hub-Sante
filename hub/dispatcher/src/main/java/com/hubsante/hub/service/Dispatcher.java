@@ -129,14 +129,10 @@ public class Dispatcher {
         };
     }
 
-    /** Publishes each routing DTO to its exchange and routing key. */
-    public void sendMessages(List<MessageRoutingDTO> routingDTOs) {
-        for (MessageRoutingDTO routingDTO : routingDTOs) {
-            rabbitTemplate.send(
-                    routingDTO.destinationExchange(),
-                    routingDTO.routingKey(),
-                    routingDTO.message());
-        }
+    /** Publishes a routing DTO to its exchange and routing key. */
+    public void sendMessage(MessageRoutingDTO routingDTO) {
+        rabbitTemplate.send(
+                routingDTO.destinationExchange(), routingDTO.routingKey(), routingDTO.message());
     }
 
     private void tagCurrentSpan(Message amqpMessage, EdxlMessage edxlMessage) {
@@ -255,14 +251,13 @@ public class Dispatcher {
             // build the list of AMQP messages to publish, with or without conversion
             List<MessageRoutingDTO> routingDTOs =
                     strategy.buildMessageRoutingDTO(message, edxlMessage);
-            sendMessages(routingDTOs);
 
-            if (isConversionRouting(routingDTOs)) {
-                logConvertedMessagesSent(routingDTOs, edxlMessage);
-            } else {
-                // a converted message only publishes its DISPATCHED_MESSAGE metric once it reaches
-                // its destination, not on this converting instance, to avoid double-counting
-                messageHandler.publishMetrics(edxlMessage, message);
+            for (MessageRoutingDTO routingDTO : routingDTOs) {
+                sendMessage(routingDTO);
+                logMessageSent(routingDTO, edxlMessage);
+                if (!isConversionRouting(routingDTO)) {
+                    messageHandler.publishMetrics(edxlMessage, message);
+                }
             }
         } catch (AbstractHubException e) {
             messageHandler.handleError(e, message);
@@ -284,18 +279,19 @@ public class Dispatcher {
     }
 
     /** A converted message is published to a transfer exchange, never to {@code DISTRIBUTION_EXCHANGE}. */
-    private boolean isConversionRouting(List<MessageRoutingDTO> routingDTOs) {
-        return !DISTRIBUTION_EXCHANGE.equals(routingDTOs.getFirst().destinationExchange());
+    private boolean isConversionRouting(MessageRoutingDTO routingDTO) {
+        return !DISTRIBUTION_EXCHANGE.equals(routingDTO.destinationExchange());
     }
 
-    private void logConvertedMessagesSent(
-            List<MessageRoutingDTO> routingDTOs, EdxlMessage edxlMessage) {
+    private void logMessageSent(MessageRoutingDTO routingDTO, EdxlMessage edxlMessage) {
         String recipientId = MessageUtils.getRecipientID(edxlMessage);
         String messageType = EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage());
-        structuredLog.debug(
+        structuredLog.info(
                 String.format(
-                        "The converted messages (%d) have been sent to the exchange to reach the recipient's vhost.",
-                        routingDTOs.size()),
+                        "Received message (%s) has been sent to exchange (%s) with routing key (%s)",
+                        edxlMessage.getDistributionID(),
+                        routingDTO.destinationExchange(),
+                        routingDTO.routingKey()),
                 Map.of(
                         LogConstants.DISTRIBUTION_ID,
                         edxlMessage.getDistributionID(),
