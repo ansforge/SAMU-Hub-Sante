@@ -16,6 +16,7 @@
 package com.hubsante.hub.service;
 
 import static com.hubsante.hub.config.Constants.*;
+import static com.hubsante.hub.service.ConversionStubs.echoConversionService;
 import static com.hubsante.hub.testsupport.HubTestConstants.*;
 import static com.hubsante.hub.testsupport.HubTestScaffolding.aHub;
 import static com.hubsante.hub.testsupport.MessageTestUtils.*;
@@ -39,12 +40,14 @@ class DispatcherMetricsTest {
 
     private Dispatcher dispatcher;
     private MeterRegistry registry;
+    private ConversionHandler conversionHandler;
 
     @BeforeEach
     void setUp() {
         HubTestScaffolding.Hub hub = aHub().build();
         dispatcher = hub.dispatcher();
         registry = hub.registry();
+        conversionHandler = hub.conversionHandler();
     }
 
     @Test
@@ -131,5 +134,33 @@ class DispatcherMetricsTest {
                 getOverallCounterForError(
                         registry, ErrorCode.DELIVERY_MODE_INCONSISTENCY.getStatusString()));
         assertEquals(3, getOverallCounterForEditor(registry, TEST_EDITOR));
+    }
+
+    @Test
+    @DisplayName("should publish DISPATCHED_MESSAGE once for a direct dispatch")
+    public void shouldPublishDispatchedMessageForDirectRouting() throws IOException {
+        Message message = createMessage("EDXL-DE", JSON);
+
+        dispatcher.dispatch(message);
+
+        assertEquals(1, dispatchedMessageCount(registry));
+    }
+
+    @Test
+    @DisplayName("should not publish DISPATCHED_MESSAGE when conversion is needed")
+    public void shouldNotPublishDispatchedMessageForConversionRouting() throws IOException {
+        // published once the message reaches its destination, not here, to avoid double-counting
+        echoConversionService(conversionHandler);
+        Message message = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY, SAMU_V1_ROUTING_KEY);
+
+        dispatcher.dispatch(message);
+
+        assertEquals(0, dispatchedMessageCount(registry));
+    }
+
+    private static double dispatchedMessageCount(MeterRegistry registry) {
+        return registry.find(DISPATCHED_MESSAGE).counters().stream()
+                .mapToDouble(io.micrometer.core.instrument.Counter::count)
+                .sum();
     }
 }
