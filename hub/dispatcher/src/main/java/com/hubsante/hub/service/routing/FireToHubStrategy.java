@@ -54,7 +54,7 @@ public class FireToHubStrategy extends HubSanteInternalStrategy implements Routi
     public void checkMessageContent(Message message, EdxlMessage edxlMessage)
             throws AbstractHubException {
         // check message type is allowed on the current vhost
-        checkMessageClassNameSupported(edxlMessage, hubConfig);
+        checkUseCaseSupported(edxlMessage, hubConfig);
         // check message is allowed for its recipient
         messageHandler.inhibitMessageIfNeeded(edxlMessage);
         // reject the message if no health actor is involved (as sender or recipient)
