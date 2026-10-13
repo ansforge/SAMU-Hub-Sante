@@ -45,7 +45,7 @@ const GlobalSearch = () => {
     from: "/$schemaName",
     shouldThrow: false,
   });
-  const currentSchema = currentSchemaMatch?.loaderData;
+  const currentSchema = currentSchemaMatch?.loaderData?.schema;
   const currentSchemaLabel = schemas.find(
     (s) => s.schemaName === currentSchemaMatch?.params.schemaName,
   )?.label;

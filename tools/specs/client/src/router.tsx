@@ -165,7 +165,7 @@ function Home() {
 }
 
 function SchemaPage() {
-  const schema = schemaRoute.useLoaderData();
+  const { schema } = schemaRoute.useLoaderData();
   const { schemaName } = schemaRoute.useParams();
   const { data: schemas } = useSchemas();
   const schemaRef = schemas?.find((s) => s.schemaName === schemaName);
@@ -200,11 +200,13 @@ const schemaRoute = createRoute({
     ]);
     if (res.status === 404) throw notFound();
     if (!res.ok) throw new Error(`Échec du chargement (HTTP ${res.status})`);
-    const schema = (await res.json()) as JsonSchemaDocument;
+    const raw = await res.text();
+    const parsed = JSON.parse(raw) as JsonSchemaDocument;
     // no example file on this ref: keep the raw pointers, page still renders
-    return exampleRes.ok
-      ? inlineExamples(schema, await exampleRes.json())
-      : schema;
+    const schema = exampleRes.ok
+      ? inlineExamples(parsed, await exampleRes.json())
+      : parsed;
+    return { raw, schema };
   },
   staleTime: 30_000,
   pendingComponent: SchemaPagePending,
