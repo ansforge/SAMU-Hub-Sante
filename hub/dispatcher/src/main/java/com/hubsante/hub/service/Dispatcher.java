@@ -221,7 +221,7 @@ public class Dispatcher {
             setOriginalRoutingKeyHeader(message);
             // Deserialize the message according to its content type
             EdxlMessage edxlMessage = messageHandler.extractMessage(message);
-            observabilityService.tagCurrentSpanWithMessageMetadata(edxlMessage);
+            observabilityService.tagCurrentSpanWithEdxlMessageMetadata(edxlMessage);
 
             RoutingStrategy strategy = selectRoutingStrategy(edxlMessage);
             // check the message is allowed to be routed (class name, inhibition, health actor
@@ -297,7 +297,7 @@ public class Dispatcher {
                 return;
             }
             EdxlMessage edxlMessage = messageHandler.extractMessage(message);
-            observabilityService.tagCurrentSpanWithMessageMetadata(edxlMessage);
+            observabilityService.tagCurrentSpanWithEdxlMessageMetadata(edxlMessage);
             // log message & error
             String errorCause =
                     "Message "
