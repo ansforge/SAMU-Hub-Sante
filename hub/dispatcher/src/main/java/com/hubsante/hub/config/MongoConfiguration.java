@@ -20,6 +20,7 @@ import jakarta.annotation.PreDestroy;
 import java.time.Duration;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -39,6 +40,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 public class MongoConfiguration {
 
     private final MongoTemplate mongoTemplate;
+    private final MongoClusterMonitor mongoMonitor;
 
     @Value("${persistence.arrivedAt.expiresDurationDays}")
     private int expiresDurationDays;
@@ -57,29 +59,79 @@ public class MongoConfiguration {
                         return thread;
                     });
 
-    public MongoConfiguration(MongoTemplate mongoTemplate) {
+    // Lock object to guard index creation and the pending retry, as attempts come from several threads
+    private final Object lock = new Object();
+    private ScheduledFuture<?> pendingRetry;
+
+    public MongoConfiguration(MongoTemplate mongoTemplate, MongoClusterMonitor mongoMonitor) {
         this.mongoTemplate = mongoTemplate;
+        this.mongoMonitor = mongoMonitor;
     }
 
+    /**
+     * Creates MongoDB indexes once the application is ready. If MongoDB is not reachable yet,
+     * the creation will be triggered once the connection is restored.
+     */
     @EventListener(ApplicationReadyEvent.class)
     public void createIndexes() {
-        attemptCreateIndexes(Duration.ofMillis(initialRetryDelayMs));
+        if (mongoMonitor.isUp()) {
+            startAttempts();
+        } else {
+            log.warn("MongoDB is not reachable yet, indexes will be created once it is");
+        }
     }
 
+    /**
+     * Handles the event when the MongoDB connection is restored.
+     * Triggers the creation of indexes.
+     */
+    @EventListener(MongoConnectionRestoredEvent.class)
+    public void onMongoConnectionRestored() {
+        log.info("MongoDB connection restored, creating indexes");
+        retryScheduler.execute(this::startAttempts);
+    }
+
+    // Starts the attempts to create indexes, cancelling any pending retry if necessary.
+    private void startAttempts() {
+        synchronized (lock) {
+            if (pendingRetry != null) {
+                pendingRetry.cancel(false);
+                pendingRetry = null;
+            }
+            attemptCreateIndexes(Duration.ofMillis(initialRetryDelayMs));
+        }
+    }
+
+
+    /**
+     * Attempts to create MongoDB indexes. If the creation fails while MongoDB is up,
+     * it will schedule a retry with exponential backoff. If MongoDB is down, it will
+     * wait for the connection to be restored before retrying.
+     */
     private void attemptCreateIndexes(Duration nextRetryDelay) {
-        try {
-            doCreateIndexes();
-            log.info("MongoDB indexes successfully created");
-        } catch (Exception e) {
-            log.error(
-                    "Failed to create MongoDB indexes, the database appears to be unreachable. "
-                            + "The application will keep running without them and retry in {}s.",
-                    nextRetryDelay.toSeconds(),
-                    e);
-            retryScheduler.schedule(
-                    () -> attemptCreateIndexes(nextDelay(nextRetryDelay)),
-                    nextRetryDelay.toMillis(),
-                    TimeUnit.MILLISECONDS);
+        synchronized (lock) {
+            try {
+                doCreateIndexes();
+                log.info("MongoDB indexes successfully created");
+            } catch (Exception e) {
+                if (!mongoMonitor.isUp()) {
+                    log.error(
+                            "Failed to create MongoDB indexes, the database is down. "
+                                    + "They will be created once the connection is restored.",
+                            e);
+                    return;
+                }
+                log.error(
+                        "Failed to create MongoDB indexes while the database is up, "
+                                + "retrying in {}s.",
+                        nextRetryDelay.toSeconds(),
+                        e);
+                pendingRetry =
+                        retryScheduler.schedule(
+                                () -> attemptCreateIndexes(nextDelay(nextRetryDelay)),
+                                nextRetryDelay.toMillis(),
+                                TimeUnit.MILLISECONDS);
+            }
         }
     }
 
