@@ -23,12 +23,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.hubsante.hub.config.HubConfiguration;
 import com.hubsante.hub.config.MappersConfiguration;
-import com.hubsante.hub.service.ClientPropertiesRegistry;
-import com.hubsante.hub.service.ConversionHandler;
-import com.hubsante.hub.service.Dispatcher;
-import com.hubsante.hub.service.MessageHandler;
-import com.hubsante.hub.service.MessagePersistenceService;
-import com.hubsante.hub.service.TopologyRegistry;
+import com.hubsante.hub.service.*;
 import com.hubsante.hub.service.routing.FireToHubStrategy;
 import com.hubsante.hub.service.routing.HubSanteInternalStrategy;
 import com.hubsante.hub.service.routing.HubToFireStrategy;
@@ -100,6 +95,8 @@ public final class HubTestScaffolding {
         ConversionHandler conversionHandler =
                 spy(new ConversionHandler(mock(WebClient.class), edxlHandler));
         Validator validator = spy(new Validator());
+        ObservabilityService observabilityService =
+                new ObservabilityService(hubConfig, Tracer.NOOP);
 
         MessageHandler messageHandler =
                 spy(
@@ -111,7 +108,8 @@ public final class HubTestScaffolding {
                                 registry,
                                 xmlMapper,
                                 jsonMapper,
-                                conversionHandler));
+                                conversionHandler,
+                                observabilityService));
 
         HubSanteInternalStrategy hubSanteInternalStrategy =
                 spy(
@@ -134,11 +132,10 @@ public final class HubTestScaffolding {
                                 edxlHandler,
                                 xmlMapper,
                                 jsonMapper,
-                                hubConfig,
-                                Tracer.NOOP,
                                 hubSanteInternalStrategy,
                                 hubToFireStrategy,
-                                fireToHubStrategy));
+                                fireToHubStrategy,
+                                observabilityService));
 
         return new Hub(
                 dispatcher,

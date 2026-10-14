@@ -18,6 +18,7 @@ package com.hubsante.hub.utils;
 import com.hubsante.hub.config.Constants;
 import com.hubsante.model.builders.EDXL_DE_Builder;
 import com.hubsante.model.edxl.*;
+import java.util.Optional;
 import java.util.UUID;
 
 public class EdxlUtils {
@@ -38,6 +39,14 @@ public class EdxlUtils {
             return Constants.UNKNOWN;
         }
         return contentMessage.getUseCaseName();
+    }
+
+    public static String getCaseIdFromMessage(ContentMessage contentMessage) {
+        if (contentMessage == null) {
+            return Constants.UNKNOWN;
+        }
+        Optional<String> caseId = contentMessage.getCaseId();
+        return caseId.orElse(Constants.UNKNOWN);
     }
 
     private static String UUID() {

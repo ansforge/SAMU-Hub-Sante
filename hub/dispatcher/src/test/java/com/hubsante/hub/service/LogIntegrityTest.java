@@ -148,6 +148,8 @@ public class LogIntegrityTest {
         when(responseSpec.bodyToMono(String.class)).thenReturn(responseMono);
 
         ConversionHandler conversionHandler = new ConversionHandler(webClient, edxlHandler);
+        ObservabilityService observabilityService =
+                new ObservabilityService(hubConfiguration, Tracer.NOOP);
 
         MessageHandler messageHandler =
                 new MessageHandler(
@@ -158,7 +160,8 @@ public class LogIntegrityTest {
                         meterRegistry,
                         xmlMapper,
                         jsonMapper,
-                        conversionHandler);
+                        conversionHandler,
+                        observabilityService);
 
         dispatcher =
                 new Dispatcher(
@@ -167,8 +170,6 @@ public class LogIntegrityTest {
                         edxlHandler,
                         xmlMapper,
                         jsonMapper,
-                        hubConfiguration,
-                        Tracer.NOOP,
                         new HubSanteInternalStrategy(
                                 messageHandler,
                                 conversionHandler,
@@ -183,7 +184,8 @@ public class LogIntegrityTest {
                                 messageHandler,
                                 conversionHandler,
                                 hubConfiguration,
-                                persistenceService));
+                                persistenceService),
+                        observabilityService);
     }
 
     @Test
