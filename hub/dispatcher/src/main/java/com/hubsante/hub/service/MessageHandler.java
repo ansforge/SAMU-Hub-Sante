@@ -37,6 +37,7 @@ import com.hubsante.model.Validator;
 import com.hubsante.model.builders.ErrorWrapperBuilder;
 import com.hubsante.model.edxl.ContentMessage;
 import com.hubsante.model.edxl.DistributionKind;
+import com.hubsante.model.edxl.EdxlEnvelope;
 import com.hubsante.model.edxl.EdxlMessage;
 import com.hubsante.model.exception.ValidationException;
 import com.hubsante.model.reference.ReferenceWrapper;
@@ -64,6 +65,7 @@ public class MessageHandler {
     private final HubConfiguration hubConfig;
     private final Validator validator;
     private final MeterRegistry registry;
+    private final ObservabilityService observabilityService;
 
     @Autowired
     @Qualifier("xmlMapper")
@@ -88,7 +90,8 @@ public class MessageHandler {
             MeterRegistry registry,
             XmlMapper xmlMapper,
             ObjectMapper jsonMapper,
-            ConversionHandler conversionHandler) {
+            ConversionHandler conversionHandler,
+            ObservabilityService observabilityService) {
         this.rabbitTemplate = rabbitTemplate;
         this.edxlHandler = edxlHandler;
         this.hubConfig = hubConfig;
@@ -97,6 +100,7 @@ public class MessageHandler {
         this.xmlMapper = xmlMapper;
         this.jsonMapper = jsonMapper;
         this.conversionHandler = conversionHandler;
+        this.observabilityService = observabilityService;
     }
 
     protected void handleError(AbstractHubException exception, Message message) {
@@ -319,6 +323,8 @@ public class MessageHandler {
                         "Unhandled Content-Type in message with extracted distributionId %s",
                         inbound.extractedDistributionId()),
                 inbound.logContext());
+        observabilityService.tagCurrentSpanWithAmqpMessageMetadata(
+                inbound.extractedDistributionId(), inbound.receivedRoutingKey());
         throw new NotAllowedContentTypeException(
                 UNHANDLED_CONTENT_TYPE_CAUSE, inbound.extractedDistributionId());
     }
@@ -331,6 +337,8 @@ public class MessageHandler {
                     "Could not find schema file",
                     Map.of(LogConstants.DISTRIBUTION_ID, inbound.extractedDistributionId()),
                     exception);
+            observabilityService.tagCurrentSpanWithAmqpMessageMetadata(
+                    inbound.extractedDistributionId(), inbound.receivedRoutingKey());
             throw new SchemaNotFoundException(
                     INTERNAL_ERROR_CAUSE, inbound.extractedDistributionId());
         } catch (ValidationException contentError) {
@@ -341,17 +349,18 @@ public class MessageHandler {
     private void validateEnvelopeOnly(
             EdxlFormat format, InboundMessage inbound, ValidationException contentError) {
         countProcessing("validate.envelope");
-        String distributionId;
+        EdxlEnvelope deserializedEnvelop;
         try {
             format.validate(validator, inbound.body(), format.envelopeSchema);
-            distributionId =
-                    format.deserializeEnvelope(edxlHandler, inbound.body()).getDistributionID();
+            deserializedEnvelop = format.deserializeEnvelope(edxlHandler, inbound.body());
         } catch (ValidationException envelopeError) {
             structuredLog.error(
                     String.format(
                             "Could not validate envelope of message with distributionId possibly being (regex extraction) %s: %s",
                             inbound.extractedDistributionId(), envelopeError.getMessage()),
                     inbound.logContext());
+            observabilityService.tagCurrentSpanWithAmqpMessageMetadata(
+                    inbound.extractedDistributionId(), inbound.receivedRoutingKey());
             throw new SchemaValidationException(
                     "CAUTION: distributionId has been extracted by regex because the envelope could not be deserialized.\n"
                             + envelopeError.getMessage(),
@@ -359,15 +368,20 @@ public class MessageHandler {
         } catch (IOException exception) {
             structuredLog.error(
                     String.format("Could not find schema file %s", exception.getMessage()),
-                    Map.of(LogConstants.DISTRIBUTION_ID, inbound.extractedDistributionId()));
+                    inbound.logContext());
+            observabilityService.tagCurrentSpanWithAmqpMessageMetadata(
+                    inbound.extractedDistributionId(), inbound.receivedRoutingKey());
             throw new SchemaNotFoundException(
                     INTERNAL_ERROR_CAUSE, inbound.extractedDistributionId());
         }
-        structuredLog.error(
-                "Could not validate content of message", inbound.logContext(distributionId));
+
+        Map<LogConstants, String> envelopeLogContext =
+                observabilityService.buildLogContextFromEdxlEnvelope(deserializedEnvelop);
+        structuredLog.error("Could not validate content of message", envelopeLogContext);
         structuredLog.debug(
                 String.format("Received message String was %s", inbound.body()),
-                inbound.logContext(distributionId));
+                envelopeLogContext);
+        observabilityService.tagCurrentSpanWithEnvelopeMetadata(deserializedEnvelop);
         throw new SchemaValidationException(
                 contentError.getMessage(), inbound.extractedDistributionId());
     }

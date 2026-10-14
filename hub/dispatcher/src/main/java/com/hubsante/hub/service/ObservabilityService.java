@@ -21,6 +21,7 @@ import static com.hubsante.hub.config.Constants.DISTRIBUTION_ID_SPAN_TAG;
 import static com.hubsante.hub.config.Constants.EDITOR_SPAN_TAG;
 
 import com.hubsante.hub.config.HubConfiguration;
+import com.hubsante.hub.config.LogConstants;
 import com.hubsante.hub.utils.EdxlUtils;
 import com.hubsante.hub.utils.MessageUtils;
 import com.hubsante.model.edxl.ContentMessage;
@@ -28,6 +29,7 @@ import com.hubsante.model.edxl.EdxlEnvelope;
 import com.hubsante.model.edxl.EdxlMessage;
 import io.micrometer.tracing.Span;
 import io.micrometer.tracing.Tracer;
+import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -42,7 +44,17 @@ public class ObservabilityService {
         this.tracer = tracer;
     }
 
-    public void tagCurrentSpanWithMessageMetadata(EdxlMessage edxlMessage) {
+    public Map<LogConstants, String> buildLogContextFromEdxlEnvelope(EdxlEnvelope envelope) {
+        return Map.of(
+                LogConstants.SENDER_ID,
+                envelope.getSenderID(),
+                LogConstants.RECIPIENT_ID,
+                envelope.getDescriptor().getExplicitAddress().getExplicitAddressValue(),
+                LogConstants.DISTRIBUTION_ID,
+                envelope.getDistributionID());
+    }
+
+    public void tagCurrentSpanWithEdxlMessageMetadata(EdxlMessage edxlMessage) {
         Span span = tracer.currentSpan();
         if (span == null) {
             return;
@@ -57,7 +69,7 @@ public class ObservabilityService {
         span.tag(DISTRIBUTION_ID_SPAN_TAG, edxlMessage.getDistributionID());
     }
 
-    public void tagCurrentSpanWithMinimalMetadata(String distributionId, String sender) {
+    public void tagCurrentSpanWithAmqpMessageMetadata(String distributionId, String sender) {
         Span span = tracer.currentSpan();
         if (span == null) {
             return;
