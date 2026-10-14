@@ -17,6 +17,9 @@ package com.hubsante.hub.config;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.mongodb.connection.ClusterDescription;
@@ -24,14 +27,17 @@ import com.mongodb.event.ClusterDescriptionChangedEvent;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.context.ApplicationEventPublisher;
 
 class MongoClusterMonitorTest {
 
+    private ApplicationEventPublisher eventPublisher;
     private MongoClusterMonitor monitor;
 
     @BeforeEach
     void setUp() {
-        monitor = new MongoClusterMonitor();
+        eventPublisher = mock(ApplicationEventPublisher.class);
+        monitor = new MongoClusterMonitor(eventPublisher);
     }
 
     private static ClusterDescriptionChangedEvent event(boolean hasWritableServer) {
@@ -74,5 +80,28 @@ class MongoClusterMonitorTest {
         monitor.clusterDescriptionChanged(event(true));
 
         assertThat(monitor.isUp()).isTrue();
+    }
+
+    @Test
+    @DisplayName("should publish a restored event once per DOWN to UP transition")
+    void shouldPublishRestoredEventOnTransitionToUpOnly() {
+        monitor.clusterDescriptionChanged(event(true));
+        monitor.clusterDescriptionChanged(event(true));
+        verify(eventPublisher, times(1)).publishEvent(new MongoConnectionRestoredEvent());
+
+        monitor.clusterDescriptionChanged(event(false));
+        monitor.clusterDescriptionChanged(event(false));
+        verify(eventPublisher, times(1)).publishEvent(new MongoConnectionRestoredEvent());
+
+        monitor.clusterDescriptionChanged(event(true));
+        verify(eventPublisher, times(2)).publishEvent(new MongoConnectionRestoredEvent());
+    }
+
+    @Test
+    @DisplayName("should not publish a restored event while the cluster stays down")
+    void shouldNotPublishWhileDown() {
+        monitor.clusterDescriptionChanged(event(false));
+
+        verify(eventPublisher, never()).publishEvent(new MongoConnectionRestoredEvent());
     }
 }
