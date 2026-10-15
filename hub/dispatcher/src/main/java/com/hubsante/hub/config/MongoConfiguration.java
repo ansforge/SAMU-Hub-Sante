@@ -45,11 +45,8 @@ public class MongoConfiguration {
     @Value("${persistence.arrivedAt.expiresDurationDays}")
     private int expiresDurationDays;
 
-    @Value("${mongo.index-creation-retry.initial-delay-ms:1000}")
-    private long initialRetryDelayMs;
-
-    @Value("${mongo.index-creation-retry.max-delay-ms:300000}")
-    private long maxRetryDelayMs;
+    @Value("${mongo.index-creation-retry.delay-ms:30000}")
+    private long retryDelayMs;
 
     private final ScheduledExecutorService retryScheduler =
             Executors.newSingleThreadScheduledExecutor(
@@ -99,16 +96,16 @@ public class MongoConfiguration {
                 pendingRetry.cancel(false);
                 pendingRetry = null;
             }
-            attemptCreateIndexes(Duration.ofMillis(initialRetryDelayMs));
+            attemptCreateIndexes();
         }
     }
 
     /**
      * Attempts to create MongoDB indexes. If the creation fails while MongoDB is up,
-     * it will schedule a retry with exponential backoff. If MongoDB is down, it will
+     * it will schedule a retry after a fixed delay. If MongoDB is down, it will
      * wait for the connection to be restored before retrying.
      */
-    private void attemptCreateIndexes(Duration nextRetryDelay) {
+    private void attemptCreateIndexes() {
         synchronized (lock) {
             try {
                 doCreateIndexes();
@@ -121,24 +118,17 @@ public class MongoConfiguration {
                             e);
                     return;
                 }
+                final Duration retryDelayDuration = Duration.ofMillis(retryDelayMs);
                 log.error(
                         "Failed to create MongoDB indexes while the database is up, "
                                 + "retrying in {}s.",
-                        nextRetryDelay.toSeconds(),
+                        retryDelayDuration.toSeconds(),
                         e);
                 pendingRetry =
                         retryScheduler.schedule(
-                                () -> attemptCreateIndexes(nextDelay(nextRetryDelay)),
-                                nextRetryDelay.toMillis(),
-                                TimeUnit.MILLISECONDS);
+                                this::attemptCreateIndexes, retryDelayMs, TimeUnit.MILLISECONDS);
             }
         }
-    }
-
-    private Duration nextDelay(Duration currentDelay) {
-        Duration doubled = currentDelay.multipliedBy(2);
-        Duration maxRetryDelay = Duration.ofMillis(maxRetryDelayMs);
-        return doubled.compareTo(maxRetryDelay) > 0 ? maxRetryDelay : doubled;
     }
 
     @PreDestroy
