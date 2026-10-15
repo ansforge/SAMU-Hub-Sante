@@ -56,14 +56,14 @@ public class HubSanteInternalStrategy implements RoutingStrategy {
     @Override
     public void checkMessageContent(Message message, EdxlMessage edxlMessage)
             throws AbstractHubException {
+        // reject the message if the sender is not consistent with the routing key
+        checkSenderConsistency(message, edxlMessage);
         // check message type is allowed on the current vhost
         checkUseCaseSupported(edxlMessage, hubConfig);
         // check message is allowed for its recipient
         messageHandler.inhibitMessageIfNeeded(edxlMessage);
         // reject the message if no health actor is involved (as sender or recipient)
         checkHealthActorIsInvolved(edxlMessage);
-        // reject the message if the sender is not consistent with the routing key
-        checkSenderConsistency(message, edxlMessage);
         // reject the message if the delivery mode is not PERSISTENT
         checkDeliveryModeIsPersistent(message, edxlMessage.getDistributionID());
         // reject the message if distributionId does not respect the format
