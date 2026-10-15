@@ -52,8 +52,7 @@ class MongoConfigurationTest {
         when(mongoMonitor.isUp()).thenReturn(true);
         mongoConfiguration = new MongoConfiguration(mongoTemplate, mongoMonitor);
         ReflectionTestUtils.setField(mongoConfiguration, "expiresDurationDays", 3);
-        ReflectionTestUtils.setField(mongoConfiguration, "initialRetryDelayMs", 50L);
-        ReflectionTestUtils.setField(mongoConfiguration, "maxRetryDelayMs", 200L);
+        ReflectionTestUtils.setField(mongoConfiguration, "retryDelayMs", 50L);
     }
 
     @AfterEach
@@ -101,7 +100,7 @@ class MongoConfigurationTest {
     }
 
     @Test
-    @DisplayName("should retry with backoff while MongoDB is up")
+    @DisplayName("should retry at a fixed delay while MongoDB is up")
     void shouldRetryWhileMongoIsUp() {
         IndexOperations indexOperations = mock(IndexOperations.class);
         AtomicInteger indexOpsCalls = new AtomicInteger();
@@ -116,7 +115,7 @@ class MongoConfigurationTest {
 
         mongoConfiguration.createIndexes();
 
-        // first call fails immediately, then retries after 50ms, then 100ms: allow up to 2s
+        // first call fails immediately, then retries every 50ms: allow up to 2s
         await().atMost(Duration.ofSeconds(2))
                 .untilAsserted(
                         () -> verify(indexOperations, times(INDEX_COUNT)).createIndex(any()));
@@ -156,7 +155,7 @@ class MongoConfigurationTest {
                             }
                             return indexOperations;
                         });
-        ReflectionTestUtils.setField(mongoConfiguration, "initialRetryDelayMs", 60_000L);
+        ReflectionTestUtils.setField(mongoConfiguration, "retryDelayMs", 60_000L);
 
         mongoConfiguration.createIndexes(); // fails, retry scheduled in 60s
         mongoConfiguration.onMongoConnectionRestored(); // succeeds right away
