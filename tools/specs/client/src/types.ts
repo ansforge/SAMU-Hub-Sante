@@ -7,6 +7,11 @@ export type SchemaReference = {
   examples?: SchemaExample[];
 };
 
+export type NomenclatureReference = {
+  label: string;
+  schemaName: string;
+};
+
 export type SchemaExample = {
   file: string;
   icon: string;

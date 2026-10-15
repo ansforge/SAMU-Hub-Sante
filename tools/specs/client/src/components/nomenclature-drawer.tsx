@@ -123,7 +123,7 @@ export function NomenclatureDrawer() {
       open={name !== null}
       onOpenChange={(open) => !open && closeNomenclatureDrawer()}
     >
-      <SheetContent className={"w-full max-w-4xl!"}>
+      <SheetContent className={"w-full max-w-4xl! gap-0"}>
         <SheetHeader className="border-b">
           {name && <NomenclatureHeader name={name} />}
         </SheetHeader>
