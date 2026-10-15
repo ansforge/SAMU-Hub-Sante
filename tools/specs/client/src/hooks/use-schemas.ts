@@ -1,6 +1,7 @@
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { getRouteApi } from "@tanstack/react-router";
 import { messageListUrl, messagePerimeters } from "@/config";
+import { fetchGithubList, githubListQueryOptions } from "@/lib/github-list";
 import type { SchemaReference } from "@/types";
 
 const rootRouteApi = getRouteApi("__root__");
@@ -10,19 +11,15 @@ export function useSchemas() {
   return useQuery({
     queryKey: ["schemas", ref],
     queryFn: async (): Promise<SchemaReference[]> => {
-      const res = await fetch(messageListUrl(ref));
-      if (res.status === 404) {
-        throw new Error(`Branche ou tag "${ref}" introuvable.`);
-      }
-      if (!res.ok) throw new Error(`Échec du chargement (HTTP ${res.status})`);
-      const schemas: SchemaReference[] = await res.json();
+      const schemas = await fetchGithubList<SchemaReference>(
+        messageListUrl(ref),
+      );
+      if (!schemas) throw new Error(`Branche ou tag "${ref}" introuvable.`);
       return schemas.map((schema) => ({
         ...schema,
         perimeters: messagePerimeters(schema.label),
       }));
     },
-    placeholderData: keepPreviousData,
-    retry: false,
-    staleTime: 30_000,
+    ...githubListQueryOptions,
   });
 }
