@@ -361,6 +361,16 @@ public class MessageHandler {
                     "CAUTION: distributionId has been extracted by regex because the envelope could not be deserialized.\n"
                             + envelopeError.getMessage(),
                     inbound.extractedDistributionId());
+        } catch (JsonProcessingException envelopeError) {
+            structuredLog.error(
+                    String.format(
+                            "Could not deserialize envelope of message with distributionId possibly being (regex extraction) %s: %s",
+                            inbound.extractedDistributionId(), envelopeError.getMessage()),
+                    inbound.logContext());
+            throw new SchemaValidationException(
+                    "CAUTION: distributionId has been extracted by regex because the envelope could not be deserialized.\n"
+                            + contentError.getMessage(),
+                    inbound.extractedDistributionId());
         } catch (IOException exception) {
             structuredLog.error(
                     String.format("Could not find schema file %s", exception.getMessage()),
@@ -377,7 +387,7 @@ public class MessageHandler {
                 envelopeLogContext);
         observabilityService.tagCurrentSpanWithEnvelopeMetadata(deserializedEnvelop);
         throw new SchemaValidationException(
-                contentError.getMessage(), inbound.extractedDistributionId());
+                contentError.getMessage(), envelopeLogContext.get(LogConstants.DISTRIBUTION_ID));
     }
 
     private EdxlMessage deserializeMessage(EdxlFormat format, InboundMessage inbound) {
