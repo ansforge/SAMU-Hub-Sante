@@ -302,6 +302,8 @@ public class MessageHandler {
     protected EdxlMessage extractMessage(Message message) {
         countProcessing("extract");
         InboundMessage inbound = InboundMessage.of(message);
+        observabilityService.tagCurrentSpanWithAmqpMessageMetadata(
+                inbound.extractedDistributionId(), inbound.receivedRoutingKey());
 
         countProcessing("validate.full");
         EdxlFormat format = resolveFormat(message, inbound);
@@ -323,8 +325,6 @@ public class MessageHandler {
                         "Unhandled Content-Type in message with extracted distributionId %s",
                         inbound.extractedDistributionId()),
                 inbound.logContext());
-        observabilityService.tagCurrentSpanWithAmqpMessageMetadata(
-                inbound.extractedDistributionId(), inbound.receivedRoutingKey());
         throw new NotAllowedContentTypeException(
                 UNHANDLED_CONTENT_TYPE_CAUSE, inbound.extractedDistributionId());
     }
@@ -337,8 +337,6 @@ public class MessageHandler {
                     "Could not find schema file",
                     Map.of(LogConstants.DISTRIBUTION_ID, inbound.extractedDistributionId()),
                     exception);
-            observabilityService.tagCurrentSpanWithAmqpMessageMetadata(
-                    inbound.extractedDistributionId(), inbound.receivedRoutingKey());
             throw new SchemaNotFoundException(
                     INTERNAL_ERROR_CAUSE, inbound.extractedDistributionId());
         } catch (ValidationException contentError) {
@@ -359,8 +357,6 @@ public class MessageHandler {
                             "Could not validate envelope of message with distributionId possibly being (regex extraction) %s: %s",
                             inbound.extractedDistributionId(), envelopeError.getMessage()),
                     inbound.logContext());
-            observabilityService.tagCurrentSpanWithAmqpMessageMetadata(
-                    inbound.extractedDistributionId(), inbound.receivedRoutingKey());
             throw new SchemaValidationException(
                     "CAUTION: distributionId has been extracted by regex because the envelope could not be deserialized.\n"
                             + envelopeError.getMessage(),
@@ -369,8 +365,6 @@ public class MessageHandler {
             structuredLog.error(
                     String.format("Could not find schema file %s", exception.getMessage()),
                     inbound.logContext());
-            observabilityService.tagCurrentSpanWithAmqpMessageMetadata(
-                    inbound.extractedDistributionId(), inbound.receivedRoutingKey());
             throw new SchemaNotFoundException(
                     INTERNAL_ERROR_CAUSE, inbound.extractedDistributionId());
         }
@@ -406,9 +400,7 @@ public class MessageHandler {
         static InboundMessage of(Message message) {
             String body = stringifyBody(message);
             return new InboundMessage(
-                    body,
-                    message.getMessageProperties().getReceivedRoutingKey(),
-                    extractDistributionId(body));
+                    body, getSenderFromRoutingKey(message), extractDistributionId(body));
         }
 
         Map<LogConstants, String> logContext() {
