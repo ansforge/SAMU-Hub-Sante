@@ -21,6 +21,7 @@ import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
 import java.util.concurrent.atomic.AtomicBoolean;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
 /**
@@ -35,7 +36,11 @@ public class MongoClusterMonitor implements ClusterListener {
     // false until the first cluster description reporting a writable server
     private final AtomicBoolean up = new AtomicBoolean(false);
 
-    public MongoClusterMonitor(MeterRegistry meterRegistry) {
+    private final ApplicationEventPublisher eventPublisher;
+
+    public MongoClusterMonitor(
+            MeterRegistry meterRegistry, ApplicationEventPublisher eventPublisher) {
+        this.eventPublisher = eventPublisher;
         Gauge.builder("dispatcher_mongodb_up", up, flag -> flag.get() ? 1 : 0)
                 .description("1 if the MongoDB cluster has a writable server, 0 otherwise")
                 .register(meterRegistry);
@@ -51,6 +56,7 @@ public class MongoClusterMonitor implements ClusterListener {
         boolean wasUp = up.getAndSet(nowUp);
         if (nowUp && !wasUp) {
             log.info("[MongoDB] Connection restored");
+            eventPublisher.publishEvent(new MongoConnectionRestoredEvent());
         } else if (!nowUp && wasUp) {
             log.error(
                     "[MongoDB] Connection lost: {}",

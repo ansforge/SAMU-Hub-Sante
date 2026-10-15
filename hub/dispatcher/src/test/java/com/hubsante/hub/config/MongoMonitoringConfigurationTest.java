@@ -25,10 +25,13 @@ import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.health.contributor.Status;
+import org.springframework.context.ApplicationEventPublisher;
 
 class MongoMonitoringConfigurationTest {
 
-    private final MongoClusterMonitor monitor = new MongoClusterMonitor(new SimpleMeterRegistry());
+    private final MongoClusterMonitor monitor =
+            new MongoClusterMonitor(
+                    new SimpleMeterRegistry(), mock(ApplicationEventPublisher.class));
 
     @Test
     @DisplayName("health indicator should reflect the monitor state without querying MongoDB")
