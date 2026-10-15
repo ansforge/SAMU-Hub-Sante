@@ -6,12 +6,12 @@ export const githubListQueryOptions = {
   staleTime: 30_000,
 } as const;
 
-export async function fetchGithubList<T>(
+export async function fetchGithubList<T extends { label: string }>(
   url: string,
 ): Promise<T[] | null> {
   const res = await fetch(url);
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`Échec du chargement (HTTP ${res.status})`);
   const list: T[] = await res.json();
-  return list;
+  return list.sort((a, b) => a.label.localeCompare(b.label));
 }
