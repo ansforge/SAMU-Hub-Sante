@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { NomenclatureDrawer } from "@/components/nomenclature-drawer";
 import type { JsonSchemaDocument } from "@/types";
-import { FieldLegend } from "./field-legend";
 import { SchemaFields } from "./schema-fields";
 import { buildGithubSchemaUrl } from "@/lib/utils";
 import { githubDomain } from "@/config";
@@ -70,7 +69,7 @@ export function SchemaDetail({
   return (
     <>
       <NomenclatureDrawer />
-      <div className="mx-auto flex min-h-0 w-full max-w-7xl flex-1 flex-col gap-6 overflow-y-auto px-4 py-6 md:px-8">
+      <div className="mx-auto flex min-h-0 w-full max-w-7xl flex-1 flex-col gap-0 overflow-y-auto px-4 py-6 md:px-8">
         <header className="flex flex-col gap-1">
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="text-2xl font-semibold">{label}</h1>
@@ -88,9 +87,8 @@ export function SchemaDetail({
         </header>
 
         {hasProperties && (
-          <section className="flex flex-col gap-4">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <FieldLegend />
+          <section className="flex flex-col">
+            <div className="flex flex-wrap items-center justify-end">
               {expandableIds.length > 0 && (
                 <Button
                   variant="outline"
