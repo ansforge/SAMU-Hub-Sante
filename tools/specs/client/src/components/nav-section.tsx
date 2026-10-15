@@ -10,6 +10,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuSub,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { ChevronRightIcon } from "lucide-react";
 import { useState, type ReactNode } from "react";
@@ -35,7 +36,17 @@ export function NavSection({
   error,
   children,
 }: NavSectionProps) {
+  const { state, setOpen: setSidebarOpen } = useSidebar();
   const [open, setOpen] = useState(defaultOpen);
+
+  const handleOpenChange = (next: boolean) => {
+    if (state === "collapsed") {
+      setSidebarOpen(true);
+      setOpen(true);
+      return;
+    }
+    setOpen(next);
+  };
 
   return (
     <SidebarGroup>
@@ -43,7 +54,7 @@ export function NavSection({
         <Collapsible
           className="group/collapsible"
           open={open}
-          onOpenChange={setOpen}
+          onOpenChange={handleOpenChange}
           render={<SidebarMenuItem />}
         >
           <CollapsibleTrigger render={<SidebarMenuButton tooltip={title} />}>
