@@ -30,6 +30,7 @@ import {
   buildGithubSchemaUrl,
   inlineExamples,
 } from "./lib/utils";
+import { NomenclatureDrawer } from "./components/nomenclature-drawer";
 
 function Root() {
   const { error, refetch } = useSchemas();
@@ -43,7 +44,10 @@ function Root() {
             {error ? (
               <SchemasError error={error} retry={refetch} />
             ) : (
-              <Outlet />
+              <>
+                <Outlet />
+                <NomenclatureDrawer />
+              </>
             )}
           </main>
         </SidebarInset>

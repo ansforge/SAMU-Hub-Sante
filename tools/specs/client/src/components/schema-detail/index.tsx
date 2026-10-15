@@ -1,7 +1,6 @@
 import { useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { NomenclatureDrawer } from "@/components/nomenclature-drawer";
 import type { JsonSchemaDocument } from "@/types";
 import { SchemaFields } from "./schema-fields";
 import { buildGithubSchemaUrl } from "@/lib/utils";
@@ -68,7 +67,6 @@ export function SchemaDetail({
 
   return (
     <>
-      <NomenclatureDrawer />
       <div className="mx-auto flex min-h-0 w-full max-w-7xl flex-1 flex-col gap-0 overflow-y-auto px-4 py-6 md:px-8">
         <header className="flex flex-col gap-1">
           <div className="flex flex-wrap items-center gap-2">
