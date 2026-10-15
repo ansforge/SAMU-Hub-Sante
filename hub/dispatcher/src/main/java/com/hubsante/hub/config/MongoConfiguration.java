@@ -59,7 +59,8 @@ public class MongoConfiguration {
                         return thread;
                     });
 
-    // Lock object to guard index creation and the pending retry, as attempts come from several threads
+    // Lock object to guard index creation and the pending retry, as attempts come from several
+    // threads
     private final Object lock = new Object();
     private ScheduledFuture<?> pendingRetry;
 
@@ -101,7 +102,6 @@ public class MongoConfiguration {
             attemptCreateIndexes(Duration.ofMillis(initialRetryDelayMs));
         }
     }
-
 
     /**
      * Attempts to create MongoDB indexes. If the creation fails while MongoDB is up,
