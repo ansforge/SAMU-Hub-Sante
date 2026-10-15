@@ -16,9 +16,6 @@
 package com.hubsante.hub.service;
 
 import static com.hubsante.hub.config.Constants.*;
-import static com.hubsante.hub.config.Constants.CASE_ID_SPAN_TAG;
-import static com.hubsante.hub.config.Constants.DISTRIBUTION_ID_SPAN_TAG;
-import static com.hubsante.hub.config.Constants.EDITOR_SPAN_TAG;
 
 import com.hubsante.hub.config.HubConfiguration;
 import com.hubsante.hub.config.LogConstants;
@@ -30,11 +27,9 @@ import com.hubsante.model.edxl.EdxlMessage;
 import io.micrometer.tracing.Span;
 import io.micrometer.tracing.Tracer;
 import java.util.Map;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 @Component
-@Slf4j
 public class ObservabilityService {
     private final HubConfiguration hubConfig;
     private final Tracer tracer;
@@ -49,7 +44,7 @@ public class ObservabilityService {
                 LogConstants.SENDER_ID,
                 envelope.getSenderID(),
                 LogConstants.RECIPIENT_ID,
-                envelope.getDescriptor().getExplicitAddress().getExplicitAddressValue(),
+                MessageUtils.getRecipientID(envelope),
                 LogConstants.DISTRIBUTION_ID,
                 envelope.getDistributionID());
     }
@@ -85,9 +80,7 @@ public class ObservabilityService {
         }
         String sender = envelope.getSenderID();
         span.tag(SENDER_SPAN_TAG, sender);
-        span.tag(
-                RECIPIENT_SPAN_TAG,
-                envelope.getDescriptor().getExplicitAddress().getExplicitAddressValue());
+        span.tag(RECIPIENT_SPAN_TAG, MessageUtils.getRecipientID(envelope));
         span.tag(EDITOR_SPAN_TAG, hubConfig.getClientPropertiesRegistry().getClientEditor(sender));
         span.tag(DISTRIBUTION_ID_SPAN_TAG, envelope.getDistributionID());
     }
