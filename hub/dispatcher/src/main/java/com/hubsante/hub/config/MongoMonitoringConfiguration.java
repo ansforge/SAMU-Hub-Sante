@@ -15,6 +15,7 @@
  */
 package com.hubsante.hub.config;
 
+import org.springframework.boot.health.autoconfigure.contributor.ConditionalOnEnabledHealthIndicator;
 import org.springframework.boot.health.contributor.Health;
 import org.springframework.boot.health.contributor.HealthIndicator;
 import org.springframework.boot.mongodb.autoconfigure.MongoClientSettingsBuilderCustomizer;
@@ -34,8 +35,10 @@ public class MongoMonitoringConfiguration {
     /**
      * Replaces Spring Boot's default "mongo" health indicator, which pings the database on every
      * call: the state is read from the driver's background monitoring instead.
+     * Toggled via management.health.mongodb.enabled (default: true)
      */
     @Bean
+    @ConditionalOnEnabledHealthIndicator("mongodb")
     public HealthIndicator mongoHealthIndicator(MongoClusterMonitor monitor) {
         return () -> (monitor.isUp() ? Health.up() : Health.down()).build();
     }
