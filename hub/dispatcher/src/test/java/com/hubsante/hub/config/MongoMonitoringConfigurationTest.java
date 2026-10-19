@@ -36,7 +36,7 @@ class MongoMonitoringConfigurationTest {
     void healthIndicatorFollowsMonitor() {
         var indicator = new MongoMonitoringConfiguration().mongoHealthIndicator(monitor);
 
-        assertThat(indicator.health().getStatus()).isEqualTo(Status.DOWN);
+        assertThat(indicator.health().getStatus()).isEqualTo(MongoMonitoringConfiguration.DEGRADED);
 
         ClusterDescription description = mock(ClusterDescription.class);
         when(description.hasWritableServer()).thenReturn(true);
