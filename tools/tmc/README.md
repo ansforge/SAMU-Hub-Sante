@@ -91,6 +91,8 @@ Lancer une simulation individuelle :
 > ⚠️ **Point de vigilance Gradle 9** : la tâche `gatlingRecorder` du plugin `io.gatling.gradle` (3.13.5) est cassée sous Gradle 9 (elle référence une propriété `reportsDir` fournie par l'ancienne Convention API, supprimée en 9.0). Elle n'est pas utilisée par ce projet, mais toute commande qui force l'évaluation de toutes les tâches (ex. `./gradlew tasks`) échouera à cause d'elle. Sans impact sur `gatlingRun` / `gatlingRunAllParallel`.
 >
 > `gatlingRunAllParallel` (tâche maison de ce build) utilise le service injecté `ExecOperations` pour forker ses process — `Project#javaexec(Closure)`, utilisé auparavant, a été retiré en Gradle 9.0. En cas de modification de cette tâche, ne pas revenir à un appel direct à `javaexec { ... }` dans le `doLast`.
+>
+> Gradle 9 refuse de configurer un projet dont le répertoire n'est pas accessible en écriture. Lorsque l'image tourne avec un système de fichiers racine en lecture seule (CronJob Kubernetes), `/app` ne l'est pas : l'entrypoint `docker-entrypoint.sh` copie alors le projet dans un répertoire inscriptible (`/tmp/tmc` par défaut, surchargeable via `TMC_WORK_DIR`) et y lance Gradle via `--project-dir`. `GRADLE_USER_HOME` doit également pointer vers un répertoire inscriptible.
 
 ## Architecture technique
 

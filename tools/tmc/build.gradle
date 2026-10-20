@@ -136,7 +136,7 @@ jib {
         tags = [project.findProperty('version') ?: 'latest']
     }
     container {
-        entrypoint = ['./gradlew']
+        entrypoint = ['/bin/sh', '/app/docker-entrypoint.sh']
         args = ['gatlingRunAllParallel']
         jvmFlags = ['-Xms512m', '-Xmx2048m']
         workingDirectory = '/app'
