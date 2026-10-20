@@ -37,16 +37,24 @@
       "groupName": "dispatcher dependencies"
     },
     {
-      "description": "Mises à jour des dépendances - Web",
-      "matchFileNames": ["web/**"],
+      "description": "Mises à jour des dépendances - Web & Tools : une PR par répertoire",
+      "matchFileNames": ["web/**", "tools/**"],
       "schedule": ["* * 21-30 * 1"],
-      "groupName": "web dependencies"
+      "groupName": "dependencies",
+      "additionalBranchPrefix": "{{packageFileDir}}-",
+      "commitMessageSuffix": "({{packageFileDir}})"
     },
     {
-      "description": "Mises à jour des dépendances - Tools",
-      "matchFileNames": ["tools/**"],
-      "schedule": ["* * 21-30 * 1"],
-      "groupName": "tools dependencies"
+      "description": "Mises à jour des dépendances - tools/specs : client et server regroupés",
+      "matchFileNames": ["tools/specs/**"],
+      "additionalBranchPrefix": "tools/specs-",
+      "commitMessageSuffix": "(tools/specs)"
+    },
+    {
+      "description": "Mises à jour des dépendances - web/lrm : client et server regroupés",
+      "matchFileNames": ["web/lrm/**"],
+      "additionalBranchPrefix": "web/lrm-",
+      "commitMessageSuffix": "(web/lrm)"
     }
   ],
   "vulnerabilityAlerts": {
