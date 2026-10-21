@@ -1,41 +1,27 @@
 import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import { Input } from "@/components/ui/input";
-import {
-  SidebarGroup,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
 import { getPerimeters } from "@/lib/get-perimeters";
-import { SchemaReference } from "@/types";
 import { Link, useParams } from "@tanstack/react-router";
-import { Braces, ChevronRightIcon } from "lucide-react";
+import { Braces } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { useSchemas } from "@/hooks/use-schemas";
+import { NavSection } from "./nav-section";
 import { PerimeterSelect } from "./perimeter-select";
 
 export function NavSchemas() {
   const { data: schemas = [] } = useSchemas();
   const { schemaName: activeSchema } = useParams({ strict: false });
-  const [search, setSearch] = useState<string>("");
-  const [open, setOpen] = useState<boolean>(true);
-  const [selectedPerimeters, seSelectedPerimeters] = useState<string[]>([]);
+  const [search, setSearch] = useState("");
+  const [selectedPerimeters, setSelectedPerimeters] = useState<string[]>([]);
 
   const perimeters = getPerimeters(schemas);
 
   const filteredSchemas = useMemo(() => {
-    const q = search.toLocaleLowerCase();
+    const q = search.toLowerCase();
     return schemas.filter((s) => {
-      const matchesSearch = s.schemaName
-        .toLowerCase()
-        .includes(q.toLowerCase());
+      const matchesSearch = s.schemaName.toLowerCase().includes(q);
       if (!s.perimeters) return matchesSearch;
       const matchesPerimeters =
         selectedPerimeters.length > 0
@@ -45,73 +31,45 @@ export function NavSchemas() {
     });
   }, [search, schemas, selectedPerimeters]);
 
-  const toggleFilter = useCallback(
-    (value: string, checked: boolean) => {
-      seSelectedPerimeters((prev) => {
-        if (checked) return [...prev, value];
-        else return prev.filter((p) => p !== value);
-      });
-    },
-    [seSelectedPerimeters],
-  );
+  const toggleFilter = useCallback((value: string, checked: boolean) => {
+    setSelectedPerimeters((prev) =>
+      checked ? [...prev, value] : prev.filter((p) => p !== value),
+    );
+  }, []);
 
   return (
-    <SidebarGroup>
-      <SidebarMenu>
-        <Collapsible
-          className="group/collapsible"
-          open={open}
-          onOpenChange={setOpen}
-          render={<SidebarMenuItem />}
-        >
-          <CollapsibleTrigger
-            render={<SidebarMenuButton tooltip={"Schemas"} />}
+    <NavSection
+      title="Schemas"
+      icon={<Braces />}
+      defaultOpen
+      search={search}
+      onSearchChange={setSearch}
+      toolbar={
+        perimeters.length > 0 && (
+          <PerimeterSelect
+            toggleFilter={toggleFilter}
+            selectedPerimeters={selectedPerimeters}
+            perimeters={perimeters}
+            className="group-data-[collapsible=icon]:hidden"
+          />
+        )
+      }
+    >
+      {filteredSchemas.map((schema) => (
+        <SidebarMenuSubItem key={schema.schemaName}>
+          <SidebarMenuSubButton
+            isActive={schema.schemaName === activeSchema}
+            render={
+              <Link
+                to="/$schemaName"
+                params={{ schemaName: schema.schemaName }}
+              />
+            }
           >
-            <Braces />
-            <span>Schemas</span>
-            <ChevronRightIcon className="ml-auto transition-transform duration-200 group-data-open/collapsible:rotate-90" />
-          </CollapsibleTrigger>
-          <CollapsibleContent>
-            {open && (
-              <div className="flex items-center gap-1">
-                <Input
-                  autoFocus
-                  type="search"
-                  placeholder="Rechercher..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="mx-2 my-1 w-[calc(100%-1rem)] group-data-[collapsible=icon]:hidden grow"
-                />
-                {perimeters.length > 0 && (
-                  <PerimeterSelect
-                    toggleFilter={toggleFilter}
-                    selectedPerimeters={selectedPerimeters}
-                    perimeters={perimeters}
-                    className="group-data-[collapsible=icon]:hidden"
-                  />
-                )}
-              </div>
-            )}
-            <SidebarMenuSub>
-              {filteredSchemas.map((schema: SchemaReference) => (
-                <SidebarMenuSubItem key={schema.schemaName}>
-                  <SidebarMenuSubButton
-                    isActive={schema.schemaName === activeSchema}
-                    render={
-                      <Link
-                        to="/$schemaName"
-                        params={{ schemaName: schema.schemaName }}
-                      />
-                    }
-                  >
-                    <span>{schema.label}</span>
-                  </SidebarMenuSubButton>
-                </SidebarMenuSubItem>
-              ))}
-            </SidebarMenuSub>
-          </CollapsibleContent>
-        </Collapsible>
-      </SidebarMenu>
-    </SidebarGroup>
+            <span>{schema.label}</span>
+          </SidebarMenuSubButton>
+        </SidebarMenuSubItem>
+      ))}
+    </NavSection>
   );
 }

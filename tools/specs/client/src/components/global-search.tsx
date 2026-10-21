@@ -9,13 +9,17 @@ import {
 } from "@/components/ui/command";
 import { useKeyboardShortcut } from "@/hooks/use-keyboard-shortcut";
 import { useSchemaStore } from "@/store/schema-store";
-import { fieldTitle, flattenFields } from "@/components/schema-detail/schema-utils";
+import {
+  fieldTitle,
+  flattenFields,
+} from "@/components/schema-detail/schema-utils";
 import { useMatch, useNavigate } from "@tanstack/react-router";
 import { useCallback, useMemo } from "react";
 import { useSchemas } from "@/hooks/use-schemas";
-import { SearchIcon } from "lucide-react";
+import { Braces, SearchIcon, Type } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { isMac } from "@/lib/utils";
+import { useNomenclatures } from "@/hooks/use-nomenclatures";
 
 // normalize is a method to remove all accent
 // so it does something like : é -> e
@@ -40,6 +44,12 @@ const GlobalSearch = () => {
   const open = useSchemaStore((s) => s.searchOpen);
   const setOpen = useSchemaStore((s) => s.setSearchOpen);
   const { data: schemas = [] } = useSchemas();
+  const { data: nomenclatures = [] } = useNomenclatures();
+
+  const openNomenclatureDrawer = useSchemaStore(
+    (s) => s.openNomenclatureDrawer,
+  );
+
   const navigate = useNavigate();
   const currentSchemaMatch = useMatch({
     from: "/$schemaName",
@@ -65,12 +75,17 @@ const GlobalSearch = () => {
     [],
   );
 
-  const handleOnSelect = useCallback((schemaName: string) => {
+  const handleSchemaOnSelect = useCallback((schemaName: string) => {
     setOpen(false);
     navigate({
       to: "/$schemaName",
       params: { schemaName },
     });
+  }, []);
+
+  const handleNomenclatureOnSelect = useCallback((nomenclatureName: string) => {
+    setOpen(false);
+    openNomenclatureDrawer(nomenclatureName);
   }, []);
 
   const handleFieldSelect = useCallback((fieldPath: string) => {
@@ -142,9 +157,23 @@ const GlobalSearch = () => {
                   key={s.schemaName}
                   value={s.label}
                   keywords={[s.schemaName]}
-                  onSelect={() => handleOnSelect(s.schemaName)}
+                  onSelect={() => handleSchemaOnSelect(s.schemaName)}
                 >
+                  <Braces className="opacity-60 h-3 w-3" />
                   {s.label}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+            <CommandGroup heading="Nomenclatures">
+              {nomenclatures.map((n) => (
+                <CommandItem
+                  key={n.schemaName}
+                  value={n.label}
+                  keywords={[n.schemaName]}
+                  onSelect={() => handleNomenclatureOnSelect(n.label)}
+                >
+                  <Type className="opacity-60 h-3 w-3" />
+                  {n.label}
                 </CommandItem>
               ))}
             </CommandGroup>

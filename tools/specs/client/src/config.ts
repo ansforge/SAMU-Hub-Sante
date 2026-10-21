@@ -72,4 +72,12 @@ export function messageListUrl(ref: string): string {
   );
 }
 
+export function nomenclatureListUrl(ref: string): string {
+  return buildGithubUrl(
+    rawGithubDomain,
+    ref,
+    "src/main/resources/sample/examples/nomenclaturesList.json",
+  );
+}
+
 export const NOMENCLATURE_KEY = "x-nomenclature";

@@ -1,32 +1,35 @@
 import type { JsonSchemaProperty } from "@/types";
 import { FieldValues } from "./field-values";
 import { useState } from "react";
-import { cn } from "@/lib/utils";
+
+const PREVIEW_LENGTH = 140;
 
 export function FieldDescription({ prop }: { prop: JsonSchemaProperty }) {
   const [detailed, setDetailed] = useState(false);
-  const [overflows, setOverflows] = useState(false);
 
   if (!prop.description && !prop.enum) return null;
+  const description = prop.description ?? "";
+  const long = description.length > PREVIEW_LENGTH;
+  const cut = description.lastIndexOf(" ", PREVIEW_LENGTH);
+  const text =
+    long && !detailed
+      ? `${description.slice(0, cut > 0 ? cut : PREVIEW_LENGTH)}… `
+      : `${description} `;
+
   return (
     <div className="space-y-1.5 text-left">
       {prop.description && (
-        <div className="flex items-baseline gap-2 text-sm">
-          <p
-            // ponytail: measured on render only, add a ResizeObserver if resizes matter
-            ref={(el) => {
-              if (el && !detailed) setOverflows(el.scrollHeight > el.clientHeight);
-            }}
-            className={cn("flex-1 font-normal text-muted-foreground", !detailed && "line-clamp-1")}
-          >
-            {prop.description}
-          </p>
-          {overflows && (
-            <button className="text-primary underline" onClick={() => setDetailed(!detailed)}>
-              {detailed ? "Moins" : "Plus"}
+        <p className="text-sm font-normal text-muted-foreground">
+          {text}
+          {long && (
+            <button
+              className="text-primary underline"
+              onClick={() => setDetailed(!detailed)}
+            >
+              {detailed ? "moins" : "plus"}
             </button>
           )}
-        </div>
+        </p>
       )}
       {prop.enum && <FieldValues values={prop.enum} />}
     </div>
