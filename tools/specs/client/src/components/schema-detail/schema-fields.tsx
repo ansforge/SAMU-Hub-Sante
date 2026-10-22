@@ -1,4 +1,5 @@
 import { ChevronRightIcon } from "lucide-react";
+import { useLocation } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 import { useSchemaStore } from "@/store/schema-store";
 import type { JsonSchemaDefinitions, JsonSchemaProperty } from "@/types";
@@ -60,10 +61,18 @@ function FieldNode({
   const nested = nestedFields(prop, definitions);
   const open = useSchemaStore((s) => s.openFields.includes(id));
   const toggleField = useSchemaStore((s) => s.toggleField);
+  // read the hash from the router, CSS :target misses fields rendered after
+  // load and pushState navigations
+  const isTarget = useLocation({ select: (l) => l.hash === id });
 
   return (
     <li id={id} className="scroll-mt-24">
-      <div className="flex items-start gap-1 rounded-md py-1.5 pr-2 transition-colors duration-300 [:target>&]:bg-muted [:target>&]:ring-2 [:target>&]:ring-ring/40">
+      <div
+        className={cn(
+          "flex items-start gap-1 rounded-md py-1.5 pr-2 transition-colors duration-300",
+          isTarget && "bg-muted ring-2 ring-ring/40",
+        )}
+      >
         {nested ? (
           <button
             type="button"
