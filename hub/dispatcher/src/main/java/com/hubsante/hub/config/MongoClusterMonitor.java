@@ -19,6 +19,7 @@ import com.mongodb.event.ClusterDescriptionChangedEvent;
 import com.mongodb.event.ClusterListener;
 import java.util.concurrent.atomic.AtomicBoolean;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
 /**
@@ -33,6 +34,12 @@ public class MongoClusterMonitor implements ClusterListener {
     // false until the first cluster description reporting a writable server
     private final AtomicBoolean up = new AtomicBoolean(false);
 
+    private final ApplicationEventPublisher eventPublisher;
+
+    public MongoClusterMonitor(ApplicationEventPublisher eventPublisher) {
+        this.eventPublisher = eventPublisher;
+    }
+
     public boolean isUp() {
         return up.get();
     }
@@ -43,6 +50,7 @@ public class MongoClusterMonitor implements ClusterListener {
         boolean wasUp = up.getAndSet(nowUp);
         if (nowUp && !wasUp) {
             log.info("[MongoDB] Connection restored");
+            eventPublisher.publishEvent(new MongoConnectionRestoredEvent());
         } else if (!nowUp && wasUp) {
             log.error(
                     "[MongoDB] Connection lost: {}",

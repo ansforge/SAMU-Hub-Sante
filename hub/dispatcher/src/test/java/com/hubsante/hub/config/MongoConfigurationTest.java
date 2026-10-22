@@ -15,12 +15,14 @@
  */
 package com.hubsante.hub.config;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.Duration;
@@ -36,16 +38,21 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 class MongoConfigurationTest {
 
+    // number of indexes created by MongoConfiguration
+    private static final int INDEX_COUNT = 7;
+
     private MongoTemplate mongoTemplate;
+    private MongoClusterMonitor mongoMonitor;
     private MongoConfiguration mongoConfiguration;
 
     @BeforeEach
     void setUp() {
         mongoTemplate = mock(MongoTemplate.class);
-        mongoConfiguration = new MongoConfiguration(mongoTemplate);
+        mongoMonitor = mock(MongoClusterMonitor.class);
+        when(mongoMonitor.isUp()).thenReturn(true);
+        mongoConfiguration = new MongoConfiguration(mongoTemplate, mongoMonitor);
         ReflectionTestUtils.setField(mongoConfiguration, "expiresDurationDays", 3);
-        ReflectionTestUtils.setField(mongoConfiguration, "initialRetryDelayMs", 50L);
-        ReflectionTestUtils.setField(mongoConfiguration, "maxRetryDelayMs", 200L);
+        ReflectionTestUtils.setField(mongoConfiguration, "retryDelayMs", 50L);
     }
 
     @AfterEach
@@ -53,49 +60,108 @@ class MongoConfigurationTest {
         mongoConfiguration.shutdownRetryScheduler();
     }
 
-    @Test
-    @DisplayName("should not throw when MongoDB is unreachable during index creation")
-    void shouldNotThrowWhenMongoIsUnreachable() {
-        when(mongoTemplate.indexOps(anyString()))
-                .thenThrow(
-                        new DataAccessResourceFailureException(
-                                "Connection refused: no MongoDB server available"));
-
-        assertThatCode(() -> mongoConfiguration.createIndexes()).doesNotThrowAnyException();
+    private static DataAccessResourceFailureException mongoDown() {
+        return new DataAccessResourceFailureException(
+                "Connection refused: no MongoDB server available");
     }
 
     @Test
-    @DisplayName("should not throw when an individual index creation fails")
-    void shouldNotThrowWhenCreateIndexFails() {
+    @DisplayName("should create indexes at startup when MongoDB is already up")
+    void shouldCreateIndexesAtStartupWhenUp() {
         IndexOperations indexOperations = mock(IndexOperations.class);
         when(mongoTemplate.indexOps(anyString())).thenReturn(indexOperations);
-        when(indexOperations.createIndex(any()))
-                .thenThrow(
-                        new DataAccessResourceFailureException(
-                                "Connection refused: no MongoDB server available"));
 
-        assertThatCode(() -> mongoConfiguration.createIndexes()).doesNotThrowAnyException();
+        mongoConfiguration.createIndexes();
+
+        verify(indexOperations, times(INDEX_COUNT)).createIndex(any());
     }
 
     @Test
-    @DisplayName("should retry index creation with backoff until MongoDB becomes reachable")
-    void shouldRetryUntilMongoIsReachable() {
+    @DisplayName("should wait for the restored event at startup when MongoDB is not up yet")
+    void shouldNotCreateIndexesAtStartupWhenDown() {
+        when(mongoMonitor.isUp()).thenReturn(false);
+
+        assertThatCode(() -> mongoConfiguration.createIndexes()).doesNotThrowAnyException();
+
+        verify(mongoTemplate, never()).indexOps(anyString());
+    }
+
+    @Test
+    @DisplayName("should create indexes when the MongoDB connection is restored")
+    void shouldCreateIndexesOnConnectionRestored() {
+        IndexOperations indexOperations = mock(IndexOperations.class);
+        when(mongoTemplate.indexOps(anyString())).thenReturn(indexOperations);
+
+        mongoConfiguration.onMongoConnectionRestored();
+
+        await().atMost(Duration.ofSeconds(2))
+                .untilAsserted(
+                        () -> verify(indexOperations, times(INDEX_COUNT)).createIndex(any()));
+    }
+
+    @Test
+    @DisplayName("should retry at a fixed delay while MongoDB is up")
+    void shouldRetryWhileMongoIsUp() {
         IndexOperations indexOperations = mock(IndexOperations.class);
         AtomicInteger indexOpsCalls = new AtomicInteger();
         when(mongoTemplate.indexOps(anyString()))
                 .thenAnswer(
                         invocation -> {
                             if (indexOpsCalls.getAndIncrement() < 2) {
-                                throw new DataAccessResourceFailureException(
-                                        "Connection refused: no MongoDB server available");
+                                throw new DataAccessResourceFailureException("index build failed");
                             }
                             return indexOperations;
                         });
 
         mongoConfiguration.createIndexes();
 
-        // first call fails immediately, then retries after 50ms, then 100ms: allow up to 2s
+        // first call fails immediately, then retries every 50ms: allow up to 2s
         await().atMost(Duration.ofSeconds(2))
-                .untilAsserted(() -> assertThat(indexOpsCalls.get()).isEqualTo(3));
+                .untilAsserted(
+                        () -> verify(indexOperations, times(INDEX_COUNT)).createIndex(any()));
+    }
+
+    @Test
+    @DisplayName("should not retry when creation fails because MongoDB is down")
+    void shouldNotRetryWhenMongoIsDown() throws InterruptedException {
+        when(mongoTemplate.indexOps(anyString())).thenThrow(mongoDown());
+        when(mongoMonitor.isUp()).thenReturn(true, false);
+
+        assertThatCode(() -> mongoConfiguration.createIndexes()).doesNotThrowAnyException();
+
+        Thread.sleep(400);
+        verify(mongoTemplate, times(1)).indexOps(anyString());
+    }
+
+    @Test
+    @DisplayName("should not propagate a failure when creating indexes after a reconnection")
+    void shouldNotThrowWhenCreationFailsAfterReconnection() {
+        when(mongoTemplate.indexOps(anyString())).thenThrow(mongoDown());
+
+        assertThatCode(() -> mongoConfiguration.onMongoConnectionRestored())
+                .doesNotThrowAnyException();
+    }
+
+    @Test
+    @DisplayName("a new reconnection should supersede a retry pending from a previous failure")
+    void shouldSupersedePendingRetryOnReconnection() {
+        IndexOperations indexOperations = mock(IndexOperations.class);
+        AtomicInteger indexOpsCalls = new AtomicInteger();
+        when(mongoTemplate.indexOps(anyString()))
+                .thenAnswer(
+                        invocation -> {
+                            if (indexOpsCalls.getAndIncrement() == 0) {
+                                throw new DataAccessResourceFailureException("index build failed");
+                            }
+                            return indexOperations;
+                        });
+        ReflectionTestUtils.setField(mongoConfiguration, "retryDelayMs", 60_000L);
+
+        mongoConfiguration.createIndexes(); // fails, retry scheduled in 60s
+        mongoConfiguration.onMongoConnectionRestored(); // succeeds right away
+
+        await().atMost(Duration.ofSeconds(2))
+                .untilAsserted(
+                        () -> verify(indexOperations, times(INDEX_COUNT)).createIndex(any()));
     }
 }
