@@ -46,39 +46,16 @@ configurations.all {
     }
 }
 
-def simulationListDir = layout.buildDirectory.dir('generated/tmc-resources')
-
-// Lists the simulations run by loadtesting.launcher.TmcLauncher, so it needs no classpath scanning at runtime
-def generateSimulationList = tasks.register('generateSimulationList') {
-    def javaSources = fileTree('src/gatling/java') { include '**/simulations/*Simulation.java' }
-    def sourceRoot = file('src/gatling/java')
-    inputs.files(javaSources).withPathSensitivity(PathSensitivity.RELATIVE)
-    outputs.dir(simulationListDir)
-
-    doLast {
-        def simulations = javaSources.files.collect { f ->
-            sourceRoot.toPath().relativize(f.toPath()).toString()
-                    .replace(File.separatorChar, '.' as char)
-                    .replaceAll(/\.java$/, '')
-        }.sort()
-        def output = simulationListDir.get().file('tmc-simulations.txt').asFile
-        output.parentFile.mkdirs()
-        output.text = simulations.join('\n') + '\n'
-    }
-}
-
-sourceSets.gatling.resources.srcDir(generateSimulationList)
-
 tasks.register('runGatlingSimulations', JavaExec) {
     group = 'gatling'
-    description = 'Run all Gatling simulations, or the subset given by -Psimulations=A,B, in parallel (one JVM per simulation).'
+    description = 'Run loadtesting.simulations.TmcSimulation: all scenarios, or the subset given by -Pscenarios=15-gps,15-18-persistance, in parallel.'
 
     classpath = sourceSets.gatling.runtimeClasspath
-    mainClass = 'loadtesting.launcher.TmcLauncher'
-    workingDir = projectDir
-    environment 'TMC_RESULTS_DIR', layout.buildDirectory.dir('reports/gatling').get().asFile.absolutePath
-    if (project.hasProperty('simulations')) {
-        environment 'TMC_SIMULATIONS', project.property('simulations')
+    mainClass = 'io.gatling.app.Gatling'
+    jvmArgs '--add-opens=java.base/java.lang=ALL-UNNAMED', '--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED'
+    args '-s', 'loadtesting.simulations.TmcSimulation', '-rf', layout.buildDirectory.dir('reports/gatling').get().asFile.absolutePath
+    if (project.hasProperty('scenarios')) {
+        environment 'TMC_SCENARIOS', project.property('scenarios')
     }
 }
 
@@ -116,8 +93,9 @@ jib {
         tags = [project.findProperty('version') ?: 'latest']
     }
     container {
-        mainClass = 'loadtesting.launcher.TmcLauncher'
-        jvmFlags = ['-Xmx128m']
+        mainClass = 'io.gatling.app.Gatling'
+        args = ['-s', 'loadtesting.simulations.TmcSimulation', '-rf', '/tmp/tmc-results']
+        jvmFlags = ['-XX:MaxRAMPercentage=75', '--add-opens=java.base/java.lang=ALL-UNNAMED', '--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED', '-Djava.util.prefs.userRoot=/tmp/java-prefs']
         workingDirectory = '/app'
         user = '1000:1000'
     }
