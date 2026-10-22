@@ -48,7 +48,17 @@ Chaque virtual user envoie deux messages successifs avec une pause intermédiair
 | `SAMU_NEXSIS_DIRECT_SCENARIO_USER_COUNT` | Utilisateurs simultanés pour `SamuNexsisDirectSimulation` (défaut : `2`) |
 | `SAMU_NEXSIS_CONVERSION_SCENARIO_USER_COUNT` | Utilisateurs simultanés pour `SamuNexsisConversionSimulation` (défaut : `2`) |
 | `SAMU_NEXSIS_RS_SCENARIO_USER_COUNT` | Utilisateurs simultanés pour `SamuNexsisRsSimulation` (défaut : `2`) |
-| `SAMU_NEXSIS_RC_RI_SCENARIO_USER_COUNT` | Utilisateurs simultanés pour `SamuNexsisRcRiSimulation` (défaut : `2`) |## Utilisation en local
+| `SAMU_NEXSIS_RC_RI_SCENARIO_USER_COUNT` | Utilisateurs simultanés pour `SamuNexsisRcRiSimulation` (défaut : `2`) |
+
+Variables du lanceur `TmcLauncher` (utilisé par `runGatlingSimulations` et par l'image Docker) :
+
+| Variable | Description |
+|---|---|
+| `TMC_SIMULATIONS` | Simulations à lancer, séparées par des virgules (nom simple ou complet). Défaut : toutes |
+| `TMC_CHILD_JVM_OPTS` | Options JVM de chaque simulation (défaut : `-Xmx512m`) |
+| `TMC_RESULTS_DIR` | Répertoire des rapports Gatling (défaut : `${java.io.tmpdir}/tmc-results`, `build/reports/gatling` via Gradle) |
+| `TMC_TIMEOUT_MINUTES` | Durée maximale du run ; au-delà les simulations sont arrêtées et le run échoue (défaut : `120`) |
+## Utilisation en local
 
 ### Prérequis
 
@@ -79,20 +89,43 @@ Note : l'exposition des variables via `.env` est gérée par la librairie [doten
 Lancer toutes les simulations en parallèle :
 
 ```bash
-./gradlew gatlingRunAllParallel
+./gradlew runGatlingSimulations
 ```
 
-Lancer une simulation individuelle :
+Lancer une simulation individuelle ou un sous-ensemble (noms simples ou complets, séparés par des virgules) :
 
 ```bash
-./gradlew gatlingRun --simulation loadtesting.simulations.<NOM_DE_LA_SIMULATION>
+./gradlew runGatlingSimulations -Psimulations=SamuGpsSimulation
+./gradlew runGatlingSimulations -Psimulations=SamuGpsSimulation,SamuSmurSimulation
 ```
 
-> ⚠️ **Point de vigilance Gradle 9** : la tâche `gatlingRecorder` du plugin `io.gatling.gradle` (3.13.5) est cassée sous Gradle 9 (elle référence une propriété `reportsDir` fournie par l'ancienne Convention API, supprimée en 9.0). Elle n'est pas utilisée par ce projet, mais toute commande qui force l'évaluation de toutes les tâches (ex. `./gradlew tasks`) échouera à cause d'elle. Sans impact sur `gatlingRun` / `gatlingRunAllParallel`.
->
-> `gatlingRunAllParallel` (tâche maison de ce build) utilise le service injecté `ExecOperations` pour forker ses process — `Project#javaexec(Closure)`, utilisé auparavant, a été retiré en Gradle 9.0. En cas de modification de cette tâche, ne pas revenir à un appel direct à `javaexec { ... }` dans le `doLast`.
->
-> Gradle 9 refuse de configurer un projet dont le répertoire n'est pas accessible en écriture. Lorsque l'image tourne avec un système de fichiers racine en lecture seule (CronJob Kubernetes), `/app` ne l'est pas : l'entrypoint `docker-entrypoint.sh` copie alors le projet dans un répertoire inscriptible (`/tmp/tmc` par défaut, surchargeable via `TMC_WORK_DIR`) et y lance Gradle via `--project-dir`. `GRADLE_USER_HOME` doit également pointer vers un répertoire inscriptible.
+> ⚠️ **Point de vigilance Gradle 9** : les tâches `gatlingRun` et `gatlingRecorder` du plugin `io.gatling.gradle` (3.13.5) sont cassées sous Gradle 9 (`gatlingRun` appelle `Project#javaexec`, `gatlingRecorder` lit la propriété `reportsDir` de l'ancienne Convention API, tous deux supprimés en 9.0). Le plugin ne peut pas être mis à jour car gatling-amqp impose Gatling 3.13.5 : utiliser `runGatlingSimulations`, y compris pour une seule simulation. Toute commande qui force l'évaluation de toutes les tâches (ex. `./gradlew tasks`) échoue également.
+
+`runGatlingSimulations` exécute `loadtesting.launcher.TmcLauncher`, qui lance chaque simulation dans sa propre JVM (le plugin gatling-amqp ne gère pas plusieurs connexions RabbitMQ dans une même JVM). La liste des simulations est générée au build (`generateSimulationList`, à partir des fichiers `**/simulations/*Simulation.java`). Le run échoue si une simulation échoue (y compris une erreur de configuration) ou dépasse `TMC_TIMEOUT_MINUTES`.
+
+## Image Docker
+
+L'image (`./gradlew jib`) est construite par Jib à partir de `eclipse-temurin:21-jre-alpine` et contient l'application compilée (`/app/libs`), sans sources ni Gradle : son entrypoint lance directement `TmcLauncher`. Elle n'a donc pas besoin de réseau vers Maven ni de `GITHUB_TOKEN` à l'exécution (le token reste nécessaire au build pour récupérer `com.hubsante:models`).
+
+Contrat attendu côté CronJob Kubernetes :
+- ne pas surcharger `command` / `args` ;
+- `/tmp` accessible en écriture (ex. `emptyDir`) si le système de fichiers racine est en lecture seule : les rapports y sont écrits et perdus en fin de pod ;
+- monter le certificat et le truststore et fournir les variables d'environnement ci-dessus ;
+- l'image tourne avec l'utilisateur non privilégié `1000:1000` : le certificat et le truststore montés doivent lui être lisibles (ex. `defaultMode: 0444` ou `fsGroup: 1000`) ;
+- `GRADLE_USER_HOME`, `TMC_WORK_DIR` et `GITHUB_TOKEN` ne sont plus utilisés ;
+- mémoire : prévoir environ 8 × le heap des simulations (`TMC_CHILD_JVM_OPTS`) + l'overhead de chaque JVM + 128 Mo pour le lanceur, soit ~5 à 6 Gi avec les valeurs par défaut.
+
+Tester l'image en local dans des conditions proches du cluster (système de fichiers en lecture seule, utilisateur non privilégié, sans capabilities) :
+
+```bash
+./gradlew jibDockerBuild -Pimage=tmc -Pversion=local
+docker run --rm --read-only --tmpfs /tmp --cap-drop ALL --security-opt no-new-privileges \
+  --env-file .env \
+  -e CERTIFICATE_PATH=/certs/client.p12 -e TRUST_STORE_PATH=/certs/truststore \
+  -v <chemin_certificat>:/certs/client.p12:ro -v <chemin_truststore>:/certs/truststore:ro \
+  -e TMC_SIMULATIONS=SamuGpsSimulation \
+  tmc:local
+```
 
 ## Architecture technique
 
