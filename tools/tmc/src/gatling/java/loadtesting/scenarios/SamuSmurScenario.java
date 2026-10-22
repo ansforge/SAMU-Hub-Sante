@@ -1,12 +1,10 @@
-package loadtesting.simulations;
+package loadtesting.scenarios;
 
-import loadtesting.amqp_scenario.BaseSimulation;
-import loadtesting.amqp_scenario.ScenarioConfig;
-
-public class SamuSmurSimulation extends BaseSimulation {
+public class SamuSmurScenario extends BaseScenario {
 
     protected ScenarioConfig getConfig() {
         return new ScenarioConfig(
+                "15-smur",
                 "15-smur: create case",
                 "15-smur_v1.7",
                 "fr.health.test.samu1-v3",

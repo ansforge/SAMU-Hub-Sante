@@ -1,11 +1,9 @@
-package loadtesting.simulations;
+package loadtesting.scenarios;
 
-import loadtesting.amqp_scenario.BaseSimulation;
-import loadtesting.amqp_scenario.ScenarioConfig;
-
-public class SamuGpsSimulation extends BaseSimulation {
+public class SamuGpsScenario extends BaseScenario {
     protected ScenarioConfig getConfig() {
         return new ScenarioConfig(
+                "15-gps",
                 "15-GPS: geo position update",
                 "15-gps_v1.3",
                 "fr.health.test.samu1-v3",

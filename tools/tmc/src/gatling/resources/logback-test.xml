@@ -6,6 +6,7 @@
 		</encoder>
 		<immediateFlush>false</immediateFlush>
 	</appender>
+	<logger name="loadtesting.simulations" level="INFO" />
 	<root level="WARN">
 		<appender-ref ref="CONSOLE" />
 	</root>

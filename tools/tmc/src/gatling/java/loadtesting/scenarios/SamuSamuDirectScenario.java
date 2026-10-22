@@ -1,12 +1,10 @@
-package loadtesting.simulations;
+package loadtesting.scenarios;
 
-import loadtesting.amqp_scenario.BaseSimulation;
-import loadtesting.amqp_scenario.ScenarioConfig;
-
-public class SamuSamuDirectSimulation extends BaseSimulation {
+public class SamuSamuDirectScenario extends BaseScenario {
 
     protected ScenarioConfig getConfig() {
         return new ScenarioConfig(
+                "15-15-direct",
                 "15-15: direct transfer",
                 "15-15_v2.1",
                 "fr.health.test.samu1-v3",
