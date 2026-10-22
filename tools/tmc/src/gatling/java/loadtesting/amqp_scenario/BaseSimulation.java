@@ -56,6 +56,7 @@ public abstract class BaseSimulation extends Simulation {
             ).maxDuration(duration * 2L);
         } catch (Exception e) {
             log.error("Unexpected error during load test", e);
+            throw new IllegalStateException("Simulation setup failed", e);
         }
     }
 }
