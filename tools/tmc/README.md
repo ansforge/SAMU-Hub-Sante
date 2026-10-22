@@ -48,7 +48,16 @@ Chaque virtual user envoie deux messages successifs avec une pause intermédiair
 | `SAMU_NEXSIS_DIRECT_SCENARIO_USER_COUNT` | Utilisateurs simultanés pour `SamuNexsisDirectSimulation` (défaut : `2`) |
 | `SAMU_NEXSIS_CONVERSION_SCENARIO_USER_COUNT` | Utilisateurs simultanés pour `SamuNexsisConversionSimulation` (défaut : `2`) |
 | `SAMU_NEXSIS_RS_SCENARIO_USER_COUNT` | Utilisateurs simultanés pour `SamuNexsisRsSimulation` (défaut : `2`) |
-| `SAMU_NEXSIS_RC_RI_SCENARIO_USER_COUNT` | Utilisateurs simultanés pour `SamuNexsisRcRiSimulation` (défaut : `2`) |## Utilisation en local
+| `SAMU_NEXSIS_RC_RI_SCENARIO_USER_COUNT` | Utilisateurs simultanés pour `SamuNexsisRcRiSimulation` (défaut : `2`) |
+
+Variables du lanceur `TmcLauncher` (utilisé par `runGatlingSimulations` et par l'image Docker) :
+
+| Variable | Description |
+|---|---|
+| `TMC_SIMULATIONS` | Simulations à lancer, séparées par des virgules (nom simple, ex. `SamuGpsSimulation`). Défaut : toutes |
+| `TMC_RESULTS_DIR` | Répertoire des rapports Gatling (défaut : `${java.io.tmpdir}/tmc-results`, `build/reports/gatling` via Gradle) |
+
+## Utilisation en local
 
 ### Prérequis
 
@@ -79,18 +88,19 @@ Note : l'exposition des variables via `.env` est gérée par la librairie [doten
 Lancer toutes les simulations en parallèle :
 
 ```bash
-./gradlew gatlingRunAllParallel
+./gradlew runGatlingSimulations
 ```
 
-Lancer une simulation individuelle :
+Lancer une simulation individuelle ou un sous-ensemble (noms simples, séparés par des virgules) :
 
 ```bash
-./gradlew gatlingRun --simulation loadtesting.simulations.<NOM_DE_LA_SIMULATION>
+./gradlew runGatlingSimulations -Psimulations=SamuGpsSimulation
+./gradlew runGatlingSimulations -Psimulations=SamuGpsSimulation,SamuSmurSimulation
 ```
 
-> ⚠️ **Point de vigilance Gradle 9** : la tâche `gatlingRecorder` du plugin `io.gatling.gradle` (3.13.5) est cassée sous Gradle 9 (elle référence une propriété `reportsDir` fournie par l'ancienne Convention API, supprimée en 9.0). Elle n'est pas utilisée par ce projet, mais toute commande qui force l'évaluation de toutes les tâches (ex. `./gradlew tasks`) échouera à cause d'elle. Sans impact sur `gatlingRun` / `gatlingRunAllParallel`.
->
-> `gatlingRunAllParallel` (tâche maison de ce build) utilise le service injecté `ExecOperations` pour forker ses process — `Project#javaexec(Closure)`, utilisé auparavant, a été retiré en Gradle 9.0. En cas de modification de cette tâche, ne pas revenir à un appel direct à `javaexec { ... }` dans le `doLast`.
+> ⚠️ **Point de vigilance Gradle 9** : les tâches `gatlingRun` et `gatlingRecorder` du plugin `io.gatling.gradle` (3.13.5) sont cassées sous Gradle 9 (`gatlingRun` appelle `Project#javaexec`, `gatlingRecorder` lit la propriété `reportsDir` de l'ancienne Convention API, tous deux supprimés en 9.0). Le plugin ne peut pas être mis à jour car gatling-amqp impose Gatling 3.13.5 : utiliser `runGatlingSimulations`, y compris pour une seule simulation. Toute commande qui force l'évaluation de toutes les tâches (ex. `./gradlew tasks`) échoue également.
+
+`runGatlingSimulations` exécute `loadtesting.launcher.TmcLauncher`, qui lance chaque simulation dans sa propre JVM (le plugin gatling-amqp ne gère pas plusieurs connexions RabbitMQ dans une même JVM). La liste des simulations est générée au build (`generateSimulationList`, à partir des fichiers `**/simulations/*Simulation.java`). Le run échoue si une simulation échoue (y compris une erreur de configuration). Chaque simulation est bornée par son propre `maxDuration` Gatling.
 
 ## Architecture technique
 

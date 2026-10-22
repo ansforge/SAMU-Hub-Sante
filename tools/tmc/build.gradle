@@ -46,111 +46,57 @@ configurations.all {
     }
 }
 
-import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit
-import org.gradle.process.ExecOperations
-import javax.inject.Inject
+tasks.register('runGatlingSimulations', JavaExec) {
+    group = 'gatling'
+    description = 'Run loadtesting.simulations.TmcSimulation: all scenarios, or the subset given by -Pscenarios=15-gps,15-18-persistance, in parallel.'
 
-// Project#javaexec(Closure) was removed in Gradle 9.0 (deprecated since 8.10): tasks must use the
-// injected ExecOperations service instead. objects.newInstance() lets us obtain it without declaring
-// a dedicated Task class for this ad hoc task.
-abstract class ExecOperationsProvider {
-    @Inject
-    abstract ExecOperations getExecOperations()
+    classpath = sourceSets.gatling.runtimeClasspath
+    mainClass = 'io.gatling.app.Gatling'
+    jvmArgs '--add-opens=java.base/java.lang=ALL-UNNAMED', '--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED'
+    args '-s', 'loadtesting.simulations.TmcSimulation', '-rf', layout.buildDirectory.dir('reports/gatling').get().asFile.absolutePath
+    if (project.hasProperty('scenarios')) {
+        environment 'TMC_SCENARIOS', project.property('scenarios')
+    }
 }
 
-def discoverGatlingSimulations = {
-    def classesDirs = sourceSets.gatling.output.classesDirs.files
-    def simulations = []
-
-    classesDirs.each { dir ->
-        if (!dir.exists()) return
-        fileTree(dir).matching { include "**/simulations/*Simulation.class" }.files.each { f ->
-            def relPath = f.absolutePath - (dir.absolutePath + File.separator)
-            def fqn = relPath
-                    .replace(File.separatorChar, '.' as char)
-                    .replaceAll(/\.class$/, '')
-            simulations << fqn
-        }
-    }
-
-    simulations.unique().sort()
+// Jib only containerizes the main source set: the gatling one is packaged as a jar and added to the image
+// through a dedicated classpath configuration
+def tmcSimulationsJar = tasks.register('tmcSimulationsJar', Jar) {
+    archiveClassifier = 'simulations'
+    from sourceSets.gatling.output
 }
 
-tasks.register("gatlingRunAllParallel") {
-    group = "gatling"
-    description = "Run all Gatling simulations in parallel (one thread per simulation)."
-
-    dependsOn("gatlingClasses")
-
-    doLast {
-        def simulations = discoverGatlingSimulations()
-        if (simulations.isEmpty()) {
-            println "No simulations found."
-            return
-        }
-
-        println "Found simulations:"
-        simulations.each { println " - $it" }
-
-        def gatlingCpFiles = sourceSets.gatling.runtimeClasspath.files.toList()
-        def execOperations = objects.newInstance(ExecOperationsProvider).execOperations
-
-        def pool = Executors.newFixedThreadPool(simulations.size())
-        def failures = Collections.synchronizedList([])
-
-        simulations.each { simulation ->
-            pool.submit {
-                try {
-                    def simulationClassName = simulation.toString().tokenize('.').last()
-                    def reportDir = file("${layout.buildDirectory.asFile.get()}/reports/gatling/${simulationClassName}-${System.currentTimeMillis()}")
-
-                    execOperations.javaexec {
-                        classpath = files(gatlingCpFiles)
-                        mainClass = "io.gatling.app.Gatling"
-                        jvmArgs = project.gatling.jvmArgs
-                        args = ["-s", simulation, "-rf", reportDir.absolutePath]
-                    }
-                } catch (Throwable t) {
-                    failures << "${simulation}: ${t.message}"
-                    t.printStackTrace()
-                }
-            }
-        }
-
-        pool.shutdown()
-        pool.awaitTermination(2, TimeUnit.HOURS)
-
-        if (!failures.isEmpty()) {
-            throw new GradleException("Some simulations failed:\n" + failures.join("\n"))
+configurations {
+    tmcImageClasspath {
+        canBeConsumed = false
+        canBeResolved = true
+        // Only the external dependencies: the other gatling configurations also hold the source sets' output directories
+        extendsFrom configurations.gatling
+        attributes { container ->
+            def source = configurations.gatlingRuntimeClasspath.attributes
+            source.keySet().each { key -> container.attribute(key, source.getAttribute(key)) }
         }
     }
+}
+
+dependencies {
+    tmcImageClasspath files(tmcSimulationsJar)
 }
 
 jib {
+    configurationName = 'tmcImageClasspath'
     from {
-        image = 'eclipse-temurin:21-jdk-alpine'
+        image = 'eclipse-temurin:21-jre-alpine'
     }
     to {
         image = project.findProperty('image') ?: 'ghcr.io/ansforge/tmc:latest'
         tags = [project.findProperty('version') ?: 'latest']
     }
     container {
-        entrypoint = ['./gradlew']
-        args = ['gatlingRunAllParallel']
-        jvmFlags = ['-Xms512m', '-Xmx2048m']
+        mainClass = 'io.gatling.app.Gatling'
+        args = ['-s', 'loadtesting.simulations.TmcSimulation', '-rf', '/tmp/tmc-results']
+        jvmFlags = ['-XX:MaxRAMPercentage=75', '--add-opens=java.base/java.lang=ALL-UNNAMED', '--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED', '-Djava.util.prefs.userRoot=/tmp/java-prefs']
         workingDirectory = '/app'
-    }
-    extraDirectories {
-        paths {
-            path {
-                from = file('.')
-                into = '/app'
-                excludes = ['build/**', '.gradle/**', '.git/**', '*.log']
-            }
-        }
-        permissions = [
-            '/app/gradlew': '755'
-        ]
+        user = '1000:1000'
     }
 }
