@@ -42,6 +42,14 @@ export function buildNomenclatureUrl(
   );
 }
 
+export function buildSchemaIndexUrl(domain: string, ref: string): string {
+  return buildGithubUrl(
+    domain,
+    ref,
+    "src/main/resources/sample/examples/field-index.json",
+  );
+}
+
 export const isMac = window.navigator.platform === "MacIntel";
 
 // csv_parser writes the generated example next to its other outputs

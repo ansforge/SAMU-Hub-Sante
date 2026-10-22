@@ -74,3 +74,13 @@ export type ApiUser = {
 export type ApiAuthResponse =
   | { authenticated: true; user: ApiUser }
   | { authenticated: false; user: null };
+
+export interface SchemaIndex {
+  [key: string]: IndexEntry[];
+}
+export interface IndexEntry {
+  schema: string;
+  path: string;
+  schemaLabel: string;
+  schemaTitle: string | null;
+}
