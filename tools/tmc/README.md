@@ -101,3 +101,5 @@ Sur Confluence sont disponibles [l'expression de besoin](https://ans-esante.atla
 Le document de stratégie technique contient notamment un ADR sur le choix de Gatling par rapport aux autres offres disponibles sur le marché.
 
 Note : la version de Gatling utilisée ici est la `3.13.5`. Il s'agit de la version requise par le plugin [gatling-amqp](https://github.com/galax-io/gatling-amqp-plugin) en version `1.2.10`.
+
+Le moteur TLS natif de Gatling (BoringSSL) est désactivé dans `src/gatling/resources/gatling.conf` : la librairie native est compilée pour glibc et ne peut pas être chargée sur l'image Alpine (musl), ce qui fait échouer Gatling au démarrage. Les connexions AMQP utilisent le TLS de la JDK (`TLSConf`) et ne sont pas impactées.
