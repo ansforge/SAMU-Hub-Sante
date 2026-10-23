@@ -39,7 +39,7 @@ public class SamuNexsisRcRiScenario implements TmcScenario {
     public ScenarioBuilder build() throws Exception {
         String rcRiContent = SimulationUtils.loadSampleFile("rc-ri.json");
 
-        int pause = getNumericEnvVar("SCENARIO_PAUSE_SECONDS", 5);
+        int pause = getNumericEnvVar("SCENARIO_PAUSE_SECONDS", DEFAULT_PAUSE_DURATION);
 
         return scenario(TITLE)
                 .feed(SimulationUtils.generateRcRiFlowFeeder(rcRiContent, SENDER_ID, RECIPIENT_ID))

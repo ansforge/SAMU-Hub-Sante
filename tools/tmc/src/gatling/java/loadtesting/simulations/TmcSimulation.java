@@ -17,11 +17,11 @@ import static io.gatling.javaapi.core.CoreDsl.constantUsersPerSec;
 import static io.gatling.javaapi.core.CoreDsl.global;
 import static loadtesting.ConfigUtils.getEnvVar;
 import static loadtesting.ConfigUtils.getNumericEnvVar;
+import static loadtesting.Constants.DEFAULT_PAUSE_DURATION;
 
 public class TmcSimulation extends Simulation {
     private final static int defaultDuration = 10;
     private final static int defaultUserCount = 2;
-    private final static int defaultPause = 5;
 
     private static final List<TmcScenario> SCENARIOS = List.of(
             new SamuGpsScenario(),
@@ -39,7 +39,7 @@ public class TmcSimulation extends Simulation {
     {
         try {
             int duration = getNumericEnvVar("SCENARIO_DURATION", defaultDuration);
-            int pause = getNumericEnvVar("SCENARIO_PAUSE_SECONDS", defaultPause);
+            int pause = getNumericEnvVar("SCENARIO_PAUSE_SECONDS", DEFAULT_PAUSE_DURATION);
             Set<String> selected = parseSelectedScenarios(getEnvVar("TMC_SCENARIOS"));
 
             List<String> availableKeys = SCENARIOS.stream().map(TmcScenario::key).toList();

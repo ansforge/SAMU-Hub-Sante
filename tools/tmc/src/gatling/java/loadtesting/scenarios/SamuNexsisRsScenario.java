@@ -39,7 +39,7 @@ public class SamuNexsisRsScenario implements TmcScenario {
         String rsRiContent = SimulationUtils.loadSampleFile("rs-ri.json");
         String rsSrContent = SimulationUtils.loadSampleFile("rs-sr.json");
 
-        int pause = getNumericEnvVar("SCENARIO_PAUSE_SECONDS", 5);
+        int pause = getNumericEnvVar("SCENARIO_PAUSE_SECONDS", DEFAULT_PAUSE_DURATION);
 
         return scenario(TITLE)
                 .feed(SimulationUtils.generateRsFlowFeeder(rsRiContent, rsSrContent, SENDER_ID, RECIPIENT_ID))
