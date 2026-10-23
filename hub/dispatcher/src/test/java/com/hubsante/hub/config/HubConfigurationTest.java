@@ -38,7 +38,7 @@ public class HubConfigurationTest {
         File tempFile = File.createTempFile("supported-messages", ".csv");
         try (FileWriter writer = new FileWriter(tempFile, StandardCharsets.UTF_8)) {
             writer.write("vhost;supported_messages\n");
-            writer.write("common;ReferenceWrapper,ErrorWrapper\n");
+            writer.write("common;reference,error\n");
             writer.write("host_1;type1,type2\n");
             writer.write("host_2;type1,type3\n");
         }
@@ -48,9 +48,9 @@ public class HubConfigurationTest {
 
     @ParameterizedTest(name = "vhost {0} supports {1}")
     @CsvSource({
-        "host_1, 'ReferenceWrapper,ErrorWrapper,type1,type2'",
-        "host_2, 'ReferenceWrapper,ErrorWrapper,type1,type3'",
-        "unknown, 'ReferenceWrapper,ErrorWrapper'",
+        "host_1, 'reference,error,type1,type2'",
+        "host_2, 'reference,error,type1,type3'",
+        "unknown, 'reference,error'",
     })
     @DisplayName("should load the common messages plus the ones specific to the vhost")
     void shouldLoadSupportedMessages(String vhost, String expected) throws Exception {

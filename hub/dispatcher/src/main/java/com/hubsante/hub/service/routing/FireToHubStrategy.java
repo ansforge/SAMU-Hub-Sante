@@ -53,15 +53,15 @@ public class FireToHubStrategy extends HubSanteInternalStrategy implements Routi
     @Override
     public void checkMessageContent(Message message, EdxlMessage edxlMessage)
             throws AbstractHubException {
+        // hubex partners publish through a shared technical routing key that will not always
+        // match the functional senderId, so we only require both to share the same domain prefix
+        checkSenderConsistency(message, edxlMessage);
         // check message type is allowed on the current vhost
-        checkMessageClassNameSupported(edxlMessage, hubConfig);
+        checkUseCaseSupported(edxlMessage, hubConfig);
         // check message is allowed for its recipient
         messageHandler.inhibitMessageIfNeeded(edxlMessage);
         // reject the message if no health actor is involved (as sender or recipient)
         checkHealthActorIsInvolved(edxlMessage);
-        // hubex partners publish through a shared technical routing key that will not always
-        // match the functional senderId, so we only require both to share the same domain prefix
-        checkSenderConsistency(message, edxlMessage);
     }
 
     private void checkSenderConsistency(Message message, EdxlMessage edxlMessage) {
