@@ -11,7 +11,7 @@ public final class Constants {
 
     public final static String GATLING_EL_MESSAGE_KEY = "message";
 
-    public final static String AMQP_REQUEST_NAME = "publish message as client";
-
     public final static String RC_DE_USER_PREFIX = "hubex";
+
+    public final static Integer DEFAULT_PAUSE_DURATION = 5;
 }
