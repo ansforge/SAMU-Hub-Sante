@@ -28,6 +28,8 @@ public class Constants {
     public static final String RECIPIENT_SPAN_TAG = "hubsante.recipient";
     public static final String USE_CASE_SPAN_TAG = "hubsante.use_case";
     public static final String EDITOR_SPAN_TAG = "hubsante.editor";
+    public static final String CASE_ID_SPAN_TAG = "hubsante.case_id";
+    public static final String DISTRIBUTION_ID_SPAN_TAG = "hubsante.distribution_id";
     public static final String OPERATION = "operation";
     public static final String DISTRIBUTION_ID_UNAVAILABLE =
             "distributionId_could_not_be_extracted";

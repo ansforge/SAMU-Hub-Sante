@@ -25,6 +25,7 @@ import com.hubsante.hub.config.LogConstants;
 import com.hubsante.hub.config.StructuredLogger;
 import com.hubsante.hub.exception.*;
 import com.hubsante.model.edxl.DistributionKind;
+import com.hubsante.model.edxl.EdxlEnvelope;
 import com.hubsante.model.edxl.EdxlMessage;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -164,13 +165,13 @@ public class MessageUtils {
         return clientId + ".info";
     }
 
-    public static String getRecipientID(EdxlMessage edxlMessage) {
-        if (edxlMessage == null
-                || edxlMessage.getDescriptor() == null
-                || edxlMessage.getDescriptor().getExplicitAddress() == null) {
+    public static String getRecipientID(EdxlEnvelope envelope) {
+        if (envelope == null
+                || envelope.getDescriptor() == null
+                || envelope.getDescriptor().getExplicitAddress() == null) {
             return Constants.UNKNOWN;
         }
-        return edxlMessage.getDescriptor().getExplicitAddress().getExplicitAddressValue();
+        return envelope.getDescriptor().getExplicitAddress().getExplicitAddressValue();
     }
 
     public static String getRecipientQueueName(EdxlMessage edxlMessage) {

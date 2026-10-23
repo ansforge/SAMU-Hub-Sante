@@ -22,7 +22,6 @@ import static com.hubsante.hub.utils.MessageUtils.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import com.hubsante.hub.config.HubConfiguration;
 import com.hubsante.hub.config.LogConstants;
 import com.hubsante.hub.config.StructuredLogger;
 import com.hubsante.hub.exception.*;
@@ -39,8 +38,6 @@ import com.hubsante.model.edxl.EdxlMessage;
 import com.hubsante.model.report.Error;
 import com.hubsante.model.report.ErrorCode;
 import io.micrometer.core.annotation.Timed;
-import io.micrometer.tracing.Span;
-import io.micrometer.tracing.Tracer;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -86,9 +83,8 @@ public class Dispatcher {
     @Qualifier("jsonMapper")
     private ObjectMapper jsonMapper;
 
-    private final HubConfiguration hubConfig;
+    private final ObservabilityService observabilityService;
     private static final StructuredLogger structuredLog = new StructuredLogger(log);
-    private final Tracer tracer;
     private final HubSanteInternalStrategy hubSanteInternalStrategy;
     private final HubToFireStrategy hubToFireStrategy;
     private final FireToHubStrategy fireToHubStrategy;
@@ -99,18 +95,16 @@ public class Dispatcher {
             EdxlHandler edxlHandler,
             XmlMapper xmlMapper,
             ObjectMapper jsonMapper,
-            HubConfiguration hubConfig,
-            Tracer tracer,
             HubSanteInternalStrategy hubSanteInternalStrategy,
             HubToFireStrategy hubToFireStrategy,
-            FireToHubStrategy fireToHubStrategy) {
+            FireToHubStrategy fireToHubStrategy,
+            ObservabilityService observabilityService) {
         this.messageHandler = messageHandler;
         this.rabbitTemplate = rabbitTemplate;
         this.edxlHandler = edxlHandler;
         this.xmlMapper = xmlMapper;
         this.jsonMapper = jsonMapper;
-        this.hubConfig = hubConfig;
-        this.tracer = tracer;
+        this.observabilityService = observabilityService;
         this.hubSanteInternalStrategy = hubSanteInternalStrategy;
         this.hubToFireStrategy = hubToFireStrategy;
         this.fireToHubStrategy = fireToHubStrategy;
@@ -133,21 +127,6 @@ public class Dispatcher {
     public void sendMessage(MessageRoutingDTO routingDTO) {
         rabbitTemplate.send(
                 routingDTO.destinationExchange(), routingDTO.routingKey(), routingDTO.message());
-    }
-
-    private void tagCurrentSpan(Message amqpMessage, EdxlMessage edxlMessage) {
-        Span currentSpan = tracer.currentSpan();
-        if (currentSpan == null) {
-            return;
-        }
-        String sender = getSenderFromRoutingKey(amqpMessage);
-        currentSpan.tag(SENDER_SPAN_TAG, sender);
-        currentSpan.tag(RECIPIENT_SPAN_TAG, MessageUtils.getRecipientID(edxlMessage));
-        currentSpan.tag(
-                USE_CASE_SPAN_TAG,
-                EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage()));
-        currentSpan.tag(
-                EDITOR_SPAN_TAG, hubConfig.getClientPropertiesRegistry().getClientEditor(sender));
     }
 
     public void initReturnsCallback() {
@@ -242,7 +221,7 @@ public class Dispatcher {
             setOriginalRoutingKeyHeader(message);
             // Deserialize the message according to its content type
             EdxlMessage edxlMessage = messageHandler.extractMessage(message);
-            tagCurrentSpan(message, edxlMessage);
+            observabilityService.tagCurrentSpanWithEdxlMessageMetadata(edxlMessage);
 
             RoutingStrategy strategy = selectRoutingStrategy(edxlMessage);
             // check the message is allowed to be routed (class name, inhibition, health actor
@@ -318,7 +297,7 @@ public class Dispatcher {
                 return;
             }
             EdxlMessage edxlMessage = messageHandler.extractMessage(message);
-            tagCurrentSpan(message, edxlMessage);
+            observabilityService.tagCurrentSpanWithEdxlMessageMetadata(edxlMessage);
             // log message & error
             String errorCause =
                     "Message "
