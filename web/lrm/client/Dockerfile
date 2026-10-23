@@ -1,5 +1,5 @@
 # 1. Build
-FROM node:24.11-alpine AS builder
+FROM node:24.22.1-alpine AS builder
 
 # Set working directory
 WORKDIR /app
@@ -21,7 +21,7 @@ RUN npm cache clean --force && \
 	rm -rf /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx
 
 # 2. Start
-FROM node:24.11-alpine AS runner
+FROM node:24.22.1-alpine AS runner
 
 WORKDIR /app
 
