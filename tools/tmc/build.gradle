@@ -95,7 +95,7 @@ jib {
     container {
         mainClass = 'io.gatling.app.Gatling'
         args = ['-s', 'loadtesting.simulations.TmcSimulation', '-rf', '/tmp/tmc-results']
-        jvmFlags = ['-XX:MaxRAMPercentage=75', '--add-opens=java.base/java.lang=ALL-UNNAMED', '--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED', '-Djava.util.prefs.userRoot=/tmp/java-prefs']
+        jvmFlags = ['-XX:MaxRAMPercentage=75', '-XX:ActiveProcessorCount=2', '--add-opens=java.base/java.lang=ALL-UNNAMED', '--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED', '-Djava.util.prefs.userRoot=/tmp/java-prefs']
         workingDirectory = '/app'
         user = '1000:1000'
     }
