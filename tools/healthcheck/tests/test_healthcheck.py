@@ -9,10 +9,14 @@ from config import (
     RABBITMQ_HEALTH_URL,
     CONVERTER_HEALTH_URL,
     SHOVEL_STATUS_URL,
+    QUEUES_URL,
 )
 import logging
 
-with patch("checks.hubex_partners_shovels.open", mock_open(read_data="vhost1;queue1")):
+with (
+    patch("checks.hubex_partners_shovels.open", mock_open(read_data="vhost1;queue1")),
+    patch("checks.hubex_consumers.open", mock_open(read_data="vhost1;queue1")),
+):
     from healthcheck import (
         HEALTH_INTERNAL_ENDPOINT,
         HEALTH_EXTERNAL_ENDPOINT,
@@ -47,11 +51,13 @@ class HealthCheckTestCase(unittest.TestCase):
         converter_response=None,
         annuaire_response=None,
         shovel_status_response=None,
+        queues_response=None,
         rabbitmq_error=False,
         dispatcher_error=False,
         converter_error=False,
         annuaire_error=False,
         shovel_status_error=False,
+        queues_error=False,
     ):
         def side_effect(url, **kwargs):
             if CONVERTER_HEALTH_URL in url:
@@ -89,6 +95,16 @@ class HealthCheckTestCase(unittest.TestCase):
                         "src_queue": "queue1",
                         "blocked_status": "running",
                     },
+                ]
+                mock_response._content = json.dumps(response_data).encode()
+                return mock_response
+            elif QUEUES_URL in url:
+                if queues_error:
+                    raise requests.exceptions.RequestException("Queues Error")
+                mock_response = requests.Response()
+                mock_response.status_code = 200
+                response_data = queues_response or [
+                    {"vhost": "vhost1", "name": "queue1", "consumers": 1},
                 ]
                 mock_response._content = json.dumps(response_data).encode()
                 return mock_response
@@ -497,7 +513,7 @@ class HealthCheckTestCase(unittest.TestCase):
                 self.assertEqual(response.status_code, 200)
                 data = json.loads(response.data)
                 self.assertEqual(data["status"], Status.UP.value)
-                self.assertEqual(len(data["components"]), 5)
+                self.assertEqual(len(data["components"]), 6)
                 self.assertEqual(
                     data["components"]["rabbitmq_server"]["status"], Status.UP.value
                 )
@@ -535,12 +551,13 @@ class HealthCheckTestCase(unittest.TestCase):
             called_urls = [call_args[0][0] for call_args in mock_get.call_args_list]
 
             # 6 calls for: converter, annuaire, rabbitmq, shovel status and the 2 dispatchers
-            expected_numbers_of_requests = 6
+            expected_numbers_of_requests = 7
             self.assertEqual(len(called_urls), expected_numbers_of_requests)
             self.assertIn(RABBITMQ_HEALTH_URL, called_urls)
             self.assertIn(CONVERTER_HEALTH_URL, called_urls)
             self.assertIn(ANNUAIRE_HEALTH_URL, called_urls)
             self.assertIn(SHOVEL_STATUS_URL, called_urls)
+            self.assertIn(QUEUES_URL, called_urls)
             self.assertIn(_dispatcher_url("dispatcher1"), called_urls)
             self.assertIn(_dispatcher_url("dispatcher2"), called_urls)
 
