@@ -335,6 +335,65 @@ class HealthCheckTestCase(unittest.TestCase):
                     data["components"]["converter"]["status"], expected_converter_status
                 )
 
+    @parameterized.expand(
+        [
+            (1, Status.UP.value, Status.UP.value),
+            (0, Status.DOWN.value, Status.DOWN.value),
+        ]
+    )
+    @patch(MOCK_TARGET)
+    def test_hubex_consumers_healthcheck_status(
+        self,
+        consumers,
+        expected_consumers_status,
+        expected_global_status,
+        mock_get,
+        mock_mongo_client,
+    ):
+        mock_get.side_effect = self.create_mock_side_effect(
+            queues_response=[
+                {"vhost": "vhost1", "name": "queue1", "consumers": consumers}
+            ]
+        )
+
+        with patch.object(
+            dispatcher,
+            "dispatcher_instances",
+            _dispatchers_config("dispatcher_instance"),
+        ):
+            with app.test_client() as client:
+                response = client.get(HEALTH_EXTERNAL_ENDPOINT)
+                self.assertEqual(response.status_code, 200)
+                data = json.loads(response.data)
+                self.assertEqual(data["status"], expected_global_status)
+                self.assertEqual(
+                    data["components"]["vhost1-queue1-consumers"]["status"],
+                    expected_consumers_status,
+                )
+
+    @patch(MOCK_TARGET)
+    def test_hubex_consumers_healthcheck_error(
+        self,
+        mock_get,
+        mock_mongo_client,
+    ):
+        mock_get.side_effect = self.create_mock_side_effect(queues_error=True)
+
+        with patch.object(
+            dispatcher,
+            "dispatcher_instances",
+            _dispatchers_config("dispatcher_instance"),
+        ):
+            with app.test_client() as client:
+                response = client.get(HEALTH_EXTERNAL_ENDPOINT)
+                self.assertEqual(response.status_code, 200)
+                data = json.loads(response.data)
+                self.assertEqual(data["status"], Status.DOWN.value)
+                self.assertEqual(
+                    data["components"]["vhost1-queue1-consumers"]["status"],
+                    Status.DOWN.value,
+                )
+
     @patch(MOCK_TARGET)
     def test_annuaire_healthcheck_error(
         self,
