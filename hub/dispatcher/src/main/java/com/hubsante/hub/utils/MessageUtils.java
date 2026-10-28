@@ -53,6 +53,11 @@ public class MessageUtils {
         return receivedRoutingKey != null ? receivedRoutingKey : "";
     }
 
+    public static String getOriginalRoutingKey(Message message) {
+        String originalRoutingKey = message.getMessageProperties().getHeader(ORIGINAL_ROUTING_KEY);
+        return originalRoutingKey != null ? originalRoutingKey : Constants.UNKNOWN;
+    }
+
     public static void setOriginalRoutingKeyHeader(Message message) {
         // we need to store the original routing key to keep track of the original sender, even
         // after generating a new routing key based on recipient & distributionKind

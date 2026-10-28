@@ -110,7 +110,7 @@ public class MessageHandler {
         error.setErrorCause(exception.getMessage());
         String distributionId = exception.getReferencedDistributionID();
         error.setReferencedDistributionID(distributionId);
-        String senderClientId = message.getMessageProperties().getHeader(ORIGINAL_ROUTING_KEY);
+        String senderClientId = getOriginalRoutingKey(message);
         String recipientId = exception.getRecipientId();
         String messageType = exception.getMessageType();
 
