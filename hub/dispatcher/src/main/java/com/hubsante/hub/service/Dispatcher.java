@@ -137,6 +137,10 @@ public class Dispatcher {
                     EdxlMessage returnedEdxlMessage = null;
                     String returnedEdxlString =
                             new String(returned.getMessage().getBody(), StandardCharsets.UTF_8);
+                    String senderRoutingKey =
+                            returned.getMessage()
+                                    .getMessageProperties()
+                                    .getHeader(ORIGINAL_ROUTING_KEY);
 
                     try {
                         returnedEdxlMessage =
@@ -146,7 +150,21 @@ public class Dispatcher {
                     } catch (JsonProcessingException e) {
                         // This should never happen as if we've reached this point, the message has
                         // already been deserialized
-                        log.error("Could not deserialize message " + returnedEdxlString, e);
+                        Map<LogConstants, String> logContext =
+                                Map.of(
+                                        LogConstants.SENDER_ID,
+                                        senderRoutingKey,
+                                        LogConstants.DISTRIBUTION_ID,
+                                        extractDistributionId(returnedEdxlString));
+                        structuredLog.error(
+                                String.format(
+                                        "Could not deserialize returned message with hashed value %s",
+                                        hashBody(returned.getMessage())),
+                                logContext,
+                                e);
+                        structuredLog.debug(
+                                String.format("Returned message String was %s", returnedEdxlString),
+                                logContext);
                     }
 
                     String distributionId =
@@ -159,10 +177,6 @@ public class Dispatcher {
                                             returnedEdxlMessage.getFirstContentMessage())
                                     : UNKNOWN;
                     String recipientId = MessageUtils.getRecipientID(returnedEdxlMessage);
-                    String senderRoutingKey =
-                            returned.getMessage()
-                                    .getMessageProperties()
-                                    .getHeader(ORIGINAL_ROUTING_KEY);
 
                     Error error = new Error();
                     error.setErrorCode(ErrorCode.UNROUTABLE_MESSAGE);

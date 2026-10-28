@@ -108,6 +108,12 @@ public class MessageHandler {
         Error error = new Error();
         error.setErrorCode(exception.getErrorCode());
         error.setErrorCause(exception.getMessage());
+        String distributionId = exception.getReferencedDistributionID();
+        error.setReferencedDistributionID(distributionId);
+        String senderClientId = message.getMessageProperties().getHeader(ORIGINAL_ROUTING_KEY);
+        String recipientId = exception.getRecipientId();
+        String messageType = exception.getMessageType();
+
         try {
             if (isJSON(message)) {
                 error.setSourceMessage(jsonMapper.readValue(message.getBody(), HashMap.class));
@@ -115,17 +121,21 @@ public class MessageHandler {
                 error.setSourceMessage(xmlMapper.readValue(message.getBody(), HashMap.class));
             }
         } catch (IOException e) {
-            log.error("Could not read message body", e);
+            structuredLog.error(
+                    "Could not read message body",
+                    Map.of(
+                            LogConstants.SENDER_ID,
+                            senderClientId,
+                            LogConstants.DISTRIBUTION_ID,
+                            distributionId,
+                            LogConstants.RECIPIENT_ID,
+                            recipientId,
+                            LogConstants.MESSAGE_TYPE,
+                            messageType),
+                    e);
         }
-        String distributionId = exception.getReferencedDistributionID();
-        error.setReferencedDistributionID(distributionId);
 
         // send Error to sender
-        String senderClientId = message.getMessageProperties().getHeader(ORIGINAL_ROUTING_KEY);
-
-        String recipientId = exception.getRecipientId();
-        String messageType = exception.getMessageType();
-
         logErrorMessage(error, distributionId, senderClientId, recipientId, messageType);
         // currently, we do not handle error messages on other hubex, and inhibit DLQ messages other
         // than the "expired" ones
