@@ -137,10 +137,7 @@ public class Dispatcher {
                     EdxlMessage returnedEdxlMessage = null;
                     String returnedEdxlString =
                             new String(returned.getMessage().getBody(), StandardCharsets.UTF_8);
-                    String senderRoutingKey =
-                            returned.getMessage()
-                                    .getMessageProperties()
-                                    .getHeader(ORIGINAL_ROUTING_KEY);
+                    String senderRoutingKey = getOriginalRoutingKey(returned.getMessage());
 
                     try {
                         returnedEdxlMessage =
@@ -329,10 +326,7 @@ public class Dispatcher {
             // We don't want to log again the error if it has been thrown by handleError
             // We just log the unexpected errors
             if (!(e instanceof AmqpRejectAndDontRequeueException)) {
-                String originalRoutingKey =
-                        message.getMessageProperties().getHeader(ORIGINAL_ROUTING_KEY) != null
-                                ? message.getMessageProperties().getHeader(ORIGINAL_ROUTING_KEY)
-                                : "Unknown routing key";
+                String originalRoutingKey = getOriginalRoutingKey(message);
                 String distributionId = extractDistributionId(stringifyBody(message));
 
                 structuredLog.warn(
