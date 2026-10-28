@@ -32,17 +32,17 @@
     "@types/cookie-parser": "1.4.10",
     "@types/cors": "2.8.19",
     "@types/express": "5.0.6",
-    "@types/node": "22.18.13",
+    "@types/node": "26.6.5",
     "@types/ws": "8.18.1",
     "@typescript-eslint/eslint-plugin": "8.46.2",
     "@typescript-eslint/parser": "8.46.2",
-    "@vitest/coverage-v8": "4.1.11",
-    "dotenv": "17.4.2",
-    "eslint": "9.38.0",
+    "@vitest/coverage-v8": "5.0.4",
+    "dotenv": "18.0.7",
+    "eslint": "10.12.0",
     "nodemon": "3.1.14",
     "prettier": "3.9.6",
     "ts-node": "10.9.2",
-    "typescript": "5.9.3",
-    "vitest": "4.1.11"
+    "typescript": "7.0.2",
+    "vitest": "5.0.4"
   }
 }

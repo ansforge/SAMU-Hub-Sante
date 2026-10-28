@@ -1,5 +1,5 @@
 # Node base image
-FROM node:24.22.1-alpine AS build
+FROM node:26.11.1-alpine AS build
 
 # Set working directory
 WORKDIR /app
@@ -17,7 +17,7 @@ COPY . .
 RUN npm run build
 
 # Stage 2 : run
-FROM node:24.22.1-alpine AS production
+FROM node:26.11.1-alpine AS production
 
 # Set working directory
 WORKDIR /app
