@@ -302,9 +302,10 @@ public class Dispatcher {
     public void dispatchDLQ(Message message) {
         try {
             //  If an info message sent by the Hub has not been read, we do not want to loop and
-            // sent the Hub an info message back
+            // sent the Hub an info message back. Messages built by the Hub (e.g. error reports)
+            // have no original routing key header.
             String deadFromQueue = message.getMessageProperties().getHeader(ORIGINAL_ROUTING_KEY);
-            if (deadFromQueue.endsWith(".info")) {
+            if (deadFromQueue == null || deadFromQueue.endsWith(".info")) {
                 return;
             }
             EdxlMessage edxlMessage = messageHandler.extractMessage(message);
