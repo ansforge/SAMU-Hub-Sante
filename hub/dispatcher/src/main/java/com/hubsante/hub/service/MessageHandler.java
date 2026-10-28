@@ -184,7 +184,9 @@ public class MessageHandler {
                         LogConstants.RECIPIENT_ID,
                         recipientId,
                         LogConstants.MESSAGE_TYPE,
-                        messageType));
+                        messageType,
+                        LogConstants.ERROR_CODE,
+                        error.getErrorCode().getStatusString()));
         structuredLog.debug(
                 String.format("ErrorSourceMessage was %s", error.getSourceMessage()),
                 Map.of(
