@@ -17,6 +17,7 @@ package com.hubsante.hub.config;
 
 import java.util.Map;
 import org.slf4j.Logger;
+import org.slf4j.MDC;
 import org.slf4j.event.Level;
 import org.slf4j.spi.LoggingEventBuilder;
 
@@ -25,7 +26,13 @@ public record StructuredLogger(Logger logger) {
     public void log(Level level, String message, Map<LogConstants, String> metadata, Throwable t) {
         LoggingEventBuilder builder = logger.atLevel(level);
         if (metadata != null) {
-            metadata.forEach((lc, v) -> builder.addKeyValue(lc.getKey(), v));
+            // the MDC message context wins, to avoid emitting the same key twice
+            metadata.forEach(
+                    (lc, v) -> {
+                        if (v != null && MDC.get(lc.getKey()) == null) {
+                            builder.addKeyValue(lc.getKey(), v);
+                        }
+                    });
         }
         if (t != null) {
             builder.setCause(t);
