@@ -23,6 +23,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.hubsante.hub.config.LogConstants;
+import com.hubsante.hub.config.MessageLogContext;
 import com.hubsante.hub.config.StructuredLogger;
 import com.hubsante.hub.exception.*;
 import com.hubsante.hub.service.routing.FireToHubStrategy;
@@ -46,6 +47,7 @@ import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.AmqpRejectAndDontRequeueException;
 import org.springframework.amqp.core.Message;
+import org.springframework.amqp.core.ReturnedMessage;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -134,91 +136,102 @@ public class Dispatcher {
         // set returns callback to track undistributed messages
         rabbitTemplate.setReturnsCallback(
                 returned -> {
-                    EdxlMessage returnedEdxlMessage = null;
-                    String returnedEdxlString =
-                            new String(returned.getMessage().getBody(), StandardCharsets.UTF_8);
-                    String senderRoutingKey = getOriginalRoutingKey(returned.getMessage());
-
+                    // runs on a broker connection thread, which has no context of the listener
+                    MessageLogContext logContext = MessageLogContext.open(returned.getMessage());
                     try {
-                        returnedEdxlMessage =
-                                isXML(returned)
-                                        ? edxlHandler.deserializeXmlEDXL(returnedEdxlString)
-                                        : edxlHandler.deserializeJsonEDXL(returnedEdxlString);
-                    } catch (JsonProcessingException e) {
-                        // This should never happen as if we've reached this point, the message has
-                        // already been deserialized
-                        Map<LogConstants, String> logContext =
-                                Map.of(
-                                        LogConstants.SENDER_ID,
-                                        senderRoutingKey,
-                                        LogConstants.DISTRIBUTION_ID,
-                                        extractDistributionId(returnedEdxlString));
-                        structuredLog.error(
-                                String.format(
-                                        "Could not deserialize returned message with hashed value %s",
-                                        hashBody(returned.getMessage())),
-                                logContext,
-                                e);
-                        structuredLog.debug(
-                                String.format("Returned message String was %s", returnedEdxlString),
-                                logContext);
+                        handleReturnedMessage(returned);
+                    } finally {
+                        logContext.restore();
                     }
-
-                    String distributionId =
-                            returnedEdxlMessage != null
-                                    ? returnedEdxlMessage.getDistributionID()
-                                    : DISTRIBUTION_ID_UNAVAILABLE;
-                    String messageType =
-                            returnedEdxlMessage != null
-                                    ? EdxlUtils.getUseCaseFromMessage(
-                                            returnedEdxlMessage.getFirstContentMessage())
-                                    : UNKNOWN;
-                    String recipientId = MessageUtils.getRecipientID(returnedEdxlMessage);
-
-                    Error error = new Error();
-                    error.setErrorCode(ErrorCode.UNROUTABLE_MESSAGE);
-                    error.setErrorCause(
-                            "unable do deliver message to "
-                                    + returned.getRoutingKey()
-                                    + ", cause was "
-                                    + returned.getReplyText()
-                                    + " ("
-                                    + returned.getReplyCode()
-                                    + ")");
-                    try {
-                        if (isJSON(returned.getMessage())) {
-                            error.setSourceMessage(
-                                    jsonMapper.readValue(
-                                            returned.getMessage().getBody(), HashMap.class));
-                        } else if (isXML(returned.getMessage())) {
-                            error.setSourceMessage(
-                                    xmlMapper.readValue(
-                                            returned.getMessage().getBody(), HashMap.class));
-                        }
-                    } catch (IOException e) {
-                        structuredLog.error(
-                                "Could not read message body",
-                                Map.of(
-                                        LogConstants.DISTRIBUTION_ID,
-                                        distributionId,
-                                        LogConstants.MESSAGE_TYPE,
-                                        messageType,
-                                        LogConstants.SENDER_ID,
-                                        senderRoutingKey,
-                                        LogConstants.RECIPIENT_ID,
-                                        recipientId),
-                                e);
-                    }
-                    error.setReferencedDistributionID(distributionId);
-                    messageHandler.logErrorMessage(
-                            error, distributionId, senderRoutingKey, recipientId, messageType);
-                    // currently, we do not handle error messages on other hubex
-                    if (senderRoutingKey.startsWith(FR_HEALTH_PREFIX)) {
-                        messageHandler.sendErrorReport(error, senderRoutingKey);
-                    }
-                    messageHandler.publishErrorMetric(
-                            ErrorCode.UNROUTABLE_MESSAGE.getStatusString(), senderRoutingKey);
                 });
+    }
+
+    private void handleReturnedMessage(ReturnedMessage returned) {
+        EdxlMessage returnedEdxlMessage = null;
+        String returnedEdxlString =
+                new String(returned.getMessage().getBody(), StandardCharsets.UTF_8);
+        String senderRoutingKey = getOriginalRoutingKey(returned.getMessage());
+
+        try {
+            returnedEdxlMessage =
+                    isXML(returned)
+                            ? edxlHandler.deserializeXmlEDXL(returnedEdxlString)
+                            : edxlHandler.deserializeJsonEDXL(returnedEdxlString);
+            observabilityService.bind(returnedEdxlMessage);
+        } catch (JsonProcessingException e) {
+            // This should never happen as if we've reached this point, the message has
+            // already been deserialized
+            MessageLogContext.put(
+                    LogConstants.DISTRIBUTION_ID, extractDistributionId(returnedEdxlString));
+            Map<LogConstants, String> logContext =
+                    Map.of(
+                            LogConstants.SENDER_ID,
+                            senderRoutingKey,
+                            LogConstants.DISTRIBUTION_ID,
+                            extractDistributionId(returnedEdxlString));
+            structuredLog.error(
+                    String.format(
+                            "Could not deserialize returned message with hashed value %s",
+                            hashBody(returned.getMessage())),
+                    logContext,
+                    e);
+            structuredLog.debug(
+                    String.format("Returned message String was %s", returnedEdxlString),
+                    logContext);
+        }
+
+        String distributionId =
+                returnedEdxlMessage != null
+                        ? returnedEdxlMessage.getDistributionID()
+                        : DISTRIBUTION_ID_UNAVAILABLE;
+        String messageType =
+                returnedEdxlMessage != null
+                        ? EdxlUtils.getUseCaseFromMessage(
+                                returnedEdxlMessage.getFirstContentMessage())
+                        : UNKNOWN;
+        String recipientId = MessageUtils.getRecipientID(returnedEdxlMessage);
+
+        Error error = new Error();
+        error.setErrorCode(ErrorCode.UNROUTABLE_MESSAGE);
+        error.setErrorCause(
+                "unable do deliver message to "
+                        + returned.getRoutingKey()
+                        + ", cause was "
+                        + returned.getReplyText()
+                        + " ("
+                        + returned.getReplyCode()
+                        + ")");
+        try {
+            if (isJSON(returned.getMessage())) {
+                error.setSourceMessage(
+                        jsonMapper.readValue(returned.getMessage().getBody(), HashMap.class));
+            } else if (isXML(returned.getMessage())) {
+                error.setSourceMessage(
+                        xmlMapper.readValue(returned.getMessage().getBody(), HashMap.class));
+            }
+        } catch (IOException e) {
+            structuredLog.error(
+                    "Could not read message body",
+                    Map.of(
+                            LogConstants.DISTRIBUTION_ID,
+                            distributionId,
+                            LogConstants.MESSAGE_TYPE,
+                            messageType,
+                            LogConstants.SENDER_ID,
+                            senderRoutingKey,
+                            LogConstants.RECIPIENT_ID,
+                            recipientId),
+                    e);
+        }
+        error.setReferencedDistributionID(distributionId);
+        messageHandler.logErrorMessage(
+                error, distributionId, senderRoutingKey, recipientId, messageType);
+        // currently, we do not handle error messages on other hubex
+        if (senderRoutingKey.startsWith(FR_HEALTH_PREFIX)) {
+            messageHandler.sendErrorReport(error, senderRoutingKey);
+        }
+        messageHandler.publishErrorMetric(
+                ErrorCode.UNROUTABLE_MESSAGE.getStatusString(), senderRoutingKey);
     }
 
     @RabbitListener(queues = DISPATCH_QUEUE_NAME)
@@ -228,11 +241,12 @@ public class Dispatcher {
             histogram = true,
             extraTags = {"operation", "dispatch"})
     public void dispatch(Message message) {
+        setOriginalRoutingKeyHeader(message);
+        MessageLogContext logContext = MessageLogContext.open(message);
         try {
-            setOriginalRoutingKeyHeader(message);
             // Deserialize the message according to its content type
             EdxlMessage edxlMessage = messageHandler.extractMessage(message);
-            observabilityService.tagCurrentSpanWithEdxlMessageMetadata(edxlMessage);
+            observabilityService.bind(edxlMessage);
 
             RoutingStrategy strategy = selectRoutingStrategy(edxlMessage);
             // check the message is allowed to be routed (class name, inhibition, health actor
@@ -265,6 +279,8 @@ public class Dispatcher {
                             distributionId),
                     e);
             throw new AmqpRejectAndDontRequeueException(e);
+        } finally {
+            logContext.restore();
         }
     }
 
@@ -300,6 +316,7 @@ public class Dispatcher {
             histogram = true,
             extraTags = {"operation", "dispatch_dlq"})
     public void dispatchDLQ(Message message) {
+        MessageLogContext logContext = MessageLogContext.open(message);
         try {
             //  If an info message sent by the Hub has not been read, we do not want to loop and
             // sent the Hub an info message back. Messages built by the Hub (e.g. error reports)
@@ -309,7 +326,7 @@ public class Dispatcher {
                 return;
             }
             EdxlMessage edxlMessage = messageHandler.extractMessage(message);
-            observabilityService.tagCurrentSpanWithEdxlMessageMetadata(edxlMessage);
+            observabilityService.bind(edxlMessage);
             // log message & error
             String errorCause =
                     "Message "
@@ -340,6 +357,8 @@ public class Dispatcher {
                         e);
             }
             throw new AmqpRejectAndDontRequeueException(e);
+        } finally {
+            logContext.restore();
         }
     }
 }
