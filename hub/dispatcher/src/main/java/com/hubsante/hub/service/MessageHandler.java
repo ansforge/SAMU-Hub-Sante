@@ -225,8 +225,10 @@ public class MessageHandler {
                     List<String> convertedMessages =
                             conversionHandler.applyConversionRules(conversionParameters);
                     if (convertedMessages.size() > 1) {
-                        structuredLog.info(
-                                "convertedMessages has more than one message: %s",
+                        structuredLog.warn(
+                                String.format(
+                                        "Conversion produced %d messages, only the first one is sent",
+                                        convertedMessages.size()),
                                 Map.of(
                                         LogConstants.SENDER_ID,
                                         sender,
