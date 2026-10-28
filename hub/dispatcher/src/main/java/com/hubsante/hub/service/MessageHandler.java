@@ -316,7 +316,7 @@ public class MessageHandler {
     protected EdxlMessage extractMessage(Message message) {
         countProcessing("extract");
         InboundMessage inbound = InboundMessage.of(message);
-        observabilityService.tagCurrentSpanWithAmqpMessageMetadata(
+        observabilityService.bindExtractedMetadata(
                 inbound.extractedDistributionId(), inbound.receivedRoutingKey());
 
         countProcessing("validate.full");
@@ -393,15 +393,12 @@ public class MessageHandler {
                     INTERNAL_ERROR_CAUSE, inbound.extractedDistributionId());
         }
 
-        Map<LogConstants, String> envelopeLogContext =
-                observabilityService.buildLogContextFromEdxlEnvelope(deserializedEnvelop);
-        structuredLog.error("Could not validate content of message", envelopeLogContext);
+        observabilityService.bind(deserializedEnvelop);
+        structuredLog.error("Could not validate content of message", Map.of());
         structuredLog.debug(
-                String.format("Received message String was %s", inbound.body()),
-                envelopeLogContext);
-        observabilityService.tagCurrentSpanWithEnvelopeMetadata(deserializedEnvelop);
+                String.format("Received message String was %s", inbound.body()), Map.of());
         throw new SchemaValidationException(
-                contentError.getMessage(), envelopeLogContext.get(LogConstants.DISTRIBUTION_ID));
+                contentError.getMessage(), deserializedEnvelop.getDistributionID());
     }
 
     private EdxlMessage deserializeMessage(EdxlFormat format, InboundMessage inbound) {
