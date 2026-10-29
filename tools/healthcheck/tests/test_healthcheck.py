@@ -609,7 +609,7 @@ class HealthCheckTestCase(unittest.TestCase):
 
             called_urls = [call_args[0][0] for call_args in mock_get.call_args_list]
 
-            # 6 calls for: converter, annuaire, rabbitmq, shovel status and the 2 dispatchers
+            # 7 calls for: converter, annuaire, rabbitmq, hubex queues, shovel status and the 2 dispatchers
             expected_numbers_of_requests = 7
             self.assertEqual(len(called_urls), expected_numbers_of_requests)
             self.assertIn(RABBITMQ_HEALTH_URL, called_urls)
