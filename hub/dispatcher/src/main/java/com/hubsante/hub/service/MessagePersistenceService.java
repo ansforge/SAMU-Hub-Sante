@@ -18,7 +18,6 @@ package com.hubsante.hub.service;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hubsante.hub.config.HubConfiguration;
-import com.hubsante.hub.config.LogConstants;
 import com.hubsante.hub.config.StructuredLogger;
 import com.hubsante.hub.exception.HubPersistenceException;
 import com.hubsante.hub.model.PersistedMessage;
@@ -68,21 +67,11 @@ public class MessagePersistenceService {
             repository.save(doc);
 
             structuredLog.info(
-                    String.format("Message of type %s persisted from vhost %s", useCase, vhost),
-                    Map.of(
-                            LogConstants.DISTRIBUTION_ID,
-                            edxlMessage.getDistributionID(),
-                            LogConstants.MESSAGE_TYPE,
-                            useCase));
+                    String.format("Message of type %s persisted from vhost %s", useCase, vhost));
         } catch (Exception e) {
             structuredLog.error(
                     String.format(
                             "Failed to persist message of type %s from vhost %s", useCase, vhost),
-                    Map.of(
-                            LogConstants.DISTRIBUTION_ID,
-                            edxlMessage.getDistributionID(),
-                            LogConstants.MESSAGE_TYPE,
-                            useCase),
                     e);
             throw new HubPersistenceException(
                     e.getMessage(), edxlMessage.getDistributionID(), recipient, useCase);

@@ -21,7 +21,6 @@ import static com.hubsante.hub.config.Constants.FR_HEALTH_PREFIX;
 
 import com.hubsante.hub.config.Constants;
 import com.hubsante.hub.config.HubConfiguration;
-import com.hubsante.hub.config.LogConstants;
 import com.hubsante.hub.config.StructuredLogger;
 import com.hubsante.hub.exception.*;
 import com.hubsante.model.edxl.DistributionKind;
@@ -34,7 +33,6 @@ import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Base64;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -129,14 +127,8 @@ public class MessageUtils {
             if (!message.getMessageProperties()
                     .getReceivedRoutingKey()
                     .startsWith(FR_HEALTH_PREFIX)) {
-                String senderId = getSenderFromRoutingKey(message);
                 structuredLog.error(
-                        "Message has been received from hubex without persistent mode enabled",
-                        Map.of(
-                                LogConstants.SENDER_ID,
-                                senderId,
-                                LogConstants.DISTRIBUTION_ID,
-                                distributionId));
+                        "Message has been received from hubex without persistent mode enabled");
                 return;
             }
             String errorCause =
@@ -232,7 +224,6 @@ public class MessageUtils {
         // We assume that one second is an acceptable interval
         long messageCustomExpirationDateTime = edxlMessage.getDateTimeExpires().toEpochSecond();
         String distributionId = edxlMessage.getDistributionID();
-        String senderId = edxlMessage.getSenderID();
         String recipientId = getRecipientID(edxlMessage);
         String messageType = EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage());
 
@@ -242,16 +233,7 @@ public class MessageUtils {
             structuredLog.info(
                     String.format(
                             "Message received with expiration header containing %s, resetting header value to null",
-                            properties.getExpiration()),
-                    Map.of(
-                            LogConstants.DISTRIBUTION_ID,
-                            distributionId,
-                            LogConstants.SENDER_ID,
-                            senderId,
-                            LogConstants.RECIPIENT_ID,
-                            recipientId,
-                            LogConstants.MESSAGE_TYPE,
-                            messageType));
+                            properties.getExpiration()));
             properties.setExpiration(null);
         }
 
@@ -265,16 +247,7 @@ public class MessageUtils {
                             "Message received is already expired, provided dateTimeExpires is %s",
                             edxlMessage
                                     .getDateTimeExpires()
-                                    .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)),
-                    Map.of(
-                            LogConstants.DISTRIBUTION_ID,
-                            distributionId,
-                            LogConstants.SENDER_ID,
-                            senderId,
-                            LogConstants.RECIPIENT_ID,
-                            recipientId,
-                            LogConstants.MESSAGE_TYPE,
-                            messageType));
+                                    .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)));
             String errorCause = "Message has expired before reaching the recipient queue";
             throw new ExpiredBeforeDispatchMessageException(
                     errorCause, distributionId, recipientId, messageType);
@@ -291,16 +264,7 @@ public class MessageUtils {
             structuredLog.info(
                     String.format(
                             "Setting expiration header to %s based on client requested TTL",
-                            dateTimeExpires),
-                    Map.of(
-                            LogConstants.DISTRIBUTION_ID,
-                            distributionId,
-                            LogConstants.SENDER_ID,
-                            senderId,
-                            LogConstants.RECIPIENT_ID,
-                            recipientId,
-                            LogConstants.MESSAGE_TYPE,
-                            messageType));
+                            dateTimeExpires));
         }
     }
 
@@ -355,15 +319,7 @@ public class MessageUtils {
             byte[] hashedBytes = digest.digest(body.getBytes(StandardCharsets.UTF_8));
             return Base64.getEncoder().encodeToString(hashedBytes);
         } catch (NoSuchAlgorithmException e) {
-            String senderId = getSenderFromRoutingKey(message);
-            String distributionId = extractDistributionId(stringifyBody(message));
-            structuredLog.error(
-                    "Could not get SHA-256 algorithm",
-                    Map.of(
-                            LogConstants.SENDER_ID,
-                            senderId,
-                            LogConstants.DISTRIBUTION_ID,
-                            distributionId));
+            structuredLog.error("Could not get SHA-256 algorithm");
             throw new RuntimeException(e);
         }
     }

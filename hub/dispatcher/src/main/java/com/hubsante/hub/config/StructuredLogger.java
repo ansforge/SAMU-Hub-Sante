@@ -17,7 +17,6 @@ package com.hubsante.hub.config;
 
 import java.util.Map;
 import org.slf4j.Logger;
-import org.slf4j.MDC;
 import org.slf4j.event.Level;
 import org.slf4j.spi.LoggingEventBuilder;
 
@@ -26,10 +25,13 @@ public record StructuredLogger(Logger logger) {
     public void log(Level level, String message, Map<LogConstants, String> metadata, Throwable t) {
         LoggingEventBuilder builder = logger.atLevel(level);
         if (metadata != null) {
-            // the MDC message context wins, to avoid emitting the same key twice
             metadata.forEach(
                     (lc, v) -> {
-                        if (v != null && MDC.get(lc.getKey()) == null) {
+                        if (MessageLogContext.CONTEXT_KEYS.contains(lc)) {
+                            throw new IllegalArgumentException(
+                                    lc + " is a message log context key, it must be the MDC");
+                        }
+                        if (v != null) {
                             builder.addKeyValue(lc.getKey(), v);
                         }
                     });
@@ -40,12 +42,28 @@ public record StructuredLogger(Logger logger) {
         builder.log(message);
     }
 
+    public void info(String message) {
+        log(Level.INFO, message, null, null);
+    }
+
     public void info(String message, Map<LogConstants, String> metadata) {
         log(Level.INFO, message, metadata, null);
     }
 
+    public void debug(String message) {
+        log(Level.DEBUG, message, null, null);
+    }
+
     public void debug(String message, Map<LogConstants, String> metadata) {
         log(Level.DEBUG, message, metadata, null);
+    }
+
+    public void warn(String message) {
+        log(Level.WARN, message, null, null);
+    }
+
+    public void warn(String message, Throwable t) {
+        log(Level.WARN, message, null, t);
     }
 
     public void warn(String message, Map<LogConstants, String> metadata) {
@@ -54,6 +72,14 @@ public record StructuredLogger(Logger logger) {
 
     public void warn(String message, Map<LogConstants, String> metadata, Throwable t) {
         log(Level.WARN, message, metadata, t);
+    }
+
+    public void error(String message) {
+        log(Level.ERROR, message, null, null);
+    }
+
+    public void error(String message, Throwable t) {
+        log(Level.ERROR, message, null, t);
     }
 
     public void error(String message, Map<LogConstants, String> metadata) {
