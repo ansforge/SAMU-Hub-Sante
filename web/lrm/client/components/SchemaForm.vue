@@ -12,6 +12,7 @@
       />
     </v-window-item>
     <id-manager />
+    <date-manager />
     <v-divider class="my-4" />
     <RequestForm
       v-if="schema"
