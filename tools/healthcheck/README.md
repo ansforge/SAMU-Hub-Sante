@@ -29,6 +29,25 @@ The `.env` file is gitignored and only consumed by local commands (via `uv run -
 uv run --env-file .env healthcheck.py --port 8085
 ```
 
+## Hubex partners connections
+
+Two checks monitor the connections with the Hubex partners (e.g. Hub Pompiers):
+
+| Direction | Check | Config file | How the status is determined |
+| --- | --- | --- | --- |
+| Hubex -> Hub Santé | `checks/hubex_partners_shovels.py` | `monitored_partners_shovels.txt` | The shovel (`SHOVEL_STATUS_URL`) that fetches the partner messages is `running` |
+| Hub Santé -> Hubex | `checks/hubex_consumers.py` | `monitored_hubex_queues.txt` | The queues made available to the partner (`QUEUES_URL`) have at least one consumer |
+
+Both config files use one line per vhost, with the monitored queues separated by commas:
+
+```
+15-nexsis_vactive;fr.health.fire.message,fr.health.fire.ack
+```
+
+For the consumers check, each queue is exposed in the response as `<vhost>-<queue>-consumers` and in the Prometheus metric `hubex_consumers_status`. A queue is `DOWN` when it has no consumer, when it does not exist or when the RabbitMQ API cannot be reached. The `info` queue is not monitored since the partners choose not to consume it.
+
+`QUEUES_URL` is the RabbitMQ management API queues endpoint, restricted to the needed columns: `http://localhost:15672/api/queues?columns=vhost,name,consumers`.
+
 ## Tests
 
 Run the tests:

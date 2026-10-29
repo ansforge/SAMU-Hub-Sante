@@ -13,6 +13,7 @@ from checks.rabbitmq import RabbitMQHealthcheck
 from checks.dispatcher import DispatchersHealthcheck
 from checks.annuaire import AnnuaireHealthcheck
 from checks.hubex_partners_shovels import HubexPartnersHealthcheck
+from checks.hubex_consumers import HubexConsumersHealthcheck
 from checks.mongo import MongoDBHealthcheck
 import argparse
 
@@ -24,15 +25,24 @@ dispatcher = DispatchersHealthcheck()
 converter = ConverterHealthcheck()
 annuaire = AnnuaireHealthcheck()
 hubex_partners = HubexPartnersHealthcheck()
+hubex_consumers = HubexConsumersHealthcheck()
 mongodb = MongoDBHealthcheck()
 
-external_checkers = [rabbitmq_server, dispatcher, converter, hubex_partners, mongodb]
+external_checkers = [
+    rabbitmq_server,
+    dispatcher,
+    converter,
+    hubex_partners,
+    hubex_consumers,
+    mongodb,
+]
 internal_checkers = [
     rabbitmq_server,
     dispatcher,
     converter,
     annuaire,
     hubex_partners,
+    hubex_consumers,
     mongodb,
 ]
 
