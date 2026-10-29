@@ -40,12 +40,28 @@ public record StructuredLogger(Logger logger) {
         builder.log(message);
     }
 
+    public void info(String message) {
+        log(Level.INFO, message, null, null);
+    }
+
     public void info(String message, Map<LogConstants, String> metadata) {
         log(Level.INFO, message, metadata, null);
     }
 
+    public void debug(String message) {
+        log(Level.DEBUG, message, null, null);
+    }
+
     public void debug(String message, Map<LogConstants, String> metadata) {
         log(Level.DEBUG, message, metadata, null);
+    }
+
+    public void warn(String message) {
+        log(Level.WARN, message, null, null);
+    }
+
+    public void warn(String message, Throwable t) {
+        log(Level.WARN, message, null, t);
     }
 
     public void warn(String message, Map<LogConstants, String> metadata) {
@@ -54,6 +70,14 @@ public record StructuredLogger(Logger logger) {
 
     public void warn(String message, Map<LogConstants, String> metadata, Throwable t) {
         log(Level.WARN, message, metadata, t);
+    }
+
+    public void error(String message) {
+        log(Level.ERROR, message, null, null);
+    }
+
+    public void error(String message, Throwable t) {
+        log(Level.ERROR, message, null, t);
     }
 
     public void error(String message, Map<LogConstants, String> metadata) {

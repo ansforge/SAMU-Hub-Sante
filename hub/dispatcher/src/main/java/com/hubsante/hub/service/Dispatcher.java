@@ -43,7 +43,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.AmqpRejectAndDontRequeueException;
 import org.springframework.amqp.core.Message;
@@ -163,33 +162,19 @@ public class Dispatcher {
             // already been deserialized
             MessageLogContext.put(
                     LogConstants.DISTRIBUTION_ID, extractDistributionId(returnedEdxlString));
-            Map<LogConstants, String> logContext =
-                    Map.of(
-                            LogConstants.SENDER_ID,
-                            senderRoutingKey,
-                            LogConstants.DISTRIBUTION_ID,
-                            extractDistributionId(returnedEdxlString));
             structuredLog.error(
                     String.format(
                             "Could not deserialize returned message with hashed value %s",
                             hashBody(returned.getMessage())),
-                    logContext,
                     e);
             structuredLog.debug(
-                    String.format("Returned message String was %s", returnedEdxlString),
-                    logContext);
+                    String.format("Returned message String was %s", returnedEdxlString));
         }
 
         String distributionId =
                 returnedEdxlMessage != null
                         ? returnedEdxlMessage.getDistributionID()
                         : DISTRIBUTION_ID_UNAVAILABLE;
-        String messageType =
-                returnedEdxlMessage != null
-                        ? EdxlUtils.getUseCaseFromMessage(
-                                returnedEdxlMessage.getFirstContentMessage())
-                        : UNKNOWN;
-        String recipientId = MessageUtils.getRecipientID(returnedEdxlMessage);
 
         Error error = new Error();
         error.setErrorCode(ErrorCode.UNROUTABLE_MESSAGE);
@@ -210,22 +195,10 @@ public class Dispatcher {
                         xmlMapper.readValue(returned.getMessage().getBody(), HashMap.class));
             }
         } catch (IOException e) {
-            structuredLog.error(
-                    "Could not read message body",
-                    Map.of(
-                            LogConstants.DISTRIBUTION_ID,
-                            distributionId,
-                            LogConstants.MESSAGE_TYPE,
-                            messageType,
-                            LogConstants.SENDER_ID,
-                            senderRoutingKey,
-                            LogConstants.RECIPIENT_ID,
-                            recipientId),
-                    e);
+            structuredLog.error("Could not read message body", e);
         }
         error.setReferencedDistributionID(distributionId);
-        messageHandler.logErrorMessage(
-                error, distributionId, senderRoutingKey, recipientId, messageType);
+        messageHandler.logErrorMessage(error, senderRoutingKey);
         // currently, we do not handle error messages on other hubex
         if (senderRoutingKey.startsWith(FR_HEALTH_PREFIX)) {
             messageHandler.sendErrorReport(error, senderRoutingKey);
@@ -246,7 +219,6 @@ public class Dispatcher {
         try {
             // Deserialize the message according to its content type
             EdxlMessage edxlMessage = messageHandler.extractMessage(message);
-            observabilityService.bind(edxlMessage);
 
             RoutingStrategy strategy = selectRoutingStrategy(edxlMessage);
             // check the message is allowed to be routed (class name, inhibition, health actor
@@ -268,16 +240,7 @@ public class Dispatcher {
         } catch (Exception e) {
             // still log.error because it is not one of our AbstractHubExceptions, so there must be
             // a hole in our error cover
-            String senderId = getSenderFromRoutingKey(message);
-            String distributionId = extractDistributionId(stringifyBody(message));
-            structuredLog.error(
-                    "Unexpected error occurred while dispatching message",
-                    Map.of(
-                            LogConstants.SENDER_ID,
-                            senderId,
-                            LogConstants.DISTRIBUTION_ID,
-                            distributionId),
-                    e);
+            structuredLog.error("Unexpected error occurred while dispatching message", e);
             throw new AmqpRejectAndDontRequeueException(e);
         } finally {
             logContext.restore();
@@ -290,23 +253,12 @@ public class Dispatcher {
     }
 
     private void logMessageSent(MessageRoutingDTO routingDTO, EdxlMessage edxlMessage) {
-        String recipientId = MessageUtils.getRecipientID(edxlMessage);
-        String messageType = EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage());
         structuredLog.info(
                 String.format(
                         "Received message (%s) has been sent to exchange (%s) with routing key (%s)",
                         edxlMessage.getDistributionID(),
                         routingDTO.destinationExchange(),
-                        routingDTO.routingKey()),
-                Map.of(
-                        LogConstants.DISTRIBUTION_ID,
-                        edxlMessage.getDistributionID(),
-                        LogConstants.SENDER_ID,
-                        edxlMessage.getSenderID(),
-                        LogConstants.RECIPIENT_ID,
-                        recipientId,
-                        LogConstants.MESSAGE_TYPE,
-                        messageType));
+                        routingDTO.routingKey()));
     }
 
     @RabbitListener(queues = DISPATCH_DLQ_NAME)
@@ -326,7 +278,6 @@ public class Dispatcher {
                 return;
             }
             EdxlMessage edxlMessage = messageHandler.extractMessage(message);
-            observabilityService.bind(edxlMessage);
             // log message & error
             String errorCause =
                     "Message "
@@ -344,17 +295,7 @@ public class Dispatcher {
             // We don't want to log again the error if it has been thrown by handleError
             // We just log the unexpected errors
             if (!(e instanceof AmqpRejectAndDontRequeueException)) {
-                String originalRoutingKey = getOriginalRoutingKey(message);
-                String distributionId = extractDistributionId(stringifyBody(message));
-
-                structuredLog.warn(
-                        "Unexpected error occurred while DLQ-dispatching message",
-                        Map.of(
-                                LogConstants.SENDER_ID,
-                                originalRoutingKey,
-                                LogConstants.DISTRIBUTION_ID,
-                                distributionId),
-                        e);
+                structuredLog.warn("Unexpected error occurred while DLQ-dispatching message", e);
             }
             throw new AmqpRejectAndDontRequeueException(e);
         } finally {
