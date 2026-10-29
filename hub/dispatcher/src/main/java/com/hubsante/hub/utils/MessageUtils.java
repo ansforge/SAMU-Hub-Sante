@@ -93,7 +93,7 @@ public class MessageUtils {
         }
     }
 
-    private static String extractDomainPrefix(String id) {
+    public static String extractDomainPrefix(String id) {
         String[] segments = id.split("\\.", 3);
         if (segments.length < 2) {
             return id;
@@ -142,7 +142,7 @@ public class MessageUtils {
     }
 
     public static void checkMessageClassNameSupported(
-            EdxlMessage edxlMessage, HubConfiguration hubConfig) throws Exception {
+            EdxlMessage edxlMessage, HubConfiguration hubConfig) {
         String messageClassName =
                 EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage());
         List<String> supportedMessages = hubConfig.getSupportedMessages();
