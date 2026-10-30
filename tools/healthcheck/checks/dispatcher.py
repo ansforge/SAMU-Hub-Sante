@@ -12,15 +12,21 @@ from http_client import http_session
 
 from config import DISPATCHER_CONFIG_FILE_PATH
 
+# DISPATCHER_CONFIG_FILE_PATH must point to a file where each non-empty,
+# non-comment line has the format:
+# <dispatcher_name>;<dispatcher_health_url>[;<perimeter>]
+# The perimeter is 15-15 or 15-18. It is optional but a warning is logged without it.
+# The path may be absolute or relative to the healthcheck root directory.
+# Example:
+# dispatcher1;http://localhost:8080/actuator/health;15-15
+# dispatcher2;http://localhost:8081/actuator/health;15-18
+
+PERIMETER_15_15 = "15-15"
+PERIMETER_15_18 = "15-18"
+PERIMETERS = (PERIMETER_15_15, PERIMETER_15_18)
 DISPATCHERS_AGGREGATE_NAME = "dispatchers"
 # Known actuator statuses are returned unchanged; any unrecognized status falls back to DOWN.
 DISPATCHER_ACCEPTED_STATUSES = (Status.UP.value, Status.DEGRADED.value)
-# DISPATCHER_CONFIG_FILE_PATH must point to a file where each non-empty,
-# non-comment line has the format: <dispatcher_name>;<dispatcher_health_url>
-# The path may be absolute or relative to the healthcheck root directory.
-# Example:
-# dispatcher1;http://localhost:8080/actuator/health
-# dispatcher2;http://localhost:8081/actuator/health
 
 
 class DispatchersHealthcheck(IChecker):
@@ -32,6 +38,7 @@ class DispatchersHealthcheck(IChecker):
 
     def __init__(self):
         self.dispatcher_instances: Dict[str, str] = {}
+        self.dispatcher_perimeters: Dict[str, str | None] = {}
         self._load_config()
         self._init_metrics()
 
@@ -53,15 +60,18 @@ class DispatchersHealthcheck(IChecker):
                 parsed = self._parse_line(line)
                 if parsed is None:
                     continue
-                name, url = parsed
+                name, url, perimeter = parsed
                 self.dispatcher_instances[name] = url
+                self.dispatcher_perimeters[name] = perimeter
+                if perimeter is None:
+                    logging.warning("Dispatcher %s has no perimeter configured", name)
 
         if not self.dispatcher_instances:
             raise RuntimeError(f"No dispatchers loaded from {path}")
 
         logging.info("Loaded %d dispatchers", len(self.dispatcher_instances))
 
-    def _parse_line(self, line: str) -> tuple[str, str] | None:
+    def _parse_line(self, line: str) -> tuple[str, str, str | None] | None:
         line = line.strip()
 
         if not line or line.startswith("#"):
@@ -75,11 +85,19 @@ class DispatchersHealthcheck(IChecker):
         name = name.strip()
         url = url.strip()
 
+        # The perimeter is the last field, only if it is a known perimeter:
+        # any other value stays part of the url (which may contain semicolons).
+        perimeter = None
+        if ";" in url:
+            head, last = url.rsplit(";", 1)
+            if last.strip() in PERIMETERS:
+                url, perimeter = head.strip(), last.strip()
+
         if not name or not url:
             logging.warning("Incomplete config line (ignored): %s", line)
             return
 
-        return name, url
+        return name, url, perimeter
 
     def _init_metrics(self):
         for dispatcher in self.dispatcher_instances:

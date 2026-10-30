@@ -1,3 +1,3 @@
-dispatcher1;http://localhost:8080/actuator/health
-dispatcher2;http://localhost:8081/actuator/health
-dispatcher3;http://localhost:8082/actuator/health
+dispatcher1;http://localhost:8080/actuator/health;15-15
+dispatcher2;http://localhost:8081/actuator/health;15-18
+dispatcher3;http://localhost:8082/actuator/health;15-18
