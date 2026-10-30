@@ -145,6 +145,14 @@ class TestHubexConsumersHealthcheck(unittest.TestCase):
         self.assertEqual(self._metric_value("vhost1-queue-ack"), 0)
 
     @patch("checks.hubex_consumers.http_session.get")
+    def test_perform_checks_without_monitored_queues_skips_api_call(self, mock_get):
+        with patch("checks.hubex_consumers.open", mock_open(read_data="")):
+            checker = HubexConsumersHealthcheck()
+        result = checker.check_wrapper()
+        self.assertEqual(result, {})
+        mock_get.assert_not_called()
+
+    @patch("checks.hubex_consumers.http_session.get")
     def test_check_wrapper_falls_back_to_down_on_api_error(self, mock_get):
         mock_get.side_effect = Exception("RabbitMQ unreachable")
         result = self.checker.check_wrapper()

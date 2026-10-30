@@ -88,6 +88,8 @@ class HubexConsumersHealthcheck(IChecker):
                 ).set(0)
 
     def perform_checks(self):
+        if not any(self.QUEUES_MAP.values()):
+            return {}
         response = http_session.get(
             QUEUES_URL,
             auth=(RABBITMQ_MONITORING_USERNAME, RABBITMQ_MONITORING_PASSWORD),
