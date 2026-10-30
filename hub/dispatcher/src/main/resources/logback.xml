@@ -12,10 +12,6 @@
             <fieldNames>
                 <timestamp>timestamp</timestamp>
             </fieldNames>
-            <includeKeyValueKeyName>distributionId</includeKeyValueKeyName>
-            <includeKeyValueKeyName>senderId</includeKeyValueKeyName>
-            <includeKeyValueKeyName>recipientId</includeKeyValueKeyName>
-            <includeKeyValueKeyName>messageType</includeKeyValueKeyName>
         </encoder>
     </appender>
 

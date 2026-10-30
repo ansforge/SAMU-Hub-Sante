@@ -137,6 +137,7 @@ public class Dispatcher {
                     EdxlMessage returnedEdxlMessage = null;
                     String returnedEdxlString =
                             new String(returned.getMessage().getBody(), StandardCharsets.UTF_8);
+                    String senderRoutingKey = getOriginalRoutingKey(returned.getMessage());
 
                     try {
                         returnedEdxlMessage =
@@ -146,7 +147,21 @@ public class Dispatcher {
                     } catch (JsonProcessingException e) {
                         // This should never happen as if we've reached this point, the message has
                         // already been deserialized
-                        log.error("Could not deserialize message " + returnedEdxlString, e);
+                        Map<LogConstants, String> logContext =
+                                Map.of(
+                                        LogConstants.SENDER_ID,
+                                        senderRoutingKey,
+                                        LogConstants.DISTRIBUTION_ID,
+                                        extractDistributionId(returnedEdxlString));
+                        structuredLog.error(
+                                String.format(
+                                        "Could not deserialize returned message with hashed value %s",
+                                        hashBody(returned.getMessage())),
+                                logContext,
+                                e);
+                        structuredLog.debug(
+                                String.format("Returned message String was %s", returnedEdxlString),
+                                logContext);
                     }
 
                     String distributionId =
@@ -159,10 +174,6 @@ public class Dispatcher {
                                             returnedEdxlMessage.getFirstContentMessage())
                                     : UNKNOWN;
                     String recipientId = MessageUtils.getRecipientID(returnedEdxlMessage);
-                    String senderRoutingKey =
-                            returned.getMessage()
-                                    .getMessageProperties()
-                                    .getHeader(ORIGINAL_ROUTING_KEY);
 
                     Error error = new Error();
                     error.setErrorCode(ErrorCode.UNROUTABLE_MESSAGE);
@@ -291,9 +302,10 @@ public class Dispatcher {
     public void dispatchDLQ(Message message) {
         try {
             //  If an info message sent by the Hub has not been read, we do not want to loop and
-            // sent the Hub an info message back
+            // sent the Hub an info message back. Messages built by the Hub (e.g. error reports)
+            // have no original routing key header.
             String deadFromQueue = message.getMessageProperties().getHeader(ORIGINAL_ROUTING_KEY);
-            if (deadFromQueue.endsWith(".info")) {
+            if (deadFromQueue == null || deadFromQueue.endsWith(".info")) {
                 return;
             }
             EdxlMessage edxlMessage = messageHandler.extractMessage(message);
@@ -315,10 +327,7 @@ public class Dispatcher {
             // We don't want to log again the error if it has been thrown by handleError
             // We just log the unexpected errors
             if (!(e instanceof AmqpRejectAndDontRequeueException)) {
-                String originalRoutingKey =
-                        message.getMessageProperties().getHeader(ORIGINAL_ROUTING_KEY) != null
-                                ? message.getMessageProperties().getHeader(ORIGINAL_ROUTING_KEY)
-                                : "Unknown routing key";
+                String originalRoutingKey = getOriginalRoutingKey(message);
                 String distributionId = extractDistributionId(stringifyBody(message));
 
                 structuredLog.warn(
