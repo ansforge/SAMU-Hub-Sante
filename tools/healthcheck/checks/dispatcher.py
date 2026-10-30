@@ -7,10 +7,14 @@ from collections import OrderedDict
 from prometheus_client import Gauge
 
 from checks.checker import IChecker
-from checks.status import Status
+from checks.status import Status, aggregate_statuses
 from http_client import http_session
 
 from config import DISPATCHER_CONFIG_FILE_PATH
+
+DISPATCHERS_AGGREGATE_NAME = "dispatchers"
+# Statuses an actuator can return that are kept as is. Any other value is DOWN.
+DISPATCHER_ACCEPTED_STATUSES = (Status.UP.value, Status.DEGRADED.value)
 # DISPATCHER_CONFIG_FILE_PATH must point to a file where each non-empty,
 # non-comment line has the format: <dispatcher_name>;<dispatcher_health_url>
 # The path may be absolute or relative to the healthcheck root directory.
@@ -87,7 +91,14 @@ class DispatchersHealthcheck(IChecker):
                 name: executor.submit(self.single_dispatcher_healthcheck, name, url)
                 for name, url in self.dispatcher_instances.items()
             }
-            return {name: future.result() for name, future in futures.items()}
+            result = {name: future.result() for name, future in futures.items()}
+
+        result[DISPATCHERS_AGGREGATE_NAME] = {
+            "status": aggregate_statuses(
+                instance["status"] for instance in result.values()
+            )
+        }
+        return result
 
     def check_failure_fallback(self) -> Dict[str, dict]:
         result = {}
@@ -96,6 +107,7 @@ class DispatchersHealthcheck(IChecker):
             result[name] = {"status": Status.DOWN.value}
             self.dispatcher_status_metric.labels(dispatcher=name).set(0)
 
+        result[DISPATCHERS_AGGREGATE_NAME] = {"status": Status.DOWN.value}
         return result
 
     def single_dispatcher_healthcheck(self, name: str, url: str) -> dict:
@@ -107,6 +119,8 @@ class DispatchersHealthcheck(IChecker):
 
             data = response.json()
             status = data.get("status", Status.UNKNOWN.value)
+            if status not in DISPATCHER_ACCEPTED_STATUSES:
+                status = Status.DOWN.value
 
             is_up = status == Status.UP.value
             self.dispatcher_status_metric.labels(dispatcher=name).set(1 if is_up else 0)
