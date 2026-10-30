@@ -108,6 +108,10 @@ public class MessageHandler {
         Error error = new Error();
         error.setErrorCode(exception.getErrorCode());
         error.setErrorCause(exception.getMessage());
+        String distributionId = exception.getReferencedDistributionID();
+        error.setReferencedDistributionID(distributionId);
+        String senderClientId = getOriginalRoutingKey(message);
+
         try {
             if (isJSON(message)) {
                 error.setSourceMessage(jsonMapper.readValue(message.getBody(), HashMap.class));
@@ -115,18 +119,11 @@ public class MessageHandler {
                 error.setSourceMessage(xmlMapper.readValue(message.getBody(), HashMap.class));
             }
         } catch (IOException e) {
-            log.error("Could not read message body", e);
+            structuredLog.error("Could not read message body", e);
         }
-        String distributionId = exception.getReferencedDistributionID();
-        error.setReferencedDistributionID(distributionId);
 
         // send Error to sender
-        String senderClientId = message.getMessageProperties().getHeader(ORIGINAL_ROUTING_KEY);
-
-        String recipientId = exception.getRecipientId();
-        String messageType = exception.getMessageType();
-
-        logErrorMessage(error, distributionId, senderClientId, recipientId, messageType);
+        logErrorMessage(error, senderClientId);
         // currently, we do not handle error messages on other hubex, and inhibit DLQ messages other
         // than the "expired" ones
         boolean isSenderInHealthPerimeter = senderClientId.startsWith(FR_HEALTH_PREFIX);
@@ -137,17 +134,7 @@ public class MessageHandler {
                     isSenderInHealthPerimeter
                             ? "Error message not sent as it has been dead-letter-queued for an other reason than expiration"
                             : "Error message not sent as it is not a health perimeter";
-            structuredLog.info(
-                    errorLog,
-                    Map.of(
-                            LogConstants.SENDER_ID,
-                            senderClientId,
-                            LogConstants.DISTRIBUTION_ID,
-                            distributionId,
-                            LogConstants.RECIPIENT_ID,
-                            recipientId,
-                            LogConstants.MESSAGE_TYPE,
-                            messageType));
+            structuredLog.info(errorLog);
         }
 
         // increment metric like dispatch_error{reason="INVALID_MESSAGE",sender="fr.health.samuXXX"}
@@ -156,36 +143,13 @@ public class MessageHandler {
         throw new AmqpRejectAndDontRequeueException(exception);
     }
 
-    protected void logErrorMessage(
-            Error error,
-            String distributionId,
-            String senderId,
-            String recipientId,
-            String messageType) {
+    protected void logErrorMessage(Error error, String senderId) {
         structuredLog.error(
                 String.format(
                         "Error occurred with message published by %s \nError %s \nErrorCause %s",
                         senderId, error.getErrorCode(), error.getErrorCause()),
-                Map.of(
-                        LogConstants.DISTRIBUTION_ID,
-                        distributionId,
-                        LogConstants.SENDER_ID,
-                        senderId,
-                        LogConstants.RECIPIENT_ID,
-                        recipientId,
-                        LogConstants.MESSAGE_TYPE,
-                        messageType));
-        structuredLog.debug(
-                String.format("ErrorSourceMessage was %s", error.getSourceMessage()),
-                Map.of(
-                        LogConstants.DISTRIBUTION_ID,
-                        distributionId,
-                        LogConstants.SENDER_ID,
-                        senderId,
-                        LogConstants.RECIPIENT_ID,
-                        recipientId,
-                        LogConstants.MESSAGE_TYPE,
-                        messageType));
+                Map.of(LogConstants.ERROR_CODE, error.getErrorCode().getStatusString()));
+        structuredLog.debug(String.format("ErrorSourceMessage was %s", error.getSourceMessage()));
     }
 
     protected void sendErrorReport(Error error, String sender) {
@@ -225,13 +189,10 @@ public class MessageHandler {
                     List<String> convertedMessages =
                             conversionHandler.applyConversionRules(conversionParameters);
                     if (convertedMessages.size() > 1) {
-                        structuredLog.info(
-                                "convertedMessages has more than one message: %s",
-                                Map.of(
-                                        LogConstants.SENDER_ID,
-                                        sender,
-                                        LogConstants.DISTRIBUTION_ID,
-                                        error.getReferencedDistributionID()));
+                        structuredLog.warn(
+                                String.format(
+                                        "Conversion produced %d messages, only the first one is sent",
+                                        convertedMessages.size()));
                     }
                     errorAmqpMessage =
                             forwardedStringMessage(convertedMessages.getFirst(), errorAmqpMessage);
@@ -242,12 +203,7 @@ public class MessageHandler {
                     structuredLog.info(
                             String.format(
                                     "Message transferred to exchange: %s with routing key: %s",
-                                    destinationExchange, routingKey),
-                            Map.of(
-                                    LogConstants.SENDER_ID,
-                                    sender,
-                                    LogConstants.DISTRIBUTION_ID,
-                                    error.getReferencedDistributionID()));
+                                    destinationExchange, routingKey));
                 }
             }
 
@@ -255,21 +211,9 @@ public class MessageHandler {
         } catch (JsonProcessingException e) {
             // This should never happen : we are serializing a POJO with 2 String attributes and a
             // single enum
-            String distributionId = error.getReferencedDistributionID();
-            structuredLog.error(
-                    String.format("Could not serialize Error : %s", e.getMessage()),
-                    Map.of(
-                            LogConstants.SENDER_ID,
-                            sender,
-                            LogConstants.DISTRIBUTION_ID,
-                            distributionId));
+            structuredLog.error(String.format("Could not serialize Error : %s", e.getMessage()));
             structuredLog.debug(
-                    String.format("ErrorSourceMessage was %s", error.getSourceMessage()),
-                    Map.of(
-                            LogConstants.SENDER_ID,
-                            sender,
-                            LogConstants.DISTRIBUTION_ID,
-                            distributionId));
+                    String.format("ErrorSourceMessage was %s", error.getSourceMessage()));
             throw new RuntimeException(e);
         }
     }
@@ -302,7 +246,7 @@ public class MessageHandler {
     protected EdxlMessage extractMessage(Message message) {
         countProcessing("extract");
         InboundMessage inbound = InboundMessage.of(message);
-        observabilityService.tagCurrentSpanWithAmqpMessageMetadata(
+        observabilityService.bindExtractedMetadata(
                 inbound.extractedDistributionId(), inbound.receivedRoutingKey());
 
         countProcessing("validate.full");
@@ -311,6 +255,7 @@ public class MessageHandler {
 
         countProcessing("deserialize");
         EdxlMessage edxlMessage = deserializeMessage(format, inbound);
+        observabilityService.bind(edxlMessage);
         logMessage(message, edxlMessage, inbound.body());
         return edxlMessage;
     }
@@ -323,8 +268,7 @@ public class MessageHandler {
         structuredLog.error(
                 String.format(
                         "Unhandled Content-Type in message with extracted distributionId %s",
-                        inbound.extractedDistributionId()),
-                inbound.logContext());
+                        inbound.extractedDistributionId()));
         throw new NotAllowedContentTypeException(
                 UNHANDLED_CONTENT_TYPE_CAUSE, inbound.extractedDistributionId());
     }
@@ -333,10 +277,7 @@ public class MessageHandler {
         try {
             format.validate(validator, inbound.body(), format.fullSchema);
         } catch (IOException exception) {
-            structuredLog.error(
-                    "Could not find schema file",
-                    Map.of(LogConstants.DISTRIBUTION_ID, inbound.extractedDistributionId()),
-                    exception);
+            structuredLog.error("Could not find schema file", exception);
             throw new SchemaNotFoundException(
                     INTERNAL_ERROR_CAUSE, inbound.extractedDistributionId());
         } catch (ValidationException contentError) {
@@ -355,8 +296,7 @@ public class MessageHandler {
             structuredLog.error(
                     String.format(
                             "Could not validate envelope of message with distributionId possibly being (regex extraction) %s: %s",
-                            inbound.extractedDistributionId(), envelopeError.getMessage()),
-                    inbound.logContext());
+                            inbound.extractedDistributionId(), envelopeError.getMessage()));
             throw new SchemaValidationException(
                     "CAUTION: distributionId has been extracted by regex because the envelope could not be deserialized.\n"
                             + envelopeError.getMessage(),
@@ -365,41 +305,31 @@ public class MessageHandler {
             structuredLog.error(
                     String.format(
                             "Could not deserialize envelope of message with distributionId possibly being (regex extraction) %s: %s",
-                            inbound.extractedDistributionId(), envelopeError.getMessage()),
-                    inbound.logContext());
+                            inbound.extractedDistributionId(), envelopeError.getMessage()));
             throw new SchemaValidationException(
                     "CAUTION: distributionId has been extracted by regex because the envelope could not be deserialized.\n"
                             + contentError.getMessage(),
                     inbound.extractedDistributionId());
         } catch (IOException exception) {
             structuredLog.error(
-                    String.format("Could not find schema file %s", exception.getMessage()),
-                    inbound.logContext());
+                    String.format("Could not find schema file %s", exception.getMessage()));
             throw new SchemaNotFoundException(
                     INTERNAL_ERROR_CAUSE, inbound.extractedDistributionId());
         }
 
-        Map<LogConstants, String> envelopeLogContext =
-                observabilityService.buildLogContextFromEdxlEnvelope(deserializedEnvelop);
-        structuredLog.error("Could not validate content of message", envelopeLogContext);
-        structuredLog.debug(
-                String.format("Received message String was %s", inbound.body()),
-                envelopeLogContext);
-        observabilityService.tagCurrentSpanWithEnvelopeMetadata(deserializedEnvelop);
+        observabilityService.bind(deserializedEnvelop);
+        structuredLog.error("Could not validate content of message");
+        structuredLog.debug(String.format("Received message String was %s", inbound.body()));
         throw new SchemaValidationException(
-                contentError.getMessage(), envelopeLogContext.get(LogConstants.DISTRIBUTION_ID));
+                contentError.getMessage(), deserializedEnvelop.getDistributionID());
     }
 
     private EdxlMessage deserializeMessage(EdxlFormat format, InboundMessage inbound) {
         try {
             return format.deserialize(edxlHandler, inbound.body());
         } catch (JsonProcessingException exception) {
-            structuredLog.error(
-                    String.format("Could not deserialize content: %s", exception),
-                    inbound.logContext());
-            structuredLog.debug(
-                    String.format("Received message String was %s", inbound.body()),
-                    inbound.logContext());
+            structuredLog.error(String.format("Could not deserialize content: %s", exception));
+            structuredLog.debug(String.format("Received message String was %s", inbound.body()));
             throw new UnrecognizedMessageFormatException(
                     INTERNAL_ERROR_CAUSE, inbound.extractedDistributionId());
         }
@@ -411,18 +341,6 @@ public class MessageHandler {
             String body = stringifyBody(message);
             return new InboundMessage(
                     body, getSenderFromRoutingKey(message), extractDistributionId(body));
-        }
-
-        Map<LogConstants, String> logContext() {
-            return logContext(extractedDistributionId);
-        }
-
-        Map<LogConstants, String> logContext(String distributionId) {
-            return Map.of(
-                    LogConstants.SENDER_ID,
-                    receivedRoutingKey,
-                    LogConstants.DISTRIBUTION_ID,
-                    distributionId);
         }
     }
 
@@ -452,10 +370,8 @@ public class MessageHandler {
             MessageProperties fwdAmqpProperties) {
         countProcessing("serialize.edxl");
         String recipientId = getRecipientID(edxlMessage);
-        String senderId = getSenderFromRoutingKey(receivedAmqpMessage);
         String edxlString;
         String distributionKind = edxlMessage.getDistributionKind().getValue();
-        String messageType = getUseCaseFromMessage(edxlMessage.getFirstContentMessage());
 
         try {
             Boolean useXML = hubConfig.getClientPropertiesRegistry().isClientUseXml(recipientId);
@@ -467,49 +383,20 @@ public class MessageHandler {
                 fwdAmqpProperties.setContentType(MessageProperties.CONTENT_TYPE_JSON);
             }
 
-            String distributionId = edxlMessage.getDistributionID();
             String hashedBody = hashBody(receivedAmqpMessage);
             String referencedDistributionId = extractReferencedDistributionID(edxlMessage);
             if (Objects.nonNull(referencedDistributionId)) {
                 structuredLog.info(
                         String.format(
                                 "Forwarding %s: message with referenced distributionId %s and hashed value %s",
-                                distributionKind, referencedDistributionId, hashedBody),
-                        Map.of(
-                                LogConstants.RECIPIENT_ID,
-                                recipientId,
-                                LogConstants.DISTRIBUTION_ID,
-                                distributionId,
-                                LogConstants.SENDER_ID,
-                                senderId,
-                                LogConstants.MESSAGE_TYPE,
-                                messageType));
+                                distributionKind, referencedDistributionId, hashedBody));
             } else {
                 structuredLog.info(
                         String.format(
                                 "Forwarding %s: message with hashed value %s",
-                                distributionKind, hashedBody),
-                        Map.of(
-                                LogConstants.RECIPIENT_ID,
-                                recipientId,
-                                LogConstants.DISTRIBUTION_ID,
-                                distributionId,
-                                LogConstants.SENDER_ID,
-                                senderId,
-                                LogConstants.MESSAGE_TYPE,
-                                messageType));
+                                distributionKind, hashedBody));
             }
-            structuredLog.debug(
-                    edxlString,
-                    Map.of(
-                            LogConstants.RECIPIENT_ID,
-                            recipientId,
-                            LogConstants.DISTRIBUTION_ID,
-                            distributionId,
-                            LogConstants.SENDER_ID,
-                            senderId,
-                            LogConstants.MESSAGE_TYPE,
-                            messageType));
+            structuredLog.debug(edxlString);
 
             return new Message(edxlString.getBytes(StandardCharsets.UTF_8), fwdAmqpProperties);
 
@@ -524,8 +411,6 @@ public class MessageHandler {
     private Message getFwdStringMessageBody(
             String message, Message receivedAmqpMessage, MessageProperties fwdAmqpProperties) {
         countProcessing("serialize.string");
-        String senderId = getSenderFromRoutingKey(receivedAmqpMessage);
-        String distributionId = extractDistributionId(message);
 
         fwdAmqpProperties.setContentType(MessageProperties.CONTENT_TYPE_JSON);
 
@@ -534,12 +419,7 @@ public class MessageHandler {
 
         structuredLog.info(
                 String.format(
-                        "Forwarding converted message with hashed value %s", hashBody(fwdMessage)),
-                Map.of(
-                        LogConstants.SENDER_ID,
-                        senderId,
-                        LogConstants.DISTRIBUTION_ID,
-                        distributionId));
+                        "Forwarding converted message with hashed value %s", hashBody(fwdMessage)));
 
         return fwdMessage;
     }
@@ -563,53 +443,21 @@ public class MessageHandler {
 
     private void logMessage(Message message, EdxlMessage edxlMessage, String receivedEdxl) {
         String distributionKind = edxlMessage.getDistributionKind().getValue();
-        String senderId = getSenderFromRoutingKey(message);
-        String distributionId = edxlMessage.getDistributionID();
-        String recipientId = getRecipientID(edxlMessage);
         String referencedDistributionId = extractReferencedDistributionID(edxlMessage);
         String hashedBody = hashBody(message);
-        String messageType = getUseCaseFromMessage(edxlMessage.getFirstContentMessage());
 
         if (Objects.nonNull(referencedDistributionId)) {
             structuredLog.info(
                     String.format(
                             "Received %s: message with referenced distributionId %s and hashed value %s",
-                            distributionKind, referencedDistributionId, hashedBody),
-                    Map.of(
-                            LogConstants.RECIPIENT_ID,
-                            recipientId,
-                            LogConstants.DISTRIBUTION_ID,
-                            distributionId,
-                            LogConstants.SENDER_ID,
-                            senderId,
-                            LogConstants.MESSAGE_TYPE,
-                            messageType));
+                            distributionKind, referencedDistributionId, hashedBody));
         } else {
             structuredLog.info(
                     String.format(
                             "Received %s: message with hashed value %s",
-                            distributionKind, hashedBody),
-                    Map.of(
-                            LogConstants.RECIPIENT_ID,
-                            recipientId,
-                            LogConstants.DISTRIBUTION_ID,
-                            distributionId,
-                            LogConstants.SENDER_ID,
-                            senderId,
-                            LogConstants.MESSAGE_TYPE,
-                            messageType));
+                            distributionKind, hashedBody));
         }
-        structuredLog.debug(
-                receivedEdxl,
-                Map.of(
-                        LogConstants.RECIPIENT_ID,
-                        recipientId,
-                        LogConstants.DISTRIBUTION_ID,
-                        distributionId,
-                        LogConstants.SENDER_ID,
-                        senderId,
-                        LogConstants.MESSAGE_TYPE,
-                        messageType));
+        structuredLog.debug(receivedEdxl);
     }
 
     protected void publishErrorMetric(String error, String sender) {

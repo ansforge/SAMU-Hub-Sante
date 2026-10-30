@@ -23,6 +23,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.hubsante.hub.config.LogConstants;
+import com.hubsante.hub.config.MessageLogContext;
 import com.hubsante.hub.config.StructuredLogger;
 import com.hubsante.hub.exception.*;
 import com.hubsante.hub.service.routing.FireToHubStrategy;
@@ -42,10 +43,10 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.AmqpRejectAndDontRequeueException;
 import org.springframework.amqp.core.Message;
+import org.springframework.amqp.core.ReturnedMessage;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -134,80 +135,76 @@ public class Dispatcher {
         // set returns callback to track undistributed messages
         rabbitTemplate.setReturnsCallback(
                 returned -> {
-                    EdxlMessage returnedEdxlMessage = null;
-                    String returnedEdxlString =
-                            new String(returned.getMessage().getBody(), StandardCharsets.UTF_8);
-
+                    // runs on a broker connection thread, which has no context of the listener
+                    MessageLogContext logContext = MessageLogContext.open(returned.getMessage());
                     try {
-                        returnedEdxlMessage =
-                                isXML(returned)
-                                        ? edxlHandler.deserializeXmlEDXL(returnedEdxlString)
-                                        : edxlHandler.deserializeJsonEDXL(returnedEdxlString);
-                    } catch (JsonProcessingException e) {
-                        // This should never happen as if we've reached this point, the message has
-                        // already been deserialized
-                        log.error("Could not deserialize message " + returnedEdxlString, e);
+                        handleReturnedMessage(returned);
+                    } finally {
+                        logContext.restore();
                     }
-
-                    String distributionId =
-                            returnedEdxlMessage != null
-                                    ? returnedEdxlMessage.getDistributionID()
-                                    : DISTRIBUTION_ID_UNAVAILABLE;
-                    String messageType =
-                            returnedEdxlMessage != null
-                                    ? EdxlUtils.getUseCaseFromMessage(
-                                            returnedEdxlMessage.getFirstContentMessage())
-                                    : UNKNOWN;
-                    String recipientId = MessageUtils.getRecipientID(returnedEdxlMessage);
-                    String senderRoutingKey =
-                            returned.getMessage()
-                                    .getMessageProperties()
-                                    .getHeader(ORIGINAL_ROUTING_KEY);
-
-                    Error error = new Error();
-                    error.setErrorCode(ErrorCode.UNROUTABLE_MESSAGE);
-                    error.setErrorCause(
-                            "unable do deliver message to "
-                                    + returned.getRoutingKey()
-                                    + ", cause was "
-                                    + returned.getReplyText()
-                                    + " ("
-                                    + returned.getReplyCode()
-                                    + ")");
-                    try {
-                        if (isJSON(returned.getMessage())) {
-                            error.setSourceMessage(
-                                    jsonMapper.readValue(
-                                            returned.getMessage().getBody(), HashMap.class));
-                        } else if (isXML(returned.getMessage())) {
-                            error.setSourceMessage(
-                                    xmlMapper.readValue(
-                                            returned.getMessage().getBody(), HashMap.class));
-                        }
-                    } catch (IOException e) {
-                        structuredLog.error(
-                                "Could not read message body",
-                                Map.of(
-                                        LogConstants.DISTRIBUTION_ID,
-                                        distributionId,
-                                        LogConstants.MESSAGE_TYPE,
-                                        messageType,
-                                        LogConstants.SENDER_ID,
-                                        senderRoutingKey,
-                                        LogConstants.RECIPIENT_ID,
-                                        recipientId),
-                                e);
-                    }
-                    error.setReferencedDistributionID(distributionId);
-                    messageHandler.logErrorMessage(
-                            error, distributionId, senderRoutingKey, recipientId, messageType);
-                    // currently, we do not handle error messages on other hubex
-                    if (senderRoutingKey.startsWith(FR_HEALTH_PREFIX)) {
-                        messageHandler.sendErrorReport(error, senderRoutingKey);
-                    }
-                    messageHandler.publishErrorMetric(
-                            ErrorCode.UNROUTABLE_MESSAGE.getStatusString(), senderRoutingKey);
                 });
+    }
+
+    private void handleReturnedMessage(ReturnedMessage returned) {
+        EdxlMessage returnedEdxlMessage = null;
+        String returnedEdxlString =
+                new String(returned.getMessage().getBody(), StandardCharsets.UTF_8);
+        String senderRoutingKey = getOriginalRoutingKey(returned.getMessage());
+
+        try {
+            returnedEdxlMessage =
+                    isXML(returned)
+                            ? edxlHandler.deserializeXmlEDXL(returnedEdxlString)
+                            : edxlHandler.deserializeJsonEDXL(returnedEdxlString);
+            observabilityService.bind(returnedEdxlMessage);
+        } catch (JsonProcessingException e) {
+            // This should never happen as if we've reached this point, the message has
+            // already been deserialized
+            MessageLogContext.put(
+                    LogConstants.DISTRIBUTION_ID, extractDistributionId(returnedEdxlString));
+            structuredLog.error(
+                    String.format(
+                            "Could not deserialize returned message with hashed value %s",
+                            hashBody(returned.getMessage())),
+                    e);
+            structuredLog.debug(
+                    String.format("Returned message String was %s", returnedEdxlString));
+        }
+
+        String distributionId =
+                returnedEdxlMessage != null
+                        ? returnedEdxlMessage.getDistributionID()
+                        : DISTRIBUTION_ID_UNAVAILABLE;
+
+        Error error = new Error();
+        error.setErrorCode(ErrorCode.UNROUTABLE_MESSAGE);
+        error.setErrorCause(
+                "unable do deliver message to "
+                        + returned.getRoutingKey()
+                        + ", cause was "
+                        + returned.getReplyText()
+                        + " ("
+                        + returned.getReplyCode()
+                        + ")");
+        try {
+            if (isJSON(returned.getMessage())) {
+                error.setSourceMessage(
+                        jsonMapper.readValue(returned.getMessage().getBody(), HashMap.class));
+            } else if (isXML(returned.getMessage())) {
+                error.setSourceMessage(
+                        xmlMapper.readValue(returned.getMessage().getBody(), HashMap.class));
+            }
+        } catch (IOException e) {
+            structuredLog.error("Could not read message body", e);
+        }
+        error.setReferencedDistributionID(distributionId);
+        messageHandler.logErrorMessage(error, senderRoutingKey);
+        // currently, we do not handle error messages on other hubex
+        if (senderRoutingKey.startsWith(FR_HEALTH_PREFIX)) {
+            messageHandler.sendErrorReport(error, senderRoutingKey);
+        }
+        messageHandler.publishErrorMetric(
+                ErrorCode.UNROUTABLE_MESSAGE.getStatusString(), senderRoutingKey);
     }
 
     @RabbitListener(queues = DISPATCH_QUEUE_NAME)
@@ -217,11 +214,11 @@ public class Dispatcher {
             histogram = true,
             extraTags = {"operation", "dispatch"})
     public void dispatch(Message message) {
+        setOriginalRoutingKeyHeader(message);
+        MessageLogContext logContext = MessageLogContext.open(message);
         try {
-            setOriginalRoutingKeyHeader(message);
             // Deserialize the message according to its content type
             EdxlMessage edxlMessage = messageHandler.extractMessage(message);
-            observabilityService.tagCurrentSpanWithEdxlMessageMetadata(edxlMessage);
 
             RoutingStrategy strategy = selectRoutingStrategy(edxlMessage);
             // check the message is allowed to be routed (class name, inhibition, health actor
@@ -243,17 +240,10 @@ public class Dispatcher {
         } catch (Exception e) {
             // still log.error because it is not one of our AbstractHubExceptions, so there must be
             // a hole in our error cover
-            String senderId = getSenderFromRoutingKey(message);
-            String distributionId = extractDistributionId(stringifyBody(message));
-            structuredLog.error(
-                    "Unexpected error occurred while dispatching message",
-                    Map.of(
-                            LogConstants.SENDER_ID,
-                            senderId,
-                            LogConstants.DISTRIBUTION_ID,
-                            distributionId),
-                    e);
+            structuredLog.error("Unexpected error occurred while dispatching message", e);
             throw new AmqpRejectAndDontRequeueException(e);
+        } finally {
+            logContext.restore();
         }
     }
 
@@ -263,23 +253,12 @@ public class Dispatcher {
     }
 
     private void logMessageSent(MessageRoutingDTO routingDTO, EdxlMessage edxlMessage) {
-        String recipientId = MessageUtils.getRecipientID(edxlMessage);
-        String messageType = EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage());
         structuredLog.info(
                 String.format(
                         "Received message (%s) has been sent to exchange (%s) with routing key (%s)",
                         edxlMessage.getDistributionID(),
                         routingDTO.destinationExchange(),
-                        routingDTO.routingKey()),
-                Map.of(
-                        LogConstants.DISTRIBUTION_ID,
-                        edxlMessage.getDistributionID(),
-                        LogConstants.SENDER_ID,
-                        edxlMessage.getSenderID(),
-                        LogConstants.RECIPIENT_ID,
-                        recipientId,
-                        LogConstants.MESSAGE_TYPE,
-                        messageType));
+                        routingDTO.routingKey()));
     }
 
     @RabbitListener(queues = DISPATCH_DLQ_NAME)
@@ -289,15 +268,16 @@ public class Dispatcher {
             histogram = true,
             extraTags = {"operation", "dispatch_dlq"})
     public void dispatchDLQ(Message message) {
+        MessageLogContext logContext = MessageLogContext.open(message);
         try {
             //  If an info message sent by the Hub has not been read, we do not want to loop and
-            // sent the Hub an info message back
+            // sent the Hub an info message back. Messages built by the Hub (e.g. error reports)
+            // have no original routing key header.
             String deadFromQueue = message.getMessageProperties().getHeader(ORIGINAL_ROUTING_KEY);
-            if (deadFromQueue.endsWith(".info")) {
+            if (deadFromQueue == null || deadFromQueue.endsWith(".info")) {
                 return;
             }
             EdxlMessage edxlMessage = messageHandler.extractMessage(message);
-            observabilityService.tagCurrentSpanWithEdxlMessageMetadata(edxlMessage);
             // log message & error
             String errorCause =
                     "Message "
@@ -315,22 +295,11 @@ public class Dispatcher {
             // We don't want to log again the error if it has been thrown by handleError
             // We just log the unexpected errors
             if (!(e instanceof AmqpRejectAndDontRequeueException)) {
-                String originalRoutingKey =
-                        message.getMessageProperties().getHeader(ORIGINAL_ROUTING_KEY) != null
-                                ? message.getMessageProperties().getHeader(ORIGINAL_ROUTING_KEY)
-                                : "Unknown routing key";
-                String distributionId = extractDistributionId(stringifyBody(message));
-
-                structuredLog.warn(
-                        "Unexpected error occurred while DLQ-dispatching message",
-                        Map.of(
-                                LogConstants.SENDER_ID,
-                                originalRoutingKey,
-                                LogConstants.DISTRIBUTION_ID,
-                                distributionId),
-                        e);
+                structuredLog.warn("Unexpected error occurred while DLQ-dispatching message", e);
             }
             throw new AmqpRejectAndDontRequeueException(e);
+        } finally {
+            logContext.restore();
         }
     }
 }
