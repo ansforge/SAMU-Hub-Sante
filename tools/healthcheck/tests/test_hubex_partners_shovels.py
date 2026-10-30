@@ -123,6 +123,7 @@ class TestFunctionalHubexPartnersShovels(unittest.TestCase):
             check_response,
             {
                 "vhost1-queue1": {"status": Status.UP.value},
+                "vhost1-shovels": {"status": Status.UP.value},
             },
         )
 
@@ -180,6 +181,7 @@ class TestFunctionalHubexPartnersShovels(unittest.TestCase):
             {
                 "vhost1-queue1": {"status": Status.UP.value},
                 "vhost1-queue2": {"status": Status.DOWN.value},
+                "vhost1-shovels": {"status": Status.DEGRADED.value},
             },
         )
 
