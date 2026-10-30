@@ -46,6 +46,8 @@ Both config files use one line per vhost, with the monitored queues separated by
 
 For the consumers check, each queue is exposed in the response as `<vhost>-<queue>-consumers` and in the Prometheus metric `hubex_consumers_status`. A queue is `DOWN` when it has no consumer, when it does not exist or when the RabbitMQ API cannot be reached. The `info` queue is not monitored since the partners choose not to consume it.
 
+Each connection is also summarized per vhost in the response: `<vhost>-shovels` (Hubex -> Hub Santé) and `<vhost>-consumers` (Hub Santé -> Hubex). The status is `UP` when all the shovels (or queues) of the vhost are `UP`, `DOWN` when all are `DOWN` and `DEGRADED` otherwise. The same aggregation applies to the dispatchers, in the `dispatchers` entry.
+
 `QUEUES_URL` is the RabbitMQ management API queues endpoint, restricted to the needed columns: `http://localhost:15672/api/queues?columns=vhost,name,consumers`.
 
 ## Tests

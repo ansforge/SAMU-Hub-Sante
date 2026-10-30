@@ -121,6 +121,7 @@ class TestHubexConsumersHealthcheck(unittest.TestCase):
             {
                 "vhost1-queue-message-consumers": {"status": Status.UP.value},
                 "vhost1-queue-ack-consumers": {"status": Status.UP.value},
+                "vhost1-consumers": {"status": Status.UP.value},
             },
         )
         self.assertEqual(self._metric_value("vhost1-queue-message"), 1)
@@ -141,6 +142,7 @@ class TestHubexConsumersHealthcheck(unittest.TestCase):
         self.assertEqual(
             result["vhost1-queue-ack-consumers"]["status"], Status.DOWN.value
         )
+        self.assertEqual(result["vhost1-consumers"]["status"], Status.DEGRADED.value)
         self.assertEqual(self._metric_value("vhost1-queue-message"), 1)
         self.assertEqual(self._metric_value("vhost1-queue-ack"), 0)
 
@@ -161,6 +163,7 @@ class TestHubexConsumersHealthcheck(unittest.TestCase):
             {
                 "vhost1-queue-message-consumers": {"status": Status.DOWN.value},
                 "vhost1-queue-ack-consumers": {"status": Status.DOWN.value},
+                "vhost1-consumers": {"status": Status.DOWN.value},
             },
         )
         self.assertEqual(self._metric_value("vhost1-queue-message"), 0)

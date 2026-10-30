@@ -572,7 +572,16 @@ class HealthCheckTestCase(unittest.TestCase):
                 self.assertEqual(response.status_code, 200)
                 data = json.loads(response.data)
                 self.assertEqual(data["status"], Status.UP.value)
-                self.assertEqual(len(data["components"]), 6)
+                self.assertEqual(len(data["components"]), 9)
+                self.assertEqual(
+                    data["components"]["dispatchers"]["status"], Status.UP.value
+                )
+                self.assertEqual(
+                    data["components"]["vhost1-shovels"]["status"], Status.UP.value
+                )
+                self.assertEqual(
+                    data["components"]["vhost1-consumers"]["status"], Status.UP.value
+                )
                 self.assertEqual(
                     data["components"]["rabbitmq_server"]["status"], Status.UP.value
                 )
