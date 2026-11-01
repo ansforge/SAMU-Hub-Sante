@@ -148,10 +148,10 @@ class DispatcherMetricsTest {
 
     @Test
     @DisplayName("should not publish DISPATCHED_MESSAGE when conversion is needed")
-    public void shouldNotPublishDispatchedMessageForConversionRouting() throws IOException {
-        // published once the message reaches its destination, not here, to avoid double-counting
+    public void shouldNotPublishDispatchedMessageForAlreadyConversionMessages() throws IOException {
         echoConversionService(conversionHandler);
         Message message = createMessage("EDXL-DE", JSON, SAMU_A_ROUTING_KEY, SAMU_V1_ROUTING_KEY);
+        message.getMessageProperties().setReceivedExchange("internal-transfer");
 
         dispatcher.dispatch(message);
 

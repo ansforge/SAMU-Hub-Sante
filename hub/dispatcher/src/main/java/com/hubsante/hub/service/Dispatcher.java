@@ -245,9 +245,9 @@ public class Dispatcher {
             for (MessageRoutingDTO routingDTO : routingDTOs) {
                 sendMessage(routingDTO);
                 logMessageSent(routingDTO, edxlMessage);
-                if (!isConversionRouting(routingDTO)) {
-                    messageHandler.publishMetrics(edxlMessage, message);
-                }
+            }
+            if (!hasMessageBeenConverted(message)) {
+                messageHandler.publishMetrics(edxlMessage, message);
             }
         } catch (AbstractHubException e) {
             messageHandler.handleError(e, message);
@@ -268,9 +268,13 @@ public class Dispatcher {
         }
     }
 
-    /** A converted message is published to a transfer exchange, never to {@code DISTRIBUTION_EXCHANGE}. */
-    private boolean isConversionRouting(MessageRoutingDTO routingDTO) {
-        return !DISTRIBUTION_EXCHANGE.equals(routingDTO.destinationExchange());
+    /** A converted message is consumed from a transfer exchange. */
+    private boolean hasMessageBeenConverted(Message message) {
+        String receivedExchange = message.getMessageProperties().getReceivedExchange();
+        if (receivedExchange == null) return false;
+        return message.getMessageProperties()
+                .getReceivedExchange()
+                .equals(INTERNAL_TRANSFER_EXCHANGE);
     }
 
     private void logMessageSent(MessageRoutingDTO routingDTO, EdxlMessage edxlMessage) {
