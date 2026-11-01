@@ -450,12 +450,12 @@ public class MessageHandler {
                 .increment();
     }
 
-    private String extractReferencedDistributionID(EdxlMessage edxlMessage) {
+    private ReferenceWrapper isAckMessage(EdxlMessage edxlMessage) {
         ContentMessage contentMessage = edxlMessage.getFirstContentMessage();
         boolean isAck = DistributionKind.ACK.equals(edxlMessage.getDistributionKind());
         boolean isReferenceWrapper = contentMessage instanceof ReferenceWrapper;
         if (isAck && isReferenceWrapper) {
-            return ((ReferenceWrapper) contentMessage).getReference().getDistributionID();
+            return (ReferenceWrapper) contentMessage;
         }
         return null;
     }
@@ -483,12 +483,15 @@ public class MessageHandler {
 
             String distributionId = edxlMessage.getDistributionID();
             String hashedBody = hashBody(receivedAmqpMessage);
-            String referencedDistributionId = extractReferencedDistributionID(edxlMessage);
-            if (Objects.nonNull(referencedDistributionId)) {
+            ReferenceWrapper ackMessage = isAckMessage(edxlMessage);
+            if (Objects.nonNull(ackMessage)) {
+                boolean refused =
+                        Optional.ofNullable(ackMessage.getReference().getRefused()).orElse(false);
+                String referencedDistributionId = ackMessage.getReference().getDistributionID();
                 structuredLog.info(
                         String.format(
-                                "Forwarding %s: message with referenced distributionId %s and hashed value %s",
-                                distributionKind, referencedDistributionId, hashedBody),
+                                "Forwarding %s: message with referenced distributionId %s (refused: %s) and hashed value %s",
+                                distributionKind, referencedDistributionId, refused, hashedBody),
                         Map.of(
                                 LogConstants.RECIPIENT_ID,
                                 recipientId,
@@ -580,15 +583,18 @@ public class MessageHandler {
         String senderId = getSenderFromRoutingKey(message);
         String distributionId = edxlMessage.getDistributionID();
         String recipientId = getRecipientID(edxlMessage);
-        String referencedDistributionId = extractReferencedDistributionID(edxlMessage);
         String hashedBody = hashBody(message);
         String messageType = getUseCaseFromMessage(edxlMessage.getFirstContentMessage());
+        ReferenceWrapper ackMessage = isAckMessage(edxlMessage);
 
-        if (Objects.nonNull(referencedDistributionId)) {
+        if (Objects.nonNull(ackMessage)) {
+            boolean refused =
+                    Optional.ofNullable(ackMessage.getReference().getRefused()).orElse(false);
+            String referencedDistributionId = ackMessage.getReference().getDistributionID();
             structuredLog.info(
                     String.format(
-                            "Received %s: message with referenced distributionId %s and hashed value %s",
-                            distributionKind, referencedDistributionId, hashedBody),
+                            "Received %s: message with referenced distributionId %s (refused: %s) and hashed value %s",
+                            distributionKind, referencedDistributionId, refused, hashedBody),
                     Map.of(
                             LogConstants.RECIPIENT_ID,
                             recipientId,
