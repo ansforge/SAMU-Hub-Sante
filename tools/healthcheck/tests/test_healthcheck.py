@@ -35,11 +35,23 @@ def _dispatchers_config(*names: str) -> dict:
     return {name: _dispatcher_url(name) for name in names}
 
 
+# Dispatchers used in the tests: each perimeter needs one to be computed.
+DISPATCHER_PERIMETERS = {
+    "dispatcher1": "15-15",
+    "dispatcher2": "15-18",
+    "dispatcher_instance": "15-15",
+    "dispatcher_instance_18": "15-18",
+}
+
+
 @patch("checks.mongo.MongoClient")
 class HealthCheckTestCase(unittest.TestCase):
     def setUp(self):
         # Prevent logging errors when the mocks throw exceptions.
         logging.disable(logging.CRITICAL)
+        perimeters = patch.dict(dispatcher.dispatcher_perimeters, DISPATCHER_PERIMETERS)
+        perimeters.start()
+        self.addCleanup(perimeters.stop)
 
     def tearDown(self):
         logging.disable(logging.NOTSET)
@@ -235,7 +247,7 @@ class HealthCheckTestCase(unittest.TestCase):
         with patch.object(
             dispatcher,
             "dispatcher_instances",
-            _dispatchers_config("dispatcher1"),
+            _dispatchers_config("dispatcher1", "dispatcher2"),
         ):
             with app.test_client() as client:
                 response = client.get(HEALTH_INTERNAL_ENDPOINT)
@@ -290,13 +302,13 @@ class HealthCheckTestCase(unittest.TestCase):
         with patch.object(
             dispatcher,
             "dispatcher_instances",
-            _dispatchers_config("dispatcher_instance"),
+            _dispatchers_config("dispatcher_instance", "dispatcher_instance_18"),
         ):
             with app.test_client() as client:
                 response = client.get(HEALTH_INTERNAL_ENDPOINT)
                 self.assertEqual(response.status_code, 200)
                 data = json.loads(response.data)
-                self.assertEqual(data["status"], Status.DOWN.value)  # global status
+                self.assertEqual(data["status"], Status.DEGRADED.value)  # global status
                 self.assertEqual(
                     data["components"]["converter"]["status"], Status.DOWN.value
                 )
@@ -304,8 +316,8 @@ class HealthCheckTestCase(unittest.TestCase):
     @parameterized.expand(
         [
             (Status.UP.value, Status.UP.value, Status.UP.value),
-            (Status.DOWN.value, Status.DOWN.value, Status.DOWN.value),
-            (Status.UNKNOWN.value, Status.DOWN.value, Status.DOWN.value),
+            (Status.DOWN.value, Status.DOWN.value, Status.DEGRADED.value),
+            (Status.UNKNOWN.value, Status.DOWN.value, Status.DEGRADED.value),
         ]
     )
     @patch(MOCK_TARGET)
@@ -324,7 +336,7 @@ class HealthCheckTestCase(unittest.TestCase):
         with patch.object(
             dispatcher,
             "dispatcher_instances",
-            _dispatchers_config("dispatcher_instance"),
+            _dispatchers_config("dispatcher_instance", "dispatcher_instance_18"),
         ):
             with app.test_client() as client:
                 response = client.get(HEALTH_INTERNAL_ENDPOINT)
@@ -338,7 +350,8 @@ class HealthCheckTestCase(unittest.TestCase):
     @parameterized.expand(
         [
             (1, Status.UP.value, Status.UP.value),
-            (0, Status.DOWN.value, Status.DOWN.value),
+            # A Hubex connection depends on the partner: it does not change the global status
+            (0, Status.DOWN.value, Status.UP.value),
         ]
     )
     @patch(MOCK_TARGET)
@@ -359,7 +372,7 @@ class HealthCheckTestCase(unittest.TestCase):
         with patch.object(
             dispatcher,
             "dispatcher_instances",
-            _dispatchers_config("dispatcher_instance"),
+            _dispatchers_config("dispatcher_instance", "dispatcher_instance_18"),
         ):
             with app.test_client() as client:
                 response = client.get(HEALTH_EXTERNAL_ENDPOINT)
@@ -382,13 +395,13 @@ class HealthCheckTestCase(unittest.TestCase):
         with patch.object(
             dispatcher,
             "dispatcher_instances",
-            _dispatchers_config("dispatcher_instance"),
+            _dispatchers_config("dispatcher_instance", "dispatcher_instance_18"),
         ):
             with app.test_client() as client:
                 response = client.get(HEALTH_EXTERNAL_ENDPOINT)
                 self.assertEqual(response.status_code, 200)
                 data = json.loads(response.data)
-                self.assertEqual(data["status"], Status.DOWN.value)
+                self.assertEqual(data["status"], Status.UP.value)
                 self.assertEqual(
                     data["components"]["vhost1-queue1-consumers"]["status"],
                     Status.DOWN.value,
@@ -405,13 +418,14 @@ class HealthCheckTestCase(unittest.TestCase):
         with patch.object(
             dispatcher,
             "dispatcher_instances",
-            _dispatchers_config("dispatcher_instance"),
+            _dispatchers_config("dispatcher_instance", "dispatcher_instance_18"),
         ):
             with app.test_client() as client:
                 response = client.get(HEALTH_INTERNAL_ENDPOINT)
                 self.assertEqual(response.status_code, 200)
                 data = json.loads(response.data)
-                self.assertEqual(data["status"], Status.DOWN.value)  # global status
+                # The annuaire does not impact the platform status
+                self.assertEqual(data["status"], Status.UP.value)
                 self.assertEqual(
                     data["components"]["annuaire"]["status"], Status.DOWN.value
                 )
@@ -419,8 +433,8 @@ class HealthCheckTestCase(unittest.TestCase):
     @parameterized.expand(
         [
             (Status.UP.value, Status.UP.value, Status.UP.value),
-            (Status.DOWN.value, Status.DOWN.value, Status.DOWN.value),
-            (Status.UNKNOWN.value, Status.DOWN.value, Status.DOWN.value),
+            (Status.DOWN.value, Status.DOWN.value, Status.UP.value),
+            (Status.UNKNOWN.value, Status.DOWN.value, Status.UP.value),
         ]
     )
     @patch(MOCK_TARGET)
@@ -439,7 +453,7 @@ class HealthCheckTestCase(unittest.TestCase):
         with patch.object(
             dispatcher,
             "dispatcher_instances",
-            _dispatchers_config("dispatcher_instance"),
+            _dispatchers_config("dispatcher_instance", "dispatcher_instance_18"),
         ):
             with app.test_client() as client:
                 response = client.get(HEALTH_INTERNAL_ENDPOINT)
@@ -471,7 +485,7 @@ class HealthCheckTestCase(unittest.TestCase):
                 {"status": "DOWN", "components": {}},
                 {"status": "DOWN"},
                 {"status": "DOWN"},
-                "DOWN",
+                "DEGRADED",
                 "UP",
                 "UP",
                 "DOWN",
@@ -565,14 +579,14 @@ class HealthCheckTestCase(unittest.TestCase):
         with patch.object(
             dispatcher,
             "dispatcher_instances",
-            _dispatchers_config("dispatcher_instance"),
+            _dispatchers_config("dispatcher_instance", "dispatcher_instance_18"),
         ):
             with app.test_client() as client:
                 response = client.get(HEALTH_EXTERNAL_ENDPOINT)
                 self.assertEqual(response.status_code, 200)
                 data = json.loads(response.data)
                 self.assertEqual(data["status"], Status.UP.value)
-                self.assertEqual(len(data["components"]), 9)
+                self.assertEqual(len(data["components"]), 10)
                 self.assertEqual(
                     data["components"]["dispatchers"]["status"], Status.UP.value
                 )
@@ -599,6 +613,28 @@ class HealthCheckTestCase(unittest.TestCase):
                     data["components"]["mongodb"]["status"], Status.UP.value
                 )
                 self.assertNotIn("annuaire", data["components"].keys())
+                self.assertEqual(
+                    data["perimeters"],
+                    {
+                        "15-15": {"status": Status.UP.value},
+                        "15-18": {
+                            "routing": {"status": Status.UP.value},
+                            "fire_connections": {
+                                "fire_to_health": {"status": Status.UP.value},
+                                "health_to_fire": {"status": Status.UP.value},
+                            },
+                        },
+                    },
+                )
+                self.assertEqual(
+                    data["technical"],
+                    {
+                        "rabbitmq": {"status": Status.UP.value},
+                        "dispatcher": {"status": Status.UP.value},
+                        "converter": {"status": Status.UP.value},
+                        "persistence": {"status": Status.UP.value},
+                    },
+                )
 
     @patch(MOCK_TARGET)
     def test_update_metrics_before_scrapping_requests_are_made(
@@ -640,7 +676,7 @@ class HealthCheckTestCase(unittest.TestCase):
         with patch.object(
             dispatcher,
             "dispatcher_instances",
-            _dispatchers_config("dispatcher_instance"),
+            _dispatchers_config("dispatcher_instance", "dispatcher_instance_18"),
         ):
             with app.test_client() as client:
                 response = client.get(HEALTH_INTERNAL_ENDPOINT)
@@ -665,7 +701,7 @@ class HealthCheckTestCase(unittest.TestCase):
         with patch.object(
             dispatcher,
             "dispatcher_instances",
-            _dispatchers_config("dispatcher_instance"),
+            _dispatchers_config("dispatcher_instance", "dispatcher_instance_18"),
         ):
             with app.test_client() as client:
                 response = client.get(HEALTH_INTERNAL_ENDPOINT)
