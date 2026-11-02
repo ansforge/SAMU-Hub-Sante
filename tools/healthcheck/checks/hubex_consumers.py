@@ -6,7 +6,7 @@ from prometheus_client import Gauge
 
 from checks.checker import IChecker
 from checks.hubex_partners_shovels import parse_monitored_shovels_line
-from checks.status import Status
+from checks.status import Status, aggregate_statuses
 from http_client import http_session
 from config import (
     QUEUES_URL,
@@ -99,6 +99,7 @@ class HubexConsumersHealthcheck(IChecker):
         data = response.json()
         result = {}
         for vhost, queues_list in self.QUEUES_MAP.items():
+            queue_statuses = []
             for queue in queues_list:
                 logging.info(
                     f"Checking consumers of hubex partner on vhost {vhost} and queue {queue}"
@@ -106,9 +107,14 @@ class HubexConsumersHealthcheck(IChecker):
                 queue_status = check_queue_consumers(data, vhost, queue)
                 queue_label = f"{vhost}-{queue}"
                 result[f"{queue_label}-consumers"] = queue_status
+                queue_statuses.append(queue_status["status"])
                 self.hubex_consumers_status_metric.labels(queue=queue_label).set(
                     1 if queue_status["status"] == Status.UP.value else 0
                 )
+            if queue_statuses:
+                result[f"{vhost}-consumers"] = {
+                    "status": aggregate_statuses(queue_statuses)
+                }
         return result
 
     def check_failure_fallback(self):
@@ -118,4 +124,6 @@ class HubexConsumersHealthcheck(IChecker):
                 queue_label = f"{vhost}-{queue}"
                 result[f"{queue_label}-consumers"] = {"status": Status.DOWN.value}
                 self.hubex_consumers_status_metric.labels(queue=queue_label).set(0)
+            if queues_list:
+                result[f"{vhost}-consumers"] = {"status": Status.DOWN.value}
         return result
