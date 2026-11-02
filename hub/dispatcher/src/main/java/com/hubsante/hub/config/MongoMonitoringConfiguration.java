@@ -18,12 +18,19 @@ package com.hubsante.hub.config;
 import org.springframework.boot.health.autoconfigure.contributor.ConditionalOnEnabledHealthIndicator;
 import org.springframework.boot.health.contributor.Health;
 import org.springframework.boot.health.contributor.HealthIndicator;
+import org.springframework.boot.health.contributor.Status;
 import org.springframework.boot.mongodb.autoconfigure.MongoClientSettingsBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class MongoMonitoringConfiguration {
+
+    /**
+     * Custom health status indicating that MongoDB is degraded but the application is still running.
+     * This status should be included in management.endpoint.health.status.order.
+     */
+    public static final Status DEGRADED = new Status("DEGRADED");
 
     @Bean
     public MongoClientSettingsBuilderCustomizer mongoClusterMonitorCustomizer(
@@ -40,6 +47,6 @@ public class MongoMonitoringConfiguration {
     @Bean
     @ConditionalOnEnabledHealthIndicator("mongodb")
     public HealthIndicator mongoHealthIndicator(MongoClusterMonitor monitor) {
-        return () -> (monitor.isUp() ? Health.up() : Health.down()).build();
+        return () -> Health.status(monitor.isUp() ? Status.UP : DEGRADED).build();
     }
 }
