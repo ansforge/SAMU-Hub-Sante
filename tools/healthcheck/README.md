@@ -64,7 +64,7 @@ Each line of the dispatchers config file has an optional perimeter: `<name>;<url
 
 A `DEGRADED` dispatcher (MongoDB unreachable) only affects the 15-18 routing. The annuaire does not impact the status.
 
-`perimeters.15-18.fire_connections` exposes the connections with the Hubex fire: `fire_to_health` (shovels) and `health_to_fire` (consumers). They depend on the partner, so they change neither the routing nor the global status.
+`perimeters.15-18.fire_connections` exposes the connections with the Hubex fire: `fire_to_health` (shovels) and `health_to_fire` (consumers). They depend on the partner, so they change neither the routing nor the global status. The `fire_connections` key is omitted when there is nothing to monitor.
 
 `technical` gives the status of `rabbitmq`, `dispatcher`, `converter` and `persistence` (MongoDB).
 

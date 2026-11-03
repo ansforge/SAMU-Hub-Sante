@@ -156,6 +156,10 @@ class BuildPlatformStatusTestCase(unittest.TestCase):
             },
         )
 
+    def test_fire_connections_are_omitted_when_there_is_nothing_to_monitor(self):
+        result = _platform()
+        self.assertEqual(result["perimeters"]["15-18"], {"routing": {"status": UP}})
+
     def test_technical_block(self):
         result = _platform(d_v2=DOWN, mongodb=DOWN)
         self.assertEqual(
