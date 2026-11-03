@@ -568,6 +568,21 @@ class MessageUtilsTest {
         }
 
         @Test
+        @DisplayName("should read the original routing key from its header")
+        void shouldReadOriginalRoutingKey() {
+            Message message = amqp(SAMU_A, null);
+            message.getMessageProperties().setHeader(ORIGINAL_ROUTING_KEY, SAMU_A);
+
+            assertThat(MessageUtils.getOriginalRoutingKey(message)).isEqualTo(SAMU_A);
+        }
+
+        @Test
+        @DisplayName("should fall back to unknown when the original routing key header is absent")
+        void shouldFallBackWhenOriginalRoutingKeyAbsent() {
+            assertThat(MessageUtils.getOriginalRoutingKey(amqp(SAMU_A, null))).isEqualTo(UNKNOWN);
+        }
+
+        @Test
         @DisplayName("should record the original routing key in a header")
         void shouldSetOriginalRoutingKeyHeader() {
             Message message = amqp(SAMU_A, MessageProperties.CONTENT_TYPE_JSON);
