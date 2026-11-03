@@ -82,7 +82,8 @@ def build_platform_status(
     """Build the global status and the perimeters and technical blocks.
 
     The connections with the Hubex fire are only exposed: they depend on the
-    partner, so they change neither the routing nor the global status.
+    partner, so they change neither the routing nor the global status. They are
+    omitted when there is nothing to monitor.
     """
 
     def statuses_of(perimeter: str) -> List[str]:
@@ -106,19 +107,19 @@ def build_platform_status(
         "persistence": mongodb,
     }
 
+    perimeter_15_18 = {"routing": {"status": routing_15_18}}
+    if fire_connections:
+        perimeter_15_18["fire_connections"] = {
+            name: {"status": status} for name, status in fire_connections.items()
+        }
+
     return {
         "status": global_status(
             rabbitmq, [status_15_15, routing_15_18], technical.values()
         ),
         "perimeters": {
             PERIMETER_15_15: {"status": status_15_15},
-            PERIMETER_15_18: {
-                "routing": {"status": routing_15_18},
-                "fire_connections": {
-                    name: {"status": status}
-                    for name, status in fire_connections.items()
-                },
-            },
+            PERIMETER_15_18: perimeter_15_18,
         },
         "technical": {name: {"status": status} for name, status in technical.items()},
     }
