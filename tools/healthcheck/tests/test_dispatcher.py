@@ -21,8 +21,30 @@ class ParseLineTestCase(unittest.TestCase):
     def test_valid_line_parsed(self):
         self.assertEqual(
             self.checker._parse_line("name;http://host/health"),
-            ("name", "http://host/health"),
+            ("name", "http://host/health", None),
         )
+
+    @parameterized.expand([("15-15",), ("15-18",)])
+    def test_valid_line_with_perimeter_parsed(self, perimeter):
+        self.assertEqual(
+            self.checker._parse_line(f"name;http://host/health;{perimeter}"),
+            ("name", "http://host/health", perimeter),
+        )
+
+    def test_unknown_perimeter_stays_in_url(self):
+        self.assertEqual(
+            self.checker._parse_line("name;http://host/health;15-16"),
+            ("name", "http://host/health;15-16", None),
+        )
+
+    def test_url_with_semicolon_and_perimeter(self):
+        self.assertEqual(
+            self.checker._parse_line("name;http://host/health;token=x;15-15"),
+            ("name", "http://host/health;token=x", "15-15"),
+        )
+
+    def test_blank_url_with_perimeter_ignored(self):
+        self.assertIsNone(self.checker._parse_line("name;;15-15"))
 
     def test_empty_and_whitespace_lines_ignored(self):
         self.assertIsNone(self.checker._parse_line(""))
@@ -44,13 +66,13 @@ class ParseLineTestCase(unittest.TestCase):
     def test_url_with_semicolon_preserved(self):
         self.assertEqual(
             self.checker._parse_line("name;http://host/health;token=x"),
-            ("name", "http://host/health;token=x"),
+            ("name", "http://host/health;token=x", None),
         )
 
     def test_whitespace_trimmed(self):
         self.assertEqual(
             self.checker._parse_line("  name  ;  http://host/health  \n"),
-            ("name", "http://host/health"),
+            ("name", "http://host/health", None),
         )
 
 
@@ -112,6 +134,26 @@ class LoadConfigTestCase(unittest.TestCase):
                 "dispatcher2": "http://dispatcher2/health",
             },
         )
+
+    def test_loads_perimeters_and_warns_when_missing(self):
+        config_content = (
+            "dispatcher1;http://dispatcher1/health;15-15\n"
+            "dispatcher2;http://dispatcher2/health\n"
+        )
+        with (
+            patch("checks.dispatcher.DISPATCHER_CONFIG_FILE_PATH", "/abs/path.txt"),
+            patch("checks.dispatcher.os.path.exists", return_value=True),
+            patch("checks.dispatcher.open", mock_open(read_data=config_content)),
+            self.assertLogs(level="WARNING") as logs,
+        ):
+            self.checker._load_config()
+
+        self.assertEqual(
+            self.checker.dispatcher_perimeters,
+            {"dispatcher1": "15-15", "dispatcher2": None},
+        )
+        self.assertEqual(len(logs.records), 1)
+        self.assertIn("dispatcher2", logs.output[0])
 
 
 class PerformChecksTestCase(unittest.TestCase):

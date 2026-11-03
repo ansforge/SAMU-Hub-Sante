@@ -50,6 +50,24 @@ Each connection is also summarized per vhost in the response: `<vhost>-shovels` 
 
 `QUEUES_URL` is the RabbitMQ management API queues endpoint, restricted to the needed columns: `http://localhost:15672/api/queues?columns=vhost,name,consumers`.
 
+## Platform status
+
+In addition to `components`, `/health` and `/internal/health` return a `perimeters` block and a `technical` block, and the global `status` is computed from them (`UP`, `DEGRADED` or `DOWN`, always with HTTP 200). The rules are in `checks/platform_status.py`.
+
+Each line of the dispatchers config file has an optional perimeter: `<name>;<url>;<perimeter>`, with `15-15` or `15-18`. A warning is logged for a dispatcher without perimeter.
+
+| Item | `DOWN` | `DEGRADED` |
+| --- | --- | --- |
+| `perimeters.15-15` (15-15 and 15-CAP) | all the 15-15 dispatchers are `DOWN` | a 15-15 dispatcher or the converter is `DOWN` |
+| `perimeters.15-18.routing` | the 15-18 dispatcher is `DOWN`, or all the dispatchers are `DOWN` | a dispatcher is not `UP`, the converter is `DOWN` or MongoDB is unreachable |
+| Global `status` | RabbitMQ is `DOWN` or all the perimeters are `DOWN` | a perimeter or a `technical` item is not `UP` |
+
+A `DEGRADED` dispatcher (MongoDB unreachable) only affects the 15-18 routing. The annuaire does not impact the status.
+
+`perimeters.15-18.fire_connections` exposes the connections with the Hubex fire: `fire_to_health` (shovels) and `health_to_fire` (consumers). They depend on the partner, so they change neither the routing nor the global status. The `fire_connections` key is omitted when there is nothing to monitor.
+
+`technical` gives the status of `rabbitmq`, `dispatcher`, `converter` and `persistence` (MongoDB).
+
 ## Tests
 
 Run the tests:
