@@ -161,7 +161,7 @@ public class ClientPropertiesRegistry {
                         .orElse(null);
 
         if (perimeter == null) {
-            structuredLog.warn(
+            structuredLog.info(
                     "Client does not support perimeter " + perimeterName,
                     Map.of(LogConstants.RECIPIENT_ID, clientId));
             return null;
