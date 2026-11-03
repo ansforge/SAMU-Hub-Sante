@@ -241,7 +241,7 @@ public class MessageUtils {
         if (Objects.nonNull(properties.getExpiration())) {
             structuredLog.info(
                     String.format(
-                            "Reset expiration header that was originally set to %s",
+                            "Message received with expiration header containing %s, resetting header value to null",
                             properties.getExpiration()),
                     Map.of(
                             LogConstants.DISTRIBUTION_ID,
@@ -289,7 +289,9 @@ public class MessageUtils {
             String dateTimeExpires =
                     edxlMessage.getDateTimeExpires().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
             structuredLog.info(
-                    String.format("override expiration: expiration is now %s", dateTimeExpires),
+                    String.format(
+                            "Setting expiration header to %s based on client requested TTL",
+                            dateTimeExpires),
                     Map.of(
                             LogConstants.DISTRIBUTION_ID,
                             distributionId,
