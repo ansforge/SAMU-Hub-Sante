@@ -41,6 +41,7 @@ public class Constants {
     public static final String FR_CISU_PREFIX = "fr.cisu";
     public static final String HEALTH_VHOST_PREFIX = "15-15_v";
     public static final String NEXSIS_HUBEX_PARTNER = "fire";
+    public static final String INTERNAL_TRANSFER_EXCHANGE = "internal-transfer";
 
     public enum Perimeter {
         HEALTH("15-15"),
