@@ -260,6 +260,21 @@ public class MessageUtils {
         long newTTL = messageCustomExpirationDateTime - OffsetDateTime.now().toEpochSecond();
         boolean isNewTTLInThePast = newTTL <= 0;
         if (isNewTTLInThePast) {
+            structuredLog.info(
+                    String.format(
+                            "Message received is already expired, provided dateTimeExpires is %s",
+                            edxlMessage
+                                    .getDateTimeExpires()
+                                    .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)),
+                    Map.of(
+                            LogConstants.DISTRIBUTION_ID,
+                            distributionId,
+                            LogConstants.SENDER_ID,
+                            senderId,
+                            LogConstants.RECIPIENT_ID,
+                            recipientId,
+                            LogConstants.MESSAGE_TYPE,
+                            messageType));
             String errorCause = "Message has expired before reaching the recipient queue";
             throw new ExpiredBeforeDispatchMessageException(
                     errorCause, distributionId, recipientId, messageType);
