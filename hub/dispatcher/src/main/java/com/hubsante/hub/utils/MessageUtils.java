@@ -241,7 +241,7 @@ public class MessageUtils {
         if (Objects.nonNull(properties.getExpiration())) {
             structuredLog.info(
                     String.format(
-                            "Reset expiration header that was originally set to %s",
+                            "Message received with expiration header containing %s, resetting header value to null",
                             properties.getExpiration()),
                     Map.of(
                             LogConstants.DISTRIBUTION_ID,
@@ -260,6 +260,21 @@ public class MessageUtils {
         long newTTL = messageCustomExpirationDateTime - OffsetDateTime.now().toEpochSecond();
         boolean isNewTTLInThePast = newTTL <= 0;
         if (isNewTTLInThePast) {
+            structuredLog.info(
+                    String.format(
+                            "Message received is already expired, provided dateTimeExpires is %s",
+                            edxlMessage
+                                    .getDateTimeExpires()
+                                    .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)),
+                    Map.of(
+                            LogConstants.DISTRIBUTION_ID,
+                            distributionId,
+                            LogConstants.SENDER_ID,
+                            senderId,
+                            LogConstants.RECIPIENT_ID,
+                            recipientId,
+                            LogConstants.MESSAGE_TYPE,
+                            messageType));
             String errorCause = "Message has expired before reaching the recipient queue";
             throw new ExpiredBeforeDispatchMessageException(
                     errorCause, distributionId, recipientId, messageType);
@@ -274,7 +289,9 @@ public class MessageUtils {
             String dateTimeExpires =
                     edxlMessage.getDateTimeExpires().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
             structuredLog.info(
-                    String.format("override expiration: expiration is now %s", dateTimeExpires),
+                    String.format(
+                            "Setting expiration header to %s based on client requested TTL",
+                            dateTimeExpires),
                     Map.of(
                             LogConstants.DISTRIBUTION_ID,
                             distributionId,
