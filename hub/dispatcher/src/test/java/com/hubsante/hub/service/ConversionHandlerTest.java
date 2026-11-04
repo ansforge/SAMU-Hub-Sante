@@ -245,7 +245,7 @@ class ConversionHandlerTest {
                                 assertThat(exception.getReferencedDistributionID())
                                         .isEqualTo(DISTRIBUTION_ID);
                                 assertThat(exception.getRecipientId()).isEqualTo(RECIPIENT_ID);
-                                assertThat(exception.getMessageType()).isEqualTo("ErrorWrapper");
+                                assertThat(exception.getMessageType()).isEqualTo("error");
                             })
                     .hasMessageContaining("invalid parameter");
         }

@@ -22,7 +22,6 @@ import static com.hubsante.hub.utils.MessageUtils.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import com.hubsante.hub.config.HubConfiguration;
 import com.hubsante.hub.config.LogConstants;
 import com.hubsante.hub.config.StructuredLogger;
 import com.hubsante.hub.exception.*;
@@ -39,8 +38,6 @@ import com.hubsante.model.edxl.EdxlMessage;
 import com.hubsante.model.report.Error;
 import com.hubsante.model.report.ErrorCode;
 import io.micrometer.core.annotation.Timed;
-import io.micrometer.tracing.Span;
-import io.micrometer.tracing.Tracer;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -86,9 +83,8 @@ public class Dispatcher {
     @Qualifier("jsonMapper")
     private ObjectMapper jsonMapper;
 
-    private final HubConfiguration hubConfig;
+    private final ObservabilityService observabilityService;
     private static final StructuredLogger structuredLog = new StructuredLogger(log);
-    private final Tracer tracer;
     private final HubSanteInternalStrategy hubSanteInternalStrategy;
     private final HubToFireStrategy hubToFireStrategy;
     private final FireToHubStrategy fireToHubStrategy;
@@ -99,18 +95,16 @@ public class Dispatcher {
             EdxlHandler edxlHandler,
             XmlMapper xmlMapper,
             ObjectMapper jsonMapper,
-            HubConfiguration hubConfig,
-            Tracer tracer,
             HubSanteInternalStrategy hubSanteInternalStrategy,
             HubToFireStrategy hubToFireStrategy,
-            FireToHubStrategy fireToHubStrategy) {
+            FireToHubStrategy fireToHubStrategy,
+            ObservabilityService observabilityService) {
         this.messageHandler = messageHandler;
         this.rabbitTemplate = rabbitTemplate;
         this.edxlHandler = edxlHandler;
         this.xmlMapper = xmlMapper;
         this.jsonMapper = jsonMapper;
-        this.hubConfig = hubConfig;
-        this.tracer = tracer;
+        this.observabilityService = observabilityService;
         this.hubSanteInternalStrategy = hubSanteInternalStrategy;
         this.hubToFireStrategy = hubToFireStrategy;
         this.fireToHubStrategy = fireToHubStrategy;
@@ -135,21 +129,6 @@ public class Dispatcher {
                 routingDTO.destinationExchange(), routingDTO.routingKey(), routingDTO.message());
     }
 
-    private void tagCurrentSpan(Message amqpMessage, EdxlMessage edxlMessage) {
-        Span currentSpan = tracer.currentSpan();
-        if (currentSpan == null) {
-            return;
-        }
-        String sender = getSenderFromRoutingKey(amqpMessage);
-        currentSpan.tag(SENDER_SPAN_TAG, sender);
-        currentSpan.tag(RECIPIENT_SPAN_TAG, MessageUtils.getRecipientID(edxlMessage));
-        currentSpan.tag(
-                USE_CASE_SPAN_TAG,
-                EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage()));
-        currentSpan.tag(
-                EDITOR_SPAN_TAG, hubConfig.getClientPropertiesRegistry().getClientEditor(sender));
-    }
-
     public void initReturnsCallback() {
 
         // set returns callback to track undistributed messages
@@ -158,6 +137,7 @@ public class Dispatcher {
                     EdxlMessage returnedEdxlMessage = null;
                     String returnedEdxlString =
                             new String(returned.getMessage().getBody(), StandardCharsets.UTF_8);
+                    String senderRoutingKey = getOriginalRoutingKey(returned.getMessage());
 
                     try {
                         returnedEdxlMessage =
@@ -167,7 +147,21 @@ public class Dispatcher {
                     } catch (JsonProcessingException e) {
                         // This should never happen as if we've reached this point, the message has
                         // already been deserialized
-                        log.error("Could not deserialize message " + returnedEdxlString, e);
+                        Map<LogConstants, String> logContext =
+                                Map.of(
+                                        LogConstants.SENDER_ID,
+                                        senderRoutingKey,
+                                        LogConstants.DISTRIBUTION_ID,
+                                        extractDistributionId(returnedEdxlString));
+                        structuredLog.error(
+                                String.format(
+                                        "Could not deserialize returned message with hashed value %s",
+                                        hashBody(returned.getMessage())),
+                                logContext,
+                                e);
+                        structuredLog.debug(
+                                String.format("Returned message String was %s", returnedEdxlString),
+                                logContext);
                     }
 
                     String distributionId =
@@ -180,10 +174,6 @@ public class Dispatcher {
                                             returnedEdxlMessage.getFirstContentMessage())
                                     : UNKNOWN;
                     String recipientId = MessageUtils.getRecipientID(returnedEdxlMessage);
-                    String senderRoutingKey =
-                            returned.getMessage()
-                                    .getMessageProperties()
-                                    .getHeader(ORIGINAL_ROUTING_KEY);
 
                     Error error = new Error();
                     error.setErrorCode(ErrorCode.UNROUTABLE_MESSAGE);
@@ -242,7 +232,7 @@ public class Dispatcher {
             setOriginalRoutingKeyHeader(message);
             // Deserialize the message according to its content type
             EdxlMessage edxlMessage = messageHandler.extractMessage(message);
-            tagCurrentSpan(message, edxlMessage);
+            observabilityService.tagCurrentSpanWithEdxlMessageMetadata(edxlMessage);
 
             RoutingStrategy strategy = selectRoutingStrategy(edxlMessage);
             // check the message is allowed to be routed (class name, inhibition, health actor
@@ -255,9 +245,9 @@ public class Dispatcher {
             for (MessageRoutingDTO routingDTO : routingDTOs) {
                 sendMessage(routingDTO);
                 logMessageSent(routingDTO, edxlMessage);
-                if (!isConversionRouting(routingDTO)) {
-                    messageHandler.publishMetrics(edxlMessage, message);
-                }
+            }
+            if (!hasMessageBeenConverted(message)) {
+                messageHandler.publishMetrics(edxlMessage, message);
             }
         } catch (AbstractHubException e) {
             messageHandler.handleError(e, message);
@@ -278,9 +268,13 @@ public class Dispatcher {
         }
     }
 
-    /** A converted message is published to a transfer exchange, never to {@code DISTRIBUTION_EXCHANGE}. */
-    private boolean isConversionRouting(MessageRoutingDTO routingDTO) {
-        return !DISTRIBUTION_EXCHANGE.equals(routingDTO.destinationExchange());
+    /** A converted message is consumed from a transfer exchange. */
+    private boolean hasMessageBeenConverted(Message message) {
+        String receivedExchange = message.getMessageProperties().getReceivedExchange();
+        if (receivedExchange == null) return false;
+        return message.getMessageProperties()
+                .getReceivedExchange()
+                .equals(INTERNAL_TRANSFER_EXCHANGE);
     }
 
     private void logMessageSent(MessageRoutingDTO routingDTO, EdxlMessage edxlMessage) {
@@ -312,13 +306,14 @@ public class Dispatcher {
     public void dispatchDLQ(Message message) {
         try {
             //  If an info message sent by the Hub has not been read, we do not want to loop and
-            // sent the Hub an info message back
+            // sent the Hub an info message back. Messages built by the Hub (e.g. error reports)
+            // have no original routing key header.
             String deadFromQueue = message.getMessageProperties().getHeader(ORIGINAL_ROUTING_KEY);
-            if (deadFromQueue.endsWith(".info")) {
+            if (deadFromQueue == null || deadFromQueue.endsWith(".info")) {
                 return;
             }
             EdxlMessage edxlMessage = messageHandler.extractMessage(message);
-            tagCurrentSpan(message, edxlMessage);
+            observabilityService.tagCurrentSpanWithEdxlMessageMetadata(edxlMessage);
             // log message & error
             String errorCause =
                     "Message "
@@ -336,10 +331,7 @@ public class Dispatcher {
             // We don't want to log again the error if it has been thrown by handleError
             // We just log the unexpected errors
             if (!(e instanceof AmqpRejectAndDontRequeueException)) {
-                String originalRoutingKey =
-                        message.getMessageProperties().getHeader(ORIGINAL_ROUTING_KEY) != null
-                                ? message.getMessageProperties().getHeader(ORIGINAL_ROUTING_KEY)
-                                : "Unknown routing key";
+                String originalRoutingKey = getOriginalRoutingKey(message);
                 String distributionId = extractDistributionId(stringifyBody(message));
 
                 structuredLog.warn(

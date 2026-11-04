@@ -22,7 +22,6 @@ import static com.hubsante.hub.utils.EdxlUtils.HUB_ID;
 import static com.hubsante.hub.utils.EdxlUtils.edxlMessageFromHub;
 import static com.hubsante.hub.utils.EdxlUtils.getUseCaseFromMessage;
 import static com.hubsante.hub.utils.MessageUtils.*;
-import static com.hubsante.model.config.Constants.*;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -38,6 +37,7 @@ import com.hubsante.model.Validator;
 import com.hubsante.model.builders.ErrorWrapperBuilder;
 import com.hubsante.model.edxl.ContentMessage;
 import com.hubsante.model.edxl.DistributionKind;
+import com.hubsante.model.edxl.EdxlEnvelope;
 import com.hubsante.model.edxl.EdxlMessage;
 import com.hubsante.model.exception.ValidationException;
 import com.hubsante.model.reference.ReferenceWrapper;
@@ -65,6 +65,7 @@ public class MessageHandler {
     private final HubConfiguration hubConfig;
     private final Validator validator;
     private final MeterRegistry registry;
+    private final ObservabilityService observabilityService;
 
     @Autowired
     @Qualifier("xmlMapper")
@@ -76,6 +77,10 @@ public class MessageHandler {
 
     private final ConversionHandler conversionHandler;
     private static final StructuredLogger structuredLog = new StructuredLogger(log);
+    private static final String INTERNAL_ERROR_CAUSE =
+            "An internal server error has occurred, please contact the administration team";
+    private static final String UNHANDLED_CONTENT_TYPE_CAUSE =
+            "Unhandled Content-Type ! Message Content-Type should be set at 'application/json' or 'application/xml'";
 
     public MessageHandler(
             RabbitTemplate rabbitTemplate,
@@ -85,7 +90,8 @@ public class MessageHandler {
             MeterRegistry registry,
             XmlMapper xmlMapper,
             ObjectMapper jsonMapper,
-            ConversionHandler conversionHandler) {
+            ConversionHandler conversionHandler,
+            ObservabilityService observabilityService) {
         this.rabbitTemplate = rabbitTemplate;
         this.edxlHandler = edxlHandler;
         this.hubConfig = hubConfig;
@@ -94,6 +100,7 @@ public class MessageHandler {
         this.xmlMapper = xmlMapper;
         this.jsonMapper = jsonMapper;
         this.conversionHandler = conversionHandler;
+        this.observabilityService = observabilityService;
     }
 
     protected void handleError(AbstractHubException exception, Message message) {
@@ -101,6 +108,12 @@ public class MessageHandler {
         Error error = new Error();
         error.setErrorCode(exception.getErrorCode());
         error.setErrorCause(exception.getMessage());
+        String distributionId = exception.getReferencedDistributionID();
+        error.setReferencedDistributionID(distributionId);
+        String senderClientId = getOriginalRoutingKey(message);
+        String recipientId = exception.getRecipientId();
+        String messageType = exception.getMessageType();
+
         try {
             if (isJSON(message)) {
                 error.setSourceMessage(jsonMapper.readValue(message.getBody(), HashMap.class));
@@ -108,17 +121,21 @@ public class MessageHandler {
                 error.setSourceMessage(xmlMapper.readValue(message.getBody(), HashMap.class));
             }
         } catch (IOException e) {
-            log.error("Could not read message body", e);
+            structuredLog.error(
+                    "Could not read message body",
+                    Map.of(
+                            LogConstants.SENDER_ID,
+                            senderClientId,
+                            LogConstants.DISTRIBUTION_ID,
+                            distributionId,
+                            LogConstants.RECIPIENT_ID,
+                            recipientId,
+                            LogConstants.MESSAGE_TYPE,
+                            messageType),
+                    e);
         }
-        String distributionId = exception.getReferencedDistributionID();
-        error.setReferencedDistributionID(distributionId);
 
         // send Error to sender
-        String senderClientId = message.getMessageProperties().getHeader(ORIGINAL_ROUTING_KEY);
-
-        String recipientId = exception.getRecipientId();
-        String messageType = exception.getMessageType();
-
         logErrorMessage(error, distributionId, senderClientId, recipientId, messageType);
         // currently, we do not handle error messages on other hubex, and inhibit DLQ messages other
         // than the "expired" ones
@@ -167,7 +184,9 @@ public class MessageHandler {
                         LogConstants.RECIPIENT_ID,
                         recipientId,
                         LogConstants.MESSAGE_TYPE,
-                        messageType));
+                        messageType,
+                        LogConstants.ERROR_CODE,
+                        error.getErrorCode().getStatusString()));
         structuredLog.debug(
                 String.format("ErrorSourceMessage was %s", error.getSourceMessage()),
                 Map.of(
@@ -218,8 +237,10 @@ public class MessageHandler {
                     List<String> convertedMessages =
                             conversionHandler.applyConversionRules(conversionParameters);
                     if (convertedMessages.size() > 1) {
-                        structuredLog.info(
-                                "convertedMessages has more than one message: %s",
+                        structuredLog.warn(
+                                String.format(
+                                        "Conversion produced %d messages, only the first one is sent",
+                                        convertedMessages.size()),
                                 Map.of(
                                         LogConstants.SENDER_ID,
                                         sender,
@@ -290,185 +311,151 @@ public class MessageHandler {
     }
 
     /*
-     ** Deserialize the message according to its content type
+     ** Validate then deserialize the message according to its content type
      */
     protected EdxlMessage extractMessage(Message message) {
-        registry.counter(
-                        METRIC_MESSAGE_PROCESSING,
-                        OPERATION,
-                        "extract",
-                        VHOST_TAG,
-                        sanitizeVhostForProm(hubConfig.getVhost()))
-                .increment();
-        String receivedEdxl = stringifyBody(message);
-        validateFullMessage(message, receivedEdxl);
-        return deserializeMessage(message, receivedEdxl);
+        countProcessing("extract");
+        InboundMessage inbound = InboundMessage.of(message);
+        observabilityService.tagCurrentSpanWithAmqpMessageMetadata(
+                inbound.extractedDistributionId(), inbound.receivedRoutingKey());
+
+        countProcessing("validate.full");
+        EdxlFormat format = resolveFormat(message, inbound);
+        validateFullMessage(format, inbound);
+
+        countProcessing("deserialize");
+        EdxlMessage edxlMessage = deserializeMessage(format, inbound);
+        logMessage(message, edxlMessage, inbound.body());
+        return edxlMessage;
     }
 
-    private void validateFullMessage(Message message, String receivedEdxl) {
-        registry.counter(
-                        METRIC_MESSAGE_PROCESSING,
-                        OPERATION,
-                        "validate.full",
-                        VHOST_TAG,
-                        sanitizeVhostForProm(hubConfig.getVhost()))
-                .increment();
-        // We deserialize according to the content type
-        // It MUST be explicitly set by the client
-        String extractedDistributionId = extractDistributionId(receivedEdxl);
+    private EdxlFormat resolveFormat(Message message, InboundMessage inbound) {
+        Optional<EdxlFormat> format = EdxlFormat.of(message);
+        if (format.isPresent()) {
+            return format.get();
+        }
+        structuredLog.error(
+                String.format(
+                        "Unhandled Content-Type in message with extracted distributionId %s",
+                        inbound.extractedDistributionId()),
+                inbound.logContext());
+        throw new NotAllowedContentTypeException(
+                UNHANDLED_CONTENT_TYPE_CAUSE, inbound.extractedDistributionId());
+    }
+
+    private void validateFullMessage(EdxlFormat format, InboundMessage inbound) {
         try {
-            if (isJSON(message)) {
-                validator.validateJSON(receivedEdxl, FULL_SCHEMA);
-            } else if (isXML(message)) {
-                validator.validateXML(receivedEdxl, FULL_XSD);
-            } else {
-                String senderId = message.getMessageProperties().getReceivedRoutingKey();
-                structuredLog.error(
-                        String.format(
-                                "Unhandled Content-Type in message with extracted distributionId %s",
-                                extractedDistributionId),
-                        Map.of(
-                                LogConstants.SENDER_ID,
-                                senderId,
-                                LogConstants.DISTRIBUTION_ID,
-                                extractedDistributionId));
-                String errorCause =
-                        "Unhandled Content-Type ! Message Content-Type should be set at 'application/json' or 'application/xml'";
-                throw new NotAllowedContentTypeException(errorCause, extractedDistributionId);
-            }
+            format.validate(validator, inbound.body(), format.fullSchema);
         } catch (IOException exception) {
             structuredLog.error(
                     "Could not find schema file",
-                    Map.of(LogConstants.DISTRIBUTION_ID, extractedDistributionId),
+                    Map.of(LogConstants.DISTRIBUTION_ID, inbound.extractedDistributionId()),
                     exception);
             throw new SchemaNotFoundException(
-                    "An internal server error has occurred, please contact the administration team",
-                    extractDistributionId(receivedEdxl));
-        } catch (ValidationException validationException) {
-            validateEnvelopeOnly(message, receivedEdxl);
-            throw new SchemaValidationException(
-                    validationException.getMessage(), extractedDistributionId);
+                    INTERNAL_ERROR_CAUSE, inbound.extractedDistributionId());
+        } catch (ValidationException contentError) {
+            validateEnvelopeOnly(format, inbound, contentError);
         }
     }
 
-    private void validateEnvelopeOnly(Message message, String receivedEdxl) {
-        registry.counter(
-                        METRIC_MESSAGE_PROCESSING,
-                        OPERATION,
-                        "validate.envelope",
-                        VHOST_TAG,
-                        sanitizeVhostForProm(hubConfig.getVhost()))
-                .increment();
+    private void validateEnvelopeOnly(
+            EdxlFormat format, InboundMessage inbound, ValidationException contentError) {
+        countProcessing("validate.envelope");
+        EdxlEnvelope deserializedEnvelop;
         try {
-            String distributionId = UNKNOWN;
-            if (isJSON(message)) {
-                validator.validateJSON(receivedEdxl, ENVELOPE_SCHEMA);
-                distributionId =
-                        edxlHandler.deserializeJsonEDXLEnvelope(receivedEdxl).getDistributionID();
-            } else if (isXML(message)) {
-                validator.validateXML(receivedEdxl, ENVELOPE_XSD);
-                distributionId =
-                        edxlHandler.deserializeXmlEDXLEnvelope(receivedEdxl).getDistributionID();
-            }
-            String senderId = message.getMessageProperties().getReceivedRoutingKey();
-            structuredLog.error(
-                    "Could not validate content of message",
-                    Map.of(
-                            LogConstants.SENDER_ID,
-                            senderId,
-                            LogConstants.DISTRIBUTION_ID,
-                            distributionId));
-            structuredLog.debug(
-                    String.format("Received message String was %s", receivedEdxl),
-                    Map.of(
-                            LogConstants.SENDER_ID,
-                            senderId,
-                            LogConstants.DISTRIBUTION_ID,
-                            distributionId));
-        } catch (ValidationException envelopeValidationException) {
-            // we replace the ValidationException from the models lib by another one extending
-            // AbstractHubException
-            String senderId = message.getMessageProperties().getReceivedRoutingKey();
-            String distributionId = extractDistributionId(receivedEdxl);
+            format.validate(validator, inbound.body(), format.envelopeSchema);
+            deserializedEnvelop = format.deserializeEnvelope(edxlHandler, inbound.body());
+        } catch (ValidationException envelopeError) {
             structuredLog.error(
                     String.format(
                             "Could not validate envelope of message with distributionId possibly being (regex extraction) %s: %s",
-                            distributionId, envelopeValidationException.getMessage()),
-                    Map.of(
-                            LogConstants.SENDER_ID,
-                            senderId,
-                            LogConstants.DISTRIBUTION_ID,
-                            distributionId));
+                            inbound.extractedDistributionId(), envelopeError.getMessage()),
+                    inbound.logContext());
             throw new SchemaValidationException(
                     "CAUTION: distributionId has been extracted by regex because the envelope could not be deserialized.\n"
-                            + envelopeValidationException.getMessage(),
-                    extractDistributionId(receivedEdxl));
+                            + envelopeError.getMessage(),
+                    inbound.extractedDistributionId());
+        } catch (JsonProcessingException envelopeError) {
+            structuredLog.error(
+                    String.format(
+                            "Could not deserialize envelope of message with distributionId possibly being (regex extraction) %s: %s",
+                            inbound.extractedDistributionId(), envelopeError.getMessage()),
+                    inbound.logContext());
+            throw new SchemaValidationException(
+                    "CAUTION: distributionId has been extracted by regex because the envelope could not be deserialized.\n"
+                            + contentError.getMessage(),
+                    inbound.extractedDistributionId());
         } catch (IOException exception) {
-            String distributionId = extractDistributionId(receivedEdxl);
             structuredLog.error(
                     String.format("Could not find schema file %s", exception.getMessage()),
-                    Map.of(LogConstants.DISTRIBUTION_ID, distributionId));
+                    inbound.logContext());
             throw new SchemaNotFoundException(
-                    "An internal server error has occurred, please contact the administration team",
+                    INTERNAL_ERROR_CAUSE, inbound.extractedDistributionId());
+        }
+
+        Map<LogConstants, String> envelopeLogContext =
+                observabilityService.buildLogContextFromEdxlEnvelope(deserializedEnvelop);
+        structuredLog.error("Could not validate content of message", envelopeLogContext);
+        structuredLog.debug(
+                String.format("Received message String was %s", inbound.body()),
+                envelopeLogContext);
+        observabilityService.tagCurrentSpanWithEnvelopeMetadata(deserializedEnvelop);
+        throw new SchemaValidationException(
+                contentError.getMessage(), envelopeLogContext.get(LogConstants.DISTRIBUTION_ID));
+    }
+
+    private EdxlMessage deserializeMessage(EdxlFormat format, InboundMessage inbound) {
+        try {
+            return format.deserialize(edxlHandler, inbound.body());
+        } catch (JsonProcessingException exception) {
+            structuredLog.error(
+                    String.format("Could not deserialize content: %s", exception),
+                    inbound.logContext());
+            structuredLog.debug(
+                    String.format("Received message String was %s", inbound.body()),
+                    inbound.logContext());
+            throw new UnrecognizedMessageFormatException(
+                    INTERNAL_ERROR_CAUSE, inbound.extractedDistributionId());
+        }
+    }
+
+    private record InboundMessage(
+            String body, String receivedRoutingKey, String extractedDistributionId) {
+        static InboundMessage of(Message message) {
+            String body = stringifyBody(message);
+            return new InboundMessage(
+                    body, getSenderFromRoutingKey(message), extractDistributionId(body));
+        }
+
+        Map<LogConstants, String> logContext() {
+            return logContext(extractedDistributionId);
+        }
+
+        Map<LogConstants, String> logContext(String distributionId) {
+            return Map.of(
+                    LogConstants.SENDER_ID,
+                    receivedRoutingKey,
+                    LogConstants.DISTRIBUTION_ID,
                     distributionId);
         }
     }
 
-    private EdxlMessage deserializeMessage(Message message, String receivedEdxl) {
+    private void countProcessing(String operation) {
         registry.counter(
                         METRIC_MESSAGE_PROCESSING,
                         OPERATION,
-                        "deserialize",
+                        operation,
                         VHOST_TAG,
                         sanitizeVhostForProm(hubConfig.getVhost()))
                 .increment();
-        EdxlMessage edxlMessage;
-
-        // We deserialize according to the content type
-        // It MUST be explicitly set by the client
-        try {
-            if (isJSON(message)) {
-                edxlMessage = edxlHandler.deserializeJsonEDXL(receivedEdxl);
-                logMessage(message, edxlMessage, receivedEdxl);
-            } else if (isXML(message)) {
-                edxlMessage = edxlHandler.deserializeXmlEDXL(receivedEdxl);
-                logMessage(message, edxlMessage, receivedEdxl);
-            } else {
-                String distributionId = extractDistributionId(receivedEdxl);
-                String errorCause =
-                        "Unhandled Content-Type ! Message Content-Type should be set at 'application/json' or 'application/xml'";
-                throw new NotAllowedContentTypeException(errorCause, distributionId);
-            }
-        } catch (JsonProcessingException exception) {
-            String senderId = message.getMessageProperties().getReceivedRoutingKey();
-            String distributionId = extractDistributionId(receivedEdxl);
-            structuredLog.error(
-                    String.format("Could not deserialize content: %s", exception),
-                    Map.of(
-                            LogConstants.SENDER_ID,
-                            senderId,
-                            LogConstants.DISTRIBUTION_ID,
-                            distributionId));
-            structuredLog.debug(
-                    String.format("Received message String was %s", receivedEdxl),
-                    Map.of(
-                            LogConstants.SENDER_ID,
-                            senderId,
-                            LogConstants.DISTRIBUTION_ID,
-                            distributionId));
-            String errorCause =
-                    "An internal server error has occurred, please contact the administration team";
-            throw new UnrecognizedMessageFormatException(errorCause, distributionId);
-        }
-        return edxlMessage;
     }
 
-    private String extractReferencedDistributionID(EdxlMessage edxlMessage) {
+    private ReferenceWrapper isAckMessage(EdxlMessage edxlMessage) {
         ContentMessage contentMessage = edxlMessage.getFirstContentMessage();
         boolean isAck = DistributionKind.ACK.equals(edxlMessage.getDistributionKind());
         boolean isReferenceWrapper = contentMessage instanceof ReferenceWrapper;
         if (isAck && isReferenceWrapper) {
-            return ((ReferenceWrapper) contentMessage).getReference().getDistributionID();
+            return (ReferenceWrapper) contentMessage;
         }
         return null;
     }
@@ -477,13 +464,7 @@ public class MessageHandler {
             EdxlMessage edxlMessage,
             Message receivedAmqpMessage,
             MessageProperties fwdAmqpProperties) {
-        registry.counter(
-                        METRIC_MESSAGE_PROCESSING,
-                        OPERATION,
-                        "serialize.edxl",
-                        VHOST_TAG,
-                        sanitizeVhostForProm(hubConfig.getVhost()))
-                .increment();
+        countProcessing("serialize.edxl");
         String recipientId = getRecipientID(edxlMessage);
         String senderId = getSenderFromRoutingKey(receivedAmqpMessage);
         String edxlString;
@@ -502,12 +483,15 @@ public class MessageHandler {
 
             String distributionId = edxlMessage.getDistributionID();
             String hashedBody = hashBody(receivedAmqpMessage);
-            String referencedDistributionId = extractReferencedDistributionID(edxlMessage);
-            if (Objects.nonNull(referencedDistributionId)) {
+            ReferenceWrapper ackMessage = isAckMessage(edxlMessage);
+            if (Objects.nonNull(ackMessage)) {
+                boolean refused =
+                        Optional.ofNullable(ackMessage.getReference().getRefused()).orElse(false);
+                String referencedDistributionId = ackMessage.getReference().getDistributionID();
                 structuredLog.info(
                         String.format(
-                                "Forwarding %s: message with referenced distributionId %s and hashed value %s",
-                                distributionKind, referencedDistributionId, hashedBody),
+                                "Forwarding %s: message with referenced distributionId %s (refused: %s) and hashed value %s",
+                                distributionKind, referencedDistributionId, refused, hashedBody),
                         Map.of(
                                 LogConstants.RECIPIENT_ID,
                                 recipientId,
@@ -556,13 +540,7 @@ public class MessageHandler {
 
     private Message getFwdStringMessageBody(
             String message, Message receivedAmqpMessage, MessageProperties fwdAmqpProperties) {
-        registry.counter(
-                        METRIC_MESSAGE_PROCESSING,
-                        OPERATION,
-                        "serialize.string",
-                        VHOST_TAG,
-                        sanitizeVhostForProm(hubConfig.getVhost()))
-                .increment();
+        countProcessing("serialize.string");
         String senderId = getSenderFromRoutingKey(receivedAmqpMessage);
         String distributionId = extractDistributionId(message);
 
@@ -605,15 +583,18 @@ public class MessageHandler {
         String senderId = getSenderFromRoutingKey(message);
         String distributionId = edxlMessage.getDistributionID();
         String recipientId = getRecipientID(edxlMessage);
-        String referencedDistributionId = extractReferencedDistributionID(edxlMessage);
         String hashedBody = hashBody(message);
         String messageType = getUseCaseFromMessage(edxlMessage.getFirstContentMessage());
+        ReferenceWrapper ackMessage = isAckMessage(edxlMessage);
 
-        if (Objects.nonNull(referencedDistributionId)) {
+        if (Objects.nonNull(ackMessage)) {
+            boolean refused =
+                    Optional.ofNullable(ackMessage.getReference().getRefused()).orElse(false);
+            String referencedDistributionId = ackMessage.getReference().getDistributionID();
             structuredLog.info(
                     String.format(
-                            "Received %s: message with referenced distributionId %s and hashed value %s",
-                            distributionKind, referencedDistributionId, hashedBody),
+                            "Received %s: message with referenced distributionId %s (refused: %s) and hashed value %s",
+                            distributionKind, referencedDistributionId, refused, hashedBody),
                     Map.of(
                             LogConstants.RECIPIENT_ID,
                             recipientId,

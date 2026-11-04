@@ -48,4 +48,8 @@ public final class HubAssertions {
             RabbitTemplate rabbitTemplate, String exchange, String routingKey) {
         verify(rabbitTemplate, never()).send(eq(exchange), eq(routingKey), any(Message.class));
     }
+
+    public static void assertThatNoMessageSentTo(RabbitTemplate rabbitTemplate, String exchange) {
+        verify(rabbitTemplate, never()).send(eq(exchange), any(), any(Message.class));
+    }
 }

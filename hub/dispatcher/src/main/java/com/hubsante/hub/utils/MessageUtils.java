@@ -25,6 +25,7 @@ import com.hubsante.hub.config.LogConstants;
 import com.hubsante.hub.config.StructuredLogger;
 import com.hubsante.hub.exception.*;
 import com.hubsante.model.edxl.DistributionKind;
+import com.hubsante.model.edxl.EdxlEnvelope;
 import com.hubsante.model.edxl.EdxlMessage;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -50,6 +51,11 @@ public class MessageUtils {
     public static String getSenderFromRoutingKey(Message message) {
         String receivedRoutingKey = message.getMessageProperties().getReceivedRoutingKey();
         return receivedRoutingKey != null ? receivedRoutingKey : "";
+    }
+
+    public static String getOriginalRoutingKey(Message message) {
+        String originalRoutingKey = message.getMessageProperties().getHeader(ORIGINAL_ROUTING_KEY);
+        return originalRoutingKey != null ? originalRoutingKey : Constants.UNKNOWN;
     }
 
     public static void setOriginalRoutingKeyHeader(Message message) {
@@ -141,8 +147,8 @@ public class MessageUtils {
         }
     }
 
-    public static void checkMessageClassNameSupported(
-            EdxlMessage edxlMessage, HubConfiguration hubConfig) {
+    public static void checkUseCaseSupported(EdxlMessage edxlMessage, HubConfiguration hubConfig)
+            throws UnroutableMessageException {
         String messageClassName =
                 EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage());
         List<String> supportedMessages = hubConfig.getSupportedMessages();
@@ -164,13 +170,13 @@ public class MessageUtils {
         return clientId + ".info";
     }
 
-    public static String getRecipientID(EdxlMessage edxlMessage) {
-        if (edxlMessage == null
-                || edxlMessage.getDescriptor() == null
-                || edxlMessage.getDescriptor().getExplicitAddress() == null) {
+    public static String getRecipientID(EdxlEnvelope envelope) {
+        if (envelope == null
+                || envelope.getDescriptor() == null
+                || envelope.getDescriptor().getExplicitAddress() == null) {
             return Constants.UNKNOWN;
         }
-        return edxlMessage.getDescriptor().getExplicitAddress().getExplicitAddressValue();
+        return envelope.getDescriptor().getExplicitAddress().getExplicitAddressValue();
     }
 
     public static String getRecipientQueueName(EdxlMessage edxlMessage) {
@@ -235,7 +241,7 @@ public class MessageUtils {
         if (Objects.nonNull(properties.getExpiration())) {
             structuredLog.info(
                     String.format(
-                            "Reset expiration header that was originally set to %s",
+                            "Message received with expiration header containing %s, resetting header value to null",
                             properties.getExpiration()),
                     Map.of(
                             LogConstants.DISTRIBUTION_ID,
@@ -254,6 +260,21 @@ public class MessageUtils {
         long newTTL = messageCustomExpirationDateTime - OffsetDateTime.now().toEpochSecond();
         boolean isNewTTLInThePast = newTTL <= 0;
         if (isNewTTLInThePast) {
+            structuredLog.info(
+                    String.format(
+                            "Message received is already expired, provided dateTimeExpires is %s",
+                            edxlMessage
+                                    .getDateTimeExpires()
+                                    .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)),
+                    Map.of(
+                            LogConstants.DISTRIBUTION_ID,
+                            distributionId,
+                            LogConstants.SENDER_ID,
+                            senderId,
+                            LogConstants.RECIPIENT_ID,
+                            recipientId,
+                            LogConstants.MESSAGE_TYPE,
+                            messageType));
             String errorCause = "Message has expired before reaching the recipient queue";
             throw new ExpiredBeforeDispatchMessageException(
                     errorCause, distributionId, recipientId, messageType);
@@ -268,7 +289,9 @@ public class MessageUtils {
             String dateTimeExpires =
                     edxlMessage.getDateTimeExpires().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
             structuredLog.info(
-                    String.format("override expiration: expiration is now %s", dateTimeExpires),
+                    String.format(
+                            "Setting expiration header to %s based on client requested TTL",
+                            dateTimeExpires),
                     Map.of(
                             LogConstants.DISTRIBUTION_ID,
                             distributionId,
