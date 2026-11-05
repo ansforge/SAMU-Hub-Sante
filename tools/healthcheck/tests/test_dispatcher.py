@@ -206,9 +206,19 @@ class PerformChecksTestCase(unittest.TestCase):
         self.assertEqual(result["dispatchers"]["status"], Status.DEGRADED.value)
 
     @patch("checks.dispatcher.http_session.get")
-    def test_degraded_instance_metric_is_zero(self, mock_get):
+    def test_degraded_instance_metric_is_one(self, mock_get):
         mock_get.side_effect = self._mock_responses(
             {"dispatcher1": "DEGRADED", "dispatcher2": "UP"}
+        )
+        self.checker.check_wrapper()
+        metric = DispatchersHealthcheck.dispatcher_status_metric
+        self.assertEqual(metric.labels(dispatcher="dispatcher1")._value.get(), 1)
+        self.assertEqual(metric.labels(dispatcher="dispatcher2")._value.get(), 1)
+
+    @patch("checks.dispatcher.http_session.get")
+    def test_down_instance_metric_is_zero(self, mock_get):
+        mock_get.side_effect = self._mock_responses(
+            {"dispatcher1": "OUT_OF_SERVICE", "dispatcher2": "UP"}
         )
         self.checker.check_wrapper()
         metric = DispatchersHealthcheck.dispatcher_status_metric

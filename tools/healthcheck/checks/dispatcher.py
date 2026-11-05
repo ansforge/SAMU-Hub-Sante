@@ -32,7 +32,7 @@ DISPATCHER_ACCEPTED_STATUSES = (Status.UP.value, Status.DEGRADED.value)
 class DispatchersHealthcheck(IChecker):
     dispatcher_status_metric = Gauge(
         "dispatcher_status",
-        "Statut des dispatchers (1=UP, 0=DOWN)",
+        "Statut des dispatchers (1=joignable: UP ou DEGRADED, 0=DOWN)",
         ["dispatcher"],
     )
 
@@ -140,8 +140,10 @@ class DispatchersHealthcheck(IChecker):
             if status not in DISPATCHER_ACCEPTED_STATUSES:
                 status = Status.DOWN.value
 
-            is_up = status == Status.UP.value
-            self.dispatcher_status_metric.labels(dispatcher=name).set(1 if is_up else 0)
+            is_reachable = status in DISPATCHER_ACCEPTED_STATUSES
+            self.dispatcher_status_metric.labels(dispatcher=name).set(
+                1 if is_reachable else 0
+            )
 
             return OrderedDict(
                 [
