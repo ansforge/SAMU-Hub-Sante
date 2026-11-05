@@ -22,14 +22,17 @@ import static com.hubsante.hub.utils.MessageUtils.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import com.hubsante.hub.config.Constants;
 import com.hubsante.hub.config.HubConfiguration;
 import com.hubsante.hub.config.LogConstants;
 import com.hubsante.hub.config.StructuredLogger;
 import com.hubsante.hub.exception.*;
+import com.hubsante.hub.service.routing.FireToHubStrategy;
+import com.hubsante.hub.service.routing.HubSanteInternalStrategy;
+import com.hubsante.hub.service.routing.HubToFireStrategy;
+import com.hubsante.hub.service.routing.MessageRoutingDTO;
+import com.hubsante.hub.service.routing.RoutingStrategy;
 import com.hubsante.hub.utils.ConversionUtils;
 import com.hubsante.hub.utils.EdxlUtils;
-import com.hubsante.hub.utils.MessagePersistencePolicy;
 import com.hubsante.hub.utils.MessageUtils;
 import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.edxl.EdxlMessage;
@@ -83,11 +86,12 @@ public class Dispatcher {
     @Qualifier("jsonMapper")
     private ObjectMapper jsonMapper;
 
-    private final ConversionHandler conversionHandler;
     private final HubConfiguration hubConfig;
-    private final MessagePersistenceService persistenceService;
     private static final StructuredLogger structuredLog = new StructuredLogger(log);
     private final Tracer tracer;
+    private final HubSanteInternalStrategy hubSanteInternalStrategy;
+    private final HubToFireStrategy hubToFireStrategy;
+    private final FireToHubStrategy fireToHubStrategy;
 
     public Dispatcher(
             MessageHandler messageHandler,
@@ -95,20 +99,40 @@ public class Dispatcher {
             EdxlHandler edxlHandler,
             XmlMapper xmlMapper,
             ObjectMapper jsonMapper,
-            ConversionHandler conversionHandler,
             HubConfiguration hubConfig,
-            MessagePersistenceService persistenceService,
-            Tracer tracer) {
+            Tracer tracer,
+            HubSanteInternalStrategy hubSanteInternalStrategy,
+            HubToFireStrategy hubToFireStrategy,
+            FireToHubStrategy fireToHubStrategy) {
         this.messageHandler = messageHandler;
         this.rabbitTemplate = rabbitTemplate;
         this.edxlHandler = edxlHandler;
         this.xmlMapper = xmlMapper;
         this.jsonMapper = jsonMapper;
-        this.conversionHandler = conversionHandler;
         this.hubConfig = hubConfig;
-        this.persistenceService = persistenceService;
         this.tracer = tracer;
+        this.hubSanteInternalStrategy = hubSanteInternalStrategy;
+        this.hubToFireStrategy = hubToFireStrategy;
+        this.fireToHubStrategy = fireToHubStrategy;
         initReturnsCallback();
+    }
+
+    /**
+     * Selects the routing strategy matching the message's sender/recipient cinematic (both health,
+     * health to fire, or fire to health).
+     */
+    public RoutingStrategy selectRoutingStrategy(EdxlMessage edxlMessage) {
+        return switch (ConversionUtils.determineRoutingType(edxlMessage)) {
+            case SAMU_TO_SAMU -> hubSanteInternalStrategy;
+            case SAMU_TO_CISU -> hubToFireStrategy;
+            case CISU_TO_SAMU -> fireToHubStrategy;
+        };
+    }
+
+    /** Publishes a routing DTO to its exchange and routing key. */
+    public void sendMessage(MessageRoutingDTO routingDTO) {
+        rabbitTemplate.send(
+                routingDTO.destinationExchange(), routingDTO.routingKey(), routingDTO.message());
     }
 
     private void tagCurrentSpan(Message amqpMessage, EdxlMessage edxlMessage) {
@@ -219,78 +243,22 @@ public class Dispatcher {
             // Deserialize the message according to its content type
             EdxlMessage edxlMessage = messageHandler.extractMessage(message);
             tagCurrentSpan(message, edxlMessage);
-            // check message type is allowed on the current vhost
-            checkMessageClassNameSupported(edxlMessage, hubConfig);
-            // check message is allowed for its recipient
-            messageHandler.inhibitMessageIfNeeded(edxlMessage);
-            // reject the message if no health actor is involved (as sender or recipient)
-            checkHealthActorIsInvolved(edxlMessage);
-            // ToDo: see how hubConfig should be made available to the Dispatcher (and remove getter
-            // in MessageHandler)
-            // ToDo: check this only on specific vhosts (like 15-NexSIS)?
-            // Reject the message if the sender is not consistent with the routing key
-            checkSenderConsistency(message, edxlMessage);
-            // Reject the message if the delivery mode is not PERSISTENT
-            checkDeliveryModeIsPersistent(message, edxlMessage.getDistributionID());
-            // Reject the message if distributionId does not respect the format
-            // (senderId_internalId)
-            if (message.getMessageProperties()
-                    .getReceivedRoutingKey()
-                    .startsWith(Constants.FR_HEALTH_PREFIX)) {
-                checkDistributionIDFormat(edxlMessage);
-            }
 
-            ConversionUtils.ConversionParametersDTO conversionParameters =
-                    ConversionUtils.resolveConversionParameters(hubConfig, edxlMessage);
-            boolean isConversionNeeded = conversionParameters != null;
+            RoutingStrategy strategy = selectRoutingStrategy(edxlMessage);
+            // check the message is allowed to be routed (class name, inhibition, health actor
+            // involvement, sender consistency, delivery mode, distributionId format)
+            strategy.checkMessageContent(message, edxlMessage);
+            // build the list of AMQP messages to publish, with or without conversion
+            List<MessageRoutingDTO> routingDTOs =
+                    strategy.buildMessageRoutingDTO(message, edxlMessage);
 
-            if (isConversionNeeded) {
-                if (conversionParameters.conversionType()
-                        == ConversionUtils.ConversionType.CISU_TRANSCODING) {
-                    String useCase =
-                            EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage());
-                    // Persist before conversion so the original message is saved even if conversion
-                    // fails
-                    if (MessagePersistencePolicy.shouldPersist(hubConfig.getVhost(), useCase)) {
-                        persistenceService.persist(edxlMessage);
-                    }
+            for (MessageRoutingDTO routingDTO : routingDTOs) {
+                sendMessage(routingDTO);
+                logMessageSent(routingDTO, edxlMessage);
+                if (!isConversionRouting(routingDTO)) {
+                    messageHandler.publishMetrics(edxlMessage, message);
                 }
-                List<String> convertedMessages =
-                        conversionHandler.applyConversionRules(conversionParameters);
-                for (String convertedMessage : convertedMessages) {
-                    sendToTransferExchange(
-                            convertedMessage, message, conversionParameters.targetVhost());
-                }
-                String recipientId = MessageUtils.getRecipientID(edxlMessage);
-                String messageType =
-                        EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage());
-                structuredLog.debug(
-                        String.format(
-                                "The converted messages (%d) have been sent to the exchange to reach the recipient's vhost.",
-                                convertedMessages.size()),
-                        Map.of(
-                                LogConstants.DISTRIBUTION_ID,
-                                edxlMessage.getDistributionID(),
-                                LogConstants.SENDER_ID,
-                                edxlMessage.getSenderID(),
-                                LogConstants.RECIPIENT_ID,
-                                recipientId,
-                                LogConstants.MESSAGE_TYPE,
-                                messageType));
-                // We MUST return here to exit the dispatch() function, otherwise the message will
-                // be published on the source Exchange as well
-                return;
             }
-
-            // Forward the message according to the recipient preferences. Conversion JSON <-> XML
-            // can happen here
-            Message forwardedMsg = messageHandler.forwardedMessage(edxlMessage, message);
-            // Extract recipient queue name from the message (explicit address and distribution
-            // kind)
-            String queueName = getRecipientQueueName(edxlMessage);
-            // publish the message to the recipient queue
-            rabbitTemplate.send(DISTRIBUTION_EXCHANGE, queueName, forwardedMsg);
-            messageHandler.publishMetrics(edxlMessage, forwardedMsg);
         } catch (AbstractHubException e) {
             messageHandler.handleError(e, message);
         } catch (Exception e) {
@@ -310,27 +278,29 @@ public class Dispatcher {
         }
     }
 
-    public void sendToTransferExchange(
-            String convertedMessage, Message message, String targetVhost) {
-        Message forwardedMsg = messageHandler.forwardedStringMessage(convertedMessage, message);
+    /** A converted message is published to a transfer exchange, never to {@code DISTRIBUTION_EXCHANGE}. */
+    private boolean isConversionRouting(MessageRoutingDTO routingDTO) {
+        return !DISTRIBUTION_EXCHANGE.equals(routingDTO.destinationExchange());
+    }
 
-        String transferExchangeName =
-                ConversionUtils.buildTransferExchangeName(hubConfig.getVhost(), targetVhost);
-
-        String routingKey = message.getMessageProperties().getReceivedRoutingKey();
-        String distributionId = extractDistributionId(stringifyBody(message));
-
+    private void logMessageSent(MessageRoutingDTO routingDTO, EdxlMessage edxlMessage) {
+        String recipientId = MessageUtils.getRecipientID(edxlMessage);
+        String messageType = EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage());
         structuredLog.info(
                 String.format(
-                        "Message transferred to exchange: %s with routing key: %s",
-                        transferExchangeName, routingKey),
+                        "Received message (%s) has been sent to exchange (%s) with routing key (%s)",
+                        edxlMessage.getDistributionID(),
+                        routingDTO.destinationExchange(),
+                        routingDTO.routingKey()),
                 Map.of(
-                        LogConstants.SENDER_ID,
-                        routingKey,
                         LogConstants.DISTRIBUTION_ID,
-                        distributionId));
-
-        rabbitTemplate.send(transferExchangeName, routingKey, forwardedMsg);
+                        edxlMessage.getDistributionID(),
+                        LogConstants.SENDER_ID,
+                        edxlMessage.getSenderID(),
+                        LogConstants.RECIPIENT_ID,
+                        recipientId,
+                        LogConstants.MESSAGE_TYPE,
+                        messageType));
     }
 
     @RabbitListener(queues = DISPATCH_DLQ_NAME)
