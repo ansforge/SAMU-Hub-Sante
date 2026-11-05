@@ -18,7 +18,6 @@ package com.hubsante.hub.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hubsante.hub.config.LogConstants;
 import com.hubsante.hub.config.StructuredLogger;
 import com.hubsante.hub.exception.ConversionException;
 import com.hubsante.hub.utils.ConversionUtils;
@@ -29,7 +28,6 @@ import com.hubsante.model.edxl.EdxlMessage;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -58,7 +56,6 @@ public class ConversionHandler {
         ConversionUtils.ConversionType type = conversionParametersDTO.conversionType();
         EdxlMessage edxlMessage = conversionParametersDTO.edxlMessage();
         String distributionId = edxlMessage.getDistributionID();
-        String senderId = edxlMessage.getSenderID();
         String recipientId = MessageUtils.getRecipientID(edxlMessage);
         String messageType = EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage());
 
@@ -68,16 +65,7 @@ public class ConversionHandler {
             structuredLog.debug(
                     String.format(
                             "Starting conversion of type %s from %s to %s",
-                            type, sourceModelVersion, targetModelVersion),
-                    Map.of(
-                            LogConstants.DISTRIBUTION_ID,
-                            distributionId,
-                            LogConstants.SENDER_ID,
-                            senderId,
-                            LogConstants.RECIPIENT_ID,
-                            recipientId,
-                            LogConstants.MESSAGE_TYPE,
-                            messageType));
+                            type, sourceModelVersion, targetModelVersion));
             List<String> convertedJsonList =
                     callConversionService(
                             jsonEdxlString,
@@ -86,33 +74,14 @@ public class ConversionHandler {
                             type,
                             distributionId);
             structuredLog.debug(
-                    "Message(s) converted successfully: " + convertedJsonList.toString(),
-                    Map.of(
-                            LogConstants.DISTRIBUTION_ID,
-                            distributionId,
-                            LogConstants.SENDER_ID,
-                            senderId,
-                            LogConstants.RECIPIENT_ID,
-                            recipientId,
-                            LogConstants.MESSAGE_TYPE,
-                            messageType));
+                    "Message(s) converted successfully: " + convertedJsonList.toString());
 
             return convertedJsonList; // returns a list of strings (deserialization is not possible
             // because of
             // version change)
         } catch (RuntimeException e) {
             // Error raised by the conversion service or its call
-            structuredLog.error(
-                    "Error during internal call to Hub Santé conversion service " + e,
-                    Map.of(
-                            LogConstants.DISTRIBUTION_ID,
-                            distributionId,
-                            LogConstants.SENDER_ID,
-                            senderId,
-                            LogConstants.RECIPIENT_ID,
-                            recipientId,
-                            LogConstants.MESSAGE_TYPE,
-                            messageType));
+            structuredLog.error("Error during internal call to Hub Santé conversion service " + e);
             throw new ConversionException(e.getMessage(), distributionId, recipientId, messageType);
         }
     }
@@ -159,9 +128,7 @@ public class ConversionHandler {
                 JsonNode errorNode = objectMapper.readTree(e.getResponseBodyAsString());
                 String errorMessage =
                         errorNode.has("error") ? errorNode.get("error").asText() : e.getMessage();
-                structuredLog.error(
-                        "Error received from converter service " + errorMessage,
-                        Map.of(LogConstants.DISTRIBUTION_ID, distributionId));
+                structuredLog.error("Error received from converter service " + errorMessage);
                 throw new ConversionException(errorMessage, distributionId);
             } catch (JsonProcessingException jsonException) {
                 // this should never happen as long as the objectMapper.readTree method has already
@@ -172,8 +139,7 @@ public class ConversionHandler {
             }
         } catch (JsonProcessingException e) {
             structuredLog.error(
-                    "Failed to parse error response from conversion service: " + e.getMessage(),
-                    Map.of(LogConstants.DISTRIBUTION_ID, distributionId));
+                    "Failed to parse error response from conversion service: " + e.getMessage());
             throw new ConversionException(
                     "Failed to parse response from conversion service: " + e.getMessage(),
                     distributionId);
