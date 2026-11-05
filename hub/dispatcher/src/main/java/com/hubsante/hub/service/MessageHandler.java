@@ -446,11 +446,7 @@ public class MessageHandler {
 
     private void logMessage(Message message, EdxlMessage edxlMessage, String receivedEdxl) {
         String distributionKind = edxlMessage.getDistributionKind().getValue();
-        String senderId = getSenderFromRoutingKey(message);
-        String distributionId = edxlMessage.getDistributionID();
-        String recipientId = getRecipientID(edxlMessage);
         String hashedBody = hashBody(message);
-        String messageType = getUseCaseFromMessage(edxlMessage.getFirstContentMessage());
         ReferenceWrapper ackMessage = isAckMessage(edxlMessage);
 
         if (Objects.nonNull(ackMessage)) {
