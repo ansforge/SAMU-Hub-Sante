@@ -22,7 +22,6 @@ import static com.hubsante.hub.utils.MessageUtils.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import com.hubsante.hub.config.LogConstants;
 import com.hubsante.hub.config.MessageLogContext;
 import com.hubsante.hub.config.StructuredLogger;
 import com.hubsante.hub.exception.*;
@@ -160,8 +159,8 @@ public class Dispatcher {
         } catch (JsonProcessingException e) {
             // This should never happen as if we've reached this point, the message has
             // already been deserialized
-            MessageLogContext.put(
-                    LogConstants.DISTRIBUTION_ID, extractDistributionId(returnedEdxlString));
+            observabilityService.bindExtractedMetadata(
+                    extractDistributionId(returnedEdxlString), senderRoutingKey);
             structuredLog.error(
                     String.format(
                             "Could not deserialize returned message with hashed value %s",
