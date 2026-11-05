@@ -34,20 +34,28 @@ public class ObservabilityService {
     private final HubConfiguration hubConfig;
     private final Tracer tracer;
 
+    private static final String UNKNOWN_CASE_ID = "unknown";
+
     public ObservabilityService(HubConfiguration hubConfig, Tracer tracer) {
         this.hubConfig = hubConfig;
         this.tracer = tracer;
     }
 
     public void bindExtractedMetadata(String distributionId, String receivedRoutingKey) {
-        MessageLogContext.put(LogConstants.DISTRIBUTION_ID, distributionId);
+        boolean shouldAddDistributionId =
+                distributionId != null && !distributionId.equals(DISTRIBUTION_ID_UNAVAILABLE);
+        if (shouldAddDistributionId) {
+            MessageLogContext.put(LogConstants.DISTRIBUTION_ID, distributionId);
+        }
 
         Span span = tracer.currentSpan();
         if (span == null) {
             return;
         }
         span.tag(SENDER_SPAN_TAG, receivedRoutingKey);
-        span.tag(DISTRIBUTION_ID_SPAN_TAG, distributionId);
+        if (shouldAddDistributionId) {
+            span.tag(DISTRIBUTION_ID_SPAN_TAG, distributionId);
+        }
     }
 
     public void bind(EdxlEnvelope envelope) {
@@ -78,13 +86,18 @@ public class ObservabilityService {
         String caseId = EdxlUtils.getCaseIdFromMessage(contentMessage);
 
         MessageLogContext.put(LogConstants.MESSAGE_TYPE, useCase);
-        MessageLogContext.put(LogConstants.CASE_ID, caseId);
+        boolean shouldAddCaseId = caseId != null && !caseId.equals(UNKNOWN_CASE_ID);
+        if (shouldAddCaseId) {
+            MessageLogContext.put(LogConstants.CASE_ID, caseId);
+        }
 
         Span span = tracer.currentSpan();
         if (span == null) {
             return;
         }
         span.tag(USE_CASE_SPAN_TAG, useCase);
-        span.tag(CASE_ID_SPAN_TAG, caseId);
+        if (shouldAddCaseId) {
+            span.tag(CASE_ID_SPAN_TAG, caseId);
+        }
     }
 }
