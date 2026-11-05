@@ -206,14 +206,72 @@ class PerformChecksTestCase(unittest.TestCase):
         self.assertEqual(result["dispatchers"]["status"], Status.DEGRADED.value)
 
     @patch("checks.dispatcher.http_session.get")
-    def test_degraded_instance_metric_is_zero(self, mock_get):
+    def test_degraded_instance_metric_is_one(self, mock_get):
         mock_get.side_effect = self._mock_responses(
             {"dispatcher1": "DEGRADED", "dispatcher2": "UP"}
         )
         self.checker.check_wrapper()
         metric = DispatchersHealthcheck.dispatcher_status_metric
+        self.assertEqual(metric.labels(dispatcher="dispatcher1")._value.get(), 1)
+        self.assertEqual(metric.labels(dispatcher="dispatcher2")._value.get(), 1)
+
+    @patch("checks.dispatcher.http_session.get")
+    def test_down_instance_metric_is_zero(self, mock_get):
+        mock_get.side_effect = self._mock_responses(
+            {"dispatcher1": "OUT_OF_SERVICE", "dispatcher2": "UP"}
+        )
+        self.checker.check_wrapper()
+        metric = DispatchersHealthcheck.dispatcher_status_metric
         self.assertEqual(metric.labels(dispatcher="dispatcher1")._value.get(), 0)
         self.assertEqual(metric.labels(dispatcher="dispatcher2")._value.get(), 1)
+
+    def _mongodb_metric_value(self, name):
+        for family in DispatchersHealthcheck.dispatcher_mongodb_status_metric.collect():
+            for sample in family.samples:
+                if sample.labels["dispatcher"] == name:
+                    return sample.value
+        return None
+
+    @parameterized.expand(
+        [
+            ("up_mongo_up", "UP", {"mongo": {"status": "UP"}}, 1),
+            ("degraded_mongo_down", "DEGRADED", {"mongo": {"status": "DOWN"}}, 0),
+            ("up_mongo_down", "UP", {"mongo": {"status": "DOWN"}}, 0),
+            ("mongo_component_missing", "UP", {}, None),
+            ("down_status", "OUT_OF_SERVICE", {"mongo": {"status": "UP"}}, None),
+        ]
+    )
+    @patch("checks.dispatcher.http_session.get")
+    def test_mongodb_metric(self, _, status, components, expected, mock_get):
+        response = MagicMock()
+        response.json.return_value = {"status": status, "components": components}
+        mock_get.return_value = response
+        self.checker.dispatcher_instances = {"dispatcher1": "http://dispatcher1/health"}
+
+        self.checker.check_wrapper()
+
+        self.assertEqual(self._mongodb_metric_value("dispatcher1"), expected)
+
+    @patch("checks.dispatcher.http_session.get")
+    def test_mongodb_metric_is_removed_when_dispatcher_becomes_unreachable(
+        self, mock_get
+    ):
+        response = MagicMock()
+        response.json.return_value = {
+            "status": "DEGRADED",
+            "components": {"mongo": {"status": "DOWN"}},
+        }
+        mock_get.return_value = response
+        self.checker.dispatcher_instances = {"dispatcher1": "http://dispatcher1/health"}
+        self.checker.check_wrapper()
+        self.assertEqual(self._mongodb_metric_value("dispatcher1"), 0)
+
+        mock_get.side_effect = Exception("unreachable")
+        self.checker.check_wrapper()
+
+        self.assertIsNone(self._mongodb_metric_value("dispatcher1"))
+        metric = DispatchersHealthcheck.dispatcher_status_metric
+        self.assertEqual(metric.labels(dispatcher="dispatcher1")._value.get(), 0)
 
     @patch("checks.dispatcher.http_session.get")
     def test_instance_error_is_down_and_aggregate_degraded(self, mock_get):

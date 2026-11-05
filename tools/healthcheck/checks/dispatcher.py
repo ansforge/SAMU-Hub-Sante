@@ -32,7 +32,15 @@ DISPATCHER_ACCEPTED_STATUSES = (Status.UP.value, Status.DEGRADED.value)
 class DispatchersHealthcheck(IChecker):
     dispatcher_status_metric = Gauge(
         "dispatcher_status",
-        "Statut des dispatchers (1=UP, 0=DOWN)",
+        "Statut des dispatchers (1=joignable: UP ou DEGRADED, 0=DOWN)",
+        ["dispatcher"],
+    )
+
+    # Published only while the dispatcher answers: a missing series means the
+    # state of the database is unknown, which is covered by dispatcher_status.
+    dispatcher_mongodb_status_metric = Gauge(
+        "dispatcher_mongodb_status",
+        "Statut de la connexion MongoDB des dispatchers (1=UP, 0=DOWN)",
         ["dispatcher"],
     )
 
@@ -103,6 +111,21 @@ class DispatchersHealthcheck(IChecker):
         for dispatcher in self.dispatcher_instances:
             self.dispatcher_status_metric.labels(dispatcher=dispatcher).set(0)
 
+    def _set_mongodb_metric(self, name: str, components: dict):
+        mongo_status = components.get("mongo", {}).get("status")
+        if mongo_status is None:
+            self._remove_mongodb_metric(name)
+            return
+        self.dispatcher_mongodb_status_metric.labels(dispatcher=name).set(
+            1 if mongo_status == Status.UP.value else 0
+        )
+
+    def _remove_mongodb_metric(self, name: str):
+        try:
+            self.dispatcher_mongodb_status_metric.remove(name)
+        except KeyError:
+            pass
+
     def perform_checks(self) -> Dict[str, dict]:
         with ThreadPoolExecutor() as executor:
             futures = {
@@ -124,6 +147,7 @@ class DispatchersHealthcheck(IChecker):
         for name in self.dispatcher_instances:
             result[name] = {"status": Status.DOWN.value}
             self.dispatcher_status_metric.labels(dispatcher=name).set(0)
+            self._remove_mongodb_metric(name)
 
         result[DISPATCHERS_AGGREGATE_NAME] = {"status": Status.DOWN.value}
         return result
@@ -140,13 +164,20 @@ class DispatchersHealthcheck(IChecker):
             if status not in DISPATCHER_ACCEPTED_STATUSES:
                 status = Status.DOWN.value
 
-            is_up = status == Status.UP.value
-            self.dispatcher_status_metric.labels(dispatcher=name).set(1 if is_up else 0)
+            is_reachable = status in DISPATCHER_ACCEPTED_STATUSES
+            self.dispatcher_status_metric.labels(dispatcher=name).set(
+                1 if is_reachable else 0
+            )
+            components = data.get("components", {})
+            if is_reachable:
+                self._set_mongodb_metric(name, components)
+            else:
+                self._remove_mongodb_metric(name)
 
             return OrderedDict(
                 [
                     ("status", status),
-                    ("components", data.get("components", {})),
+                    ("components", components),
                 ]
             )
 
@@ -156,4 +187,5 @@ class DispatchersHealthcheck(IChecker):
             )
 
         self.dispatcher_status_metric.labels(dispatcher=name).set(0)
+        self._remove_mongodb_metric(name)
         return {"status": Status.DOWN.value}
