@@ -27,20 +27,7 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v6
         with:
-          version: "12"
-
-      - name: Setup pnpm config
-        run: pnpm config set store-dir "$PNPM_CACHE_FOLDER"
-      # Makes sure the pnpm store path exists (which is exactly what setup-node cares about)
-      - name: Verify PNPM Cache Directory
-        run: |
-          PNPM_STORE_PATH="$( pnpm store path --silent )"
-          if [ ! -d "$PNPM_STORE_PATH" ]; then
-            echo "PNPM store directory does not exist, creating it."
-            mkdir -p "$PNPM_STORE_PATH"
-          else
-            echo "PNPM store directory exists."
-          fi
+          package_json_file: tools/specs/client/package.json
 
       - name: Set up Node.js
         uses: actions/setup-node@v7
