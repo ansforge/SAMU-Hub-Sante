@@ -29,6 +29,19 @@ jobs:
         with:
           version: "12"
 
+      - name: Setup pnpm config
+        run: pnpm config set store-dir "$PNPM_CACHE_FOLDER"
+      # Makes sure the pnpm store path exists (which is exactly what setup-node cares about)
+      - name: Verify PNPM Cache Directory
+        run: |
+          PNPM_STORE_PATH="$( pnpm store path --silent )"
+          if [ ! -d "$PNPM_STORE_PATH" ]; then
+            echo "PNPM store directory does not exist, creating it."
+            mkdir -p "$PNPM_STORE_PATH"
+          else
+            echo "PNPM store directory exists."
+          fi
+
       - name: Set up Node.js
         uses: actions/setup-node@v7
         with:
@@ -79,18 +92,18 @@ jobs:
   security-scan-client:
     uses: ./.github/workflows/security-scan.yml
     with:
-      working-directory: 'tools/specs/client'
-      project-type: 'nodejs'
-      node-version: '24.11'
-      component-name: 'specs-client'
+      working-directory: "tools/specs/client"
+      project-type: "nodejs"
+      node-version: "24.11"
+      component-name: "specs-client"
       scan-dockerfile: true
 
   security-scan-server:
     uses: ./.github/workflows/security-scan.yml
     with:
-      working-directory: 'tools/specs/server'
-      project-type: 'python'
-      python-version: '3.14'
-      component-name: 'specs-server'
+      working-directory: "tools/specs/server"
+      project-type: "python"
+      python-version: "3.14"
+      component-name: "specs-server"
       scan-dockerfile: true
       dependency-scan: true
