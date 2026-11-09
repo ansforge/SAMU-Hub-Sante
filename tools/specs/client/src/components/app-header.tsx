@@ -7,6 +7,7 @@ import RefSelector from "@/components/ref-selector";
 import User from "@/components/user";
 import { SidebarTrigger } from "./ui/sidebar";
 
+// this is the AppHeader
 export function AppHeader() {
   return (
     <header className="sticky top-0 z-20 flex h-(--header-height) w-full shrink-0 items-center gap-4 border-b bg-background px-4">

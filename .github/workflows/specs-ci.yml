@@ -27,7 +27,7 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v6
         with:
-          version: "12"
+          package_json_file: tools/specs/client/package.json
 
       - name: Set up Node.js
         uses: actions/setup-node@v7
@@ -79,18 +79,18 @@ jobs:
   security-scan-client:
     uses: ./.github/workflows/security-scan.yml
     with:
-      working-directory: 'tools/specs/client'
-      project-type: 'nodejs'
-      node-version: '24.11'
-      component-name: 'specs-client'
+      working-directory: "tools/specs/client"
+      project-type: "nodejs"
+      node-version: "24.11"
+      component-name: "specs-client"
       scan-dockerfile: true
 
   security-scan-server:
     uses: ./.github/workflows/security-scan.yml
     with:
-      working-directory: 'tools/specs/server'
-      project-type: 'python'
-      python-version: '3.14'
-      component-name: 'specs-server'
+      working-directory: "tools/specs/server"
+      project-type: "python"
+      python-version: "3.14"
+      component-name: "specs-server"
       scan-dockerfile: true
       dependency-scan: true
