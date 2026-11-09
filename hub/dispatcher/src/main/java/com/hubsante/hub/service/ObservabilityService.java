@@ -19,6 +19,7 @@ import static com.hubsante.hub.config.Constants.*;
 
 import com.hubsante.hub.config.HubConfiguration;
 import com.hubsante.hub.config.LogConstants;
+import com.hubsante.hub.config.MessageLogContext;
 import com.hubsante.hub.utils.EdxlUtils;
 import com.hubsante.hub.utils.MessageUtils;
 import com.hubsante.model.edxl.ContentMessage;
@@ -26,7 +27,6 @@ import com.hubsante.model.edxl.EdxlEnvelope;
 import com.hubsante.model.edxl.EdxlMessage;
 import io.micrometer.tracing.Span;
 import io.micrometer.tracing.Tracer;
-import java.util.Map;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -34,54 +34,70 @@ public class ObservabilityService {
     private final HubConfiguration hubConfig;
     private final Tracer tracer;
 
+    private static final String UNKNOWN_CASE_ID = "unknown";
+
     public ObservabilityService(HubConfiguration hubConfig, Tracer tracer) {
         this.hubConfig = hubConfig;
         this.tracer = tracer;
     }
 
-    public Map<LogConstants, String> buildLogContextFromEdxlEnvelope(EdxlEnvelope envelope) {
-        return Map.of(
-                LogConstants.SENDER_ID,
-                envelope.getSenderID(),
-                LogConstants.RECIPIENT_ID,
-                MessageUtils.getRecipientID(envelope),
-                LogConstants.DISTRIBUTION_ID,
-                envelope.getDistributionID());
-    }
+    public void bindExtractedMetadata(String distributionId, String receivedRoutingKey) {
+        boolean shouldAddDistributionId =
+                distributionId != null && !distributionId.equals(DISTRIBUTION_ID_UNAVAILABLE);
+        if (shouldAddDistributionId) {
+            MessageLogContext.put(LogConstants.DISTRIBUTION_ID, distributionId);
+        }
 
-    public void tagCurrentSpanWithEdxlMessageMetadata(EdxlMessage edxlMessage) {
         Span span = tracer.currentSpan();
         if (span == null) {
             return;
         }
-        String sender = edxlMessage.getSenderID();
-        ContentMessage contentMessage = edxlMessage.getFirstContentMessage();
-        span.tag(SENDER_SPAN_TAG, sender);
-        span.tag(RECIPIENT_SPAN_TAG, MessageUtils.getRecipientID(edxlMessage));
-        span.tag(USE_CASE_SPAN_TAG, EdxlUtils.getUseCaseFromMessage(contentMessage));
-        span.tag(EDITOR_SPAN_TAG, hubConfig.getClientPropertiesRegistry().getClientEditor(sender));
-        span.tag(CASE_ID_SPAN_TAG, EdxlUtils.getCaseIdFromMessage(contentMessage));
-        span.tag(DISTRIBUTION_ID_SPAN_TAG, edxlMessage.getDistributionID());
+        span.tag(SENDER_SPAN_TAG, receivedRoutingKey);
+        if (shouldAddDistributionId) {
+            span.tag(DISTRIBUTION_ID_SPAN_TAG, distributionId);
+        }
     }
 
-    public void tagCurrentSpanWithAmqpMessageMetadata(String distributionId, String sender) {
+    public void bind(EdxlEnvelope envelope) {
+        String sender = envelope.getSenderID();
+        String recipient = MessageUtils.getRecipientID(envelope);
+        String editor = hubConfig.getClientPropertiesRegistry().getClientEditor(sender);
+        String distributionId = envelope.getDistributionID();
+
+        MessageLogContext.put(LogConstants.SENDER_ID, sender);
+        MessageLogContext.put(LogConstants.RECIPIENT_ID, recipient);
+        MessageLogContext.put(LogConstants.EDITOR, editor);
+        MessageLogContext.put(LogConstants.DISTRIBUTION_ID, distributionId);
+
         Span span = tracer.currentSpan();
         if (span == null) {
             return;
         }
         span.tag(SENDER_SPAN_TAG, sender);
+        span.tag(RECIPIENT_SPAN_TAG, recipient);
+        span.tag(EDITOR_SPAN_TAG, editor);
         span.tag(DISTRIBUTION_ID_SPAN_TAG, distributionId);
     }
 
-    public void tagCurrentSpanWithEnvelopeMetadata(EdxlEnvelope envelope) {
+    public void bind(EdxlMessage edxlMessage) {
+        bind((EdxlEnvelope) edxlMessage);
+        ContentMessage contentMessage = edxlMessage.getFirstContentMessage();
+        String useCase = EdxlUtils.getUseCaseFromMessage(contentMessage);
+        String caseId = EdxlUtils.getCaseIdFromMessage(contentMessage);
+
+        MessageLogContext.put(LogConstants.MESSAGE_TYPE, useCase);
+        boolean shouldAddCaseId = caseId != null && !caseId.equals(UNKNOWN_CASE_ID);
+        if (shouldAddCaseId) {
+            MessageLogContext.put(LogConstants.CASE_ID, caseId);
+        }
+
         Span span = tracer.currentSpan();
         if (span == null) {
             return;
         }
-        String sender = envelope.getSenderID();
-        span.tag(SENDER_SPAN_TAG, sender);
-        span.tag(RECIPIENT_SPAN_TAG, MessageUtils.getRecipientID(envelope));
-        span.tag(EDITOR_SPAN_TAG, hubConfig.getClientPropertiesRegistry().getClientEditor(sender));
-        span.tag(DISTRIBUTION_ID_SPAN_TAG, envelope.getDistributionID());
+        span.tag(USE_CASE_SPAN_TAG, useCase);
+        if (shouldAddCaseId) {
+            span.tag(CASE_ID_SPAN_TAG, caseId);
+        }
     }
 }
