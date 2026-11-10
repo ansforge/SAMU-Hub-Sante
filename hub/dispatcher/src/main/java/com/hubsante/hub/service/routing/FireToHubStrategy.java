@@ -62,6 +62,8 @@ public class FireToHubStrategy extends HubSanteInternalStrategy implements Routi
         messageHandler.inhibitMessageIfNeeded(edxlMessage);
         // reject the message if no health actor is involved (as sender or recipient)
         checkHealthActorIsInvolved(edxlMessage);
+        // soft check to log messages with multiple content objects
+        checkContentSize(edxlMessage);
     }
 
     private void checkSenderConsistency(Message message, EdxlMessage edxlMessage) {

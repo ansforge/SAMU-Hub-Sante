@@ -69,6 +69,8 @@ public class HubSanteInternalStrategy implements RoutingStrategy {
         // reject the message if distributionId does not respect the format
         // (senderId_internalId); assumes the sender is always a health actor
         checkDistributionIDFormat(edxlMessage);
+        // soft check to log messages with multiple content objects
+        checkContentSize(edxlMessage);
     }
 
     @Override
