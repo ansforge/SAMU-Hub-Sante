@@ -293,6 +293,17 @@ public class MessageUtils {
         }
     }
 
+    public static void checkContentSize(EdxlMessage edxlMessage) {
+        int contentSize = edxlMessage.getContent().size();
+        // TODO: reject message instead of logging after confrontation to prod traffic
+        if (contentSize > 1) {
+            structuredLog.warn(
+                    String.format(
+                            "EDXL content must contain a single element, but contains %d",
+                            contentSize));
+        }
+    }
+
     public static String extractDistributionId(String edxlString) {
         // Regex pattern to match the distributionId value
         String jsonRegex = "\"distributionID\"\\s*:\\s*\"([\\w._-]+)\"";
