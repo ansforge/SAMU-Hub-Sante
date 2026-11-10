@@ -227,6 +227,18 @@ class MessageHandlerTest {
         }
 
         @Test
+        @DisplayName("should reject a message whose content contains more than one element")
+        void shouldRejectMultipleContentObjects() throws IOException {
+            Message message =
+                    createInvalidMessage(
+                            "EDXL-DE/multiple-content-objects.json", SAMU_A_ROUTING_KEY);
+
+            assertThatThrownBy(() -> messageHandler.extractMessage(message))
+                    .isInstanceOf(SchemaValidationException.class)
+                    .hasMessageContaining("single element");
+        }
+
+        @Test
         @DisplayName("should count every extraction attempt")
         void shouldCountExtractions() throws IOException {
             messageHandler.extractMessage(createMessage("EDXL-DE", JSON));
