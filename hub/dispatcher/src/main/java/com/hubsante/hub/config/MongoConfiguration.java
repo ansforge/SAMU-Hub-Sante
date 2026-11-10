@@ -17,6 +17,7 @@ package com.hubsante.hub.config;
 
 import com.hubsante.hub.model.PersistedMessage;
 import java.time.Duration;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.annotation.Configuration;
@@ -30,6 +31,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 
 @Configuration
 @EnableMongoAuditing
+@Slf4j
 public class MongoConfiguration {
 
     private final MongoTemplate mongoTemplate;
@@ -43,52 +45,61 @@ public class MongoConfiguration {
 
     @EventListener(ApplicationReadyEvent.class)
     public void createIndexes() {
-        var indexOps = mongoTemplate.indexOps(PersistedMessage.COLLECTION_NAME);
-        indexOps.createIndex(
-                new Index()
-                        .named("idx_arrivedAt_ttl")
-                        .on("arrivedAt", Sort.Direction.ASC)
-                        .expire(Duration.ofDays(expiresDurationDays)));
-        indexOps.createIndex(new Index().named("idx_message_type").on("type", Sort.Direction.ASC));
-        indexOps.createIndex(
-                new Index()
-                        .named("idx_distributionID")
-                        .on("payload.distributionID", Sort.Direction.ASC));
-        indexOps.createIndex(
-                new Index()
-                        .named("idx_resourcesInfo_caseId")
-                        .on(
-                                "payload.content.jsonContent.embeddedJsonContent.message.resourcesInfo.caseId",
-                                Sort.Direction.ASC)
-                        .partial(
-                                PartialIndexFilter.of(
-                                        Criteria.where("type").is("ResourcesInfoWrapper"))));
-        indexOps.createIndex(
-                new Index()
-                        .named("idx_resourcesStatus_caseId")
-                        .on(
-                                "payload.content.jsonContent.embeddedJsonContent.message.resourcesStatus.caseId",
-                                Sort.Direction.ASC)
-                        .partial(
-                                PartialIndexFilter.of(
-                                        Criteria.where("type").is("ResourcesStatusWrapper"))));
-        indexOps.createIndex(
-                new Index()
-                        .named("idx_resourcesStatus_resourceId")
-                        .on(
-                                "payload.content.jsonContent.embeddedJsonContent.message.resourcesStatus.resourceId",
-                                Sort.Direction.ASC)
-                        .partial(
-                                PartialIndexFilter.of(
-                                        Criteria.where("type").is("ResourcesStatusWrapper"))));
-        indexOps.createIndex(
-                new Index()
-                        .named("idx_resourcesInfoCisu_caseId")
-                        .on(
-                                "payload.content.jsonContent.embeddedJsonContent.message.resourcesInfoCisu.caseId",
-                                Sort.Direction.ASC)
-                        .partial(
-                                PartialIndexFilter.of(
-                                        Criteria.where("type").is("ResourcesInfoCisuWrapper"))));
+        try {
+            var indexOps = mongoTemplate.indexOps(PersistedMessage.COLLECTION_NAME);
+            indexOps.createIndex(
+                    new Index()
+                            .named("idx_arrivedAt_ttl")
+                            .on("arrivedAt", Sort.Direction.ASC)
+                            .expire(Duration.ofDays(expiresDurationDays)));
+            indexOps.createIndex(
+                    new Index().named("idx_message_type").on("type", Sort.Direction.ASC));
+            indexOps.createIndex(
+                    new Index()
+                            .named("idx_distributionID")
+                            .on("payload.distributionID", Sort.Direction.ASC));
+            indexOps.createIndex(
+                    new Index()
+                            .named("idx_resourcesInfo_caseId")
+                            .on(
+                                    "payload.content.jsonContent.embeddedJsonContent.message.resourcesInfo.caseId",
+                                    Sort.Direction.ASC)
+                            .partial(
+                                    PartialIndexFilter.of(
+                                            Criteria.where("type").is("ResourcesInfoWrapper"))));
+            indexOps.createIndex(
+                    new Index()
+                            .named("idx_resourcesStatus_caseId")
+                            .on(
+                                    "payload.content.jsonContent.embeddedJsonContent.message.resourcesStatus.caseId",
+                                    Sort.Direction.ASC)
+                            .partial(
+                                    PartialIndexFilter.of(
+                                            Criteria.where("type").is("ResourcesStatusWrapper"))));
+            indexOps.createIndex(
+                    new Index()
+                            .named("idx_resourcesStatus_resourceId")
+                            .on(
+                                    "payload.content.jsonContent.embeddedJsonContent.message.resourcesStatus.resourceId",
+                                    Sort.Direction.ASC)
+                            .partial(
+                                    PartialIndexFilter.of(
+                                            Criteria.where("type").is("ResourcesStatusWrapper"))));
+            indexOps.createIndex(
+                    new Index()
+                            .named("idx_resourcesInfoCisu_caseId")
+                            .on(
+                                    "payload.content.jsonContent.embeddedJsonContent.message.resourcesInfoCisu.caseId",
+                                    Sort.Direction.ASC)
+                            .partial(
+                                    PartialIndexFilter.of(
+                                            Criteria.where("type")
+                                                    .is("ResourcesInfoCisuWrapper"))));
+        } catch (Exception e) {
+            log.error(
+                    "Failed to create MongoDB indexes, the database appears to be unreachable. "
+                            + "The application will keep starting without them.",
+                    e);
+        }
     }
 }
