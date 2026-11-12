@@ -55,7 +55,7 @@ public class ConversionUtils {
             String targetVhost,
             ConversionType conversionType) {
 
-        static ConversionParametersDTO forVhostConversion(
+        public static ConversionParametersDTO forVhostConversion(
                 EdxlMessage edxlMessage,
                 String sourceVhost,
                 String targetVhost,
@@ -202,7 +202,7 @@ public class ConversionUtils {
                 EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage()));
     }
 
-    private static RoutingType determineRoutingType(EdxlMessage edxlMessage) {
+    public static RoutingType determineRoutingType(EdxlMessage edxlMessage) {
         String senderId = edxlMessage.getSenderID();
         String recipientId = getRecipientID(edxlMessage);
 

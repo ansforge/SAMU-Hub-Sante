@@ -206,7 +206,7 @@ class DispatcherConversionErrorHandlingTest {
                                 event ->
                                         event.getFormattedMessage()
                                                 .contains(
-                                                        "Received Ack: message with referenced distributionId fr.health.samuB_2607723d-507d-4cbf-bf74-12345f7064cd"));
+                                                        "Received Ack: message with referenced distributionId fr.health.samuB_2607723d-507d-4cbf-bf74-12345f7064cd (refused: false)"));
         assertTrue(
                 foundReceivedLog,
                 "Received log should contain referenced distributionId: fr.health.samuB_2607723d-507d-4cbf-bf74-12345f7064cd");
@@ -217,7 +217,7 @@ class DispatcherConversionErrorHandlingTest {
                                 event ->
                                         event.getFormattedMessage()
                                                 .contains(
-                                                        "Forwarding Ack: message with referenced distributionId fr.health.samuB_2607723d-507d-4cbf-bf74-12345f7064cd"));
+                                                        "Forwarding Ack: message with referenced distributionId fr.health.samuB_2607723d-507d-4cbf-bf74-12345f7064cd (refused: false)"));
         assertTrue(
                 foundForwardingLog,
                 "Forwarding log should contain referenced distributionId: fr.health.samuB_2607723d-507d-4cbf-bf74-12345f7064cd");

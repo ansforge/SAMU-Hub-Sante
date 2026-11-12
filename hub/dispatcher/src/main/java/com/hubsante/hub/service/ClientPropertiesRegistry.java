@@ -17,7 +17,6 @@ package com.hubsante.hub.service;
 
 import static com.hubsante.hub.config.Constants.UNKNOWN;
 
-import com.hubsante.hub.config.LogConstants;
 import com.hubsante.hub.config.StructuredLogger;
 import com.hubsante.hub.exception.ClientConfigurationException;
 import com.hubsante.hub.model.ClientProperties;
@@ -149,8 +148,7 @@ public class ClientPropertiesRegistry {
         ClientProperties clientProperties = get(clientId);
 
         if (clientProperties == null) {
-            structuredLog.warn(
-                    "Client has no configuration", Map.of(LogConstants.RECIPIENT_ID, clientId));
+            structuredLog.warn(String.format("Client %s has no configuration", clientId));
             return null;
         }
 
@@ -161,9 +159,9 @@ public class ClientPropertiesRegistry {
                         .orElse(null);
 
         if (perimeter == null) {
-            structuredLog.warn(
-                    "Client does not support perimeter " + perimeterName,
-                    Map.of(LogConstants.RECIPIENT_ID, clientId));
+            structuredLog.info(
+                    String.format(
+                            "Client %s does not support perimeter %s", clientId, perimeterName));
             return null;
         }
         return perimeter.versions().toArray(String[]::new);

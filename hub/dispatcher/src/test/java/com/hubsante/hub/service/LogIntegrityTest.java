@@ -26,6 +26,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.hubsante.hub.HubApplication;
 import com.hubsante.hub.config.HubConfiguration;
+import com.hubsante.hub.service.routing.FireToHubStrategy;
+import com.hubsante.hub.service.routing.HubSanteInternalStrategy;
+import com.hubsante.hub.service.routing.HubToFireStrategy;
 import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.Validator;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -145,6 +148,8 @@ public class LogIntegrityTest {
         when(responseSpec.bodyToMono(String.class)).thenReturn(responseMono);
 
         ConversionHandler conversionHandler = new ConversionHandler(webClient, edxlHandler);
+        ObservabilityService observabilityService =
+                new ObservabilityService(hubConfiguration, Tracer.NOOP);
 
         MessageHandler messageHandler =
                 new MessageHandler(
@@ -155,7 +160,8 @@ public class LogIntegrityTest {
                         meterRegistry,
                         xmlMapper,
                         jsonMapper,
-                        conversionHandler);
+                        conversionHandler,
+                        observabilityService);
 
         dispatcher =
                 new Dispatcher(
@@ -164,10 +170,22 @@ public class LogIntegrityTest {
                         edxlHandler,
                         xmlMapper,
                         jsonMapper,
-                        conversionHandler,
-                        hubConfiguration,
-                        persistenceService,
-                        Tracer.NOOP);
+                        new HubSanteInternalStrategy(
+                                messageHandler,
+                                conversionHandler,
+                                hubConfiguration,
+                                persistenceService),
+                        new HubToFireStrategy(
+                                messageHandler,
+                                conversionHandler,
+                                hubConfiguration,
+                                persistenceService),
+                        new FireToHubStrategy(
+                                messageHandler,
+                                conversionHandler,
+                                hubConfiguration,
+                                persistenceService),
+                        observabilityService);
     }
 
     @Test

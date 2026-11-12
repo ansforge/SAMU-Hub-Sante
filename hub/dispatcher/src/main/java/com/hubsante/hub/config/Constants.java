@@ -28,6 +28,8 @@ public class Constants {
     public static final String RECIPIENT_SPAN_TAG = "hubsante.recipient";
     public static final String USE_CASE_SPAN_TAG = "hubsante.use_case";
     public static final String EDITOR_SPAN_TAG = "hubsante.editor";
+    public static final String CASE_ID_SPAN_TAG = "hubsante.case_id";
+    public static final String DISTRIBUTION_ID_SPAN_TAG = "hubsante.distribution_id";
     public static final String OPERATION = "operation";
     public static final String DISTRIBUTION_ID_UNAVAILABLE =
             "distributionId_could_not_be_extracted";
@@ -39,6 +41,7 @@ public class Constants {
     public static final String FR_CISU_PREFIX = "fr.cisu";
     public static final String HEALTH_VHOST_PREFIX = "15-15_v";
     public static final String NEXSIS_HUBEX_PARTNER = "fire";
+    public static final String INTERNAL_TRANSFER_EXCHANGE = "internal-transfer";
 
     public enum Perimeter {
         HEALTH("15-15"),

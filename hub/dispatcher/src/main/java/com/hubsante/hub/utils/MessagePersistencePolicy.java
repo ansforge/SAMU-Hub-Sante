@@ -33,15 +33,15 @@ public final class MessagePersistencePolicy {
      * Message types to persist when circulating from 18 → 15 (vhost 15-nexsis).
      */
     private static final Set<String> NEXSIS_PERSISTED_USE_CASES =
-            Set.of("ResourcesInfoCisuWrapper"); // RC-RI
+            Set.of("resourcesInfoCisu"); // RC-RI
 
     /**
      * Message types to persist when circulating from 15 → 18 (vhost 15-15_v*).
      */
     private static final Set<String> HEALTH_PERSISTED_USE_CASES =
             Set.of(
-                    "ResourcesInfoWrapper", // RS-RI
-                    "ResourcesStatusWrapper" // RS-SR
+                    "resourcesInfo", // RS-RI
+                    "resourcesStatus" // RS-SR
                     );
 
     /**

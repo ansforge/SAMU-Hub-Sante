@@ -22,7 +22,6 @@ import static com.hubsante.hub.testsupport.MessageTestUtils.*;
 import static com.hubsante.hub.testsupport.assertions.HubAssertions.assertThatMessageSentTo;
 import static com.hubsante.hub.testsupport.assertions.HubAssertions.assertThatNoMessageSentTo;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
@@ -89,24 +88,22 @@ class DispatcherDeadLetterTest {
         Message dlqMessage = applyRabbitmqDLQHeaders(originalInfo, "expired");
 
         assertDoesNotThrow(() -> dispatcher.dispatchDLQ(dlqMessage));
-        Mockito.verify(rabbitTemplate, times(0))
-                .send(eq(DISTRIBUTION_EXCHANGE), any(), any(Message.class));
+        assertThatNoMessageSentTo(rabbitTemplate, DISTRIBUTION_EXCHANGE);
     }
 
     /**
-     * {@code dispatchDLQ} dereferences the original routing key header without a null check, so a
-     * DLQ message missing it is rejected through the generic catch and its sender is never told.
+     * Messages built by the Hub (e.g. error reports) have no original routing key header: when
+     * one is dead-lettered, it must be dropped without reporting an error back.
      */
     @Test
-    @DisplayName("should reject a DLQ message carrying no original routing key, silently")
-    public void shouldRejectDlqMessageWithoutOriginalRoutingKey() throws Exception {
+    @DisplayName("should ignore a DLQ message carrying no original routing key")
+    public void shouldIgnoreDlqMessageWithoutOriginalRoutingKey() throws Exception {
         Message dlqMessage = createMessage("EDXL-DE", JSON);
         dlqMessage.getMessageProperties().setHeader(DLQ_REASON, DLQ_EXPIRED_REASON);
 
-        assertThrows(
-                AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatchDLQ(dlqMessage));
+        assertDoesNotThrow(() -> dispatcher.dispatchDLQ(dlqMessage));
 
-        assertThatNoMessageSentTo(rabbitTemplate, DISTRIBUTION_EXCHANGE, SAMU_A_INFO_QUEUE);
+        assertThatNoMessageSentTo(rabbitTemplate, DISTRIBUTION_EXCHANGE);
     }
 
     @Test

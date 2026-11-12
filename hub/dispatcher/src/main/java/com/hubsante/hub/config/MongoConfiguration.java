@@ -56,39 +56,38 @@ public class MongoConfiguration {
                         .on("payload.distributionID", Sort.Direction.ASC));
         indexOps.createIndex(
                 new Index()
-                        .named("idx_resourcesInfo_caseId")
+                        .named("idx_resourcesInfo_caseId_v2")
                         .on(
                                 "payload.content.jsonContent.embeddedJsonContent.message.resourcesInfo.caseId",
                                 Sort.Direction.ASC)
                         .partial(
-                                PartialIndexFilter.of(
-                                        Criteria.where("type").is("ResourcesInfoWrapper"))));
+                                PartialIndexFilter.of(Criteria.where("type").is("resourcesInfo"))));
         indexOps.createIndex(
                 new Index()
-                        .named("idx_resourcesStatus_caseId")
+                        .named("idx_resourcesStatus_caseId_v2")
                         .on(
                                 "payload.content.jsonContent.embeddedJsonContent.message.resourcesStatus.caseId",
                                 Sort.Direction.ASC)
                         .partial(
                                 PartialIndexFilter.of(
-                                        Criteria.where("type").is("ResourcesStatusWrapper"))));
+                                        Criteria.where("type").is("resourcesStatus"))));
         indexOps.createIndex(
                 new Index()
-                        .named("idx_resourcesStatus_resourceId")
+                        .named("idx_resourcesStatus_resourceId_v2")
                         .on(
                                 "payload.content.jsonContent.embeddedJsonContent.message.resourcesStatus.resourceId",
                                 Sort.Direction.ASC)
                         .partial(
                                 PartialIndexFilter.of(
-                                        Criteria.where("type").is("ResourcesStatusWrapper"))));
+                                        Criteria.where("type").is("resourcesStatus"))));
         indexOps.createIndex(
                 new Index()
-                        .named("idx_resourcesInfoCisu_caseId")
+                        .named("idx_resourcesInfoCisu_caseId_v2")
                         .on(
                                 "payload.content.jsonContent.embeddedJsonContent.message.resourcesInfoCisu.caseId",
                                 Sort.Direction.ASC)
                         .partial(
                                 PartialIndexFilter.of(
-                                        Criteria.where("type").is("ResourcesInfoCisuWrapper"))));
+                                        Criteria.where("type").is("resourcesInfoCisu"))));
     }
 }

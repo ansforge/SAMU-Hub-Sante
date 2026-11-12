@@ -21,10 +21,10 @@ import static com.hubsante.hub.config.Constants.FR_HEALTH_PREFIX;
 
 import com.hubsante.hub.config.Constants;
 import com.hubsante.hub.config.HubConfiguration;
-import com.hubsante.hub.config.LogConstants;
 import com.hubsante.hub.config.StructuredLogger;
 import com.hubsante.hub.exception.*;
 import com.hubsante.model.edxl.DistributionKind;
+import com.hubsante.model.edxl.EdxlEnvelope;
 import com.hubsante.model.edxl.EdxlMessage;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -33,7 +33,6 @@ import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Base64;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -50,6 +49,11 @@ public class MessageUtils {
     public static String getSenderFromRoutingKey(Message message) {
         String receivedRoutingKey = message.getMessageProperties().getReceivedRoutingKey();
         return receivedRoutingKey != null ? receivedRoutingKey : "";
+    }
+
+    public static String getOriginalRoutingKey(Message message) {
+        String originalRoutingKey = message.getMessageProperties().getHeader(ORIGINAL_ROUTING_KEY);
+        return originalRoutingKey != null ? originalRoutingKey : Constants.UNKNOWN;
     }
 
     public static void setOriginalRoutingKeyHeader(Message message) {
@@ -93,7 +97,7 @@ public class MessageUtils {
         }
     }
 
-    private static String extractDomainPrefix(String id) {
+    public static String extractDomainPrefix(String id) {
         String[] segments = id.split("\\.", 3);
         if (segments.length < 2) {
             return id;
@@ -123,14 +127,8 @@ public class MessageUtils {
             if (!message.getMessageProperties()
                     .getReceivedRoutingKey()
                     .startsWith(FR_HEALTH_PREFIX)) {
-                String senderId = getSenderFromRoutingKey(message);
                 structuredLog.error(
-                        "Message has been received from hubex without persistent mode enabled",
-                        Map.of(
-                                LogConstants.SENDER_ID,
-                                senderId,
-                                LogConstants.DISTRIBUTION_ID,
-                                distributionId));
+                        "Message has been received from hubex without persistent mode enabled");
                 return;
             }
             String errorCause =
@@ -141,8 +139,8 @@ public class MessageUtils {
         }
     }
 
-    public static void checkMessageClassNameSupported(
-            EdxlMessage edxlMessage, HubConfiguration hubConfig) throws Exception {
+    public static void checkUseCaseSupported(EdxlMessage edxlMessage, HubConfiguration hubConfig)
+            throws UnroutableMessageException {
         String messageClassName =
                 EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage());
         List<String> supportedMessages = hubConfig.getSupportedMessages();
@@ -164,13 +162,13 @@ public class MessageUtils {
         return clientId + ".info";
     }
 
-    public static String getRecipientID(EdxlMessage edxlMessage) {
-        if (edxlMessage == null
-                || edxlMessage.getDescriptor() == null
-                || edxlMessage.getDescriptor().getExplicitAddress() == null) {
+    public static String getRecipientID(EdxlEnvelope envelope) {
+        if (envelope == null
+                || envelope.getDescriptor() == null
+                || envelope.getDescriptor().getExplicitAddress() == null) {
             return Constants.UNKNOWN;
         }
-        return edxlMessage.getDescriptor().getExplicitAddress().getExplicitAddressValue();
+        return envelope.getDescriptor().getExplicitAddress().getExplicitAddressValue();
     }
 
     public static String getRecipientQueueName(EdxlMessage edxlMessage) {
@@ -226,7 +224,6 @@ public class MessageUtils {
         // We assume that one second is an acceptable interval
         long messageCustomExpirationDateTime = edxlMessage.getDateTimeExpires().toEpochSecond();
         String distributionId = edxlMessage.getDistributionID();
-        String senderId = edxlMessage.getSenderID();
         String recipientId = getRecipientID(edxlMessage);
         String messageType = EdxlUtils.getUseCaseFromMessage(edxlMessage.getFirstContentMessage());
 
@@ -235,17 +232,8 @@ public class MessageUtils {
         if (Objects.nonNull(properties.getExpiration())) {
             structuredLog.info(
                     String.format(
-                            "Reset expiration header that was originally set to %s",
-                            properties.getExpiration()),
-                    Map.of(
-                            LogConstants.DISTRIBUTION_ID,
-                            distributionId,
-                            LogConstants.SENDER_ID,
-                            senderId,
-                            LogConstants.RECIPIENT_ID,
-                            recipientId,
-                            LogConstants.MESSAGE_TYPE,
-                            messageType));
+                            "Message received with expiration header containing %s, resetting header value to null",
+                            properties.getExpiration()));
             properties.setExpiration(null);
         }
 
@@ -254,6 +242,12 @@ public class MessageUtils {
         long newTTL = messageCustomExpirationDateTime - OffsetDateTime.now().toEpochSecond();
         boolean isNewTTLInThePast = newTTL <= 0;
         if (isNewTTLInThePast) {
+            structuredLog.info(
+                    String.format(
+                            "Message received is already expired, provided dateTimeExpires is %s",
+                            edxlMessage
+                                    .getDateTimeExpires()
+                                    .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)));
             String errorCause = "Message has expired before reaching the recipient queue";
             throw new ExpiredBeforeDispatchMessageException(
                     errorCause, distributionId, recipientId, messageType);
@@ -268,16 +262,9 @@ public class MessageUtils {
             String dateTimeExpires =
                     edxlMessage.getDateTimeExpires().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
             structuredLog.info(
-                    String.format("override expiration: expiration is now %s", dateTimeExpires),
-                    Map.of(
-                            LogConstants.DISTRIBUTION_ID,
-                            distributionId,
-                            LogConstants.SENDER_ID,
-                            senderId,
-                            LogConstants.RECIPIENT_ID,
-                            recipientId,
-                            LogConstants.MESSAGE_TYPE,
-                            messageType));
+                    String.format(
+                            "Setting expiration header to %s based on client requested TTL",
+                            dateTimeExpires));
         }
     }
 
@@ -303,6 +290,17 @@ public class MessageUtils {
             String messageType = EdxlUtils.getUseCaseFromMessage(message.getFirstContentMessage());
             throw new InvalidDistributionIDException(
                     errorCause, distributionId, recipientId, messageType);
+        }
+    }
+
+    public static void checkContentSize(EdxlMessage edxlMessage) {
+        int contentSize = edxlMessage.getContent().size();
+        // TODO: reject message instead of logging after confrontation to prod traffic
+        if (contentSize > 1) {
+            structuredLog.warn(
+                    String.format(
+                            "EDXL content must contain a single element, but contains %d",
+                            contentSize));
         }
     }
 
@@ -332,15 +330,7 @@ public class MessageUtils {
             byte[] hashedBytes = digest.digest(body.getBytes(StandardCharsets.UTF_8));
             return Base64.getEncoder().encodeToString(hashedBytes);
         } catch (NoSuchAlgorithmException e) {
-            String senderId = getSenderFromRoutingKey(message);
-            String distributionId = extractDistributionId(stringifyBody(message));
-            structuredLog.error(
-                    "Could not get SHA-256 algorithm",
-                    Map.of(
-                            LogConstants.SENDER_ID,
-                            senderId,
-                            LogConstants.DISTRIBUTION_ID,
-                            distributionId));
+            structuredLog.error("Could not get SHA-256 algorithm");
             throw new RuntimeException(e);
         }
     }

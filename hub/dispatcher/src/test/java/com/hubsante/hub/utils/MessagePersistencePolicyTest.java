@@ -36,23 +36,22 @@ public class MessagePersistencePolicyTest {
     // ─── Nexsis vhost (18 → 15) ───────────────────────────────────────────────
 
     @Test
-    @DisplayName("should persist ResourcesInfoCisuWrapper (RC-RI) when vhost is 15-nexsis")
-    void shouldPersistResourcesInfoCisuWrapperFromNexsisVhost() {
+    @DisplayName("should persist resourcesInfoCisu (RC-RI) when vhost is 15-nexsis")
+    void shouldPersistResourcesInfoCisuFromNexsisVhost() {
         assertTrue(
-                MessagePersistencePolicy.shouldPersist(
-                        "15-nexsis_vactive", "ResourcesInfoCisuWrapper"));
+                MessagePersistencePolicy.shouldPersist("15-nexsis_vactive", "resourcesInfoCisu"));
     }
 
     @ParameterizedTest(name = "should not persist {0} when vhost is 15-nexsis")
     @ValueSource(
             strings = {
-                "CreateCaseWrapper", // RC-EDA
-                "CreateCaseHealthWrapper", // RS-EDA
-                "ResourcesInfoWrapper", // RS-RI (health type, wrong direction)
-                "ResourcesStatusWrapper", // RS-SR (health type, wrong direction)
-                "TechnicalNoreqWrapper",
-                "ReferenceWrapper",
-                "ErrorWrapper"
+                "createCase", // RC-EDA
+                "createCaseHealth", // RS-EDA
+                "resourcesInfo", // RS-RI (health type, wrong direction)
+                "resourcesStatus", // RS-SR (health type, wrong direction)
+                "technicalNoreq",
+                "reference",
+                "error"
             })
     @DisplayName("should not persist non-RC-RI types when vhost is 15-nexsis")
     void shouldNotPersistNonAllowedTypeFromNexsisVhost(String useCase) {
@@ -62,26 +61,26 @@ public class MessagePersistencePolicyTest {
     // ─── Health vhost (15 → 18) ───────────────────────────────────────────────
 
     @Test
-    @DisplayName("should persist ResourcesInfoWrapper (RS-RI) when vhost is 15-15_v*")
-    void shouldPersistResourcesInfoWrapperFromHealthVhost() {
-        assertTrue(MessagePersistencePolicy.shouldPersist("15-15_v2.1", "ResourcesInfoWrapper"));
+    @DisplayName("should persist resourcesInfo (RS-RI) when vhost is 15-15_v*")
+    void shouldPersistResourcesInfoFromHealthVhost() {
+        assertTrue(MessagePersistencePolicy.shouldPersist("15-15_v2.1", "resourcesInfo"));
     }
 
     @Test
-    @DisplayName("should persist ResourcesStatusWrapper (RS-SR) when vhost is 15-15_v*")
-    void shouldPersistResourcesStatusWrapperFromHealthVhost() {
-        assertTrue(MessagePersistencePolicy.shouldPersist("15-15_v1.5", "ResourcesStatusWrapper"));
+    @DisplayName("should persist resourcesStatus (RS-SR) when vhost is 15-15_v*")
+    void shouldPersistResourcesStatusFromHealthVhost() {
+        assertTrue(MessagePersistencePolicy.shouldPersist("15-15_v1.5", "resourcesStatus"));
     }
 
     @ParameterizedTest(name = "should not persist {0} when vhost is 15-15_v*")
     @ValueSource(
             strings = {
-                "CreateCaseWrapper", // RC-EDA
-                "CreateCaseHealthWrapper", // RS-EDA
-                "ResourcesInfoCisuWrapper", // RC-RI (nexsis type, wrong direction)
-                "TechnicalNoreqWrapper",
-                "ReferenceWrapper",
-                "ErrorWrapper"
+                "createCase", // RC-EDA
+                "createCaseHealth", // RS-EDA
+                "resourcesInfoCisu", // RC-RI (nexsis type, wrong direction)
+                "technicalNoreq",
+                "reference",
+                "error"
             })
     @DisplayName("should not persist non-RS-RI/RS-SR types when vhost is 15-15_v*")
     void shouldNotPersistNonAllowedTypeFromHealthVhost(String useCase) {
@@ -89,11 +88,11 @@ public class MessagePersistencePolicyTest {
     }
 
     @Test
-    @DisplayName("should persist ResourcesInfoWrapper on any 15-15_v* version")
+    @DisplayName("should persist resourcesInfo on any 15-15_v* version")
     void shouldPersistOnAnyHealthVhostVersion() {
-        assertTrue(MessagePersistencePolicy.shouldPersist("15-15_v1.5", "ResourcesInfoWrapper"));
-        assertTrue(MessagePersistencePolicy.shouldPersist("15-15_v2.0", "ResourcesInfoWrapper"));
-        assertTrue(MessagePersistencePolicy.shouldPersist("15-15_v2.1", "ResourcesStatusWrapper"));
+        assertTrue(MessagePersistencePolicy.shouldPersist("15-15_v1.5", "resourcesInfo"));
+        assertTrue(MessagePersistencePolicy.shouldPersist("15-15_v2.0", "resourcesInfo"));
+        assertTrue(MessagePersistencePolicy.shouldPersist("15-15_v2.1", "resourcesStatus"));
     }
 
     // ─── Unknown / null vhost ─────────────────────────────────────────────────
@@ -102,16 +101,14 @@ public class MessagePersistencePolicyTest {
     @DisplayName("should not persist any message when vhost is unknown")
     void shouldNotPersistFromUnknownVhost() {
         assertFalse(
-                MessagePersistencePolicy.shouldPersist(
-                        "some-other-vhost", "ResourcesInfoCisuWrapper"));
-        assertFalse(
-                MessagePersistencePolicy.shouldPersist("some-other-vhost", "ResourcesInfoWrapper"));
+                MessagePersistencePolicy.shouldPersist("some-other-vhost", "resourcesInfoCisu"));
+        assertFalse(MessagePersistencePolicy.shouldPersist("some-other-vhost", "resourcesInfo"));
     }
 
     @Test
     @DisplayName("should not persist when vhost is null")
     void shouldNotPersistWhenVhostIsNull() {
-        assertFalse(MessagePersistencePolicy.shouldPersist(null, "ResourcesInfoCisuWrapper"));
-        assertFalse(MessagePersistencePolicy.shouldPersist(null, "ResourcesInfoWrapper"));
+        assertFalse(MessagePersistencePolicy.shouldPersist(null, "resourcesInfoCisu"));
+        assertFalse(MessagePersistencePolicy.shouldPersist(null, "resourcesInfo"));
     }
 }
