@@ -59,6 +59,11 @@
       "groupName": "dependencies",
       "additionalBranchPrefix": "web/lrm-",
       "commitMessageSuffix": "(web/lrm)"
+    },
+    {
+      "matchDatasources": ["docker"],
+      "matchPackagePatterns": ["^dhi\\.io/"],
+      "minimumReleaseAge": null
     }
   ],
   "vulnerabilityAlerts": {
