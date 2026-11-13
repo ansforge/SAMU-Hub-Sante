@@ -1,4 +1,5 @@
 [versions]
+models = "3.5.1"
 springBoot = "4.1.0"
 testcontainers = "2.0.5"
 logstashEncoder = "9.0"
@@ -13,6 +14,7 @@ netty = "4.2.13.Final"
 jacksonBom = "3.1.1"
 
 [libraries]
+models = { module = "com.hubsante:models", version.ref = "models" }
 tomcat-embed-core = { module = "org.apache.tomcat.embed:tomcat-embed-core", version.ref = "tomcat" }
 netty-bom = { module = "io.netty:netty-bom", version.ref = "netty" }
 jackson-bom = { module = "com.fasterxml.jackson:jackson-bom", version.ref = "jacksonBom" }
