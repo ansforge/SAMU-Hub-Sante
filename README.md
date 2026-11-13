@@ -40,7 +40,7 @@ Pour les installer :
 ## 🤝 Contribuer
 
 Les contributions, *issues* & *pull requests* sont les bienvenues !
-<br />N'hésitez pas à utiliser notre [page d'*issues*](https://github.com/ansforge/SAMU-Hub-Sante/issue).
+<br />N'hésitez pas à utiliser notre [page d'*issues*](https://github.com/ansforge/SAMU-Hub-Sante/issues).
 
 ## Montrez votre soutien
 
