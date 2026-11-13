@@ -9,6 +9,16 @@ on:
         description: "Liste des versions de modèle séparées par des espaces"
         required: true
         type: string
+  # Called by release-module.yml: a tag it pushes with GITHUB_TOKEN does not
+  # trigger the push event above. The github context is the caller's there,
+  # so the tag comes as an input.
+  # doc : https://docs.github.com/en/actions/concepts/security/github_token#when-github_token-triggers-workflow-runs
+  workflow_call:
+    inputs:
+      tag:
+        description: "Tag to build, (ex: dispatcher-1.14.1)"
+        required: true
+        type: string
 jobs:
   get-tags:
     runs-on: ubuntu-latest
@@ -18,8 +28,9 @@ jobs:
     steps:
       - name: Extract version from tag
         id: extract-dispatcher-version
+        env:
+          TAG_NAME: ${{ inputs.tag || github.ref_name }}
         run: |
-          TAG_NAME="${{ github.ref_name }}"
           VERSION=${TAG_NAME#dispatcher-}
           PATTERN="^([0-9]+\.[0-9]+(\.[0-9]+)?)(-[A-Za-z0-9\.]+)*$"
           if [[ ! "$VERSION" =~ $PATTERN ]]; then
@@ -30,12 +41,10 @@ jobs:
           echo "version=$VERSION" >> $GITHUB_OUTPUT
       - name: Set model versions output
         id: set-model-versions
+        # Not on event_name: under workflow_call it is the caller's (workflow_dispatch).
+        env:
+          MODEL_VERSIONS: ${{ inputs.model_versions || vars.MODEL_VERSIONS }}
         run: |
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            MODEL_VERSIONS="${{ inputs.model_versions }}"
-          else
-            MODEL_VERSIONS="${{ vars.MODEL_VERSIONS }}"
-          fi
           VERSION_JSON_ARRAY=$(echo "$MODEL_VERSIONS" | jq -R 'split(" ")' | jq -c '.')
           echo $VERSION_JSON_ARRAY
           echo "versions=$VERSION_JSON_ARRAY" >> $GITHUB_OUTPUT
@@ -56,6 +65,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.tag }}
       - name: Set up JDK
         uses: actions/setup-java@v6
         with:
