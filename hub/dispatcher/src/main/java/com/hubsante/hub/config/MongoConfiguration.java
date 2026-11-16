@@ -113,8 +113,7 @@ public class MongoConfiguration {
                                 "payload.content.jsonContent.embeddedJsonContent.message.resourcesInfo.caseId",
                                 Sort.Direction.ASC)
                         .partial(
-                                PartialIndexFilter.of(
-                                        Criteria.where("type").is("resourcesInfo"))));
+                                PartialIndexFilter.of(Criteria.where("type").is("resourcesInfo"))));
         indexOps.createIndex(
                 new Index()
                         .named("idx_resourcesStatus_caseId_v2")
