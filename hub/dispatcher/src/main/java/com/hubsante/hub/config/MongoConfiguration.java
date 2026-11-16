@@ -93,8 +93,7 @@ public class MongoConfiguration {
                                     Sort.Direction.ASC)
                             .partial(
                                     PartialIndexFilter.of(
-                                            Criteria.where("type")
-                                                    .is("resourcesInfoCisu"))));
+                                            Criteria.where("type").is("resourcesInfoCisu"))));
         } catch (Exception e) {
             log.error(
                     "Failed to create MongoDB indexes, the database appears to be unreachable. "
