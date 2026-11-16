@@ -9,6 +9,7 @@ import {
 } from "./dom.js";
 import { API_URL } from "./constants.js";
 import { getCurrentFilteredClientsConfig } from "./filters.js";
+import { initMapLinks } from "./map-links.js";
 
 window.addEventListener("load", async () => {
   const svgResponse = await fetch("/img/carte-france.svg");
@@ -20,6 +21,7 @@ state.clientsConfigurations = clientsConfig.map((item) => ({
     label: constituteLabel(item),
   }));
   updateDepartmentInProdColor();
+  initMapLinks();
   updateFiltersSelectOptions();
   renderClientsConfigTable(state.clientsConfigurations);
 });

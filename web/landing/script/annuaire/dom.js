@@ -10,8 +10,8 @@ import {
   getDepartmentsInProd,
   getActorsFromDepartment,
   sortClientConfig,
-  getActorsInfo,
 } from "./data.js";
+import { createDepartmentLinks } from "./map-links.js";
 
 export function renderClientsConfigTable(clientsConfig) {
   const sortedClientConfig = sortClientConfig(clientsConfig);
@@ -108,11 +108,8 @@ function renderDepartmentInfo(dep) {
       ),
     );
   } else {
-    const actors_info = getActorsFromDepartment(dep.dataset.numDep).map((c) =>
-      getActorsInfo(c),
-    );
     divInfo.style.backgroundColor = "var(--primary)";
-    divInfo.appendChild(createUnorderedList(actors_info));
+    divInfo.appendChild(createDepartmentLinks(dep.dataset.numDep));
   }
 }
 
@@ -126,16 +123,6 @@ function createParagraph(text) {
   const p = document.createElement("p");
   p.innerText = text;
   return p;
-}
-
-function createUnorderedList(list) {
-  const ul = document.createElement("ul");
-  list.forEach((item) => {
-    const li = document.createElement("li");
-    li.textContent = item;
-    ul.appendChild(li);
-  });
-  return ul;
 }
 
 export function updateDepartmentInProdColor() {

@@ -395,19 +395,33 @@
           </li>
           <li class="js-tablist__item">
             <a href="#tabs-check-02" class="js-tablist__link">
-              Acteurs raccordés
+              Liste des acteurs raccordés
             </a>
           </li>
         </ul>
         <div class="js-tabcontent--container">
           <div id="tabs-check-01" class="js-tabcontent">
             <!-- Contenu de l'onglet 01 -->
+            <!-- Filtre par lien : les liens sélectionnés se cumulent (ET) -->
+            <div
+              id="perimeter-filter"
+              class="d-flex flex-wrap mb-2"
+              role="group"
+              aria-label="Filtrer la carte par lien"
+              style="width: 90%; padding-left: 10%; gap: 8px"
+            ></div>
+            <p class="small mb-3" style="width: 90%; padding-left: 10%">
+              Sélectionnez un ou plusieurs liens : seuls les départements ayant
+              tous les liens sélectionnés restent affichés.
+            </p>
             <div class="row" style="width: 90%; padding-left: 10%">
-              <div
-                id="div-map"
-                class="col-lg-7"
-                style="display: flex; justify-content: center"
-              >
+              <div class="col-lg-7">
+                <div
+                  id="div-map"
+                  style="display: flex; justify-content: center"
+                ></div>
+                <!-- Légende et partenaires nationaux, sous la carte -->
+                <div id="map-legend" class="mt-3 mb-5"></div>
               </div>
               <div id="aside-content" class="col-lg-5">
                 <div id="region-select" class="form-group">

@@ -48,3 +48,122 @@ body {
   fill: var(--primary-darker);
   transition: fill 0.3s ease;
 }
+
+/* ---------- Carte : filtre par lien, pastilles, légende ---------- */
+
+/* Départements écartés par le filtre */
+#div-map .department.is-dimmed,
+#div-map .department.is-dimmed:hover {
+  fill: var(--gray-400);
+}
+
+/* Pastilles des liens sélectionnés */
+#link-dots {
+  pointer-events: none;
+}
+
+#link-dots circle {
+  stroke: var(--white);
+  stroke-width: 1.2;
+  filter: drop-shadow(0 0 0.8px rgba(15, 63, 104, 0.9));
+}
+
+/* Pastille de couleur d'un lien (filtre, badges) */
+.link-dot {
+  display: inline-block;
+  flex: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px var(--gray-500);
+}
+
+#perimeter-filter .link-dot {
+  margin-right: 6px;
+  vertical-align: -1px;
+}
+
+/* Badge « pastille + libellé » d'un lien */
+.link-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border: 1px solid var(--gray-400);
+  border-radius: 16px;
+  background: var(--white);
+  color: var(--gray-900);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.link-badge .link-dot {
+  width: 10px;
+  height: 10px;
+}
+
+/* Liens d'un acteur dans l'encart du département */
+.link-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+}
+
+.link-badges + .link-badges {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.35);
+}
+
+/* Légende sous la carte */
+.map-legend__items {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 24px;
+  font-size: 14px;
+}
+
+.map-legend__swatch {
+  display: inline-block;
+  width: 22px;
+  height: 14px;
+  margin-right: 8px;
+  border-radius: 3px;
+  vertical-align: -2px;
+}
+
+.map-legend__swatch--has-links {
+  background: var(--primary);
+}
+
+.map-legend__swatch--no-links {
+  background: var(--gray-400);
+}
+
+/* Partenaires nationaux */
+.national-partners {
+  margin-top: 16px;
+  padding: 14px 20px;
+  border-left: 4px solid var(--primary);
+  border-radius: 0 12px 12px 12px;
+  background: var(--gray-200);
+}
+
+.national-partners__title {
+  margin-bottom: 8px;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--gray-900);
+}
+
+.national-partners__item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 4px;
+  font-size: 15px;
+  color: var(--gray-900);
+}
