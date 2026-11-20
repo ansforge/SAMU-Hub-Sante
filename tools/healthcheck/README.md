@@ -68,6 +68,25 @@ A `DEGRADED` dispatcher (MongoDB unreachable) only affects the 15-18 routing. Th
 
 `technical` gives the status of `rabbitmq`, `dispatcher`, `converter` and `persistence` (MongoDB).
 
+## Status metrics
+
+The connection to MongoDB is optional for the converter and the dispatchers: when it is lost they answer `DEGRADED` instead of `DOWN`. The healthcheck publishes the reachability of each component on `/metrics`:
+
+| Metric | Source | Value |
+| --- | --- | --- |
+| `dispatcher_status{dispatcher}` | `status` of the dispatcher | `1` if `UP` or `DEGRADED`, `0` otherwise |
+| `converter_status` | `status` of the converter | `1` if `UP` or `DEGRADED`, `0` otherwise |
+
+`*_status` means "reachable": a `DEGRADED` component (MongoDB unreachable) does not trigger the "component down" alert. The MongoDB state itself is published by the components (`dispatcher_mongodb_up`, `converter_mongodb_up`) and alerted on from their own metrics, so that a single alert is raised for a given component:
+
+| State | `*_status` | `*_mongodb_up` |
+| --- | --- | --- |
+| `UP` | `1` | `1` |
+| `DEGRADED` (MongoDB unreachable) | `1` | `0` |
+| Unreachable or `DOWN` | `0` | absent (the component is not scraped) |
+
+A `DEGRADED` converter is reported `DEGRADED` in `components.converter`, and no longer `DOWN`.
+
 ## Tests
 
 Run the tests:

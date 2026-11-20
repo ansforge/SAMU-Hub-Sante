@@ -6,10 +6,14 @@ from http_client import http_session
 
 from config import CONVERTER_HEALTH_URL
 
+# Known converter statuses are returned unchanged; any unrecognized status falls back to DOWN.
+# DEGRADED means the converter is reachable but cannot access its database.
+CONVERTER_ACCEPTED_STATUSES = (Status.UP.value, Status.DEGRADED.value)
+
 
 class ConverterHealthcheck(IChecker):
     converter_status_metric = Gauge(
-        "converter_status", "Statut du converter (1=UP, 0=DOWN)"
+        "converter_status", "Statut du converter (1=joignable: UP ou DEGRADED, 0=DOWN)"
     )
 
     def perform_checks(self):
@@ -17,14 +21,10 @@ class ConverterHealthcheck(IChecker):
         response.raise_for_status()
         data = response.json()
         status = data.get("status", Status.UNKNOWN.value)
-        self.converter_status_metric.set(1 if status == Status.UP.value else 0)
-        return {
-            "converter": (
-                {"status": Status.UP.value}
-                if status == Status.UP.value
-                else {"status": Status.DOWN.value}
-            )
-        }
+        if status not in CONVERTER_ACCEPTED_STATUSES:
+            status = Status.DOWN.value
+        self.converter_status_metric.set(0 if status == Status.DOWN.value else 1)
+        return {"converter": {"status": status}}
 
     def check_failure_fallback(self):
         self.converter_status_metric.set(0)

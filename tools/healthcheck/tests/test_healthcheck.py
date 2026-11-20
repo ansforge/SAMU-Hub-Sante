@@ -316,6 +316,7 @@ class HealthCheckTestCase(unittest.TestCase):
     @parameterized.expand(
         [
             (Status.UP.value, Status.UP.value, Status.UP.value),
+            (Status.DEGRADED.value, Status.DEGRADED.value, Status.DEGRADED.value),
             (Status.DOWN.value, Status.DOWN.value, Status.DEGRADED.value),
             (Status.UNKNOWN.value, Status.DOWN.value, Status.DEGRADED.value),
         ]
