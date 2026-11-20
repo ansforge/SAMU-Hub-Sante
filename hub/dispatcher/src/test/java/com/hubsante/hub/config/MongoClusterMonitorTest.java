@@ -21,17 +21,20 @@ import static org.mockito.Mockito.when;
 
 import com.mongodb.connection.ClusterDescription;
 import com.mongodb.event.ClusterDescriptionChangedEvent;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 class MongoClusterMonitorTest {
 
+    private SimpleMeterRegistry meterRegistry;
     private MongoClusterMonitor monitor;
 
     @BeforeEach
     void setUp() {
-        monitor = new MongoClusterMonitor();
+        meterRegistry = new SimpleMeterRegistry();
+        monitor = new MongoClusterMonitor(meterRegistry);
     }
 
     private static ClusterDescriptionChangedEvent event(boolean hasWritableServer) {
@@ -43,10 +46,15 @@ class MongoClusterMonitorTest {
         return event;
     }
 
+    private double gaugeValue() {
+        return meterRegistry.get("dispatcher_mongodb_up").gauge().value();
+    }
+
     @Test
     @DisplayName("should be down until a writable server is reported")
     void shouldBeDownInitially() {
         assertThat(monitor.isUp()).isFalse();
+        assertThat(gaugeValue()).isZero();
     }
 
     @Test
@@ -55,6 +63,7 @@ class MongoClusterMonitorTest {
         monitor.clusterDescriptionChanged(event(true));
 
         assertThat(monitor.isUp()).isTrue();
+        assertThat(gaugeValue()).isEqualTo(1.0);
     }
 
     @Test
@@ -64,6 +73,7 @@ class MongoClusterMonitorTest {
         monitor.clusterDescriptionChanged(event(false));
 
         assertThat(monitor.isUp()).isFalse();
+        assertThat(gaugeValue()).isZero();
     }
 
     @Test
@@ -74,5 +84,6 @@ class MongoClusterMonitorTest {
         monitor.clusterDescriptionChanged(event(true));
 
         assertThat(monitor.isUp()).isTrue();
+        assertThat(gaugeValue()).isEqualTo(1.0);
     }
 }
