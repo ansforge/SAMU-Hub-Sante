@@ -1,4 +1,4 @@
-import { CLIENT_ID_PREFIX, perimeter, perimeterLabels } from "./constants.js";
+import { CLIENT_ID_PREFIX } from "./constants.js";
 
 export const state = { clientsConfigurations: [] };
 
@@ -85,11 +85,4 @@ export function sortClientConfig(clientsConfig) {
     const clientIdB = (b.client_id || "").toLowerCase();
     return clientIdA.localeCompare(clientIdB);
   });
-}
-
-export function getActorsInfo(clientConfig) {
-  const activePerimeters = perimeter
-    .filter((p) => clientConfig.perimeters?.[p])
-    .map((p) => perimeterLabels[p]);
-  return activePerimeters.join(", ");
 }

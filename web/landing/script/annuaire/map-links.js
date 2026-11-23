@@ -11,6 +11,7 @@ const LINK_COLORS = {
   "15-cap": "#F29A2B",
   "15-cnr114": "#751F51",
   "15-portail": "#FAE832",
+  "15-gps": "#9AB938",
 };
 const LINKS = Object.keys(LINK_COLORS);
 
@@ -106,6 +107,7 @@ function updateMap() {
 
 // Une pastille par lien sélectionné dans chaque département qui les a tous.
 function renderLinkDots(svg) {
+  if (!svg) return; // carte non chargée : ne pas bloquer le reste de la page
   svg.querySelector("#link-dots")?.remove();
   if (selectedLinks.size === 0) return;
 

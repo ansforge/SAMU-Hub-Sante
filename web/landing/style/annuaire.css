@@ -57,6 +57,11 @@ body {
   fill: var(--gray-400);
 }
 
+/* Département grisé mais sélectionné : garder la surbrillance */
+#div-map .department.is-dimmed.selected {
+  fill: var(--gray-500);
+}
+
 /* Pastilles des liens sélectionnés */
 #link-dots {
   pointer-events: none;

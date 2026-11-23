@@ -8,7 +8,6 @@ import {
 import { FILTERS_CONFIG } from "./filters.js";
 import {
   getDepartmentsInProd,
-  getActorsFromDepartment,
   sortClientConfig,
 } from "./data.js";
 import { createDepartmentLinks } from "./map-links.js";

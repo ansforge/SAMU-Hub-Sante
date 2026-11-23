@@ -5,7 +5,6 @@ import {
   getActorsFromDepartment,
   state,
   sortClientConfig,
-  getActorsInfo,
 } from "../../script/annuaire/data.js";
 import { CLIENT_ID_PREFIX } from "../../script/annuaire/constants.js";
 import { expect, jest } from "@jest/globals";
@@ -124,19 +123,6 @@ describe("Data utils", () => {
       ];
       sortedClientConfig.forEach((c, index) => {
         expect(c.client_id).toEqual(expected_client_id_suite[index]);
-      });
-    });
-
-    test("should return client actors info", () => {
-      const expectedInfo = [
-        "15-15, 15-SMUR/RPIS",
-        "15-NexSIS",
-        "15-15, 15-SMUR/RPIS, 15-GPS",
-        "",
-        "",
-      ];
-      state.clientsConfigurations.forEach((c, index) => {
-        expect(getActorsInfo(c)).toEqual(expectedInfo[index]);
       });
     });
   });
