@@ -5,7 +5,7 @@ import {
   getCurrentFilteredClientsConfig,
 } from "../../script/annuaire/filters.js";
 import { state } from "../../script/annuaire/data.js";
-import { perimeter, FILTER_IDS } from "../../script/annuaire/constants.js";
+import { FILTER_IDS } from "../../script/annuaire/constants.js";
 
 describe("Filters utils", () => {
   beforeEach(() => {
@@ -57,8 +57,15 @@ describe("Filters utils", () => {
     expect(getEditors()).toEqual(["ANS", "Appligos", "NexSIS"]);
   });
 
-  test("getPerimeter should return a copy of perimeter", () => {
-    expect(getPerimeter()).toEqual(perimeter);
+  test("getPerimeter should return only active perimeters", () => {
+    state.clientsConfigurations = [
+      { client_id: "fr.health.samu410", perimeters: { "15-15": true } },
+      {
+        client_id: "fr.health.fire",
+        perimeters: { "15-nexsis": true, "15-15": false },
+      },
+    ];
+    expect(getPerimeter()).toEqual(["15-15", "15-nexsis"]);
   });
 
   describe("getCurrentFilteredClientsConfig", () => {

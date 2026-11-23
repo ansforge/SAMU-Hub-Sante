@@ -101,6 +101,12 @@ describe("Data utils", () => {
     });
 
     test("should return departments in prod from clients configurations", () => {
+      state.clientsConfigurations.push({
+        client_id: CLIENT_ID_PREFIX.SAMU + "010",
+        label: "SAMU 01",
+        perimeters: { "15-15": false, "15-nexsis": false },
+      });
+      // Un acteur raccordé sans lien actif ne colore pas son département
       expect(getDepartmentsInProd().sort()).toEqual(["33", "75"]);
     });
 

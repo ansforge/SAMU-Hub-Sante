@@ -6,20 +6,29 @@ import {
   onDepartmentSelected,
   hideInfoSelectedDepartment,
   unselectDepartment,
+  renderLinkFilters,
+  onLinkFilterClicked,
 } from "./dom.js";
 import { API_URL } from "./constants.js";
 import { getCurrentFilteredClientsConfig } from "./filters.js";
 
 window.addEventListener("load", async () => {
-  const svgResponse = await fetch("/img/carte-france.svg");
-  const svgContent = await svgResponse.text();
-  document.getElementById("div-map").innerHTML = svgContent;
+  try {
+    const svgResponse = await fetch("/img/carte-france.svg");
+    if (!svgResponse.ok) {
+      throw new Error(`Erreur HTTP : ${svgResponse.status}`);
+    }
+    document.getElementById("div-map").innerHTML = await svgResponse.text();
+  } catch (e) {
+    console.error("Erreur lors du chargement de la carte :", e);
+  }
   const clientsConfig = await fetchData(API_URL);
 state.clientsConfigurations = clientsConfig.map((item) => ({
     ...item,
     label: constituteLabel(item),
   }));
   updateDepartmentInProdColor();
+  renderLinkFilters();
   updateFiltersSelectOptions();
   renderClientsConfigTable(state.clientsConfigurations);
 });
@@ -28,6 +37,12 @@ document.querySelectorAll("#div-filtres select").forEach((select) => {
   select.addEventListener("change", () => {
     renderClientsConfigTable(getCurrentFilteredClientsConfig());
   });
+});
+
+document.getElementById("link-filters").addEventListener("click", (e) => {
+  const button = e.target.closest(".link-filter");
+  if (!button) return;
+  onLinkFilterClicked(button.dataset.link);
 });
 
 document.getElementById("div-map").addEventListener("click", (e) => {

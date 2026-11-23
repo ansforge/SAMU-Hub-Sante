@@ -48,3 +48,69 @@ body {
   fill: var(--primary-darker);
   transition: fill 0.3s ease;
 }
+
+#div-map .department.prod.filtered-out {
+  fill: var(--gray-400);
+}
+
+#div-map .department.prod.filtered-out:hover {
+  fill: var(--gray-500);
+}
+
+#div-map .department.prod.filtered-out.selected {
+  fill: var(--gray-600);
+}
+
+.link-dots {
+  pointer-events: none;
+}
+
+.link-dots circle {
+  stroke: var(--white);
+  stroke-width: 1.2;
+  filter: drop-shadow(0 0 0.8px rgba(15, 63, 104, 0.9));
+}
+
+.link-filter {
+  display: inline-flex;
+  align-items: center;
+}
+
+.link-filter .link-dot {
+  margin-right: 6px;
+}
+
+.link-dot {
+  display: inline-block;
+  flex: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px var(--gray-500);
+}
+
+/* Légende sous la carte */
+.map-legend__items {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 24px;
+  font-size: 14px;
+}
+
+.map-legend__swatch {
+  display: inline-block;
+  width: 22px;
+  height: 14px;
+  margin-right: 8px;
+  border-radius: 3px;
+  vertical-align: -2px;
+}
+
+.map-legend__swatch--has-links {
+  background: var(--primary);
+}
+
+.map-legend__swatch--no-links {
+  background: var(--gray-400);
+}
