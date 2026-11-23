@@ -1,6 +1,6 @@
-// Carte des acteurs : filtre par lien, pastilles, légende et partenaires nationaux.
-import { CLIENT_ID_PREFIX, perimeterLabels } from "./constants.js";
-import { state, getActorsFromDepartment } from "./data.js";
+// Carte des acteurs : filtre par lien, pastilles et légende.
+import { perimeterLabels } from "./constants.js";
+import { getActorsFromDepartment, getDepartmentsInProd } from "./data.js";
 
 // Liens proposés (dans l'ordre d'affichage) et couleur de leur pastille :
 // charte ANS (blanc, couleur secondaire, couleurs « illustratives »).
@@ -26,8 +26,11 @@ const LEGEND_ITEMS = [
 
 // Liens sélectionnés dans le filtre (vide = « Tous »).
 const selectedLinks = new Set();
+// Appelé à chaque clic sur un filtre (ex. : désélectionner le département en cours).
+let onFilterChange = () => {};
 
-export function initMapLinks() {
+export function initMapLinks(options = {}) {
+  onFilterChange = options.onFilterChange ?? onFilterChange;
   renderPerimeterFilter();
   renderMapLegend();
 }
@@ -43,20 +46,15 @@ function getDepartmentLinks(numDep) {
   return LINKS.filter((link) => links.has(link));
 }
 
+// Liens actifs dans au moins un département : les autres n'auraient aucun résultat.
+function getAvailableLinks() {
+  const links = new Set(getDepartmentsInProd().flatMap(getDepartmentLinks));
+  return LINKS.filter((link) => links.has(link));
+}
+
 function hasAllSelectedLinks(numDep) {
   const links = getDepartmentLinks(numDep);
   return [...selectedLinks].every((link) => links.includes(link));
-}
-
-function isDepartmentalClient({ client_id }) {
-  return client_id.startsWith(CLIENT_ID_PREFIX.SAMU) || client_id.startsWith(CLIENT_ID_PREFIX.SNP);
-}
-
-function getNationalPartners() {
-  return state.clientsConfigurations
-    .filter((client) => !isDepartmentalClient(client))
-    .map((client) => ({ name: client.client_name, links: getActiveLinks(client) }))
-    .filter((partner) => partner.links.length > 0);
 }
 
 /* ---------- Filtre par lien ---------- */
@@ -65,7 +63,7 @@ function renderPerimeterFilter() {
   const container = document.getElementById("perimeter-filter");
   container.replaceChildren(
     createFilterButton(null, "Tous"),
-    ...LINKS.map((link) => createFilterButton(link, perimeterLabels[link])),
+    ...getAvailableLinks().map((link) => createFilterButton(link, perimeterLabels[link])),
   );
   updateMap();
 }
@@ -85,6 +83,7 @@ function toggleLink(link) {
   if (!link) selectedLinks.clear();
   else if (selectedLinks.has(link)) selectedLinks.delete(link);
   else selectedLinks.add(link);
+  onFilterChange();
   updateMap();
 }
 
@@ -178,7 +177,7 @@ function getPathAnchor(path) {
   return best;
 }
 
-/* ---------- Légende et partenaires nationaux ---------- */
+/* ---------- Légende ---------- */
 
 function renderMapLegend() {
   const container = document.getElementById("map-legend");
@@ -189,17 +188,6 @@ function renderMapLegend() {
     items.appendChild(item);
   });
   container.replaceChildren(items);
-
-  const partners = getNationalPartners();
-  if (partners.length === 0) return;
-  const box = createElement("div", "national-partners");
-  box.appendChild(createElement("p", "national-partners__title", "Partenaires nationaux"));
-  partners.forEach(({ name, links }) => {
-    const row = createElement("p", "national-partners__item", name);
-    row.append(...links.map(createLinkBadge));
-    box.appendChild(row);
-  });
-  container.appendChild(box);
 }
 
 /* ---------- Encart du département ---------- */

@@ -141,29 +141,3 @@ body {
 .map-legend__swatch--no-links {
   background: var(--gray-400);
 }
-
-/* Partenaires nationaux */
-.national-partners {
-  margin-top: 16px;
-  padding: 14px 20px;
-  border-left: 4px solid var(--primary);
-  border-radius: 0 12px 12px 12px;
-  background: var(--gray-200);
-}
-
-.national-partners__title {
-  margin-bottom: 8px;
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--gray-900);
-}
-
-.national-partners__item {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-  margin: 0 0 4px;
-  font-size: 15px;
-  color: var(--gray-900);
-}

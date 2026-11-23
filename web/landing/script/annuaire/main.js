@@ -21,7 +21,7 @@ state.clientsConfigurations = clientsConfig.map((item) => ({
     label: constituteLabel(item),
   }));
   updateDepartmentInProdColor();
-  initMapLinks();
+  initMapLinks({ onFilterChange: clearSelectedDepartment });
   updateFiltersSelectOptions();
   renderClientsConfigTable(state.clientsConfigurations);
 });
@@ -39,11 +39,16 @@ document.getElementById("div-map").addEventListener("click", (e) => {
   onDepartmentSelected(dep);
 });
 
+function clearSelectedDepartment() {
+  document.getElementById("departements-list").value = "";
+  unselectDepartment();
+  hideInfoSelectedDepartment();
+}
+
 document.getElementById("dep-sel-btn").addEventListener("click", () => {
   const selectedDepValue = document.getElementById("departements-list").value;
   if (selectedDepValue === "") {
-    unselectDepartment();
-    hideInfoSelectedDepartment();
+    clearSelectedDepartment();
   } else {
     const dep = document.querySelector(`[data-num-dep="${selectedDepValue}"]`);
     onDepartmentSelected(dep);

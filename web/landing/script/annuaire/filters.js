@@ -24,8 +24,11 @@ export function getActors() {
   ];
 }
 
+// Périmètres actifs chez au moins un acteur : les autres n'auraient aucun résultat.
 export function getPerimeter() {
-  return [...perimeter];
+  return perimeter.filter((p) =>
+    state.clientsConfigurations.some((item) => item.perimeters?.[p]),
+  );
 }
 
 export function getCurrentFilteredClientsConfig() {
