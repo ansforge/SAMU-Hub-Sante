@@ -54,7 +54,7 @@ Each connection is also summarized per vhost in the response: `<vhost>-shovels` 
 
 In addition to `components`, `/health` and `/internal/health` return a `perimeters` block and a `technical` block, and the global `status` is computed from them (`UP`, `DEGRADED` or `DOWN`, always with HTTP 200). The rules are in `checks/platform_status.py`.
 
-Each line of the dispatchers config file has an optional perimeter: `<name>;<url>;<perimeter>`, with `15-15` or `15-18`. A warning is logged for a dispatcher without perimeter.
+Each line of the dispatchers config file is `<name>;<url>`. The perimeter of a dispatcher is deduced from its name, `dispatcher-<perimeter>_v<version>`: `15-15` gives the `15-15` perimeter and `15-nexsis` gives `15-18` (the table is `PERIMETER_BY_DISPATCHER_PERIMETER` in `checks/dispatcher.py`). Other dispatchers (`15-smur`, `15-gps`, `15-sas`) are in no perimeter.
 
 | Item | `DOWN` | `DEGRADED` |
 | --- | --- | --- |
