@@ -7,10 +7,11 @@ from collections import OrderedDict
 from prometheus_flask_exporter import PrometheusMetrics
 
 from utils import remove_error_keys
-from checks.status import Status
+from checks.status import Status, aggregate_statuses
+from checks.platform_status import build_platform_status
 from checks.converter import ConverterHealthcheck
 from checks.rabbitmq import RabbitMQHealthcheck
-from checks.dispatcher import DispatchersHealthcheck
+from checks.dispatcher import DISPATCHERS_AGGREGATE_NAME, DispatchersHealthcheck
 from checks.annuaire import AnnuaireHealthcheck
 from checks.hubex_partners_shovels import HubexPartnersHealthcheck
 from checks.hubex_consumers import HubexConsumersHealthcheck
@@ -55,8 +56,49 @@ DEFAULT_FLASK_HOST = "0.0.0.0"
 DEFAULT_FLASK_PORT = 8080
 
 
+def _component_status(components, name):
+    return components.get(name, {}).get("status", Status.UNKNOWN.value)
+
+
+def _connection_status(components, vhosts, suffix):
+    """Aggregated status of the Hubex connections of all the vhosts, or None if
+    there is nothing to monitor."""
+    statuses = [
+        components[f"{vhost}-{suffix}"]["status"]
+        for vhost in vhosts
+        if f"{vhost}-{suffix}" in components
+    ]
+    return aggregate_statuses(statuses) if statuses else None
+
+
+def compute_platform_status(components):
+    fire_connections = {
+        "fire_to_health": _connection_status(
+            components, hubex_partners.SHOVELS_MAP, "shovels"
+        ),
+        "health_to_fire": _connection_status(
+            components, hubex_consumers.QUEUES_MAP, "consumers"
+        ),
+    }
+    return build_platform_status(
+        rabbitmq=_component_status(components, "rabbitmq_server"),
+        converter=_component_status(components, "converter"),
+        mongodb=_component_status(components, "mongodb"),
+        dispatchers_aggregate=_component_status(components, DISPATCHERS_AGGREGATE_NAME),
+        dispatcher_statuses={
+            name: _component_status(components, name)
+            for name in dispatcher.dispatcher_instances
+        },
+        dispatcher_perimeters=dispatcher.dispatcher_perimeters,
+        fire_connections={
+            name: status
+            for name, status in fire_connections.items()
+            if status is not None
+        },
+    )
+
+
 def compute_globale_status(custom_checkers):
-    global_status = Status.UP.value
     components = OrderedDict()
 
     with ThreadPoolExecutor() as executor:
@@ -65,13 +107,17 @@ def compute_globale_status(custom_checkers):
             for checker in custom_checkers
         ]
         for _, future in futures:
-            health_statuses = future.result()
-            for component, status in health_statuses.items():
-                components[component] = status
-                if status["status"] == Status.DOWN.value:
-                    global_status = Status.DOWN.value
+            components.update(future.result())
 
-    result = OrderedDict([("status", global_status), ("components", components)])
+    platform = compute_platform_status(components)
+    result = OrderedDict(
+        [
+            ("status", platform["status"]),
+            ("components", components),
+            ("perimeters", platform["perimeters"]),
+            ("technical", platform["technical"]),
+        ]
+    )
     return remove_error_keys(result)
 
 

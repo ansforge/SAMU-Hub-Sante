@@ -1,5 +1,6 @@
 import logging
 import os
+import re
 from concurrent.futures import ThreadPoolExecutor
 from typing import Dict
 from collections import OrderedDict
@@ -7,27 +8,52 @@ from collections import OrderedDict
 from prometheus_client import Gauge
 
 from checks.checker import IChecker
-from checks.status import Status
+from checks.status import Status, aggregate_statuses
 from http_client import http_session
 
 from config import DISPATCHER_CONFIG_FILE_PATH
+
 # DISPATCHER_CONFIG_FILE_PATH must point to a file where each non-empty,
 # non-comment line has the format: <dispatcher_name>;<dispatcher_health_url>
 # The path may be absolute or relative to the healthcheck root directory.
 # Example:
-# dispatcher1;http://localhost:8080/actuator/health
-# dispatcher2;http://localhost:8081/actuator/health
+# dispatcher-15-15_v1.5;http://localhost:8080/actuator/health
+# dispatcher-15-nexsis_v1.9;http://localhost:8081/actuator/health
+
+PERIMETER_15_15 = "15-15"
+PERIMETER_15_18 = "15-18"
+PERIMETERS = (PERIMETER_15_15, PERIMETER_15_18)
+# Perimeter of the dispatcher (from its name) -> perimeter of the platform status.
+# A dispatcher with another perimeter (15-smur, 15-gps, 15-sas...) is in no perimeter.
+PERIMETER_BY_DISPATCHER_PERIMETER = {
+    "15-15": PERIMETER_15_15,
+    "15-nexsis": PERIMETER_15_18,
+}
+DISPATCHER_NAME_PATTERN = re.compile(r"^dispatcher-(?P<perimeter>.+)_v[^_]*$")
+DISPATCHERS_AGGREGATE_NAME = "dispatchers"
+# Known actuator statuses are returned unchanged; any unrecognized status falls back to DOWN.
+DISPATCHER_ACCEPTED_STATUSES = (Status.UP.value, Status.DEGRADED.value)
+
+
+def perimeter_from_name(name: str) -> str | None:
+    """Perimeter of the platform status of a dispatcher named
+    dispatcher-<perimeter>_v<version>, or None if its perimeter is not monitored."""
+    match = DISPATCHER_NAME_PATTERN.match(name)
+    if match is None:
+        return None
+    return PERIMETER_BY_DISPATCHER_PERIMETER.get(match.group("perimeter"))
 
 
 class DispatchersHealthcheck(IChecker):
     dispatcher_status_metric = Gauge(
         "dispatcher_status",
-        "Statut des dispatchers (1=UP, 0=DOWN)",
+        "Statut des dispatchers (1=joignable: UP ou DEGRADED, 0=DOWN)",
         ["dispatcher"],
     )
 
     def __init__(self):
         self.dispatcher_instances: Dict[str, str] = {}
+        self.dispatcher_perimeters: Dict[str, str | None] = {}
         self._load_config()
         self._init_metrics()
 
@@ -51,6 +77,9 @@ class DispatchersHealthcheck(IChecker):
                     continue
                 name, url = parsed
                 self.dispatcher_instances[name] = url
+                self.dispatcher_perimeters[name] = perimeter_from_name(name)
+                if self.dispatcher_perimeters[name] is None:
+                    logging.debug("Dispatcher %s is in no monitored perimeter", name)
 
         if not self.dispatcher_instances:
             raise RuntimeError(f"No dispatchers loaded from {path}")
@@ -87,7 +116,14 @@ class DispatchersHealthcheck(IChecker):
                 name: executor.submit(self.single_dispatcher_healthcheck, name, url)
                 for name, url in self.dispatcher_instances.items()
             }
-            return {name: future.result() for name, future in futures.items()}
+            result = {name: future.result() for name, future in futures.items()}
+
+        result[DISPATCHERS_AGGREGATE_NAME] = {
+            "status": aggregate_statuses(
+                instance["status"] for instance in result.values()
+            )
+        }
+        return result
 
     def check_failure_fallback(self) -> Dict[str, dict]:
         result = {}
@@ -96,6 +132,7 @@ class DispatchersHealthcheck(IChecker):
             result[name] = {"status": Status.DOWN.value}
             self.dispatcher_status_metric.labels(dispatcher=name).set(0)
 
+        result[DISPATCHERS_AGGREGATE_NAME] = {"status": Status.DOWN.value}
         return result
 
     def single_dispatcher_healthcheck(self, name: str, url: str) -> dict:
@@ -107,9 +144,13 @@ class DispatchersHealthcheck(IChecker):
 
             data = response.json()
             status = data.get("status", Status.UNKNOWN.value)
+            if status not in DISPATCHER_ACCEPTED_STATUSES:
+                status = Status.DOWN.value
 
-            is_up = status == Status.UP.value
-            self.dispatcher_status_metric.labels(dispatcher=name).set(1 if is_up else 0)
+            is_reachable = status in DISPATCHER_ACCEPTED_STATUSES
+            self.dispatcher_status_metric.labels(dispatcher=name).set(
+                1 if is_reachable else 0
+            )
 
             return OrderedDict(
                 [

@@ -46,7 +46,46 @@ Both config files use one line per vhost, with the monitored queues separated by
 
 For the consumers check, each queue is exposed in the response as `<vhost>-<queue>-consumers` and in the Prometheus metric `hubex_consumers_status`. A queue is `DOWN` when it has no consumer, when it does not exist or when the RabbitMQ API cannot be reached. The `info` queue is not monitored since the partners choose not to consume it.
 
+Each connection is also summarized per vhost in the response: `<vhost>-shovels` (Hubex -> Hub Santé) and `<vhost>-consumers` (Hub Santé -> Hubex). The status is `UP` when all the shovels (or queues) of the vhost are `UP`, `DOWN` when all are `DOWN` and `DEGRADED` otherwise. The same aggregation applies to the dispatchers, in the `dispatchers` entry.
+
 `QUEUES_URL` is the RabbitMQ management API queues endpoint, restricted to the needed columns: `http://localhost:15672/api/queues?columns=vhost,name,consumers`.
+
+## Platform status
+
+In addition to `components`, `/health` and `/internal/health` return a `perimeters` block and a `technical` block, and the global `status` is computed from them (`UP`, `DEGRADED` or `DOWN`, always with HTTP 200). The rules are in `checks/platform_status.py`.
+
+Each line of the dispatchers config file is `<name>;<url>`. The perimeter of a dispatcher is deduced from its name, `dispatcher-<perimeter>_v<version>`: `15-15` gives the `15-15` perimeter and `15-nexsis` gives `15-18` (the table is `PERIMETER_BY_DISPATCHER_PERIMETER` in `checks/dispatcher.py`). Other dispatchers (`15-smur`, `15-gps`, `15-sas`) are in no perimeter.
+
+| Item | `DOWN` | `DEGRADED` |
+| --- | --- | --- |
+| `perimeters.15-15` (15-15 and 15-CAP) | all the 15-15 dispatchers are `DOWN` | a 15-15 dispatcher or the converter is `DOWN` |
+| `perimeters.15-18.routing` | the 15-18 dispatcher is `DOWN`, or all the dispatchers are `DOWN` | a dispatcher is not `UP`, the converter is `DOWN` or MongoDB is unreachable |
+| Global `status` | RabbitMQ is `DOWN` or all the perimeters are `DOWN` | a perimeter or a `technical` item is not `UP` |
+
+A `DEGRADED` dispatcher (MongoDB unreachable) only affects the 15-18 routing. The annuaire does not impact the status.
+
+`perimeters.15-18.fire_connections` exposes the connections with the Hubex fire: `fire_to_health` (shovels) and `health_to_fire` (consumers). They depend on the partner, so they change neither the routing nor the global status. The `fire_connections` key is omitted when there is nothing to monitor.
+
+`technical` gives the status of `rabbitmq`, `dispatcher`, `converter` and `persistence` (MongoDB).
+
+## Status metrics
+
+The connection to MongoDB is optional for the converter and the dispatchers: when it is lost they answer `DEGRADED` instead of `DOWN`. The healthcheck publishes the reachability of each component on `/metrics`:
+
+| Metric | Source | Value |
+| --- | --- | --- |
+| `dispatcher_status{dispatcher}` | `status` of the dispatcher | `1` if `UP` or `DEGRADED`, `0` otherwise |
+| `converter_status` | `status` of the converter | `1` if `UP` or `DEGRADED`, `0` otherwise |
+
+`*_status` means "reachable": a `DEGRADED` component (MongoDB unreachable) does not trigger the "component down" alert. The MongoDB state itself is published by the components (`dispatcher_mongodb_up`, `converter_mongodb_up`) and alerted on from their own metrics, so that a single alert is raised for a given component:
+
+| State | `*_status` | `*_mongodb_up` |
+| --- | --- | --- |
+| `UP` | `1` | `1` |
+| `DEGRADED` (MongoDB unreachable) | `1` | `0` |
+| Unreachable or `DOWN` | `0` | absent (the component is not scraped) |
+
+A `DEGRADED` converter is reported `DEGRADED` in `components.converter`, and no longer `DOWN`.
 
 ## Tests
 

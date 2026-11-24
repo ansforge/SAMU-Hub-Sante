@@ -1,8 +1,12 @@
+import logging
 import os
 import unittest
-from unittest.mock import patch, mock_open
+from unittest.mock import patch, mock_open, MagicMock
 
-from checks.dispatcher import DispatchersHealthcheck
+from parameterized import parameterized
+
+from checks.dispatcher import DispatchersHealthcheck, perimeter_from_name
+from checks.status import Status
 
 
 def _instance_without_load() -> DispatchersHealthcheck:
@@ -106,6 +110,142 @@ class LoadConfigTestCase(unittest.TestCase):
             {
                 "dispatcher1": "http://dispatcher1/health",
                 "dispatcher2": "http://dispatcher2/health",
+            },
+        )
+
+    def test_loads_perimeters_from_names(self):
+        config_content = (
+            "dispatcher-15-15_v1.5;http://d1/health\n"
+            "dispatcher-15-nexsis_vactive;http://d2/health\n"
+            "dispatcher-15-smur_v1.7;http://d3/health\n"
+        )
+        with (
+            patch("checks.dispatcher.DISPATCHER_CONFIG_FILE_PATH", "/abs/path.txt"),
+            patch("checks.dispatcher.os.path.exists", return_value=True),
+            patch("checks.dispatcher.open", mock_open(read_data=config_content)),
+        ):
+            self.checker._load_config()
+
+        self.assertEqual(
+            self.checker.dispatcher_perimeters,
+            {
+                "dispatcher-15-15_v1.5": "15-15",
+                "dispatcher-15-nexsis_vactive": "15-18",
+                "dispatcher-15-smur_v1.7": None,
+            },
+        )
+
+
+class PerimeterFromNameTestCase(unittest.TestCase):
+    @parameterized.expand(
+        [
+            ("dispatcher-15-15_v1.5", "15-15"),
+            ("dispatcher-15-15_v2.1", "15-15"),
+            ("dispatcher-15-nexsis_v1.9", "15-18"),
+            ("dispatcher-15-nexsis_vactive", "15-18"),
+            ("dispatcher-15-smur_v1.7", None),
+            ("dispatcher-15-gps_v1.3", None),
+            ("dispatcher-15-sas_v1.0", None),
+            ("dispatcher1", None),
+            ("dispatcher-15-15", None),
+            ("15-15_v1.5", None),
+        ]
+    )
+    def test_perimeter_from_name(self, name, expected):
+        self.assertEqual(perimeter_from_name(name), expected)
+
+
+class PerformChecksTestCase(unittest.TestCase):
+    def setUp(self):
+        logging.disable(logging.CRITICAL)
+        self.checker = _instance_without_load()
+        self.checker.dispatcher_instances = {
+            "dispatcher1": "http://dispatcher1/health",
+            "dispatcher2": "http://dispatcher2/health",
+        }
+
+    def tearDown(self):
+        logging.disable(logging.NOTSET)
+
+    def _mock_responses(self, statuses):
+        def side_effect(url, **kwargs):
+            name = url.split("//")[1].split("/")[0]
+            response = MagicMock()
+            response.json.return_value = {"status": statuses[name], "components": {}}
+            return response
+
+        return side_effect
+
+    @parameterized.expand(
+        [
+            ("all_up", "UP", "UP", Status.UP.value),
+            ("all_down", "DOWN", "DOWN", Status.DOWN.value),
+            ("one_down", "UP", "DOWN", Status.DEGRADED.value),
+            ("one_degraded", "UP", "DEGRADED", Status.DEGRADED.value),
+            ("all_degraded", "DEGRADED", "DEGRADED", Status.DEGRADED.value),
+        ]
+    )
+    @patch("checks.dispatcher.http_session.get")
+    def test_aggregated_status(self, _, status1, status2, expected, mock_get):
+        mock_get.side_effect = self._mock_responses(
+            {"dispatcher1": status1, "dispatcher2": status2}
+        )
+        result = self.checker.check_wrapper()
+        self.assertEqual(result["dispatchers"]["status"], expected)
+        self.assertEqual(result["dispatcher1"]["status"], status1)
+        self.assertEqual(result["dispatcher2"]["status"], status2)
+
+    @patch("checks.dispatcher.http_session.get")
+    def test_unexpected_actuator_status_is_down(self, mock_get):
+        mock_get.side_effect = self._mock_responses(
+            {"dispatcher1": "OUT_OF_SERVICE", "dispatcher2": "UP"}
+        )
+        result = self.checker.check_wrapper()
+        self.assertEqual(result["dispatcher1"]["status"], Status.DOWN.value)
+        self.assertEqual(result["dispatchers"]["status"], Status.DEGRADED.value)
+
+    @patch("checks.dispatcher.http_session.get")
+    def test_degraded_instance_metric_is_one(self, mock_get):
+        mock_get.side_effect = self._mock_responses(
+            {"dispatcher1": "DEGRADED", "dispatcher2": "UP"}
+        )
+        self.checker.check_wrapper()
+        metric = DispatchersHealthcheck.dispatcher_status_metric
+        self.assertEqual(metric.labels(dispatcher="dispatcher1")._value.get(), 1)
+        self.assertEqual(metric.labels(dispatcher="dispatcher2")._value.get(), 1)
+
+    @patch("checks.dispatcher.http_session.get")
+    def test_down_instance_metric_is_zero(self, mock_get):
+        mock_get.side_effect = self._mock_responses(
+            {"dispatcher1": "OUT_OF_SERVICE", "dispatcher2": "UP"}
+        )
+        self.checker.check_wrapper()
+        metric = DispatchersHealthcheck.dispatcher_status_metric
+        self.assertEqual(metric.labels(dispatcher="dispatcher1")._value.get(), 0)
+        self.assertEqual(metric.labels(dispatcher="dispatcher2")._value.get(), 1)
+
+    @patch("checks.dispatcher.http_session.get")
+    def test_instance_error_is_down_and_aggregate_degraded(self, mock_get):
+        def side_effect(url, **kwargs):
+            if "dispatcher1" in url:
+                raise Exception("unreachable")
+            response = MagicMock()
+            response.json.return_value = {"status": "UP"}
+            return response
+
+        mock_get.side_effect = side_effect
+        result = self.checker.check_wrapper()
+        self.assertEqual(result["dispatcher1"]["status"], Status.DOWN.value)
+        self.assertEqual(result["dispatchers"]["status"], Status.DEGRADED.value)
+
+    def test_fallback_marks_all_down(self):
+        result = self.checker.check_failure_fallback()
+        self.assertEqual(
+            result,
+            {
+                "dispatcher1": {"status": Status.DOWN.value},
+                "dispatcher2": {"status": Status.DOWN.value},
+                "dispatchers": {"status": Status.DOWN.value},
             },
         )
 
