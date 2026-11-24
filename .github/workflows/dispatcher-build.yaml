@@ -96,7 +96,7 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Run tests, build and push Docker image
+      - name: Build and push Docker image
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DISPATCHER_VERSION: ${{ needs.get-tags.outputs.dispatcher-version }}
