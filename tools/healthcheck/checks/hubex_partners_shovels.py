@@ -5,7 +5,7 @@ import sys
 from prometheus_client import Gauge
 
 from checks.checker import IChecker
-from checks.status import Status
+from checks.status import Status, aggregate_statuses
 from http_client import http_session
 from config import (
     SHOVEL_STATUS_URL,
@@ -98,6 +98,7 @@ class HubexPartnersHealthcheck(IChecker):
         data = response.json()
         result = {}
         for vhost, shovels_list in self.SHOVELS_MAP.items():
+            shovel_statuses = []
             for shovel in shovels_list:
                 logging.info(
                     f"Checking health of hubex partner connection for vhost {vhost} and shovel {shovel}"
@@ -105,9 +106,14 @@ class HubexPartnersHealthcheck(IChecker):
                 shovel_status = check_shovel_response(data, vhost, shovel)
                 shovel_label = f"{vhost}-{shovel}"
                 result[shovel_label] = shovel_status
+                shovel_statuses.append(shovel_status["status"])
                 self.hubex_partners_status_metric.labels(shovel=shovel_label).set(
                     1 if shovel_status["status"] == Status.UP.value else 0
                 )
+            if shovel_statuses:
+                result[f"{vhost}-shovels"] = {
+                    "status": aggregate_statuses(shovel_statuses)
+                }
         return result
 
     def check_failure_fallback(self):
@@ -117,4 +123,6 @@ class HubexPartnersHealthcheck(IChecker):
                 shovel_label = f"{vhost}-{shovel}"
                 result[shovel_label] = {"status": Status.DOWN.value}
                 self.hubex_partners_status_metric.labels(shovel=shovel_label).set(0)
+            if shovels_list:
+                result[f"{vhost}-shovels"] = {"status": Status.DOWN.value}
         return result
