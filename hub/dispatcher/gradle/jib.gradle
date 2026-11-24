@@ -1,58 +1,23 @@
+def appVersion = project.version.toString()
+
 jib {
     from {
         image 'dhi.io/eclipse-temurin:21-alpine3.23'
     }
-    to {
-        image "ghcr.io/${System.getenv('GITHUB_REPOSITORY_OWNER')}/dispatcher"
-        tags = gitRefs()
-    }
     container {
         environment = [
-                'APP_VERSION'      : project.version,
+                'APP_VERSION'      : appVersion,
                 'APP_MODEL_VERSION': modelVersion
         ]
     }
 }
 
-import groovy.json.JsonSlurper
-
-def gitRefs() {
-    try {
-        def releaseCommitHash = null
-        def tagName = null
-
-        if (System.getenv('GITHUB_TOKEN')) {
-            def releaseData = callGithubAPI('releases/latest')
-            tagName = releaseData.tag_name
-
-            def commitData = callGithubAPI('commits/' + tagName)
-            releaseCommitHash = commitData.sha.take(7)
-            println("Release commit hash: " + releaseCommitHash)
+tasks.matching { it.name.startsWith('jib') }.configureEach {
+    doFirst {
+        // Project.DEFAULT_VERSION is set to "unspecified" by Gradle.
+        // Same values when not provided by the user through a CLI argument.
+        if (appVersion == Project.DEFAULT_VERSION) {
+            throw new GradleException("-Pversion is required to build the dispatcher image (e.g. -Pversion=1.15.0 or -Pversion=local-dev)")
         }
-
-        def result = project.providers.exec {
-            commandLine 'git', 'rev-parse', '--short=7', 'HEAD'
-        }
-
-        def currentCommitHash = result.standardOutput.asText.get().trim()
-        println("Current commit hash: " + currentCommitHash)
-
-        if (currentCommitHash == releaseCommitHash) {
-            return ['latest', currentCommitHash, tagName]
-        } else {
-            return [currentCommitHash]
-        }
-    } catch (Exception e) {
-        throw new GradleException('Failed to retrieve Git commit hash.', e)
     }
-}
-
-static def callGithubAPI(String endpoint) {
-    def apiUrl = 'https://api.github.com/repos/ansforge/SAMU-Hub-Sante/'
-    def token = System.getenv('GITHUB_TOKEN')
-    def request = new URL(apiUrl + endpoint).openConnection()
-    request.setRequestProperty('Authorization', 'token ' + token)
-    request.connect()
-
-    return new JsonSlurper().parseText(request.getInputStream().getText())
 }
