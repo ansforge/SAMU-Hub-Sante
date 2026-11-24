@@ -23,11 +23,6 @@ export const perimeterLabels = {
   "15-portail": "15-Portail",
 };
 
-export const perimeterColors = {
-  "15-15": "#FFFFFF", "15-nexsis": "#E11414", "15-smur": "#4EC79C",
-  "15-gps": "#957EC6", "15-cap": "#FAE832", "15-cnr114": "#EA74B9",
-  "15-portail": "#8B5612",
-};
 
 export const perimeterInVhost = {
   [perimeter[0]]: "15-15",

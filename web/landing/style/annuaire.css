@@ -69,7 +69,19 @@ body {
   stroke: var(--white);
   stroke-width: 1.2;
   filter: drop-shadow(0 0 0.8px rgba(15, 63, 104, 0.9));
+  fill: var(--perimeter-color);
 }
+
+/* Couleurs par périmètre — utilisées via --perimeter-color */
+.perimeter-15-15      { --perimeter-color: #FFFFFF; }
+.perimeter-15-nexsis  { --perimeter-color: #E11414; }
+.perimeter-15-smur    { --perimeter-color: #4EC79C; }
+.perimeter-15-gps     { --perimeter-color: #957EC6; }
+.perimeter-15-cap     { --perimeter-color: #FAE832; }
+.perimeter-15-cnr114  { --perimeter-color: #EA74B9; }
+.perimeter-15-portail { --perimeter-color: #8B5612; }
+
+.link-dot { background-color: var(--perimeter-color); }
 
 .link-filter {
   display: inline-flex;

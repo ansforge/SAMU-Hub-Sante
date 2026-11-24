@@ -3,7 +3,6 @@ import {
   perimeterInVhost,
   perimeterLabels,
   perimeterPdfLinks,
-  perimeterColors,
   perimeter,
 } from "./constants.js";
 import { FILTERS_CONFIG } from "./filters.js";
@@ -201,7 +200,7 @@ function createLinkFilterButton(label, link) {
 function createLinkDot(link) {
   const dot = document.createElement("span");
   dot.classList.add("link-dot");
-  dot.style.backgroundColor = perimeterColors[link];
+  dot.classList.add(`perimeter-${link}`);
   return dot;
 }
 
@@ -271,7 +270,7 @@ function renderDots(dep, links) {
       circle.setAttribute("cx", x);
       circle.setAttribute("cy", y);
       circle.setAttribute("r", DOT_RADIUS);
-      circle.setAttribute("fill", perimeterColors[link]);
+      circle.classList.add(`perimeter-${link}`);
       group.appendChild(circle);
     });
   });
