@@ -4,8 +4,7 @@ import {
   updateFiltersSelectOptions,
   updateDepartmentInProdColor,
   onDepartmentSelected,
-  hideInfoSelectedDepartment,
-  unselectDepartment,
+  resetDepartmentSelection,
   renderLinkFilters,
   onLinkFilterClicked,
 } from "./dom.js";
@@ -49,8 +48,7 @@ document.getElementById("div-map").addEventListener("click", (e) => {
 document.getElementById("dep-sel-btn").addEventListener("click", () => {
   const selectedDepValue = document.getElementById("departements-list").value;
   if (selectedDepValue === "") {
-    unselectDepartment();
-    hideInfoSelectedDepartment();
+    resetDepartmentSelection();
   } else {
     const dep = document.querySelector(`[data-num-dep="${selectedDepValue}"]`);
     onDepartmentSelected(dep);

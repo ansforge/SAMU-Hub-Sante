@@ -231,7 +231,7 @@ export function onLinkFilterClicked(link) {
   applyLinkFilter();
 }
 
-function resetDepartmentSelection() {
+export function resetDepartmentSelection() {
   unselectDepartment();
   hideInfoSelectedDepartment();
   document.getElementById("departements-list").value = "";
@@ -239,8 +239,8 @@ function resetDepartmentSelection() {
 
 function applyLinkFilter() {
   const selected = mapFilter.selectedLinks;
-  document.querySelectorAll(".link-dots").forEach((g) => g.remove());
-  document.querySelectorAll(".department.prod").forEach((dep) => {
+  document.querySelectorAll("#div-map .link-dots").forEach((g) => g.remove());
+  document.querySelectorAll("#div-map .department.prod").forEach((dep) => {
     const links = getDepartmentLinks(dep.dataset.numDep);
     const keep = selected.every((l) => links.includes(l));
     dep.classList.toggle("filtered-out", !keep);
