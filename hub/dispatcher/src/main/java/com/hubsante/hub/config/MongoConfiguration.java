@@ -16,7 +16,12 @@
 package com.hubsante.hub.config;
 
 import com.hubsante.hub.model.PersistedMessage;
+import jakarta.annotation.PreDestroy;
 import java.time.Duration;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.annotation.Configuration;
@@ -30,6 +35,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 
 @Configuration
 @EnableMongoAuditing
+@Slf4j
 public class MongoConfiguration {
 
     private final MongoTemplate mongoTemplate;
@@ -37,12 +43,58 @@ public class MongoConfiguration {
     @Value("${persistence.arrivedAt.expiresDurationDays}")
     private int expiresDurationDays;
 
+    @Value("${mongo.index-creation-retry.initial-delay-ms:1000}")
+    private long initialRetryDelayMs;
+
+    @Value("${mongo.index-creation-retry.max-delay-ms:300000}")
+    private long maxRetryDelayMs;
+
+    private final ScheduledExecutorService retryScheduler =
+            Executors.newSingleThreadScheduledExecutor(
+                    runnable -> {
+                        Thread thread = new Thread(runnable, "mongo-index-creation-retry");
+                        thread.setDaemon(true);
+                        return thread;
+                    });
+
     public MongoConfiguration(MongoTemplate mongoTemplate) {
         this.mongoTemplate = mongoTemplate;
     }
 
     @EventListener(ApplicationReadyEvent.class)
     public void createIndexes() {
+        attemptCreateIndexes(Duration.ofMillis(initialRetryDelayMs));
+    }
+
+    private void attemptCreateIndexes(Duration nextRetryDelay) {
+        try {
+            doCreateIndexes();
+            log.info("MongoDB indexes successfully created");
+        } catch (Exception e) {
+            log.error(
+                    "Failed to create MongoDB indexes, the database appears to be unreachable. "
+                            + "The application will keep running without them and retry in {}s.",
+                    nextRetryDelay.toSeconds(),
+                    e);
+            retryScheduler.schedule(
+                    () -> attemptCreateIndexes(nextDelay(nextRetryDelay)),
+                    nextRetryDelay.toMillis(),
+                    TimeUnit.MILLISECONDS);
+        }
+    }
+
+    private Duration nextDelay(Duration currentDelay) {
+        Duration doubled = currentDelay.multipliedBy(2);
+        Duration maxRetryDelay = Duration.ofMillis(maxRetryDelayMs);
+        return doubled.compareTo(maxRetryDelay) > 0 ? maxRetryDelay : doubled;
+    }
+
+    @PreDestroy
+    public void shutdownRetryScheduler() {
+        retryScheduler.shutdownNow();
+    }
+
+    private void doCreateIndexes() {
         var indexOps = mongoTemplate.indexOps(PersistedMessage.COLLECTION_NAME);
         indexOps.createIndex(
                 new Index()
