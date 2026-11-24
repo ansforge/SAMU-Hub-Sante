@@ -90,7 +90,7 @@ body {
 }
 
 /* Légende sous la carte */
-.map-legend__items {
+.legend-items {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
@@ -98,7 +98,7 @@ body {
   font-size: 14px;
 }
 
-.map-legend__swatch {
+.legend-swatch {
   display: inline-block;
   width: 22px;
   height: 14px;
@@ -107,10 +107,10 @@ body {
   vertical-align: -2px;
 }
 
-.map-legend__swatch--has-links {
+.legend-swatch.has-links {
   background: var(--primary);
 }
 
-.map-legend__swatch--no-links {
+.legend-swatch.no-links {
   background: var(--gray-400);
 }
