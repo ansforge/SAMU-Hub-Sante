@@ -29,8 +29,18 @@ jobs:
       - name: Extract version from tag
         id: extract-dispatcher-version
         env:
+          INPUT_TAG: ${{ inputs.tag }}
+          REF_TYPE: ${{ github.ref_type }}
           TAG_NAME: ${{ inputs.tag || github.ref_name }}
         run: |
+          if [[ -z "$INPUT_TAG" && "$REF_TYPE" != "tag" ]]; then
+            echo "::error::Run this workflow from a dispatcher-* tag, not from the branch $TAG_NAME"
+            exit 1
+          fi
+          if [[ "$TAG_NAME" != dispatcher-* ]]; then
+            echo "::error::Tag $TAG_NAME is not a dispatcher-* tag"
+            exit 1
+          fi
           VERSION=${TAG_NAME#dispatcher-}
           PATTERN="^([0-9]+\.[0-9]+(\.[0-9]+)?)(-[A-Za-z0-9\.]+)*$"
           if [[ ! "$VERSION" =~ $PATTERN ]]; then
