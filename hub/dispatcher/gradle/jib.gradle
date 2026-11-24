@@ -25,7 +25,7 @@ def gitRefs() {
             def releaseData = callGithubAPI('releases/latest')
             tagName = releaseData.tag_name
 
-            def commitData = callGithubAPI('commits/tags/' + tagName)
+            def commitData = callGithubAPI('commits/' + tagName)
             releaseCommitHash = commitData.sha.take(7)
             println("Release commit hash: " + releaseCommitHash)
         }
