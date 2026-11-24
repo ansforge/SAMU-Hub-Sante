@@ -45,10 +45,10 @@ jobs:
           PATTERN="^([0-9]+\.[0-9]+(\.[0-9]+)?)(-[A-Za-z0-9\.]+)*$"
           if [[ ! "$VERSION" =~ $PATTERN ]]; then
             echo "Invalid version number"
-            echo $VERSION
+            echo "$VERSION"
             exit 1
           fi
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
       - name: Set model versions output
         id: set-model-versions
         # Not on event_name: under workflow_call it is the caller's (workflow_dispatch).
@@ -56,8 +56,8 @@ jobs:
           MODEL_VERSIONS: ${{ inputs.model_versions || vars.MODEL_VERSIONS }}
         run: |
           VERSION_JSON_ARRAY=$(echo "$MODEL_VERSIONS" | jq -R 'split(" ")' | jq -c '.')
-          echo $VERSION_JSON_ARRAY
-          echo "versions=$VERSION_JSON_ARRAY" >> $GITHUB_OUTPUT
+          echo "$VERSION_JSON_ARRAY"
+          echo "versions=$VERSION_JSON_ARRAY" >> "$GITHUB_OUTPUT"
 
   build-dispatcher:
     name: Build Dispatcher images
