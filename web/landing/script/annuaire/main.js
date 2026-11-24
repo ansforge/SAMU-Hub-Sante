@@ -13,15 +13,9 @@ import { API_URL } from "./constants.js";
 import { getCurrentFilteredClientsConfig } from "./filters.js";
 
 window.addEventListener("load", async () => {
-  try {
-    const svgResponse = await fetch("/img/carte-france.svg");
-    if (!svgResponse.ok) {
-      throw new Error(`Erreur HTTP : ${svgResponse.status}`);
-    }
-    document.getElementById("div-map").innerHTML = await svgResponse.text();
-  } catch (e) {
-    console.error("Erreur lors du chargement de la carte :", e);
-  }
+  const svgResponse = await fetch("/img/carte-france.svg");
+  const svgContent = await svgResponse.text();
+  document.getElementById("div-map").innerHTML = svgContent;
   const clientsConfig = await fetchData(API_URL);
 state.clientsConfigurations = clientsConfig.map((item) => ({
     ...item,
