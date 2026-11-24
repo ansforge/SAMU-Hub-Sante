@@ -103,13 +103,14 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DISPATCHER_VERSION: ${{ needs.get-tags.outputs.dispatcher-version }}
           MODEL_VERSION: ${{ matrix.model_version }}
+          IMAGE_REPOSITORY: ghcr.io/${{ github.repository_owner }}/dispatcher
         run: |
           IMAGE_TAG="${DISPATCHER_VERSION}-model-${MODEL_VERSION}"
-            echo "Building image for $IMAGE_TAG"
+          echo "Building image for $IMAGE_TAG"
           ./gradlew jib \
-            -Pversion=$DISPATCHER_VERSION \
-            -PmodelVersion=$MODEL_VERSION \
-            --image ghcr.io/${{ github.repository_owner }}/dispatcher:$IMAGE_TAG
+            -Pversion="$DISPATCHER_VERSION" \
+            -PmodelVersion="$MODEL_VERSION" \
+            --image "$IMAGE_REPOSITORY:$IMAGE_TAG"
 
   # image-security-scan:
   #   name: Scan Docker Images
