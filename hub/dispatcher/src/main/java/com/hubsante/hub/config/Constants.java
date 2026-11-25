@@ -35,7 +35,9 @@ public class Constants {
             "distributionId_could_not_be_extracted";
     public static final String DISPATCHED_MESSAGE = "dispatch.message";
     public static final String USE_CASE_TAG = "use_case";
+    public static final String REFUSED_TAG = "refused";
     public static final String UNKNOWN = "unknown";
+    public static final String NOT_APPLICABLE = "n/a";
     public static final String FR_HEALTH_PREFIX = "fr.health";
     public static final String FR_FIRE_PREFIX = "fr.fire";
     public static final String FR_CISU_PREFIX = "fr.cisu";
