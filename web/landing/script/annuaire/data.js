@@ -41,6 +41,7 @@ export function constituteLabel(data) {
 
 export function getDepartmentsInProd() {
   const clientIds = state.clientsConfigurations
+    .filter((item) => hasActiveLink(item))
     .map((item) => item.client_id)
     .filter(
       (client_id) =>
@@ -58,6 +59,15 @@ export function getDepartmentsInProd() {
   });
 
   return [...new Set(departmentNumbers)];
+}
+
+function hasActiveLink(clientConfig) {
+  return perimeter.some((p) => clientConfig.perimeters?.[p]);
+}
+
+export function getDepartmentLinks(numDep) {
+  const actors = getActorsFromDepartment(numDep);
+  return perimeter.filter((p) => actors.some((a) => a.perimeters?.[p]));
 }
 
 export function getActorsFromDepartment(numDep) {

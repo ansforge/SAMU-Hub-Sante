@@ -5,46 +5,34 @@ import {
   getCurrentFilteredClientsConfig,
 } from "../../script/annuaire/filters.js";
 import { state } from "../../script/annuaire/data.js";
-import { perimeter, FILTER_IDS } from "../../script/annuaire/constants.js";
+import { FILTER_IDS } from "../../script/annuaire/constants.js";
 
 describe("Filters utils", () => {
   beforeEach(() => {
     state.clientsConfigurations = [
       {
-        "P: 15-15": "1.5,2.0,2.1",
-        "P: 15-gps": "",
-        "P: 15-nexsis": "1.9",
-        "P: 15-smur": "",
         client_id: "fr.health.lrm",
         editor: "ANS",
         label: "",
+        perimeters: { "15-15": true, "15-nexsis": true },
       },
       {
-        "P: 15-15": "1.5",
-        "P: 15-gps": "",
-        "P: 15-nexsis": "",
-        "P: 15-smur": "",
         client_id: "fr.health.snp410",
         editor: "Appligos",
         label: "SNP 41",
+        perimeters: { "15-15": true },
       },
       {
-        "P: 15-15": "1.5",
-        "P: 15-gps": "",
-        "P: 15-nexsis": "",
-        "P: 15-smur": "",
         client_id: "fr.health.samu410",
         editor: "Appligos",
         label: "SAMU 41",
+        perimeters: { "15-15": true },
       },
       {
-        "P: 15-15": "",
-        "P: 15-gps": "",
-        "P: 15-nexsis": "1.9",
-        "P: 15-smur": "",
         client_id: "fr.health.fire",
         editor: "NexSIS",
         label: "",
+        perimeters: { "15-nexsis": true },
       },
     ];
   });
@@ -57,8 +45,15 @@ describe("Filters utils", () => {
     expect(getEditors()).toEqual(["ANS", "Appligos", "NexSIS"]);
   });
 
-  test("getPerimeter should return a copy of perimeter", () => {
-    expect(getPerimeter()).toEqual(perimeter);
+  test("getPerimeter should return only active perimeters", () => {
+    state.clientsConfigurations = [
+      { client_id: "fr.health.samu410", perimeters: { "15-15": true } },
+      {
+        client_id: "fr.health.fire",
+        perimeters: { "15-nexsis": true, "15-15": false },
+      },
+    ];
+    expect(getPerimeter()).toEqual(["15-15", "15-nexsis"]);
   });
 
   describe("getCurrentFilteredClientsConfig", () => {
@@ -117,36 +112,32 @@ describe("Filters utils", () => {
       document.getElementById(FILTER_IDS.perimeter).value = perimeter;
       const result = getCurrentFilteredClientsConfig();
       const expectedResult = state.clientsConfigurations.filter(
-        (client) => client.perimeter !== "",
+        (client) => !!client.perimeters?.[perimeter],
       );
       expect(result).toEqual(expectedResult);
     });
 
-    test("should apply multiple filters (perimeter and editor)", () => {
+    test("should apply multiple filters (perimeter and actor)", () => {
       const perimeter = "15-15";
-      const editor = "ANS";
-      document.getElementById(FILTER_IDS.perimeter).value = perimeter;
-      document.getElementById(FILTER_IDS.editor).value = editor;
-      const result = getCurrentFilteredClientsConfig();
-      const expectedResult = state.clientsConfigurations.filter(
-        (client) => client.perimeter !== "" && client.editor == editor,
-      );
-      expect(result).toEqual(expectedResult);
-    });
-
-    test("should apply multiple filters (perimeter, actor and editor)", () => {
-      const perimeter = "15-15";
-      const editor = "ANS";
       const actor = "SAMU 41";
       document.getElementById(FILTER_IDS.perimeter).value = perimeter;
-      document.getElementById(FILTER_IDS.editor).value = editor;
+      document.getElementById(FILTER_IDS.actor).value = actor;
+      const result = getCurrentFilteredClientsConfig();
+      const expectedResult = state.clientsConfigurations.filter(
+        (client) => !!client.perimeters?.[perimeter] && client.label == actor,
+      );
+      expect(result).toEqual(expectedResult);
+    });
+
+    test("should apply multiple filters (perimeter and actor, no match)", () => {
+      const perimeter = "15-nexsis";
+      const actor = "SNP 41";
+      document.getElementById(FILTER_IDS.perimeter).value = perimeter;
       document.getElementById(FILTER_IDS.actor).value = actor;
       const result = getCurrentFilteredClientsConfig();
       const expectedResult = state.clientsConfigurations.filter(
         (client) =>
-          client.perimeter !== "" &&
-          client.editor == editor &&
-          client.label == actor,
+          !!client.perimeters?.[perimeter] && client.label == actor,
       );
       expect(result).toEqual(expectedResult);
     });

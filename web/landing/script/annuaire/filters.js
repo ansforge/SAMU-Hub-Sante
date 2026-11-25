@@ -25,7 +25,9 @@ export function getActors() {
 }
 
 export function getPerimeter() {
-  return [...perimeter];
+  return perimeter.filter((p) =>
+    state.clientsConfigurations.some((item) => item.perimeters?.[p]),
+  );
 }
 
 export function getCurrentFilteredClientsConfig() {

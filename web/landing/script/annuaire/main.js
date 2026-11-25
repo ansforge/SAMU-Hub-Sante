@@ -4,8 +4,9 @@ import {
   updateFiltersSelectOptions,
   updateDepartmentInProdColor,
   onDepartmentSelected,
-  hideInfoSelectedDepartment,
-  unselectDepartment,
+  resetDepartmentSelection,
+  renderLinkFilters,
+  onLinkFilterClicked,
 } from "./dom.js";
 import { API_URL } from "./constants.js";
 import { getCurrentFilteredClientsConfig } from "./filters.js";
@@ -20,6 +21,7 @@ state.clientsConfigurations = clientsConfig.map((item) => ({
     label: constituteLabel(item),
   }));
   updateDepartmentInProdColor();
+  renderLinkFilters();
   updateFiltersSelectOptions();
   renderClientsConfigTable(state.clientsConfigurations);
 });
@@ -28,6 +30,12 @@ document.querySelectorAll("#div-filtres select").forEach((select) => {
   select.addEventListener("change", () => {
     renderClientsConfigTable(getCurrentFilteredClientsConfig());
   });
+});
+
+document.getElementById("link-filters").addEventListener("click", (e) => {
+  const button = e.target.closest(".link-filter");
+  if (!button) return;
+  onLinkFilterClicked(button.dataset.link);
 });
 
 document.getElementById("div-map").addEventListener("click", (e) => {
@@ -40,8 +48,7 @@ document.getElementById("div-map").addEventListener("click", (e) => {
 document.getElementById("dep-sel-btn").addEventListener("click", () => {
   const selectedDepValue = document.getElementById("departements-list").value;
   if (selectedDepValue === "") {
-    unselectDepartment();
-    hideInfoSelectedDepartment();
+    resetDepartmentSelection();
   } else {
     const dep = document.querySelector(`[data-num-dep="${selectedDepValue}"]`);
     onDepartmentSelected(dep);

@@ -23,6 +23,7 @@ export const perimeterLabels = {
   "15-portail": "15-Portail",
 };
 
+
 export const perimeterInVhost = {
   [perimeter[0]]: "15-15",
   [perimeter[1]]: "15-nexsis",
