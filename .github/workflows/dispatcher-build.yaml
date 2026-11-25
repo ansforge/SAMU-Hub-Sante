@@ -29,16 +29,26 @@ jobs:
       - name: Extract version from tag
         id: extract-dispatcher-version
         env:
+          INPUT_TAG: ${{ inputs.tag }}
+          REF_TYPE: ${{ github.ref_type }}
           TAG_NAME: ${{ inputs.tag || github.ref_name }}
         run: |
+          if [[ -z "$INPUT_TAG" && "$REF_TYPE" != "tag" ]]; then
+            echo "::error::Run this workflow from a dispatcher-* tag, not from the branch $TAG_NAME"
+            exit 1
+          fi
+          if [[ "$TAG_NAME" != dispatcher-* ]]; then
+            echo "::error::Tag $TAG_NAME is not a dispatcher-* tag"
+            exit 1
+          fi
           VERSION=${TAG_NAME#dispatcher-}
           PATTERN="^([0-9]+\.[0-9]+(\.[0-9]+)?)(-[A-Za-z0-9\.]+)*$"
           if [[ ! "$VERSION" =~ $PATTERN ]]; then
             echo "Invalid version number"
-            echo $VERSION
+            echo "$VERSION"
             exit 1
           fi
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
       - name: Set model versions output
         id: set-model-versions
         # Not on event_name: under workflow_call it is the caller's (workflow_dispatch).
@@ -46,8 +56,8 @@ jobs:
           MODEL_VERSIONS: ${{ inputs.model_versions || vars.MODEL_VERSIONS }}
         run: |
           VERSION_JSON_ARRAY=$(echo "$MODEL_VERSIONS" | jq -R 'split(" ")' | jq -c '.')
-          echo $VERSION_JSON_ARRAY
-          echo "versions=$VERSION_JSON_ARRAY" >> $GITHUB_OUTPUT
+          echo "$VERSION_JSON_ARRAY"
+          echo "versions=$VERSION_JSON_ARRAY" >> "$GITHUB_OUTPUT"
 
   build-dispatcher:
     name: Build Dispatcher images
@@ -74,8 +84,6 @@ jobs:
           distribution: 'temurin'
       - name: Grant execute permission for Gradlew
         run: chmod +x gradlew
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4
       - name: Login to Docker Hardened Images
         uses: docker/login-action@v4
         with:
@@ -88,18 +96,19 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Run tests, build and push Docker image
+      - name: Build and push Docker image
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DISPATCHER_VERSION: ${{ needs.get-tags.outputs.dispatcher-version }}
           MODEL_VERSION: ${{ matrix.model_version }}
+          IMAGE_REPOSITORY: ghcr.io/${{ github.repository_owner }}/dispatcher
         run: |
           IMAGE_TAG="${DISPATCHER_VERSION}-model-${MODEL_VERSION}"
-            echo "Building image for $IMAGE_TAG"
+          echo "Building image for $IMAGE_TAG"
           ./gradlew jib \
-            -Pversion=$DISPATCHER_VERSION \
-            -PmodelVersion=$MODEL_VERSION \
-            --image ghcr.io/${{ github.repository_owner }}/dispatcher:$IMAGE_TAG
+            -Pversion="$DISPATCHER_VERSION" \
+            -PmodelVersion="$MODEL_VERSION" \
+            --image "$IMAGE_REPOSITORY:$IMAGE_TAG"
 
   # image-security-scan:
   #   name: Scan Docker Images

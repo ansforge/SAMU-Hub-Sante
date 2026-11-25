@@ -38,8 +38,7 @@ jobs:
 
       - name: Build and run unit tests
         env:
-          # required to run tests because the whole build.gradle seems to be evaluated, even if the jib task is not executed
-          # so the GITHUB_TOKEN var must be resolved
+          # required to download the models library from GitHub Packages
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DISPATCHER_TESTS_MODEL_VERSIONS: ${{ vars.DISPATCHER_TESTS_MODEL_VERSIONS }}
         run: |
