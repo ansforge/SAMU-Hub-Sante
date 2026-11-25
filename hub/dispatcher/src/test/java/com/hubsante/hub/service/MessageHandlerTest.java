@@ -18,8 +18,15 @@ package com.hubsante.hub.service;
 import static com.hubsante.hub.config.AmqpConfiguration.DISTRIBUTION_EXCHANGE;
 import static com.hubsante.hub.config.AmqpConfiguration.DLQ_REASON;
 import static com.hubsante.hub.config.AmqpConfiguration.ORIGINAL_ROUTING_KEY;
+import static com.hubsante.hub.config.Constants.CLIENT_ID_TAG;
 import static com.hubsante.hub.config.Constants.DISPATCH_ERROR;
+import static com.hubsante.hub.config.Constants.EDITOR_TAG;
 import static com.hubsante.hub.config.Constants.METRIC_MESSAGE_PROCESSING;
+import static com.hubsante.hub.config.Constants.REASON_TAG;
+import static com.hubsante.hub.config.Constants.RECIPIENT_ID_TAG;
+import static com.hubsante.hub.config.Constants.UNKNOWN;
+import static com.hubsante.hub.config.Constants.USE_CASE_TAG;
+import static com.hubsante.hub.config.Constants.VHOST_TAG;
 import static com.hubsante.hub.testsupport.HubTestConstants.JSON;
 import static com.hubsante.hub.testsupport.HubTestConstants.SAMU_A_INFO_QUEUE;
 import static com.hubsante.hub.testsupport.HubTestConstants.SAMU_A_ROUTING_KEY;
@@ -37,6 +44,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.doReturn;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.hubsante.hub.config.LogConstants;
 import com.hubsante.hub.exception.NotAllowedContentTypeException;
 import com.hubsante.hub.exception.SchemaNotFoundException;
 import com.hubsante.hub.exception.SchemaValidationException;
@@ -45,13 +53,19 @@ import com.hubsante.hub.testsupport.HubTestScaffolding;
 import com.hubsante.model.EdxlHandler;
 import com.hubsante.model.edxl.EdxlMessage;
 import com.hubsante.model.report.ErrorCode;
+import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tag;
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.slf4j.MDC;
 import org.springframework.amqp.AmqpRejectAndDontRequeueException;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -66,11 +80,18 @@ class MessageHandlerTest {
 
     @BeforeEach
     void setUp() {
+        // extractMessage binds the message log context, which the error metric labels read
+        MDC.clear();
         HubTestScaffolding.Hub hub = aHub().build();
         messageHandler = hub.messageHandler();
         rabbitTemplate = hub.rabbitTemplate();
         clientPropertiesRegistry = hub.clientPropertiesRegistry();
         registry = hub.registry();
+    }
+
+    @AfterEach
+    void clearLogContext() {
+        MDC.clear();
     }
 
     private static final String RESOURCES_INFO_CISU_USE_CASE = "resourcesInfoCisu";
@@ -380,5 +401,68 @@ class MessageHandlerTest {
                     .as("an error counter is published per rejected message")
                     .isNotEmpty();
         }
+
+        @Test
+        @DisplayName("should label the error metric with the recipient and use case of the context")
+        void shouldLabelErrorMetricFromLogContext() throws IOException {
+            Message message = received();
+            MDC.put(LogConstants.RECIPIENT_ID.getKey(), SAMU_B_ROUTING_KEY);
+            MDC.put(LogConstants.MESSAGE_TYPE.getKey(), RESOURCES_INFO_USE_CASE);
+
+            assertThatThrownBy(() -> messageHandler.handleError(unroutable(), message))
+                    .isInstanceOf(AmqpRejectAndDontRequeueException.class);
+
+            assertThat(
+                            registry.find(DISPATCH_ERROR)
+                                    .tag(RECIPIENT_ID_TAG, SAMU_B_ROUTING_KEY)
+                                    .tag(USE_CASE_TAG, RESOURCES_INFO_USE_CASE)
+                                    .counter())
+                    .isNotNull();
+        }
+
+        @Test
+        @DisplayName("should label the error metric as unknown when the context is empty")
+        void shouldLabelErrorMetricUnknownWithoutLogContext() throws IOException {
+            Message message = received();
+
+            assertThatThrownBy(() -> messageHandler.handleError(unroutable(), message))
+                    .isInstanceOf(AmqpRejectAndDontRequeueException.class);
+
+            assertThat(
+                            registry.find(DISPATCH_ERROR)
+                                    .tag(RECIPIENT_ID_TAG, UNKNOWN)
+                                    .tag(USE_CASE_TAG, UNKNOWN)
+                                    .counter())
+                    .isNotNull();
+        }
+
+        @Test
+        @DisplayName("should publish the error metric with the full set of label keys")
+        void shouldPublishErrorMetricWithAllLabelKeys() throws IOException {
+            Message message = received();
+
+            assertThatThrownBy(() -> messageHandler.handleError(unroutable(), message))
+                    .isInstanceOf(AmqpRejectAndDontRequeueException.class);
+
+            assertThat(registry.find(DISPATCH_ERROR).counters())
+                    .singleElement()
+                    .extracting(counter -> tagKeys(counter.getId()))
+                    .isEqualTo(
+                            Set.of(
+                                    REASON_TAG,
+                                    CLIENT_ID_TAG,
+                                    VHOST_TAG,
+                                    EDITOR_TAG,
+                                    RECIPIENT_ID_TAG,
+                                    USE_CASE_TAG));
+        }
+
+        private UnroutableMessageException unroutable() {
+            return new UnroutableMessageException("boom", "id", SAMU_B_ROUTING_KEY, "error");
+        }
+    }
+
+    private static Set<String> tagKeys(Meter.Id id) {
+        return id.getTags().stream().map(Tag::getKey).collect(Collectors.toSet());
     }
 }

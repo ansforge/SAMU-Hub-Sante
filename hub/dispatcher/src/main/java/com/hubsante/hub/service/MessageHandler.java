@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.amqp.AmqpRejectAndDontRequeueException;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageProperties;
@@ -466,6 +467,10 @@ public class MessageHandler {
         structuredLog.debug(receivedEdxl);
     }
 
+    /**
+     * Recipient and use case come from the message log context, bound when the message (or only its
+     * envelope) was read, and fall back to {@code unknown}.
+     */
     protected void publishErrorMetric(String error, String sender) {
         String editor = hubConfig.getClientPropertiesRegistry().getClientEditor(sender);
         registry.counter(
@@ -474,11 +479,19 @@ public class MessageHandler {
                         error,
                         CLIENT_ID_TAG,
                         sender,
+                        RECIPIENT_ID_TAG,
+                        fromLogContext(LogConstants.RECIPIENT_ID),
                         VHOST_TAG,
                         sanitizeVhostForProm(hubConfig.getVhost()),
+                        USE_CASE_TAG,
+                        fromLogContext(LogConstants.MESSAGE_TYPE),
                         EDITOR_TAG,
                         editor)
                 .increment();
+    }
+
+    private static String fromLogContext(LogConstants key) {
+        return Optional.ofNullable(MDC.get(key.getKey())).orElse(UNKNOWN);
     }
 
     protected void publishMetrics(EdxlMessage edxlMessage, Message amqpMessage) {

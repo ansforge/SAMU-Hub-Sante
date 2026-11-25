@@ -15,6 +15,8 @@
  */
 package com.hubsante.hub.service;
 
+import static com.hubsante.hub.config.AmqpConfiguration.DISTRIBUTION_EXCHANGE;
+import static com.hubsante.hub.config.AmqpConfiguration.ORIGINAL_ROUTING_KEY;
 import static com.hubsante.hub.config.Constants.*;
 import static com.hubsante.hub.service.ConversionStubs.echoConversionService;
 import static com.hubsante.hub.testsupport.HubTestConstants.*;
@@ -22,18 +24,30 @@ import static com.hubsante.hub.testsupport.HubTestScaffolding.aHub;
 import static com.hubsante.hub.testsupport.MessageTestUtils.*;
 import static com.hubsante.hub.testsupport.MetricsUtils.*;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.verify;
 
 import com.hubsante.hub.testsupport.HubTestScaffolding;
 import com.hubsante.model.report.ErrorCode;
+import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.search.Search;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.amqp.AmqpRejectAndDontRequeueException;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageDeliveryMode;
+import org.springframework.amqp.core.MessageProperties;
+import org.springframework.amqp.core.ReturnedMessage;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
 @DisplayName("Dispatcher — metrics")
 class DispatcherMetricsTest {
@@ -41,6 +55,8 @@ class DispatcherMetricsTest {
     private Dispatcher dispatcher;
     private MeterRegistry registry;
     private ConversionHandler conversionHandler;
+    private ClientPropertiesRegistry clientPropertiesRegistry;
+    private RabbitTemplate rabbitTemplate;
 
     @BeforeEach
     void setUp() {
@@ -48,6 +64,8 @@ class DispatcherMetricsTest {
         dispatcher = hub.dispatcher();
         registry = hub.registry();
         conversionHandler = hub.conversionHandler();
+        clientPropertiesRegistry = hub.clientPropertiesRegistry();
+        rabbitTemplate = hub.rabbitTemplate();
     }
 
     @Test
@@ -158,9 +176,145 @@ class DispatcherMetricsTest {
         assertEquals(0, dispatchedMessageCount(registry));
     }
 
+    @Test
+    @DisplayName("should label a rejected message with its recipient and the routed use case")
+    public void shouldLabelRejectedMessageWithRecipientAndUseCase() throws IOException {
+        dispatcher.dispatch(createMessage("EDXL-DE", JSON));
+        String useCase = registry.get(DISPATCHED_MESSAGE).counter().getId().getTag(USE_CASE_TAG);
+        doReturn(List.of(useCase))
+                .when(clientPropertiesRegistry)
+                .getClientInhibitedUseCases(SAMU_B_ROUTING_KEY);
+
+        assertThrows(
+                AmqpRejectAndDontRequeueException.class,
+                () -> dispatcher.dispatch(createMessage("EDXL-DE", JSON)));
+
+        Counter error = registry.get(DISPATCH_ERROR).counter();
+        assertEquals(SAMU_B_ROUTING_KEY, error.getId().getTag(RECIPIENT_ID_TAG));
+        assertEquals(
+                useCase,
+                error.getId().getTag(USE_CASE_TAG),
+                "use_case must have the same format in both metrics");
+    }
+
+    @Test
+    @DisplayName("should label an invalid content with its recipient and an unknown use case")
+    public void shouldLabelInvalidContentWithRecipientOnly() throws IOException {
+        Message message =
+                createInvalidMessage(
+                        "EDXL-DE/invalid-content-valid-envelope.json", SAMU_A_ROUTING_KEY);
+
+        assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(message));
+
+        Counter error = registry.get(DISPATCH_ERROR).counter();
+        assertEquals(SAMU_B_ROUTING_KEY, error.getId().getTag(RECIPIENT_ID_TAG));
+        assertEquals(UNKNOWN, error.getId().getTag(USE_CASE_TAG));
+    }
+
+    @Test
+    @DisplayName("should label an unreadable envelope as unknown")
+    public void shouldLabelUnreadableEnvelopeUnknown() throws IOException {
+        Message message =
+                createInvalidMessage(
+                        "EDXL-DE/missing-EDXL-required-field.json", SAMU_A_ROUTING_KEY);
+
+        assertThrows(AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(message));
+
+        Counter error = registry.get(DISPATCH_ERROR).counter();
+        assertEquals(UNKNOWN, error.getId().getTag(RECIPIENT_ID_TAG));
+        assertEquals(UNKNOWN, error.getId().getTag(USE_CASE_TAG));
+    }
+
+    @Test
+    @DisplayName("should label a returned message with its recipient and use case")
+    public void shouldLabelReturnedMessageWithRecipientAndUseCase() throws IOException {
+        dispatcher.dispatch(createMessage("EDXL-DE", JSON));
+        String useCase = registry.get(DISPATCHED_MESSAGE).counter().getId().getTag(USE_CASE_TAG);
+        Message message = createMessage("EDXL-DE", JSON);
+        message.getMessageProperties().setHeader(ORIGINAL_ROUTING_KEY, SAMU_A_ROUTING_KEY);
+
+        returnsCallback().returnedMessage(returned(message));
+
+        Counter error =
+                registry.get(DISPATCH_ERROR)
+                        .tag(REASON_TAG, ErrorCode.UNROUTABLE_MESSAGE.getStatusString())
+                        .counter();
+        assertEquals(SAMU_B_ROUTING_KEY, error.getId().getTag(RECIPIENT_ID_TAG));
+        assertEquals(useCase, error.getId().getTag(USE_CASE_TAG));
+    }
+
+    @Test
+    @DisplayName("should label an unreadable returned message as unknown")
+    public void shouldLabelUnreadableReturnedMessageUnknown() {
+        MessageProperties properties = new MessageProperties();
+        properties.setContentType(JSON);
+        properties.setHeader(ORIGINAL_ROUTING_KEY, SAMU_A_ROUTING_KEY);
+        Message message = new Message("not an EDXL".getBytes(StandardCharsets.UTF_8), properties);
+
+        assertDoesNotThrow(() -> returnsCallback().returnedMessage(returned(message)));
+
+        Counter error = registry.get(DISPATCH_ERROR).counter();
+        assertEquals(UNKNOWN, error.getId().getTag(RECIPIENT_ID_TAG));
+        assertEquals(UNKNOWN, error.getId().getTag(USE_CASE_TAG));
+    }
+
+    @Test
+    @DisplayName("should publish business errors and returned messages with the same label keys")
+    public void shouldPublishAllErrorSeriesWithTheSameLabelKeys() throws IOException {
+        Message nonPersistent = createMessage("EDXL-DE", JSON);
+        nonPersistent
+                .getMessageProperties()
+                .setReceivedDeliveryMode(MessageDeliveryMode.NON_PERSISTENT);
+        assertThrows(
+                AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(nonPersistent));
+        Message unreadable =
+                createInvalidMessage(
+                        "EDXL-DE/missing-EDXL-required-field.json", SAMU_A_ROUTING_KEY);
+        assertThrows(
+                AmqpRejectAndDontRequeueException.class, () -> dispatcher.dispatch(unreadable));
+        Message returned = createMessage("EDXL-DE", JSON);
+        returned.getMessageProperties().setHeader(ORIGINAL_ROUTING_KEY, SAMU_A_ROUTING_KEY);
+        returnsCallback().returnedMessage(returned(returned));
+
+        // SimpleMeterRegistry accepts different key sets for one name, Prometheus does not
+        assertEquals(3, registry.find(DISPATCH_ERROR).counters().size());
+        assertEquals(
+                Set.of(
+                        Set.of(
+                                REASON_TAG,
+                                CLIENT_ID_TAG,
+                                VHOST_TAG,
+                                EDITOR_TAG,
+                                RECIPIENT_ID_TAG,
+                                USE_CASE_TAG)),
+                tagKeySets(registry, DISPATCH_ERROR));
+    }
+
+    private RabbitTemplate.ReturnsCallback returnsCallback() {
+        ArgumentCaptor<RabbitTemplate.ReturnsCallback> captor =
+                ArgumentCaptor.forClass(RabbitTemplate.ReturnsCallback.class);
+        verify(rabbitTemplate).setReturnsCallback(captor.capture());
+        return captor.getValue();
+    }
+
+    private static ReturnedMessage returned(Message message) {
+        return new ReturnedMessage(
+                message, 312, "NO_ROUTE", DISTRIBUTION_EXCHANGE, SAMU_B_MESSAGE_QUEUE);
+    }
+
+    private static Set<Set<String>> tagKeySets(MeterRegistry registry, String name) {
+        return registry.find(name).counters().stream()
+                .map(
+                        counter ->
+                                counter.getId().getTags().stream()
+                                        .map(Tag::getKey)
+                                        .collect(Collectors.toSet()))
+                .collect(Collectors.toSet());
+    }
+
     private static double dispatchedMessageCount(MeterRegistry registry) {
         return registry.find(DISPATCHED_MESSAGE).counters().stream()
-                .mapToDouble(io.micrometer.core.instrument.Counter::count)
+                .mapToDouble(Counter::count)
                 .sum();
     }
 }
