@@ -290,6 +290,72 @@ class DispatcherMetricsTest {
                 tagKeySets(registry, DISPATCH_ERROR));
     }
 
+    @Test
+    @DisplayName("should label a message other than an acknowledgement as refused n/a")
+    public void shouldLabelNonAckMessageRefusedNotApplicable() throws IOException {
+        dispatcher.dispatch(createMessage("EDXL-DE", JSON));
+
+        assertEquals("n/a", registry.get(DISPATCHED_MESSAGE).counter().getId().getTag(REFUSED_TAG));
+    }
+
+    @Test
+    @DisplayName("should label an acknowledgement without refused flag as not refused")
+    public void shouldLabelAckWithoutFlagNotRefused() throws IOException {
+        dispatcher.dispatch(createMessage("rc-ref", JSON));
+
+        assertEquals(
+                "false", registry.get(DISPATCHED_MESSAGE).counter().getId().getTag(REFUSED_TAG));
+    }
+
+    @Test
+    @DisplayName("should label an acknowledgement refused or not according to its flag")
+    public void shouldLabelAckAccordingToRefusedFlag() throws IOException {
+        dispatcher.dispatch(rcRef(true));
+        dispatcher.dispatch(rcRef(false));
+        dispatcher.dispatch(rcRef(true));
+
+        assertEquals(2, registry.find(DISPATCHED_MESSAGE).counters().size());
+        assertEquals(
+                2, registry.get(DISPATCHED_MESSAGE).tag(REFUSED_TAG, "true").counter().count());
+        assertEquals(
+                1, registry.get(DISPATCHED_MESSAGE).tag(REFUSED_TAG, "false").counter().count());
+    }
+
+    @Test
+    @DisplayName("should publish every dispatched message series with the same label keys")
+    public void shouldPublishAllMessageSeriesWithTheSameLabelKeys() throws IOException {
+        dispatcher.dispatch(createMessage("EDXL-DE", JSON));
+        dispatcher.dispatch(rcRef(true));
+        dispatcher.dispatch(createMessage("rc-ref", JSON));
+
+        // SimpleMeterRegistry accepts different key sets for one name, Prometheus does not
+        assertEquals(3, registry.find(DISPATCHED_MESSAGE).counters().size());
+        assertEquals(
+                Set.of(
+                        Set.of(
+                                CLIENT_ID_TAG,
+                                RECIPIENT_ID_TAG,
+                                VHOST_TAG,
+                                USE_CASE_TAG,
+                                EDITOR_TAG,
+                                REFUSED_TAG)),
+                tagKeySets(registry, DISPATCHED_MESSAGE));
+    }
+
+    /** The rc-ref sample with an explicit refused flag on its reference. */
+    private static Message rcRef(boolean refused) throws IOException {
+        String referencedId =
+                "\"distributionID\": \"fr.health.samuB_2607723d-507d-4cbf-bf74-12345f7064cd\"";
+        String body = getSampleMessage("rc-ref", false);
+        assertTrue(body.contains(referencedId));
+        body = body.replace(referencedId, referencedId + ", \"refused\": " + refused);
+        MessageProperties properties = new MessageProperties();
+        properties.setReceivedRoutingKey(SAMU_A_ROUTING_KEY);
+        properties.setReceivedDeliveryMode(MessageDeliveryMode.PERSISTENT);
+        properties.setContentType(JSON);
+        return new Message(body.getBytes(StandardCharsets.UTF_8), properties);
+    }
+
     private RabbitTemplate.ReturnsCallback returnsCallback() {
         ArgumentCaptor<RabbitTemplate.ReturnsCallback> captor =
                 ArgumentCaptor.forClass(RabbitTemplate.ReturnsCallback.class);

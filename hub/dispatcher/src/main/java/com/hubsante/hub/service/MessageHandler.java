@@ -511,7 +511,19 @@ public class MessageHandler {
                         USE_CASE_TAG,
                         useCase,
                         EDITOR_TAG,
-                        editor)
+                        editor,
+                        REFUSED_TAG,
+                        refusedLabel(edxlMessage))
                 .increment();
+    }
+
+    /** {@code true} or {@code false} for an acknowledgement, {@code n/a} for any other message. */
+    private String refusedLabel(EdxlMessage edxlMessage) {
+        ReferenceWrapper ackMessage = isAckMessage(edxlMessage);
+        if (ackMessage == null) {
+            return NOT_APPLICABLE;
+        }
+        return String.valueOf(
+                Optional.ofNullable(ackMessage.getReference().getRefused()).orElse(false));
     }
 }
