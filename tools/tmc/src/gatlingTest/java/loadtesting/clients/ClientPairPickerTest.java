@@ -44,18 +44,18 @@ class ClientPairPickerTest {
 
     @Test
     void emptySenderPoolFails() {
-        assertThatThrownBy(() -> picker(new ClientPool("senders constraint", List.of()), pool("a")))
+        assertThatThrownBy(() -> picker(new ClientPool("getSenders constraint", List.of()), pool("a")))
                 .isInstanceOf(ClientConfigurationException.class)
                 .hasMessageContaining("No sender/recipient pair available for scenario X")
-                .hasMessageContaining("senders constraint");
+                .hasMessageContaining("getSenders constraint");
     }
 
     @Test
     void emptyRecipientPoolFails() {
-        assertThatThrownBy(() -> picker(pool("a"), new ClientPool("recipients constraint", List.of())))
+        assertThatThrownBy(() -> picker(pool("a"), new ClientPool("getRecipients constraint", List.of())))
                 .isInstanceOf(ClientConfigurationException.class)
                 .hasMessageContaining("No sender/recipient pair available for scenario X")
-                .hasMessageContaining("recipients constraint");
+                .hasMessageContaining("getRecipients constraint");
     }
 
     @Test

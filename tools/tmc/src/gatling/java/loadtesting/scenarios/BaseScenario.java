@@ -2,7 +2,8 @@ package loadtesting.scenarios;
 
 import io.gatling.javaapi.core.ScenarioBuilder;
 import loadtesting.SimulationUtils;
-import loadtesting.clients.ClientPair;
+import loadtesting.clients.ClientPairPicker;
+import loadtesting.clients.ClientPropertiesRegistry;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -30,13 +31,20 @@ public abstract class BaseScenario implements TmcScenario {
     }
 
     @Override
-    public ScenarioBuilder build() throws Exception {
+    public ClientPairPicker clientPairPicker(ClientPropertiesRegistry registry) {
+        ScenarioConfig config = getConfig();
+        return new ClientPairPicker("scenario " + config.key(),
+                config.getSenders().apply(registry), config.getRecipients().apply(registry));
+    }
+
+    @Override
+    public ScenarioBuilder build(ClientPropertiesRegistry registry) throws Exception {
         ScenarioConfig config = getConfig();
 
         String fileContent = SimulationUtils.loadSampleFile(config.messageSampleName());
 
         Iterator<Map<String, Object>> messageFeeder =
-                SimulationUtils.generateMessageFeeder(fileContent, () -> new ClientPair(config.senderId(), config.recipientId()));
+                SimulationUtils.generateMessageFeeder(fileContent, clientPairPicker(registry)::pick);
 
         return scenario(config.title())
                 .feed(

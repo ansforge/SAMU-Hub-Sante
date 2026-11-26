@@ -2,7 +2,9 @@ package loadtesting.scenarios;
 
 import io.gatling.javaapi.core.ScenarioBuilder;
 import loadtesting.SimulationUtils;
-import loadtesting.clients.ClientPair;
+import loadtesting.clients.ClientPairPicker;
+import loadtesting.clients.ClientPool;
+import loadtesting.clients.ClientPropertiesRegistry;
 
 import static io.gatling.javaapi.core.CoreDsl.*;
 import static loadtesting.ConfigUtils.getNumericEnvVar;
@@ -16,8 +18,6 @@ public class SamuNexsisRsScenario implements TmcScenario {
     private static final String KEY = "15-18-persistance";
     private static final String TITLE = "RS flux complet — SAMU→NexSIS";
     private static final String VHOST = "15-15_v2.1";
-    private static final String SENDER_ID = "fr.health.test.samu1-v3";
-    private static final String RECIPIENT_ID = "fr.fire.nexsis.sdisZ";
     private static final String USER_COUNT_ENV_VAR = "SAMU_NEXSIS_RS_SCENARIO_USER_COUNT";
 
     @Override
@@ -36,14 +36,19 @@ public class SamuNexsisRsScenario implements TmcScenario {
     }
 
     @Override
-    public ScenarioBuilder build() throws Exception {
+    public ClientPairPicker clientPairPicker(ClientPropertiesRegistry registry) {
+        return new ClientPairPicker("scenario " + KEY, registry.getTranscodingCisuClients(), ClientPool.of(NEXSIS_CLIENT_ID));
+    }
+
+    @Override
+    public ScenarioBuilder build(ClientPropertiesRegistry registry) throws Exception {
         String rsRiContent = SimulationUtils.loadSampleFile("rs-ri.json");
         String rsSrContent = SimulationUtils.loadSampleFile("rs-sr.json");
 
         int pause = getNumericEnvVar("SCENARIO_PAUSE_SECONDS", DEFAULT_PAUSE_DURATION);
 
         return scenario(TITLE)
-                .feed(SimulationUtils.generateRsFlowFeeder(rsRiContent, rsSrContent, () -> new ClientPair(SENDER_ID, RECIPIENT_ID)))
+                .feed(SimulationUtils.generateRsFlowFeeder(rsRiContent, rsSrContent, clientPairPicker(registry)::pick))
                 .exec(
                         amqp(String.format("%s (RS-RI)", TITLE))
                                 .publish()

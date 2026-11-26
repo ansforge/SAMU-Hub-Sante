@@ -19,5 +19,7 @@ public final class Constants {
 
     public final static String RC_DE_USER_PREFIX = "hubex";
 
+    public final static String NEXSIS_CLIENT_ID = "fr.fire.nexsis.sdisZ";
+
     public final static Integer DEFAULT_PAUSE_DURATION = 5;
 }
