@@ -65,6 +65,10 @@ jobs:
           distribution: 'temurin'
       - name: Grant execute permission for Gradlew
         run: chmod +x gradlew
+      - name: Run unit tests
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./gradlew test
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
       - name: Login to Container Registry
