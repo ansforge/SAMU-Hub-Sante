@@ -69,37 +69,45 @@ public final class ClientPropertiesRegistry {
         return clients;
     }
 
-    public List<String> getClientsByPerimeterVersion(PerimeterVersion required, PerimeterVersion... excluded) {
-        return clients.stream()
+    public ClientPool getClientsByPerimeterVersion(PerimeterVersion required, PerimeterVersion... excluded) {
+        List<String> clientIds = clients.stream()
                 .filter(client -> client.clientId().startsWith(HEALTH_TEST_PREFIX))
                 .filter(client -> supports(client, required))
                 .filter(client -> Arrays.stream(excluded).noneMatch(perimeterVersion -> supports(client, perimeterVersion)))
                 .map(ClientProperties::clientId)
                 .toList();
+
+        StringBuilder description = new StringBuilder(HEALTH_TEST_PREFIX + "* with " + describe(required));
+        Arrays.stream(excluded).forEach(perimeterVersion -> description.append(" without ").append(describe(perimeterVersion)));
+        return new ClientPool(description.toString(), clientIds);
     }
 
-    public List<String> getGpsClients() {
+    public ClientPool getGpsClients() {
         return getClientsByPerimeterVersion(GPS_V3);
     }
 
-    public List<String> getSmurClients() {
+    public ClientPool getSmurClients() {
         return getClientsByPerimeterVersion(SMUR_V3);
     }
 
-    public List<String> getSamuV1Clients() {
+    public ClientPool getSamuV1Clients() {
         return getClientsByPerimeterVersion(SAMU_V1);
     }
 
-    public List<String> getSamuV3Clients() {
+    public ClientPool getSamuV3Clients() {
         return getClientsByPerimeterVersion(SAMU_V3);
     }
 
-    public List<String> getDirectCisuClients() {
+    public ClientPool getDirectCisuClients() {
         return getClientsByPerimeterVersion(NEXSIS_V3);
     }
 
-    public List<String> getTranscodingCisuClients() {
+    public ClientPool getTranscodingCisuClients() {
         return getClientsByPerimeterVersion(SAMU_V3, NEXSIS_V3);
+    }
+
+    private static String describe(PerimeterVersion perimeterVersion) {
+        return perimeterVersion.perimeter() + "_v" + perimeterVersion.version();
     }
 
     private static boolean supports(ClientProperties client, PerimeterVersion perimeterVersion) {

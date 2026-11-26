@@ -172,19 +172,19 @@ class ClientPropertiesRegistryTest {
 
     @Test
     void healthTestClientsKeepsTestClientsWithRequiredPerimeterVersion() throws Exception {
-        assertThat(pools().getClientsByPerimeterVersion(new PerimeterVersion("15-15", "2.1")))
+        assertThat(pools().getClientsByPerimeterVersion(new PerimeterVersion("15-15", "2.1")).clientIds())
                 .containsExactly("fr.health.test.samu1-v3", "fr.health.test.samu-multi");
     }
 
     @Test
     void healthTestClientsIsEmptyWhenNoClientMatches() throws Exception {
-        assertThat(pools().getClientsByPerimeterVersion(new PerimeterVersion("15-sas", "1.0"))).isEmpty();
+        assertThat(pools().getClientsByPerimeterVersion(new PerimeterVersion("15-sas", "1.0")).clientIds()).isEmpty();
     }
 
     @Test
     void getClientsByPerimeterVersionDropsClientsHavingAnExcludedPerimeterVersion() throws Exception {
         assertThat(pools().getClientsByPerimeterVersion(
-                new PerimeterVersion("15-15", "2.1"), new PerimeterVersion("15-nexsis", "1.9")))
+                new PerimeterVersion("15-15", "2.1"), new PerimeterVersion("15-nexsis", "1.9")).clientIds())
                 .containsExactly("fr.health.test.samu1-v3");
     }
 
@@ -193,34 +193,55 @@ class ClientPropertiesRegistryTest {
         assertThat(pools().getClientsByPerimeterVersion(
                 new PerimeterVersion("15-15", "1.5"),
                 new PerimeterVersion("15-15", "2.1"),
-                new PerimeterVersion("15-nexsis", "1.9")))
+                new PerimeterVersion("15-nexsis", "1.9")).clientIds())
                 .containsExactly("fr.health.test.samu1-v1");
     }
 
     @Test
     void getGpsClients() throws Exception {
-        assertThat(pools().getGpsClients()).containsExactly("fr.health.test.samu1-v3");
+        assertThat(pools().getGpsClients().clientIds()).containsExactly("fr.health.test.samu1-v3");
     }
 
     @Test
     void getSmurClients() throws Exception {
-        assertThat(pools().getSmurClients()).containsExactly("fr.health.test.samu1-v3");
+        assertThat(pools().getSmurClients().clientIds()).containsExactly("fr.health.test.samu1-v3");
     }
 
     @Test
     void getSamuV3Clients() throws Exception {
-        assertThat(pools().getSamuV3Clients())
+        assertThat(pools().getSamuV3Clients().clientIds())
                 .containsExactly("fr.health.test.samu1-v3", "fr.health.test.samu-multi");
     }
 
     @Test
     void getDirectCisuClients() throws Exception {
-        assertThat(pools().getDirectCisuClients()).containsExactly("fr.health.test.samu-multi");
+        assertThat(pools().getDirectCisuClients().clientIds()).containsExactly("fr.health.test.samu-multi");
     }
 
     @Test
     void getTranscodingCisuClientsExcludesDirectCisuClients() throws Exception {
-        assertThat(pools().getTranscodingCisuClients()).containsExactly("fr.health.test.samu1-v3");
+        assertThat(pools().getTranscodingCisuClients().clientIds()).containsExactly("fr.health.test.samu1-v3");
+    }
+
+    @Test
+    void getSamuV1Clients() throws Exception {
+        assertThat(pools().getSamuV1Clients().clientIds())
+                .containsExactly("fr.health.test.samu1-v1", "fr.health.test.samu-multi");
+    }
+
+    @Test
+    void poolDescriptionNamesRequiredPerimeterVersion() throws Exception {
+        assertThat(pools().getClientsByPerimeterVersion(new PerimeterVersion("15-gps", "1.3")).description())
+                .isEqualTo("fr.health.test.* with 15-gps_v1.3");
+    }
+
+    @Test
+    void poolDescriptionNamesEveryExcludedPerimeterVersion() throws Exception {
+        assertThat(pools().getClientsByPerimeterVersion(
+                new PerimeterVersion("15-15", "1.5"),
+                new PerimeterVersion("15-15", "2.1"),
+                new PerimeterVersion("15-nexsis", "1.9")).description())
+                .isEqualTo("fr.health.test.* with 15-15_v1.5 without 15-15_v2.1 without 15-nexsis_v1.9");
     }
 
     @Test
