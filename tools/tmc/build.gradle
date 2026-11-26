@@ -16,6 +16,7 @@ dependencies {
     gatling("org.galaxio:gatling-amqp-plugin_2.13:${libs.versions.gatlingAmqpPlugin.get()}")
     gatling("io.github.cdimascio:dotenv-java:${libs.versions.dotenvJava.get()}")
     gatling("com.hubsante:models:${project.ext.modelVersion}")
+    gatling("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:${libs.versions.jackson.get()}")
 }
 
 gatling {
