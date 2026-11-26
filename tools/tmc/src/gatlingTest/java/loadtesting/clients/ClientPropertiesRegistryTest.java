@@ -171,6 +171,17 @@ class ClientPropertiesRegistryTest {
     }
 
     @Test
+    void healthTestClientsKeepsTestClientsWithRequiredPerimeterVersion() throws Exception {
+        assertThat(pools().getClientsByPerimeterVersion(new PerimeterVersion("15-15", "2.1")))
+                .containsExactly("fr.health.test.samu1-v3", "fr.health.test.samu-multi");
+    }
+
+    @Test
+    void healthTestClientsIsEmptyWhenNoClientMatches() throws Exception {
+        assertThat(pools().getClientsByPerimeterVersion(new PerimeterVersion("15-sas", "1.0"))).isEmpty();
+    }
+
+    @Test
     void configurationPathDefaultsToLocalFile() {
         assertThat(ClientPropertiesRegistry.configurationPath(null)).isEqualTo(Path.of("config/clients.yaml"));
         assertThat(ClientPropertiesRegistry.configurationPath(" ")).isEqualTo(Path.of("config/clients.yaml"));
@@ -180,6 +191,10 @@ class ClientPropertiesRegistryTest {
     void configurationPathUsesProvidedValue() {
         assertThat(ClientPropertiesRegistry.configurationPath("/tmp/clients.yaml"))
                 .isEqualTo(Path.of("/tmp/clients.yaml"));
+    }
+
+    private ClientPropertiesRegistry pools() throws URISyntaxException {
+        return ClientPropertiesRegistry.load(resource("clients/clients-pools.yaml"));
     }
 
     private Path resource(String name) throws URISyntaxException {

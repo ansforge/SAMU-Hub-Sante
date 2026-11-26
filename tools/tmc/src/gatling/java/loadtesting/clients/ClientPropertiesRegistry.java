@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 
 public final class ClientPropertiesRegistry {
     public static final Path DEFAULT_CONFIGURATION_PATH = Path.of("config/clients.yaml");
+    public static final String HEALTH_TEST_PREFIX = "fr.health.test.";
 
     private static final ObjectMapper yamlMapper = JsonMapper.builder(new YAMLFactory())
             .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
@@ -60,6 +61,20 @@ public final class ClientPropertiesRegistry {
 
     public List<ClientProperties> all() {
         return clients;
+    }
+
+    public List<String> getClientsByPerimeterVersion(PerimeterVersion required) {
+        return clients.stream()
+                .filter(client -> client.clientId().startsWith(HEALTH_TEST_PREFIX))
+                .filter(client -> supports(client, required))
+                .map(ClientProperties::clientId)
+                .toList();
+    }
+
+    private static boolean supports(ClientProperties client, PerimeterVersion perimeterVersion) {
+        return client.perimeters().stream().anyMatch(perimeter ->
+                perimeter.name().equals(perimeterVersion.perimeter())
+                        && perimeter.versions().contains(perimeterVersion.version()));
     }
 
     private static void validateClients(Path path, List<ClientProperties> clients) {
