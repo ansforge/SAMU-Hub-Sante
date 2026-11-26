@@ -5,6 +5,8 @@ clients:
         versions: ["2.1"]
       - name: 15-gps
         versions: ["1.3"]
+      - name: 15-smur
+        versions: ["1.7"]
   - client_id: fr.health.test.samu1-v1
     perimeters:
       - name: 15-15
@@ -13,6 +15,8 @@ clients:
     perimeters:
       - name: 15-15
         versions: ["1.5", "2.1"]
+      - name: 15-nexsis
+        versions: ["1.9"]
   - client_id: fr.health.tnr.samu1-v3
     perimeters:
       - name: 15-15

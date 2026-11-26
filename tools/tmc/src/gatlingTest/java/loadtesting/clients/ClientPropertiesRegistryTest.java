@@ -182,6 +182,48 @@ class ClientPropertiesRegistryTest {
     }
 
     @Test
+    void getClientsByPerimeterVersionDropsClientsHavingAnExcludedPerimeterVersion() throws Exception {
+        assertThat(pools().getClientsByPerimeterVersion(
+                new PerimeterVersion("15-15", "2.1"), new PerimeterVersion("15-nexsis", "1.9")))
+                .containsExactly("fr.health.test.samu1-v3");
+    }
+
+    @Test
+    void getClientsByPerimeterVersionAppliesEveryExclusion() throws Exception {
+        assertThat(pools().getClientsByPerimeterVersion(
+                new PerimeterVersion("15-15", "1.5"),
+                new PerimeterVersion("15-15", "2.1"),
+                new PerimeterVersion("15-nexsis", "1.9")))
+                .containsExactly("fr.health.test.samu1-v1");
+    }
+
+    @Test
+    void getGpsClients() throws Exception {
+        assertThat(pools().getGpsClients()).containsExactly("fr.health.test.samu1-v3");
+    }
+
+    @Test
+    void getSmurClients() throws Exception {
+        assertThat(pools().getSmurClients()).containsExactly("fr.health.test.samu1-v3");
+    }
+
+    @Test
+    void getSamuV3Clients() throws Exception {
+        assertThat(pools().getSamuV3Clients())
+                .containsExactly("fr.health.test.samu1-v3", "fr.health.test.samu-multi");
+    }
+
+    @Test
+    void getDirectCisuClients() throws Exception {
+        assertThat(pools().getDirectCisuClients()).containsExactly("fr.health.test.samu-multi");
+    }
+
+    @Test
+    void getTranscodingCisuClientsExcludesDirectCisuClients() throws Exception {
+        assertThat(pools().getTranscodingCisuClients()).containsExactly("fr.health.test.samu1-v3");
+    }
+
+    @Test
     void configurationPathDefaultsToLocalFile() {
         assertThat(ClientPropertiesRegistry.configurationPath(null)).isEqualTo(Path.of("config/clients.yaml"));
         assertThat(ClientPropertiesRegistry.configurationPath(" ")).isEqualTo(Path.of("config/clients.yaml"));

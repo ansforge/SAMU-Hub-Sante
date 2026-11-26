@@ -15,6 +15,12 @@ public final class ClientPropertiesRegistry {
     public static final Path DEFAULT_CONFIGURATION_PATH = Path.of("config/clients.yaml");
     public static final String HEALTH_TEST_PREFIX = "fr.health.test.";
 
+    private static final PerimeterVersion SAMU_V1 = new PerimeterVersion("15-15", "1.5");
+    private static final PerimeterVersion SAMU_V3 = new PerimeterVersion("15-15", "2.1");
+    private static final PerimeterVersion GPS_V3 = new PerimeterVersion("15-gps", "1.3");
+    private static final PerimeterVersion SMUR_V3 = new PerimeterVersion("15-smur", "1.7");
+    private static final PerimeterVersion NEXSIS_V3 = new PerimeterVersion("15-nexsis", "1.9");
+
     private static final ObjectMapper yamlMapper = JsonMapper.builder(new YAMLFactory())
             .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
             .build();
@@ -63,12 +69,37 @@ public final class ClientPropertiesRegistry {
         return clients;
     }
 
-    public List<String> getClientsByPerimeterVersion(PerimeterVersion required) {
+    public List<String> getClientsByPerimeterVersion(PerimeterVersion required, PerimeterVersion... excluded) {
         return clients.stream()
                 .filter(client -> client.clientId().startsWith(HEALTH_TEST_PREFIX))
                 .filter(client -> supports(client, required))
+                .filter(client -> Arrays.stream(excluded).noneMatch(perimeterVersion -> supports(client, perimeterVersion)))
                 .map(ClientProperties::clientId)
                 .toList();
+    }
+
+    public List<String> getGpsClients() {
+        return getClientsByPerimeterVersion(GPS_V3);
+    }
+
+    public List<String> getSmurClients() {
+        return getClientsByPerimeterVersion(SMUR_V3);
+    }
+
+    public List<String> getSamuV1Clients() {
+        return getClientsByPerimeterVersion(SAMU_V1);
+    }
+
+    public List<String> getSamuV3Clients() {
+        return getClientsByPerimeterVersion(SAMU_V3);
+    }
+
+    public List<String> getDirectCisuClients() {
+        return getClientsByPerimeterVersion(NEXSIS_V3);
+    }
+
+    public List<String> getTranscodingCisuClients() {
+        return getClientsByPerimeterVersion(SAMU_V3, NEXSIS_V3);
     }
 
     private static boolean supports(ClientProperties client, PerimeterVersion perimeterVersion) {
