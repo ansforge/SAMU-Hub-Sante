@@ -42,6 +42,13 @@ Les deux scénarios de persistance (`15-18-persistance`, `18-15-persistance`) co
 | `SAMU_NEXSIS_RS_SCENARIO_USER_COUNT` | Utilisateurs par seconde pour `SamuNexsisRsScenario` (défaut : `2`, `0` = scénario désactivé) |
 | `SAMU_NEXSIS_RC_RI_SCENARIO_USER_COUNT` | Utilisateurs par seconde pour `SamuNexsisRcRiScenario` (défaut : `2`, `0` = scénario désactivé) |
 | `TMC_SCENARIOS` | Clés des scénarios à lancer, séparées par des virgules (ex. `15-gps,15-18-persistance`). Défaut : tous |
+| `CLIENTS_CONFIGURATION_FILE` | Chemin du fichier de configuration client (voir [Configuration client](#configuration-client)). Défaut : `config/clients.yaml` |
+
+## Configuration client
+
+L'application TMC charge au démarrage la configuration client du Hub. Seuls `client_id` et `perimeters` (`name`, `versions`) sont lus, les autres champs sont ignorés. Le run échoue si le fichier est absent ou invalide : `client_id` manquant ou dupliqué, client sans périmètre, périmètre sans nom ou sans version.
+
+En local `config/clients.yaml` est utilisé par défaut (non versionné). Le chemin d'accès est configurable via la variable `CLIENTS_CONFIGURATION_FILE`.
 
 ## Utilisation en local
 
@@ -66,6 +73,7 @@ Remplir le fichier `.env` avec :
 - le host et port RabbitMQ (`RABBITMQ_HOST`, `RABBITMQ_PORT`)
 - la durée des scénarios en secondes (`SCENARIO_DURATION`)
 - le nombre d'utilisateurs par scénario (variables `*_USER_COUNT`)
+- le chemin vers la configuration client (`CLIENTS_CONFIGURATION_FILE`, `config/clients.yaml` par défaut), remplir avec le listing des clients présents dans la topology.
 
 Note : l'exposition des variables via `.env` est gérée par la librairie [dotenv-java](https://github.com/cdimascio/dotenv-java).
 
@@ -86,9 +94,17 @@ Lancer un scénario ou un sous-ensemble (clés, séparées par des virgules) :
 
 Le rapport est écrit dans `build/reports/gatling/tmcsimulation-<timestamp>/`.
 
+### Tests unitaires
+
+Le code des simulations est testé dans le source set dédié `src/gatlingTest/` (le source set `gatling` dépend déjà de `test`, ce qui interdit l'inverse) :
+
+```bash
+./gradlew test
+```
+
 > ⚠️ **Point de vigilance Gradle 9** : les tâches `gatlingRun` et `gatlingRecorder` du plugin `io.gatling.gradle` (3.13.5) sont cassées sous Gradle 9 (`gatlingRun` appelle `Project#javaexec`, `gatlingRecorder` lit la propriété `reportsDir` de l'ancienne Convention API, tous deux supprimés en 9.0). Le plugin ne peut pas être mis à jour car gatling-amqp impose Gatling 3.13.5 : utiliser `runGatlingSimulations`, y compris pour un seul scénario. Toute commande qui force l'évaluation de toutes les tâches (ex. `./gradlew tasks`) échoue également.
 
-`runGatlingSimulations` (comme l'image Docker) exécute une seule simulation, `loadtesting.simulations.TmcSimulation`, avec un protocole AMQP par vhost. Le run échoue si une requête est KO (assertion Gatling), si une clé de `TMC_SCENARIOS` est inconnue ou si aucun scénario n'est sélectionné.
+`runGatlingSimulations` (comme l'image Docker) exécute une seule simulation, `loadtesting.simulations.TmcSimulation`, avec un protocole AMQP par vhost. Le run échoue si une requête est KO (assertion Gatling), si une clé de `TMC_SCENARIOS` est inconnue, si la configuration client est absente ou invalide, ou si aucun scénario n'est sélectionné.
 
 ## Architecture technique
 
