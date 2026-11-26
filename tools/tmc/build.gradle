@@ -19,6 +19,38 @@ dependencies {
     gatling("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:${libs.versions.jackson.get()}")
 }
 
+// The gatling source set already depends on the test one: unit tests of the simulation code get their own source set
+sourceSets {
+    gatlingTest {
+        compileClasspath += sourceSets.gatling.output
+        runtimeClasspath += sourceSets.gatling.output
+    }
+}
+
+configurations {
+    gatlingTestImplementation.extendsFrom gatlingImplementation
+    gatlingTestRuntimeOnly.extendsFrom gatlingRuntimeOnly
+}
+
+dependencies {
+    gatlingTestImplementation(platform("org.junit:junit-bom:${libs.versions.junit.get()}"))
+    gatlingTestImplementation("org.junit.jupiter:junit-jupiter")
+    gatlingTestImplementation("org.assertj:assertj-core:${libs.versions.assertj.get()}")
+    gatlingTestRuntimeOnly("org.junit.platform:junit-platform-launcher")
+}
+
+def gatlingTest = tasks.register('gatlingTest', Test) {
+    group = 'verification'
+    description = 'Run the unit tests of the simulation code.'
+    testClassesDirs = sourceSets.gatlingTest.output.classesDirs
+    classpath = sourceSets.gatlingTest.runtimeClasspath
+    useJUnitPlatform()
+}
+
+tasks.named('test') {
+    dependsOn gatlingTest
+}
+
 gatling {
     enterprise {
         // Enterprise Cloud (https://cloud.gatling.io/) configuration reference: https://gatling.io/docs/gatling/reference/current/extensions/gradle_plugin/#working-with-gatling-enterprise-cloud
