@@ -2,6 +2,7 @@ package loadtesting.scenarios;
 
 import io.gatling.javaapi.core.ScenarioBuilder;
 import loadtesting.SimulationUtils;
+import loadtesting.clients.ClientPair;
 
 import static io.gatling.javaapi.core.CoreDsl.*;
 import static loadtesting.ConfigUtils.getNumericEnvVar;
@@ -42,11 +43,11 @@ public class SamuNexsisRsScenario implements TmcScenario {
         int pause = getNumericEnvVar("SCENARIO_PAUSE_SECONDS", DEFAULT_PAUSE_DURATION);
 
         return scenario(TITLE)
-                .feed(SimulationUtils.generateRsFlowFeeder(rsRiContent, rsSrContent, SENDER_ID, RECIPIENT_ID))
+                .feed(SimulationUtils.generateRsFlowFeeder(rsRiContent, rsSrContent, () -> new ClientPair(SENDER_ID, RECIPIENT_ID)))
                 .exec(
                         amqp(String.format("%s (RS-RI)", TITLE))
                                 .publish()
-                                .topicExchange(HUBSANTE_EXCHANGE, SENDER_ID)
+                                .topicExchange(HUBSANTE_EXCHANGE, SENDER_ID_ROUTING_KEY)
                                 .textMessage("#{rsRiMessage}")
                                 .contentType(JSON_CONTENT_TYPE)
                 )
@@ -54,7 +55,7 @@ public class SamuNexsisRsScenario implements TmcScenario {
                 .exec(
                         amqp(String.format("%s (RS-SR)", TITLE))
                                 .publish()
-                                .topicExchange(HUBSANTE_EXCHANGE, SENDER_ID)
+                                .topicExchange(HUBSANTE_EXCHANGE, SENDER_ID_ROUTING_KEY)
                                 .textMessage("#{rsSrMessage}")
                                 .contentType(JSON_CONTENT_TYPE)
                 );

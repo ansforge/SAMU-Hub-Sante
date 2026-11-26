@@ -9,6 +9,7 @@ import com.hubsante.model.edxl.*;
 import com.hubsante.model.rcde.DistributionElement;
 import com.hubsante.model.rcde.Recipient;
 import com.hubsante.model.rcde.Sender;
+import loadtesting.clients.ClientPair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,7 +22,7 @@ import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-import static loadtesting.Constants.RC_DE_USER_PREFIX;
+import static loadtesting.Constants.*;
 import static loadtesting.ConfigUtils.getNumericEnvVar;
 
 public final class SimulationUtils {
@@ -41,7 +42,10 @@ public final class SimulationUtils {
         return String.join(".", Arrays.copyOfRange(parts, 2, parts.length));
     }
 
-    public static String buildEdxlMessageString(String useCaseString, String senderId, String recipientId, DistributionKind distributionKind, DistributionStatus distributionStatus) throws Exception {
+    public static String buildEdxlMessageString(String useCaseString, ClientPair pair, DistributionKind distributionKind, DistributionStatus distributionStatus) throws Exception {
+        String senderId = pair.senderId();
+        String recipientId = pair.recipientId();
+
         // The JSON mapper config used in the library forces in the serialization
         // of the dates to be truncated to seconds.
         OffsetDateTime sentAt = OffsetDateTime.now().truncatedTo(ChronoUnit.SECONDS);
@@ -85,19 +89,20 @@ public final class SimulationUtils {
         return jsonMapper.writeValueAsString(edxlJson);
     }
 
-    public static String buildEdxlMessageString(String useCaseString, String senderId, String recipientId, DistributionKind distributionKind) throws Exception {
-        return buildEdxlMessageString(useCaseString, senderId, recipientId, distributionKind, DistributionStatus.ACTUAL);
+    public static String buildEdxlMessageString(String useCaseString, ClientPair pair, DistributionKind distributionKind) throws Exception {
+        return buildEdxlMessageString(useCaseString, pair, distributionKind, DistributionStatus.ACTUAL);
     }
 
-    public static String buildEdxlMessageString(String useCaseString, String senderId, String recipientId) throws Exception {
-        return buildEdxlMessageString(useCaseString, senderId, recipientId, DistributionKind.REPORT, DistributionStatus.ACTUAL);
+    public static String buildEdxlMessageString(String useCaseString, ClientPair pair) throws Exception {
+        return buildEdxlMessageString(useCaseString, pair, DistributionKind.REPORT, DistributionStatus.ACTUAL);
     }
 
-    public static Iterator<Map<String, Object>> generateMessageFeeder(String useCaseString, String senderId, String recipientId) {
+    public static Iterator<Map<String, Object>> generateMessageFeeder(String useCaseString, Supplier<ClientPair> pairs) {
         return Stream.generate((Supplier<Map<String, Object>>) () ->
         {
             try {
-                return Collections.singletonMap("message", buildEdxlMessageString(useCaseString, senderId, recipientId));
+                ClientPair pair = pairs.get();
+                return feederEntry(pair, Map.of(GATLING_EL_MESSAGE_KEY, buildEdxlMessageString(useCaseString, pair)));
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -106,15 +111,16 @@ public final class SimulationUtils {
 
     /** Feeder for the 15-18 flow: generates an RS-RI and RS-SR sharing the same unique caseId per virtual user. */
     public static Iterator<Map<String, Object>> generateRsFlowFeeder(
-            String rsRiContent, String rsSrContent, String senderId, String recipientId) {
+            String rsRiContent, String rsSrContent, Supplier<ClientPair> pairs) {
         return Stream.generate(() -> {
             try {
-                String caseId = senderId + "_" + UUID.randomUUID();
+                ClientPair pair = pairs.get();
+                String caseId = pair.senderId() + "_" + UUID.randomUUID();
                 String rsRiMessage = buildEdxlMessageString(
-                        jsonMapper.writeValueAsString(replaceCaseId(rsRiContent, caseId)), senderId, recipientId);
+                        jsonMapper.writeValueAsString(replaceCaseId(rsRiContent, caseId)), pair);
                 String rsSrMessage = buildEdxlMessageString(
-                        jsonMapper.writeValueAsString(replaceCaseId(rsSrContent, caseId)), senderId, recipientId);
-                return Map.<String, Object>of("rsRiMessage", rsRiMessage, "rsSrMessage", rsSrMessage);
+                        jsonMapper.writeValueAsString(replaceCaseId(rsSrContent, caseId)), pair);
+                return feederEntry(pair, Map.of("rsRiMessage", rsRiMessage, "rsSrMessage", rsSrMessage));
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -124,19 +130,27 @@ public final class SimulationUtils {
     /** Feeder for the 18-15 flow: generates two RC-RI messages sharing the same unique caseId per virtual user.
      * The first triggers the new-case path; the second (sent after a pause) triggers the known-case diff path. */
     public static Iterator<Map<String, Object>> generateRcRiFlowFeeder(
-            String rcRiContent, String senderId, String recipientId) {
+            String rcRiContent, Supplier<ClientPair> pairs) {
         return Stream.generate(() -> {
             try {
-                String caseId = senderId + "_" + UUID.randomUUID();
+                ClientPair pair = pairs.get();
+                String caseId = pair.senderId() + "_" + UUID.randomUUID();
                 String newCaseMessage = buildEdxlMessageString(
-                        jsonMapper.writeValueAsString(replaceCaseId(rcRiContent, caseId)), senderId, recipientId);
+                        jsonMapper.writeValueAsString(replaceCaseId(rcRiContent, caseId)), pair);
                 String updateMessage = buildEdxlMessageString(
-                        jsonMapper.writeValueAsString(replaceCaseId(rcRiContent, caseId)), senderId, recipientId);
-                return Map.<String, Object>of("rcRiNewMessage", newCaseMessage, "rcRiUpdateMessage", updateMessage);
+                        jsonMapper.writeValueAsString(replaceCaseId(rcRiContent, caseId)), pair);
+                return feederEntry(pair, Map.of("rcRiNewMessage", newCaseMessage, "rcRiUpdateMessage", updateMessage));
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         }).iterator();
+    }
+
+    private static Map<String, Object> feederEntry(ClientPair pair, Map<String, Object> messages) {
+        Map<String, Object> entry = new HashMap<>(messages);
+        entry.put(GATLING_EL_SENDER_ID_KEY, pair.senderId());
+        entry.put(GATLING_EL_RECIPIENT_ID_KEY, pair.recipientId());
+        return entry;
     }
 
     private static ObjectNode replaceCaseId(String useCaseString, String caseId) throws Exception {

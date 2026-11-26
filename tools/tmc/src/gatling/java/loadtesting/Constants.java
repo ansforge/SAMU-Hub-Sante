@@ -11,6 +11,12 @@ public final class Constants {
 
     public final static String GATLING_EL_MESSAGE_KEY = "message";
 
+    public final static String GATLING_EL_SENDER_ID_KEY = "senderId";
+
+    public final static String GATLING_EL_RECIPIENT_ID_KEY = "recipientId";
+
+    public final static String SENDER_ID_ROUTING_KEY = "#{" + GATLING_EL_SENDER_ID_KEY + "}";
+
     public final static String RC_DE_USER_PREFIX = "hubex";
 
     public final static Integer DEFAULT_PAUSE_DURATION = 5;
