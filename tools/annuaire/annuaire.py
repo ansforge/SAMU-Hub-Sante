@@ -10,6 +10,7 @@ from models import (
     ErrorResponse,
     Perimeter,
     Client,
+    InternalClient,
     PerimeterPath,
     ClientsResponse,
     PERIMETER_TO_ANNUAIRE_KEY_MAP,
@@ -20,7 +21,9 @@ from constants import (
     ANNUAIRE_ROOT_KEY,
     ANNUAIRE_CLIENTS_KEY,
     CLIENTS_ENDPOINT,
+    INTERNAL_CLIENTS_ENDPOINT,
     ANNUAIRE_CLIENTS_DATA_KEY,
+    INTERNAL_ANNUAIRE_CLIENTS_DATA_KEY,
     SPECS_ENDPOINT,
     HEALTH_ENDPOINT,
     VALUES_PATH,
@@ -70,16 +73,17 @@ def resolve_perimeters(annuaire: dict) -> dict[Perimeter, bool]:
     }
 
 
-def build_annuaire_client_entry(client: dict) -> Client:
-    return Client(
+def build_annuaire_client_entry(client: dict) -> InternalClient:
+    return InternalClient(
         client_id=client["client_id"],
         client_name=client.get("client_name", ""),
         client_type=client.get("client_type", ""),
         perimeters=resolve_perimeters(client.get(ANNUAIRE_ROOT_KEY, {})),
+        editor=client.get("editor", ""),
     )
 
 
-def build_annuaire_clients(clients: list[dict]) -> list[Client]:
+def build_annuaire_clients(clients: list[dict]) -> list[InternalClient]:
     return [
         build_annuaire_client_entry(c)
         for c in clients
@@ -91,11 +95,17 @@ clients_tag = Tag(name="Clients", description="Annuaire des clients par périmè
 
 
 def register_routes(app: OpenAPI) -> None:
+    def clients_json(data_key: str, perimeter: Perimeter | None = None) -> Response:
+        clients: list[Client] = app.config[data_key]
+        if perimeter:
+            clients = [c for c in clients if c.perimeters[perimeter]]
+        return jsonify([c.model_dump(by_alias=True) for c in clients])
+
+    # routes publiques
     @app.get(CLIENTS_ENDPOINT, tags=[clients_tag], responses={200: ClientsResponse})
     def get_clients() -> ClientsResponse:
         """Lister tous les clients de l'annuaire"""
-        clients: list[Client] = app.config[ANNUAIRE_CLIENTS_DATA_KEY]
-        return jsonify([c.model_dump(by_alias=True) for c in clients])
+        return clients_json(ANNUAIRE_CLIENTS_DATA_KEY)
 
     @app.get(
         f"{CLIENTS_ENDPOINT}/<perimeter>",
@@ -104,9 +114,18 @@ def register_routes(app: OpenAPI) -> None:
     )
     def get_clients_by_perimeter(path: PerimeterPath) -> ClientsResponse:
         """Lister les clients actifs sur un périmètre donné"""
-        clients: list[Client] = app.config[ANNUAIRE_CLIENTS_DATA_KEY]
-        filtered = [c for c in clients if c.perimeters[path.perimeter]]
-        return jsonify([c.model_dump(by_alias=True) for c in filtered])
+        return clients_json(ANNUAIRE_CLIENTS_DATA_KEY, path.perimeter)
+
+    # routes internes
+    @app.get(INTERNAL_CLIENTS_ENDPOINT, doc_ui=False)
+    def get_internal_clients() -> Response:
+        """Lister tous les clients de l'annuaire, avec les champs internes"""
+        return clients_json(INTERNAL_ANNUAIRE_CLIENTS_DATA_KEY)
+
+    @app.get(f"{INTERNAL_CLIENTS_ENDPOINT}/<perimeter>", doc_ui=False)
+    def get_internal_clients_by_perimeter(path: PerimeterPath) -> Response:
+        """Lister les clients actifs sur un périmètre donné, avec les champs internes"""
+        return clients_json(INTERNAL_ANNUAIRE_CLIENTS_DATA_KEY, path.perimeter)
 
     @app.get(HEALTH_ENDPOINT, doc_ui=False)
     def health_check() -> tuple[Response, int]:
@@ -154,5 +173,10 @@ def create_app() -> OpenAPI:
         CORS(app, origins=allowed_origins)
     register_routes(app)
     clients = load_clients(VALUES_PATH)
-    app.config[ANNUAIRE_CLIENTS_DATA_KEY] = build_annuaire_clients(clients)
+    internal_clients = build_annuaire_clients(clients)
+    app.config[INTERNAL_ANNUAIRE_CLIENTS_DATA_KEY] = internal_clients
+    # Deny by default : la liste publique ne contient que de vrais `Client` publiques
+    app.config[ANNUAIRE_CLIENTS_DATA_KEY] = [
+        Client.model_validate(c.model_dump()) for c in internal_clients
+    ]
     return app
