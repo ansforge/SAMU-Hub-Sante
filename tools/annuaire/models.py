@@ -46,6 +46,12 @@ class Client(BaseModel):
     perimeters: Perimeters
 
 
+class InternalClient(Client):
+    """Un client tel qu'il est exposé par l'API interne."""
+
+    editor: str = ""
+
+
 class ClientsResponse(RootModel[list[Client]]):
     """Réponse en tableau nu : documente `[Client, ...]` à la racine."""
 
