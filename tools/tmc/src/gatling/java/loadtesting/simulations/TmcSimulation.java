@@ -3,10 +3,12 @@ package loadtesting.simulations;
 import io.gatling.javaapi.core.PopulationBuilder;
 import io.gatling.javaapi.core.Simulation;
 import loadtesting.AmqpConnectionFactory;
+import loadtesting.clients.ClientPropertiesRegistry;
 import loadtesting.scenarios.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -22,6 +24,7 @@ import static loadtesting.Constants.DEFAULT_PAUSE_DURATION;
 public class TmcSimulation extends Simulation {
     private final static int defaultDuration = 10;
     private final static int defaultUserCount = 2;
+    private static final String CLIENTS_CONFIGURATION_FILE_ENV_VAR = "CLIENTS_CONFIGURATION_FILE";
 
     private static final List<TmcScenario> SCENARIOS = List.of(
             new SamuGpsScenario(),
@@ -49,6 +52,10 @@ public class TmcSimulation extends Simulation {
                         "Unknown scenario(s) in TMC_SCENARIOS: %s, available: %s", unknownKeys, availableKeys));
             }
 
+            Path clientsConfigurationPath = ClientPropertiesRegistry.configurationPath(getEnvVar(CLIENTS_CONFIGURATION_FILE_ENV_VAR));
+            ClientPropertiesRegistry clientRegistry = ClientPropertiesRegistry.load(clientsConfigurationPath);
+            log.info("Loaded {} clients from {}", clientRegistry.all().size(), clientsConfigurationPath);
+
             AmqpConnectionFactory connectionFactory = new AmqpConnectionFactory();
             List<PopulationBuilder> populations = new ArrayList<>();
 
@@ -65,7 +72,7 @@ public class TmcSimulation extends Simulation {
                 log.info("Scenario {} selected: {} users/s on vhost {} during {}s",
                         scenario.key(), userCount, scenario.vhost(), duration);
                 populations.add(
-                        scenario.build()
+                        scenario.build(clientRegistry)
                                 .injectOpen(constantUsersPerSec(userCount).during(duration))
                                 .protocols(connectionFactory.buildAmqpProtocolBuilder(scenario.vhost()))
                 );

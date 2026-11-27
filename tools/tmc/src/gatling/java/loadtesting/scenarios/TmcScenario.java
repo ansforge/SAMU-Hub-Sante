@@ -1,6 +1,8 @@
 package loadtesting.scenarios;
 
 import io.gatling.javaapi.core.ScenarioBuilder;
+import loadtesting.clients.ClientPairPicker;
+import loadtesting.clients.ClientPropertiesRegistry;
 
 public interface TmcScenario {
     String key();
@@ -9,5 +11,7 @@ public interface TmcScenario {
 
     String userCountEnvVar();
 
-    ScenarioBuilder build() throws Exception;
+    ClientPairPicker clientPairPicker(ClientPropertiesRegistry registry);
+
+    ScenarioBuilder build(ClientPropertiesRegistry registry) throws Exception;
 }

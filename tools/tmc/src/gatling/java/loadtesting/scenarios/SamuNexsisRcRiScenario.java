@@ -2,6 +2,9 @@ package loadtesting.scenarios;
 
 import io.gatling.javaapi.core.ScenarioBuilder;
 import loadtesting.SimulationUtils;
+import loadtesting.clients.ClientPairPicker;
+import loadtesting.clients.ClientPool;
+import loadtesting.clients.ClientPropertiesRegistry;
 
 import static io.gatling.javaapi.core.CoreDsl.*;
 import static loadtesting.ConfigUtils.getNumericEnvVar;
@@ -16,8 +19,6 @@ public class SamuNexsisRcRiScenario implements TmcScenario {
     private static final String KEY = "18-15-persistance";
     private static final String TITLE = "RC-RI flux complet — NexSIS→SAMU";
     private static final String VHOST = "15-nexsis_vactive";
-    private static final String SENDER_ID = "fr.fire.nexsis.sdisZ";
-    private static final String RECIPIENT_ID = "fr.health.test.samu1-v3";
     private static final String USER_COUNT_ENV_VAR = "SAMU_NEXSIS_RC_RI_SCENARIO_USER_COUNT";
 
     @Override
@@ -36,17 +37,22 @@ public class SamuNexsisRcRiScenario implements TmcScenario {
     }
 
     @Override
-    public ScenarioBuilder build() throws Exception {
+    public ClientPairPicker clientPairPicker(ClientPropertiesRegistry registry) {
+        return new ClientPairPicker("scenario " + KEY, ClientPool.of(NEXSIS_CLIENT_ID), registry.getTranscodingCisuClients());
+    }
+
+    @Override
+    public ScenarioBuilder build(ClientPropertiesRegistry registry) throws Exception {
         String rcRiContent = SimulationUtils.loadSampleFile("rc-ri.json");
 
         int pause = getNumericEnvVar("SCENARIO_PAUSE_SECONDS", DEFAULT_PAUSE_DURATION);
 
         return scenario(TITLE)
-                .feed(SimulationUtils.generateRcRiFlowFeeder(rcRiContent, SENDER_ID, RECIPIENT_ID))
+                .feed(SimulationUtils.generateRcRiFlowFeeder(rcRiContent, clientPairPicker(registry)::pick))
                 .exec(
                         amqp(String.format("%s (RC-RI nouveau caseId)", TITLE))
                                 .publish()
-                                .topicExchange(HUBSANTE_EXCHANGE, SENDER_ID)
+                                .topicExchange(HUBSANTE_EXCHANGE, SENDER_ID_ROUTING_KEY)
                                 .textMessage("#{rcRiNewMessage}")
                                 .contentType(JSON_CONTENT_TYPE)
                 )
@@ -54,7 +60,7 @@ public class SamuNexsisRcRiScenario implements TmcScenario {
                 .exec(
                         amqp(String.format("%s (RC-RI mise à jour)", TITLE))
                                 .publish()
-                                .topicExchange(HUBSANTE_EXCHANGE, SENDER_ID)
+                                .topicExchange(HUBSANTE_EXCHANGE, SENDER_ID_ROUTING_KEY)
                                 .textMessage("#{rcRiUpdateMessage}")
                                 .contentType(JSON_CONTENT_TYPE)
                 );
