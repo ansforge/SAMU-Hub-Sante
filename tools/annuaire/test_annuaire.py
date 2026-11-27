@@ -6,6 +6,7 @@ from unittest import mock
 import yaml
 
 import annuaire
+from models import Client
 from annuaire import (
     load_clients,
     resolve_perimeters,
@@ -19,6 +20,10 @@ from annuaire import (
 FIXTURE_DIR = os.path.join(os.path.dirname(__file__), "fixtures")
 FIXTURE_PATH = os.path.join(FIXTURE_DIR, "values_annuaire_api.yaml")
 VALUES_PATH_PATCH = "annuaire.VALUES_PATH"
+# Littéral volontaire : le chemin est le contrat. Il doit rester hors de /annuaire
+# pour ne pas être exposé par l'ingress.
+INTERNAL_CLIENTS_ENDPOINT = "/internal/clients"
+OPENAPI_SPEC_ENDPOINT = "/annuaire/api/specs/openapi.json"
 
 
 class AnnuaireTestCase(unittest.TestCase):
@@ -116,12 +121,18 @@ class AnnuaireTestCase(unittest.TestCase):
                 "client_id": "fr.health.ignore",
                 "editor": "ANS",
             },
+            {
+                "client_id": "fr.health.no-editor",
+                "annuaire": {"cap": True},
+            },
         ]
 
         result = build_annuaire_clients(clients)
-        self.assertEqual(len(result), 1)
+        self.assertEqual(len(result), 2)
         client = result[0].model_dump(by_alias=True)
         self.assertEqual(client.get("client_id"), "fr.health.samu750")
+        self.assertEqual(client.get("editor"), "Editeur A")
+        self.assertEqual(result[1].model_dump().get("editor"), "")
         self.assertEqual(
             client.get("perimeters"),
             {
@@ -164,9 +175,6 @@ class AnnuaireClientsApiTestCase(unittest.TestCase):
         )
         self.assertEqual(samu["client_name"], "SAMU 750")
         self.assertEqual(samu["client_type"], "SAMU")
-        self.assertNotIn("editor", samu)
-        self.assertNotIn("directCISU", samu)
-        self.assertNotIn("isLinkedToNexsis", samu)
         self.assertEqual(
             samu["perimeters"],
             {
@@ -179,6 +187,16 @@ class AnnuaireClientsApiTestCase(unittest.TestCase):
                 "15-gps": False,
             },
         )
+
+    def test_public_routes_expose_only_public_keys(self):
+        for url in [CLIENTS_ENDPOINT] + [
+            f"{CLIENTS_ENDPOINT}/{p}" for p in ["15-15", "15-cap", "15-nexsis"]
+        ]:
+            response = self.http.get(url)
+            self.assertEqual(response.status_code, 200)
+            self.assertTrue(response.json, msg=f"Empty response for {url}")
+            for entry in response.json:
+                self.assertEqual(set(entry), set(Client.model_fields), msg=url)
 
     def test_clients_api_exposes_false_for_not_implemented_perimeters(self):
         data = self.http.get(CLIENTS_ENDPOINT).json
@@ -215,6 +233,82 @@ class AnnuaireClientsApiTestCase(unittest.TestCase):
                 400,
                 msg=f"Expected 400 for perimeter '{invalid}'",
             )
+
+
+class AnnuaireInternalClientsApiTestCase(unittest.TestCase):
+    def setUp(self):
+        self.patcher = mock.patch(VALUES_PATH_PATCH, FIXTURE_PATH)
+        self.patcher.start()
+        self.http = annuaire.create_app().test_client()
+
+    def tearDown(self):
+        self.patcher.stop()
+
+    def test_internal_clients_returns_same_clients_as_public(self):
+        response = self.http.get(INTERNAL_CLIENTS_ENDPOINT)
+        self.assertEqual(response.status_code, 200)
+        ids = [entry["client_id"] for entry in response.json]
+        self.assertEqual(ids, ["fr.health.samu750", "fr.fire.sdis750"])
+
+    def test_internal_clients_response_shape(self):
+        response = self.http.get(INTERNAL_CLIENTS_ENDPOINT)
+        self.assertEqual(response.status_code, 200)
+        samu = next(
+            entry
+            for entry in response.json
+            if entry["client_id"] == "fr.health.samu750"
+        )
+        self.assertEqual(
+            samu,
+            {
+                "client_id": "fr.health.samu750",
+                "client_name": "SAMU 750",
+                "client_type": "SAMU",
+                "editor": "Editeur A",
+                "perimeters": {
+                    "15-15": True,
+                    "15-cap": True,
+                    "15-portail": False,
+                    "15-cnr114": False,
+                    "15-nexsis": True,
+                    "15-smur": False,
+                    "15-gps": False,
+                },
+            },
+        )
+
+    def test_internal_clients_filter_by_perimeter(self):
+        response_1515 = self.http.get(f"{INTERNAL_CLIENTS_ENDPOINT}/15-15")
+        self.assertEqual(response_1515.status_code, 200)
+        self.assertEqual(
+            [(e["client_id"], e["editor"]) for e in response_1515.json],
+            [("fr.health.samu750", "Editeur A")],
+        )
+
+        response_nexsis = self.http.get(f"{INTERNAL_CLIENTS_ENDPOINT}/15-nexsis")
+        self.assertEqual(response_nexsis.status_code, 200)
+        self.assertEqual(
+            [(e["client_id"], e["editor"]) for e in response_nexsis.json],
+            [("fr.health.samu750", "Editeur A"), ("fr.fire.sdis750", "Editeur Fire")],
+        )
+
+    def test_internal_clients_filter_rejects_unknown_perimeters(self):
+        for invalid in ["inconnu", "P: 15-15", "injection-attempt"]:
+            response = self.http.get(f"{INTERNAL_CLIENTS_ENDPOINT}/{invalid}")
+            self.assertEqual(
+                response.status_code,
+                400,
+                msg=f"Expected 400 for perimeter '{invalid}'",
+            )
+            self.assertIn("valid_perimeters", response.json)
+
+    def test_internal_routes_hidden_from_public_openapi_spec(self):
+        spec = self.http.get(OPENAPI_SPEC_ENDPOINT).json
+        # Allow-list : seules les routes publiques sont documentées
+        self.assertEqual(
+            set(spec["paths"]),
+            {CLIENTS_ENDPOINT, f"{CLIENTS_ENDPOINT}/{{perimeter}}"},
+        )
 
 
 if __name__ == "__main__":
