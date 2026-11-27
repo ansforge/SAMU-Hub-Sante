@@ -72,7 +72,7 @@ public class TmcSimulation extends Simulation {
                 log.info("Scenario {} selected: {} users/s on vhost {} during {}s",
                         scenario.key(), userCount, scenario.vhost(), duration);
                 populations.add(
-                        scenario.build()
+                        scenario.build(clientRegistry)
                                 .injectOpen(constantUsersPerSec(userCount).during(duration))
                                 .protocols(connectionFactory.buildAmqpProtocolBuilder(scenario.vhost()))
                 );

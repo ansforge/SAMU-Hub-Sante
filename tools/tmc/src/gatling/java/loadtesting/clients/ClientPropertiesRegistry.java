@@ -13,6 +13,13 @@ import java.util.stream.Collectors;
 
 public final class ClientPropertiesRegistry {
     public static final Path DEFAULT_CONFIGURATION_PATH = Path.of("config/clients.yaml");
+    public static final String HEALTH_TEST_PREFIX = "fr.health.test.";
+
+    private static final PerimeterVersion SAMU_V1 = new PerimeterVersion("15-15", "1.5");
+    private static final PerimeterVersion SAMU_V3 = new PerimeterVersion("15-15", "2.1");
+    private static final PerimeterVersion GPS_V3 = new PerimeterVersion("15-gps", "1.3");
+    private static final PerimeterVersion SMUR_V3 = new PerimeterVersion("15-smur", "1.7");
+    private static final PerimeterVersion NEXSIS_V3 = new PerimeterVersion("15-nexsis", "1.9");
 
     private static final ObjectMapper yamlMapper = JsonMapper.builder(new YAMLFactory())
             .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
@@ -60,6 +67,53 @@ public final class ClientPropertiesRegistry {
 
     public List<ClientProperties> all() {
         return clients;
+    }
+
+    public ClientPool getClientsByPerimeterVersion(PerimeterVersion required, PerimeterVersion... excluded) {
+        List<String> clientIds = clients.stream()
+                .filter(client -> client.clientId().startsWith(HEALTH_TEST_PREFIX))
+                .filter(client -> supports(client, required))
+                .filter(client -> Arrays.stream(excluded).noneMatch(perimeterVersion -> supports(client, perimeterVersion)))
+                .map(ClientProperties::clientId)
+                .toList();
+
+        StringBuilder description = new StringBuilder(HEALTH_TEST_PREFIX + "* with " + describe(required));
+        Arrays.stream(excluded).forEach(perimeterVersion -> description.append(" without ").append(describe(perimeterVersion)));
+        return new ClientPool(description.toString(), clientIds);
+    }
+
+    public ClientPool getGpsClients() {
+        return getClientsByPerimeterVersion(GPS_V3);
+    }
+
+    public ClientPool getSmurClients() {
+        return getClientsByPerimeterVersion(SMUR_V3);
+    }
+
+    public ClientPool getSamuV1Clients() {
+        return getClientsByPerimeterVersion(SAMU_V1);
+    }
+
+    public ClientPool getSamuV3Clients() {
+        return getClientsByPerimeterVersion(SAMU_V3);
+    }
+
+    public ClientPool getDirectCisuClients() {
+        return getClientsByPerimeterVersion(NEXSIS_V3);
+    }
+
+    public ClientPool getTranscodingCisuClients() {
+        return getClientsByPerimeterVersion(SAMU_V3, NEXSIS_V3);
+    }
+
+    private static String describe(PerimeterVersion perimeterVersion) {
+        return perimeterVersion.perimeter() + "_v" + perimeterVersion.version();
+    }
+
+    private static boolean supports(ClientProperties client, PerimeterVersion perimeterVersion) {
+        return client.perimeters().stream().anyMatch(perimeter ->
+                perimeter.name().equals(perimeterVersion.perimeter())
+                        && perimeter.versions().contains(perimeterVersion.version()));
     }
 
     private static void validateClients(Path path, List<ClientProperties> clients) {

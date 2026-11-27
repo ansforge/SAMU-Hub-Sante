@@ -1,5 +1,7 @@
 package loadtesting.scenarios;
 
+import loadtesting.clients.ClientPropertiesRegistry;
+
 public class SamuSamuDirectScenario extends BaseScenario {
 
     protected ScenarioConfig getConfig() {
@@ -7,8 +9,8 @@ public class SamuSamuDirectScenario extends BaseScenario {
                 "15-15-direct",
                 "15-15: direct transfer",
                 "15-15_v2.1",
-                "fr.health.test.samu1-v3",
-                "fr.health.test.samu2-v3",
+                ClientPropertiesRegistry::getSamuV3Clients,
+                ClientPropertiesRegistry::getSamuV3Clients,
                 "rs-eda.json",
                 "SAMU_SAMU_DIRECT_SCENARIO_USER_COUNT"
         );
